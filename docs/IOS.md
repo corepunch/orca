@@ -111,7 +111,16 @@ completion, animation step or application paint is queued.
 Each display callback snapshots the queued messages before resuming Lua. Work
 posted while that batch runs waits for the next display callback, so animation
 callbacks cannot keep UIKit from delivering a new touch during deceleration.
-The queue boundary also applies to peeking and explicit queue flushes.
+The paints that batch requests are the exception: once the batch has drained,
+the paints queued so far draw in the same callback, so every animation step and
+touch is shown in the frame that handled it instead of one display interval
+later. A paint posted by a paint waits for the next callback. The queue
+boundary also applies to peeking and explicit queue flushes.
+The display link asks for 80–120 Hz, and the generated Info.plist sets
+`CADisableMinimumFrameDurationOnPhone`, so ProMotion iPhones animate at 120 Hz
+instead of the 60 Hz iPhone default. File-change monitoring is compiled out on
+iOS: the bundle is read-only, and the per-message `stat` of every opened file
+only slowed each frame.
 
 Set `ORCA_PROFILE_FRAMES=1` in the Xcode scheme's Run environment to log
 display callback rates, frame durations and missed display intervals once per

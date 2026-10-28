@@ -96,7 +96,7 @@ def info_plist(display_name, launch_storyboard=None):
                 CFBundleInfoDictionaryVersion='6.0', CFBundlePackageType='APPL',
                 CFBundleShortVersionString='$(MARKETING_VERSION)', CFBundleVersion='$(CURRENT_PROJECT_VERSION)',
                 CFBundleDevelopmentRegion='en', UIDeviceFamily=[1, 2], LSRequiresIPhoneOS=True,
-                UIRequiredDeviceCapabilities=['opengles-3'],
+                UIRequiredDeviceCapabilities=['opengles-3'], CADisableMinimumFrameDurationOnPhone=True,
                 **({'UILaunchStoryboardName': launch_storyboard} if launch_storyboard else {'UILaunchScreen': {}}),
                 UISupportedInterfaceOrientations=orientations,
                 **{'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown']},
