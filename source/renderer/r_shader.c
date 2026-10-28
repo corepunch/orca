@@ -161,6 +161,7 @@ va_datatype_info(enum va_datatype datatype)
 HRESULT
 Shader_Release(struct shader* shader)
 {
+  if (tr.program == shader->prognum) tr.program = 0;
   R_Call(glDeleteProgram, shader->prognum);
   free(shader->constants);
   free(shader);
@@ -287,6 +288,7 @@ static GLuint _CreateGLProgram(struct shader_desc* def)
     goto shader_cleanup;
   } else {
     R_Call(glUseProgram, program);
+    tr.program = program;
     R_Call(glDetachShader, program, vertexShader);
     R_Call(glDetachShader, program, fragmentShader);
     R_Call(glDeleteShader, vertexShader);
@@ -314,6 +316,7 @@ Shader_RegisterConstants(struct shader* shader,
   GLint active_uniforms = 0;
   GLint nameLength = 0;
   R_Call(glUseProgram, shader->prognum);
+  tr.program = shader->prognum;
   R_Call(glGetProgramiv, shader->prognum, GL_ACTIVE_UNIFORMS, &active_uniforms);
   GLchar nameBuffer[256] = { 0 };
   shader->numConstants = 0;
@@ -389,6 +392,7 @@ Shader_Create(GLuint program,
               struct shader** ppShader)
 {
   struct shader* shader = ZeroAlloc(sizeof(struct shader));
+  shader->serial = ++tr.shaderSerial;
   if (!shader)
     return E_OUTOFMEMORY;
   shader->prognum = program;
@@ -540,8 +544,10 @@ Shader_BindMaterial(struct shader const* shader,
                     struct ViewDef const* view,
                     struct ViewEntity const* ent)
 {
-  R_Call(glActiveTexture, GL_TEXTURE0);
-  R_Call(glUseProgram, shader->prognum);
+  if (tr.program != shader->prognum) {
+    R_Call(glUseProgram, shader->prognum);
+    tr.program = shader->prognum;
+  }
 
   struct Texture const* texture = ent->material.texture ? ent->material.texture : tr.textures[TX_WHITE];
   struct color color = ent->material.color;
@@ -556,6 +562,17 @@ Shader_BindMaterial(struct shader const* shader,
   float w = MAX(1, (ent->bbox.max.x - ent->bbox.min.x) + ent->borderOffset);
   float h = MAX(1, (ent->bbox.max.y - ent->bbox.min.y) + ent->borderOffset);
   float radiusLimit = MIN(w, h) * 0.5f;
+  struct shader* cache = (struct shader*)shader;
+  bool_t sameView = shader->viewValid &&
+    !memcmp(&shader->viewMatrix, &view->viewMatrix, sizeof(struct mat4)) &&
+    !memcmp(&shader->projectionMatrix, &view->projectionMatrix, sizeof(struct mat4)) &&
+    !memcmp(&shader->viewport, &fviewport, sizeof(struct rect));
+  if (!sameView) {
+    cache->viewValid = TRUE;
+    cache->viewMatrix = view->viewMatrix;
+    cache->projectionMatrix = view->projectionMatrix;
+    cache->viewport = fviewport;
+  }
 
 	if (!memcmp(&color, &(struct color){0}, sizeof(struct color))) {
 		color = (struct color){1, 1, 1, 1};
@@ -581,13 +598,16 @@ Shader_BindMaterial(struct shader const* shader,
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         break;
       case kShaderUniform_ViewTransform:
+        if (sameView) break;
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, view->viewMatrix.v);
         break;
       case kShaderUniform_ProjectionTransform:
+        if (sameView) break;
         R_Call(
           glUniformMatrix4fv, location, 1, GL_FALSE, view->projectionMatrix.v);
         break;
       case kShaderUniform_ViewProjectionTransform:
+        if (sameView) break;
         tmp = MAT4_Multiply(&view->projectionMatrix, &view->viewMatrix);
         R_Call(glUniformMatrix4fv, location, 1, GL_FALSE, tmp.v);
         break;
@@ -647,9 +667,11 @@ Shader_BindMaterial(struct shader const* shader,
         R_SetPointFiltering();
         break;
       case kShaderUniform_Viewport:
+        if (sameView) break;
         R_Call(glUniform4fv, location, 1, (GLfloat const*)&fviewport);
         break;
       case kShaderUniform_CameraPosition:
+        if (sameView) break;
         R_Call(glUniform3f,
                location,
                -view->viewMatrix.v[12],
@@ -709,6 +731,10 @@ Shader_BindAttributes(struct shader const* shader,
 											struct model const* model)
 {
   R_Call(glBindVertexArray, model->vao);
+  // The VAO keeps its element buffer and attribute pointers; they only need
+  // setting again for a program with other attribute locations.
+  if (model->vaoSerial == shader->serial) return;
+  ((struct model*)model)->vaoSerial = shader->serial;
   R_Call(glBindBuffer, GL_ELEMENT_ARRAY_BUFFER, model->indexBuffer);
 
   FOR_LOOP(i, VERTEX_SEMANTIC_COUNT)

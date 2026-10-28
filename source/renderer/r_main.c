@@ -1,5 +1,6 @@
 #include <math.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -78,17 +79,17 @@ static PIPELINESTATE const DEFAULTSTATE = {
 HRESULT
 R_ClearScreen(struct color color, float depth, byte_t stencil)
 {
-  GLboolean depthWriteMask = GL_FALSE;
-  GLint stencilWriteMask = 0;
+  // glGet* stalls the GL client; the renderer tracks the depth mask itself
+  // and the stencil mask is restored from the pipeline state.
+  int depthWrite = tr.depthWrite;
+  GLint stencilWriteMask = !tr.state.stencil.mask ? 0xFF
+                         : tr.state.stencil.write ? tr.state.stencil.mask : 0;
   GLint clearFlags = 0;
-
-  R_Call(glGetBooleanv, GL_DEPTH_WRITEMASK, &depthWriteMask);
-  R_Call(glGetIntegerv, GL_STENCIL_WRITEMASK, &stencilWriteMask);
 
   R_Call(glClearColor, color.r, color.g, color.b, color.a);
   clearFlags |= GL_COLOR_BUFFER_BIT;
 
-  R_Call(glDepthMask, GL_TRUE);
+  R_SetDepthWrite(TRUE);
   R_Call(glClearDepthf, depth);
   clearFlags |= GL_DEPTH_BUFFER_BIT;
 
@@ -97,7 +98,7 @@ R_ClearScreen(struct color color, float depth, byte_t stencil)
   clearFlags |= GL_STENCIL_BUFFER_BIT;
 
   R_Call(glClear, clearFlags);
-  R_Call(glDepthMask, depthWriteMask);
+  if (depthWrite >= 0) R_SetDepthWrite(depthWrite);
   R_Call(glStencilMask, stencilWriteMask);
 
   return S_OK;
@@ -365,7 +366,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   if (target->HasDepthTestFunction) {
     R_SetDepthState(&(struct depth_state) { .func = target->DepthTestFunction, .write = write });
   } else {
-    R_Call(glDepthMask, write ? GL_TRUE : GL_FALSE);
+    R_SetDepthWrite(write);
   }
 
   Shader_BindMaterial(shader->shader, view, ent);
@@ -951,12 +952,18 @@ R_BeginFrame(struct color color)
   axGetSize(&size);
   axBeginPaint();
 
+  tr.drawCalls = tr.glCalls = 0;
   R_SetDefaultPipelineState(size.width, size.height);
   R_ClearScreen(color, 1, 0);
 
-  tr.drawCalls = 0;
-
   return NOERROR;
+}
+
+void
+R_GetFrameStats(uint32_t *drawCalls, uint32_t *glCalls)
+{
+  if (drawCalls) *drawCalls = tr.drawCalls;
+  if (glCalls) *glCalls = tr.glCalls;
 }
 
 HRESULT
@@ -964,6 +971,17 @@ R_EndFrame(void)
 {
   if (!tr.buffer) return E_FAIL;
   tr.frame++;
+
+  // Without per-call checks, report a frame's first error once per second
+  // so it still shows up; ORCA_GL_DEBUG=1 locates the call.
+  if (!tr.checkErrors) {
+    static uint32_t reported;
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR && (!reported || tr.frame - reported > 60)) {
+      reported = tr.frame;
+      Con_Error("GL error 0x%x during frame %u (set ORCA_GL_DEBUG=1 to locate it)", error, tr.frame);
+    }
+  }
 
   glFlush();
 
@@ -981,6 +999,10 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   memcpy(&tr.state, &DEFAULTSTATE, sizeof(PIPELINESTATE));
   
   tr.frame = -1;
+  tr.blendMode = tr.depthWrite = -1;
+  tr.program = 0;
+  char const *debug = getenv("ORCA_GL_DEBUG");
+  tr.checkErrors = debug && *debug && strcmp(debug, "0");
 
   if (bOffscreen) {
     Con_Printf("Initializing offscreen surface...");

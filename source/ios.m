@@ -9,6 +9,7 @@
 #import <OpenGLES/ES3/gl.h>
 
 #include <include/api.h>
+#include <include/renderer.h>
 #include <core/core.h>
 #include <generated/UIKit/UIKit.h>
 #include <libs/platform/ios/ios_local.h>
@@ -20,11 +21,40 @@ int luaopen_orca(lua_State *L);
 struct OrcaFrameProfile {
   BOOL enabled;
   unsigned callbacks, gaps, paints;
+  double drawCalls, glCalls;
   double start, last, lastTimestamp;
   double resumeTotal, resumeMax, callbackTotal, callbackMax;
   double gapTotal, gapMax, timestampGapTotal, timestampGapMax;
   double durationTotal, intervalTotal, targetLeadTotal, targetLeadMin;
 };
+
+// Message ids are hashes; name the ones that drive animation and input.
+static char const *message_name(uint32_t message, char *buffer, size_t size)
+{
+  static char const *const names[] = {
+    "Object.Animate", "Window.Paint", "Window.Resized", "Timer.Tick", "Object.Timer",
+    "Object.PropertyChanged", "Node.ScrollWheel", "Node.LeftButtonDragged",
+    "Node.LeftButtonDown", "Node.LeftButtonUp", "Node.MouseMoved", "Node.KeyDown",
+  };
+  for (size_t i = 0; i < sizeof(names) / sizeof(*names); i++)
+    if (fnv1a32(names[i]) == message) return names[i];
+  snprintf(buffer, size, "0x%08x", message);
+  return buffer;
+}
+
+static void profile_messages(void)
+{
+  struct MessageStat stats[12];
+  int n = SV_TakeMessageStats(stats, sizeof(stats) / sizeof(*stats));
+  if (!n) return;
+  fprintf(stderr, "[ios messages]");
+  for (int i = 0; i < n; i++) {
+    char buffer[16];
+    fprintf(stderr, " %s(%s)=%u", message_name(stats[i].message, buffer, sizeof(buffer)),
+            stats[i].className ? stats[i].className : "-", stats[i].count);
+  }
+  fputc('\n', stderr);
+}
 
 static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
                            double started, double resumeDuration, double finished)
@@ -32,6 +62,16 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
   if (!p->start) {
     p->start = started;
     p->targetLeadMin = link.targetTimestamp - started;
+  }
+  // A callback that painted leaves the renderer's counters for that paint.
+  static unsigned lastPainted;
+  unsigned painted = ios_paint_count();
+  if (painted != lastPainted) {
+    uint32_t drawCalls, glCalls;
+    R_GetFrameStats(&drawCalls, &glCalls);
+    lastPainted = painted;
+    p->drawCalls += drawCalls;
+    p->glCalls += glCalls;
   }
   if (p->last) {
     double gap = started - p->last, timestampGap = link.timestamp - p->lastTimestamp;
@@ -56,11 +96,14 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
   if (elapsed < 1) return;
   double count = p->callbacks, gaps = MAX(p->gaps, 1u);
   unsigned paints = ios_paint_count();
+  double paintCount = MAX(paints - p->paints, 1u);
   fprintf(stderr, "[ios frames] callbacks=%u paints=%u elapsed=%.3fs rate=%.2f/s paint_rate=%.2f/s "
+    "draws_per_paint=%.0f gl_calls_per_paint=%.0f "
     "resume_ms=%.2f/max%.2f callback_ms=%.2f/max%.2f "
     "wall_gap_ms=%.2f/max%.2f display_gap_ms=%.2f/max%.2f "
     "duration_ms=%.2f target_interval_ms=%.2f target_lead_ms=%.2f/min%.2f preferred_fps=%ld\n",
     p->callbacks, paints - p->paints, elapsed, count / elapsed, (paints - p->paints) / elapsed,
+    p->drawCalls / paintCount, p->glCalls / paintCount,
     p->resumeTotal * 1000 / count, p->resumeMax * 1000,
     p->callbackTotal * 1000 / count, p->callbackMax * 1000,
     p->gapTotal * 1000 / gaps, p->gapMax * 1000,
@@ -68,6 +111,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
     p->durationTotal * 1000 / count, p->intervalTotal * 1000 / count,
     p->targetLeadTotal * 1000 / count, p->targetLeadMin * 1000,
     (long)link.preferredFramesPerSecond);
+  profile_messages();
   *p = (struct OrcaFrameProfile){ .enabled = YES, .start = finished, .paints = paints,
     .last = started, .lastTimestamp = link.timestamp, .targetLeadMin = DBL_MAX };
 }
@@ -118,6 +162,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 {
   char const *profile = getenv("ORCA_PROFILE_FRAMES");
   _frameProfile.enabled = profile && *profile && strcmp(profile, "0");
+  SV_EnableMessageStats(_frameProfile.enabled);
   NSString *resources = [NSBundle mainBundle].resourcePath;
   NSString *project = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"ORCAProject"] ?: @"project";
   project = [resources stringByAppendingPathComponent:project];

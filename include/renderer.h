@@ -595,6 +595,8 @@ ORCA_API struct FontFamily const *Font_GetDefaultFamily(void);
 ORCA_API struct Object *R_LoadImageFromMemory(void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);
 ORCA_API HRESULT R_EndFrame(void);
+// Draw calls and GL calls issued since R_BeginFrame.
+ORCA_API void R_GetFrameStats(uint32_t *drawCalls, uint32_t *glCalls);
 ORCA_API void R_SetViewportRect(struct rect const *rect);
 ORCA_API void R_SetScissorRect(struct rect const *rect);
 

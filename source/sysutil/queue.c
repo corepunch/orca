@@ -36,10 +36,53 @@ axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,
   axPostMessageW(hobj, event, wparam, queue_message_data(lparam, size));
 }
 
+#define MESSAGE_STATS 48
+static struct MessageStat message_stats[MESSAGE_STATS];
+static bool_t message_stats_enabled;
+
+ORCA_API void
+SV_EnableMessageStats(bool_t enable)
+{
+  message_stats_enabled = enable;
+  if (!enable) memset(message_stats, 0, sizeof(message_stats));
+}
+
+static void
+record_message(struct AXmessage const *msg)
+{
+  char const *className = msg->target ? OBJ_GetClassName(msg->target) : NULL;
+  struct MessageStat *stat = message_stats;
+  for (; stat < message_stats + MESSAGE_STATS && stat->count; stat++) {
+    if (stat->message == msg->message && stat->className == className) break;
+  }
+  if (stat == message_stats + MESSAGE_STATS) return;   // table full: drop the rest
+  stat->message = msg->message;
+  stat->className = className;
+  stat->count++;
+}
+
+static int
+compare_message_stats(void const *a, void const *b)
+{
+  uint32_t x = ((struct MessageStat const *)a)->count, y = ((struct MessageStat const *)b)->count;
+  return x < y ? 1 : x > y ? -1 : 0;
+}
+
+ORCA_API int
+SV_TakeMessageStats(struct MessageStat *out, int max)
+{
+  qsort(message_stats, MESSAGE_STATS, sizeof(*message_stats), compare_message_stats);
+  int n = 0;
+  for (; n < max && n < MESSAGE_STATS && message_stats[n].count; n++) out[n] = message_stats[n];
+  memset(message_stats, 0, sizeof(message_stats));
+  return n;
+}
+
 static int
 push_event_message(lua_State *L, struct AXmessage *msg)
 {
   static Window_PaintMsg_t wnd;
+  if (message_stats_enabled) record_message(msg);
   wnd.WindowWidth = LOWORD(msg->wParam);
   wnd.WindowHeight = HIWORD(msg->wParam);
   switch (msg->message) {
