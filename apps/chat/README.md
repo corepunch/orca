@@ -49,12 +49,16 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   chats, and text or captioned-photo bubbles have a trailing timestamp row.
   Photos fill their bubble edge to edge. A photo without text has no footer or
   tail; its timestamp overlays the bottom-right of the image on a dark backing.
-  Visible photos load the full JPEG, and tapping opens a black, letterboxed
-  viewer with a close action. New uploads preserve aspect ratio within 1.5
-  megapixels and a 1600-pixel longest edge, never enlarge, and fit 250,000 bytes
+  Visible photos show the stored thumbnail while the full JPEG loads, then
+  replace it automatically. Tapping opens a black, letterboxed viewer with a
+  close action and the same preview-to-full behavior. New uploads preserve aspect
+  ratio within 1.5 megapixels and a 1600-pixel longest edge, never enlarge, and fit
+  250,000 bytes
   per JPEG. Compression adjusts quality before reducing dimensions. The separate
-  256-pixel thumbnail is not enlarged for conversation display. Older uploads
-  remain readable at their stored size.
+  256-pixel thumbnail is temporary and never enters the full-photo cache. Both
+  stages use the authenticated photo API; no public preview of encrypted Chat
+  files is requested. If the full download fails, the thumbnail remains with a
+  retry action. Older uploads remain readable at their stored size.
 - Keep the footer free of routine sync captions and empty status rows. Show
   loading, errors and retry actions only when relevant.
 

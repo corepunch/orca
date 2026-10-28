@@ -1,4 +1,4 @@
--- Full-size encrypted photos are fetched only after their frame is visible.
+-- Visible photos show their encrypted thumbnail while the full JPEG loads.
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local Observer = require "orca.UIKit.ViewportObserver"
@@ -15,7 +15,7 @@ end
 
 function Loader.new(app)
     local self = setmetatable({ app = app, active = 0, pending = {}, requests = {},
-        targets = {}, cache = {}, generation = 0 }, Loader)
+        targets = {}, cache = {}, previews = {}, generation = 0 }, Loader)
     self.observer = Observer.new {
         root = function() return app.screen end,
         retainedRoot = function() return app.shell and app.shell.screen end,
@@ -26,11 +26,15 @@ end
 function Loader:clear()
     self.generation = self.generation + 1
     self.observer:clear()
-    self.targets, self.pending, self.requests, self.cache = {}, {}, {}, {}
+    self.targets, self.pending, self.requests, self.cache, self.previews = {}, {}, {}, {}, {}
 end
 
 function Loader:cached(attachment)
     return self.cache[key(attachment)]
+end
+
+function Loader:preview(attachment)
+    return self.previews[key(attachment)]
 end
 
 function Loader:valid(target)
@@ -38,24 +42,41 @@ function Loader:valid(target)
         and self.targets[target.frame] == target and self.observer:attached(target.frame)
 end
 
-function Loader:paint(target, path, err)
+function Loader:paint(target, path, err, preview)
     if not self:valid(target) or not self.observer:isVisible(target.frame) then return end
-    clear(target.frame)
     if path then
-        target.frame:addChild(ui.ImageView { Name = "Photo" .. target.id, Src = path,
-            Foreground = "#ffffff", Stretch = "UniformToFill", IgnoreHitTest = true })
-        target.unsubscribe()
-        self.targets[target.frame] = nil
-    else
+        local image = ui.ImageView { Name = "Photo" .. target.id, Src = path,
+            Foreground = "#ffffff", Stretch = "UniformToFill", IgnoreHitTest = true }
+        image:send("Node.LoadView")
+        if not image.Source then
+            if preview then return end
+            self.cache[target.key] = nil
+            path, err = nil, { message = "This photo could not be decoded." }
+        else
+            if preview then target.preview = path
+            else
+                target.unsubscribe()
+                self.targets[target.frame] = nil
+            end
+            clear(target.frame):addChild(image)
+        end
+    end
+    if not path then
         target.failed = true
+        if not target.preview then clear(target.frame) end
         target.frame:addChild(C.button("photo unavailable · retry", function()
             if not self:valid(target) then return end
             target.failed = false
-            clear(target.frame):addChild(C.text("Loading photo…", { FontSize = 12, Foreground = C.colors.muted }))
+            if target.preview then
+                target.frame:findChild("RetryPhoto" .. target.id):removeFromParent()
+            else
+                clear(target.frame):addChild(C.text("Loading photo…", { FontSize = 12, Foreground = C.colors.muted }))
+            end
             self:loadVisible()
         end, { Name = "RetryPhoto" .. target.id, Height = 44, FontSize = 12 }))
     end
-    target.done(path, err)
+    -- Timeline snapshots and the full-screen viewer must only cache the final JPEG.
+    if not preview then target.done(path, err) end
     if self.app.repaint then self.app:repaint()
     elseif self.app.screen then
         self.app.screen:post("Window.Paint", require("orca.renderer").getSize())
@@ -79,7 +100,22 @@ function Loader:pump()
                 local ok = pcall(function()
                     if path then return end
                     local bytes
-                    bytes, err = self.app.client:getPhoto(request.id, false)
+                    local function onPreview(thumbnail)
+                        if request.generation ~= self.generation or request.epoch ~= self.app.sessionEpoch then return false end
+                        local visible = false
+                        for _, target in ipairs(request.targets) do
+                            if self:valid(target) and self.observer:isVisible(target.frame) then visible = true; break end
+                        end
+                        if not visible then return false end
+                        local media = self.app:getMedia()
+                        local preview = media and media:storePreview(thumbnail, "message-photo-preview-" .. request.key)
+                        if preview then
+                            self.previews[request.key] = preview
+                            for _, target in ipairs(request.targets) do self:paint(target, preview, nil, true) end
+                        end
+                    end
+                    bytes, err = self.app.client:getPhoto(request.id, false,
+                        not self.previews[request.key] and onPreview or nil)
                     if request.generation ~= self.generation or request.epoch ~= self.app.sessionEpoch then return end
                     local media = self.app:getMedia()
                     if bytes and media then path, err = media:storePreview(bytes, "message-photo-" .. request.key) end
@@ -105,6 +141,9 @@ end
 function Loader:loadVisible()
     self.observer:update()
     for _, target in pairs(self.targets) do
+        if target.visible and not target.preview and self.previews[target.key] then
+            self:paint(target, self.previews[target.key], nil, true)
+        end
         if target.visible and not target.requested and not target.failed and self:valid(target) then
             local path = self.cache[target.key]
             if path then self:paint(target, path)

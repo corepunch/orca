@@ -62,7 +62,20 @@ function Loader:pump()
                 path = self.app.media:path("photo:" .. request.key)
                 if not path then
                     local bytes
-                    bytes, err = self.app.client:getImage(request.key, "photo")
+                    bytes, err = self.app.client:getImage(request.key, "photo", function(preview)
+                        if self.app.sessionEpoch ~= request.epoch then return false end
+                        local visible = false
+                        for _, target in ipairs(request.targets) do
+                            if target.valid() then visible = true; break end
+                        end
+                        if not visible then return false end
+                        local snapshot = self.app.media:storePreview(preview)
+                        if not snapshot then return end
+                        request.previewPath = snapshot
+                        for _, target in ipairs(request.targets) do
+                            if target.valid() then target.preview(snapshot) end
+                        end
+                    end)
                     if bytes and self.app.sessionEpoch == request.epoch then
                         path, err = self.app.media:store(bytes, "photo:" .. request.key)
                     end
@@ -80,14 +93,17 @@ function Loader:pump()
 end
 
 function Loader:watch(frame, key, name)
+    local previous = self.watching[frame]
+    if previous then previous.cancel(); previous.stop() end
     local app, epoch = self.app, self.app.sessionEpoch
     local requested, loaded, failed = false, false, false
-    local stop, indicator
+    local stop, indicator, previewPath, retry, registration
     C.clear(frame)
     local function loading(active)
         if active and not indicator then
             indicator = ui.ActivityIndicator { Name = "Loading" .. name, Foreground = C.colors.dim }
-            C.clear(frame):addChild(indicator)
+            if not previewPath then C.clear(frame) end
+            frame:addChild(indicator)
         elseif not active and indicator then
             indicator.IsActive = false
             indicator:removeFromParent()
@@ -98,33 +114,44 @@ function Loader:watch(frame, key, name)
         requested = false
         loading(false)
     end
-    local function valid() return app.sessionEpoch == epoch and self.observer:isVisible(frame) end
+    local function valid()
+        return app.sessionEpoch == epoch and self.watching[frame] == registration and self.observer:isVisible(frame)
+    end
+    local function show(path)
+        -- Decode before replacing a usable preview; each stage has its own
+        -- immutable file path so the renderer cannot reuse the thumbnail.
+        local shaped = frame.AspectRatio > 0
+        local image = ui.ImageView { Name = name, Src = path, Foreground = "#ffffff", IgnoreHitTest = true,
+            Stretch = shaped and "UniformToFill" or "Uniform" }
+        if not shaped then image.MarginLeft, image.MarginRight, image.MarginTop, image.MarginBottom = 0, 0/0, 0, 0/0 end
+        image:send("Node.LoadView")
+        if not image.Source then return false end
+        local width, height = image.Source.Width, image.Source.Height
+        if shaped and width > 0 and height > 0 then
+            if not self.ratios[key] then
+                self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
+            end
+            frame.AspectRatio = self.ratios[key]
+        end
+        loading(false)
+        C.clear(frame):addChild(image)
+        retry = nil
+        frame.Background = "#00000000"
+        frame.IgnoreHitTest = true
+        return true
+    end
+    local function preview(path)
+        if not show(path) then return end
+        previewPath = path
+        loading(requested and valid())
+        app:repaint()
+    end
     local function finish(path, err)
         requested = false
         loading(false)
-        if path then
-            -- A frame with an aspect ratio takes the photo's shape and is filled
-            -- edge to edge; a fixed frame fits the photo in its top-left corner.
-            local shaped = frame.AspectRatio > 0
-            local image = ui.ImageView { Name = name, Src = path, Foreground = "#ffffff", IgnoreHitTest = true,
-                Stretch = shaped and "UniformToFill" or "Uniform" }
-            if not shaped then image.MarginLeft, image.MarginRight, image.MarginTop, image.MarginBottom = 0, 0/0, 0, 0/0 end
-            image:send("Node.LoadView")
-            if not image.Source then
-                app.media:discard("photo:" .. key)
-                path, err = nil, { message = "This photo could not be decoded." }
-            else
-                local width, height = image.Source.Width, image.Source.Height
-                if shaped and width > 0 and height > 0 then
-                    if not self.ratios[key] then
-                        self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
-                    end
-                    frame.AspectRatio = self.ratios[key]
-                end
-                C.clear(frame):addChild(image)
-                frame.Background = "#00000000"
-                frame.IgnoreHitTest = true
-            end
+        if path and not show(path) then
+            app.media:discard("photo:" .. key)
+            path, err = nil, { message = "This photo could not be decoded." }
         end
         if path then
             loaded = true
@@ -132,14 +159,18 @@ function Loader:watch(frame, key, name)
             self.watching[frame] = nil
         elseif err then
             failed = true
-            frame.Background = C.colors.raised
             frame.IgnoreHitTest = false
-            C.clear(frame)
-            frame:addChild(C.area(C.icon("image-off", 28, C.colors.dim, { Name = "Unavailable" .. name }), function()
+            if not previewPath then
+                frame.Background = C.colors.raised
+                C.clear(frame)
+            end
+            retry = C.area(C.icon("image-off", 28, C.colors.dim, { Name = "Unavailable" .. name }), function()
                 failed = false
-                C.clear(frame):addChild(C.icon("image", 28, C.colors.dim))
+                if retry then retry:removeFromParent(); retry = nil end
+                if not previewPath then C.clear(frame):addChild(C.icon("image", 28, C.colors.dim)) end
                 app:repaint()
-            end, { Name = "Retry" .. name }))
+            end, { Name = "Retry" .. name })
+            frame:addChild(retry)
         end
         app:repaint()
     end
@@ -150,7 +181,7 @@ function Loader:watch(frame, key, name)
         if path then finish(path); return end
         requested = true
         loading(true)
-        local target = { valid = valid, done = finish, cancel = cancel }
+        local target = { valid = valid, done = finish, cancel = cancel, preview = preview }
         local identity = epoch .. ":" .. key
         local request = self.requests[identity]
         if not request then
@@ -159,8 +190,10 @@ function Loader:watch(frame, key, name)
             self.pending[#self.pending + 1] = request
         end
         request.targets[#request.targets + 1] = target
+        if request.previewPath then preview(request.previewPath) end
         self:pump()
     end }
+    registration = target
     self.watching[frame] = target
     stop = self.observer:observe(frame, function(event)
         target.inRange = event.isVisible

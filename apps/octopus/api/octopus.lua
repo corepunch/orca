@@ -1073,11 +1073,24 @@ end
 
 -- ORCA decodes JPEG and PNG; other uploads from the website are converted by
 -- Appwrite's preview endpoint.
-function Client:getImage(fileId, variant)
+function Client:getImage(fileId, variant, onPreview)
+    if type(variant) == "function" then onPreview, variant = variant, nil end
     if not validId(fileId) then return failure("validation", "This post has no photo.") end
+    if variant and variant ~= "avatar" and variant ~= "photo" then
+        return failure("validation", "Choose an image size.")
+    end
     local base = "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(fileId)
+    -- A complete small JPEG works with stb_image while the selected full-size
+    -- image is pending. Transformations are optional on the Appwrite project.
+    if type(onPreview) == "function" then
+        local preview = self:_request("GET", base .. "/preview?width=96&output=jpg&quality=35", { binary = true })
+        if preview and imageKind(preview) then
+            -- Explicit false cancels remaining work; a consumer error does not.
+            local ok, proceed = pcall(onPreview, preview)
+            if ok and proceed == false then return failure("cancelled", "This photo is no longer needed.") end
+        end
+    end
     if variant then
-        if variant ~= "avatar" and variant ~= "photo" then return failure("validation", "Choose an image size.") end
         local size = variant == "avatar" and "width=192&height=192" or "width=780"
         local bytes = self:_request("GET", base .. "/preview?" .. size .. "&output=jpg&quality=80", { binary = true })
         if bytes and imageKind(bytes) then return bytes end
