@@ -368,6 +368,10 @@ HANDLER(Node2D, Node2D, DrawBackground)
   struct ViewEntity entity;
 
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, NULL, &pDrawBackground->brush);
+  // A transparent color or opacity would draw nothing.
+  if (!entity.material.texture && !entity.shader &&
+      (entity.material.color.a <= 0 || entity.material.opacity <= 0))
+    return FALSE;
 
   entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
 

@@ -963,6 +963,7 @@
       </properties>
       <fields>
         <field name="_step" type="uint32">Last animation step, in 80-millisecond intervals</field>
+        <field name="_drawnFrame" type="uint32">Engine frame that last drew the dots; the animation stops when the indicator is no longer drawn</field>
       </fields>
     </class>
     <class name="VectorView" parent="Node2D">

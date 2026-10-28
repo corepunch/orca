@@ -105,13 +105,24 @@ R_SetColorWriteMode(enum color_write_mode mode)
   }
 }
 
+// Depth writes and blend mode change on almost every UI entity, so the
+// renderer remembers what it set; R_SetPipelineState always reapplies.
+void
+R_SetDepthWrite(bool_t write)
+{
+  if (tr.depthWrite == !!write) return;
+  tr.depthWrite = !!write;
+  R_Call(glDepthMask, write ? GL_TRUE : GL_FALSE);
+}
+
 void
 R_SetDepthState(struct depth_state const* depth_state)
 {
   R_Call((depth_state->func == COMPARE_FUNC_ALWAYS ? glDisable : glEnable),
          GL_DEPTH_TEST);
   R_Call(glDepthFunc, R_GetCompareFunc(depth_state->func));
-  R_Call(glDepthMask, depth_state->write ? GL_TRUE : GL_FALSE);
+  tr.depthWrite = -1;
+  R_SetDepthWrite(depth_state->write);
 }
 
 static void
@@ -136,6 +147,8 @@ R_SetStencilState(struct stencil_state const* stencil)
 /*static*/ void
 R_SetBlendMode(enum blend_mode value)
 {
+  if (tr.blendMode == (int)value) return;
+  tr.blendMode = (int)value;
   R_Call((value == BLEND_MODE_OPAQUE ? glDisable : glEnable), GL_BLEND);
   switch (value) {
     case BLEND_MODE_OPAQUE:
@@ -176,6 +189,7 @@ R_SetScissorRect(struct rect const *rect)
 HRESULT
 R_SetPipelineState(PPIPELINESTATE state)
 {
+  tr.blendMode = tr.depthWrite = -1;
   R_SetStencilState(&state->stencil);
   R_SetDepthState(&state->depth);
   R_SetBlendMode(state->blend_mode);

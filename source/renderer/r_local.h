@@ -47,9 +47,13 @@
     }                                                                          \
   }
 
+// Every GL call is counted for frame statistics. glGetError after each call
+// is a driver round trip, so it runs only with ORCA_GL_DEBUG=1; R_EndFrame
+// still reports an error once per frame without it.
 #define R_Call(func, ...)                                                      \
   func(__VA_ARGS__);                                                           \
-  GetError();
+  tr.glCalls++;                                                                \
+  if (tr.checkErrors) GetError();
 #define MAKE_TEX_SIZE(width, height)                                           \
   (struct AXsize)                                                              \
   {                                                                            \
@@ -138,6 +142,7 @@ struct model
   uint32_t indexBuffer;
   uint32_t vertexBuffers[VERTEX_SEMANTIC_COUNT];
   uint32_t attr[VERTEX_SEMANTIC_COUNT];
+  uint32_t vaoSerial;   // shader serial the VAO's attribute pointers were set for
   DRAWSUBMESH* submeshes;
 };
 
@@ -160,6 +165,12 @@ struct shader
   GLuint prognum;
   GLuint uniforms[kShaderUniform_Count];
   GLint attributes[VERTEX_SEMANTIC_COUNT];
+  uint32_t serial;      // unique per linked program, never reused
+  // Per-view uniforms uploaded last; program uniforms persist, so equal
+  // values need no upload on the next entity.
+  bool_t viewValid;
+  struct mat4 viewMatrix, projectionMatrix;
+  struct rect viewport;
 };
 
 struct shape
@@ -195,7 +206,12 @@ struct managed_resource;
 
 struct renderer
 {
-  uint32_t frame, drawCalls, buffer, vao;
+  uint32_t frame, drawCalls, glCalls, buffer, vao;
+  bool_t checkErrors;          // ORCA_GL_DEBUG=1: glGetError after every call
+  uint32_t program;            // bound program, 0 when unknown
+  uint32_t shaderSerial;       // last serial handed to a linked shader
+  int blendMode;               // -1 when unknown
+  int depthWrite;              // -1 when unknown
   struct Texture* currentRenderTarget;
   PIPELINESTATE state;
   CINEMATICBUF cinbuf;
@@ -354,6 +370,8 @@ void
 R_SetBlendMode(enum blend_mode blendMode);
 void
 R_SetDepthState(struct depth_state const* depth_state);
+void
+R_SetDepthWrite(bool_t write);
 
 struct AXsize
 R_TexImage(GLenum target,

@@ -1,5 +1,6 @@
 #include <include/orca.h>
 #include <include/renderer.h>
+#include <source/core/core_local.h>
 #include <UIKit/UIKit.h>
 
 static bool_t
@@ -38,7 +39,11 @@ HANDLER(ActivityIndicator, Object, PropertyChanged)
 
 HANDLER(ActivityIndicator, Object, Animate)
 {
-  if (!pActivityIndicator->IsActive || !ActivityIndicator_IsVisible(hObject)) return FALSE;
+  // A retained page behind the current one is not hidden, yet its indicator
+  // is never drawn; once a paint skips it the steps stop until it draws again.
+  if (!pActivityIndicator->IsActive || !ActivityIndicator_IsVisible(hObject) ||
+      core.frame - pActivityIndicator->_drawnFrame > 1)
+    return FALSE;
   OBJ_RequestAnimate(hObject);
   uint32_t step = axGetMilliseconds() / 80;
   if (step == pActivityIndicator->_step) return FALSE;
@@ -64,6 +69,7 @@ HANDLER(ActivityIndicator, Node2D, DrawForeground)
   entity.radius = (struct vec4){diameter / 2, diameter / 2, diameter / 2, diameter / 2};
   uint32_t step = axGetMilliseconds() / 80;
   pActivityIndicator->_step = step;
+  pActivityIndicator->_drawnFrame = core.frame;
   for (int i = 0; i < 12; i++) {
     float angle = (float)i * 6.2831853f / 12 - 1.5707963f;
     struct rect dot = {

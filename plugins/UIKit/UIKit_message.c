@@ -97,6 +97,10 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     }
     if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam))
       return TRUE;
+    // An animation step belongs to the object that requested it. Bubbling it
+    // made every ancestor's Animate handler run too, so a spinner's step
+    // repainted the whole page through its Pivot on every display frame.
+    if (msg->message == ID_Object_Animate) return FALSE;
   }
   return FALSE;
 }

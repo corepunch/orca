@@ -145,4 +145,15 @@ enum TracePhase {
 ORCA_API void TRACE_Begin(enum TracePhase phase);
 ORCA_API void TRACE_End(enum TracePhase phase);
 
+// Counts of the messages the application loop received, by message and
+// receiver class, for frame profiling; off until enabled.
+struct MessageStat {
+  uint32_t message;
+  char const *className;   // NULL for messages without a target
+  uint32_t count;
+};
+ORCA_API void SV_EnableMessageStats(bool_t enable);
+// Copies up to max entries, most frequent first, and clears the counts.
+ORCA_API int SV_TakeMessageStats(struct MessageStat *out, int max);
+
 #endif

@@ -123,9 +123,14 @@ iOS: the bundle is read-only, and the per-message `stat` of every opened file
 only slowed each frame.
 
 Set `ORCA_PROFILE_FRAMES=1` in the Xcode scheme's Run environment to log
-display callback rates, paint rates, frame durations and missed display
-intervals once per second. This works with optimized builds and is disabled by
-default. For Instruments, profile a Release build on a device (Product >
+display callback rates, paint rates, draw calls and GL calls per paint, frame
+durations and missed display intervals once per second, followed by the
+messages the application loop handled in that second by message and receiver
+class (`[ios messages] Object.Animate(Pivot)=6 ...`), which shows what keeps
+a screen repainting. This works with optimized builds and is disabled by
+default. The renderer no longer calls `glGetError` after every GL call; it
+reports a frame's error once per second instead, and `ORCA_GL_DEBUG=1`
+restores the per-call check to locate the failing call. For Instruments, profile a Release build on a device (Product >
 Profile) with the Time Profiler template: the engine marks each display
 callback's Lua batch and every paint's Programs, Layout, Render and Present
 phases as signposts, which appear on the Points of Interest track aligned with
