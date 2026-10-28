@@ -119,6 +119,7 @@ local App = Application:extend {
         local screen = ui.Screen {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             ClearColor = colors.background, StyleSheet = "Octopus/Styles/app.css",
+            class = "octopus-" .. colors.appearance,
         }
         if content then screen:addChild(content) end
         return screen
@@ -239,10 +240,29 @@ local App = Application:extend {
     ["/auth"] = function(self) self.currentRoute = "/auth"; return Identity.auth(self, "signin") end,
     ["/auth/signup"] = function(self) self.currentRoute = "/auth/signup"; return Identity.auth(self, "signup") end,
 
+    updateAppearance = function(self)
+        -- Keep active forms and in-flight submissions intact. Chrome is
+        -- scoped to this palette, so deferring cannot create a mixed theme.
+        local route = self.currentRoute
+        if route == "/auth" or route == "/auth/signup" then return false end
+        if (route == "/me" or route == "/write") and self.client and self.client:getSession() then return false end
+        local thread = route == "/post" and self.thread
+        if thread and (thread.sending or thread.replyTo or (thread.input and (thread.input.Text or "") ~= "")) then return false end
+        if not colors.refresh() then return false end
+        -- Rebuild retained pages too; navigation captures input drafts and
+        -- invalidates pending view work without replacing the client/session.
+        self.pendingShow = nil
+        PageTransition.enter(self.screen)
+        self.shell, self.feeds = nil, {}
+        self:navigate(route or "/")
+        return true
+    end,
+
     run = function(self)
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
             if message:is("Window.Closed") then return end
+            if message:is("Window.Paint") then self:updateAppearance() end
             local ok, result = pcall(system.dispatchMessage, self.screen, message)
             if not ok then io.stderr:write(tostring(result) .. "\n")
             elseif result and not message:is("Window.Paint") then self.screen:post("Window.Paint", renderer.getSize()) end

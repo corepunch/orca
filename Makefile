@@ -283,11 +283,11 @@ test-chat-appwrite:
 test-chat-live: copyshare
 	$(TARGET) -test=tests/test_chat_live.lua
 
-.PHONY: octopus test-octopus test-octopus-startup-api test-octopus-backend
+.PHONY: octopus test-octopus test-octopus-startup-api test-octopus-backend test-octopus-theme
 octopus: copyshare
 	$(TARGET) apps/octopus
 
-test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus-backend
+test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus-backend test-octopus-theme
 	$(TARGET) -test=tests/test_octopus_api.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_templates.lua
@@ -295,6 +295,9 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
+test-octopus-theme:
+	$(LUA) tests/test_octopus_theme.lua
+
 test-octopus-startup-api:
 	$(LUA) tests/test_octopus_startup_api.lua
 	$(LUA) tests/test_octopus_pagination.lua
