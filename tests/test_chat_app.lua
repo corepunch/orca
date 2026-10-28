@@ -328,20 +328,18 @@ for _, width in ipairs { 320, 390, 834 } do
         screen.Width = width
         for _, message in ipairs(layoutMessages) do
             local bubble = assert(screen:findChild("MessageBubble" .. message.id, true))
-            local body = bubble:getFirstChild()
-            assert(body:getTextContent() == message.body, "Layout must not append padding characters to message text")
+            local body = assert(bubble:findChild("MessageBody", true))
+            assert(body.Text == message.body, "Layout must not append padding characters to message text")
             body.FontSize = fontSize
             -- Metadata must remain separate even if its font metrics change.
-            for child in bubble.children do
-                if child ~= body then child.FontSize = fontSize - 3 end
-            end
+            bubble:findChild("MessageTime" .. message.id, true).FontSize = fontSize - 3
         end
         screen:UpdateLayout(width, 844)
         for _, message in ipairs(layoutMessages) do
             local bubble = screen:findChild("MessageBubble" .. message.id, true)
-            local holder, body, time = bubble:getParent(), bubble:getFirstChild()
+            local holder, body, time = bubble:getParent(), bubble:findChild("MessageBody", true),
+                bubble:findChild("MessageTime" .. message.id, true)
             local entry, x = holder:getParent(), holder.ActualX + bubble.ActualX
-            for child in bubble.children do time = child end
             assert(x >= entry.PaddingLeft - 1 and x + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
                 string.format("Message bubble %s must fit its gutter at %d/%d: x=%.1f width=%.1f entry=%.1f",
                     message.id, width, fontSize, x, bubble.ActualWidth, entry.ActualWidth))
@@ -350,7 +348,7 @@ for _, width in ipairs { 320, 390, 834 } do
                 "The action target must cover exactly its bubble")
             assert(time.ActualY >= body.ActualY + body.ActualHeight,
                 "Timestamp must not overlap the message at any tested width or font size")
-            assert(time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
+            assert(time:getParent().ActualY + time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
                 "Bubble height must include the timestamp")
         end
     end
@@ -738,7 +736,7 @@ assert(otpApp.screen:findChild("JoinChannel" .. publicChannelId, true), "Public 
 click(otpApp, "JoinChannel" .. publicChannelId)
 assert(otpApp.room.id == publicChannelId and otpApp.room.can_post == false, "Joining a public channel creates a subscriber membership")
 assert(not otpApp.screen:findChild("Composer", true).Visible, "Fresh public subscribers cannot publish")
-assert(otpApp.screen:findChild("EmptyTimeline", true):getTextContent() == "no posts yet",
+assert(otpApp.screen:findChild("EmptyTimeline", true).Text == "no posts yet",
     "An empty subscriber timeline must not ask the reader to publish")
 
 -- The picker is injected; upload/storage/message operations remain the real mock API.
@@ -784,7 +782,7 @@ assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
 local photoBubble = assert(photoApp.screen:findChild("MessageBubble" .. photoMessages[#photoMessages].id, true))
-local timeline, bubble = photoApp.messageList, photoBubble:getParent():getParent()
+local timeline, bubble = photoApp.messageList, assert(photoApp.screen:findChild("MessageEntry" .. photoMessages[#photoMessages].id, true))
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
 local offset = timeline.ContentOffset
@@ -795,7 +793,7 @@ assert(bubble.ActualY + offset.Y >= 0 and bubble.ActualY + bubble.ActualHeight +
     "The latest photo and caption must be fully visible above the composer")
 local previewPath = photoView.Src
 local previewFile = assert(io.open(previewPath, "rb"))
-assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the actual mock full API photo bytes")
+assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the full mock API photo bytes")
 previewFile:close()
 click(photoApp, "OpenPhoto" .. attachmentId)
 local enlarged = assert(photoApp.screen:findChild("PhotoViewerImage", true), "Tapping a message photo opens its viewer")
@@ -810,8 +808,9 @@ photoMessages = photoApp.client:listMessages(photoApp.room.id)
 local photoOnly = photoMessages[#photoMessages]
 assert(photoOnly.body == "" or photoOnly.body == nil, "The photo-only fixture must send without a caption")
 local photoFrame = assert(photoApp.screen:findChild("PhotoFrame" .. photoOnly.attachments[1].id, true))
-local photoOnlyBubble = photoFrame:getParent()
-local photoOnlyEntry = photoOnlyBubble:getParent():getParent()
+local photoOnlyBubble = photoFrame:getParent():getParent():getParent()
+local photoOnlyEntry = assert(photoApp.screen:findChild("MessageEntry" .. photoOnly.id, true))
+local photoOnlyRow = assert(photoOnlyEntry:findChild("MessageRow", true))
 local photoTime = assert(photoFrame:findChild("MessageTime" .. photoOnly.id),
     "The timestamp must survive replacement of the loading placeholder")
 assert(photoFrame:findChild("Photo" .. photoOnly.attachments[1].id, true).Source,
@@ -820,7 +819,7 @@ for _, width in ipairs { 320, 390, 834 } do
     photoApp.screen.Width = width
     photoApp.screen:UpdateLayout(width, 844)
     assert(math.abs(photoOnlyBubble.ActualHeight - photoFrame.ActualHeight) < 1
-        and math.abs(photoOnlyEntry.ActualHeight - photoFrame.ActualHeight) < 1,
+        and math.abs(photoOnlyRow.ActualHeight - photoFrame.ActualHeight) < 1,
         "A photo-only message must not reserve space for a footer or tail")
     assert(photoTime.ActualX > 0 and photoTime.ActualY > 0
         and math.abs(photoTime.ActualX + photoTime.ActualWidth - (photoFrame.ActualWidth - 6)) < 1
@@ -864,9 +863,8 @@ assert(body == "Typo here" and stored.edited_at, "Sending in edit mode saves the
 assert(editApp.composer.Text == "unsent draft" and not editApp.screen:findChild("EditingMessage", true).Visible,
     "Saving an edit restores the unsent draft")
 local bubble = editApp.screen:findChild("MessageBubble" .. typo.id, true)
-local meta
-for child in bubble.children do meta = child end
-assert(bubble:getFirstChild():getTextContent() == "Typo here" and meta:getTextContent():match("^edited "),
+local meta = assert(bubble:findChild("MessageTime" .. typo.id, true))
+assert(bubble:findChild("MessageBody", true).Text == "Typo here" and meta.Text:match("^edited "),
     "The timeline shows the new text with an edited mark")
 click(editApp, "MessageActions" .. typo.id)
 click(editApp, "EditMessage")

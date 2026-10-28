@@ -90,9 +90,11 @@ void
 OBJ_DetachFromParent(struct Object *self)
 {
   if (self->parent) {
-    REMOVE_FROM_LIST(struct Object, self, self->parent->children);
-    REMOVE_FROM_LIST(struct Object, self, self->parent);
+    struct Object *parent = self->parent;
+    REMOVE_FROM_LIST(struct Object, self, parent->children);
     self->parent = NULL;
+    OBJ_SetDirty(parent);
+    OBJ_NotifyCollectionChanged(parent);
   }
 }
 
@@ -115,6 +117,12 @@ OBJ_ClearDirtyFlags(struct Object *pobj)
 void
 OBJ_Clear(struct Object *pobj)
 {
+  if (GetDataObject(pobj)) {
+    OBJ_BeginUpdate(pobj);
+    FOR_EACH_OBJECT(other, pobj) OBJ_RemoveFromParent(other);
+    OBJ_EndUpdate(pobj);
+    return;
+  }
   FOR_EACH_OBJECT(other, pobj) {
     OBJ_Clear(other);
     OBJ_RemoveFromParent(other);
@@ -139,6 +147,7 @@ OBJ_RemoveFromParent(struct Object *self)
 static void
 OBJ_Release(struct Object *pobj)
 {
+  OBJ_ClearCollectionObservers(pobj);
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
@@ -329,18 +338,30 @@ wire_controller(lua_State *L, int tbl, struct Object *target)
       if (child) { obj = child; event = sep + 1; }
     }
     struct Property *ep = OBJ_FindShortProperty(obj, fnv1a32(event));
-    if (ep && PROP_GetType(ep) == kDataTypeEvent) {
+    if (ep && PROP_GetType(ep) == kDataTypeEvent && !ep->handlerName && !ep->handlerOverride) {
       // Wrap in closure: upvalue 1 = controller table, upvalue 2 = function.
       // This makes self = controller (with self.view = root node) in handlers.
       lua_pushvalue(L, tbl);
       lua_insert(L, -2);
       lua_pushcclosure(L, _bind_handler_closure, 2);
       luaX_readProperty(L, -1, ep);
+      ep->handlerOverride = FALSE;
       lua_pop(L, 1);
     } else {
       lua_pop(L, 1);
     }
   }
+}
+
+static void
+rebind_controller_handlers(struct Object *target)
+{
+  FOR_EACH_PROPERTY(property, OBJ_GetProperties(target)) {
+    struct Property *event = (struct Property *)property;
+    if (PROP_GetType(event) == kDataTypeEvent && event->handlerName && *event->handlerName)
+      PROP_BindHandler(event, event->handlerName);
+  }
+  FOR_EACH_OBJECT(child, target) rebind_controller_handlers(child);
 }
 
 void
@@ -365,13 +386,18 @@ OBJ_LoadController(lua_State *L, struct Object *self, const char *path)
   }
 
   lua_pushvalue(L, -1);
+  if (self->controller_ref) luaL_unref(L, LUA_REGISTRYINDEX, self->controller_ref);
   self->controller_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  struct Property *controller = OBJ_FindShortProperty(self, fnv1a32("Controller"));
+  if (controller && PROP_GetType(controller) == kDataTypeString)
+    PROP_SetStringValue(controller, path);
 
   // Set controller.view = the root node so handlers can access the view hierarchy.
   luaX_pushObject(L, self);
   lua_setfield(L, -2, "view");
 
   wire_controller(L, -1, self);
+  rebind_controller_handlers(self);
   lua_pop(L, 1);
 }
 

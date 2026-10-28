@@ -37,6 +37,8 @@ struct Property
   uint32_t                   flags;
   uint32_t                   changeCallback; // Lua registry reference for the change callback function
   uint32_t                   updateFrame;
+  char*                      handlerName; // Declarative controller function; registry references stay runtime-only.
+  bool_t                     handlerOverride;
 };
 
 static inline bool_t
@@ -53,5 +55,7 @@ void PROP_NotifyChanged(struct Property *property);
 struct Property *PROP_ResolveBindingSource(struct Object *object, struct token *token);
 bool_t PROP_WriteBindingSource(struct Property *property);
 bool_t PROP_CanWriteBindingSource(struct Property const *target, struct Property const *source);
+bool_t PROP_RunBindingProgram(struct Property *property, struct token *token, struct vm_register *output);
+bool_t PROP_BindHandler(struct Property *property, char const *name);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

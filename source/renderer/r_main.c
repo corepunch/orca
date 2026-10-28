@@ -1009,7 +1009,7 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
     axCreateSurface(dwWidth, dwHeight);
   } else {
     Con_Printf("Initializing window...");
-    axCreateWindow("Window", dwWidth, dwHeight, 0);
+    axCreateWindow("Window", dwWidth, dwHeight, AX_WINDOW_RESIZABLE | AX_WINDOW_HIGHDPI);
   }
 
   // Texture creation uses the vertex buffer to detect an initialized GL context.

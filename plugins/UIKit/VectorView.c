@@ -142,6 +142,10 @@ HANDLER(VectorView, Object, Destroy)
 
 HANDLER(VectorView, Node2D, MeasureOverride)
 {
+  if (pVectorView->_texture && pVectorView->_texture->Scale != axGetScaling()) {
+    _VectorView_ReleaseTexture(pVectorView);
+    _VectorView_LoadSvg(pVectorView);
+  }
   if (pVectorView->_texture) {
     struct vec2 size = { pVectorView->_width, pVectorView->_height };
     if (pVectorView->Stretch == kStretchNone || pVectorView->Stretch == kStretchUniform) {

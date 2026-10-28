@@ -3,15 +3,22 @@
 struct Object *
 OBJ_AddChild(struct Object *self, struct Object *child)
 {
+  if (!self || !child) return NULL;
+  for (struct Object *it = self; it; it = it->parent)
+    if (it == child) return NULL;
   if (child->parent == self) {
-    REMOVE_FROM_LIST(struct Object, child, self->children);
-    REMOVE_FROM_LIST(struct Object, child, self);
-  } else if (child->parent) {
-    REMOVE_FROM_LIST(struct Object, child, child->parent->children);
-    REMOVE_FROM_LIST(struct Object, child, child->parent);
-    OBJ_ReleaseRef(child);
+    OBJ_MoveBefore(child, NULL);
+    return child;
   }
+  struct Object *oldParent = child->parent;
+  // Acquire the new hierarchy reference before releasing the old parent's.
   OBJ_AddRef(child);
+  if (oldParent) {
+    REMOVE_FROM_LIST(struct Object, child, oldParent->children);
+    child->parent = NULL;
+    OBJ_ReleaseRef(child);
+    OBJ_SetDirty(oldParent);
+  }
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
   OBJ_SetDirty(self);
@@ -19,6 +26,8 @@ OBJ_AddChild(struct Object *self, struct Object *child)
   OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
   OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
+  if (oldParent) OBJ_NotifyCollectionChanged(oldParent);
+  OBJ_NotifyCollectionChanged(self);
   return child;
 }
 
@@ -56,9 +65,14 @@ OBJ_FindByPath(struct Object *object, lpcString_t szObjectPath)
   struct Object *pChild = OBJ_FindChildByID(object, dwID);
   if (pChild) {
     return *szSplit ? OBJ_FindByPath(pChild, ++szSplit) : pChild;
-  } else {
-    return NULL;
   }
+  struct Property *property = memchr(szObjectPath, '.', szSplit - szObjectPath)
+    ? OBJ_FindLongProperty(object, dwID) : OBJ_FindShortProperty(object, dwID);
+  if (!property || PROP_GetDesc(property)->DataType != kDataTypeObject) return NULL;
+  PROP_Update(property);
+  void const *value = PROP_GetValue(property);
+  struct Object *target = value ? *(struct Object *const *)value : NULL;
+  return target && *szSplit ? OBJ_FindByPath(target, szSplit + 1) : target;
 }
 
 struct Property *
@@ -153,16 +167,24 @@ OBJ_FindParentOfClass(struct Object *self, uint32_t comp_id)
 }
 
 void
-OBJ_MoveToFront(struct Object *object)
+OBJ_MoveBefore(struct Object *self, struct Object *sibling)
 {
-  if (object->parent) {
-    REMOVE_FROM_LIST(struct Object, object, object->parent->children);
-    if (!object->parent->children) {
-      ADD_TO_LIST(object, object->parent->children);
-    } else {
-      struct Object *it = object->parent->children;
-      while (it->next) it = it->next;
-      it->next = object;
-    }
-  }
+  if (!self || !self->parent || sibling == self || self->next == sibling) return;
+  struct Object *parent = self->parent;
+  if (sibling && sibling->parent != parent) return;
+  REMOVE_FROM_LIST(struct Object, self, parent->children);
+  struct Object **slot = &parent->children;
+  while (*slot && *slot != sibling) slot = &(*slot)->next;
+  self->next = *slot;
+  *slot = self;
+  OBJ_SetDirty(parent);
+  OBJ_NotifyCollectionChanged(parent);
+}
+
+void OBJ_MoveToFront(struct Object *object) { OBJ_MoveBefore(object, NULL); }
+
+void
+OBJ_MoveBeforeFromLua(lua_State *L, struct Object *self)
+{
+  OBJ_MoveBefore(self, lua_isnoneornil(L, 2) ? NULL : luaX_checkObject(L, 2));
 }

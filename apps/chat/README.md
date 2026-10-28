@@ -68,6 +68,13 @@ view. Root pages keep their instances and form drafts when you switch pages.
 Conversation and sign-in screens are separate flows, and returning to the root
 reuses the same shell.
 
+Message and photo rows live in `Templates/Message.xml` and `Templates/Photo.xml`.
+The timeline computes presentation fields and maps message IDs to stable typed
+DataObjects through `orca.UIKit.ItemsView`; native ItemsControl observes source
+changes and owns the rows. Polls update existing fields and neighboring grouping
+without replacing unaffected messages or loaded photo content. Text, captioned
+photos and photo-only messages use bound section visibility in the same template.
+
 The inbox prepares all three filtered lists when data or search changes. Swiping
 only updates selection, keeping row instances and scroll positions intact instead
 of allocating rows during the transition. Pivot also retains spare repeating

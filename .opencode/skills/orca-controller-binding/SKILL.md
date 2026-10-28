@@ -70,11 +70,11 @@ return Controller
 - Keep simple show/hide, message dispatch, and navigation reactions in XML
   actions. Use the controller for computation, validation, runtime state, or
   data mutation.
-- `ItemsSource` initialization is not automatic collection observability.
-  Current ListBox/GridBox controls build source items at `Object.Start`;
-  initialize their source/template before attachment and use one tested refresh
-  or adapter path for subsequent collection changes. Adventure's manual row
-  construction illustrates this gap and is not a template ownership standard.
+- Native ItemsControl observes DataObject membership and source/template
+  changes and retains generated rows by record identity. Use typed records;
+  ItemsView maps service keys to stable DataObjects. Batch multiple membership
+  edits with beginUpdate/endUpdate; send ItemsControl.Refresh for immediate rows.
+  Adventure's manual rows are not a template ownership standard.
 
 ## Diagnose in layers
 

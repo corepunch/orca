@@ -35,7 +35,9 @@ Use this file when changing Lua-visible behavior.
 - `XmlDataSource` (parent: DataSource) loads data from XML, optionally backed by a `Schema.xml`.
 - `DataObject` (parent: DataContext) is the runtime representation of a schema entity instance.
 - Schema files (`DS_ParseSchema`, `DS_ParseSchemaFromString` in `source/data/data_schema.c`) register `ClassDesc` entries with typed column properties.
-- Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself.
+- Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself. Root and child collection bindings export Object pointers; missing object sources clear the destination.
+- DataObject child changes notify ItemsControl automatically. Use `addChild`, `removeFromParent`, `clear`, and `moveBefore(sibling)`; moving within a parent preserves lifecycle and references. `beginUpdate()` / `endUpdate()` batch membership notifications, including nested batches.
+- `orca.UIKit.ItemsView` maps keyed Lua records to stable typed presentation DataObjects and native item templates. See [collections](app/index.md#state-bindings-and-collections).
 
 ## HTTP responses and private sessions
 
@@ -77,6 +79,25 @@ validate restored sessions with their service, and delete credentials on logout.
 Runtime vector userdata uses exported `X`/`Y` field names, for example
 `node.ContentOffset = { X = 0, Y = -100 }`. These differ from lowercase C struct
 members; verify runtime field names when constructing values for property setters.
+
+## Event arguments
+
+Native event callbacks receive `(owner, args, sender)`. `args` keeps its generated
+userdata type and field names. It is an owned snapshot: strings and reflected
+nested structs are copied, and Object/component fields retain their objects.
+Handlers may keep the snapshot across a yield; mutating it does not alter the
+producer's original payload. Replacing or clearing an event callback releases
+its previous Lua registry reference.
+
+Opaque native pointers remain borrowed, including the separate native queue
+target. Retaining an Event does not retain an arbitrary native target; process
+peeked events promptly while their target is valid. These payloads are runtime
+messages, not a portable wire format. Persist model values and stable IDs rather
+than pointer addresses. Reflected fields preserve unsigned 32-bit values and
+reject values outside their range.
+
+Snapshots support fixed arrays and acyclic reflected structs up to 32 levels.
+Cycles and arrays without length metadata are rejected instead of shallow copied.
 
 ## Asynchronous errors
 

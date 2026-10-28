@@ -55,6 +55,13 @@ blocks with [Chat](../chat/README.md):
 `theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.
 
+Post cards and comments use XML templates under `Templates/`, with typed
+presentation records in `views/presentation.lua`. `orca.UIKit.ItemsView` maps
+service IDs to retained DataObjects; native ItemsControl owns repeated rows and
+observes source changes. Refreshing a feed or a comment thread keeps surviving
+rows and updates their bindings. The detail page shares `PostBody.xml`, whose
+bound sections support text, photos, links, and quotes with optional photos.
+
 ## Run
 
 From the repository root, build ORCA as described in `docs/BUILD.md`, then:

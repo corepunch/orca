@@ -1,48 +1,63 @@
--- Protocol/state tests use small node doubles; native layout remains covered by test_chat_app.
-package.path = "apps/chat/?.lua;" .. package.path
-local savedUI, savedComponents = package.loaded["orca.UIKit"], package.loaded["Chat/views/components"]
-local function node(props, children)
-    local n = props or {}
-    n.children = {}
-    function n:addChild(child) child.parent = self; self.children[#self.children + 1] = child end
-    function n:getFirstChild() return self.children[1] end
-    function n:removeFromParent()
-        for i, child in ipairs(self.parent.children) do
-            if child == self then table.remove(self.parent.children, i); break end
-        end
-        self.parent = nil
-    end
-    for _, child in ipairs(children or {}) do n:addChild(child) end
-    return n
-end
-local C = { colors = setmetatable({}, { __index = function(_, key) return key end }) }
-C.stack = node
-C.tail = function(incoming) return node { Tail = true, Incoming = incoming } end
-C.text = function(value, props) local n = node(props); n.Text = value; return n end
-C.date, C.time = tostring, tostring
-package.loaded["orca.UIKit"] = { ImageView = node, Grid = node, Button = node }
-package.loaded["Chat/views/components"] = C
-local Timeline = require "views.timeline"
+-- Native collection/template tests. The injected service has no network or
+-- authentication dependency; XML bindings, layout and photo loading are real.
+local orca = require "orca"
+orca.init()
+local fs = require "orca.filesystem"
+local core = require "orca.core"
+local ui = require "orca.UIKit"
+require("orca.renderer").init(390, 844, true)
+fs.init("apps/chat")
+require("orca.core.startup").load_plugins()
+local Timeline = require "Chat/views/timeline"
+local Loader = require "Chat/photo_loader"
+local C = require "Chat/views/components"
+local WHEN = "2025-10-25T12:00:00Z"
+local IMAGE = assert(os.getenv("PWD")) .. "/tests/fixtures/chat/photo.jpg"
 
-local function fixture()
-    local messages = {}
-    for i = 1, 6 do messages[i] = { id = tostring(i), body = "Message " .. i, sender_id = "me", created_at = "time" } end
-    messages[1].attachments = { { id = "photo1" } }
-    local list = node { ActualHeight = 200, ScrollHeight = 0, AdjustedContentInsetTop = 0, ContentOffset = { X = 0, Y = 0 } }
-    local root = { Width = 390, Height = 844 }
-    function root:UpdateLayout()
-        for i, child in ipairs(list.children) do child.ActualY, child.ActualHeight = (i - 1) * 100, 100 end
-        list.ScrollHeight = #list.children * 100
+local function children(node)
+    local result, child = {}, node:getFirstChild()
+    while child do result[#result + 1] = child; child = child:getNext() end
+    return result
+end
+local function named(node, name) return assert(node:findChild(name, true), "Missing " .. name) end
+local function shown(node)
+    while node do
+        if not node.Visible then return false end
+        node = node:getParent()
     end
-    function list:getRoot() return root end
-    local app = { room = { id = "room1" }, messageList = list, sessionEpoch = 1, navigationEpoch = 1,
-        rows = messages, reads = 0, photos = 0, composer = { Text = "draft remains" }, photoDrafts = { room1 = "draft-photo" } }
+    return true
+end
+local function count(node, predicate)
+    local total = predicate(node) and 1 or 0
+    for _, child in ipairs(children(node)) do total = total + count(child, predicate) end
+    return total
+end
+local function visibleCount(node, predicate)
+    return count(node, function(child) return shown(child) and predicate(child) end)
+end
+local function bottom(list) return math.min(0, list.ActualHeight - list.ScrollHeight) end
+local function near(a, b, message) assert(math.abs(a - b) < 1, message .. ": " .. a .. " vs " .. b) end
+local function message(id, body, sender)
+    return { id = tostring(id), body = body, sender_id = sender or "me", created_at = WHEN }
+end
+
+local function fixture(height)
+    local screen = ui.Screen { Width = 390, Height = height or 300, ResizeMode = "NoResize" }
+    local layout = ui.Grid { Rows = "1fr auto" }
+    local list = ui.StackView { Overflow = "hidden scroll", Spacing = 0 }
+    local status = ui.TextBlock { Height = 40, Visible = false }
+    layout:addChild(list); layout:addChild(status); screen:addChild(layout)
+    local app = { room = { id = "room1", kind = "direct" }, messageList = list, screen = screen,
+        sessionEpoch = 1, navigationEpoch = 1, rows = {}, reads = 0, photos = 0,
+        composer = ui.Input { Text = "draft remains" }, photoDrafts = { room1 = "draft-photo" } }
+    for i = 1, 6 do app.rows[i] = message(i, "Message " .. i) end
+    app.rows[1].attachments = { { id = "photo1" } }
     local session = { user = { id = "me" } }
     app.client = { getSession = function() return session end }
     function app.client:getPhoto()
         app.photos = app.photos + 1
         if app.photoHook then app.photoHook() end
-        return "jpeg"
+        return "local fixture JPEG", nil
     end
     app.models = { Messages = {} }
     function app.models.Messages:select()
@@ -50,232 +65,204 @@ local function fixture()
         if app.readHook then app.readHook() end
         return app.rows, app.error
     end
-    app.messagePhotos = { pending = {} }
-    function app.messagePhotos:watch(frame, attachment, done)
-        self.pending[#self.pending + 1] = { frame = frame, attachment = attachment, done = done }
+    function app:getMedia() return { storePreview = function() return IMAGE end } end
+    function app:notice(value)
+        self.noticeText = value
+        status.Visible, status.Text = value ~= "", value
     end
-    -- Protocol tests explicitly demand registered previews after committed layout.
-    -- Native viewport/concurrency behavior is covered by test_chat_photo_loader.
+    function app:logout() session = nil; self.sessionEpoch = self.sessionEpoch + 1; self.messagePhotos:clear() end
+    function app:task(fn) fn() end
+    function app:repaint() end
+    function app:reportError(value) self.failure = value end
+    function app:openMessageActions(value) self.actionsFor = value.id end
+    app.messagePhotos = Loader.new(app)
     function app:loadPhotos()
-        local pending = self.messagePhotos.pending
-        self.messagePhotos.pending = {}
-        for _, target in ipairs(pending) do
-            local ancestor = target.frame
-            while ancestor and ancestor ~= list do ancestor = ancestor.parent end
-            if ancestor == list then
-                local bytes, err = self.client:getPhoto(target.attachment.id, true)
-                target.done(bytes and "preview.jpg", err)
-            end
-        end
+        screen:UpdateLayout(screen.Width, screen.Height)
+        self.messagePhotos:loadVisible()
+        core.flushQueue()
     end
-    function app:getMedia() return { storePreview = function() return "preview.jpg" end } end
-    function app:notice(message) self.noticeText = message end
-    function app:logout() session = nil end
-    return app, list
+    return app, list, screen
+end
+local function refresh(app, options)
+    local result, err = Timeline.refresh(app, options)
+    assert(result, app.failure or (err and err.message))
+    core.flushQueue()
+    app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+end
+local function tails(entry)
+    return visibleCount(entry, function(child) return child.Name == "IncomingTail" or child.Name == "OutgoingTail" end)
 end
 
-local function named(parent, name)
-    for _, child in ipairs(parent.children) do
-        if child.Name == name then return child end
-    end
-end
-local function count(parent, match)
-    local total = match(parent) and 1 or 0
-    for _, child in ipairs(parent.children) do total = total + count(child, match) end
-    return total
-end
-
--- Grouping changes decoration, not the independently addressable message rows.
+-- Every message has its own retained row; adjacency changes only decoration.
 for _, kind in ipairs { "group", "direct", "channel" } do
-    local grouped, groupedList = fixture()
-    grouped.room.kind, grouped.room.name = kind, "Newsroom"
-    grouped.contactsById = { other = { get_display_name = function() return "Alex" end } }
-    grouped.rows = {}
-    for i, senderId in ipairs { "other", "other", "me", "me", "other" } do
-        grouped.rows[i] = { id = tostring(i), body = "Body " .. i, sender_id = senderId, created_at = "time" }
-    end
-    assert(Timeline.refresh(grouped))
-    local expectedTails = kind == "channel" and { 1, 0, 1, 0, 1 } or { 1, 0, 0, 1, 1 }
+    local app, list = fixture()
+    app.room.kind, app.room.name = kind, "Newsroom"
+    app.contactsById = { other = { get_display_name = function() return "Alex" end } }
+    app.rows = {}
+    for i, sender in ipairs { "other", "other", "me", "me", "other" } do app.rows[i] = message(i, "Body " .. i, sender) end
+    refresh(app)
+    local expected = kind == "channel" and { 1, 0, 1, 0, 1 } or { 1, 0, 0, 1, 1 }
     for i = 1, 5 do
-        local entry = assert(named(groupedList, "MessageEntry" .. i), "Every grouped message needs its own row")
-        assert(named(assert(named(entry, "MessageHolder" .. i)), "MessageBubble" .. i), "Every grouped message needs its own bubble")
-        assert(count(entry, function(child) return child.Tail end) == expectedTails[i],
-            kind .. " must decorate only the appropriate edge of each sender run")
-        local expectedNames = kind == "group" and (i == 1 or i == 5) and 1 or 0
-        assert(count(entry, function(child) return child.Text == "Alex" end) == expectedNames,
-            "Sender names belong only on the first incoming message in each group-chat run")
+        local entry = named(list, "MessageEntry" .. i)
+        assert(named(named(entry, "MessageHolder" .. i), "MessageBubble" .. i))
+        assert(tails(entry) == expected[i], kind .. " sender-run tails")
+        assert(visibleCount(entry, function(child) return child.Text == "Alex" end)
+            == (kind == "group" and (i == 1 or i == 5) and 1 or 0), "Group sender names appear only at the run's start")
     end
-    assert(count(groupedList, function(child) return child.Text == "Newsroom" end) == 0,
-        "Channel messages must not repeat the channel title")
-    assert(count(groupedList, function(child) return child.Tail and not child.Incoming end)
-        == (kind == "channel" and 0 or 1), "Channel posts must never use outgoing decoration")
+    assert(visibleCount(list, function(child) return child.Text == "Newsroom" end) == 0)
+    assert(visibleCount(list, function(child) return child.Name == "OutgoingTail" end) == (kind == "channel" and 0 or 1))
+    assert(list.ItemsSource and list.ItemTemplate, "The native list binds ItemsSource and ItemTemplate")
 end
 
--- Photos without captions own their timestamp and never grow a footer or tail.
+-- A photo-only album has one overlay timestamp; the loader replaces only content.
 for _, kind in ipairs { "direct", "group", "channel" } do
-    for _, senderId in ipairs { "me", "other" } do
-        for _, emptyBody in ipairs { false, "" } do
-            local photosApp, photosList = fixture()
-            photosApp.room.kind, photosApp.room.name = kind, "Newsroom"
-            photosApp.contactsById = { other = { get_display_name = function() return "Alex" end } }
-            photosApp.rows = { { id = "photo-only", body = emptyBody or nil, sender_id = senderId,
-                created_at = "time", edited_at = "edited", attachments = { { id = "one" }, { id = "two" } } } }
-            local function verifyPhotoOnly(cached)
-                local entry = assert(named(photosList, "MessageEntryphoto-only"))
-                local bubble = assert(named(assert(named(entry, "MessageHolderphoto-only")), "MessageBubblephoto-only"))
-                local firstFrame = assert(named(bubble, "PhotoFrameone"))
-                local lastFrame = assert(named(bubble, "PhotoFrametwo"))
-                local content = assert(named(lastFrame, "PhotoContenttwo"))
-                local time = assert(named(lastFrame, "MessageTimephoto-only"), "Last photo must own the timestamp")
-                assert(time.Text == "edited time" and time.Foreground == "#ffffff" and time.Background == "#00000099",
-                    "Photo timestamps must remain readable over light and dark images")
-                assert(time.MarginLeft ~= time.MarginLeft and time.MarginTop ~= time.MarginTop
-                    and time.MarginRight == 6 and time.MarginBottom == 6,
-                    "Photo timestamps must sit inside the image's bottom-right corner")
-                assert(count(entry, function(child) return child.Name == "MessageTimephoto-only" end) == 1
-                    and not named(firstFrame, "MessageTimephoto-only"), "An album needs exactly one timestamp")
-                assert(count(entry, function(child) return child.Tail end) == 0,
-                    "Photo-only messages must stay rectangular for every sender and room kind")
-                local header = kind == "group" and senderId == "other" and 1 or 0
-                assert(#bubble.children == 2 + header,
-                    "Photo-only messages may have a sender header but no caption or timestamp footer")
-                assert(count(bubble, function(child) return child.Text == "Alex" end) == header)
-                if cached then
-                    assert(named(content, "Phototwo") and photosApp.photos == 2,
-                        "Cached previews must retain the overlay without another download")
-                else
-                    assert(count(content, function(child) return child.Text == "Loading photo…" end) == 1,
-                        "The loading photo frame must reserve the same timestamp overlay")
-                    assert(photosApp.messagePhotos.pending[2].frame == content,
-                        "Preview loading must replace photo content without removing its timestamp sibling")
-                end
-            end
-            assert(Timeline.refresh(photosApp))
-            verifyPhotoOnly(false)
-            photosApp:loadPhotos()
-            -- Rebuild the row while keeping each attachment's successful preview.
-            photosApp.rows[1].updated_at = "changed"
-            assert(Timeline.refresh(photosApp, { preserveScroll = true }))
-            verifyPhotoOnly(true)
+    for _, sender in ipairs { "me", "other" } do
+        for _, empty in ipairs { false, "" } do
+            local app, list = fixture(700)
+            app.room.kind, app.room.name = kind, "Newsroom"
+            app.contactsById = { other = { get_display_name = function() return "Alex" end } }
+            app.rows = { message("album", empty or nil, sender) }
+            app.rows[1].edited_at = WHEN
+            app.rows[1].attachments = { { id = "one" }, { id = "two" } }
+            refresh(app)
+            local entry = named(list, "MessageEntryalbum")
+            local bubble, last = named(entry, "MessageBubblealbum"), named(entry, "PhotoFrametwo")
+            local time, content = named(last, "MessageTimealbum"), named(last, "PhotoContenttwo")
+            assert(time.Text == "edited " .. C.time(WHEN) and time.ForegroundColor.A == 1 and time.BackgroundColor.A > 0)
+            assert(time.MarginLeft ~= time.MarginLeft and time.MarginTop ~= time.MarginTop and time.MarginRight == 6 and time.MarginBottom == 6)
+            assert(visibleCount(entry, function(child) return child.Name == "MessageTimealbum" end) == 1)
+            assert(not shown(named(bubble, "Caption")) and tails(entry) == 0, "Photo-only rows have neither footer nor tail")
+            assert(shown(named(bubble, "SenderSection")) == (kind == "group" and sender == "other"))
+            assert(visibleCount(content, function(child) return child:getTextContent() == "Loading photo…" end) == 1)
+            app:loadPhotos()
+            assert(app.photos == 2 and named(content, "Phototwo").Source, "Visible local previews resolve native resources")
+            app.rows[1].updated_at = "message edit"
+            refresh(app, { preserveScroll = true })
+            app:loadPhotos()
+            assert(named(list, "MessageEntryalbum") == entry and named(last, "MessageTimealbum") == time and app.photos == 2,
+                "A message edit retains photo frames, cached previews and overlay identity")
+            app.rows[1].body = "A caption"
+            refresh(app, { preserveScroll = true })
+            assert(named(list, "MessageEntryalbum") == entry and shown(named(bubble, "Caption"))
+                and named(bubble, "MessageBody").Text == "A caption" and not shown(time), "Caption changes update the same row")
+            assert(named(bubble, "MessageTimealbum").Text == "edited " .. C.time(WHEN) and tails(entry) == 1)
+            app.rows[1].attachments = {}
+            refresh(app, { preserveScroll = true })
+            assert(named(list, "MessageEntryalbum") == entry and not shown(named(bubble, "Photos")), "A text edit removes the album from the retained row")
         end
-
-        local captionApp, captionList = fixture()
-        captionApp.room.kind, captionApp.room.name = kind, "Newsroom"
-        captionApp.rows = { { id = "captioned", body = "A caption", sender_id = senderId,
-            created_at = "time", attachments = { { id = "caption-photo" } } } }
-        assert(Timeline.refresh(captionApp))
-        local entry = assert(named(captionList, "MessageEntrycaptioned"))
-        local bubble = assert(named(assert(named(entry, "MessageHoldercaptioned")), "MessageBubblecaptioned"))
-        local frame = assert(named(bubble, "PhotoFramecaption-photo"))
-        local caption = bubble.children[#bubble.children]
-        assert(count(frame, function(child) return child.Text == "time" end) == 0
-            and count(caption, function(child) return child.Text == "A caption" end) == 1
-            and count(caption, function(child) return child.Text == "time" end) == 1,
-            "Captioned photos must keep both caption and timestamp below the image")
-        assert(count(entry, function(child) return child.Tail end) == 1,
-            "Captioned photos must retain their ordinary sender-run tail")
     end
 end
 
--- Successful refresh clears feedback; bottom alignment must use the reclaimed space.
-local noticeApp, noticeList = fixture()
-noticeApp.noticeText = "Could not refresh messages."
-local noticeRoot = noticeList:getRoot()
-local originalLayout = noticeRoot.UpdateLayout
-function noticeRoot:UpdateLayout(...)
-    noticeList.ActualHeight = noticeApp.noticeText ~= "" and 160 or 200
-    originalLayout(self, ...)
-end
-assert(Timeline.refresh(noticeApp))
-assert(noticeApp.noticeText == "" and noticeList.ActualHeight == 200 and noticeList.ContentOffset.Y == -500,
-    "Refresh must clear footer feedback before layout and bottom alignment")
-
+-- Clearing feedback changes the viewport before refresh chooses its bottom.
 local app, list = fixture()
-assert(Timeline.refresh(app))
-assert(list.ContentOffset.Y == -500 and app.photos == 0, "Building rows must not fetch previews")
+app:notice("Could not refresh messages.")
+app.screen:UpdateLayout(390, 300)
+local reduced = list.ActualHeight
+refresh(app)
+assert(app.noticeText == "" and list.ActualHeight > reduced)
+near(list.ContentOffset.Y, bottom(list), "Initial refresh aligns to the reclaimed viewport")
+local first, data = named(list, "MessageEntry1"), named(list, "MessageEntry1").DataContext
+assert(app.photos == 0, "Building bound rows must not fetch photos")
+list.ContentOffset = { X = 0, Y = 0 }
 app:loadPhotos()
 assert(app.photos == 1)
-local first = list.children[1]
-assert(Timeline.refresh(app, { preserveScroll = true, quiet = true }))
-assert(list.children[1] == first and app.photos == 1, "Unchanged polls must retain rows and skip photo requests")
+refresh(app, { preserveScroll = true, quiet = true })
+assert(named(list, "MessageEntry1") == first and first.DataContext == data and app.photos == 1)
+
+-- Use actual measured geometry for scrolling, rather than fixed-height doubles.
+app.rows = {}
+for i = 1, 20 do app.rows[i] = message(i, "Message " .. i .. " occupies a native measured row.") end
+refresh(app)
+list.ContentOffset = { X = 0, Y = math.max(bottom(list) + 50, -175) }
+local oldY = list.ContentOffset.Y
+app.rows[#app.rows + 1] = message(21, "Incoming", "other")
+refresh(app, { preserveScroll = true })
+near(list.ContentOffset.Y, oldY, "Appending preserves a reader's position")
+assert(named(list, "MessageEntry1") == first and app.composer.Text == "draft remains" and app.photoDrafts.room1 == "draft-photo")
+list.ContentOffset = { X = 0, Y = bottom(list) }
+app.rows[#app.rows + 1] = message(22, "Another", "other")
+refresh(app, { preserveScroll = true })
+near(list.ContentOffset.Y, bottom(list), "A reader at the bottom follows new messages")
 list.ContentOffset = { X = 0, Y = -175 }
-app.rows[#app.rows + 1] = { id = "7", body = "New", sender_id = "other", created_at = "time" }
-assert(Timeline.refresh(app, { preserveScroll = true }))
-assert(list.ContentOffset.Y == -175, "Incoming messages must preserve reading position")
-assert(app.photos == 1, "New messages must reuse successful photo previews already in this timeline")
-assert(app.composer.Text == "draft remains" and app.photoDrafts.room1 == "draft-photo")
-list.ContentOffset = { X = 0, Y = -600 }
-app.rows[#app.rows + 1] = { id = "8", body = "Another", sender_id = "other", created_at = "time" }
-assert(Timeline.refresh(app, { preserveScroll = true }))
-assert(list.ContentOffset.Y == -700, "A reader at the bottom must follow new messages")
-
--- Deferred photo work cannot overwrite scrolling after rows are committed.
-app.rows[1].body = "Edited"
-app.rows[1].attachments[1].updated_at = "changed"
-app.photoHook = function() list.ContentOffset = { X = 0, Y = -200 } end
-assert(Timeline.refresh(app, { preserveScroll = true }))
-app:loadPhotos()
-assert(list.ContentOffset.Y == -200)
-app.photoHook = nil
-
--- A moving 100-row result window must retain the first still-visible message anchor.
-list.ContentOffset = { X = 0, Y = -250 }
-table.remove(app.rows, 1)
-assert(Timeline.refresh(app, { preserveScroll = true }))
-assert(list.ContentOffset.Y == -150, "Removing an earlier row must preserve the visible message anchor")
-
-local oldFirst = list.children[1]
-app.rows[1].body = "Stale"
-app.readHook = function() app.navigationEpoch = app.navigationEpoch + 1 end
-assert(Timeline.refresh(app, { preserveScroll = true }))
-assert(list.children[1] == oldFirst, "Navigation during a fetch must discard its result")
-app.readHook = nil
-
--- Row construction commits atomically before yielding preview downloads start.
-app, list = fixture()
-assert(Timeline.refresh(app))
-oldFirst = list.children[1]
-app.rows[1].body = "Pending photo"
-app.rows[1].attachments[1].updated_at = "changed"
-app.photoHook = function() assert(list.children[1] ~= oldFirst); app:logout() end
-assert(Timeline.refresh(app, { preserveScroll = true }))
-local committed = list.children[1]
-assert(committed ~= oldFirst and #list.children == 7, "Rows commit without waiting for photo downloads")
-app:loadPhotos()
-assert(list.children[1] == committed and not app.timelineSnapshot.photos.photo1,
-    "Logout during deferred preview work must not apply stale photo results")
-
-app, list = fixture()
-local photoCalls = 0
-app.client.getPhoto = function()
-    photoCalls = photoCalls + 1
-    if photoCalls == 1 then return nil, { message = "Temporarily unavailable" } end
-    return "jpeg"
+local anchor, anchorY
+for _, entry in ipairs(app.timelineSnapshot.entries) do
+    if entry.node.ActualY + entry.node.ActualHeight + list.ContentOffset.Y > list.AdjustedContentInsetTop then
+        anchor, anchorY = entry.node, entry.node.ActualY + list.ContentOffset.Y
+        break
+    end
 end
-assert(Timeline.refresh(app))
+table.remove(app.rows, 1)
+refresh(app, { preserveScroll = true })
+near(anchor.ActualY + list.ContentOffset.Y, anchorY, "A moving result window preserves the first visible message")
+
+-- Navigation, account replacement and caller lifetimes reject stale fetches.
+for _, invalidate in ipairs {
+    function(value) value.navigationEpoch = value.navigationEpoch + 1 end,
+    function(value) value:logout() end,
+    function(value) value.room = { id = "another" } end,
+} do
+    local stale, staleList = fixture()
+    refresh(stale)
+    local retained = named(staleList, "MessageEntry1")
+    stale.rows[1].body = "Stale edit"
+    stale.readHook = function() invalidate(stale) end
+    refresh(stale, { preserveScroll = true })
+    assert(named(staleList, "MessageEntry1") == retained and named(retained, "MessageBody").Text == "Message 1")
+end
+local guarded, guardedList = fixture()
+refresh(guarded)
+guarded.rows[1].body = "Caller is gone"
+refresh(guarded, { preserveScroll = true, current = function() return false end })
+assert(named(named(guardedList, "MessageEntry1"), "MessageBody").Text == "Message 1")
+
+-- Deferred previews cannot re-scroll the list or apply another session's result.
+app, list = fixture()
+refresh(app)
+first = named(list, "MessageEntry1")
+app.rows[1].body = "Edited before preview"
+refresh(app, { preserveScroll = true })
+assert(named(list, "MessageEntry1") == first and named(first, "MessageBody").Text == "Edited before preview")
+list.ContentOffset = { X = 0, Y = 0 }
+app.photoHook = function() list.ContentOffset = { X = 0, Y = -50 } end
+app:loadPhotos()
+near(list.ContentOffset.Y, -50, "Deferred image work does not overwrite scrolling")
+app, list = fixture()
+refresh(app)
+list.ContentOffset = { X = 0, Y = 0 }
+app.photoHook = function() app:logout() end
+app:loadPhotos()
+assert(not app.timelineSnapshot.photos.photo1 and not list:findChild("Photophoto1", true), "Logout discards deferred photo results")
+
+-- Failed previews retry on the next unchanged-snapshot refresh.
+app, list = fixture()
+local calls = 0
+app.client.getPhoto = function()
+    calls = calls + 1
+    if calls == 1 then return nil, { message = "Temporarily unavailable" } end
+    return "local fixture JPEG"
+end
+refresh(app)
+list.ContentOffset = { X = 0, Y = 0 }
 app:loadPhotos()
 assert(app.timelineSnapshot.retryPhotos)
-assert(Timeline.refresh(app, { preserveScroll = true }))
+refresh(app, { preserveScroll = true })
 app:loadPhotos()
-assert(photoCalls == 2 and not app.timelineSnapshot.retryPhotos,
-    "A failed photo preview must retry even if the message snapshot is unchanged")
-assert(Timeline.refresh(app, { preserveScroll = true }) and photoCalls == 2)
+assert(calls == 2 and not app.timelineSnapshot.retryPhotos)
+refresh(app, { preserveScroll = true })
+assert(calls == 2)
 
--- A manual refresh during a yielding poll is queued, never overlapped or dropped.
+-- Manual refresh during a suspended poll runs once after it, without overlap.
 app, list = fixture()
 local calls = 0
 app.readHook = function() calls = calls + 1; if calls == 1 then coroutine.yield() end end
 local pending = coroutine.create(function() assert(Timeline.refresh(app, { preserveScroll = true })) end)
 assert(coroutine.resume(pending))
 assert(app.messageRefreshBusy and app.reads == 1)
-assert(Timeline.refresh(app))
-assert(app.reads == 1, "Manual and timer reads must not overlap")
-assert(coroutine.resume(pending))
-assert(not app.messageRefreshBusy and app.reads == 2, "Queued manual refresh must run after the poll completes")
-
+assert(Timeline.refresh(app) and app.reads == 1)
+local ok, err = coroutine.resume(pending)
+assert(ok, err)
+assert(not app.messageRefreshBusy and app.reads == 2, "The queued refresh runs after the active poll")
 app.readHook = function() error("unexpected transport failure") end
-local ok, err = Timeline.refresh(app, { preserveScroll = true, quiet = true })
-assert(not ok and err.code == "refresh_failed" and not app.messageRefreshBusy, "Exceptions must release the read lock")
-package.loaded["orca.UIKit"], package.loaded["Chat/views/components"] = savedUI, savedComponents
-package.loaded["views.timeline"] = nil
-print("PASS: Chat timeline grouping, photo timestamps, footer layout, polling snapshots, scrolling, stale results and serialization")
+local result, failure = Timeline.refresh(app, { preserveScroll = true, quiet = true })
+assert(not result and failure.code == "refresh_failed" and not app.messageRefreshBusy)
+print("PASS: native Chat templates, grouping, photo variants, retained rows, scrolling, stale guards and refresh serialization")

@@ -3,8 +3,6 @@
 
 #include <source/core/core_local.h>
 
-extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valueptr);
-
 static uint32_t
 _MessagePayloadPropertyCount(struct ClassDesc const *cls)
 {
@@ -24,20 +22,12 @@ _ClearActionPayload(struct Object *action, struct ClassDesc const *cls)
   if (!component) {
     return;
   }
-  uint32_t count = _MessagePayloadPropertyCount(cls);
-  FOR_LOOP(i, count) {
-    struct PropertyType const *field = &cls->Properties[i];
-    void *value = (char *)component + field->Offset;
-    if (field->IsArray) {
-      free(*(void **)value);
-      *(void **)value = NULL;
-      continue;
-    }
-    if (field->DataType == kDataTypeString && field->DataSize == sizeof(char *)) {
-      free(*(char **)value);
-      *(char **)value = NULL;
-    }
-  }
+  // Clear only reflected payload fields; component headers belong to the action.
+  struct StructDesc payload = {
+    .Properties = cls->Properties,
+    .NumProperties = _MessagePayloadPropertyCount(cls),
+  };
+  core_ClearStructPayload(&payload, component);
 }
 
 static bool_t
@@ -60,14 +50,24 @@ _PopulateActionFromLua(lua_State *L,
     if (use_table) {
       lua_getfield(L, table_idx, field->Name);
       if (!lua_isnil(L, -1)) {
-        read_property(L, -1, field, value);
+        luaX_readStructProperty(L, -1, field, value);
       }
       lua_pop(L, 1);
     } else if (lua_type(L, args_index + (int)i) != LUA_TNONE) {
-      read_property(L, args_index + (int)i, field, value);
+      luaX_readStructProperty(L, args_index + (int)i, field, value);
     }
   }
   return TRUE;
+}
+
+static int
+_PopulateActionProtected(lua_State *L)
+{
+  struct Object *action = lua_touserdata(L, lua_upvalueindex(1));
+  struct ClassDesc const *cls = lua_touserdata(L, lua_upvalueindex(2));
+  if (!_PopulateActionFromLua(L, action, cls, 1))
+    return luaL_error(L, "Cannot populate message %s", cls->ClassName);
+  return 0;
 }
 
 static struct Object *
@@ -99,9 +99,15 @@ _CreateMessageAction(lua_State *L,
     }
   }
 
-  if (!_PopulateActionFromLua(L, action, cls, 3)) {
+  int arguments = lua_gettop(L);
+  lua_pushlightuserdata(L, action);
+  lua_pushlightuserdata(L, (void *)cls);
+  lua_pushcclosure(L, _PopulateActionProtected, 2);
+  for (int i = 3; i <= arguments; i++) lua_pushvalue(L, i);
+  if (lua_pcall(L, arguments > 2 ? arguments - 2 : 0, 0, 0) != LUA_OK) {
     _ClearActionPayload(action, cls);
     OBJ_ReleaseRef(action);
+    lua_error(L);
     return NULL;
   }
 

@@ -26,7 +26,8 @@ HANDLER(ActivityIndicator, Object, Create)
 
 HANDLER(ActivityIndicator, Node2D, MeasureOverride)
 {
-  return MAKEDWORD(MIN(32, pMeasureOverride->Width), MIN(32, pMeasureOverride->Height));
+  float side = fmaxf(0, fminf(64, fminf(pMeasureOverride->Width, pMeasureOverride->Height)));
+  return MAKEDWORD(side, side);
 }
 
 HANDLER(ActivityIndicator, Object, PropertyChanged)

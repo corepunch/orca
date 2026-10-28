@@ -162,22 +162,32 @@ local function pumpUntil(done, milliseconds)
     if event and not event:is("Window.Paint") then system.dispatchMessage(screen, event) end
   until done() or system.getTime() >= deadline
 end
-local delivered, resumed, receivedId = 0, false, nil
+local delivered, resumed, receivedId, resumedId = 0, 0, nil, nil
+local id
 local owner = core.Timer { Tick = function(node, args)
   delivered, receivedId = delivered + 1, args.timerId
+  assert(args.timerId == id, "Every native Tick must carry its timer's ID")
   node:cancelTimer(args.timerId)
   coroutine.yield()
-  resumed = true
+  resumedId = args.timerId
+  assert(resumedId == id, "Timer.Tick arguments must survive yielding")
+  resumed = resumed + 1
 end }
-local id = owner:setTimer(20)
+id = owner:setTimer(20)
 local started = system.getTime()
-pumpUntil(function() return resumed end, 2000)
-assert(resumed and delivered == 1 and receivedId == id, string.format(
+pumpUntil(function() return resumed > 0 end, 2000)
+assert(resumed > 0 and delivered >= 1 and receivedId == id and resumedId == id, string.format(
   "A native expiration must deliver the right ID to a yielding Timer.Tick handler "
-  .. "(resumed=%s delivered=%d receivedId=%s id=%s after %d ms)",
-  tostring(resumed), delivered, tostring(receivedId), tostring(id), system.getTime() - started))
+  .. "(resumed=%d delivered=%d receivedId=%s resumedId=%s id=%s after %d ms)",
+  resumed, delivered, tostring(receivedId), tostring(resumedId), tostring(id), system.getTime() - started))
+-- A slow event loop can dispatch several expirations into callback coroutines
+-- before the first callback starts and cancels. Let those callbacks finish;
+-- cancellation must prevent any subsequent native deliveries.
+core.flushQueue()
+local deliveredAtCancellation = delivered
+assert(resumed == deliveredAtCancellation, "Every dispatched Tick callback must resume after yielding")
 pumpUntil(function() return false end, 100)
-assert(delivered == 1, "Cancellation inside Tick must stop subsequent expirations")
+assert(delivered == deliveredAtCancellation, "Cancellation inside Tick must stop subsequent expirations")
 owner:cancelTimer(id)
 owner:cancelTimer(0)
 owner:cancelTimer(-1)
@@ -185,7 +195,7 @@ local replacement = owner:setTimer(50)
 assert(replacement ~= id, "Cancel/recreate must not reuse a stale timer handle")
 owner:cancelTimer(replacement)
 pumpUntil(function() return false end, 100)
-assert(delivered == 1, "Cancelling before the first deadline must prevent delivery")
+assert(delivered == deliveredAtCancellation, "Cancelling before the first deadline must prevent delivery")
 heartbeat:cancelTimer(heartbeatId)
 
 assert(system.Event { message = "Window.Activated" }:is("Window.Activated"))

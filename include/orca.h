@@ -108,6 +108,11 @@ struct token
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);
 
+/** Queue an independent payload copy. Reflected event fields retain Objects and
+ * copy strings/nested structs; unsupported dynamic arrays reject the message.
+ * Without reflection only the supplied bytes are copied, so embedded pointers
+ * remain borrowed. The source buffer itself is always borrowed by this call.
+ * The target handle is borrowed independently from payload field ownership. */
 ORCA_API void
 axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,
                    void const *lparam, size_t size);

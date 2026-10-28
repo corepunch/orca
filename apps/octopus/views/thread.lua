@@ -3,6 +3,8 @@ local Footer = require "orca.UIKit.Footer"
 local system = require "orca.system"
 local C = require "Octopus/views/components"
 local Posts = require "Octopus/views/posts"
+local P = require "Octopus/views/presentation"
+local Items = require "orca.UIKit.ItemsView"
 local colors = C.colors
 local Thread = {}
 
@@ -30,78 +32,95 @@ local function statTiles()
     end
 end
 
--- Comments with their replies indented beneath, as on the website.
-local function renderComments(self, view, comments, likes)
-    local list = C.clear(view.comments)
-    local replies, top = {}, {}
+-- Flatten the thread in presentation order, keeping the parent relationship in
+-- the data. Comment.xml binds indentation and content from each retained row.
+local function commentItems(comments, likes)
+    local replies, top, known, items = {}, {}, {}, {}
     for _, comment in ipairs(comments) do
         if comment.parentId ~= "" then
             replies[comment.parentId] = replies[comment.parentId] or {}
             table.insert(replies[comment.parentId], comment)
-        else top[#top + 1] = comment end
+        else top[#top + 1] = comment; known[comment.id] = true end
     end
     local function item(comment, nested)
         local entry = likes[comment.id] or { pending = true }
         likes[comment.id] = entry
-        local row = ui.Grid { Name = "Comment" .. comment.id, Columns = "36px 1fr", Spacing = 12, MarginLeft = nested and 48 or 0 }
-        local function author() self:openProfile(comment.authorId, comment.authorName) end
-        row:addChild(C.area(C.avatar(comment.authorName, 36, comment.authorId, self), author, {
-            Name = "CommentAvatar" .. comment.id, Width = 36, Height = 36 }))
-        local header = ui.Grid { Columns = "1fr auto", Spacing = 8, IgnoreHitTest = true }
-        header:addChild(C.text(comment.authorName, { FontSize = 14, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
-        header:addChild(C.text(C.ago(comment.createdAt, self.clock()), { FontSize = 12, Foreground = colors.dim }))
-        local actions = C.row({ Spacing = 20, Height = 30 })
-        local function fill()
-            C.clear(actions)
-            local tint = entry.liked and colors.liked or colors.dim
-            actions:addChild(C.area(C.row({ Spacing = 6, IgnoreHitTest = true }, {
-                C.icon("heart", 16, tint, { MarginLeft = 0, MarginRight = 0 }),
-                C.text(entry.likes == nil and "…" or (entry.likes > 0 and tostring(entry.likes) or "like"), { FontSize = 13, Foreground = tint }),
-            }), function()
-                if not self:requireSession("Sign in to like comments.") or entry.busy or entry.pending then return end
-                entry.busy = true
-                local session, navigation = self.sessionEpoch, self.navigationEpoch
-                self:task(function()
-                    if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then
-                        entry.busy = false; return
-                    end
-                    local result, err = self.client:toggleLike(comment.id, "comment", entry.liked)
-                    entry.busy = false
-                    if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then return end
-                    if result == nil then self:notice(err.message, true); return end
-                    entry.likes = math.max(0, entry.likes + (result and 1 or 0) - (entry.liked and 1 or 0))
-                    entry.liked = result or nil
-                    fill(); self:repaint()
-                end)
-            end, { Name = "LikeComment" .. comment.id, Height = 30, Width = 64 }))
-            actions:addChild(C.button("reply", function()
-                if not self:requireSession("Sign in to reply.") then return end
-                -- Replies thread under the top-level comment, like the website.
-                view.replyTo = nested and { id = comment.parentId, authorName = comment.authorName } or comment
-                if view.replyLabel then
-                    view.replyLabel:setTextContent("replying to " .. comment.authorName)
-                    view.replyBar.Visible = true
-                    view.input:setFocus()
-                end
-            end, { Name = "Reply" .. comment.id, Height = 30, Width = 48, FontSize = 13 }))
-        end
-        fill()
-        row:addChild(C.stack({ Spacing = 4 }, {
-            header, C.text(comment.body, { FontSize = 15, WordWrap = true }), actions,
-        }))
-        list:addChild(row)
+        items[#items + 1] = { comment = comment, nested = nested, entry = entry }
         for _, reply in ipairs(replies[comment.id] or {}) do item(reply, true) end
     end
     for _, comment in ipairs(top) do item(comment, false) end
-    -- Replies whose parent was deleted still deserve a place.
-    for parent, orphans in pairs(replies) do
-        local known = false
-        for _, comment in ipairs(top) do if comment.id == parent then known = true end end
-        if not known then for _, reply in ipairs(orphans) do item(reply, false) end end
+    -- Preserve source order for replies whose parent was deleted.
+    for _, comment in ipairs(comments) do
+        if comment.parentId ~= "" and not known[comment.parentId] then
+            local parent = comment.parentId
+            for _, reply in ipairs(replies[parent] or {}) do item(reply, false) end
+            known[parent] = true
+        end
     end
+    return items
+end
+
+local function updateComment(self, view, entry, item, created)
+    local comment, row = item.comment, entry.node
+    row.Name = "Comment" .. comment.id
+    if created then
+        entry.controls = {}
+        for _, name in ipairs { "Avatar", "Like", "Reply" } do entry.controls[name] = assert(row:findChild(name, true)) end
+        entry.controls.Avatar:addChild(C.avatar(comment.authorName, 36, comment.authorId, self))
+    end
+    local controls = entry.controls
+    controls.Avatar.Name, controls.Like.Name, controls.Reply.Name = "CommentAvatar" .. comment.id, "LikeComment" .. comment.id, "Reply" .. comment.id
+    controls.Avatar.Click = function() self:openProfile(comment.authorId, comment.authorName) end
+    controls.Like.IgnoreHitTest, controls.Like.Opacity = item.entry.pending == true, item.entry.pending and 0.5 or 1
+    controls.Like.Click = function()
+        local stats = item.entry
+        if not self:requireSession("Sign in to like comments.") or stats.busy or stats.pending then return end
+        stats.busy = true
+        local session, navigation = self.sessionEpoch, self.navigationEpoch
+        self:task(function()
+            if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then
+                stats.busy = false; return
+            end
+            local result, err = self.client:toggleLike(comment.id, "comment", stats.liked)
+            stats.busy = false
+            if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then return end
+            if result == nil then self:notice(err.message, true); return end
+            stats.likes = math.max(0, stats.likes + (result and 1 or 0) - (stats.liked and 1 or 0))
+            stats.liked = result or nil
+            P.assign(entry.data, P.comment(self, item))
+            self:repaint()
+        end)
+    end
+    controls.Reply.Click = function()
+        if not self:requireSession("Sign in to reply.") then return end
+        view.replyTo = item.nested and { id = comment.parentId, authorName = comment.authorName } or comment
+        if view.replyLabel then
+            view.replyLabel:setTextContent("replying to " .. comment.authorName)
+            view.replyBar.Visible = true
+            view.input:setFocus()
+        end
+    end
+end
+
+local function renderComments(self, view, comments, likes)
+    if not view.commentItems then
+        -- Loading/error/empty indicators stay outside the collection's children.
+        C.clear(view.comments)
+        view.commentItems = C.stack { Name = "CommentItems", Spacing = 18 }
+        view.comments:addChild(view.commentItems)
+        view.commentCollection = Items.new {
+            node = view.commentItems, template = P.template("Comment"), record = P.record("Comment"),
+            key = function(item) return item.comment.id end,
+            fields = function(item) return P.comment(self, item) end,
+            update = function(entry, item, created) updateComment(self, view, entry, item, created) end,
+        }
+    end
+    local empty = view.comments:findChild("NoComments")
+    if empty then empty:removeFromParent() end
+    view.commentCollection:refresh(commentItems(comments, likes))
     if #comments == 0 then
-        list:addChild(C.empty("no comments yet", self.client:getSession() and "Start the conversation below."
-            or "Sign in to start the conversation."))
+        view.comments:addChild(C.empty("no comments yet", self.client:getSession() and "Start the conversation below."
+            or "Sign in to start the conversation.", { Name = "NoComments" }))
     end
 end
 

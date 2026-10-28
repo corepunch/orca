@@ -58,8 +58,9 @@ return Card
 - Prefer messages, properties, and bindings for communication across objects
   or subsystems.
 - Plain Lua state is not an observable binding source. Define its adapter to
-  `DataContext` explicitly. `ItemsSource` controls do not automatically reconcile
-  later collection mutations; choose one tested update path.
+  `DataContext` explicitly. ItemsControl observes native DataObject collection
+  mutations; use ItemsView to map service keys to stable records, and batch
+  membership edits with beginUpdate/endUpdate.
 - Preserve object ownership and lifecycle; do not retain stale scene objects
   across rebuild or removal.
 

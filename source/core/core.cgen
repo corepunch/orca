@@ -10,6 +10,8 @@
     <external struct="lua_State"/>
     <external struct="style_class_selector"/>
     <external struct="style_selector"/>
+    <external struct="collection_observer"/>
+    <external struct="StructDesc"/>
   </externals>
   <enums>
     <enum name="ScrollPhase">
@@ -252,7 +254,7 @@
         </method>
         <method name="Clear" export="clear">
           <summary>Clear all children of the object.</summary>
-          <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
+          <details>Removes and properly releases all child objects from this object's hierarchy. For DataObject collections, detaches immediate records while preserving nested data in records retained by other owners, and sends one batched collection notification. Other object trees recursively clear their children before removal.</details>
         </method>
         <method name="AddRef">
           <summary>Add one owned reference.</summary>
@@ -290,6 +292,23 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <method name="RemoveFromParent">
           <summary>Detaches an object from its parent.</summary>
           <details>Removes the object from the parent's child list, clears the back-reference, and releases the parent-owned reference. If no other references remain, the object is destroyed by the refcount drop.</details>
+        </method>
+        <method name="MoveBefore" private="true">
+          <summary>Reorders this object before another child of the same parent.</summary>
+          <details>A null sibling moves this object to the end. Invalid siblings and detached objects are ignored. Reordering preserves references, bindings and lifecycle state, and notifies observers when the parent is a DataObject collection.</details>
+          <arg name="sibling" type="Object" pointer="true">Sibling to precede, or null to move to the end.</arg>
+        </method>
+        <method name="MoveBeforeFromLua" export="moveBefore" lua="true">
+          <summary>Moves this object before a sibling; an omitted or nil sibling moves it to the end.</summary>
+          <details>Only siblings of the same parent are accepted. Invalid parents are ignored; non-object arguments are rejected. The move preserves references, bindings and lifecycle state and notifies DataObject collection observers.</details>
+        </method>
+        <method name="BeginUpdate">
+          <summary>Begins a batch of changes to a DataObject child collection.</summary>
+          <details>Calls can nest. Mutations update the hierarchy immediately, but collection observers receive one notification after the outermost EndUpdate. Has no effect on objects without DataObject.</details>
+        </method>
+        <method name="EndUpdate">
+          <summary>Ends a DataObject collection batch and notifies observers if its children changed.</summary>
+          <details>Unmatched calls and empty batches are ignored. Always balance BeginUpdate even when application mutation code fails.</details>
         </method>
         <method name="GetParent" const="true">
           <summary>Gets the parent object in the hierarchy</summary>
@@ -466,13 +485,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
         <method name="SetTimer">
           <summary>Set a timer on the object.</summary>
-          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Cancelling also drops the timer's ticks that are already queued, so no tick of a cancelled timer is delivered afterwards. Lua handlers run through the event coroutine dispatcher and may yield.</details>
+          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Cancellation removes pending platform ticks; Lua callback coroutines already dispatched may still run. Lua handlers run through the event coroutine dispatcher and may yield.</details>
           <arg name="duration" type="int">Duration of the timer in milliseconds</arg>
           <returns type="int">Positive timer identifier, or zero if creation fails</returns>
         </method>
         <method name="CancelTimer">
           <summary>Stops a timer previously created with setTimer.</summary>
-          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Ticks of this timer already queued are removed, so none is delivered after cancelTimer returns; a handler already running is not interrupted.</details>
+          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Pending platform ticks are removed and future expirations stop. Lua callback coroutines already dispatched may still run; running handlers are not interrupted.</details>
           <arg name="timerId" type="int">Timer identifier returned by setTimer</arg>
         </method>
         <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
@@ -921,10 +940,27 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
 Schema-generated subclasses (one per entity defined in a Schema XML file) carry typed
 properties for each column directly on the object, eliminating wrapper child objects.
 Container DataObjects (list roots, relation containers) hold child DataObject rows as
-object-tree children, iterated by ItemsControl and ListBox.</details>
+object-tree children, iterated by ItemsControl and ListBox. ObserveCollection subscribes to synchronous notifications for child insertion, removal, reordering, clearing and reparenting. Schema property changes use the ordinary property binding system.</details>
       <handles>
         <handle message="Object.Start"/>
+        <handle message="Object.Destroy"/>
       </handles>
+      <fields>
+        <field name="_collectionVersion" type="uint32">Increments whenever this object's immediate child collection changes.</field>
+        <field name="_collectionObservers" type="collection_observer" pointer="true">Weak collection notification subscriptions owned by this component.</field>
+        <field name="_updateDepth" type="uint">Nested collection update batch depth.</field>
+        <field name="_collectionPending" type="bool">A collection notification is waiting for the outermost EndUpdate.</field>
+      </fields>
+      <messages>
+        <message name="CollectionChanged">
+          <summary>Sent synchronously to registered observers after the child collection changes.</summary>
+          <details>The hierarchy is already updated when observers run. Observers may unsubscribe or mutate collections during dispatch. Destruction of either source or observer automatically removes its subscriptions; consumers switching sources should unsubscribe explicitly.</details>
+          <fields>
+            <field name="Source" type="Object" pointer="true">DataObject whose immediate children changed.</field>
+            <field name="Version" type="uint">Source collection version after this mutation; may wrap.</field>
+          </fields>
+        </message>
+      </messages>
     </class>
     <class name="Binding">
       <summary>Declarative property binding object that attaches a property program to its parent object.</summary>
@@ -1229,6 +1265,30 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
     </class>
   </classes>
   <functions>
+    <function name="CloneStructPayload" private="true">
+      <summary>Copies reflected payload fields, owning duplicated strings and referenced objects. Unknown external pointers remain borrowed; arrays without length metadata are rejected.</summary>
+      <arg name="desc" type="StructDesc" pointer="true" const="true"/>
+      <arg name="destination" type="void" pointer="true"/>
+      <arg name="source" type="void" pointer="true" const="true"/>
+      <returns type="bool"/>
+    </function>
+    <function name="ClearStructPayload" private="true">
+      <summary>Releases owned reflected payload fields and zeros the payload; does not free its outer allocation.</summary>
+      <arg name="desc" type="StructDesc" pointer="true" const="true"/>
+      <arg name="value" type="void" pointer="true"/>
+    </function>
+    <function name="ObserveCollection">
+      <summary>Registers a weak observer for a DataObject's immediate child collection.</summary>
+      <details>Delivers DataObject.CollectionChanged synchronously. Duplicate subscriptions are ignored. Subscriptions retain neither object and are removed automatically when either object is destroyed. Call UnobserveCollection when switching sources.</details>
+      <arg name="source" type="Object" pointer="true">Collection object with a DataObject component.</arg>
+      <arg name="observer" type="Object" pointer="true">Receiver of collection change messages.</arg>
+      <returns type="bool">True when registered; false for invalid inputs.</returns>
+    </function>
+    <function name="UnobserveCollection">
+      <summary>Removes a collection subscription. Missing subscriptions are ignored.</summary>
+      <arg name="source" type="Object" pointer="true">Previously observed collection.</arg>
+      <arg name="observer" type="Object" pointer="true">Registered receiver.</arg>
+    </function>
     <function name="GetFocus">
       <summary>Retrieves currently active object.</summary>
       <returns type="Object" pointer="true">Pointer to the currently focused object, or null if no object has focus</returns>

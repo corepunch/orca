@@ -104,9 +104,22 @@ supported bindings and update cost, rather than assuming static message values
 make one mandatory. The user prefers XML and wants the `lua-objc` approach
 considered; that preference does not yet select or implement a migration.
 
-ORCA's current [collection support](../../../docs/app/index.md#state-bindings-and-collections)
-needs to be accounted for: `ListBox`/`GridBox` create source rows at startup
-and do not automatically reconcile later membership changes. Plain Lua tables
-also do not automatically become observable `DataContext` objects. A tested
-adapter or engine work is needed before promising the same collection behavior
-as the Windows Phone reference.
+## Implemented ORCA slice
+
+Chat's message and attachment lists now use XML templates, typed presentation
+DataObjects, and bound ItemsSource collections. Octopus uses the same path for
+post cards and comments, with a shared post-body template for the detail page.
+`orca.UIKit.ItemsView` preserves records by service key; native ItemsControl
+observes membership changes and retains generated rows by DataObject identity.
+Appending, removing, moving, clearing and replacing a source are supported,
+with nested collection update batches. See [collection behavior](../../../docs/app/index.md#state-bindings-and-collections).
+
+For text versus images, the historical client used a separate media template
+selector. Our current variants share a template with bound section visibility:
+text, captioned photos, and photo-only messages differ in their content,
+caption/footer and timestamp overlay. Grouping, direction and action permission
+are independent presentation fields. This avoids duplicating the bubble tree
+and keeps a row alive when a caption is edited. StateManager can drive property
+overrides; a separate template remains appropriate when the structure differs
+substantially. Automatic template selection and virtualization remain future
+engine work; this migration does not claim WPF or Telegram feature parity.

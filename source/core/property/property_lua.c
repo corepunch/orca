@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <strings.h>
+#include <errno.h>
 
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
 extern struct Object* FS_LoadObject(const char* path);
@@ -15,6 +16,252 @@ extern int f_msgSend(lua_State *L);
 static void read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *valueptr);
 static struct Object *create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop);
 
+static struct Object *
+payload_object(struct PropertyType const *prop, void const *value)
+{
+  void *pointer = *(void *const *)value;
+  return pointer && prop->TypeString && strcmp(prop->TypeString, "Object")
+    ? CMP_GetObject(pointer) : pointer;
+}
+
+static void clear_payload_field(struct PropertyType const *prop, void *value);
+
+#define PAYLOAD_MAX_DEPTH 32
+struct PayloadAncestor {
+  struct StructDesc const *desc;
+  void const *source;
+};
+
+static bool_t clone_struct_payload(struct StructDesc const *desc, void *destination,
+  void const *source, uint32_t depth, struct PayloadAncestor *ancestors);
+
+static bool_t
+clone_payload_field(struct PropertyType const *prop, void *destination, void const *source,
+  uint32_t depth, struct PayloadAncestor *ancestors)
+{
+  if (prop->IsArray) return FALSE;
+  if (prop->FixedCount) {
+    struct PropertyType element = *prop;
+    element.FixedCount = 0;
+    element.DataSize /= prop->FixedCount;
+    memset(destination, 0, prop->DataSize);
+    for (uint32_t i = 0; i < prop->FixedCount; i++) {
+      if (clone_payload_field(&element, (char *)destination + i * element.DataSize,
+            (char const *)source + i * element.DataSize, depth, ancestors)) continue;
+      clear_payload_field(prop, destination);
+      return FALSE;
+    }
+    return TRUE;
+  }
+  if (prop->DataType == kDataTypeString && prop->DataSize == sizeof(char *)) {
+    char const *text = *(char const *const *)source;
+    *(char **)destination = text ? strdup(text) : NULL;
+    return !text || *(char **)destination;
+  }
+  if (prop->DataType == kDataTypeObject) {
+    memcpy(destination, source, prop->DataSize);
+    struct Object *object = payload_object(prop, source);
+    if (object) OBJ_AddRef(object);
+    return TRUE;
+  }
+  if (prop->DataType == kDataTypeStruct) {
+    struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+    if (desc && prop->IsPointer) {
+      void const *sourcePointer = *(void *const *)source;
+      *(void **)destination = NULL;
+      if (!sourcePointer) return TRUE;
+      void *copy = calloc(1, desc->StructSize);
+      if (!copy) return FALSE;
+      if (!clone_struct_payload(desc, copy, sourcePointer, depth + 1, ancestors)) { free(copy); return FALSE; }
+      *(void **)destination = copy;
+      return TRUE;
+    }
+    if (desc && !prop->IsPointer) return clone_struct_payload(desc, destination, source, depth + 1, ancestors);
+  }
+  memcpy(destination, source, prop->DataSize);
+  return TRUE;
+}
+
+static void
+clear_payload_field(struct PropertyType const *prop, void *value)
+{
+  if (prop->IsArray) return;
+  if (prop->FixedCount) {
+    struct PropertyType element = *prop;
+    element.FixedCount = 0;
+    element.DataSize /= prop->FixedCount;
+    for (uint32_t i = 0; i < prop->FixedCount; i++)
+      clear_payload_field(&element, (char *)value + i * element.DataSize);
+  } else if (prop->DataType == kDataTypeString && prop->DataSize == sizeof(char *)) {
+    free(*(char **)value);
+  } else if (prop->DataType == kDataTypeObject) {
+    struct Object *object = payload_object(prop, value);
+    if (object) OBJ_ReleaseRef(object);
+  } else if (prop->DataType == kDataTypeStruct) {
+    struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+    if (desc && prop->IsPointer && *(void **)value) {
+      core_ClearStructPayload(desc, *(void **)value);
+      free(*(void **)value);
+    } else if (desc && !prop->IsPointer) {
+      core_ClearStructPayload(desc, value);
+    }
+  }
+  memset(value, 0, prop->DataSize);
+}
+
+static bool_t
+clone_struct_payload(struct StructDesc const *desc, void *destination, void const *source,
+  uint32_t depth, struct PayloadAncestor *ancestors)
+{
+  if (depth >= PAYLOAD_MAX_DEPTH) return FALSE;
+  for (uint32_t i = 0; i < depth; i++)
+    if (ancestors[i].desc == desc && ancestors[i].source == source) return FALSE;
+  ancestors[depth] = (struct PayloadAncestor){ desc, source };
+  memcpy(destination, source, desc->StructSize);
+  for (uint32_t i = 0; i < desc->NumProperties; i++) {
+    struct PropertyType const *field = desc->Properties + i;
+    if (clone_payload_field(field, (char *)destination + field->Offset,
+          (char const *)source + field->Offset, depth, ancestors)) continue;
+    for (uint32_t j = 0; j < i; j++)
+      clear_payload_field(desc->Properties + j, (char *)destination + desc->Properties[j].Offset);
+    memset(destination, 0, desc->StructSize);
+    return FALSE;
+  }
+  return TRUE;
+}
+
+bool_t
+core_CloneStructPayload(struct StructDesc const *desc, void *destination, void const *source)
+{
+  if (!desc || !destination || !source) return FALSE;
+  struct PayloadAncestor ancestors[PAYLOAD_MAX_DEPTH];
+  memset(destination, 0, desc->StructSize);
+  return clone_struct_payload(desc, destination, source, 0, ancestors);
+}
+
+void
+core_ClearStructPayload(struct StructDesc const *desc, void *value)
+{
+  if (!desc || !value) return;
+  for (uint32_t i = 0; i < desc->NumProperties; i++)
+    clear_payload_field(desc->Properties + i, (char *)value + desc->Properties[i].Offset);
+  memset(value, 0, desc->StructSize);
+}
+
+void
+luaX_pushStruct(lua_State *L, struct StructDesc const *desc, void const *value)
+{
+  if (!value) { lua_pushnil(L); return; }
+  void *copy = lua_newuserdata(L, desc->StructSize);
+  memset(copy, 0, desc->StructSize);
+  luaL_setmetatable(L, desc->StructName);
+  if (!core_CloneStructPayload(desc, copy, value))
+    luaL_error(L, "Cannot snapshot struct %s: unsupported array, cyclic/deep payload, or allocation failure", desc->StructName);
+}
+
+void
+luaX_readStructProperty(lua_State *L, int index, struct PropertyType const *prop, void *value)
+{
+  index = lua_absindex(L, index);
+  if (lua_isnoneornil(L, index)) { clear_payload_field(prop, value); return; }
+  if (prop->IsArray) luaL_error(L, "Array field %s requires explicit length metadata", prop->Name);
+  if (prop->FixedCount) {
+    luaL_checktype(L, index, LUA_TTABLE);
+    luaL_argcheck(L, lua_rawlen(L, index) == prop->FixedCount, index, "fixed array has the wrong length");
+    clear_payload_field(prop, value);
+    struct PropertyType element = *prop;
+    element.FixedCount = 0;
+    element.DataSize /= prop->FixedCount;
+    for (uint32_t i = 0; i < prop->FixedCount; i++) {
+      lua_rawgeti(L, index, i + 1);
+      luaX_readStructProperty(L, -1, &element, (char *)value + i * element.DataSize);
+      lua_pop(L, 1);
+    }
+    return;
+  }
+  if (prop->DataType == kDataTypeObject) {
+    struct Object *object = NULL;
+    read_property(L, index, prop, &object);
+    void *component = object;
+    if (object && prop->TypeString && strcmp(prop->TypeString, "Object")) {
+      component = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
+      if (!component) {
+        if (lua_istable(L, index)) OBJ_ReleaseRef(object);
+        luaL_error(L, "Expected %s for struct field %s", prop->TypeString, prop->Name);
+      }
+    }
+    if (object && !lua_istable(L, index)) OBJ_AddRef(object);
+    clear_payload_field(prop, value);
+    *(void **)value = component;
+    return;
+  }
+  if (prop->DataType == kDataTypeStruct) {
+    struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+    if (!desc) {
+      if (!prop->IsPointer) luaL_error(L, "Unknown struct type %s", prop->TypeString);
+      luaL_checktype(L, index, LUA_TLIGHTUSERDATA);
+      clear_payload_field(prop, value);
+      *(void **)value = lua_touserdata(L, index);
+      return;
+    }
+    if (!lua_istable(L, index)) luaL_checkudata(L, index, desc->StructName);
+    clear_payload_field(prop, value);
+    void *destination = value;
+    if (prop->IsPointer) {
+      destination = calloc(1, desc->StructSize);
+      if (!destination) luaL_error(L, "Cannot allocate struct %s", desc->StructName);
+      *(void **)value = destination;
+    }
+    if (lua_istable(L, index)) {
+      for (uint32_t i = 0; i < desc->NumProperties; i++) {
+        struct PropertyType const *field = desc->Properties + i;
+        lua_getfield(L, index, field->Name);
+        luaX_readStructProperty(L, -1, field, (char *)destination + field->Offset);
+        lua_pop(L, 1);
+      }
+    } else if (!core_CloneStructPayload(desc, destination, luaL_checkudata(L, index, desc->StructName))) {
+      luaL_error(L, "Cannot copy struct %s", desc->StructName);
+    }
+    return;
+  }
+  if (prop->IsPointer && prop->DataType != kDataTypeString) {
+    luaL_checktype(L, index, LUA_TLIGHTUSERDATA);
+    clear_payload_field(prop, value);
+    *(void **)value = lua_touserdata(L, index);
+    return;
+  }
+  // Scalar readers validate before writing and preserve the previous value on failure.
+  if (prop->DataType == kDataTypeString) luaL_checkstring(L, index);
+  read_property(L, index, prop, value);
+}
+
+int
+luaX_newStruct(lua_State *L, struct StructDesc const *desc)
+{
+  int arguments = lua_gettop(L);
+  if (lua_islightuserdata(L, 1)) {
+    luaX_pushStruct(L, desc, lua_touserdata(L, 1));
+    return 1;
+  }
+  void *value = lua_newuserdata(L, desc->StructSize);
+  memset(value, 0, desc->StructSize);
+  luaL_setmetatable(L, desc->StructName);
+  if (arguments && lua_istable(L, 1)) {
+    for (uint32_t i = 0; i < desc->NumProperties; i++) {
+      struct PropertyType const *field = desc->Properties + i;
+      lua_getfield(L, 1, field->Name);
+      luaX_readStructProperty(L, -1, field, (char *)value + field->Offset);
+      lua_pop(L, 1);
+    }
+  } else {
+    for (uint32_t i = 0; i < desc->NumProperties && i < (uint32_t)arguments; i++) {
+      struct PropertyType const *field = desc->Properties + i;
+      luaX_readStructProperty(L, i + 1, field, (char *)value + field->Offset);
+    }
+  }
+  return 1;
+}
+
 ORCA_API int
 parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
 {
@@ -23,7 +270,16 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
       *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
       return TRUE;
     case kDataTypeInt:
-      *(int*)valueptr = atoi(str);
+      if (prop->IsUnsigned) {
+        char *end = NULL;
+        errno = 0;
+        unsigned long long number = strtoull(str, &end, 10);
+        while (end && isspace((unsigned char)*end)) end++;
+        if (errno || str == end || !end || *end || *str == '-' || number > UINT32_MAX) return FALSE;
+        *(uint32_t *)valueptr = (uint32_t)number;
+      } else {
+        *(int*)valueptr = atoi(str);
+      }
       return TRUE;
     case kDataTypeEnum:
       for (int i = 0; prop->EnumValues[i] != NULL; i++) {
@@ -158,7 +414,13 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
       *(int*)valueptr = lua_toboolean(L, idx) != 0;
       break;
     case kDataTypeInt:
-      *(int*)valueptr = (int)luaL_checkinteger(L, idx);
+      if (prop->IsUnsigned) {
+        lua_Integer number = luaL_checkinteger(L, idx);
+        luaL_argcheck(L, number >= 0 && (uint64_t)number <= UINT32_MAX, idx, "unsigned integer is outside its 32-bit range");
+        *(uint32_t *)valueptr = (uint32_t)number;
+      } else {
+        *(int*)valueptr = (int)luaL_checkinteger(L, idx);
+      }
       break;
     case kDataTypeEnum:
       *(int*)valueptr = (int)luaL_checkoption(L, idx, NULL, prop->EnumValues);
@@ -282,6 +544,23 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
 ORCA_API int
 write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr)
 {
+    if (prop->FixedCount) {
+      struct PropertyType element = *prop;
+      element.FixedCount = 0;
+      element.DataSize /= prop->FixedCount;
+      lua_createtable(L, prop->FixedCount, 0);
+      for (uint32_t i = 0; i < prop->FixedCount; i++) {
+        write_property(L, &element, (char const *)valueptr + i * element.DataSize);
+        lua_rawseti(L, -2, i + 1);
+      }
+      return 1;
+    }
+    if (prop->IsPointer && prop->DataType != kDataTypeObject &&
+        prop->DataType != kDataTypeStruct && prop->DataType != kDataTypeString) {
+      if (*(void *const *)valueptr) lua_pushlightuserdata(L, *(void *const *)valueptr);
+      else lua_pushnil(L);
+      return 1;
+    }
     // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
     if (prop->IsArray) {
       void *items = valueptr ? *(void *const*)valueptr : NULL;
@@ -314,7 +593,7 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
         lua_pushboolean(L, *(bool*)valueptr);
         break;
       case kDataTypeInt:
-        lua_pushinteger(L, *(int*)valueptr);
+        lua_pushinteger(L, prop->IsUnsigned ? (lua_Integer)*(uint32_t const *)valueptr : *(int const *)valueptr);
         break;
       case kDataTypeEnum:
         lua_pushstring(L, prop->EnumValues[*(int*)valueptr]);
@@ -339,10 +618,15 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
         luaL_setmetatable(L, "Color");
         memcpy(lua_touserdata(L, -1), valueptr, sizeof(struct color));
         break;
-      case kDataTypeStruct:
-        memcpy(lua_newuserdata(L, prop->DataSize), valueptr, prop->DataSize);
-        luaL_setmetatable(L, prop->TypeString);
+      case kDataTypeStruct: {
+        struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+        void const *source = prop->IsPointer ? *(void *const *)valueptr : valueptr;
+        if (!source) lua_pushnil(L);
+        else if (desc) luaX_pushStruct(L, desc, source);
+        else if (prop->IsPointer) lua_pushlightuserdata(L, (void *)source);
+        else return luaL_error(L, "Unknown struct type %s", prop->TypeString);
         break;
+      }
       case kDataTypeEvent:
         lua_pushfstring(L, "%s.%s", prop->Category, prop->Name);
         lua_pushcclosure(L, f_msgSend, 1);
@@ -369,12 +653,20 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
 int 
 luaX_readProperty(lua_State* L, int idx, struct Property *p)
 {
+  if (PROP_GetType(p) == kDataTypeEvent && lua_type(L, idx) == LUA_TSTRING) {
+    if (!PROP_BindHandler(p, lua_tostring(L, idx))) return luaL_error(L, "Could not bind event handler");
+    return 0;
+  }
   if (lua_isnil(L, idx)) {
     if (PROP_GetType(p) == kDataTypeEvent && p->value && *(event_t *)p->value) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t *)p->value);
       *(event_t *)p->value = 0;
     }
     PROP_Clear(p);
+    if (PROP_GetType(p) == kDataTypeEvent) {
+      p->handlerOverride = TRUE;
+      p->handlerName = strdup("");
+    }
     PROP_NotifyChanged(p);
     PROP_WriteBindingSource(p);
     return 0;
@@ -388,6 +680,15 @@ luaX_readProperty(lua_State* L, int idx, struct Property *p)
       PROP_SetFlag(p, PF_OWNS_OBJECT_CHILD);
     }
     return 0;
+  }
+
+  if (PROP_GetType(p) == kDataTypeEvent) {
+    luaL_checktype(L, idx, LUA_TFUNCTION);
+    event_t *slot = (event_t *)PROP_GetValue(p);
+    if (slot && *slot) { luaL_unref(L, LUA_REGISTRYINDEX, *slot); *slot = 0; }
+    free(p->handlerName);
+    p->handlerName = NULL;
+    p->handlerOverride = TRUE;
   }
 
   // Pointer-string properties copy the Lua bytes themselves; an intermediate

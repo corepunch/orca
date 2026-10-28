@@ -269,6 +269,7 @@ drain(app)
 assert(stat("comments") == "1")
 local comments = app.client:listComments(published)
 assert(#comments == 1 and comments[1].body == "Adding a source link later.")
+local retainedComment = find(app, "Comment" .. comments[1].id)
 click(app, "Reply" .. comments[1].id)
 assert(isShown(find(app, "ReplyBar")))
 find(app, "CommentInput").Text = "Done."
@@ -276,6 +277,7 @@ require("Octopus/views/thread").send(app, app.thread)
 drain(app)
 comments = app.client:listComments(published)
 assert(#comments == 2 and comments[2].parentId == comments[1].id, "Replies thread under their comment")
+assert(find(app, "Comment" .. comments[1].id) == retainedComment, "Adding a reply retains the parent comment view")
 
 -- Like and repost from the post page and timeline.
 click(app, "LikePost")
@@ -592,11 +594,12 @@ failRefresh = false
 delayed:refresh()
 refreshRequest = requests[#requests]
 step(refreshRequest); step(refreshRequest)
-assert(find(delayed, "Postp-reef") and not find(delayed, "Loadingdiscover").Visible)
+assert(find(delayed, "Postp-reef") == retainedPost and not find(delayed, "Loadingdiscover").Visible,
+    "A successful feed refresh updates the collection without replacing retained posts")
 local failedStats = requests[#requests]
 failStats = true
 step(failedStats); step(failedStats)
-assert(find(delayed, "Postp-reef") and delayed.feeds.discover.stats["p-reef"].pending
+assert(find(delayed, "Postp-reef") == retainedPost and delayed.feeds.discover.stats["p-reef"].pending
     and find(delayed, "Likep-reef").IgnoreHitTest, "Counter failure preserves content and blocks unsafe toggles")
 failStats = false
 -- Post counts populate while the comments section is still waiting.
@@ -620,9 +623,13 @@ step(threadRequest)
 assert(find(delayed, "Statlikes"):getTextContent() == "2" and find(delayed, "CommentsLoading"),
     "Post counts populate before comments finish loading")
 step(threadRequest)
-assert(find(delayed, "Commentc-welcome") and not delayed.screen:findChild("CommentsLoading", true),
-    "Comments appear before their like counters return")
+local retainedComment = find(delayed, "Commentc-welcome")
+assert(retainedComment and not delayed.screen:findChild("CommentsLoading", true)
+    and find(delayed, "LikeCommentc-welcome").IgnoreHitTest,
+    "Comments appear before their like counters return, with unsafe reactions disabled")
 step(threadRequest)
+assert(find(delayed, "Commentc-welcome") == retainedComment and not find(delayed, "LikeCommentc-welcome").IgnoreHitTest,
+    "Comment counter enrichment updates the retained row and enables reactions")
 -- Search posts populate before the independent people lookup finishes.
 delayed:show("/search")
 local searchPeople = delayed.client.searchPeople

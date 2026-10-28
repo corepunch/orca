@@ -310,6 +310,10 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
             if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
         }
     }
+    if (actual_flags & CG_FLAG_POINTER)
+        if (ob_printf(b, ", .IsPointer=TRUE") < 0) return -1;
+    if (!strcmp(actual_type, "uint"))
+        if (ob_printf(b, ", .IsUnsigned=TRUE") < 0) return -1;
     if (!strcmp(kind, "enum")) {
         if (ob_printf(b, ", .EnumValues = _%s", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "external_struct")) {
@@ -383,6 +387,7 @@ static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const
                                       cg_kind kind, int include_array_count,
                                       char const *storage) {
     cg_foreach(m, owner->id, kind, p) {
+        if (kind == CG_KIND_FIELD && (p->flags & CG_FLAG_NOEXPORT)) continue;
         char segs[MAX_DEPTH][64] = {{0}};
         int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
         if (fixed > 0) {
@@ -874,6 +879,12 @@ static int emit_raw_field_row(ob *b, cg_host_v1 const *h, cg_model const *m,
             (field->flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
             h->fnv1a32(field->name), owner_name, field->name, field->name,
             property_datatype(m, field->type)) < 0) return -1;
+    if (field->flags & CG_FLAG_POINTER)
+        if (ob_printf(b, ", .IsPointer=TRUE") < 0) return -1;
+    if (!strcmp(field->type, "uint"))
+        if (ob_printf(b, ", .IsUnsigned=TRUE") < 0) return -1;
+    if (field->extra && atoi(field->extra) > 0)
+        if (ob_printf(b, ", .FixedCount=%d", atoi(field->extra)) < 0) return -1;
     if (!strcmp(kind, "enum")) {
         return ob_printf(b, ", .EnumValues = _%s), // %s.%s\n", field->type, owner_name, field->name);
     } else if (!strcmp(kind, "external_struct")) {
@@ -1013,6 +1024,7 @@ static int emit_method_wrapper(ob *b, cg_model const *m, cg_node const *method,
 static int emit_method_wrappers(ob *b, cg_model const *m, cg_node const *owner,
                                 char const *prefix) {
     cg_foreach(m, owner ? owner->id : 0, CG_KIND_METHOD, method) {
+        if (method->flags & CG_FLAG_PRIVATE) continue;
         if (emit_method_wrapper(b, m, method, owner, prefix) < 0) return -1;
     }
     return 0;
@@ -1028,6 +1040,7 @@ static int emit_interfaces(ob *b, cg_model const *m) {
                 "\tluaL_setfuncs(L, ((luaL_Reg[]) {\n",
                 iface->name, export_name(iface)) < 0) return -1;
         cg_foreach(m, iface->id, CG_KIND_METHOD, method) {
+            if (method->flags & CG_FLAG_PRIVATE) continue;
             if (ob_printf(b, "\t\t{ \"%s\", f_%s%s },\n",
                     method_export_name(method), prefix, method->name) < 0) return -1;
             if (method->aux && method->aux[0])
@@ -1062,9 +1075,11 @@ static int emit_structs(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, "static struct PropertyType _%s[] = {\n", s->name) < 0) return -1;
         if (emit_properties_for_fields(b, h, m, smap, scount, s, s->name, CG_KIND_FIELD, 0, NULL) < 0) return -1;
         if (ob_printf(b, "};\nstatic luaL_Reg _%s_Methods[] = {\n", s->name) < 0) return -1;
-        cg_foreach(m, s->id, CG_KIND_METHOD, method)
+        cg_foreach(m, s->id, CG_KIND_METHOD, method) {
+            if (method->flags & CG_FLAG_PRIVATE) continue;
             if (ob_printf(b, "\t{ \"%s\", f_%s%s },\n",
                     method_export_name(method), prefix, method->name) < 0) return -1;
+        }
         if (ob_printf(b, "\t{ NULL, NULL }\n};\n") < 0) return -1;
     }
     if (ob_printf(b, "\n") < 0) return -1;
@@ -1346,6 +1361,7 @@ static int emit_luaopen(ob *b, cg_model const *m) {
     if (ob_printf(b, "\nORCA_API int luaopen_orca_%s(lua_State *L) {\n"
             "\tluaL_newlib(L, ((luaL_Reg[]) { \n", m->module_name) < 0) return -1;
     cg_foreach(m, 0, CG_KIND_METHOD, fn) {
+        if (fn->flags & CG_FLAG_PRIVATE) continue;
         if (ob_printf(b, "\t\t{ \"%s\", f_%s%s },\n",
                 method_export_name(fn), m->prefix ? m->prefix : "", fn->name) < 0) return -1;
     }

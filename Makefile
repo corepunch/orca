@@ -290,6 +290,7 @@ octopus: copyshare
 test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus-backend
 	$(TARGET) -test=tests/test_octopus_api.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
+	$(TARGET) -test=tests/test_octopus_templates.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
@@ -493,12 +494,24 @@ test-string-memory-sanitized:
 $(eval $(call C_TEST_RULE,test-styles,tests/test_styles.c,$(TEST_STYLES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-filesystem,tests/test_filesystem.c,$(TEST_FILESYSTEM_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-message-registry,tests/test_message_registry.c,$(TEST_MESSAGE_REGISTRY_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-collection-observers,tests/test_collection_observers.c,$(BINDIR)/test_collection_observers,platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-message-payload,tests/test_message_payload.c,$(BINDIR)/test_message_payload,platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) -lplatform))
 $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TEST_TRIGGER_ACTIONS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT),$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-texture-downscale,tests/test_texture_downscale.c,$(TEST_TEXTURE_DOWNSCALE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
+
+# Opt-in desktop test: intentionally excluded from test-headless.
+.PHONY: test-macos-retina
+ifeq ($(UNAME_S),Darwin)
+$(eval $(call C_TEST_RULE,test-macos-retina,tests/test_macos_retina.m,$(BINDIR)/test_macos_retina,unite,-Wno-deprecated-declarations,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -framework AppKit -framework OpenGL))
+else
+test-macos-retina:
+	$(Q)echo "test-macos-retina requires macOS and a desktop display"
+endif
+
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/test_timer_cancel,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform))
@@ -513,6 +526,13 @@ HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
+HEADLESS_LUA_TESTS += test-data-collection
+HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
+HEADLESS_LUA_TESTS += test-itemscontrol
+HEADLESS_LUA_TESTS += test-event-args
+.PHONY: test-event-args
+HEADLESS_LUA_TESTS += test-event-serialization test-controllers
+.PHONY: test-itemscontrol
 HEADLESS_LUA_TESTS += test-mvvm-form
 HEADLESS_LUA_TESTS += test-scene-format
 # Tests in tests/ run in both scene formats. Tests that need one format's loader
@@ -537,6 +557,7 @@ $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))
 
 
 $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-data-collection,tests/test_data_collection.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
@@ -586,6 +607,10 @@ $(eval $(call LUA_TEST_RULE,test-adventure-header-hit,tests/test_adventure_heade
 $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-itemscontrol,tests/test_itemscontrol.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-event-args,tests/test_event_args.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-event-serialization,tests/test_event_serialization.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-controllers,tests/test_controllers.lua,unite))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 

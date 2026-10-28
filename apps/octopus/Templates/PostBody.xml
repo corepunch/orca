@@ -1,0 +1,35 @@
+<StackView Spacing="8" IgnoreHitTest="true" ForegroundColor="{Binding DataContext/Ink}">
+  <Grid Name="PhotoFrame" Visible="{Binding DataContext/HasPhoto}" IgnoreHitTest="true">
+    <VectorView Source="Octopus/assets/icons/image.svg" Width="28" Height="28" IgnoreHitTest="true"
+                ForegroundColor="{Binding DataContext/Dim}" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto"/>
+  </Grid>
+  <TextBlock ForegroundColor="{Binding DataContext/Ink}" Visible="{Binding DataContext/HasCaption}" Name="PostBodyCaption" Text="{Binding DataContext/Caption}"
+             FontSize="15" WordWrap="true" IgnoreHitTest="true"/>
+  <Grid Visible="{Binding DataContext/IsQuote}" Columns="4px 1fr" Spacing="12" IgnoreHitTest="true">
+    <Grid BackgroundColor="{Binding DataContext/Accent}" IgnoreHitTest="true"/>
+    <StackView Spacing="4" IgnoreHitTest="true">
+      <TextBlock ForegroundColor="{Binding DataContext/Ink}" Name="PostBodyQuote" Text="{Binding DataContext/Quote}" FontSize="{Binding DataContext/QuoteSize}" WordWrap="true" IgnoreHitTest="true"/>
+      <TextBlock Visible="{Binding DataContext/HasQuoteSource}" Name="PostBodyQuoteSource" Text="{Binding DataContext/QuoteSource}"
+                 FontSize="14" ForegroundColor="{Binding DataContext/Muted}" WordWrap="true" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <TextBlock ForegroundColor="{Binding DataContext/Ink}" Visible="{Binding DataContext/HasThoughts}" Name="PostBodyThoughts" Text="{Binding DataContext/Thoughts}"
+             FontSize="15" WordWrap="true" IgnoreHitTest="true"/>
+  <Grid Visible="{Binding DataContext/IsLink}" Columns="40px 1fr" Spacing="12" IgnoreHitTest="true">
+    <Grid Width="40" Height="40" BackgroundColor="{Binding DataContext/Accent}" IgnoreHitTest="true">
+      <VectorView Source="Octopus/assets/icons/link.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto"
+                  ForegroundColor="{Binding DataContext/OnAccent}" IgnoreHitTest="true"/>
+    </Grid>
+    <StackView Spacing="4" IgnoreHitTest="true">
+      <TextBlock Name="PostBodyLinkTitle" Text="{Binding DataContext/LinkTitle}" FontSize="{Binding DataContext/LinkSize}"
+                 ForegroundColor="{Binding DataContext/AccentText}" WordWrap="true" IgnoreHitTest="true"/>
+      <TextBlock Name="PostBodyDomain" Text="{Binding DataContext/Domain}" FontSize="13" ForegroundColor="{Binding DataContext/Dim}"
+                 TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <TextBlock ForegroundColor="{Binding DataContext/Ink}" Visible="{Binding DataContext/IsText}" Name="PostBodyTitle" Text="{Binding DataContext/Title}"
+             FontSize="{Binding DataContext/TitleSize}" WordWrap="true" IgnoreHitTest="true"/>
+  <TextBlock Visible="{Binding DataContext/HasContent}" Name="PostBodyContent" Text="{Binding DataContext/Content}"
+             FontSize="{Binding DataContext/ContentSize}" ForegroundColor="{Binding DataContext/ContentColor}"
+             WordWrap="true" IgnoreHitTest="true"/>
+</StackView>

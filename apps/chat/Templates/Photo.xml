@@ -1,0 +1,9 @@
+<Grid Name="PhotoFrame" Width="260" Height="{Binding DataContext/Height}" BackgroundColor="{Binding DataContext/Soft}">
+  <Grid Name="PhotoContent">
+    <TextBlock Text="Loading photo…" FontSize="12" ForegroundColor="{Binding DataContext/Muted}"
+               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+  </Grid>
+  <TextBlock Name="PhotoTime" Visible="{Binding DataContext/ShowTime}" Text="{Binding DataContext/Timestamp}"
+             FontSize="11" ForegroundColor="#ffffff" BackgroundColor="#00000099" Padding="4 2"
+             MarginLeft="auto" MarginTop="auto" MarginRight="6" MarginBottom="6" IgnoreHitTest="true"/>
+</Grid>

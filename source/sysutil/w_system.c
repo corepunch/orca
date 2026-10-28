@@ -232,6 +232,9 @@ ORCA_API int luaopen_orca_system(lua_State* L)
   lua_setglobal(L, "SETTINGS");
 
   luaL_newmetatable(L, "Event");
+  int f_event_gc(lua_State *L);
+  lua_pushcfunction(L, f_event_gc);
+  lua_setfield(L, -2, "__gc");
   lua_pushcfunction(L, f_event_index);
   lua_setfield(L, -2, "__index");
   //  lua_setfield(L, -2, "Event");

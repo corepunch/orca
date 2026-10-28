@@ -2,38 +2,58 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-static struct {
-  unsigned char data[0x10000];
-  size_t writer;
-} g_message_data;
+struct queued_payload {
+  struct StructDesc const *desc;
+  max_align_t alignment;
+  unsigned char bytes[];
+};
 
-static void *
-queue_message_data(void const *udata, size_t size)
+static void
+dispose_struct_payload(void *value)
 {
-  if (!udata || size == 0) {
-    return NULL;
-  }
-  if (size > sizeof(g_message_data.data)) {
-    Con_Error("Message data too large: %zu bytes", size);
-    return NULL;
-  }
-  if ((size_t)g_message_data.writer + size > sizeof(g_message_data.data)) {
-    g_message_data.writer = 0;
-  }
-  void *data = g_message_data.data + g_message_data.writer;
-  memcpy(data, udata, size);
-  g_message_data.writer += size;
-  if (g_message_data.writer >= sizeof(g_message_data.data)) {
-    g_message_data.writer = 0;
-  }
-  return data;
+  struct queued_payload *payload = (void *)((char *)value - offsetof(struct queued_payload, bytes));
+  core_ClearStructPayload(payload->desc, value);
+  free(payload);
+}
+
+static struct StructDesc const *
+message_payload_desc(void *target, uint32_t event)
+{
+  struct Property *property = target ? OBJ_FindLongProperty(target, event) : NULL;
+  if (property && PROP_GetType(property) == kDataTypeEvent)
+    return OBJ_FindStructDesc(PROP_GetDesc(property)->TypeString);
+  struct ClassDesc const *action = OBJ_FindClassW(event);
+  if (!action) return NULL;
+  char name[256];
+  int length = snprintf(name, sizeof(name), "%sEventArgs", action->ClassName);
+  if (length < 0 || (size_t)length >= sizeof(name)) return NULL;
+  for (char *p = name; *p; p++) if (*p == '.') *p = '_';
+  return OBJ_FindStructDesc(name);
 }
 
 ORCA_API void
-axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,
-                   void const *lparam, size_t size)
+axPostMessageDataW(void *target, uint32_t event, uint32_t wparam,
+                   void const *value, size_t size)
 {
-  axPostMessageW(hobj, event, wparam, queue_message_data(lparam, size));
+  struct AXmessage message = { .target = target, .message = event, .wParam = wparam };
+  if (!value || !size) { axPostMessageOwnedW(message); return; }
+  struct StructDesc const *desc = message_payload_desc(target, event);
+  if (desc) {
+    if (desc->StructSize != size || size > SIZE_MAX - sizeof(struct queued_payload)) return;
+    struct queued_payload *payload = calloc(1, sizeof(*payload) + size);
+    if (!payload) return;
+    payload->desc = desc;
+    if (!core_CloneStructPayload(desc, payload->bytes, value)) { free(payload); return; }
+    message.lParam = payload->bytes;
+    if (!axOwnMessageData(&message, payload->bytes, dispose_struct_payload)) return;
+  } else {
+    void *data = malloc(size);
+    if (!data) return;
+    memcpy(data, value, size);
+    message.lParam = data;
+    if (!axOwnMessageData(&message, data, free)) return;
+  }
+  axPostMessageOwnedW(message);
 }
 
 #define MESSAGE_STATS 48
@@ -254,7 +274,14 @@ ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   void *target = msg->target;
   bool_t handled = dispatch_message(L, msg);
   OBJ_EndMessage(target);
+  axDisposeMessage(msg);
   return handled;
+}
+
+int f_event_gc(lua_State *L)
+{
+  axDisposeMessage(luaL_checkudata(L, 1, "Event"));
+  return 0;
 }
 
 ORCA_API void

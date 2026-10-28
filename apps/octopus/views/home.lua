@@ -129,7 +129,13 @@ function Home.load(self, name, more)
             return
         end
         if not more then
-            C.clear(list)
+            -- Keep the bound collection and its native rows through refresh.
+            local child = list:getFirstChild()
+            while child do
+                local nextChild = child:getNext()
+                if child.Name ~= "PostItems" then child:removeFromParent() end
+                child = nextChild
+            end
             feed.items, feed.stats = {}, {}
         end
         local loadMore = list:findChild("LoadMore" .. name)
@@ -137,13 +143,13 @@ function Home.load(self, name, more)
         for id, entry in pairs(stats) do feed.stats[id] = entry end
         for _, item in ipairs(items) do feed.items[#feed.items + 1] = item end
         feed.cursor = nextCursor
-        Posts.append(self, list, items, feed.stats)
+        Posts.refresh(self, list, feed.items, feed.stats)
         if not more and self.client.writeFeedCache then self.client:writeFeedCache(name, items, nextCursor) end
         local entries = feed.stats
         Posts.enrich(self, items, entries, function()
             return self.sessionEpoch == session and self.feeds[name] == feed and feed.stats == entries
                 and self.timelines[name] == list
-        end, function() Posts.refresh(self, list, items, entries) end)
+        end, function() Posts.refreshStats(self, list, items, entries) end)
         if #feed.items == 0 then
             if name == "home" then
                 list:addChild(C.empty("your timeline is quiet", "Follow people from discover or search to see their posts here."))
