@@ -36,6 +36,14 @@ test('PNG and JPEG header dimensions account for all EXIF display rotations and 
   }
 });
 
+test('unrecognized EXIF orientation values retain encoded dimensions in either byte order', () => {
+  for (const little of [true, false]) for (const orientation of [0, 9, 65535]) {
+    const expected = { imageWidth: 640, imageHeight: 480 };
+    assert.deepEqual(parseImageDimensions(jpeg(orientation, little)), expected);
+    assert.deepEqual(parseImageDimensions(jpeg(orientation, little, true)), expected);
+  }
+});
+
 test('header parser waits for complete metadata and rejects invalid formats, sizes and EXIF', () => {
   const source = jpeg(6);
   for (let length = 0; length < source.length; length++) assert.equal(parseImageDimensions(source.subarray(0, length)), null);
@@ -45,7 +53,10 @@ test('header parser waits for complete metadata and rejects invalid formats, siz
   assert.throws(() => parseImageDimensions(png(65536, 20)), /between 1 and 65535/);
   const badPNG = png(); badPNG.writeUInt32BE(99, 8);
   assert.throws(() => parseImageDimensions(badPNG), /IHDR/);
-  assert.throws(() => parseImageDimensions(jpeg(9)), /orientation/);
+  const badType = jpeg(1); badType.writeUInt16LE(4, 24);
+  assert.throws(() => parseImageDimensions(badType), /orientation field/);
+  const badCount = jpeg(1); badCount.writeUInt32LE(2, 26);
+  assert.throws(() => parseImageDimensions(badCount), /orientation field/);
   const badEXIF = jpeg(1); badEXIF.writeUInt32LE(9999, 16);
   assert.throws(() => parseImageDimensions(badEXIF), /directory offset/);
   assert.throws(() => parseImageDimensions(Buffer.from([255, 216, 255, 192, 0, 1])), /segment length/);
