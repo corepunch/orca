@@ -107,6 +107,13 @@ selects the provider. Neither device registration nor the app contains a server
 key. Registering, rotating and removing targets is owned by the client, including
 removal on sign-out.
 
+Chat defaults to Octopus's enabled production APNs provider
+`6ae23f3b0014b18bf3dd` (`Production sender`, Bundle ID `org.orca.chat`,
+Apple Team ID `BM2R8F5YHC`, sandbox disabled; configuration checked 2026-10-28).
+This default targets App Store and TestFlight builds. The provider ID is public;
+its authentication key remains in Appwrite. Function activation still requires
+deploying the push-capable source and setting `CHAT_PUSH_ENABLED=true` as below.
+
 To activate push for a signed Apple build:
 
 1. Enable Apple's Push Notifications capability for that build's explicit App ID
