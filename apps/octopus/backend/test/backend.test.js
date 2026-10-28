@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { createRepository } from '../src/repository.js';
 import { execute, feedDocument, publiclyReadable, refreshPost } from '../src/materialize.js';
 import { compatibleAttribute, coversIndex, migrate, feedAttributes, indexes } from '../src/migrate.js';
@@ -38,6 +39,19 @@ function fixture(documents = [post()]) {
 }
 
 const event = (collection, action = 'create') => `databases.octopus-db.collections.${collection}.documents.any.${action}`;
+
+test('deployment subscribes to current and legacy source mutations, including upserts, without feed recursion', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../appwrite.config.json', import.meta.url), 'utf8'));
+  const events = manifest.functions[0].events;
+  for (const [prefix, container, record] of [['databases', 'collections', 'documents'], ['tablesdb', 'tables', 'rows']]) {
+    for (const collection of ['posts', 'likes', 'comments', 'reposts', 'profiles']) {
+      for (const action of ['create', 'update', 'upsert', 'delete']) {
+        assert(events.includes(`${prefix}.octopus-db.${container}.${collection}.${record}.*.${action}`));
+      }
+    }
+  }
+  assert(!events.some(event => event.includes('post-feed')));
+});
 
 test('summary bounds Unicode without splitting a surrogate pair and carries trusted counts', () => {
   const summary = feedDocument(post('p1', { content: '😀'.repeat(500), userText: '🪸'.repeat(500) }), 'avatar',

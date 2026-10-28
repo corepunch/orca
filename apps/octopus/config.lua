@@ -6,4 +6,5 @@ return {
     databaseId = os.getenv("OCTOPUS_DATABASE_ID") or "octopus-db",
     bucketId = os.getenv("OCTOPUS_BUCKET_ID") or "post-images",
     feedCollectionId = os.getenv("OCTOPUS_FEED_COLLECTION_ID"),
+    functionId = os.getenv("OCTOPUS_FUNCTION_ID") or "orca-chat-api",
 }

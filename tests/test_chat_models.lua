@@ -15,6 +15,13 @@ local room = assert(models.Rooms:find("alex"))
 local messages = assert(room:get_messages { limit = 2 })
 assert(#messages == 2 and messages[1].id == "a3" and messages[2].id == "a4")
 assert(messages[1]:get_sender():get_display_name() == "Alex Morgan", "Rows must expose relations")
+local page = assert(models.Messages:page { room_id = room.id, limit = 2 })
+assert(#page.messages == 2 and page.has_more and page.next_cursor == "a3")
+assert(page.messages[1]._model == models.Messages and type(page.messages[1].edit) == "function"
+    and page.messages[1]:get_sender():get_display_name() == "Alex Morgan", "Page rows retain domain methods and client scope")
+page = assert(models.Messages:page { room_id = room.id, limit = 2, before = page.next_cursor })
+assert(#page.messages == 2 and not page.has_more and page.next_cursor == nil and page.messages[1].id == "a1")
+
 local sent = assert(models.Messages:create { room_id = room.id, body = "From a model" })
 assert(sent:get_sender():get_display_name() == "You", "Current-user relations use the API session")
 assert(room:get_messages { limit = 1 }[1].id == sent.id)
@@ -63,6 +70,8 @@ assert(client:getSession().user.id == "me" and otherClient:getSession().user.id 
 assert(client:signOut())
 rows, err = room:get_messages()
 assert(not rows and err.code == "unauthenticated", "Existing rows must use the current session, not captured credentials")
+page, err = models.Messages:page { room_id = room.id }
+assert(not page and err.code == "unauthenticated", "Page fetches preserve session failures")
 rows, err = messages[1]:get_sender()
 assert(not rows and err.code == "unauthenticated", "Sign-out must invalidate preloaded relations")
 rows, err = models.Contacts:find_all { alex.id }

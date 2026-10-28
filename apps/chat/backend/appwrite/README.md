@@ -2,9 +2,12 @@
 
 Chat uses the existing **Octopus** project (`69f1c06800389dc6a1a0`), Frankfurt
 endpoint `https://fra.cloud.appwrite.io/v1`, and database `octopus-db`.
-`schema.json` defines seven `chat_` collections; their attributes and indexes
-have been provisioned. Every collection has **no client permissions** and
-`documentSecurity=false`. Existing Octopus collections are unchanged.
+`schema.json` defines seven private collections with shared names. They have
+**no client permissions** and `documentSecurity=false`. The Function joins the
+existing public Octopus `profiles` with private `account-directory` records;
+verified email/phone and discovery preferences never enter public profiles.
+The migration below provisions this layout; previous deployments use legacy
+`chat_` collections until explicitly migrated and replaced.
 
 Signup, password sign-in, email/phone OTP, session refresh and sign-out call
 **native Appwrite Account endpoints directly**, following Banking's direct
@@ -27,7 +30,7 @@ photo keys were absent from API responses. All test accounts, documents, state
 and objects were removed afterward. No email/SMS code deliveries were performed;
 delivery providers are not configured.
 
-Active deployment: `6ae08dfcb0d301fbdd7b` (2026-10-27). The uploaded source archive
+Previous production deployment: `6ae08dfcb0d301fbdd7b` (2026-10-27, legacy collection layout). The uploaded source archive
 contains `package.json` and `src/`, with SHA-256
 `5a3525d8b1d449dc58b88fd73cd2204858f4c544cfe65d1401e80b4afef7fc6e`.
 It includes direct-room `peer_id`, message editing/deletion, non-owner group/channel
@@ -49,13 +52,13 @@ and requests these dynamic-key scopes:
 | Scope | Purpose |
 | --- | --- |
 | `users.read` | Validate member IDs and verify discovery/identity uniqueness |
-| `users.write` | Apply an email/phone change after ownership proof |
-| `documents.read`, `documents.write` | Read and update private Chat documents |
+| `users.write` | Apply an email/phone change after ownership proof; synchronize the account display name |
+| `documents.read`, `documents.write` | Read and update shared profiles and private conversation documents |
 | `files.read`, `files.write` | Store encrypted objects and serve member-authorized plaintext |
 | `targets.write`, `messages.write` | Deliver staged identifier-link challenges through Messaging |
 
 Appwrite scopes apply to the project, including its other collections/users;
-they cannot be limited to the `chat_` prefix. The handler constructs all backend
+they cannot be limited to the shared collection allowlist. The handler constructs all backend
 paths itself and exposes only its fixed Chat route allowlist. It does not issue
 or proxy Auth sessions and has no session-management scope.
 
@@ -92,6 +95,92 @@ delivery and Messaging providers are separate configurations. Six-digit OTPs
 must be enabled for the existing desktop verification form. Delivery was not
 tested against real addresses or phone numbers.
 
+## Shared storage migration
+
+| Legacy collection | Shared collection |
+| --- | --- |
+| `chat_profiles` | Public display metadata in `profiles`; private identifiers/preferences in `account-directory` |
+| `chat_rooms` | `conversations` |
+| `chat_members` | `conversation-members` |
+| `chat_messages` | `messages` |
+| `chat_attachments` | `attachments` |
+| `chat_invites` | `invitations` |
+| `chat_state` | `service-state` |
+
+The runtime uses only shared collections. Existing RPC/REST route names remain
+compatible with the desktop client. Conversation, membership, message, attachment
+and invitation IDs and JSON payloads are copied unchanged; encrypted file IDs,
+keys and authenticated object names are retained. Account IDs and sessions are
+never recreated or renamed. Message history orders by the indexed original
+`created_at` payload timestamp, so copying a document does not change which
+messages appear in the latest history page.
+
+`profiles.username` remains the website's **display label**. The private directory
+`handle` is the shared lowercase account name (1–36 letters/digits, dots,
+underscores or hyphens, starting with a letter/digit). Chat maps the public label and trusted private handle to
+`display_name` and `username` respectively. Owner-writable public `handle`
+fields are ignored; only the private unique index establishes handle ownership. Existing website labels, bios,
+interests, avatar IDs and permissions take precedence and remain intact when
+merging an old Chat profile. The trusted legacy Chat handle, email, phone and
+opt-ins go to administrator-only `account-directory`; no opaque Chat profile
+payload is copied to public data. New public profiles receive public read and
+owner update permissions, matching the social profile contract. Their account
+name is synchronized on explicit profile Save; a failed name sync returns a
+retryable `profile_sync` error after saving the shared profile.
+
+The operator migration uses native fetch and needs administrative database,
+collection, attribute, index and document read/write scopes plus `users.read`.
+Pass its key through `APPWRITE_API_KEY` in the environment; never commit it or
+place it in command arguments. `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID` and
+`CHAT_DATABASE_ID` optionally select the target. Schema operations wait for
+available attributes/indexes, preserve matching existing indexes, and refuse
+private permission drift or conflicting definitions. Public collection
+permissions are never changed.
+
+```sh
+# Provision the new collections and private handle/index. No legacy data changes.
+node src/migrate.js
+# Read-only schema verification.
+node src/migrate.js --verify
+# Disable the legacy Chat Function and wait until all executions finish FIRST.
+node src/migrate.js --migrate-legacy --quiesced
+# Check both schema and copied data without writes while the old Function is paused.
+node src/migrate.js --verify --migrate-legacy --quiesced
+# Optional cleanup only after the copy is verified; never the default.
+node src/migrate.js --migrate-legacy --quiesced --drop-legacy
+```
+
+Deploy the new Function only after the copy succeeds. Keep the Function paused
+through the migration and deployment; a failed copy leaves legacy collections
+available for recovery. Do not switch a live old Function to the new schema or
+resume it after copying: writes could diverge. The unified deployment script
+coordinates this sequence. An interrupted migration is safe to repeat while
+quiesced; matching destination documents are reused, differing destination data
+requires operator resolution. Reconcile any deliberate post-migration changes
+before retrying an old snapshot.
+
+`--drop-legacy` verifies every copied document and rereads all sources before any
+collection deletion. It never deletes accounts, public profiles or files. A
+legacy lock after draining means an execution may have crashed: inspect it and
+confirm no writer remains before explicitly removing that stale lock, then
+retry. The migration does not expire or steal locks. It refuses unknown private
+profile fields instead of discarding data, conflicting profile owners/handles,
+handle collisions with account IDs, and unavailable schema builds.
+
+Existing GUID accounts keep their aliases. New readable Account IDs and profile
+handles share a namespace by application policy: the Function checks Users for
+collisions and the private directory unique index enforces handle uniqueness.
+Only authenticated Function routes may claim a handle; public profile writes cannot
+change the authoritative claim. Account creation and handle claiming are separate Appwrite operations, so that
+preflight is not a cross-service transaction. Concurrent claims can return a
+recoverable conflict after an account was created; clients must report it and
+allow authenticated recovery instead of silently choosing another identity.
+
+The JavaScript operator API is `migrateShared(rest, { databaseId, verify,
+migrateLegacy, dropLegacy, quiesced, wait })` from `src/migrate.js`. It loads the
+local `schema.json`; the deployed handler does not import this operator module.
+The report contains collection IDs/counts, without identifiers or payloads.
+
 ## Authentication and verified profiles
 
 The desktop's Account adapter owns signup, password login, email/phone OTP,
@@ -107,7 +196,7 @@ in those Account operations.
 
 Password-only accounts may initially have an unverified email; self profiles
 expose email/phone only when Appwrite marks them verified. Public profiles
-contain only ID, display name and username. The function verifies the calling
+contain only ID, display name, handle and avatar ID. The function verifies the calling
 account for every Chat operation. Discovery/identity-link rate limits use private
 claim documents; login throttling belongs to native Account.
 
@@ -142,9 +231,26 @@ follow Appwrite cursors rather than silently returning the default first 25
 rows. The 10,000-document safety cap returns an explicit error, never a partial
 directory. The foreground client polls the open conversation every 3 seconds
 and the visible inbox every 15 seconds, with non-overlapping reads and retry
-backoff. History deliberately returns at most the requested latest 100
-messages; older-history pagination, realtime subscriptions, push, receipts and end-to-end
-encryption are outside the existing Chat feature set.
+backoff. History uses cursor pages of 30 messages by default, clamped to 1–100 per page.
+`POST /rest/v1/rpc/list_chat_messages` accepts `{target_room, limit?, before?}` and
+returns `{messages, next_cursor, has_more}`. Messages in each page are chronological;
+`next_cursor` is the oldest returned message ID when older messages remain.
+Omit `before` for the newest page, then pass `next_cursor` to load older history.
+The compatible `GET /rest/v1/chat_messages?room_id=eq.ID&limit=N&before=ID`
+continues returning descending rows without metadata.
+
+The database applies `room_id` equality, indexed original `created_at DESC`,
+`$id DESC` as a stable tie breaker, and `cursorAfter(before)`. It selects only
+`$id` and `payload`, disables totals, and reads at most N+1 message rows to
+establish `has_more`; there are no offsets or full-history reads. A cursor must
+belong to the same authorized conversation. Deleted anchors, including a delete
+between validation and listing, return `409 stale_cursor`; the client must
+explicitly reload the newest page to establish a fresh cursor. New messages do
+not move an existing older-page anchor. Attachment hydration is bounded by the
+page and four attachments per message, with eight concurrent message views.
+History performs no per-message profile or directory reads. Realtime
+subscriptions, push, receipts and end-to-end encryption remain outside the
+existing Chat feature set.
 
 New database and bucket creation were denied by the current plan quotas. The
 existing `post-images` bucket has public read and no per-file security, so it
@@ -187,7 +293,7 @@ reservation expiry, like any other unpublished photo.
 
 ## Serialization, failure recovery and maintenance
 
-Room writes share a durable lock stored as a uniquely created `chat_state`
+Room writes share a durable lock stored as a uniquely created `service-state`
 document. This serializes membership/role changes, invitation joins, posting,
 upload finalization and cleanup. Invitation allowance is reserved before the
 membership is created, so a failed creation may consume an allowance but cannot
@@ -217,7 +323,7 @@ finish and skips the contacts request for an empty inbox. Message history is
 loaded only when a conversation opens.
 
 For a stuck `busy` response, first disable new executions or otherwise quiesce
-the function, verify the old execution has ended, and inspect `chat_state` rows
+the function, verify the old execution has ended, and inspect `service-state` rows
 with `kind=lock`. Their private `name`, `token` and `acquired_at` identify the
 resource and owner. Only after verifying no worker is still running, remove
 that specific lock document through the Appwrite console/operator, then restore

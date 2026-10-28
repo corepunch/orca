@@ -29,6 +29,25 @@ including counts above 1,000. It does not fetch comment text to count it.
 Viewer like/repost state is specific to the current session and remains a
 separate client query; never store it in this shared public feed.
 
+### Counter updates
+
+The Function runs on source changes and scheduled reconciliation. Feed reads
+consume stored numbers; opening a feed does not execute a counting Function.
+Relation events recount the affected post using indexed exact totals rather
+than downloading all matching documents. Repeated or out-of-order processing
+converges on current source data, and the scheduled sweep repairs missed work.
+
+Appwrite also supports [atomic numeric updates](https://appwrite.io/docs/products/databases/documentsdb/atomic-numeric-operations)
+inside [database transactions](https://appwrite.io/docs/products/databases/documentsdb/transactions).
+If all website/mobile reaction writes move behind one trusted write service,
+create/delete the relation and increment/decrement its counter in the same
+short transaction, retry conflicts, retain unique user/target constraints, and
+keep reconciliation as a repair mechanism. That avoids counting queries on
+every write. Direct client increments would allow clients to invent counts;
+incrementing on each asynchronous event without deduplication would also drift
+after duplicate delivery. The current compatible rollout keeps authoritative
+relation documents and idempotent recounts while direct website writes remain.
+
 ## Read policy
 
 This is a **public-content cache**. Enable it only for posts intended to remain
@@ -60,6 +79,42 @@ Do not use this collection to cache private posts.
 The files here are deployment artifacts, not a record of a live deployment.
 All default validation is offline: `npm test` (Node 22+, no dependencies).
 
+### Combined Octopus and messaging deployment
+
+Both apps use one Appwrite project, Account namespace, database and public
+profile collection. Messaging uses unprefixed domain collections; the schema
+migration reuses the display information in `profiles` and keeps authoritative
+unique handles, verified contact identifiers and discovery preferences in private
+`account-directory`. Owner-editable public profile fields cannot claim a handle.
+See [the shared messaging backend](../../chat/backend/appwrite/README.md).
+
+With a temporary operator key, deploy both backends from this directory:
+
+```sh
+node --env-file=/private/tmp/octopus-deploy.env src/deploy-all.js --drop-legacy
+```
+
+The env file must be private (`chmod 600`) and contain `APPWRITE_API_KEY`.
+Use a short-lived project key with `collections.read/write`,
+`attributes.read/write`, `indexes.read/write`, `documents.read/write`,
+`functions.read/write`, `executions.read`, and `users.read` scopes. Endpoint
+and project default to the checked-in Octopus manifests. Secrets are never
+included in archives; existing secret Function variables are preserved.
+
+The command disconnects events and schedules, disables both Functions and their
+caller permissions, waits for active executions to finish,
+provisions and copies the shared schema, backfills the feed, verifies schema
+and indexes, builds and activates both source archives, and then reenables
+execution and restores their triggers. It leaves Functions paused with triggers
+disconnected on a failed migration or build so a
+rerun can repair the same state. `--drop-legacy` removes old prefixed collections
+only after verified copies and both deployments are ready; omit it to retain
+them during rollout. API-key holders can still invoke a disabled Function, so
+stop other administrative writers during migration. Set
+`OCTOPUS_FEED_COLLECTION_ID=post-feed` in the app environment only after the
+command succeeds. This command does not create test accounts, send OTPs, or
+run the manual Chat live suite.
+
 For an administrator performing the deployment:
 
 1. Set `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `OCTOPUS_DATABASE_ID` and
@@ -76,9 +131,10 @@ For an administrator performing the deployment:
    `collections.read/write`, `attributes.read/write`, `indexes.read/write`.
 3. Deploy the Function using `appwrite.config.json`. Set its environment values
    to the same endpoint/project/database/collection IDs. If changing the source
-   database, update its event names too. On Appwrite versions using only the
-   newer event vocabulary, replace legacy `databases.*.collections.*.documents.*`
-   subscriptions with `tablesdb.*.tables.*.rows.*`; the handler understands both.
+   database, update its event names too. The manifest subscribes to both legacy
+   `databases.*.collections.*.documents.*` and current
+   `tablesdb.*.tables.*.rows.*` events, including upserts; the handler understands
+   both and recounts current data if equivalent events are delivered twice.
    Never subscribe to feed/control writes, which would recurse.
 4. Keep `execute: []`, with no public Function domain. Only internal event and
    scheduled triggers are accepted by the handler. The Function needs only
@@ -97,6 +153,10 @@ For an administrator performing the deployment:
    installations need a batch size/schedule whose complete sweep meets their
    freshness target. Each batch checkpoints per post, yields before the
    Function's 600-second timeout, and traverses both source and feed collections.
+   The five-minute trigger is a batch interval, not a five-minute freshness
+   guarantee: a sweep over 100 source posts plus 100 cached rows at the default
+   batch size takes about 100–110 minutes if event processing is unavailable.
+   Monitor sweep progress and choose the batch size/schedule accordingly.
 
 Indexes cover feed ordering, author+ordering, tags+ordering and title fulltext
 search, plus the exact relation filters and viewer queries. Migration adds no

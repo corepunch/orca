@@ -296,6 +296,7 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 NODE ?= node
 test-octopus-startup-api:
 	$(LUA) tests/test_octopus_startup_api.lua
+	$(LUA) tests/test_octopus_pagination.lua
 
 test-octopus-backend:
 	$(NODE) --test apps/octopus/backend/test/*.test.js

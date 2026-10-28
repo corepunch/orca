@@ -25,6 +25,15 @@ local function validId(value)
     return type(value) == "string" and #value <= 36 and value:match("^[%w][%w%._%-]*$") ~= nil
 end
 
+local function canonicalHandle(value)
+    value = trim(value):lower()
+    if #value >= 1 and #value <= 36 and value:match("^[a-z0-9][a-z0-9._-]*$") then return value end
+end
+
+local function handleValidation()
+    return failure("validation", "Choose an account name of 1–36 letters, digits, dots, underscores or hyphens, starting with a letter or digit.")
+end
+
 local function escape(value)
     return (tostring(value):gsub("([^%w%-_%.~])", function(c) return string.format("%%%02X", c:byte()) end))
 end
@@ -233,14 +242,93 @@ function Client:signUp(name, email, password, confirm, handle)
         return failure("validation", "Password must be at least 8 characters.")
     end
     if confirm ~= nil and confirm ~= password then return failure("validation", "Passwords do not match.") end
-    handle = trim(handle):lower()
-    if #handle < 1 or #handle > 36 or not handle:match("^[a-z0-9][a-z0-9._-]*$") then
-        return failure("validation", "Choose an account name of 1–36 letters, digits, dots, underscores or hyphens, starting with a letter or digit.")
-    end
-    local created, err = self:_request("POST", "/account",
+    handle = canonicalHandle(handle)
+    if not handle then return handleValidation() end
+    local created, err
+    created, err = self:_request("POST", "/account",
         { body = { userId = handle, email = email, password = password, name = name } })
     if not created then return nil, err end
-    return self:signIn(email, password)
+    local session
+    session, err = self:signIn(email, password)
+    if session then
+        local claimed
+        claimed, err = self:claimHandle(handle)
+        if claimed then return session end
+    end
+    -- Account creation and protected handle claims live in separate services.
+    -- An existing or concurrent claim may win; retain the new account
+    -- for email/password recovery instead of claiming signup was atomic.
+    self:signOut()
+    return nil, { code = err and err.status == 409 and "handle_taken" or "signup_incomplete",
+        status = err and err.status, accountCreated = true,
+        message = err and err.status == 409
+            and "Your account was created, but this account name was claimed before setup finished. Sign in with your email and use shared account settings or support to choose another name."
+            or "Your account was created, but account-name setup could not finish. Sign in with your email and retry account-name setup." }
+end
+
+-- Protected profile operations use the existing authenticated shared backend.
+-- JWTs remain inside the session and never enter public DTOs or disk snapshots.
+function Client:_profileRpc(name, values)
+    local session, err = self:_requireSession()
+    if not session then return nil, err end
+    if not session.jwt or self.clock() >= (session.jwtExpires or 0) then
+        local token
+        token, err = self:_request("POST", "/account/jwts", { body = {} })
+        if not token then return nil, err end
+        if type(token) ~= "table" or not text(token.jwt) then
+            return failure("invalid_response", "Octopus did not return an account token.")
+        end
+        session.jwt, session.jwtExpires = token.jwt, self.clock() + 840
+    end
+    local json = require "Octopus/api/json"
+    local envelope = { method = "POST", path = "/rest/v1/rpc/" .. name, body = values or {} }
+    local execution
+    execution, err = self:_request("POST", "/functions/" .. escape(self.functionId) .. "/executions", {
+        headers = { ["X-Appwrite-JWT"] = session.jwt }, body = { body = json.encode(envelope), async = false },
+    })
+    if not execution then return nil, err end
+    if type(execution) ~= "table" or execution.status ~= "completed" or type(execution.responseStatusCode) ~= "number"
+        or type(execution.responseBody) ~= "string" then
+        return failure("invalid_response", "The shared account service did not complete the request.")
+    end
+    local ok, result = pcall(json.decode, execution.responseBody)
+    if not ok or type(result) ~= "table" or type(result.status) ~= "number" or result.status % 1 ~= 0
+        or result.status < 100 or result.status > 599 or result.encoding ~= nil
+        or type(result.body) ~= "table" then
+        return failure("invalid_response", "The shared account service returned an invalid response.")
+    end
+    if result.status < 200 or result.status >= 300 then
+        if result.status == 401 then session.jwt, session.jwtExpires = nil, nil end
+        return failure(result.body.code or result.body.type or "http_error",
+            result.body.message or "The shared account service could not complete the request.", result.status)
+    end
+    if execution.responseStatusCode < 200 or execution.responseStatusCode >= 300 then
+        return failure("invalid_response", "The shared account service failed.")
+    end
+    if result.body.id ~= session.user.id then
+        return failure("invalid_response", "The shared account service returned a different account.")
+    end
+    if result.body.username ~= nil and canonicalHandle(result.body.username) ~= result.body.username then
+        return failure("invalid_response", "The shared account service returned an invalid account name.")
+    end
+    local handle = type(result.body.username) == "string" and result.body.username or nil
+    session.user.handle = handle
+    return { id = session.user.id, userId = session.user.id, username = result.body.display_name or session.user.name,
+        handle = handle, avatarId = result.body.avatar_id }
+end
+
+function Client:getAccountProfile()
+    return self:_profileRpc("get_chat_profile")
+end
+
+-- Finish an explicit readable-ID signup. General alias changes also pass through
+-- the shared backend, which reserves native Account IDs and enforces uniqueness.
+function Client:claimHandle(handle)
+    local session, err = self:_requireSession()
+    if not session then return nil, err end
+    handle = canonicalHandle(handle)
+    if not handle then return handleValidation() end
+    return self:_profileRpc("update_chat_profile", { values = { username = handle } })
 end
 
 function Client:signOut()
@@ -341,6 +429,7 @@ function Client:listPosts(options)
     end
     if options.exclude then query[#query + 1] = Q.notEqual("$id", options.exclude) end
     query[#query + 1] = Q.orderDesc("$createdAt")
+    query[#query + 1] = Q.orderDesc("$id")
     query[#query + 1] = Q.limit(limit)
     if options.cursor then query[#query + 1] = Q.cursorAfter(options.cursor) end
     local data, err = self:_postList(query)
@@ -415,56 +504,111 @@ function Client:avatars(userIds)
     return avatars
 end
 
--- A Twitter-style timeline: posts by `authorIds` and reposts by `reposterIds`,
--- newest first. Each item is { post, at, repostedBy = { id, name } }. Paging
--- uses the time of the last item; returns items, next cursor (nil when done).
+-- Merge independently ordered post and repost streams. Cursors record only
+-- consumed events, so a full page never discards the other stream's tail.
+-- Each request reads one batch per source at most; deleted reposts may produce
+-- an empty page with a progress cursor rather than downloading its full history.
 function Client:timeline(authorIds, reposterIds, options)
     options = options or {}
     local limit = tonumber(options.limit) or 20
-    local function page(name, field, ids)
-        if #ids == 0 then return { documents = {} } end
-        local query = { Q.equal(field, ids), Q.orderDesc("$createdAt"), Q.limit(limit) }
-        if options.before then query[#query + 1] = Q.lessThan("$createdAt", options.before) end
-        if name == "posts" then return self:_postList(query) end
-        query[#query + 1] = Q.select { "$id", "$createdAt", "postId", "userId" }
-        return self:_list(name, query)
+    if limit % 1 ~= 0 or limit < 1 or limit > 100 then return failure("validation", "Choose between 1 and 100 posts.") end
+    local previous, boundary = options.before, nil
+    if type(previous) == "string" then boundary, previous = previous, nil
+    elseif previous ~= nil and (type(previous) ~= "table" or previous.version ~= 1) then
+        return failure("validation", "Refresh this timeline to continue.")
     end
-    local pages = self:_parallel {
-        function() return page("posts", "authorId", authorIds) end,
-        function() return page("reposts", "userId", reposterIds) end,
+    if previous then boundary = previous.before end
+    if boundary ~= nil and not text(boundary) then return failure("validation", "Refresh this timeline to continue.") end
+    local streams = {
+        { name = "posts", field = "authorId", ids = authorIds },
+        { name = "reposts", field = "userId", ids = reposterIds },
     }
-    local posts, err = table.unpack(pages[1], 1, 2)
-    if not posts then return nil, err end
-    local reposts
-    reposts, err = table.unpack(pages[2], 1, 2)
-    if not reposts then return nil, err end
-    local items, originals, reposters = {}, {}, {}
-    for _, doc in ipairs(posts.documents) do items[#items + 1] = { post = post(doc), at = doc.sourceCreatedAt or doc["$createdAt"] } end
-    if #reposts.documents > 0 then
-        local ids, users = {}, {}
-        for _, doc in ipairs(reposts.documents) do ids[#ids + 1], users[#users + 1] = doc.postId, doc.userId end
-        local found
-        found, err = self:_postList { Q.equal("$id", ids), Q.limit(100) }
-        if not found then return nil, err end
-        for _, doc in ipairs(found.documents) do originals[doc["$id"]] = post(doc) end
-        reposters, err = self:names(users)
-        if not reposters then return nil, err end
+    for _, stream in ipairs(streams) do
+        local saved = previous and previous[stream.name]
+        if saved == nil then saved = {} end
+        if type(saved) ~= "table" or (saved.after ~= nil and not validId(saved.after))
+            or (saved.done ~= nil and type(saved.done) ~= "boolean") then
+            return failure("validation", "Refresh this timeline to continue.")
+        end
+        stream.after, stream.exhausted = saved.after, saved.done == true or #stream.ids == 0
+        stream.docs, stream.index = {}, 1
     end
-    for _, doc in ipairs(reposts.documents) do
-        -- A repost of a deleted post has nothing to show.
-        if originals[doc.postId] then
-            items[#items + 1] = { post = originals[doc.postId], at = doc["$createdAt"],
-                repostedBy = { id = doc.userId, name = reposters[doc.userId] } }
+    local originals, reposters = {}, {}
+    local function fetch(stream)
+        if stream.exhausted or stream.index <= #stream.docs then return true end
+        local query = { Q.equal(stream.field, stream.ids), Q.orderDesc("$createdAt"), Q.orderDesc("$id"), Q.limit(limit) }
+        if boundary then query[#query + 1] = Q.lessThan("$createdAt", boundary) end
+        if stream.after then query[#query + 1] = Q.cursorAfter(stream.after) end
+        local data, err
+        if stream.name == "posts" then data, err = self:_postList(query)
+        else
+            query[#query + 1] = Q.select { "$id", "$createdAt", "postId", "userId" }
+            data, err = self:_list("reposts", query)
+        end
+        if not data then return nil, err end
+        stream.docs, stream.index, stream.exhausted = data.documents, 1, #data.documents < limit
+        if stream.name == "reposts" and #data.documents > 0 then
+            local ids, users, wanted, seen = {}, {}, {}, {}
+            for _, doc in ipairs(data.documents) do
+                if originals[doc.postId] == nil and not wanted[doc.postId] then
+                    ids[#ids + 1], wanted[doc.postId] = doc.postId, true
+                end
+                if not reposters[doc.userId] and not seen[doc.userId] then
+                    users[#users + 1], seen[doc.userId] = doc.userId, true
+                end
+            end
+            if #ids > 0 then
+                local found
+                found, err = self:_postList { Q.equal("$id", ids), Q.limit(100) }
+                if not found then return nil, err end
+                for _, id in ipairs(ids) do originals[id] = false end
+                for _, doc in ipairs(found.documents) do originals[doc["$id"]] = post(doc) end
+            end
+            if #users > 0 then
+                local names
+                names, err = self:names(users)
+                if not names then return nil, err end
+                for id, name in pairs(names) do reposters[id] = name end
+            end
+        end
+        return true
+    end
+    local initial = self:_parallel {
+        function() return fetch(streams[1]) end,
+        function() return fetch(streams[2]) end,
+    }
+    for _, result in ipairs(initial) do if not result[1] then return nil, result[2] end end
+    local result, seen = {}, {}
+    while #result < limit do
+        local chosen, doc, at, waiting
+        for _, stream in ipairs(streams) do
+            local nextDoc = stream.docs[stream.index]
+            if not nextDoc and not stream.exhausted then waiting = true end
+            if nextDoc then
+                local nextAt = nextDoc.sourceCreatedAt or nextDoc["$createdAt"]
+                if not doc or nextAt > at or (nextAt == at and nextDoc["$id"] > doc["$id"]) then
+                    chosen, doc, at = stream, nextDoc, nextAt
+                end
+            end
+        end
+        -- An unread batch could precede the other stream's buffered tail.
+        if waiting or not chosen then break end
+        chosen.after, chosen.index = doc["$id"], chosen.index + 1
+        -- Deleted originals still consume their repost event and cannot stall paging.
+        local value = chosen.name == "posts" and post(doc) or originals[doc.postId]
+        if value and not seen[value.id] then
+            seen[value.id] = true
+            result[#result + 1] = { post = value, at = at,
+                repostedBy = chosen.name == "reposts" and { id = doc.userId, name = reposters[doc.userId] } or nil }
         end
     end
-    table.sort(items, function(a, b) return a.at > b.at end)
-    local result, seen = {}, {}
-    for _, item in ipairs(items) do
-        if #result == limit then break end
-        if not seen[item.post.id] then seen[item.post.id] = true; result[#result + 1] = item end
+    local cursor, more = { version = 1, before = boundary }, false
+    for _, stream in ipairs(streams) do
+        local done = stream.exhausted and stream.index > #stream.docs
+        cursor[stream.name] = { after = stream.after, done = done }
+        if not done then more = true end
     end
-    local more = #posts.documents == limit or #reposts.documents == limit
-    return result, more and #result > 0 and result[#result].at or nil
+    return result, more and cursor or nil
 end
 
 -- Your posts plus posts and reposts from the people you follow.
@@ -735,6 +879,10 @@ function Client:getProfile(userId)
     local doc, err = self:_request("GET", self:collection("profiles") .. "/" .. escape(userId))
     if not doc and err.status ~= 404 then return nil, err end
     local result = profile(doc, userId)
+    if userId == self:currentUserId() then
+        local trusted = self:getAccountProfile()
+        result.handle = trusted and trusted.handle or nil
+    end
     self.avatarIds[userId] = result.avatarId or false
     local posts = self:_list("posts", { Q.equal("authorId", userId), Q.limit(1), Q.select { "$id" } }, true)
     result.posts = posts and posts.total
@@ -897,6 +1045,7 @@ function Octopus.client(options)
     options = options or {}
     if type(options.transport) ~= "function" then return failure("configuration", "Provide a transport function.") end
     if not validId(options.projectId) or not validId(options.databaseId or "octopus-db")
+        or (options.functionId and not validId(options.functionId))
         or (options.feedCollectionId and not validId(options.feedCollectionId))
         or not validId(options.bucketId or "post-images") then
         return failure("configuration", "Set the public Appwrite project, database and bucket IDs.")
@@ -904,7 +1053,8 @@ function Octopus.client(options)
     return setmetatable({ mode = options.mode or "custom", transport = options.transport,
         projectId = options.projectId, databaseId = options.databaseId or "octopus-db",
         bucketId = options.bucketId or "post-images", clock = options.clock or os.time, avatarIds = {}, profiles = {},
-        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule }, Client)
+        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule,
+        functionId = options.functionId or "orca-chat-api" }, Client)
 end
 
 function Octopus.appwrite(options)
@@ -919,7 +1069,7 @@ function Octopus.appwrite(options)
     }
     return Octopus.client { mode = "appwrite", transport = transport, projectId = options.projectId,
         databaseId = options.databaseId, bucketId = options.bucketId, clock = options.clock,
-        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule }
+        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule, functionId = options.functionId }
 end
 
 -- The offline mock serves the same REST paths from in-memory fixtures.

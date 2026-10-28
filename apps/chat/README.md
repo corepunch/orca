@@ -99,6 +99,21 @@ updates every 15 seconds. Polling pauses with the iOS scene and refreshes on
 return, backs off on service errors, and preserves scroll position and drafts.
 The manual refresh commands remain available.
 
+Opening a conversation and each poll request the latest **30 messages**. Scrolling
+within 160 pixels of the top requests the next 30 older messages through an
+opaque cursor; the first visible message stays at the same screen position when
+the page is prepended. The history row shows loading or an explicit retry action,
+and a deleted cursor offers **reload latest**. Requests are serialized, duplicate
+IDs are removed, and composer/photo drafts survive these updates. The loaded
+window is scoped to one thread and grows as you request earlier pages; opening
+a thread replaces that window with the newest page. A burst exceeding the latest
+page while reading history offers **show latest**, avoiding a hidden gap between
+pages. This follows the on-demand, scroll-up history pattern in
+[Microsoft’s chat SDK](https://github.com/microsoft/omnichannel-chat-sdk/blob/main/README.md#get-persistent-chat-history)
+and the visible-item preservation behavior documented for
+[UWP item updates](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.itemsupdatingscrollmode).
+These are interaction references; the visual direction remains Windows Phone.
+
 New Message follows Telegram's task flow within the existing Metro style:
 search, New Group, New Channel, and contacts. Tap a person to open a direct chat.
 Groups select members before the name step; Back preserves that selection and
@@ -227,8 +242,8 @@ survive relaunch in Keychain and obtain a fresh JWT after validation. Messages
 support text and JPEG photos, prepared with native resizing/compression and
 stored encrypted in the shared bucket with thumbnails. Owners can rename
 groups/channels; other members can leave from conversation info. History
-currently loads the latest 100 messages. Video, live subscriptions, push, and
-older-history pagination remain future work.
+loads the latest 30 messages and pages backward as you scroll. Video, live
+subscriptions and push remain future work.
 
 Installed iOS apps do not inherit terminal environment variables, so the public
 Appwrite values are defaults in `config.lua`. Set `CHAT_BACKEND=mock` for the

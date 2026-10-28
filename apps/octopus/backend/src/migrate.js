@@ -17,6 +17,8 @@ export function indexes(config) {
     { collection: config.feedId, key: 'feed_author_created', attributes: ['authorId', 'sourceCreatedAt'], orders: ['ASC', 'DESC'] },
     { collection: config.feedId, key: 'feed_tags_created', attributes: ['tags', 'sourceCreatedAt'], orders: ['ASC', 'DESC'] },
     { collection: config.feedId, key: 'feed_title_search', type: 'fulltext', attributes: ['title'] },
+    { collection: 'posts', key: 'feed_author_created', attributes: ['authorId', '$createdAt'], orders: ['ASC', 'DESC'] },
+    { collection: 'reposts', key: 'feed_user_created', attributes: ['userId', '$createdAt'], orders: ['ASC', 'DESC'] },
     { collection: 'likes', key: 'feed_target', attributes: ['targetType', 'targetId'] },
     { collection: 'likes', key: 'feed_viewer_target', attributes: ['targetType', 'targetId', 'userId'] },
     { collection: 'comments', key: 'feed_post', attributes: ['postId'] },

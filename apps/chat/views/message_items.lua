@@ -8,6 +8,7 @@ local MessageItems = {}
 local messageColumns = {
     EntryName = "string", HolderName = "string", BubbleName = "string", ActionsName = "string", TimeName = "string",
     Date = "string", EmptyTitle = "string", EmptyHint = "string", Sender = "string", Body = "string", Timestamp = "string",
+    HistoryText = "string", ShowHistory = "bool", HistoryDisabled = "bool",
     Alignment = "string", Tone = "string", Ink = "string", Meta = "string", Dim = "string", Muted = "string", Accent = "string",
     ShowDate = "bool", Empty = "bool", HasMessage = "bool", ShowSender = "bool", HasPhotos = "bool", ShowCaption = "bool",
     HasBody = "bool", CanAct = "bool", IncomingTail = "bool", OutgoingTail = "bool",
@@ -37,6 +38,7 @@ function MessageItems.new(app, node)
                 entry.bubble = entry.node:findChild("MessageBubble", true)
                 entry.button = entry.node:findChild("MessageActions", true)
                 entry.time = entry.node:findChild("MessageTime", true)
+                entry.history = entry.node:findChild("EarlierMessages", true)
                 entry.photos = Items.new {
                     node = entry.node:findChild("Photos", true), template = photoTemplate,
                     record = Items.record("ChatPhotoPresentation", photoColumns),
@@ -83,6 +85,8 @@ function MessageItems.new(app, node)
             entry.node.Name, entry.holder.Name = row.fields.EntryName, row.fields.HolderName
             entry.bubble.Name, entry.button.Name = row.fields.BubbleName, row.fields.ActionsName
             entry.time.Name = row.fields.TimeName
+            entry.history.Name = row.loadHistory and "EarlierMessages" or ""
+            entry.history.Click = function() if current() and row.loadHistory then row.loadHistory() end end
             entry.photos:refresh(row.photos)
             -- The template owns the hit target. Its callback reads this refresh's
             -- message and permissions rather than a stale service record.

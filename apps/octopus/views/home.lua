@@ -99,6 +99,7 @@ function Home.load(self, name, more)
         end
     end
     if feed.loading or (more and not feed.cursor) then return end
+    feed.autoPaused = false
     feed.loading = true
     local session = self.sessionEpoch
     local request = {}
@@ -121,6 +122,7 @@ function Home.load(self, name, more)
         local loadingMore = list:findChild("LoadingMore")
         if loadingMore then loadingMore:removeFromParent() end
         if not items then
+            feed.autoPaused = true
             if #feed.items == 0 then
                 C.clear(list):addChild(C.empty("can't load posts", stats.message .. " Use refresh to try again."))
             end
@@ -136,12 +138,21 @@ function Home.load(self, name, more)
                 if child.Name ~= "PostItems" then child:removeFromParent() end
                 child = nextChild
             end
-            feed.items, feed.stats = {}, {}
+            feed.items, feed.stats, feed.prefetchY = {}, {}, nil
         end
         local loadMore = list:findChild("LoadMore" .. name)
         if loadMore then loadMore:removeFromParent() end
+        local empty = list:findChild("EmptyTimeline" .. name)
+        if empty then empty:removeFromParent() end
         for id, entry in pairs(stats) do feed.stats[id] = entry end
-        for _, item in ipairs(items) do feed.items[#feed.items + 1] = item end
+        local seen = {}
+        for _, item in ipairs(feed.items) do seen[item.post.id] = true end
+        for _, item in ipairs(items) do
+            if not seen[item.post.id] then
+                seen[item.post.id] = true
+                feed.items[#feed.items + 1] = item
+            end
+        end
         feed.cursor = nextCursor
         Posts.refresh(self, list, feed.items, feed.stats)
         if not more and self.client.writeFeedCache then self.client:writeFeedCache(name, items, nextCursor) end
@@ -152,17 +163,37 @@ function Home.load(self, name, more)
         end, function() Posts.refreshStats(self, list, items, entries) end)
         if #feed.items == 0 then
             if name == "home" then
-                list:addChild(C.empty("your timeline is quiet", "Follow people from discover or search to see their posts here."))
+                list:addChild(C.empty("your timeline is quiet", "Follow people from discover or search to see their posts here.", {
+                    Name = "EmptyTimeline" .. name }))
             else
-                list:addChild(C.empty("no posts yet", "Be the first to write something."))
+                list:addChild(C.empty("no posts yet", "Be the first to write something.", { Name = "EmptyTimeline" .. name }))
             end
-        elseif feed.cursor then
+        end
+        if feed.cursor then
             list:addChild(C.button("load more posts", function() Home.load(self, name, true) end, {
                 Name = "LoadMore" .. name, FontSize = 16 }))
         end
         if self.currentRoute == "/" then self:notice(self.remote and "" or "Offline mock · posts stay in this session") end
         self:repaint()
     end)
+end
+
+-- Layout exposes the scroll geometry after paint, including touch inertia.
+-- Require reader movement so short pages and duplicate reposts cannot drain
+-- the whole history while the viewport stands still.
+function Home.prefetch(self)
+    if self.currentRoute ~= "/" or self.feed == "connect" then return end
+    local name = self.feed
+    local feed, list = self.feeds[name], self.timelines[name]
+    if not feed or not list or feed.loading or feed.autoPaused or not feed.cursor then return end
+    local height, extent = list.ActualHeight, list.ScrollHeight
+    if height <= 0 or extent <= height then return end
+    local y = list.ContentOffset.Y
+    if y >= -1 or y == feed.prefetchY then return end
+    local threshold = math.max(240, math.min(800, height))
+    if extent + y - height > threshold then return end
+    feed.prefetchY = y
+    Home.load(self, name, true)
 end
 
 function Home.select(self, name)

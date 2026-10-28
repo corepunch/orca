@@ -68,7 +68,7 @@ local App = Application:extend {
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
-        self.timelineSnapshot, self.messageRefreshQueued, self.editing = nil, nil, nil
+        self.timelineSnapshot, self.timelinePage, self.messageRefreshQueued, self.editing = nil, nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.inboxError, self.inboxIndicators, self.messageLoading = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
@@ -125,6 +125,7 @@ local App = Application:extend {
     afterPaint = function(self)
         if self.avatars then self.avatars:loadVisible() end
         if self.messagePhotos then self.messagePhotos:loadVisible() end
+        if self.currentRoute == "/thread" then Timeline.loadNearTop(self) end
     end,
 
     activate_controller = function(self, controller)
@@ -532,6 +533,12 @@ local App = Application:extend {
         if self.sessionEpoch ~= epoch or not self.room or self.room.id ~= room.id then return end
         if not ok then self:notice(err.message, true); return end
         if self.editing and self.editing.message.id == message.id then self:cancelEdit() end
+        local page = self.timelinePage
+        if page then
+            for i, row in ipairs(page.messages) do
+                if row.id == message.id then table.remove(page.messages, i); break end
+            end
+        end
         self:renderMessages { preserveScroll = true, quiet = true }
         self:notice("Message deleted.")
     end,
@@ -569,6 +576,7 @@ local App = Application:extend {
     thread = function(self)
         if not self.room then return self:home() end
         local room = self.room
+        self.timelinePage, self.timelineSnapshot = nil, nil
         -- Leaving the thread abandons an edit but keeps the unsent draft.
         local function keepDraft()
             if self.editing then self.editing = nil

@@ -2,6 +2,11 @@
   <TextBlock Name="TimelineDate" Visible="{Binding DataContext/ShowDate}" Text="{Binding DataContext/Date}"
              FontSize="12" ForegroundColor="{Binding DataContext/Dim}" TextHorizontalAlignment="Center"
              MarginTop="4" MarginBottom="6" IgnoreHitTest="true"/>
+  <Button Name="EarlierMessages" Visible="{Binding DataContext/ShowHistory}" IgnoreHitTest="{Binding DataContext/HistoryDisabled}"
+          Height="44" Background="#00000000" BorderWidth="0">
+    <TextBlock Text="{Binding DataContext/HistoryText}" FontSize="12" ForegroundColor="{Binding DataContext/Muted}"
+               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+  </Button>
   <StackView Name="EmptyState" Visible="{Binding DataContext/Empty}" Spacing="8" Padding="0 8">
     <TextBlock Name="EmptyTimeline" Text="{Binding DataContext/EmptyTitle}" FontSize="22"
                ForegroundColor="{Binding DataContext/Muted}" TextWrapping="Wrap" IgnoreHitTest="true"/>

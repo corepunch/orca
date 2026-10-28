@@ -60,10 +60,13 @@ local function fixture(height)
         return "local fixture JPEG", nil
     end
     app.models = { Messages = {} }
-    function app.models.Messages:select()
+    function app.models.Messages:page(options)
+        assert(options.limit == 30, "Every latest/history request must stay bounded to 30 messages")
+        app.lastRequest = options
         app.reads = app.reads + 1
         if app.readHook then app.readHook() end
-        return app.rows, app.error
+        if app.error then return nil, app.error end
+        return { messages = app.rows, has_more = app.hasMore or false, next_cursor = app.nextCursor }
     end
     function app:getMedia() return { storePreview = function() return IMAGE end } end
     function app:notice(value)
@@ -72,6 +75,7 @@ local function fixture(height)
     end
     function app:logout() session = nil; self.sessionEpoch = self.sessionEpoch + 1; self.messagePhotos:clear() end
     function app:task(fn) fn() end
+    function app:load(work) work() end
     function app:repaint() end
     function app:reportError(value) self.failure = value end
     function app:openMessageActions(value) self.actionsFor = value.id end
@@ -263,6 +267,81 @@ local ok, err = coroutine.resume(pending)
 assert(ok, err)
 assert(not app.messageRefreshBusy and app.reads == 2, "The queued refresh runs after the active poll")
 app.readHook = function() error("unexpected transport failure") end
-local result, failure = Timeline.refresh(app, { preserveScroll = true, quiet = true })
-assert(not result and failure.code == "refresh_failed" and not app.messageRefreshBusy)
-print("PASS: native Chat templates, grouping, photo variants, retained rows, scrolling, stale guards and refresh serialization")
+local ok, err = Timeline.refresh(app, { preserveScroll = true, quiet = true })
+assert(not ok and err.code == "refresh_failed" and not app.messageRefreshBusy, "Exceptions must release the read lock")
+-- Initial and polling fetch only 30; older pages prepend without moving the visible row.
+app, list = fixture()
+app.hasMore, app.nextCursor = true, "1"
+assert(Timeline.refresh(app))
+assert(app.lastRequest.limit == 30 and app.lastRequest.before == nil)
+list.ContentOffset = { X = 0, Y = -120 }
+local anchorBefore = named(list, "MessageEntry1").ActualY + list.ContentOffset.Y
+app.rows = {
+    { id = "old1", sender_id = "me", created_at = "2025-10-24T12:00:00Z", body = "Older" },
+    { id = "1", sender_id = "me", created_at = WHEN, body = "Duplicate must keep current row" },
+}
+app.hasMore = false
+assert(Timeline.refresh(app, { older = true, preserveScroll = true }))
+assert(app.lastRequest.before == "1" and app.lastRequest.limit == 30)
+assert(#app.timelinePage.messages == 7 and app.timelinePage.messages[2].body == "Message 1", "Overlapping pages dedupe IDs and preserve current edits")
+assert(named(list, "MessageEntry1").ActualY + list.ContentOffset.Y == anchorBefore,
+    "Prepending history must preserve the first visible message's screen position")
+assert(app.composer.Text == "draft remains" and app.photoDrafts.room1 == "draft-photo")
+local reads = app.reads
+Timeline.loadNearTop(app)
+assert(app.reads == reads, "The final history page must stop automatic reads")
+app.rows = { { id = "6", sender_id = "me", created_at = WHEN, body = "Latest edited" } }
+assert(Timeline.refresh(app, { preserveScroll = true, quiet = true }))
+assert(#app.timelinePage.messages == 7 and app.timelinePage.messages[7].body == "Latest edited",
+    "Latest polling must refresh current rows without dropping loaded history")
+app.rows = { { id = "new", sender_id = "me", created_at = "2025-10-26T12:00:00Z", body = "Burst after history" } }
+assert(Timeline.refresh(app, { preserveScroll = true, quiet = true }))
+assert(app.timelinePage.latestPending and #app.timelinePage.messages == 7, "A nonoverlapping latest page must offer explicit recovery instead of creating a history gap")
+assert(named(list, "EarlierMessages"))
+assert(Timeline.refresh(app, { reset = true }))
+assert(#app.timelinePage.messages == 1 and not app.timelinePage.latestPending)
+
+-- Near-top automatic demand, serialized requests, retry and stale-cursor recovery.
+app, list = fixture()
+app.hasMore, app.nextCursor = true, "1"
+assert(Timeline.refresh(app))
+list.ContentOffset = { X = 0, Y = -300 }
+reads = app.reads
+Timeline.loadNearTop(app)
+assert(app.reads == reads, "History must not load far from the top")
+list.ContentOffset = { X = 0, Y = -150 }
+app.error = { code = "network", message = "Offline" }
+Timeline.loadNearTop(app)
+assert(app.reads == reads + 1 and app.timelinePage.error.code == "network")
+Timeline.loadNearTop(app)
+assert(app.reads == reads + 1, "A failed older request must wait for explicit retry")
+app.error = nil
+assert(Timeline.refresh(app, { preserveScroll = true, quiet = true }))
+assert(app.timelinePage.error and app.timelinePage.error.code == "network", "A successful latest poll must preserve explicit history retry state")
+app.error = { code = "stale_cursor", message = "History changed" }
+assert(not Timeline.refresh(app, { older = true, preserveScroll = true, quiet = true }))
+app.error, app.hasMore = nil, false
+named(list, "EarlierMessages"):post("Button.Click")
+core.flushQueue()
+assert(app.lastRequest.before == nil and not app.timelinePage.error, "A deleted cursor must explicitly reload latest rather than repeat the broken cursor")
+
+app, list = fixture()
+app.hasMore, app.nextCursor = true, "1"
+assert(Timeline.refresh(app))
+app.readHook = function() coroutine.yield() end
+pending = coroutine.create(function() Timeline.refresh(app, { older = true, preserveScroll = true, quiet = true }) end)
+assert(coroutine.resume(pending))
+assert(named(list, "EarlierMessages").IgnoreHitTest, "History controls disable while an older page is in flight")
+reads = app.reads
+Timeline.loadNearTop(app)
+assert(app.reads == reads and app.timelinePage.loading)
+local oldPage = app.timelinePage
+app.navigationEpoch = app.navigationEpoch + 1
+assert(coroutine.resume(pending))
+assert(app.timelinePage == oldPage and #app.timelinePage.messages == 6 and not app.messageRefreshBusy,
+    "Navigation must discard an older response and release the request lock")
+app.readHook = function() error("history transport exploded") end
+assert(not Timeline.refresh(app, { older = true, preserveScroll = true, quiet = true }))
+assert(not app.messageRefreshBusy and not app.timelinePage.loading and app.timelinePage.error,
+    "Unexpected history errors must leave a retryable state")
+print("PASS: Chat timeline grouping, photo timestamps, footer layout, polling snapshots, scrolling, stale results and serialization")

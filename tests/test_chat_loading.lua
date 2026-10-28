@@ -84,8 +84,8 @@ assert(app.shell.active == "New" and app.status == status and shell:findChild("S
 client.getProfile = getProfile
 
 local room = app.rooms[1]
-local messagesSelect = app.models.Messages.select
-app.models.Messages.select = function(self, ...) coroutine.yield("messages"); return messagesSelect(self, ...) end
+local messagesPage = app.models.Messages.page
+app.models.Messages.page = function(self, ...) coroutine.yield("messages"); return messagesPage(self, ...) end
 app:openRoom(room)
 -- The page in view turns out; its completion handler then shows the thread.
 core.flushQueue()
@@ -94,11 +94,12 @@ local thread = app.screen
 assert(thread:findChild("MessagesLoading", true).Visible and thread:findChild("ThreadPage", true).BackIcon ~= ""
     and thread:findChild("Message", true), "Thread header and composer must mount before loading messages")
 local messages = nextRequest()
+assert(coroutine.status(messages) == "suspended", "The initial message page must remain pending while composing")
 app.composer.Text = "Draft written during loading"
 resume(messages)
 assert(app.composer.Text == "Draft written during loading" and not thread:findChild("MessagesLoading", true).Visible,
     "Loading messages must preserve new composer edits")
-app.models.Messages.select = messagesSelect
+app.models.Messages.page = messagesPage
 
 local listMembers = client.listMembers
 client.listMembers = function(self, ...) coroutine.yield("members"); return listMembers(self, ...) end

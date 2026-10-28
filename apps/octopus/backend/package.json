@@ -7,6 +7,8 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "migrate": "node src/migrate.js",
-    "reconcile": "node src/admin.js reconcile"
+    "reconcile": "node src/admin.js reconcile",
+    "deploy": "node src/deploy.js",
+    "deploy:all": "node src/deploy-all.js"
   }
 }

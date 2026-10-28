@@ -54,7 +54,7 @@ local session = assert(client:signIn(" demo@example.invalid ", "password123"))
 assert(session.user.id == "u-ada" and session.user.name == "Ada Reef")
 -- Home: Ada's own posts, Maya's and Sam's posts, and what they reposted.
 local timeline, cursor = assert(client:homeTimeline { limit = 4 })
-assert(#timeline == 4 and cursor == timeline[4].at, "A full page continues from its last item")
+assert(#timeline == 4 and type(cursor) == "table" and cursor.version == 1, "A full page preserves both source cursors")
 assert(timeline[1].post.id == "p-reef" and timeline[2].post.id == "p-eames")
 assert(timeline[3].post.id == "p-small" and timeline[3].repostedBy.id == "u-maya", "Reposts appear in the timeline")
 assert(timeline[4].post.id == "p-arms" and timeline[4].repostedBy.name == "Maya Chen")
@@ -164,7 +164,7 @@ assert(err.status == 409, "Existing emails are rejected by the service")
 session = assert(fresh:signUp("New Person", "new@example.invalid", "password123", "password123", "new-person"))
 assert(session.user.id == "new-person", "The account name is the account ID")
 local own = assert(fresh:getProfile(session.user.id))
-assert(own.exists and own.username == "New Person" and own.posts == 0)
+assert(own.exists and own.username == "New Person" and own.handle == "new-person" and own.posts == 0)
 
 -- The HTTP transport serialises Appwrite queries, cookies and bodies.
 local requests = {}
@@ -197,7 +197,8 @@ for value in url:gmatch("queries%[%d+%]=([^&]+)") do
 end
 assert(decoded[1].method == "equal" and decoded[1].attribute == "tags" and decoded[1].values[1] == "news")
 assert(decoded[2].method == "orderDesc" and decoded[2].attribute == "$createdAt")
-assert(decoded[3].method == "limit" and decoded[3].values[1] == 3)
+assert(decoded[3].method == "orderDesc" and decoded[3].attribute == "$id")
+assert(decoded[4].method == "limit" and decoded[4].values[1] == 3)
 assert(requests[1].options.headers["X-Appwrite-Project"] == "proj1" and requests[1].options.nocookies)
 assert(not requests[1].options.headers.Cookie, "Guests send no session")
 assert(remote:signIn("r@example.invalid", "password123"))

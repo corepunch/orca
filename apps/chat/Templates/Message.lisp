@@ -2,6 +2,10 @@
   (TextBlock Name="TimelineDate" Visible=(bind "DataContext/ShowDate") Text=(bind "DataContext/Date") FontSize=12
     ForegroundColor=(bind "DataContext/Dim") TextHorizontalAlignment="Center" MarginTop=4 MarginBottom=6
     IgnoreHitTest=true)
+  (Button Name="EarlierMessages" Visible=(bind "DataContext/ShowHistory") IgnoreHitTest=(bind "DataContext/HistoryDisabled")
+    Height=44 Background="#00000000" BorderWidth=0
+    (TextBlock Text=(bind "DataContext/HistoryText") FontSize=12 ForegroundColor=(bind "DataContext/Muted")
+      TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest=true))
   (StackView Name="EmptyState" Visible=(bind "DataContext/Empty") Spacing=8 Padding="0 8"
     (TextBlock Name="EmptyTimeline" Text=(bind "DataContext/EmptyTitle") FontSize=22
       ForegroundColor=(bind "DataContext/Muted") TextWrapping="Wrap" IgnoreHitTest=true)

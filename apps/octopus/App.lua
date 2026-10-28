@@ -97,6 +97,7 @@ local App = Application:extend {
     end,
 
     afterPaint = function(self)
+        Home.prefetch(self)
         if self.avatars then self.avatars:loadVisible() end
         if self.photos then self.photos:loadVisible() end
     end,
