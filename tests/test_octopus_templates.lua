@@ -54,6 +54,34 @@ for _, index in ipairs { 1, 5 } do
     assert(math.abs(avatar.ActualY - (content:getParent().ActualY + content.ActualY)) < 1,
         "Standard and repost avatars align vertically with their native laid-out post content")
 end
+local function top(node)
+    local y = 0
+    while node and node ~= screen do
+        y = y + node.ActualY
+        node = node:getParent()
+    end
+    return y
+end
+local function aligned(a, b, message)
+    assert(math.abs(top(a) - top(b)) < 0.01, message)
+end
+for _, size in ipairs { { 390, 844 }, { 320, 700 } } do
+    screen.Width, screen.Height = size[1], size[2]
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(size[1], size[2])
+    for _, row in ipairs(rows) do
+        aligned(row.controls.Avatar, row.controls.Open, "Portraits start at the post body for every post type")
+    end
+    aligned(rows[1].controls.Avatar, field(rows[1], "Title"), "Text titles align to the portrait")
+    aligned(rows[3].controls.Avatar, watches["quote-image"], "Quote photos align to the portrait")
+    local tile = field(rows[4], "LinkTile")
+    aligned(rows[4].controls.Avatar, tile, "Link tiles align to the portrait")
+    aligned(tile, field(rows[4], "LinkTitle"), "Link titles align to the tile")
+    assert(tile.ActualWidth == rows[4].controls.Avatar.ActualWidth
+        and tile.ActualHeight == rows[4].controls.Avatar.ActualHeight, "Link tiles match the portrait's square size")
+end
+screen.Width, screen.Height = 390, 844
 assert(field(rows[1], "Title").Text == "Title text", "Post fields reach the XML template through DataContext")
 assert(field(rows[1], "Title").Visible and not field(rows[1], "Caption").Visible)
 assert(not field(rows[2], "Caption").Visible and not field(rows[2], "Title").Visible,
@@ -64,6 +92,14 @@ assert(field(rows[4], "LinkTitle").Text == "Title link" and not field(rows[4], "
 assert(watches.image and watches["quote-image"], "Declarative photo frames use the existing viewport loader")
 assert(host:findChild("PostItems").ItemsSource and host:findChild("PostItems").ItemTemplate,
     "The collection exposes native ItemsSource and ItemTemplate")
+local repost = Posts.card(app, link, {}, { id = "reposter", name = "A Reposter" })
+host:addChild(repost)
+core.flushQueue()
+core.runAllPrograms(screen)
+screen:UpdateLayout(390, 844)
+aligned(repost:findChild("Avatarlink", true), repost:findChild("PostBodyLinkTile", true),
+    "A repost keeps its portrait aligned below the repost and author lines")
+repost:removeFromParent()
 local retained, context, frame = rows[1].node, rows[1].data, watches.image
 text.title, photo.content, stats.text.likes = "Edited title", "A caption", 3
 local changed = Posts.refresh(app, host, Posts.items { link, text, photo }, stats)
