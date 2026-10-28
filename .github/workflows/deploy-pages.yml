@@ -9,6 +9,11 @@ on:
   # Allow manual workflow dispatch
   workflow_dispatch:
 
+  # Validate the complete site and demo before merging workflow changes.
+  pull_request:
+    paths:
+      - '.github/workflows/deploy-pages.yml'
+
 # Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
@@ -20,7 +25,7 @@ permissions:
 # in-progress runs as we want to allow these production deployments
 # to complete.
 concurrency:
-  group: "pages"
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages' }}
   cancel-in-progress: false
 
 jobs:
@@ -60,12 +65,10 @@ jobs:
           mkdir -p build/lib
           emmake make -C libs/platform OUTDIR=../../build/lib
 
-      - name: Generate DTD and API docs
+      - name: Generate C, Lua and XML API docs
         run: |
-          cd tools
-          make dtd
-          make docs
-          cp ../QUICKSTART.md ../docs/quickstart.md
+          make -C tools documentation
+          cp QUICKSTART.md docs/quickstart.md
 
       - name: Build documentation site
         run: mkdocs build
@@ -80,10 +83,27 @@ jobs:
           mkdir -p site/demo
           cp -r build/webgl/. site/demo/
 
+      - name: Verify publication files
+        run: |
+          test -s site/index.html
+          test -s site/quickstart/index.html
+          test -s site/schemas/cgen.dtd
+          for language in c lua xml; do
+            for module in core geometry filesystem UIKit SceneKit SpriteKit renderer; do
+              test -s "site/generated/$language/$module/overview/index.html"
+            done
+          done
+          for file in orca.html orca.js orca.wasm orca.data; do
+            test -s "site/demo/$file"
+            cmp "build/webgl/$file" "site/demo/$file"
+          done
+
       - name: Setup Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v4
 
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload the MkDocs-generated site directory
@@ -91,6 +111,7 @@ jobs:
 
   # Deployment job
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
