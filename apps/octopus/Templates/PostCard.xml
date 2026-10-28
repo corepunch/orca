@@ -11,8 +11,8 @@
     </Button>
     <Button Name="Author" Height="24" BackgroundColor="#00000000" class="octopus-row">
       <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
-        <TextBlock ForegroundColor="{Binding DataContext/Ink}" Text="{Binding DataContext/AuthorName}" FontSize="16" FontWeight="Bold" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-        <TextBlock Text="{Binding DataContext/Age}" FontSize="13" ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
+        <TextBlock Name="PostAuthorName" ForegroundColor="{Binding DataContext/Ink}" Text="{Binding DataContext/AuthorName}" FontSize="16" FontWeight="Bold" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+        <TextBlock Name="PostTimestamp" Text="{Binding DataContext/Age}" FontSize="16" TextWrapping="NoWrap" ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
       </Grid>
     </Button>
     <Button Name="Open" BackgroundColor="#00000000" class="octopus-row"/>
