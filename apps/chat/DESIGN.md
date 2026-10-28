@@ -52,6 +52,10 @@ claiming historical fidelity.
 - The inbox uses a compact `ApplicationBar` with round commands and an
   ellipsis for secondary actions. A conversation uses attach, message input
   and send in its composer, without another command row below it.
+  Both use a 58-point content height; the composer leaves 5 points above and
+  below its 48-point controls. System/keyboard insets are added separately.
+  Matching these heights is a Chat consistency choice, not a historical
+  Windows Phone requirement for custom message composers.
 - Use prominent Pivot titles, square avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.
