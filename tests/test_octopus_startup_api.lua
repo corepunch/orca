@@ -151,11 +151,67 @@ for _, broken in ipairs { { items = { true } }, { items = { { post = { id = "mis
     saved = broken
     assert(not cached:readFeedCache("discover"), "Malformed feed schemas must be cache misses")
 end
-for _, corrupt in ipairs { { stats = true }, { stats = { likes = "bad", comments = 0, reposts = 0 } }, { tags = { true } } } do
+for _, corrupt in ipairs { { stats = true }, { stats = { likes = "bad", comments = 0, reposts = 0 } }, { tags = { true } },
+    { imageWidth = 1200 }, { imageWidth = "1200", imageHeight = 800 }, { imageWidth = 0, imageHeight = 800 },
+    { imageWidth = 1.5, imageHeight = 800 }, { imageWidth = 65536, imageHeight = 800 } } do
     local bad = {}; for key, value in pairs(posts[1]) do bad[key] = value end
     for key, value in pairs(corrupt) do bad[key] = value end
     saved = { items = { { post = bad } } }
     assert(not cached:readFeedCache("discover"), "Malformed optional fields must not reach UI constructors")
+end
+
+local function integer(value, count, little)
+    local bytes = {}
+    for i = 1, count do
+        bytes[little and i or count - i + 1] = string.char(value % 256)
+        value = math.floor(value / 256)
+    end
+    return table.concat(bytes)
+end
+local function png(width, height)
+    return "\137PNG\r\n\26\n" .. integer(13, 4) .. "IHDR" .. integer(width, 4) .. integer(height, 4)
+        .. "\8\2\0\0\0" .. string.rep("\0", 4)
+end
+local function jpeg(width, height, orientation, little)
+    local exif = ""
+    if orientation then
+        local tiff = (little and "II" or "MM") .. integer(42, 2, little) .. integer(8, 4, little)
+            .. integer(1, 2, little) .. integer(274, 2, little) .. integer(3, 2, little)
+            .. integer(1, 4, little) .. integer(orientation, 2, little) .. "\0\0" .. string.rep("\0", 4)
+        local payload = "Exif\0\0" .. tiff
+        exif = "\255\225" .. integer(#payload + 2, 2) .. payload
+    end
+    return "\255\216" .. exif .. "\255\192\0\11\8" .. integer(height, 2) .. integer(width, 2)
+        .. "\1\1\17\0\255\217"
+end
+for _, bytes in ipairs { png(1200, 800), jpeg(1200, 800) } do
+    local width, height = Octopus.imageDimensions(bytes)
+    assert(width == 1200 and height == 800, "Layout dimensions must come from PNG/JPEG headers")
+end
+for _, little in ipairs { false, true } do
+    for orientation = 1, 8 do
+        local width, height = Octopus.imageDimensions(jpeg(1200, 800, orientation, little))
+        assert(width == (orientation >= 5 and 800 or 1200) and height == (orientation >= 5 and 1200 or 800),
+            "Raw JPEG dimensions must account for EXIF rotation in either TIFF byte order")
+    end
+end
+for _, bytes in ipairs { "", "not a photo", "\255\216\255", png(0, 800), png(65536, 800),
+    png(1200, 800):sub(1, 32), jpeg(1200, 800):sub(1, 8), "\255\216\255\225\0\1" } do
+    assert(not Octopus.imageDimensions(bytes), "Malformed, truncated and oversized image metadata is ignored")
+end
+for _, collection in ipairs { "posts", "feed" } do
+    local document = { ["$id"] = "photo-post", authorId = "alice", imageWidth = 1200, imageHeight = 800 }
+    if collection == "feed" then document.sourceCreatedAt = "2026-10-28T09:00:00Z" end
+    local service = client(function() return reply { documents = { document } } end,
+        collection == "feed" and { feedCollectionId = "feed" } or nil)
+    local photo = assert(service:listPosts())[1]
+    assert(photo.imageWidth == 1200 and photo.imageHeight == 800, "Source and summary reads preserve image size")
+    document.imageHeight = nil
+    photo = assert(service:listPosts())[1]
+    assert(not photo.imageWidth and not photo.imageHeight, "Legacy and incomplete metadata use the unknown-size fallback")
+    document.imageHeight, document.imageWidth = 800, 0/0
+    photo = assert(service:listPosts())[1]
+    assert(not photo.imageWidth and not photo.imageHeight, "Non-finite layout metadata never reaches views")
 end
 
 local jpg = "\255\216\255test"
@@ -194,6 +250,15 @@ assert(state.users["my.handle"].name == "Updated Name" and identity:getSession()
 local published = assert(identity:createPost { title = "A post", content = "Body" })
 assert(published.authorName == "Updated Name" and published.authorId == "my.handle",
     "New posts must use the synchronized display name and stable readable account ID")
+for _, kind in ipairs { "photo", "quote" } do
+    local uploaded = assert(identity:createPost { postType = kind, content = "Photo metadata",
+        photo = { jpeg = jpeg(1200, 800, 6, true), width = 9999, height = 9999 } })
+    assert(uploaded.imageWidth == 800 and uploaded.imageHeight == 1200,
+        "Publishing must save dimensions derived from actual bytes, including quote photos")
+    local persisted = assert(identity:getPost(uploaded.id))
+    assert(persisted.imageWidth == 800 and persisted.imageHeight == 1200,
+        "Dimensions must persist on the source document rather than only the returned view model")
+end
 for _, rollbackFails in ipairs { false, true } do
     local failProfile, nameWrites = true, 0
     local recovering = client(function(request)

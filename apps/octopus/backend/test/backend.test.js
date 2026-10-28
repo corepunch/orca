@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRepository } from '../src/repository.js';
 import { execute, feedDocument, publiclyReadable, refreshPost, reconcileBatch } from '../src/materialize.js';
-import { compatibleAttribute, coversIndex, migrate, feedAttributes, indexes } from '../src/migrate.js';
+import { compatibleAttribute, coversIndex, migrate, feedAttributes, imageAttributes, indexes } from '../src/migrate.js';
 
 const now = '2026-10-28T10:00:00.000Z';
 const post = (id = 'p1', overrides = {}) => ({ $id: id, $createdAt: now, $updatedAt: now,
@@ -63,6 +63,18 @@ test('summary bounds Unicode without splitting a surrogate pair and carries trus
   assert.equal(summary.content, '😀'.repeat(320));
   assert.equal(summary.likeCount, 1201);
   assert.equal(summary.sourceCreatedAt, now);
+});
+
+test('summary carries paired image dimensions and clears malformed or absent metadata', () => {
+  const summary = overrides => feedDocument(post('p1', overrides), '', {}, now);
+  assert.equal(summary({ imageWidth: 1200, imageHeight: 800 }).imageWidth, 1200);
+  assert.equal(summary({ imageWidth: 1200, imageHeight: 800 }).imageHeight, 800);
+  for (const dimensions of [{}, { imageWidth: 1200 }, { imageWidth: 0, imageHeight: 800 },
+    { imageWidth: 65536, imageHeight: 800 }, { imageWidth: 1.5, imageHeight: 800 },
+    { imageWidth: '1200', imageHeight: 800 }, { imageWidth: NaN, imageHeight: Infinity }]) {
+    assert.equal(summary(dimensions).imageWidth, null);
+    assert.equal(summary(dimensions).imageHeight, null);
+  }
 });
 
 test('public policy respects collection grants, disabled collections and document security', () => {
@@ -285,6 +297,10 @@ test('a missing exact total fails instead of publishing incorrect zero counts', 
 test('schema/index verification accepts covering indexes and rejects unsafe schema drift', () => {
   assert.ok(compatibleAttribute({ type: 'string', size: 512, required: false }, { type: 'string', size: 320, required: false }));
   assert.equal(compatibleAttribute({ type: 'string', size: 40, required: false }, { type: 'string', size: 320, required: false }), false);
+  assert.ok(compatibleAttribute({ ...imageAttributes[0] }, imageAttributes[0]));
+  assert.equal(compatibleAttribute({ ...imageAttributes[0], max: 65536 }, imageAttributes[0]), false);
+  assert.equal(compatibleAttribute({ ...imageAttributes[0], min: 0 }, imageAttributes[0]), false);
+  assert.equal(compatibleAttribute({ ...imageAttributes[0], required: true }, imageAttributes[0]), false);
   assert.ok(coversIndex({ type: 'unique', status: 'available', attributes: ['postId'] }, { type: 'key', attributes: ['postId'] }));
   assert.ok(coversIndex({ type: 'unique', status: 'available', attributes: ['targetId', 'targetType', 'userId'] },
     { type: 'key', attributes: ['targetType', 'targetId'] }));
@@ -323,9 +339,18 @@ test('migration avoids unsupported array indexes, is idempotent and verify perfo
     },
   };
   await migrate(repo);
-  assert.equal(data.size, feedAttributes.length + 1 + indexes(config).length);
+  assert.equal(data.size, feedAttributes.length + imageAttributes.length + 1 + indexes(config).length);
+  assert.equal(collections.has('posts'), false, 'Source permissions must not be replaced by feed-only security rules');
+  for (const collection of ['posts', 'feed']) {
+    for (const attribute of imageAttributes) assert.deepEqual(data.get(`${root}/${collection}/attributes/${attribute.key}`),
+      { ...attribute, status: 'available' });
+  }
   const firstWrites = writes;
   await migrate(repo);
   await migrate(repo, { verify: true });
   assert.equal(writes, firstWrites);
+  const width = data.get(`${root}/posts/attributes/imageWidth`);
+  width.max = 65536;
+  await assert.rejects(migrate(repo), /Incompatible or unavailable attribute posts.imageWidth/);
+  assert.equal(writes, firstWrites, 'Conflicting metadata columns must never be silently replaced');
 });

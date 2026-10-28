@@ -35,8 +35,15 @@ function Loader:loadVisible()
     for _, target in ipairs(ordered) do target.load() end
 end
 
--- The aspect ratio to reserve for a photo: its own once it has been decoded.
-function Loader:aspect(key)
+-- Persisted dimensions reserve the final frame before the first image request.
+-- Older rows fall back to their decoded ratio, or the default while loading.
+function Loader:aspect(key, width, height)
+    if type(width) == "number" and type(height) == "number" and width % 1 == 0 and height % 1 == 0
+        and width > 0 and height > 0 and width <= 65535 and height <= 65535 then
+        local ratio = math.max(TALLEST, math.min(WIDEST, width / height))
+        if key then self.ratios[key] = ratio end
+        return ratio
+    end
     return self.ratios[key] or GUESS
 end
 
@@ -76,6 +83,7 @@ function Loader:watch(frame, key, name)
     local app, epoch = self.app, self.app.sessionEpoch
     local requested, loaded, failed = false, false, false
     local stop, indicator
+    C.clear(frame)
     local function loading(active)
         if active and not indicator then
             indicator = ui.ActivityIndicator { Name = "Loading" .. name, Foreground = C.colors.dim }
@@ -107,7 +115,7 @@ function Loader:watch(frame, key, name)
                 path, err = nil, { message = "This photo could not be decoded." }
             else
                 local width, height = image.Source.Width, image.Source.Height
-                if shaped and width > 0 and height > 0 then
+                if shaped and not self.ratios[key] and width > 0 and height > 0 then
                     self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
                     frame.AspectRatio = self.ratios[key]
                 end

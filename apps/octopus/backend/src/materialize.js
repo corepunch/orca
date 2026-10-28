@@ -4,6 +4,7 @@ const PUBLIC_READ = 'read("any")';
 const equal = (field, value) => query('equal', field, [value]);
 const excerpt = value => Array.from(typeof value === 'string' ? value : '').slice(0, 320).join('');
 const text = value => typeof value === 'string' ? value : '';
+const imageEdge = value => Number.isInteger(value) && value > 0 && value <= 65535;
 
 // Collection permissions and document permissions are additive in Appwrite.
 // Document permissions have no effect when documentSecurity is disabled.
@@ -13,11 +14,14 @@ export function publiclyReadable(document, collection) {
 }
 
 export function feedDocument(post, avatarId, counts, now) {
+  const hasDimensions = imageEdge(post.imageWidth) && imageEdge(post.imageHeight);
   return { sourceCreatedAt: post.$createdAt, title: text(post.title), content: excerpt(post.content),
     postType: ['text', 'photo', 'quote', 'link'].includes(post.postType) ? post.postType : 'text',
     authorId: text(post.authorId), authorName: text(post.authorName) || 'Someone',
     tags: Array.isArray(post.tags) ? post.tags.slice(0, 10).map(tag => text(tag).slice(0, 64)) : [],
-    imageId: text(post.imageId), linkUrl: text(post.linkUrl), quoteSource: excerpt(post.quoteSource),
+    imageId: text(post.imageId), imageWidth: hasDimensions ? post.imageWidth : null,
+    imageHeight: hasDimensions ? post.imageHeight : null,
+    linkUrl: text(post.linkUrl), quoteSource: excerpt(post.quoteSource),
     userText: excerpt(post.userText), avatarId: text(avatarId), ...counts, statsUpdatedAt: now };
 }
 

@@ -8,6 +8,15 @@ Client.__index = Client
 
 local POST_TYPES = { text = true, photo = true, quote = true, link = true }
 local PAGE = 100
+local MAX_IMAGE_EDGE = 65535
+
+local function imageDimensions(width, height)
+    for _, value in ipairs { width, height } do
+        if type(value) ~= "number" or value < 1 or value > MAX_IMAGE_EDGE or value % 1 ~= 0 then return nil end
+    end
+    if width == nil or height == nil then return nil end
+    return width, height
+end
 
 local function failure(code, message, status)
     return nil, { code = code, message = message, status = status }
@@ -69,10 +78,12 @@ local function post(doc)
     for _, tag in ipairs(type(doc.tags) == "table" and doc.tags or {}) do tags[#tags + 1] = tag end
     local avatarId
     if doc.sourceCreatedAt then avatarId = validId(doc.avatarId) and doc.avatarId or false end
+    local width, height = imageDimensions(doc.imageWidth, doc.imageHeight)
     return {
         id = doc["$id"], createdAt = doc.sourceCreatedAt or doc["$createdAt"], title = doc.title or "", content = doc.content or "",
         authorId = doc.authorId, authorName = doc.authorName or "Someone", tags = tags,
         postType = POST_TYPES[doc.postType] and doc.postType or "text", imageId = validId(doc.imageId) and doc.imageId or nil,
+        imageWidth = width, imageHeight = height,
         avatarId = avatarId,
         linkUrl = doc.linkUrl, quoteSource = doc.quoteSource, userText = doc.userText,
         summary = doc.sourceCreatedAt ~= nil,
@@ -387,6 +398,7 @@ function Client:readFeedCache(name)
         if #p.tags > 10 or (item.at ~= nil and type(item.at) ~= "string") then return nil end
         for _, tag in ipairs(p.tags) do if type(tag) ~= "string" or #tag > 64 then return nil end end
         if p.imageId ~= nil and not validId(p.imageId) then return nil end
+        if (p.imageWidth ~= nil or p.imageHeight ~= nil) and not imageDimensions(p.imageWidth, p.imageHeight) then return nil end
         if p.avatarId ~= nil and p.avatarId ~= false and not validId(p.avatarId) then return nil end
         for _, field in ipairs { "linkUrl", "quoteSource", "userText" } do
             if p[field] ~= nil and type(p[field]) ~= "string" then return nil end
@@ -717,6 +729,9 @@ function Client:createPost(values)
         file, err = self:uploadImage(values.photo)
         if not file then return nil, err end
         data.imageId = file
+        -- Derive layout metadata from the uploaded bytes, not caller-supplied fields.
+        local bytes = type(values.photo) == "table" and values.photo.jpeg or values.photo
+        data.imageWidth, data.imageHeight = Octopus.imageDimensions(bytes)
     end
     local doc
     doc, err = self:_create("posts", data)
@@ -994,6 +1009,67 @@ local function imageKind(bytes)
     if bytes:sub(1, 8) == "\137PNG\r\n\26\n" then return "png" end
 end
 Octopus.imageKind = imageKind
+
+-- Read only bounded image headers. Native photo preparation already rotates its
+-- JPEG; raw JPEG uploads can retain EXIF orientation, so reserve displayed size.
+function Octopus.imageDimensions(bytes)
+    local kind = imageKind(bytes)
+    if not kind then return nil end
+    local function integer(at, count, little, last)
+        if at < 1 or at + count - 1 > (last or #bytes) then return nil end
+        local n = 0
+        for i = 0, count - 1 do
+            n = n * 256 + bytes:byte(at + (little and count - i - 1 or i))
+        end
+        return n
+    end
+    if kind == "png" then
+        if #bytes < 33 or integer(9, 4) ~= 13 or bytes:sub(13, 16) ~= "IHDR" then return nil end
+        return imageDimensions(integer(17, 4), integer(21, 4))
+    end
+    local function orientation(first, last)
+        if bytes:sub(first, first + 5) ~= "Exif\0\0" then return nil end
+        local base = first + 6
+        local order = bytes:sub(base, base + 1)
+        if order ~= "II" and order ~= "MM" then return nil end
+        local little = order == "II"
+        if integer(base + 2, 2, little, last) ~= 42 then return nil end
+        local offset = integer(base + 4, 4, little, last)
+        if not offset or offset < 8 then return nil end
+        local directory = base + offset
+        local count = integer(directory, 2, little, last)
+        if not count or directory + 2 + count * 12 - 1 > last then return nil end
+        for i = 0, count - 1 do
+            local entry = directory + 2 + i * 12
+            if integer(entry, 2, little, last) == 274
+                and integer(entry + 2, 2, little, last) == 3
+                and integer(entry + 4, 4, little, last) == 1 then
+                return integer(entry + 8, 2, little, last)
+            end
+        end
+    end
+    local at, width, height, rotate = 3
+    while at <= #bytes do
+        if bytes:byte(at) ~= 255 then return nil end
+        while bytes:byte(at) == 255 do at = at + 1 end
+        local marker = bytes:byte(at)
+        at = at + 1
+        if not marker or marker == 0 or marker == 217 then break end
+        if marker == 218 then break end -- Entropy-coded scan is not header data.
+        if marker ~= 1 and not (marker >= 208 and marker <= 216) then
+            local length = integer(at, 2)
+            if not length or length < 2 or at + length - 1 > #bytes then return nil end
+            if marker == 225 then rotate = orientation(at + 2, at + length - 1) or rotate end
+            if marker >= 192 and marker <= 207 and marker ~= 196 and marker ~= 200 and marker ~= 204 then
+                if length < 8 then return nil end
+                height, width = integer(at + 3, 2), integer(at + 5, 2)
+            end
+            at = at + length
+        end
+    end
+    if rotate and rotate >= 5 and rotate <= 8 then width, height = height, width end
+    return imageDimensions(width, height)
+end
 
 -- ORCA decodes JPEG and PNG; other uploads from the website are converted by
 -- Appwrite's preview endpoint.
