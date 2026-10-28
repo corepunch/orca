@@ -161,6 +161,10 @@ end)
 
 ## Images and viewport notifications
 
+For thumbnail/full stages, queue priority, authenticated delivery and decoder
+choices, read [Loading image previews](app/image-loading.md). A decoder's input
+callbacks and an app's ready-preview callbacks are different interfaces.
+
 Load network images asynchronously as their views need them. Apple recommends
 [cached asynchronous image loading](https://developer.apple.com/documentation/uikit/asynchronously-loading-images-into-table-and-collection-views)
 and [prefetching upcoming cells](https://developer.apple.com/documentation/uikit/prefetching-collection-view-data),
@@ -200,8 +204,10 @@ Queued requests with no visible consumers are skipped. An already running,
 shared request may finish and populate the cache; session and view guards
 prevent stale completions from changing another reader's UI. Failed requests
 do not retry on every paint. Large photos offer explicit retry; avatar failures
-leave initials and can retry when a new view is created. These caches belong to
-the app/session; they are not a persistent cache or list virtualization system.
+leave initials and can retry when a new view is created. Cache lifetime is owned
+by the app: Chat's private previews are temporary; Octopus can persist completed
+guest image variants in its bounded cache while keeping preview snapshots
+temporary. Neither cache is a list virtualization system.
 The demo portraits are already 256-pixel JPEGs. Production uploads should provide
 small avatar variants rather than assuming full-size originals are inexpensive.
 

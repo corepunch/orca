@@ -66,6 +66,9 @@ return Card
 
 ## Keep boundaries clear
 
+- For remote images, staged callbacks, queue priority or cache ownership, read
+  [Loading image previews](../../../docs/app/image-loading.md). Distinguish a
+  complete thumbnail from incremental decoder output before selecting a codec.
 - Use `$orca-controller-binding` when an XML view owns structure and Lua
   supplies event behavior.
 - Use `$orca-xml-authoring` for declarative screens and prefabs.
