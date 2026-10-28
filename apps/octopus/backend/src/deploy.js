@@ -9,10 +9,10 @@ import { AppwriteRest } from '../../../chat/backend/appwrite/src/rest.js';
 const run = promisify(execFile);
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const segment = encodeURIComponent;
-const fields = ['name', 'execute', 'events', 'schedule', 'timeout', 'enabled', 'logging', 'entrypoint', 'commands', 'scopes'];
+const fields = ['name', 'execute', 'events', 'schedule', 'interval', 'timeout', 'enabled', 'logging', 'entrypoint', 'commands', 'scopes'];
 // enabled=false only blocks ordinary callers; event and scheduled executions
 // must be disconnected separately while a migration changes their storage.
-export const paused = config => ({ ...config, enabled: false, execute: [], events: [], schedule: '' });
+export const paused = config => ({ ...config, enabled: false, execute: [], events: [], schedule: '', interval: 0 });
 
 export async function sourceArchive(directory) {
   const temporary = await mkdtemp(join(tmpdir(), 'octopus-deploy-'));
@@ -49,7 +49,7 @@ export async function deployFunction(rest, config, directory, variables, {
   archive = sourceArchive, wait = pause, progress = console.log,
 } = {}) {
   const staging = await configureFunction(rest, paused(config), variables);
-  const settings = { ...staging, execute: config.execute || [], events: config.events || [], schedule: config.schedule || '' };
+  const settings = { ...staging, execute: config.execute || [], events: config.events || [], schedule: config.schedule || '', interval: config.interval || 0 };
   const path = `/functions/${segment(config.$id)}`;
   const multipart = new FormData();
   multipart.set('code', new Blob([await archive(directory)], { type: 'application/gzip' }), 'source.tar.gz');

@@ -42,7 +42,9 @@ const event = (collection, action = 'create') => `databases.octopus-db.collectio
 
 test('deployment subscribes to current and legacy source mutations, including upserts, without feed recursion', async () => {
   const manifest = JSON.parse(await readFile(new URL('../appwrite.config.json', import.meta.url), 'utf8'));
-  const events = manifest.functions[0].events;
+  const feed = manifest.functions[0], events = feed.events;
+  assert.equal(feed.schedule, '', 'Free-plan repair uses an interval rather than cron');
+  assert.equal(feed.interval, 60, 'scheduled repair runs hourly on the Free plan');
   for (const [prefix, container, record] of [['databases', 'collections', 'documents'], ['tablesdb', 'tables', 'rows']]) {
     for (const collection of ['posts', 'likes', 'comments', 'reposts', 'profiles']) {
       for (const action of ['create', 'update', 'upsert', 'delete']) {

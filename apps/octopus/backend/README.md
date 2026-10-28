@@ -152,16 +152,17 @@ For an administrator performing the deployment:
    posts are reported and retried next cycle instead of blocking later posts.
    It can safely restart by running again after errors. Re-run read-only schema/index
    verification, then set client `OCTOPUS_FEED_COLLECTION_ID=post-feed`.
-6. Retain scheduled reconciliation. The manifest runs a batch every five
-   minutes; adjust the schedule to your Appwrite plan's supported frequency.
+6. Retain scheduled reconciliation. The manifest runs a batch every 60 minutes,
+   the minimum interval on Appwrite Cloud Free/Education plans. Paid plans can
+   use a shorter interval or cron. See [Appwrite scheduling](https://appwrite.io/docs/products/functions/execute#schedule).
    `OCTOPUS_FEED_RECONCILE_BATCH_SIZE` defaults to 10, maximum 100. Large
    installations need a batch size/schedule whose complete sweep meets their
    freshness target. Each batch refreshes up to four posts concurrently and
    checkpoints after the whole group settles. It yields before the
    Function's 600-second timeout, and traverses both source and feed collections.
-   The five-minute trigger is a batch interval, not a five-minute freshness
+   The hourly trigger is a batch interval, not an hourly freshness
    guarantee: a sweep over 100 source posts plus 100 cached rows at the default
-   batch size takes about 100–110 minutes if event processing is unavailable.
+   batch size takes about 20–22 hours if event processing is unavailable.
    Monitor sweep progress and choose the batch size/schedule accordingly.
 
 Indexes cover feed ordering, author+ordering and title fulltext

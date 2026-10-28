@@ -62,7 +62,8 @@
       "tablesdb.octopus-db.tables.profiles.rows.*.upsert",
       "tablesdb.octopus-db.tables.profiles.rows.*.delete"
     ],
-    "schedule": "*/5 * * * *",
+    "schedule": "",
+    "interval": 60,
     "timeout": 600,
     "enabled": true,
     "logging": true,
