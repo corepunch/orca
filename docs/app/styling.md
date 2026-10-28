@@ -125,6 +125,12 @@ scale consistently. Reserve fixed sizing for intentional constraints such as
 icons and control heights. Prefer container layout over coordinate offsets.
 Test narrow and resized windows before depending on one screenshot's bounds.
 
+Align elements that are almost aligned to an exact shared edge, center, or
+text baseline. Keep comparable gaps equal, including across nested containers:
+the gap from a portrait to a link tile should match the gap from that tile to
+its text. Check rendered bounds and text metrics, not just container spacing;
+different font sizes can place adjacent labels on different baselines.
+
 For a Lua screen with bottom chrome, use the shared edge-to-edge shell by
 default:
 

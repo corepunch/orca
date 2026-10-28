@@ -20,6 +20,15 @@ local function top(node, screen)
     return y
 end
 
+local function left(node, screen)
+    local x = 0
+    while node and node ~= screen do
+        x = x + node.ActualX
+        node = node:getParent()
+    end
+    return x
+end
+
 for _, width in ipairs { 390, 320 } do
     local screen = ui.Screen { Width = width, Height = 844, ResizeMode = "NoResize" }
     local host = ui.StackView { Spacing = 12 }
@@ -36,6 +45,13 @@ for _, width in ipairs { 390, 320 } do
         screen:UpdateLayout(width, 844)
         local avatar = assert(row:findChild("Avatar" .. kind, true))
         local body = assert(row:findChild("Open" .. kind, true))
+        local author = assert(row:findChild("PostAuthorName", true))
+        local timestamp = assert(row:findChild("PostTimestamp", true))
+        assert(math.abs(top(author, screen) - top(timestamp, screen)) < 0.01
+            and author.FontSize == timestamp.FontSize and author.ActualHeight == timestamp.ActualHeight,
+            "Author and timestamp share the same text line metrics")
+        assert(left(timestamp, screen) >= left(author, screen) + author.ActualWidth,
+            "The timestamp stays clear of the author at narrow widths")
         assert(math.abs(top(avatar, screen) - top(body, screen)) < 0.01,
             "Portraits start at the body, below the author and optional repost lines")
         local name = post.postType == "link" and "PostBodyLinkTitle"
@@ -51,6 +67,11 @@ for _, width in ipairs { 390, 320 } do
                 "The link tile matches the portrait's square size")
             assert(math.abs(top(avatar, screen) - top(tile, screen)) < 0.01,
                 "Link tiles align with portrait tops")
+            local title = assert(row:findChild("PostBodyLinkTitle", true))
+            local portraitGap = left(tile, screen) - left(avatar, screen) - avatar.ActualWidth
+            local textGap = left(title, screen) - left(tile, screen) - tile.ActualWidth
+            assert(portraitGap > 0 and math.abs(portraitGap - textGap) < 0.01,
+                "Portrait-to-link and link-to-text gaps match across nested containers")
         end
     end
 end

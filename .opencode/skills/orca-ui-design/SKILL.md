@@ -49,6 +49,7 @@ utilities rather than native AppKit/UIKit controls.
 - Use stack, grid, or flow layout primitives for arrangement.
 - Typography: establish a clear type scale (headings, body, captions) via utilities or theme.
 - Spacing: use a consistent spacing scale. Sibling spacing is explicit; avoid magic margins.
+- Alignment: elements that are almost aligned should share an exact edge, center, or text baseline. Keep comparable gaps equal, including gaps across nested containers; check rendered bounds rather than only individual spacing values.
 - Color: use theme or semantic roles (primary, secondary, error, success, surface) rather than raw hex when the system supports it.
 - Icons: Lucide stroke-based SVGs with `currentColor` so they inherit tint.
 - Interactive controls: buttons, inputs, lists, cards should have adequate hit areas and visible focus indicators.
