@@ -1,6 +1,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <include/api.h>
 #include <include/orca.h>
 #include <core/core.h>
 #include <UIKit/UIKit.h>
@@ -45,6 +46,44 @@ int main(void)
   OBJ_CancelTimer(other, foreign);
   OBJ_ReleaseRef(owner);
   OBJ_ReleaseRef(other);
+  assert(luaL_dostring(L,
+    "calls, resumed, counts = 0, 0, {}; "
+    "owner = require('orca.core').Timer { Tick = function(self, args) "
+    "calls = calls + 1; counts[args.timerId] = (counts[args.timerId] or 0) + 1; "
+    "self:cancelTimer(args.timerId); coroutine.yield(); resumed = resumed + 1 end }; "
+    "timerId = owner:setTimer(60000)") == LUA_OK);
+  lua_getglobal(L, "owner");
+  struct Object *timer = luaX_checkObject(L, -1);
+  lua_pop(L, 1);
+  lua_getglobal(L, "timerId");
+  int timerId = (int)lua_tointeger(L, -1);
+  lua_pop(L, 1);
+  // A stalled native loop can dispatch several expirations before Lua starts.
+  for (int i = 0; i < 2; i++) {
+    struct AXmessage tick = { .target = timer, .message = kEventTimer, .wParam = timerId };
+    OBJ_BeginMessage(timer);
+    assert(SV_DispatchMessage(L, &tick));
+  }
+  int independent = OBJ_SetTimer(timer, 60000);
+  struct AXmessage independentTick = { .target = timer, .message = kEventTimer, .wParam = independent };
+  OBJ_BeginMessage(timer);
+  assert(SV_DispatchMessage(L, &independentTick));
+  core_FlushQueue(L);
+  assert(luaL_dostring(L, "assert(calls == 2 and counts[timerId] == 1 and resumed == 2, 'Cancellation must drop queued Lua callbacks and resume the running handler')") == LUA_OK);
+  // Cancellation before either queued callback begins must suppress both.
+  assert(luaL_dostring(L, "calls, resumed = 0, 0; timerId = owner:setTimer(60000)") == LUA_OK);
+  lua_getglobal(L, "timerId");
+  timerId = (int)lua_tointeger(L, -1);
+  lua_pop(L, 1);
+  for (int i = 0; i < 2; i++) {
+    struct AXmessage tick = { .target = timer, .message = kEventTimer, .wParam = timerId };
+    OBJ_BeginMessage(timer);
+    assert(SV_DispatchMessage(L, &tick));
+  }
+  OBJ_CancelTimer(timer, timerId);
+  lua_gc(L, LUA_GCCOLLECT);
+  core_FlushQueue(L);
+  assert(luaL_dostring(L, "assert(calls == 0 and resumed == 0)") == LUA_OK);
   lua_close(L);
   puts("PASS: cancelling a timer drops its queued ticks and keeps every other message");
   return 0;

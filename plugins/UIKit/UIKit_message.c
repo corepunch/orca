@@ -94,6 +94,8 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
   {
     struct Property *handler = luaX_getobjectcallback(L, hobj, msg->message);
     if (handler) {
+      if ((msg->message == ID_Timer_Tick || msg->message == ID_Object_Timer) && msg->lParam)
+        OBJ_GuardTimerCallback(L, msg->target, ((struct Object_TimerEventArgs *)msg->lParam)->timerId);
       luaX_import(L, "orca", "async");
       lua_insert(L, -2);
       luaX_pushObject(L, hobj); // self
