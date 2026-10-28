@@ -40,6 +40,8 @@ blocks with [Chat](../chat/README.md):
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
   a photo shaped like the picture, between 4:5 and 1.91:1), its tags, and comment/repost/like counts. Liked hearts turn red and
   reposts green. Profiles list posts and reposts together, as on Twitter.
+  Portraits start at the post body below the author line. Leading text aligns
+  by its visible glyphs, and link badges share the portrait's 44-point square.
 - A post's page shows its full time and large like, repost and comment
   counts between hairlines, then the threaded replies.
 - Text boxes are pale with dark text in both themes; primary commands are

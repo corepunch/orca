@@ -406,6 +406,7 @@ T_LayoutText(LayoutCtx *ctx)
   /* We always need to know the final size before allocating the bitmap,
    so we do a lightweight pre-pass to get width/height.              */
   struct AXsize measuredSize = { 0 };
+  int leading = INT_MAX;
   {
     LayoutState ls;
     LS_Init(&ls);
@@ -521,6 +522,11 @@ T_LayoutText(LayoutCtx *ctx)
             current_char++;
             uint32_t const gi = T_LoadChar(m.face, wch);
             if (!gi) { prev_gi2 = 0; continue; }
+            if (text->trimLeading && ls.lineY == 0) {
+              struct font_glyph bounds;
+              if (FontFace_GetGlyphBounds(m.face, gi, m.fontScale, &bounds))
+                leading = MIN(leading, ls.baseline + bounds.yoff);
+            }
             cx16 += FontFace_GetGlyphKerning(m.face, prev_gi2, gi, m.fontScale);
             cx16 += FontFace_GetGlyphAdvance(m.face, gi, m.fontScale);
             prev_gi2 = gi;
@@ -549,6 +555,9 @@ T_LayoutText(LayoutCtx *ctx)
 
     measuredSize.width  = MAX(measuredSize.width, (uint32_t)ls.lineX);
     measuredSize.height = (uint32_t)ls.lineY + (uint32_t)ls.lineHeight;
+    leading = leading == INT_MAX ? 0 : MAX(0, leading);
+    measuredSize.height -= MIN(measuredSize.height, (uint32_t)leading);
+    ctx->cursor.y -= (int)(leading / scale);
 
     /* Apply availableWidth clamp for ellipsis */
     if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0)
@@ -575,6 +584,7 @@ T_LayoutText(LayoutCtx *ctx)
 
   LayoutState ls;
   LS_Init(&ls);
+  ls.lineY = -leading;
   if (text->textIndent > 0)
     ls.lineX = (int)(text->textIndent * scale);
   int  ul_depth     = 0;       /* nesting depth for <u> tags */
@@ -769,16 +779,28 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor)
   return ctx.size;
 }
 
+ORCA_API HRESULT
+TextBlockText_Rasterize(struct TextBlockText *text,
+                        struct AXsize *size,
+                        unsigned char **bitmap)
+{
+  LayoutCtx ctx = { .text = text, .bRender = TRUE };
+  HRESULT hr = T_LayoutText(&ctx);
+  if (FAILED(hr)) return hr;
+  *size = ctx.size;
+  *bitmap = ctx.image_data;
+  return S_OK;
+}
+
 static HRESULT
 TextBlockText_Print(struct TextBlockText *pViewText,
                     struct Texture      **pTexture,
                     bool_t               bReuseTexture)
 {
-  LayoutCtx ctx = { .text = pViewText, .bRender = TRUE };
-  HRESULT hr = T_LayoutText(&ctx);
+  struct AXsize sz;
+  unsigned char *bitmap;
+  HRESULT hr = TextBlockText_Rasterize(pViewText, &sz, &bitmap);
   if (FAILED(hr)) return hr;
-
-  struct AXsize const sz = ctx.size;
 
   CREATEIMGSTRUCT cis = {
     .Width     = sz.width,
@@ -786,7 +808,7 @@ TextBlockText_Print(struct TextBlockText *pViewText,
     .Format    = kTextureFormatAlpha8,
     .MinFilter = kTextureFilterLinear,
     .MagFilter = kTextureFilterLinear,
-    .ImageData = ctx.image_data,
+    .ImageData = bitmap,
   };
 
   if (bReuseTexture && *pTexture) {
@@ -794,12 +816,12 @@ TextBlockText_Print(struct TextBlockText *pViewText,
     (*pTexture)->Scale  = pViewText->scale;
     (*pTexture)->Width  = T_LogicalPixels(sz.width, pViewText->scale);
     (*pTexture)->Height = T_LogicalPixels(sz.height, pViewText->scale);
-    free(ctx.image_data);
+    free(bitmap);
     return S_OK;
   }
 
   hr = Texture_Create(&cis, pTexture);
-  free(ctx.image_data);
+  free(bitmap);
   if (FAILED(hr)) return hr;
 
   (*pTexture)->Scale  = pViewText->scale;
@@ -874,7 +896,7 @@ TextBlockText_GetInsets(struct TextBlockText const *text,
     struct font_metrics metrics;
     if (!face
       || !FontFace_GetMetrics(face, run->fontSize, text->scale, &metrics)
-      || (text->flags & UI_TEXT_USE_FONT_HEIGHT))
+      || (text->flags & UI_TEXT_USE_FONT_HEIGHT) || text->trimLeading)
     {
       *edges = (struct edges){ 0 };
       return S_OK;
@@ -993,6 +1015,7 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   }
 
   pViewText->flags          = pTextBlockConcept->UseFullFontHeight ? UI_TEXT_USE_FONT_HEIGHT : 0;
+  pViewText->trimLeading    = pTextBlockConcept->TrimLeading;
   pViewText->availableWidth = pMakeText->availableSpace;
   pViewText->textWrapping   = (uint32_t)pTextBlockConcept->TextWrapping;
   pViewText->textOverflow   = (uint32_t)pTextBlockConcept->TextOverflow;

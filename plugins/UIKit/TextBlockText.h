@@ -29,6 +29,7 @@ struct TextBlockText
   uint32_t textWrapping;
   uint32_t textOverflow;
   float textIndent;
+  bool_t trimLeading;
   uint32_t textureHash;
   uint32_t infoHash;
   struct text_info info;
@@ -51,6 +52,7 @@ enum
 ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
 ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
 ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
+ORCA_API HRESULT TextBlockText_Rasterize(struct TextBlockText *text, struct AXsize *size, unsigned char **bitmap);
 ORCA_API void TextBlockText_Release(struct TextBlockText *text);
 ORCA_API uint32_t TextBlockText_GetMeasureCount(void);
 ORCA_API uint32_t TextBlockText_GetRenderCount(void);

@@ -27,5 +27,6 @@ int FontFace_GetMetrics(struct fontface*, float, float, struct font_metrics*);
 uint32_t FontFace_GetGlyphIndex(struct fontface*, uint32_t);
 int32_t FontFace_GetGlyphAdvance(struct fontface*, uint32_t, float);
 int32_t FontFace_GetGlyphKerning(struct fontface*, uint32_t, uint32_t, float);
+int FontFace_GetGlyphBounds(struct fontface*, uint32_t, float, struct font_glyph*);
 int FontFace_RenderGlyph(struct fontface*, uint32_t, float, struct font_glyph*);
 void FontFace_FreeGlyph(struct font_glyph*);
