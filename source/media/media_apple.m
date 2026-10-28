@@ -148,7 +148,8 @@ static int Media_Fail(struct MediaError *error, char const *code, char const *me
 
 static CGImageRef Media_Flatten(CGImageRef source, size_t edge) {
   size_t w = CGImageGetWidth(source), h = CGImageGetHeight(source);
-  double scale = fmin(1, (double)edge / fmax(w, h));
+  double scale = fmin(1, fmin((double)edge / fmax(w, h),
+      sqrt((double)MEDIA_PHOTO_PIXELS / ((double)w * h))));
   w = fmax(1, floor(w * scale)); h = fmax(1, floor(h * scale));
   CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
   if (!space) return NULL;
@@ -181,31 +182,30 @@ static CFDataRef Media_Jpeg(CGImageRef image, double quality) {
 }
 
 static CFDataRef Media_Compress(CGImageRef image, struct MediaPhoto *photo) {
-  static double const qualities[] = { .8, .7, .6 };
+  static double const qualities[] = { .82, .76, .70, .65, .60 };
   size_t longest = MAX(CGImageGetWidth(image), CGImageGetHeight(image));
   size_t minimum = MIN(longest, 800);
-  CFDataRef best = NULL;
-  for (int step = 0; step < 5; step++) {
-    size_t edge = MAX(minimum, floor(longest * pow(.8, step)));
+  for (int step = 0; step < 6; step++) {
+    size_t edge = MAX(minimum, floor(longest * pow(.85, step)));
+    // Each candidate comes from the decoded original, avoiding accumulated blur.
     CGImageRef resized = Media_Flatten(image, edge);
-    if (!resized) break;
+    if (!resized) return NULL;
     for (size_t i = 0; i < sizeof(qualities) / sizeof(qualities[0]); i++) {
       CFDataRef data = Media_Jpeg(resized, qualities[i]);
       if (!data) continue;
-      size_t size = CFDataGetLength(data);
-      if (size <= MEDIA_PHOTO_LIMIT && (!best || size <= 500000)) {
-        if (best) CFRelease(best);
-        best = data;
+      if (CFDataGetLength(data) <= MEDIA_PHOTO_LIMIT) {
         photo->quality = qualities[i];
         photo->width = (uint32_t)CGImageGetWidth(resized);
         photo->height = (uint32_t)CGImageGetHeight(resized);
-        if (size <= 500000) { CGImageRelease(resized); return best; }
-      } else CFRelease(data);
+        CGImageRelease(resized);
+        return data;
+      }
+      CFRelease(data);
     }
     CGImageRelease(resized);
     if (edge == minimum) break;
   }
-  return best;
+  return NULL;
 }
 
 int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo, struct MediaError *error) {
@@ -240,15 +240,18 @@ int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo,
       CFRelease(source);
       return Media_Fail(error, "dimensions", "Choose a photo within 100 megapixels and 32768 pixels per edge.");
     }
+    double scale = fmin(1, fmin((double)MEDIA_PHOTO_EDGE / MAX(w, h),
+        sqrt((double)MEDIA_PHOTO_PIXELS / ((double)w * h))));
+    size_t edge = MAX(1, floor(MAX(w, h) * scale));
     CGImageRef decoded = CGImageSourceCreateThumbnailAtIndex(source, 0, (CFDictionaryRef)@{
       (id)kCGImageSourceCreateThumbnailFromImageAlways: @YES,
       (id)kCGImageSourceCreateThumbnailWithTransform: @YES,
       (id)kCGImageSourceShouldCacheImmediately: @YES,
-      (id)kCGImageSourceThumbnailMaxPixelSize: @(MIN(MAX(w, h), 1600)),
+      (id)kCGImageSourceThumbnailMaxPixelSize: @(edge),
     });
     CFRelease(source);
     if (!decoded) return Media_Fail(error, "invalid_image", "The photo could not be decoded.");
-    CGImageRef flattened = Media_Flatten(decoded, 1600);
+    CGImageRef flattened = Media_Flatten(decoded, edge);
     CGImageRelease(decoded);
     if (!flattened) return Media_Fail(error, "memory", "There is not enough memory to prepare this photo.");
     CFDataRef jpeg = Media_Compress(flattened, photo);

@@ -1,10 +1,13 @@
--- Encrypted attachment previews are fetched only after their frame is visible.
+-- Full-size encrypted photos are fetched only after their frame is visible.
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local Observer = require "orca.UIKit.ViewportObserver"
 local Loader = {}
 Loader.__index = Loader
 local MAX_ACTIVE = 2
+local function key(attachment)
+    return attachment.id .. ":" .. tostring(attachment.updated_at or "")
+end
 local function clear(node)
     while node:getFirstChild() do node:getFirstChild():removeFromParent() end
     return node
@@ -24,6 +27,10 @@ function Loader:clear()
     self.generation = self.generation + 1
     self.observer:clear()
     self.targets, self.pending, self.requests, self.cache = {}, {}, {}, {}
+end
+
+function Loader:cached(attachment)
+    return self.cache[key(attachment)]
 end
 
 function Loader:valid(target)
@@ -72,7 +79,7 @@ function Loader:pump()
                 local ok = pcall(function()
                     if path then return end
                     local bytes
-                    bytes, err = self.app.client:getPhoto(request.id, true)
+                    bytes, err = self.app.client:getPhoto(request.id, false)
                     if request.generation ~= self.generation or request.epoch ~= self.app.sessionEpoch then return end
                     local media = self.app:getMedia()
                     if bytes and media then path, err = media:storePreview(bytes, "message-photo-" .. request.key) end
@@ -119,7 +126,7 @@ function Loader:loadVisible()
 end
 
 function Loader:watch(frame, attachment, done)
-    local target = { frame = frame, id = attachment.id, key = attachment.id .. ":" .. tostring(attachment.updated_at or ""),
+    local target = { frame = frame, id = attachment.id, key = key(attachment),
         epoch = self.app.sessionEpoch, generation = self.generation, done = done or function() end }
     self.targets[frame] = target
     target.unsubscribe = self.observer:observe(frame, function(event)

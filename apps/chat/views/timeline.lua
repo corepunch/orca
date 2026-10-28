@@ -100,17 +100,20 @@ local function refresh(self, options, room, node, current)
             local frame = ui.Grid { Name = "PhotoFrame" .. attachment.id, Width = PHOTO_WIDTH,
                 Height = photoHeight(attachment), Background = colors.soft }
             bubble:addChild(frame)
-            local content = frame
+            -- Loading replaces content; keep tap targets and timestamps outside it.
+            local content = ui.Grid { Name = "PhotoContent" .. attachment.id }
+            frame:addChild(content)
             if photoOnly and index == #attachments then
-                -- The loader replaces content; keep the timestamp in a separate layer.
-                content = ui.Grid { Name = "PhotoContent" .. attachment.id }
-                frame:addChild(content)
                 frame:addChild(C.text(timestamp, {
                     Name = "MessageTime" .. message.id, FontSize = 11, Foreground = "#ffffff",
                     Background = "#00000099", Padding = "4 2", MarginTop = 0/0, MarginLeft = 0/0,
                     MarginRight = 6, MarginBottom = 6,
                 }))
             end
+            local open = ui.Button { Name = "OpenPhoto" .. attachment.id,
+                Background = "#00000000", BorderWidth = "0",
+                Click = function() if current() then self:openPhoto(attachment) end end }
+            frame:addChild(open)
             if path then
                 photos[attachment.id] = { updated_at = attachment.updated_at, path = path }
                 content:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
@@ -120,6 +123,7 @@ local function refresh(self, options, room, node, current)
                     TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center" }))
                 self.messagePhotos:watch(content, attachment, function(loaded, photoError)
                     if not current() then return end
+                    open.IgnoreHitTest = not loaded and photoError ~= nil
                     if loaded then photos[attachment.id] = { updated_at = attachment.updated_at, path = loaded } end
                     local active = self.timelineSnapshot
                     if active and active.photos == photos then
@@ -149,7 +153,12 @@ local function refresh(self, options, room, node, current)
         holder:addChild(bubble)
         local canEdit, canDelete = permissions(room, message, me)
         if canEdit or canDelete then
-            holder:addChild(ui.Button { Name = "MessageActions" .. message.id, Background = "#00000000", BorderWidth = "0",
+            holder:addChild(ui.Button { Name = "MessageActions" .. message.id,
+                Background = photo and "#00000099" or "#00000000", BorderWidth = "0",
+                Width = photo and 44 or nil, Height = photo and 44 or nil,
+                MarginLeft = photo and 0/0 or 0, MarginBottom = photo and 0/0 or 0,
+                Text = photo and "…" or "", FontSize = 22, Foreground = "#ffffff",
+                TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
                 Click = function() if current() then self:openMessageActions(message, canEdit, canDelete) end end })
         end
         entry:addChild(holder)

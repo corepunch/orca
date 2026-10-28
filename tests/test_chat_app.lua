@@ -777,13 +777,13 @@ click(photoApp, "SendMessage")
 assert(not photoApp.photoDrafts[photoApp.room.id] and photoApp.composer.Text == "", "Clear photo drafts only after successful send")
 local photoMessages = photoApp.client:listMessages(photoApp.room.id)
 assert(photoMessages[#photoMessages].attachments[1].id == attachmentId, "Retry must attach the already uploaded photo")
-local photoView = assert(photoApp.screen:findChild("Photo" .. attachmentId, true), "The timeline must render the API thumbnail")
-assert(photoView.Source, "The timeline thumbnail must load a real image texture from the private preview file")
+local photoView = assert(photoApp.screen:findChild("Photo" .. attachmentId, true), "The timeline must render the full API photo")
+assert(photoView.Source, "The timeline photo must load a real image texture from the private preview file")
 assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
-    "The loaded thumbnail texture must be initialized with its actual image dimensions")
+    "The loaded photo texture must be initialized with its actual image dimensions")
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
-local photoBubble = photoView:getParent():getParent()
+local photoBubble = assert(photoApp.screen:findChild("MessageBubble" .. photoMessages[#photoMessages].id, true))
 local timeline, bubble = photoApp.messageList, photoBubble:getParent():getParent()
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
@@ -795,8 +795,13 @@ assert(bubble.ActualY + offset.Y >= 0 and bubble.ActualY + bubble.ActualHeight +
     "The latest photo and caption must be fully visible above the composer")
 local previewPath = photoView.Src
 local previewFile = assert(io.open(previewPath, "rb"))
-assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the actual mock API thumbnail bytes")
+assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the actual mock full API photo bytes")
 previewFile:close()
+click(photoApp, "OpenPhoto" .. attachmentId)
+local enlarged = assert(photoApp.screen:findChild("PhotoViewerImage", true), "Tapping a message photo opens its viewer")
+assert(enlarged.Src == previewPath and enlarged.Stretch == "Uniform", "The viewer fits the cached full JPEG without cropping")
+click(photoApp, "ClosePhotoViewer")
+assert(not photoApp.screen:findChild("PhotoViewer", true), "The close action returns to the conversation")
 
 -- Photo-only messages have one image rectangle, with metadata over the image.
 click(photoApp, "AttachPhoto")
@@ -822,8 +827,8 @@ for _, width in ipairs { 320, 390, 834 } do
         and math.abs(photoTime.ActualY + photoTime.ActualHeight - (photoFrame.ActualHeight - 6)) < 1,
         "The timestamp must overlay the image's bottom-right corner")
     local actions = photoOnlyEntry:findChild("MessageActions" .. photoOnly.id, true)
-    assert(actions and math.abs(actions.ActualHeight - photoFrame.ActualHeight) < 1,
-        "Photo-only messages must retain their full-image action target")
+    assert(actions and actions.ActualHeight == 44 and actions.ActualWidth == 44,
+        "Photo actions stay accessible in a compact menu while the image opens the viewer")
 end
 photoApp.screen.Width = 390
 photoApp:show("/profile"); click(photoApp, "SignOut")

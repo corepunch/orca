@@ -104,8 +104,9 @@ return function(Client, helpers)
         if not width then return failure("validation", height) end
         local tw, th = jpeg.dimensions(photo.thumbnail)
         if not tw then return failure("validation", th) end
-        if #photo.jpeg > 1000000 or #photo.thumbnail > 1000000 or math.max(width, height) > 1600 or math.max(tw, th) > 256 then
-            return failure("validation", "Photo exceeds the image size or dimension limit.")
+        if #photo.jpeg > 250000 or #photo.thumbnail > 250000 or width * height > 1500000
+            or math.max(width, height) > 1600 or math.max(tw, th) > 256 then
+            return failure("validation", "Photos must be JPEGs up to 250 KB, 1.5 megapixels and 1600 pixels on the longest edge.")
         end
         if (photo.width and photo.width ~= width) or (photo.height and photo.height ~= height) then return failure("validation", "Photo dimensions do not match the JPEG data.") end
         local attachment, err = self:_rpc("reserve_chat_photo", {

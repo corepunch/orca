@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 #define MEDIA_INPUT_LIMIT (32u * 1024u * 1024u)
-#define MEDIA_PHOTO_LIMIT 1000000u
+#define MEDIA_PHOTO_LIMIT 250000u
+#define MEDIA_PHOTO_PIXELS 1500000u
+#define MEDIA_PHOTO_EDGE 1600u
 
 struct MediaPhoto {
   unsigned char *jpeg, *thumbnail;

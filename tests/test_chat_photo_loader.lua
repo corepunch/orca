@@ -13,7 +13,8 @@ local app = { screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoRe
 function app:task(fn) workers[#workers + 1] = coroutine.create(fn) end
 function app:getMedia() return self.media end
 function app:repaint() end
-function app.client:getPhoto(id)
+function app.client:getPhoto(id, thumbnail)
+    assert(thumbnail == false, "Chat must fetch the full JPEG rather than enlarge a 256px thumbnail")
     calls[id] = (calls[id] or 0) + 1
     coroutine.yield()
     if id == "bad" then return nil, { message = "Download failed" } end
@@ -49,6 +50,8 @@ finish()
 assert(calls.same == 1 and calls.third == 1 and calls.fourth == 1 and not calls.bad,
     "Visible duplicate previews share one fetch; offscreen photos wait")
 assert(results[1] == results[2] and frames[1]:findChild("Photosame"), "All duplicate visible frames receive the preview")
+assert(loader:cached { id = "same" } == results[1], "The viewer can reuse the full JPEG without another download")
+assert(not loader:cached { id = "same", updated_at = "new-version" }, "Cache lookups respect attachment revisions")
 list.ContentOffset = { X = 0, Y = -100 }
 app.screen:UpdateLayout(200,200)
 loader:loadVisible(); finish()
@@ -86,4 +89,5 @@ app.sessionEpoch = 2
 loader:clear(); app.media:clear()
 finish()
 assert(not late:findChild("Photolate") and next(app.media.keys) == nil)
+assert(not loader:cached { id = "same" }, "Session reset clears full-size photos")
 print("PASS: viewport chat previews, concurrency, deduplication, retry, versioned cache and session cleanup")

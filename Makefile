@@ -266,8 +266,10 @@ test-chat: copyshare
 # Fast offline presentation checks. Reuse the current binary for app-only edits;
 # rebuild separately with `make unite` after native changes or on a fresh checkout.
 test-chat-ui: copyshare
+	$(LUA) tests/test_chat_photo_policy.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua
 	$(TARGET) -test=tests/test_chat_photo_loader.lua
+	$(TARGET) -test=tests/test_chat_photo_viewer.lua
 	$(TARGET) -test=tests/test_footer.lua
 
 # Adapter unit tests need only Lua: no engine startup, resource copy or rebuild.
