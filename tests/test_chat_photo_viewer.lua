@@ -7,7 +7,8 @@ local Viewer = require "Chat/views/photo_viewer"
 local Media = require "Chat/media"
 local file = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = file:read("*a"); file:close()
-local workers, calls, stored = {}, 0, 0
+local workers, calls, stored, repaints = {}, 0, 0, 0
+local corruptFull = true
 local session = { user = { id = "alice" } }
 local app = { screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize", ClearColor = "#ffffff" },
     room = {}, sessionEpoch = 1, navigationEpoch = 1, client = {}, media = Media.new() }
@@ -15,12 +16,19 @@ local store = app.media.storePreview
 function app.media:storePreview(bytes, key) stored = stored + 1; return store(self, bytes, key) end
 function app:getMedia() return self.media end
 function app:load(fn) workers[#workers + 1] = coroutine.create(fn) end
+function app:repaint() repaints = repaints + 1 end
 function app.client:getSession() return session end
-function app.client:getPhoto(id, thumbnail)
+function app.client:getPhoto(id, thumbnail, onPreview)
     assert(thumbnail == false, "The viewer must fetch the full JPEG")
     calls = calls + 1
     coroutine.yield()
-    if id == "bad" then return nil, { message = "Photo download failed" } end
+    if id ~= "bad" and onPreview then
+        local bytes = id:match("^broken%-preview") and "\255\216bad\255\217" or jpeg
+        if onPreview(bytes) == false then return nil, { code = "cancelled" } end
+        coroutine.yield()
+    end
+    if id == "bad" or id == "preview-bad" then return nil, { message = "Photo download failed" } end
+    if id == "broken-full" and corruptFull then return "\255\216bad\255\217" end
     return jpeg
 end
 local function step(worker)
@@ -47,10 +55,21 @@ assert(app.screen:findChild("ClosePhotoViewer", true), "Loading photos can be cl
 local worker = workers[#workers]
 step(worker)
 assert(calls == 1 and stored == 0)
+step(worker)
+local preview = assert(app.screen:findChild("PhotoViewerImage", true)).Src
+assert(stored == 1 and repaints == 1 and coroutine.status(worker) == "suspended",
+    "The thumbnail requests repaint while the full JPEG is still pending")
+require("orca.core").flushQueue()
+app.screen:UpdateLayout(390, 844)
+local previewImage = app.screen:findChild("PhotoViewerImage", true)
+local previewWidth, previewHeight = previewImage.ActualWidth, previewImage.ActualHeight
 finish(worker)
 require("orca.core").flushQueue()
 app.screen:UpdateLayout(390, 844)
 local image = assert(app.screen:findChild("PhotoViewerImage", true))
+assert(image.Src ~= preview and stored == 2, "The final JPEG replaces the preview with its own cache file")
+assert(image.ActualWidth == previewWidth and image.ActualHeight == previewHeight,
+    "Upgrading image quality must retain the preview's fitted layout")
 assert(image.Stretch == "Uniform" and image.Source and image.Source.Width == 32,
     "The full JPEG must be fitted without cropping")
 for _, size in ipairs { { 390, 844 }, { 834, 390 } } do
@@ -108,8 +127,65 @@ Viewer.open(app, { id = "late" })
 worker = workers[#workers]; step(worker)
 Viewer.open(app, { id = "cached" })
 finish(worker)
-assert(stored == 1 and app.screen:findChild("PhotoViewerImage", true).Src == cached)
+assert(stored == 2 and app.screen:findChild("PhotoViewerImage", true).Src == cached)
 Viewer.close(app)
+
+Viewer.open(app, { id = "preview-bad" })
+finish(workers[#workers])
+local retained = assert(app.screen:findChild("PhotoViewerImage", true)).Src
+assert(app.screen:findChild("RetryPhotoViewer", true), "A failed full download keeps the usable preview and offers retry")
+click("RetryPhotoViewer")
+assert(app.screen:findChild("PhotoViewerImage", true).Src == retained,
+    "Retry must retain the previous preview while loading")
+Viewer.close(app)
+finish(workers[#workers])
+
+app.messagePhotos.preview = function(_, attachment)
+    return (attachment.id == "reuse-preview" or attachment.id == "broken-preview-existing") and retained or nil
+end
+Viewer.open(app, { id = "reuse-preview" })
+assert(app.screen:findChild("PhotoViewerImage", true).Src == retained,
+    "An existing message thumbnail is shown immediately in the viewer")
+Viewer.close(app)
+finish(workers[#workers])
+
+for _, id in ipairs { "broken-preview", "broken-preview-existing" } do
+    Viewer.open(app, { id = id })
+    worker = workers[#workers]; step(worker)
+    local before = repaints
+    step(worker)
+    local shown = app.screen:findChild("PhotoViewerImage", true)
+    assert(repaints == before and app.screen:findChild("PhotoViewerLoading", true),
+        "Undecodable previews must leave the pending image state intact")
+    assert(id == "broken-preview" and not shown or id == "broken-preview-existing" and shown.Src == retained,
+        "Broken optional previews must not clear an existing usable photo")
+    finish(worker)
+    assert(app.screen:findChild("PhotoViewerImage", true).Src ~= retained
+        and not app.screen:findChild("PhotoViewerError", true), "A valid full photo still replaces an invalid preview")
+    Viewer.close(app)
+end
+
+Viewer.open(app, { id = "broken-full" })
+worker = workers[#workers]; step(worker); step(worker)
+local usablePreview = assert(app.screen:findChild("PhotoViewerImage", true)).Src
+finish(worker)
+assert(app.screen:findChild("PhotoViewerImage", true).Src == usablePreview
+    and app.screen:findChild("RetryPhotoViewer", true),
+    "An undecodable full JPEG must preserve the usable thumbnail and offer retry")
+corruptFull = false
+click("RetryPhotoViewer")
+finish(workers[#workers])
+assert(app.screen:findChild("PhotoViewerImage", true).Src ~= usablePreview
+    and not app.screen:findChild("RetryPhotoViewer", true),
+    "Retry must replace a corrupt full file with the valid response")
+Viewer.close(app)
+
+-- Closing after the preview arrived must also suppress the final file write.
+Viewer.open(app, { id = "late-stage" })
+worker = workers[#workers]; step(worker); step(worker)
+local expectedStored = stored
+Viewer.close(app); finish(worker)
+assert(stored == expectedStored, "Closed staged viewers cannot write a late full JPEG")
 
 -- Navigation and session changes are checked before writing private files.
 for _, invalidate in ipairs {
@@ -120,9 +196,9 @@ for _, invalidate in ipairs {
     Viewer.open(app, { id = "late" })
     worker = workers[#workers]; step(worker)
     invalidate(); finish(worker)
-    assert(stored == 1 and not app.screen:findChild("PhotoViewerImage", true),
+    assert(stored == expectedStored and not app.screen:findChild("PhotoViewerImage", true),
         "Stale requests must not recreate private files or change the viewer")
     Viewer.close(app)
 end
 app.media:clear()
-print("PASS: letterboxed full-photo viewer, cached JPEG, close, retry and stale request guards")
+print("PASS: staged letterboxed photo viewer, cached JPEG/preview, close, retry and stale request guards")

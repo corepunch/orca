@@ -259,4 +259,57 @@ package.loaded["orca.network"] = oldNetwork
 package.loaded["api.json"] = oldJson
 package.loaded["api.orca_transport"] = oldTransport
 
+-- Staged photos reuse the authenticated file path and fetch metadata only once.
+local photoRows = { { object_key = "full.jpg", thumbnail_key = "small.jpg" } }
+for _, previewStatus in ipairs { 200, 404 } do
+  client, requests = backend {
+    { status = 200, body = session() },
+    { status = 200, body = photoRows },
+    { status = previewStatus, body = previewStatus == 200 and "small-bytes" or { message = "Missing thumbnail" } },
+    { status = 200, body = "full-bytes" },
+  }
+  assert(client:signIn("a@b.test", "password"))
+  local previews = 0
+  local bytes = assert(client:getPhoto("photo-1", false, function(preview)
+    previews = previews + 1
+    check(preview == "small-bytes" and #requests == 3, "Preview arrives before the full file request")
+  end))
+  check(bytes == "full-bytes" and previews == (previewStatus == 200 and 1 or 0),
+    "A missing optional thumbnail must not stop the full download")
+  check(#requests == 4 and requests[3].url:match("/small.jpg$") and requests[4].url:match("/full.jpg$")
+    and requests[3].responseType == "binary" and requests[4].responseType == "binary"
+    and requests[3].headers.Authorization == "Bearer access-1"
+    and requests[4].headers.Authorization == "Bearer access-1", "Both stages use authenticated binary requests")
+end
+for _, cancel in ipairs { false, true } do
+  client, requests = backend {
+    { status = 200, body = session() }, { status = 200, body = photoRows },
+    { status = 200, body = "small-bytes" }, { status = 200, body = "full-bytes" },
+  }
+  assert(client:signIn("a@b.test", "password"))
+  value, err = client:getPhoto("photo-1", false, function()
+    if cancel then return false end
+    error("Broken optional preview consumer")
+  end)
+  check(cancel and value == nil and err.code == "cancelled" and #requests == 3
+    or not cancel and value == "full-bytes" and #requests == 4,
+    "Preview cancellation skips full transfer; callback errors leave it usable")
+end
+client, requests = backend {
+  { status = 200, body = session() }, { status = 200, body = photoRows },
+  { status = 200, body = "full-bytes" },
+}
+assert(client:signIn("a@b.test", "password"))
+check(client:getPhoto("photo-1", false) == "full-bytes" and #requests == 3
+  and requests[3].url:match("/full.jpg$"), "Callers without a preview callback keep one file request")
+client, requests = backend {
+  { status = 200, body = session() }, { status = 200, body = photoRows },
+  { status = 200, body = "small-bytes" },
+}
+assert(client:signIn("a@b.test", "password"))
+local called = false
+check(client:getPhoto("photo-1", true, function() called = true end) == "small-bytes"
+  and not called and #requests == 3 and requests[3].url:match("/small.jpg$"),
+  "Thumbnail-only requests keep their original one-file behavior")
+
 print("PASS: chat API (" .. checks .. " checks)")

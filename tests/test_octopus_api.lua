@@ -219,6 +219,50 @@ local ok = pcall(remote.transport, { method = "GET", path = "/../secret" })
 assert(not ok, "Path traversal is rejected")
 assert(not Octopus.appwrite { endpoint = "http://example.invalid/v1", projectId = "p" }, "HTTPS is required")
 
+-- Appwrite serves a small complete JPEG before the unchanged original. Preview
+-- errors, unsupported responses and consumer failures cannot suppress the full.
+do
+    local paths, previewBody, previewStatus, original = {}, image, 200, image
+    local staged = assert(Octopus.client { projectId = "staged", transport = function(request)
+        paths[#paths + 1] = request.path
+        assert(request.binary)
+        if request.path:find("width=96", 1, true) then return { status = previewStatus, body = previewBody } end
+        if request.path:find("/view", 1, true) then return { status = 200, body = original } end
+        return { status = 200, body = image }
+    end })
+    local previews = 0
+    local function preview(bytes)
+        previews = previews + 1
+        assert(bytes == image and #paths == 1 and paths[1]:find("quality=35", 1, true))
+    end
+    assert(staged:getImage("existing", preview) == image and previews == 1 and #paths == 2)
+    assert(paths[2]:match("/view$"), "A preview must not replace the full original")
+    paths, previewStatus = {}, 501
+    assert(staged:getImage("existing", preview) == image and previews == 1 and #paths == 2,
+        "Unavailable preview transformations must fall back to the original")
+    paths, previewStatus, previewBody = {}, 200, "not an image"
+    assert(staged:getImage("existing", preview) == image and previews == 1)
+    paths, previewBody = {}, image
+    assert(staged:getImage("existing", function() error("consumer failed") end) == image,
+        "A preview consumer failure must not prevent the full request")
+    paths = {}
+    local cancelled, cancelError = staged:getImage("existing", function() return false end)
+    assert(not cancelled and cancelError.code == "cancelled" and #paths == 1,
+        "Explicit preview cancellation must skip the full request")
+    paths, original = {}, "unsupported original"
+    assert(staged:getImage("existing", preview) == image and #paths == 3,
+        "Unsupported originals must retain the existing full-size JPEG preview fallback")
+    paths, original = {}, image
+    assert(staged:getImage("existing", "photo", preview) == image and #paths == 2
+        and paths[2]:find("width=780", 1, true), "Photo variants must keep their 780-pixel transformation after the thumbnail")
+    paths = {}
+    assert(staged:getImage("existing", "avatar") == image and #paths == 1
+        and paths[1]:find("width=192&height=192", 1, true), "Avatars must keep their existing transformation contract")
+    paths = {}
+    assert(staged:getImage("existing") == image and #paths == 1 and paths[1]:match("/view$"),
+        "Callers without a preview callback must retain the original request contract")
+end
+
 -- Profile photos live in profiles.avatarId, shared with the website and Chat.
 local photos = Octopus.mock { clock = clock }
 local lookups, transport = 0, photos.transport

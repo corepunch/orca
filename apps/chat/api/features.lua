@@ -123,12 +123,22 @@ return function(Client, helpers)
         if not ready then self:discardPhoto(attachment.id); return nil, err end
         return ready
     end
-    function Client:getPhoto(id, thumbnail)
+    -- onPreview receives the stored thumbnail before the full photo. It may
+    -- return false to cancel; preview failures/errors do not block the full file.
+    function Client:getPhoto(id, thumbnail, onPreview)
         if not validId(id) then return failure("validation", "Choose a photo.") end
         local rows, err = self:_request("GET", "/rest/v1/chat_attachments?select=*&id=eq." .. escape(id), nil, true)
         if not rows then return nil, err end
         local attachment = rows[1]
         if not attachment then return failure("not_found", "Photo is unavailable.") end
+        if thumbnail == false and type(onPreview) == "function" and attachment.thumbnail_key then
+            local bytes = self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. attachment.thumbnail_key,
+                nil, true, false, { responseType = "binary" })
+            if bytes then
+                local ok, proceed = pcall(onPreview, bytes)
+                if ok and proceed == false then return failure("cancelled", "Photo loading was cancelled.") end
+            end
+        end
         local key = thumbnail and attachment.thumbnail_key or attachment.object_key
         return self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. key, nil, true, false, { responseType = "binary" })
     end

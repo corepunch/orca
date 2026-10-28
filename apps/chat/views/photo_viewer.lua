@@ -41,10 +41,13 @@ function Viewer.open(app, attachment)
         while host:getFirstChild() do host:getFirstChild():removeFromParent() end
     end
     local function display(path)
-        clear()
         local image = ui.ImageView { Name = "PhotoViewerImage", Src = path, Foreground = "#ffffff",
             Stretch = "Uniform", IgnoreHitTest = true,
             MarginLeft = auto, MarginRight = auto, MarginTop = auto, MarginBottom = auto }
+        image:send("Node.LoadView")
+        if not image.Source then return false end
+        clear()
+        viewer.path = path
         host:addChild(image)
         -- ImageView also fits its frame during arrangement. Give auto margins
         -- the final fitted size so centering does not use its intrinsic pixels.
@@ -55,11 +58,15 @@ function Viewer.open(app, attachment)
         local width = "MIN(" .. availableWidth .. ", " .. availableHeight .. " * " .. ratio .. ")"
         image:attachPropertyProgram("Node.Width", width, "OneWay", true)
         image:attachPropertyProgram("Node.Height", "(" .. width .. ") / " .. ratio, "OneWay", true)
+        return true
     end
     local load
     local function failed(err)
-        clear()
-        host:addChild(C.stack({ Name = "PhotoViewerError", Spacing = 16, JustifyContent = "Center", Padding = "24" }, {
+        if not viewer.path then clear() end
+        local loading = host:findChild("PhotoViewerLoading", true)
+        if loading then loading:removeFromParent() end
+        host:addChild(C.stack({ Name = "PhotoViewerError", Spacing = 16, JustifyContent = "Center", Padding = "24",
+            MarginTop = viewer.path and auto or 0, Background = "#000000c0" }, {
             C.text(type(err) == "table" and err.message or "Could not load this photo.", {
                 WordWrap = true, Foreground = "#ffffff", TextHorizontalAlignment = "Center" }),
             C.button("retry", load, { Name = "RetryPhotoViewer", Foreground = "#ffffff",
@@ -71,15 +78,29 @@ function Viewer.open(app, attachment)
         viewer.attempt = viewer.attempt + 1
         local attempt = viewer.attempt
         local cached = app.messagePhotos and app.messagePhotos:cached(attachment)
-        if cached then display(cached); return end
-        clear()
+        if cached and display(cached) then return end
+        local preview = app.messagePhotos and app.messagePhotos.preview and app.messagePhotos:preview(attachment)
+        if viewer.path then display(viewer.path)
+        elseif preview then display(preview)
+        else clear() end
         host:addChild(ui.ActivityIndicator { Name = "PhotoViewerLoading", Foreground = "#ffffff" })
         app:load(function()
             if not current() or viewer.attempt ~= attempt then return end
             local path, err
             local ok = pcall(function()
                 local bytes
-                bytes, err = app.client:getPhoto(attachment.id, false)
+                bytes, err = app.client:getPhoto(attachment.id, false, function(previewBytes)
+                    if not current() or viewer.attempt ~= attempt then return false end
+                    local media = app:getMedia()
+                    if media then
+                        local previewPath = media:storePreview(previewBytes,
+                            "message-photo-preview-" .. attachment.id .. ":" .. tostring(attachment.updated_at or ""))
+                        if previewPath and display(previewPath) then
+                            if app.repaint then app:repaint()
+                            else screen:post("Window.Paint", require("orca.renderer").getSize()) end
+                        end
+                    end
+                end)
                 if not current() or viewer.attempt ~= attempt then return end
                 local media = app:getMedia()
                 if bytes and media then
@@ -88,7 +109,7 @@ function Viewer.open(app, attachment)
                 end
             end)
             if not current() or viewer.attempt ~= attempt then return end
-            if ok and path then display(path) else failed(err) end
+            if not (ok and path and display(path)) then failed(err) end
         end)
     end
     load()

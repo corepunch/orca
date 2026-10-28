@@ -207,12 +207,23 @@ Posts and feed summaries store optional `imageWidth`/`imageHeight`, derived from
 uploaded image headers with EXIF rotation applied. These dimensions reserve a
 gray frame before loading, preserving the feed's 4:5 to 1.91:1 crop limits.
 Legacy rows without metadata use a fallback ratio until a photo is decoded.
-There is no separate thumbnail upload or request. Avatars retain their 192-pixel
-square preview and post photos their 780-pixel preview/original fallback; on
-plans without image transformations the existing original-image path is used.
-Variant keys keep avatars from being reused as post photos.
-The gray placeholder shows a centered activity indicator until the image is
-ready. Known metadata keeps its frame unchanged when the image decodes.
+Post photos first request a 96-pixel JPEG at quality 35, then their existing
+780-pixel preview/original fallback. The thumbnail remains visible during the
+full download and on failure, with a retry control. No thumbnail upload or
+migration is needed. Preview failures fall through to the existing full path;
+on plans without image transformations the original-image path still works.
+`client:getImage(id, variant, onPreview)` optionally supplies complete preview
+bytes. A callback in the second argument keeps the original-image contract.
+Returning `false` cancels the remaining request with a `cancelled` error;
+callback exceptions still allow the full request. Preview snapshots have
+immutable private temporary paths, excluded from the completed persistent cache.
+Avatars retain their 192-pixel square preview, and variant keys keep avatars
+from being reused as post photos. Each shared request keeps one concurrency
+slot for both stages. Session, visibility and frame registration are checked
+before previews or final images update their targets.
+The gray placeholder shows a centered activity indicator until a preview arrives,
+then the indicator overlays the preview until the full image is ready.
+Known metadata keeps its frame unchanged when either stage decodes.
 Offscreen indicators stop animating, and stale session responses are discarded.
 
 ## Verify

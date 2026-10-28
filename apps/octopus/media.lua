@@ -39,13 +39,18 @@ function Media:discard(key)
     self.files[path], self.keys[key] = nil, nil
 end
 
-function Media:store(bytes, key)
+-- Preview snapshots stay temporary even when completed images are persistent.
+function Media:storePreview(bytes)
+    return self:store(bytes, nil, true)
+end
+
+function Media:store(bytes, key, preview)
     local extension = kind(bytes)
     if not extension or #bytes > 12000000 then return failure("invalid_image", "This photo can't be shown here.") end
     key = tostring(key or "photo")
-    local existing = self:path(key)
+    local existing = not preview and self:path(key)
     if existing then return existing end
-    if self.cache then
+    if self.cache and not preview then
         local path = self.cache:store(bytes, key)
         if path then return path end
     end
@@ -63,7 +68,8 @@ function Media:store(bytes, key)
         os.remove(path)
         return failure("file", "Could not save the photo.")
     end
-    self.files[path], self.keys[key] = true, path
+    self.files[path] = true
+    if not preview then self.keys[key] = path end
     return path
 end
 

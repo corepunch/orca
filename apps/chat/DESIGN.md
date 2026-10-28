@@ -81,7 +81,10 @@ claiming historical fidelity.
 - Tapping a message photo opens the full stored JPEG on black, fitted without
   cropping and letterboxed as needed. Keep a clear back action, preserve the
   conversation on close, and leave edit/delete commands in a compact photo menu.
-  Conversation photos use the full JPEG rather than enlarging a thumbnail.
+  Conversation photos and the viewer show a temporary enlarged thumbnail while
+  loading, then replace it with the full JPEG. If the full download fails, keep
+  the thumbnail visible with a retry action. A thumbnail never counts as a
+  completed full-photo download.
 
 These are Chat decisions agreed during the 2026-10-28 review, rather than
 requirements established by the linked Microsoft article. Clipping an image
