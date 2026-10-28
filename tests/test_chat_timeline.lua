@@ -111,17 +111,84 @@ for _, kind in ipairs { "group", "direct", "channel" } do
         == (kind == "channel" and 0 or 1), "Channel posts must never use outgoing decoration")
 end
 
--- A notice can consume footer space; bottom alignment must use its final viewport.
+-- Photos without captions own their timestamp and never grow a footer or tail.
+for _, kind in ipairs { "direct", "group", "channel" } do
+    for _, senderId in ipairs { "me", "other" } do
+        for _, emptyBody in ipairs { false, "" } do
+            local photosApp, photosList = fixture()
+            photosApp.room.kind, photosApp.room.name = kind, "Newsroom"
+            photosApp.contactsById = { other = { get_display_name = function() return "Alex" end } }
+            photosApp.rows = { { id = "photo-only", body = emptyBody or nil, sender_id = senderId,
+                created_at = "time", edited_at = "edited", attachments = { { id = "one" }, { id = "two" } } } }
+            local function verifyPhotoOnly(cached)
+                local entry = assert(named(photosList, "MessageEntryphoto-only"))
+                local bubble = assert(named(assert(named(entry, "MessageHolderphoto-only")), "MessageBubblephoto-only"))
+                local firstFrame = assert(named(bubble, "PhotoFrameone"))
+                local lastFrame = assert(named(bubble, "PhotoFrametwo"))
+                local content = assert(named(lastFrame, "PhotoContenttwo"))
+                local time = assert(named(lastFrame, "MessageTimephoto-only"), "Last photo must own the timestamp")
+                assert(time.Text == "edited time" and time.Foreground == "#ffffff" and time.Background == "#00000099",
+                    "Photo timestamps must remain readable over light and dark images")
+                assert(time.MarginLeft ~= time.MarginLeft and time.MarginTop ~= time.MarginTop
+                    and time.MarginRight == 6 and time.MarginBottom == 6,
+                    "Photo timestamps must sit inside the image's bottom-right corner")
+                assert(count(entry, function(child) return child.Name == "MessageTimephoto-only" end) == 1
+                    and not named(firstFrame, "MessageTimephoto-only"), "An album needs exactly one timestamp")
+                assert(count(entry, function(child) return child.Tail end) == 0,
+                    "Photo-only messages must stay rectangular for every sender and room kind")
+                local header = kind == "group" and senderId == "other" and 1 or 0
+                assert(#bubble.children == 2 + header,
+                    "Photo-only messages may have a sender header but no caption or timestamp footer")
+                assert(count(bubble, function(child) return child.Text == "Alex" end) == header)
+                if cached then
+                    assert(named(content, "Phototwo") and photosApp.photos == 2,
+                        "Cached previews must retain the overlay without another download")
+                else
+                    assert(count(content, function(child) return child.Text == "Loading photo…" end) == 1,
+                        "The loading photo frame must reserve the same timestamp overlay")
+                    assert(photosApp.messagePhotos.pending[2].frame == content,
+                        "Preview loading must replace photo content without removing its timestamp sibling")
+                end
+            end
+            assert(Timeline.refresh(photosApp))
+            verifyPhotoOnly(false)
+            photosApp:loadPhotos()
+            -- Rebuild the row while keeping each attachment's successful preview.
+            photosApp.rows[1].updated_at = "changed"
+            assert(Timeline.refresh(photosApp, { preserveScroll = true }))
+            verifyPhotoOnly(true)
+        end
+
+        local captionApp, captionList = fixture()
+        captionApp.room.kind, captionApp.room.name = kind, "Newsroom"
+        captionApp.rows = { { id = "captioned", body = "A caption", sender_id = senderId,
+            created_at = "time", attachments = { { id = "caption-photo" } } } }
+        assert(Timeline.refresh(captionApp))
+        local entry = assert(named(captionList, "MessageEntrycaptioned"))
+        local bubble = assert(named(assert(named(entry, "MessageHoldercaptioned")), "MessageBubblecaptioned"))
+        local frame = assert(named(bubble, "PhotoFramecaption-photo"))
+        local caption = bubble.children[#bubble.children]
+        assert(count(frame, function(child) return child.Text == "time" end) == 0
+            and count(caption, function(child) return child.Text == "A caption" end) == 1
+            and count(caption, function(child) return child.Text == "time" end) == 1,
+            "Captioned photos must keep both caption and timestamp below the image")
+        assert(count(entry, function(child) return child.Tail end) == 1,
+            "Captioned photos must retain their ordinary sender-run tail")
+    end
+end
+
+-- Successful refresh clears feedback; bottom alignment must use the reclaimed space.
 local noticeApp, noticeList = fixture()
+noticeApp.noticeText = "Could not refresh messages."
 local noticeRoot = noticeList:getRoot()
 local originalLayout = noticeRoot.UpdateLayout
 function noticeRoot:UpdateLayout(...)
-    noticeList.ActualHeight = noticeApp.noticeText and 160 or 200
+    noticeList.ActualHeight = noticeApp.noticeText ~= "" and 160 or 200
     originalLayout(self, ...)
 end
 assert(Timeline.refresh(noticeApp))
-assert(noticeApp.noticeText and noticeList.ActualHeight == 160 and noticeList.ContentOffset.Y == -540,
-    "Refresh must publish the footer notice before layout and bottom alignment")
+assert(noticeApp.noticeText == "" and noticeList.ActualHeight == 200 and noticeList.ContentOffset.Y == -500,
+    "Refresh must clear footer feedback before layout and bottom alignment")
 
 local app, list = fixture()
 assert(Timeline.refresh(app))
@@ -211,4 +278,4 @@ local ok, err = Timeline.refresh(app, { preserveScroll = true, quiet = true })
 assert(not ok and err.code == "refresh_failed" and not app.messageRefreshBusy, "Exceptions must release the read lock")
 package.loaded["orca.UIKit"], package.loaded["Chat/views/components"] = savedUI, savedComponents
 package.loaded["views.timeline"] = nil
-print("PASS: Chat timeline grouping, footer layout, polling snapshots, scrolling, stale results and serialization")
+print("PASS: Chat timeline grouping, photo timestamps, footer layout, polling snapshots, scrolling, stale results and serialization")

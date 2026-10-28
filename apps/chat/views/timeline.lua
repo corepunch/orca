@@ -79,6 +79,9 @@ local function refresh(self, options, room, node, current)
         -- Photos fill the bubble edge to edge; name and caption keep the text inset.
         local attachments = message.attachments or {}
         local photo = #attachments > 0
+        local photoOnly = photo and (not message.body or message.body == "")
+        local time = C.time(message.created_at) or ""
+        local timestamp = message.edited_at and "edited " .. time or time
         local bubble = C.stack({ Name = "MessageBubble" .. message.id, Background = tone,
             Width = photo and PHOTO_WIDTH or nil, Padding = photo and "0" or "10 6", Spacing = photo and 0 or 2 })
         local function section()
@@ -91,20 +94,31 @@ local function refresh(self, options, room, node, current)
             section():addChild(C.text(sender(self, room, message), {
                 FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText, TextWrapping = "Wrap" }))
         end
-        for _, attachment in ipairs(attachments) do
+        for index, attachment in ipairs(attachments) do
             local cached = previous and previous.node == node and previous.photos[attachment.id]
             local path = cached and cached.updated_at == attachment.updated_at and cached.path
             local frame = ui.Grid { Name = "PhotoFrame" .. attachment.id, Width = PHOTO_WIDTH,
                 Height = photoHeight(attachment), Background = colors.soft }
             bubble:addChild(frame)
+            local content = frame
+            if photoOnly and index == #attachments then
+                -- The loader replaces content; keep the timestamp in a separate layer.
+                content = ui.Grid { Name = "PhotoContent" .. attachment.id }
+                frame:addChild(content)
+                frame:addChild(C.text(timestamp, {
+                    Name = "MessageTime" .. message.id, FontSize = 11, Foreground = "#ffffff",
+                    Background = "#00000099", Padding = "4 2", MarginTop = 0/0, MarginLeft = 0/0,
+                    MarginRight = 6, MarginBottom = 6,
+                }))
+            end
             if path then
                 photos[attachment.id] = { updated_at = attachment.updated_at, path = path }
-                frame:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
+                content:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
                     Stretch = "UniformToFill", IgnoreHitTest = true })
             else
-                frame:addChild(C.text("Loading photo…", { FontSize = 12, Foreground = colors.muted,
+                content:addChild(C.text("Loading photo…", { FontSize = 12, Foreground = colors.muted,
                     TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center" }))
-                self.messagePhotos:watch(frame, attachment, function(loaded, photoError)
+                self.messagePhotos:watch(content, attachment, function(loaded, photoError)
                     if not current() then return end
                     if loaded then photos[attachment.id] = { updated_at = attachment.updated_at, path = loaded } end
                     local active = self.timelineSnapshot
@@ -115,19 +129,20 @@ local function refresh(self, options, room, node, current)
                 end)
             end
         end
-        local caption = section()
-        if message.body and message.body ~= "" then
-            caption:addChild(C.text(message.body, {
-                TextWrapping = "Wrap", FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
+        if not photoOnly then
+            local caption = section()
+            if message.body and message.body ~= "" then
+                caption:addChild(C.text(message.body, {
+                    TextWrapping = "Wrap", FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
+            end
+            caption:addChild(C.text(timestamp, {
+                FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
+            }))
         end
-        local time = C.time(message.created_at) or ""
-        caption:addChild(C.text(message.edited_at and "edited " .. time or time, {
-            FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
-        }))
         local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
             MarginTop = i == 1 and 0 or first and 8 or 2,
             PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })
-        if first and not mine then entry:addChild(C.tail(true, tone, false)) end
+        if first and not mine and not photoOnly then entry:addChild(C.tail(true, tone, false)) end
         -- A transparent button over the bubble opens its actions; the bubble's
         -- StackView keeps sizing itself to the text.
         local holder = ui.Grid { Name = "MessageHolder" .. message.id }
@@ -138,7 +153,7 @@ local function refresh(self, options, room, node, current)
                 Click = function() if current() then self:openMessageActions(message, canEdit, canDelete) end end })
         end
         entry:addChild(holder)
-        if last and mine then entry:addChild(C.tail(false, tone, true)) end
+        if last and mine and not photoOnly then entry:addChild(C.tail(false, tone, true)) end
         children[#children + 1], entries[#entries + 1] = entry, { id = message.id, node = entry }
     end
     if #messages == 0 then
@@ -171,8 +186,8 @@ local function refresh(self, options, room, node, current)
     while node:getFirstChild() do node:getFirstChild():removeFromParent() end
     for _, child in ipairs(children) do node:addChild(child) end
     self.timelineSnapshot = { node = node, signature = signature, entries = entries, photos = photos, retryPhotos = false }
-    -- The notice can resize the footer, so set it before measuring the bottom.
-    if not options.quiet then self:notice(self.remote and "Synced · updates automatically" or "Offline mock · messages stay in this session") end
+    -- Clear request feedback before measuring the composer's final viewport.
+    if not options.quiet then self:notice("") end
     local root = node:getRoot()
     root:UpdateLayout(root.Width, root.Height)
     bottom = math.min(0, node.ActualHeight - node.ScrollHeight)

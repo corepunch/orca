@@ -14,7 +14,10 @@ Make and the Xcode command-line tools without an Xcode project.
 
 ## Design
 
-The app follows Facebook Messenger on Windows Phone and is built from the
+Windows Phone / Metro is the current visual direction, with Facebook Messenger
+on Windows Phone as the app's established inspiration. See the
+[design decisions and historical references](DESIGN.md), including Microsoft's
+app-bar guidance and an archived Telegram screenshot. The app uses the
 engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
 
 - The inbox is a `Pivot` titled MESSENGER whose items are the all, unread
@@ -41,8 +44,11 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   your profile. Message bubbles are square, with
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
-  chats, and the time has its own trailing row so text and metadata cannot overlap.
-  Photos fill their bubble edge to edge above the caption and time.
+  chats, and text or captioned-photo bubbles have a trailing timestamp row.
+  Photos fill their bubble edge to edge. A photo without text has no footer or
+  tail; its timestamp overlays the bottom-right of the image on a dark backing.
+- Keep the footer free of routine sync captions and empty status rows. Show
+  loading, errors and retry actions only when relevant.
 
 `theme.lua` holds a black and a white palette with Messenger blue. The OS
 appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
@@ -97,10 +103,11 @@ to the composer. Retained tabs may finish loading in the background without bein
 selected, while session changes and discarded detail screens reject late results.
 Failed first loads offer retry and are distinct from empty conversations.
 
-The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
+Earlier visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
 [Chat App Design on Behance](https://www.behance.net/gallery/186704313/Chat-App-Design-Dark-UI),
 and [Appetite UI's chat patterns](https://www.appetiteui.com/screens/patterns/chat).
 These informed the avatar shortcuts, inbox hierarchy, quiet metadata, and fixed composer.
+Use [Windows Phone references](DESIGN.md) as the primary direction for current changes.
 
 ## Run
 
@@ -228,6 +235,18 @@ scope, including video. [Backend setup](backend/README.md) describes the
 live Appwrite services.
 
 ## Verify
+
+For Appwrite changes, run only the affected unit checks by default:
+
+```sh
+make test-chat-appwrite           # Standalone Lua; no engine build/startup
+make test-chat-appwrite-backend   # Injected dependencies; no Appwrite service
+```
+
+Use Node's `--test-name-pattern` for individual backend cases. Skip Appwrite
+tests for UI-only edits. Integration and end-to-end runs (including the
+live-suite emulator) require an explicit user request. Other focused checks
+are available below; run only those relevant to the change.
 
 ```sh
 make test-chat

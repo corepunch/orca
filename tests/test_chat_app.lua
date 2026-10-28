@@ -74,6 +74,8 @@ local home = app.screen
 assert(home.Width == 390 and home.Height == 844)
 assert(home.ResizeMode == "NoResize")
 assert(home:findChild("Room1", true), "Conversation list must be rendered")
+assert(not app.homeStatus.Visible and app.homeStatus:getTextContent() == "",
+    "A healthy inbox must not show a routine sync caption")
 home:UpdateLayout(390, 844)
 assert(home:getFirstChild().ActualHeight >= 843, "App content must fill the portrait viewport")
 local firstRoom = home:findChild("Room1", true)
@@ -143,6 +145,17 @@ assert(app.composer.ActualHeight >= 44 and app.composer.ActualWidth > 200,
     string.format("Composer dimensions: %.1f x %.1f", app.composer.ActualWidth, app.composer.ActualHeight))
 local composerStrip = screen:findChild("Composer", true)
 local footer = screen:findChild("ThreadFooter", true)
+assert(not app.status.Visible and app.status:getTextContent() == "",
+    "A healthy thread must not show a routine sync caption")
+assert(math.abs(footer.ActualHeight - composerStrip.ActualHeight) < 1,
+    "The clean composer must not reserve space for an empty status row")
+app:notice("Could not send. Try again.", true)
+assert(app.status.Visible and app.status:getTextContent() == "Could not send. Try again.",
+    "Actionable failures must remain visible")
+app:notice("")
+screen:UpdateLayout(390, 844)
+assert(not app.status.Visible and math.abs(footer.ActualHeight - composerStrip.ActualHeight) < 1,
+    "Clearing feedback must collapse its footer space")
 assert(math.abs(composerStrip.ActualWidth - 390) < 1 and math.abs(composerStrip.ActualX) < 1,
     "The rectangular composer must span the full screen width")
 assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - 844) < 1,
@@ -736,7 +749,9 @@ local nextPhoto, cancelPick = { jpeg = jpeg, thumbnail = jpeg, width = 32, heigh
     thumbnail_width = 32, thumbnail_height = 24, byte_count = #jpeg, mime_type = "image/jpeg" }, false
 photoMedia.pick = function()
     if cancelPick then return nil, { code = "cancelled", message = "Photo selection cancelled." } end
-    return nextPhoto
+    local photo = {}
+    for key, value in pairs(nextPhoto) do photo[key] = value end
+    return photo
 end
 local photoApp = mockApp(photoMedia)
 local photoRoom = photoApp.client:listRooms()[1]
@@ -782,6 +797,35 @@ local previewPath = photoView.Src
 local previewFile = assert(io.open(previewPath, "rb"))
 assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the actual mock API thumbnail bytes")
 previewFile:close()
+
+-- Photo-only messages have one image rectangle, with metadata over the image.
+click(photoApp, "AttachPhoto")
+click(photoApp, "SendMessage")
+photoMessages = photoApp.client:listMessages(photoApp.room.id)
+local photoOnly = photoMessages[#photoMessages]
+assert(photoOnly.body == "" or photoOnly.body == nil, "The photo-only fixture must send without a caption")
+local photoFrame = assert(photoApp.screen:findChild("PhotoFrame" .. photoOnly.attachments[1].id, true))
+local photoOnlyBubble = photoFrame:getParent()
+local photoOnlyEntry = photoOnlyBubble:getParent():getParent()
+local photoTime = assert(photoFrame:findChild("MessageTime" .. photoOnly.id),
+    "The timestamp must survive replacement of the loading placeholder")
+assert(photoFrame:findChild("Photo" .. photoOnly.attachments[1].id, true).Source,
+    "Photo-only messages must load a real preview beneath the timestamp")
+for _, width in ipairs { 320, 390, 834 } do
+    photoApp.screen.Width = width
+    photoApp.screen:UpdateLayout(width, 844)
+    assert(math.abs(photoOnlyBubble.ActualHeight - photoFrame.ActualHeight) < 1
+        and math.abs(photoOnlyEntry.ActualHeight - photoFrame.ActualHeight) < 1,
+        "A photo-only message must not reserve space for a footer or tail")
+    assert(photoTime.ActualX > 0 and photoTime.ActualY > 0
+        and math.abs(photoTime.ActualX + photoTime.ActualWidth - (photoFrame.ActualWidth - 6)) < 1
+        and math.abs(photoTime.ActualY + photoTime.ActualHeight - (photoFrame.ActualHeight - 6)) < 1,
+        "The timestamp must overlay the image's bottom-right corner")
+    local actions = photoOnlyEntry:findChild("MessageActions" .. photoOnly.id, true)
+    assert(actions and math.abs(actions.ActualHeight - photoFrame.ActualHeight) < 1,
+        "Photo-only messages must retain their full-image action target")
+end
+photoApp.screen.Width = 390
 photoApp:show("/profile"); click(photoApp, "SignOut")
 local leftover = io.open(previewPath, "rb")
 if leftover then leftover:close() end

@@ -1,9 +1,24 @@
 # Live Chat backend tests
 
+Routine Appwrite validation uses **only focused unit tests**:
+`make test-chat-appwrite` (standalone Lua adapter) or
+`make test-chat-appwrite-backend` (Function logic with injected dependencies).
+Integration is trusted for routine changes. Do not run this directory's suites,
+including `test-live-emulated`, unless integration verification is explicitly
+requested. UI-only changes do not require Appwrite unit tests either.
+
 Manual end-to-end tests for the **deployed** Chat backend: native Appwrite
 Account sessions plus the `orca-chat-api` Function, using real test accounts.
-They are deliberately **not** part of `make test`, `make test-chat` or CI. Run
-them yourself after a deployment or from time to time.
+They are deliberately **not** part of `make test`, `make test-chat` or CI.
+Run them **only when the user explicitly requests live verification**. Agents
+must not start them automatically after edits, offline checks, builds, or
+deployments, including UI-only message and photo changes. Setup, cleanup,
+native live checks, and two-account device checks follow the same policy.
+
+For routine Chat presentation changes, use `make test-chat-ui` (offline,
+existing binary) or run only the affected test file. Rebuild separately when
+native code changes or the binary is missing. Full offline and live suites
+are not required after every small UI edit.
 
 The offline suites (`make test-chat`, `make test-chat-appwrite-backend`) only
 use mocks and injected repositories. These tests catch what the mocks can't:
@@ -139,8 +154,9 @@ The timeout defaults to 600 seconds (`CHAT_LIVE_TIMEOUT_MS`, up to 900000).
 It removes its messages/photos and revokes its own sessions, keeping Node's
 saved sessions and the interactive app's Keychain entry intact. The canonical
 direct/contact relation remains. A timeout may leave interrupted-run artifacts.
-Finish with a two-account/device UI pass for touchscreen layout and actual iOS
-process relaunch; the native suite does not cover those.
+When device verification is explicitly requested, use a two-account/device UI
+pass for touchscreen layout and actual iOS process relaunch; the native suite
+does not cover those.
 
 ### Telegram parity checklist
 

@@ -1,0 +1,646 @@
+// !$*UTF8*$!
+{
+"archiveVersion" = 1;
+"classes" = {
+};
+"objectVersion" = 56;
+"objects" = {
+"09AA38CEF3EA53936A20C858" = {
+"isa" = "XCBuildConfiguration";
+"name" = "Debug";
+"buildSettings" = {
+"ORCA_ROOT" = "$(SRCROOT)/../..";
+"ORCA_PROJECT" = "$(SRCROOT)/.";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"SDKROOT" = "iphoneos";
+"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+"TARGETED_DEVICE_FAMILY" = "1,2";
+"SUPPORTS_MACCATALYST" = "NO";
+"SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD" = "NO";
+"GCC_C_LANGUAGE_STANDARD" = "gnu11";
+"CLANG_ENABLE_OBJC_ARC" = "NO";
+"ENABLE_USER_SCRIPT_SANDBOXING" = "NO";
+"ALWAYS_SEARCH_USER_PATHS" = "NO";
+"HEADER_SEARCH_PATHS" = (
+"$(inherited)",
+"$(DERIVED_FILE_DIR)",
+"$(DERIVED_FILE_DIR)/include",
+"$(DERIVED_FILE_DIR)/dependencies/include",
+"$(ORCA_ROOT)",
+"$(SDKROOT)/usr/include/libxml2",
+);
+"LIBRARY_SEARCH_PATHS" = (
+"$(inherited)",
+"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
+);
+"GCC_PREPROCESSOR_DEFINITIONS" = (
+"$(inherited)",
+"ORCA_IOS=1",
+"ORCA_STATIC=1",
+"GL_SILENCE_DEPRECATION",
+);
+"OTHER_CFLAGS" = (
+"$(inherited)",
+"-Wno-deprecated-declarations",
+);
+"PRODUCT_NAME" = "Banking";
+"PRODUCT_BUNDLE_IDENTIFIER" = "org.orca.Banking";
+"MARKETING_VERSION" = "1.0";
+"CURRENT_PROJECT_VERSION" = "1";
+"CODE_SIGN_STYLE" = "Automatic";
+"GCC_OPTIMIZATION_LEVEL" = "0";
+"DEBUG_INFORMATION_FORMAT" = "dwarf";
+"ONLY_ACTIVE_ARCH" = "YES";
+};
+};
+"2C51B24F1BD0E37CCD3A85CD" = {
+"isa" = "XCBuildConfiguration";
+"name" = "Release";
+"buildSettings" = {
+"ORCA_ROOT" = "$(SRCROOT)/../..";
+"ORCA_PROJECT" = "$(SRCROOT)/.";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"SDKROOT" = "iphoneos";
+"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
+"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
+"TARGETED_DEVICE_FAMILY" = "1,2";
+"SUPPORTS_MACCATALYST" = "NO";
+"SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD" = "NO";
+"GCC_C_LANGUAGE_STANDARD" = "gnu11";
+"CLANG_ENABLE_OBJC_ARC" = "NO";
+"ENABLE_USER_SCRIPT_SANDBOXING" = "NO";
+"ALWAYS_SEARCH_USER_PATHS" = "NO";
+"HEADER_SEARCH_PATHS" = (
+"$(inherited)",
+"$(DERIVED_FILE_DIR)",
+"$(DERIVED_FILE_DIR)/include",
+"$(DERIVED_FILE_DIR)/dependencies/include",
+"$(ORCA_ROOT)",
+"$(SDKROOT)/usr/include/libxml2",
+);
+"LIBRARY_SEARCH_PATHS" = (
+"$(inherited)",
+"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
+);
+"GCC_PREPROCESSOR_DEFINITIONS" = (
+"$(inherited)",
+"ORCA_IOS=1",
+"ORCA_STATIC=1",
+"GL_SILENCE_DEPRECATION",
+);
+"OTHER_CFLAGS" = (
+"$(inherited)",
+"-Wno-deprecated-declarations",
+);
+"PRODUCT_NAME" = "Banking";
+"PRODUCT_BUNDLE_IDENTIFIER" = "org.orca.Banking";
+"MARKETING_VERSION" = "1.0";
+"CURRENT_PROJECT_VERSION" = "1";
+"CODE_SIGN_STYLE" = "Automatic";
+"GCC_OPTIMIZATION_LEVEL" = "s";
+"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+"ONLY_ACTIVE_ARCH" = "NO";
+};
+};
+"1E4B6209DBC7689E3E7CF89C" = {
+"isa" = "XCConfigurationList";
+"buildConfigurations" = (
+"09AA38CEF3EA53936A20C858",
+"2C51B24F1BD0E37CCD3A85CD",
+);
+"defaultConfigurationIsVisible" = 0;
+"defaultConfigurationName" = "Debug";
+};
+"E7CD36740DB9EFBDD8B518FF" = {
+"isa" = "XCBuildConfiguration";
+"name" = "Debug";
+"buildSettings" = {
+"INFOPLIST_FILE" = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
+"GENERATE_INFOPLIST_FILE" = "NO";
+"OTHER_LDFLAGS" = (
+"$(inherited)",
+"-llua",
+"-llz4",
+"-lcurl",
+"-lxml2",
+"-lz",
+"-liconv",
+"-lm",
+"-framework",
+"UIKit",
+"-framework",
+"Foundation",
+"-framework",
+"OpenGLES",
+"-framework",
+"QuartzCore",
+"-framework",
+"CoreGraphics",
+"-framework",
+"CoreText",
+"-framework",
+"ImageIO",
+"-framework",
+"PhotosUI",
+"-framework",
+"Security",
+"-framework",
+"SystemConfiguration",
+"-framework",
+"UniformTypeIdentifiers",
+"-framework",
+"AudioToolbox",
+);
+"SKIP_INSTALL" = "NO";
+"INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
+"GCC_OPTIMIZATION_LEVEL" = "0";
+"DEBUG_INFORMATION_FORMAT" = "dwarf";
+"ONLY_ACTIVE_ARCH" = "YES";
+};
+};
+"B03ED196A12E1E05501E30C0" = {
+"isa" = "XCBuildConfiguration";
+"name" = "Release";
+"buildSettings" = {
+"INFOPLIST_FILE" = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
+"GENERATE_INFOPLIST_FILE" = "NO";
+"OTHER_LDFLAGS" = (
+"$(inherited)",
+"-llua",
+"-llz4",
+"-lcurl",
+"-lxml2",
+"-lz",
+"-liconv",
+"-lm",
+"-framework",
+"UIKit",
+"-framework",
+"Foundation",
+"-framework",
+"OpenGLES",
+"-framework",
+"QuartzCore",
+"-framework",
+"CoreGraphics",
+"-framework",
+"CoreText",
+"-framework",
+"ImageIO",
+"-framework",
+"PhotosUI",
+"-framework",
+"Security",
+"-framework",
+"SystemConfiguration",
+"-framework",
+"UniformTypeIdentifiers",
+"-framework",
+"AudioToolbox",
+);
+"SKIP_INSTALL" = "NO";
+"INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
+"GCC_OPTIMIZATION_LEVEL" = "s";
+"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+"ONLY_ACTIVE_ARCH" = "NO";
+};
+};
+"5C4A41E1B9C45C1687F96CF9" = {
+"isa" = "XCConfigurationList";
+"buildConfigurations" = (
+"E7CD36740DB9EFBDD8B518FF",
+"B03ED196A12E1E05501E30C0",
+);
+"defaultConfigurationIsVisible" = 0;
+"defaultConfigurationName" = "Debug";
+};
+"3BF2B439D83108F1AA9584F0" = {
+"isa" = "PBXFileReference";
+"path" = "u_geometry.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"65521147251D803FB1F338F0" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "3BF2B439D83108F1AA9584F0";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"FE17040419202473A0450F3F" = {
+"isa" = "PBXFileReference";
+"path" = "u_orca.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"3DDFAAC86ED5E907DB209A7D" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "FE17040419202473A0450F3F";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"D2181FDA8DD894232D039594" = {
+"isa" = "PBXFileReference";
+"path" = "u_sysutil.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"D5CCDEEFEF9D374DC96FF70A" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "D2181FDA8DD894232D039594";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"740FBD71F2D3BB7A5874ECA8" = {
+"isa" = "PBXFileReference";
+"path" = "u_console.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"73D83E24C5843D59D0B62AC3" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "740FBD71F2D3BB7A5874ECA8";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"34E5FBBCBE3176AD042506AC" = {
+"isa" = "PBXFileReference";
+"path" = "u_parsers.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"0AF39FE5F7387655AD9A8FB1" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "34E5FBBCBE3176AD042506AC";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"E9C8ACFED7B1B1C0E7136156" = {
+"isa" = "PBXFileReference";
+"path" = "u_debug.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"B50528024333B06007BD0C60" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "E9C8ACFED7B1B1C0E7136156";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"6713268E31C5FA584C7185CE" = {
+"isa" = "PBXFileReference";
+"path" = "u_network.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"7C397BC6875E6C3DB0CF731E" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "6713268E31C5FA584C7185CE";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"431F787BDBBF945B98E0B459" = {
+"isa" = "PBXFileReference";
+"path" = "u_renderer.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"F9DB4963FA17E56ED4163393" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "431F787BDBBF945B98E0B459";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"8B2402E161C703FDC7E91BF0" = {
+"isa" = "PBXFileReference";
+"path" = "u_filesystem.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"9CAEA638192CB14230AB6D21" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "8B2402E161C703FDC7E91BF0";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"E751426A76E21A414369B694" = {
+"isa" = "PBXFileReference";
+"path" = "u_core.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"91BDAFBD6A82CB7CCCFAEF94" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "E751426A76E21A414369B694";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"EF46FF2EF79FF736DA7D848A" = {
+"isa" = "PBXFileReference";
+"path" = "u_data.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"4ACD369103D458DCF7F60CE9" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "EF46FF2EF79FF736DA7D848A";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"564321233673841F3EAAA9D9" = {
+"isa" = "PBXFileReference";
+"path" = "u_media.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"FEF57507BE2F55D969D8B592" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "564321233673841F3EAAA9D9";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"A1A1B0A559963F72918AC739" = {
+"isa" = "PBXFileReference";
+"path" = "u_credentials.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"480BCB49654A5F61FDA6F4F0" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "A1A1B0A559963F72918AC739";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"162B92800E3AD53CEC9CB5BC" = {
+"isa" = "PBXFileReference";
+"path" = "u_UIKit.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"A338AA3F9DCFD32CA0E3E6C2" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "162B92800E3AD53CEC9CB5BC";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"709706B0DA7D53D275ED0C03" = {
+"isa" = "PBXFileReference";
+"path" = "u_SceneKit.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"DBD48EDB615D4D3FFB4140F0" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "709706B0DA7D53D275ED0C03";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"83424ACAA6CAF4EEAD77DE73" = {
+"isa" = "PBXFileReference";
+"path" = "u_SpriteKit.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"E1331E22DDDAAB2050635741" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "83424ACAA6CAF4EEAD77DE73";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"F99A1494E406C50D0A5CE0FD" = {
+"isa" = "PBXFileReference";
+"path" = "u_platform_unix.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"67655E313DB73FD02ECE5C4A" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "F99A1494E406C50D0A5CE0FD";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"4A1D7E190E4DE5E974329025" = {
+"isa" = "PBXFileReference";
+"path" = "ios_runtime.m";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.objc";
+};
+"B3DB704ABC167581963A98C6" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "4A1D7E190E4DE5E974329025";
+"settings" = {
+"COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"BCBE196513D59F88F4B8718C" = {
+"isa" = "PBXFileReference";
+"path" = "native_modules.m";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.objc";
+};
+"5297588D925865098767F1D7" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "BCBE196513D59F88F4B8718C";
+"settings" = {
+"COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"45666D976BAB316D970EC459" = {
+"isa" = "PBXShellScriptBuildPhase";
+"buildActionMask" = 2147483647;
+"name" = "Prepare ORCA sources and dependencies";
+"shellPath" = "/bin/sh";
+"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" prepare\n";
+"inputPaths" = (
+"$(ORCA_ROOT)/tools/xcode/build.py",
+"$(ORCA_ROOT)/tools/xcode/common.py",
+"$(ORCA_ROOT)/tools/ios/dependencies.py",
+);
+"outputPaths" = (
+"$(DERIVED_FILE_DIR)/u_geometry.c",
+"$(DERIVED_FILE_DIR)/u_orca.c",
+"$(DERIVED_FILE_DIR)/u_sysutil.c",
+"$(DERIVED_FILE_DIR)/u_console.c",
+"$(DERIVED_FILE_DIR)/u_parsers.c",
+"$(DERIVED_FILE_DIR)/u_debug.c",
+"$(DERIVED_FILE_DIR)/u_network.c",
+"$(DERIVED_FILE_DIR)/u_renderer.c",
+"$(DERIVED_FILE_DIR)/u_filesystem.c",
+"$(DERIVED_FILE_DIR)/u_core.c",
+"$(DERIVED_FILE_DIR)/u_data.c",
+"$(DERIVED_FILE_DIR)/u_media.c",
+"$(DERIVED_FILE_DIR)/u_credentials.c",
+"$(DERIVED_FILE_DIR)/u_UIKit.c",
+"$(DERIVED_FILE_DIR)/u_SceneKit.c",
+"$(DERIVED_FILE_DIR)/u_SpriteKit.c",
+"$(DERIVED_FILE_DIR)/u_platform_unix.c",
+"$(DERIVED_FILE_DIR)/ios_runtime.m",
+"$(DERIVED_FILE_DIR)/native_modules.m",
+);
+"runOnlyForDeploymentPostprocessing" = 0;
+"alwaysOutOfDate" = 1;
+};
+"878A52FC5FF6A57D50B7B870" = {
+"isa" = "PBXSourcesBuildPhase";
+"buildActionMask" = 2147483647;
+"files" = (
+"65521147251D803FB1F338F0",
+"3DDFAAC86ED5E907DB209A7D",
+"D5CCDEEFEF9D374DC96FF70A",
+"73D83E24C5843D59D0B62AC3",
+"0AF39FE5F7387655AD9A8FB1",
+"B50528024333B06007BD0C60",
+"7C397BC6875E6C3DB0CF731E",
+"F9DB4963FA17E56ED4163393",
+"9CAEA638192CB14230AB6D21",
+"91BDAFBD6A82CB7CCCFAEF94",
+"4ACD369103D458DCF7F60CE9",
+"FEF57507BE2F55D969D8B592",
+"480BCB49654A5F61FDA6F4F0",
+"A338AA3F9DCFD32CA0E3E6C2",
+"DBD48EDB615D4D3FFB4140F0",
+"E1331E22DDDAAB2050635741",
+"67655E313DB73FD02ECE5C4A",
+"B3DB704ABC167581963A98C6",
+"5297588D925865098767F1D7",
+);
+"runOnlyForDeploymentPostprocessing" = 0;
+};
+"41D311A605520FC7B8B9A980" = {
+"isa" = "PBXShellScriptBuildPhase";
+"buildActionMask" = 2147483647;
+"name" = "Bundle ORCA runtime and app resources";
+"shellPath" = "/bin/sh";
+"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" resources\n";
+"runOnlyForDeploymentPostprocessing" = 0;
+"alwaysOutOfDate" = 1;
+};
+"A8792157CB4F27FB949C035F" = {
+"isa" = "PBXFileReference";
+"path" = "Banking.app";
+"sourceTree" = "BUILT_PRODUCTS_DIR";
+"explicitFileType" = "wrapper.application";
+};
+"B8764ADBD6403993534BB2FD" = {
+"isa" = "PBXNativeTarget";
+"name" = "Banking-ios";
+"productName" = "Banking";
+"productReference" = "A8792157CB4F27FB949C035F";
+"productType" = "com.apple.product-type.application";
+"buildConfigurationList" = "5C4A41E1B9C45C1687F96CF9";
+"buildPhases" = (
+"45666D976BAB316D970EC459",
+"878A52FC5FF6A57D50B7B870",
+"41D311A605520FC7B8B9A980",
+);
+"buildRules" = (
+);
+"dependencies" = (
+);
+};
+"2F57FC4A3FA941B68F299FA2" = {
+"isa" = "PBXFileReference";
+"name" = "Application resources";
+"path" = ".";
+"sourceTree" = "SOURCE_ROOT";
+"lastKnownFileType" = "folder";
+};
+"2D25A9B56DCCB8131EBB5456" = {
+"isa" = "PBXGroup";
+"name" = "Engine";
+"children" = (
+"3BF2B439D83108F1AA9584F0",
+"FE17040419202473A0450F3F",
+"D2181FDA8DD894232D039594",
+"740FBD71F2D3BB7A5874ECA8",
+"34E5FBBCBE3176AD042506AC",
+"E9C8ACFED7B1B1C0E7136156",
+"6713268E31C5FA584C7185CE",
+"431F787BDBBF945B98E0B459",
+"8B2402E161C703FDC7E91BF0",
+"E751426A76E21A414369B694",
+"EF46FF2EF79FF736DA7D848A",
+"564321233673841F3EAAA9D9",
+"A1A1B0A559963F72918AC739",
+"F99A1494E406C50D0A5CE0FD",
+);
+"sourceTree" = "<group>";
+};
+"90C4A5508CD24F3833987AAE" = {
+"isa" = "PBXGroup";
+"name" = "Plugins";
+"children" = (
+"162B92800E3AD53CEC9CB5BC",
+"709706B0DA7D53D275ED0C03",
+"83424ACAA6CAF4EEAD77DE73",
+);
+"sourceTree" = "<group>";
+};
+"D20ADA84B682F079A05DF86A" = {
+"isa" = "PBXGroup";
+"name" = "Native Sources";
+"children" = (
+"4A1D7E190E4DE5E974329025",
+"BCBE196513D59F88F4B8718C",
+);
+"sourceTree" = "<group>";
+};
+"BEAD8915881B60FC177E63AB" = {
+"isa" = "PBXGroup";
+"name" = "Products";
+"children" = (
+"A8792157CB4F27FB949C035F",
+);
+"sourceTree" = "<group>";
+};
+"664F835B1ED89846DAB355B5" = {
+"isa" = "PBXGroup";
+"children" = (
+"2F57FC4A3FA941B68F299FA2",
+"2D25A9B56DCCB8131EBB5456",
+"90C4A5508CD24F3833987AAE",
+"D20ADA84B682F079A05DF86A",
+"BEAD8915881B60FC177E63AB",
+);
+"sourceTree" = "<group>";
+};
+"244210E48437B6556980A702" = {
+"isa" = "PBXProject";
+"buildConfigurationList" = "1E4B6209DBC7689E3E7CF89C";
+"compatibilityVersion" = "Xcode 14.0";
+"developmentRegion" = "en";
+"knownRegions" = (
+"en",
+"Base",
+);
+"mainGroup" = "664F835B1ED89846DAB355B5";
+"productRefGroup" = "BEAD8915881B60FC177E63AB";
+"projectDirPath" = "";
+"projectRoot" = "";
+"targets" = (
+"B8764ADBD6403993534BB2FD",
+);
+"attributes" = {
+"LastUpgradeCheck" = "1600";
+};
+};
+};
+"rootObject" = "244210E48437B6556980A702";
+}

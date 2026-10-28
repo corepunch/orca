@@ -197,6 +197,7 @@ local App = Application:extend {
         if self.status then
             self.status:setTextContent(text or "")
             self.status.Foreground = error and colors.error or colors.dim
+            self.status.Visible = text ~= nil and text ~= ""
         elseif error then
             self:reportError(text, "Request")
         end
@@ -325,8 +326,9 @@ local App = Application:extend {
                 if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
                 self.inboxError = err
                 if err and not self.rooms then self:renderRoomList() end
-                self.homeStatus:setTextContent(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"))
+                self.homeStatus:setTextContent(err and err.message or "")
                 self.homeStatus.Foreground = err and colors.error or colors.dim
+                self.homeStatus.Visible = err ~= nil
             end)
         end
         if self.shell and self.shell:has("Chats") then
@@ -336,6 +338,7 @@ local App = Application:extend {
             return self.shell:show("Chats")
         end
         self.status = C.text("", {
+            Name = "InboxStatus", Height = 24, SafeAreaEdge = "Bottom", class = "frosted", Visible = false,
             FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
         })
         self.homeStatus = self.status
@@ -374,10 +377,8 @@ local App = Application:extend {
             end
             self.pivot:addChild(item)
         end
-        local statusBar = ui.Grid { Name = "InboxStatus", Rows = "24px", SafeAreaEdge = "Bottom", class = "frosted" }
-        statusBar:addChild(self.status)
         local grid = ui.Node2D { Background = colors.background }
-        grid:addChild(self.pivot); grid:addChild(statusBar)
+        grid:addChild(self.pivot); grid:addChild(self.status)
         local screen = self:frame(grid, "Chats")
         self:renderRoomList()
         refresh()
@@ -561,7 +562,7 @@ local App = Application:extend {
         self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll",
             ScrollAnchor = "Bottom" })
         self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
-            Margin = "24 8" })
+            Name = "ThreadStatus", Visible = false, Margin = "24 8" })
         self.composer = C.input("Message", "type a message", {
             Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end, BorderRadius = "0",
         })
