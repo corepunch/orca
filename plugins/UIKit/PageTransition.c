@@ -203,6 +203,17 @@ NativeTransition_Screen(struct Object *page)
 }
 
 static void
+NativeTransition_ClipBars(struct Object *object, struct Object *page, float *bottom)
+{
+  if (object == page) return;
+  struct Node2D *node = GetNode2D(object);
+  if (node && OBJ_IsHidden(object)) return;
+  if (node && node->SafeAreaEdge == kSafeAreaEdgeBottom)
+    *bottom = MIN(*bottom, node->Matrix.v[13]);
+  FOR_EACH_OBJECT(child, object) NativeTransition_ClipBars(child, page, bottom);
+}
+
+static void
 NativeTransition_Reset(bool_t clear_overlay)
 {
   struct Object *page = native_transition.page;
@@ -232,7 +243,8 @@ NativeTransition_Completed(uint64_t generation, bool_t finished)
 
 void ORCA_IOS_CancelPageTransitionRequests(void)
 {
-  if (native_transition.page) NativeTransition_Completed(native_transition.generation, FALSE);
+  if (native_transition.phase == NativeTransitionHeld) NativeTransition_Reset(FALSE);
+  else if (native_transition.page) NativeTransition_Completed(native_transition.generation, FALSE);
 }
 
 void
@@ -289,10 +301,12 @@ PageTransition_NativePresent(struct Object *screen, uint32_t width, uint32_t hei
   struct Node2D *node = GetNode2D(page);
   struct Motion const *motion = Transition_Motion(kTransitionTypeTurnstile, native_transition.mode);
   struct Screen *view = GetScreen(screen);
+  float bottom = MIN(node->Matrix.v[13] + Node2D_GetFrame(node, kBox3FieldHeight), height);
+  NativeTransition_ClipBars(screen, page, &bottom);
   struct OrcaIOSPageTransition spec = {
     .x = node->Matrix.v[12], .y = node->Matrix.v[13],
     .width = MIN(Node2D_GetFrame(node, kBox3FieldWidth), width),
-    .height = MIN(Node2D_GetFrame(node, kBox3FieldHeight), height),
+    .height = MAX(bottom - node->Matrix.v[13], 0),
     .background = { view->ClearColor.r, view->ClearColor.g, view->ClearColor.b, view->ClearColor.a },
     .fromAngle = motion->turn[0], .toAngle = motion->turn[1],
     .perspective = motion->depth, .duration = motion->ms / 1000,
