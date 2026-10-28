@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRepository } from '../src/repository.js';
-import { execute, feedDocument, publiclyReadable, refreshPost } from '../src/materialize.js';
+import { execute, feedDocument, publiclyReadable, refreshPost, reconcileBatch } from '../src/materialize.js';
 import { compatibleAttribute, coversIndex, migrate, feedAttributes, indexes } from '../src/migrate.js';
 
 const now = '2026-10-28T10:00:00.000Z';
@@ -148,6 +148,92 @@ test('a failed post is reported and does not starve later posts during reconcili
   assert.deepEqual(result.body.failed, [{ id: 'a', status: 500 }]);
   assert.ok(repo.collections.feed.has('b'));
   assert.equal((await repo.loadCheckpoint()).cursor, 'b');
+});
+
+test('reconciliation runs at most four workers and checkpoints only wholly settled groups', async t => {
+  const ids = Array.from('abcdefghi'), repo = fixture(ids.map(id => post(id)));
+  repo.config.batchSize = ids.length;
+  const gates = new Map(), started = [], checkpoints = [];
+  const originalGet = repo.get.bind(repo), originalPut = repo.put.bind(repo), originalCheckpoint = repo.checkpoint.bind(repo);
+  let active = 0, maximum = 0;
+  for (const id of ids) {
+    let release;
+    const waiting = new Promise(resolve => { release = resolve; });
+    gates.set(id, { waiting, release });
+  }
+  t.after(() => { for (const gate of gates.values()) gate.release(); });
+  repo.get = async (collection, id, privileged) => {
+    if (collection === 'posts' && !started.includes(id)) {
+      started.push(id); maximum = Math.max(maximum, ++active);
+      await gates.get(id).waiting;
+    }
+    return originalGet(collection, id, privileged);
+  };
+  repo.put = async (...args) => { await originalPut(...args); active--; };
+  repo.checkpoint = async state => {
+    assert.equal(active, 0, 'no cursor can pass an unfinished row');
+    checkpoints.push(structuredClone(state)); await originalCheckpoint(state);
+  };
+  const turn = () => new Promise(resolve => setImmediate(resolve));
+  const running = reconcileBatch(repo);
+  await turn();
+  assert.deepEqual(started, ['a', 'b', 'c', 'd']); assert.equal(active, 4);
+  for (const id of ['d', 'b', 'c']) gates.get(id).release();
+  await turn();
+  assert.equal(active, 1); assert.deepEqual(checkpoints, []);
+  assert.deepEqual(started, ['a', 'b', 'c', 'd']);
+  gates.get('a').release(); await turn();
+  assert.deepEqual(checkpoints, [{ phase: 'posts', cursor: 'd' }]);
+  assert.deepEqual(started, Array.from('abcdefgh'));
+  for (const id of ['h', 'f', 'g', 'e']) gates.get(id).release();
+  await turn();
+  assert.deepEqual(checkpoints.map(state => state.cursor), ['d', 'h']);
+  assert.deepEqual(started, ids);
+  gates.get('i').release();
+  assert.deepEqual(await running, { processed: 9, failed: [], cycleComplete: false });
+  assert.equal(maximum, 4); assert.equal(active, 0);
+  assert.deepEqual(checkpoints.map(state => state.cursor), ['d', 'h', 'i']);
+});
+
+test('reconciliation finishes its current group but starts no new group after the deadline', async t => {
+  const repo = fixture(Array.from('abcdefgh', id => post(id)));
+  repo.config.batchSize = 8;
+  let clock = 0;
+  t.mock.method(Date, 'now', () => clock);
+  const originalPut = repo.put.bind(repo), started = [];
+  const originalGet = repo.get.bind(repo);
+  repo.get = async (collection, id, privileged) => {
+    if (collection === 'posts' && !started.includes(id)) started.push(id);
+    return originalGet(collection, id, privileged);
+  };
+  repo.put = async (...args) => { clock = 11; return originalPut(...args); };
+  const result = await reconcileBatch(repo, 10);
+  assert.deepEqual(result, { processed: 4, failed: [], cycleComplete: false });
+  assert.deepEqual(started, Array.from('abcd'));
+  assert.deepEqual(await repo.loadCheckpoint(), { phase: 'posts', cursor: 'd' });
+  assert.deepEqual([...repo.collections.feed.keys()].sort(), Array.from('abcd'));
+  const resumed = await reconcileBatch(repo, 100);
+  assert.equal(resumed.processed, 4);
+  assert.deepEqual([...repo.collections.feed.keys()].sort(), Array.from('abcdefgh'));
+  assert.deepEqual(await repo.loadCheckpoint(), { phase: 'feed', cursor: null });
+});
+
+test('a failed group checkpoint retries all rows idempotently without skipping them', async () => {
+  const repo = fixture(Array.from('abcde', id => post(id)));
+  repo.config.batchSize = 5;
+  const originalCheckpoint = repo.checkpoint.bind(repo);
+  let unavailable = true;
+  repo.checkpoint = async state => {
+    if (unavailable) { unavailable = false; throw new Error('checkpoint unavailable'); }
+    return originalCheckpoint(state);
+  };
+  await assert.rejects(reconcileBatch(repo), /checkpoint unavailable/);
+  assert.deepEqual(await repo.loadCheckpoint(), { phase: 'posts', cursor: null });
+  assert.deepEqual([...repo.collections.feed.keys()].sort(), Array.from('abcd'));
+  const result = await reconcileBatch(repo);
+  assert.deepEqual(result, { processed: 5, failed: [], cycleComplete: false });
+  assert.deepEqual([...repo.collections.feed.keys()].sort(), Array.from('abcde'));
+  assert.deepEqual(await repo.loadCheckpoint(), { phase: 'posts', cursor: 'e' });
 });
 
 test('profile updates preserve sweep progress; unrelated/comment-like events and HTTP are ignored', async () => {

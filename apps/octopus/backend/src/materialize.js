@@ -60,15 +60,21 @@ export async function reconcileBatch(repo, deadline = Date.now() + 360000) {
   }
   let processed = 0;
   const failed = [];
-  for (const doc of page.documents) {
+  for (let offset = 0; offset < page.documents.length; offset += 4) {
     if (Date.now() > deadline) return { processed, failed, cycleComplete: false };
-    // Do not let one malformed post or unavailable dependency permanently
-    // starve the rest of the sweep. Failed rows are retried next cycle.
-    try { await refreshPost(repo, doc.$id); }
-    catch (error) { failed.push({ id: doc.$id, status: error.status || 500 }); }
-    state.cursor = doc.$id;
+    const group = page.documents.slice(offset, offset + 4);
+    const failures = await Promise.all(group.map(async doc => {
+      // Failed rows advance with their group and are retried next cycle, so one
+      // unavailable dependency cannot permanently starve the rest of the sweep.
+      try { await refreshPost(repo, doc.$id); return null; }
+      catch (error) { return { id: doc.$id, status: error.status || 500 }; }
+    }));
+    failed.push(...failures.filter(Boolean));
+    // All earlier rows have settled before publishing this contiguous cursor.
+    // An interrupted group is safely repeated from the previous checkpoint.
+    state.cursor = group.at(-1).$id;
     await repo.checkpoint(state);
-    processed++;
+    processed += group.length;
   }
   const complete = page.documents.length < repo.config.batchSize;
   if (complete) await repo.checkpoint({ phase: state.phase === 'posts' ? 'feed' : 'posts', cursor: null });
