@@ -115,8 +115,10 @@ function Loader:watch(frame, key, name)
                 path, err = nil, { message = "This photo could not be decoded." }
             else
                 local width, height = image.Source.Width, image.Source.Height
-                if shaped and not self.ratios[key] and width > 0 and height > 0 then
-                    self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
+                if shaped and width > 0 and height > 0 then
+                    if not self.ratios[key] then
+                        self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
+                    end
                     frame.AspectRatio = self.ratios[key]
                 end
                 C.clear(frame):addChild(image)

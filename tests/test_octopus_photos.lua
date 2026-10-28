@@ -214,5 +214,23 @@ app.screen:UpdateLayout(200, 450)
 assert(known:findChild("Known") and math.abs(known.ActualHeight - reserved) < 0.1,
     "Decoding must not replace metadata dimensions or shift the feed")
 assert(calls.known == 1, "Photos load once without a separate thumbnail request")
+-- Every duplicate legacy frame must receive the ratio learned by the shared download.
+workers, calls = {}, {}
+app.screen = ui.Screen { Width = 200, Height = 450, ResizeMode = "NoResize" }
+local legacyList = ui.StackView {}
+app.screen:addChild(legacyList)
+loader = Loader.new(app)
+local legacyFrames = {}
+for i = 1, 2 do
+    local frame = ui.Grid { AspectRatio = 1 }
+    legacyList:addChild(frame)
+    loader:watch(frame, "legacy-shared", "Legacy" .. i)
+    legacyFrames[i] = frame
+end
+app.screen:UpdateLayout(200, 450)
+loader:loadVisible(); finishWorkers()
+assert(calls["legacy-shared"] == 1 and math.abs(legacyFrames[1].AspectRatio - 4 / 3) < 0.001
+    and math.abs(legacyFrames[2].AspectRatio - 4 / 3) < 0.001,
+    "All shaped legacy frames receive the shared decoded ratio after one download")
 app.media:clear()
 print("PASS: stable metadata layout, bounded viewport loading, native resources, cache, retry and stale sessions")
