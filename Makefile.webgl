@@ -35,6 +35,11 @@ WEBGL_EMCC     = emcc
 WEBGL_HOST_CC ?= cc
 WEBGL_SHELL   ?= web/shell.html
 WEBGL_VERSION ?= dev
+# Writes WEBGL_VERSION (often a commit title) into orca.html.  $(value) keeps
+# make from expanding `$` in it; the shell gets it single-quoted, so only `'`
+# needs escaping, and the script copies it from the environment verbatim.
+WEBGL_STAMP    = BUILD_VERSION='$(subst ','\'',$(value WEBGL_VERSION))' \
+                 sh tools/webgl-version.sh
 
 # Modules included in the WebGL build.  Excluded: vsomeip (C++ service
 # discovery), server (host-only), editor (desktop UI).  network is included
@@ -135,8 +140,7 @@ webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 		$(WEBGL_LDFLAGS) \
 		--shell-file $(WEBGL_SHELL) \
 		-o $(WEBGL_DIR)/orca.html
-	sed -i.bak 's/@@BUILD_VERSION@@/$(WEBGL_VERSION)/g' $(WEBGL_DIR)/orca.html && \
-	  rm -f $(WEBGL_DIR)/orca.html.bak
+	$(WEBGL_STAMP) $(WEBGL_DIR)/orca.html
 
 # Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
 # Override WEBGL_DEMO from the command line to bundle a different project:
@@ -222,8 +226,7 @@ webgl-debug: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 		$(WEBGL_DEBUG_LDFLAGS) \
 		--shell-file $(WEBGL_SHELL) \
 		-o $(WEBGL_DIR)/orca.html
-	sed -i.bak 's/@@BUILD_VERSION@@/$(WEBGL_VERSION)/g' $(WEBGL_DIR)/orca.html && \
-	  rm -f $(WEBGL_DIR)/orca.html.bak
+	$(WEBGL_STAMP) $(WEBGL_DIR)/orca.html
 
 webgl-debug-demo:
 	$(MAKE) webgl-debug WEBGL_DATA=$(WEBGL_DEMO)
