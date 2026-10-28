@@ -297,11 +297,12 @@ local App = Application:extend {
             })))
         end
         if self.restorePending then
-            local mark = C.appIcon(128)
-            mark.Name = "LoadingLogo"
-            mark.MarginLeft, mark.MarginRight, mark.MarginTop, mark.MarginBottom = auto, auto, auto, auto
             local loading = ui.Grid { Name = "SessionSplash", Background = C.brandBackground }
-            loading:addChild(mark)
+            loading:addChild(ui.ImageView { Name = "LoadingGradient", Src = "Chat/assets/splash-gradient.png",
+                Stretch = "Fill", Foreground = "#ffffff", IgnoreHitTest = true })
+            loading:addChild(ui.ImageView { Name = "LoadingLogo", Src = "Chat/assets/splash-mark.png",
+                Width = 128, Height = 128, Stretch = "Uniform", Foreground = "#ffffff", IgnoreHitTest = true,
+                MarginLeft = auto, MarginRight = auto, MarginTop = auto, MarginBottom = auto })
             loading:addChild(C.stack({ MarginLeft = auto, MarginRight = auto, MarginTop = auto,
                 MarginBottom = auto, PaddingTop = 216, IgnoreHitTest = true }, {
                 ui.ActivityIndicator { Name = "SessionLoading", Foreground = "#ffffff" },

@@ -198,8 +198,10 @@ declaration to make a `VectorView` tint.
 secondary text roles. Select font families actually registered or supported
 by the app. Preserve readable contrast on every surface and state, including
 muted text and placeholders. Color alone should not identify errors or unread
-items. Use the supported `hover`, `focus`, and `active` states where relevant,
-and make keyboard focus visible. For touch-oriented screens, aim for roughly
+items. Use `hover`, `focus`, `focus-visible`, and `active` where relevant.
+Use `focus-visible` for keyboard-navigation rings, while `focus` can identify
+an active text field regardless of input method. Touch and mouse clicks clear
+keyboard-ring mode; key-down events restore it. For touch-oriented screens, aim for roughly
 44-unit control targets; icon artwork can be smaller inside them. This is
 design guidance, not a universal engine minimum for every desktop control.
 

@@ -1,8 +1,8 @@
 .chat-action:hover { opacity: 0.78; }
-.chat-action:focus { ring: 0 2 #0078e7; }
+.chat-action:focus-visible { ring: 0 2 #0078e7; }
 .chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
 .conversation:hover { background-color: #f2f2f2; }
-.chat-action:focus:dark { ring: 0 2 #3d9eff; }
+.chat-action:focus-visible:dark { ring: 0 2 #3d9eff; }
 .chat-input:focus:dark { border-color: #0084ff; background-color: #ffffff; }
 .conversation:hover:dark { background-color: #1a1a1a; }
 /* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */

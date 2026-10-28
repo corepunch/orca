@@ -40,6 +40,7 @@
 #define STYLE_FOCUS 2
 #define STYLE_DARK 4
 #define STYLE_SELECT 8
+#define STYLE_FOCUS_VISIBLE 16
 
 struct lua_State;
 struct alias;
@@ -112,6 +113,7 @@ struct game
   longTime_t realtime;
   uint32_t frame;
   struct Object *focus;
+  bool_t keyboardNavigation;
   struct Object *hover;
   struct Object *hover2;
   fixedString_t tags[MAX_TAGS];

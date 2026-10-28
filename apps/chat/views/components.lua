@@ -1,5 +1,5 @@
 local ui = require "orca.UIKit"
-local C = { colors = require "Chat/theme", brandBackground = "#7430ff" }
+local C = { colors = require "Chat/theme", brandBackground = "#7930ff" }
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
