@@ -3,6 +3,7 @@ return {
     backend = os.getenv("CHAT_BACKEND") or "appwrite",
     endpoint = os.getenv("APPWRITE_ENDPOINT") or "https://fra.cloud.appwrite.io/v1",
     projectId = os.getenv("APPWRITE_PROJECT_ID") or "69f1c06800389dc6a1a0",
-    pushProviderId = os.getenv("APPWRITE_PUSH_PROVIDER_ID") or "",
+    -- Octopus production APNs provider for App Store / TestFlight builds.
+    pushProviderId = os.getenv("APPWRITE_PUSH_PROVIDER_ID") or "6ae23f3b0014b18bf3dd",
     functionId = os.getenv("APPWRITE_CHAT_FUNCTION_ID") or "orca-chat-api",
 }
