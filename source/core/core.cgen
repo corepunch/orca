@@ -485,13 +485,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
         <method name="SetTimer">
           <summary>Set a timer on the object.</summary>
-          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Cancellation removes pending platform ticks; Lua callback coroutines already dispatched may still run. Lua handlers run through the event coroutine dispatcher and may yield.</details>
+          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Cancellation removes pending platform ticks and suppresses queued Lua callbacks that have not started. A handler already running may finish and yield normally.</details>
           <arg name="duration" type="int">Duration of the timer in milliseconds</arg>
           <returns type="int">Positive timer identifier, or zero if creation fails</returns>
         </method>
         <method name="CancelTimer">
           <summary>Stops a timer previously created with setTimer.</summary>
-          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Pending platform ticks are removed and future expirations stop. Lua callback coroutines already dispatched may still run; running handlers are not interrupted.</details>
+          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Pending platform ticks are removed and future expirations stop. Queued Lua callbacks that have not started are suppressed; running handlers are not interrupted.</details>
           <arg name="timerId" type="int">Timer identifier returned by setTimer</arg>
         </method>
         <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
