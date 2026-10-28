@@ -5,4 +5,5 @@ return {
     projectId = os.getenv("APPWRITE_PROJECT_ID") or "69f1c06800389dc6a1a0",
     databaseId = os.getenv("OCTOPUS_DATABASE_ID") or "octopus-db",
     bucketId = os.getenv("OCTOPUS_BUCKET_ID") or "post-images",
+    feedCollectionId = os.getenv("OCTOPUS_FEED_COLLECTION_ID"),
 }

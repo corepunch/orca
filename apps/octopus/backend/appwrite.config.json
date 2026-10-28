@@ -1,0 +1,42 @@
+{
+  "projectId": "69f1c06800389dc6a1a0",
+  "projectName": "Octopus",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
+  "functions": [{
+    "$id": "octopus-feed",
+    "name": "Octopus public feed materializer",
+    "runtime": "node-22",
+    "path": ".",
+    "entrypoint": "src/main.js",
+    "commands": "npm install --omit=dev --ignore-scripts",
+    "execute": [],
+    "events": [
+      "databases.octopus-db.collections.posts.update",
+      "databases.octopus-db.collections.likes.update",
+      "databases.octopus-db.collections.comments.update",
+      "databases.octopus-db.collections.reposts.update",
+      "databases.octopus-db.collections.profiles.update",
+      "databases.octopus-db.collections.posts.documents.*.create",
+      "databases.octopus-db.collections.posts.documents.*.update",
+      "databases.octopus-db.collections.posts.documents.*.delete",
+      "databases.octopus-db.collections.likes.documents.*.create",
+      "databases.octopus-db.collections.likes.documents.*.update",
+      "databases.octopus-db.collections.likes.documents.*.delete",
+      "databases.octopus-db.collections.comments.documents.*.create",
+      "databases.octopus-db.collections.comments.documents.*.update",
+      "databases.octopus-db.collections.comments.documents.*.delete",
+      "databases.octopus-db.collections.reposts.documents.*.create",
+      "databases.octopus-db.collections.reposts.documents.*.update",
+      "databases.octopus-db.collections.reposts.documents.*.delete",
+      "databases.octopus-db.collections.profiles.documents.*.create",
+      "databases.octopus-db.collections.profiles.documents.*.update",
+      "databases.octopus-db.collections.profiles.documents.*.delete"
+    ],
+    "schedule": "*/5 * * * *",
+    "timeout": 600,
+    "enabled": true,
+    "logging": true,
+    "ignore": ["node_modules", ".git", ".env", ".env.*", "test", "*.tar.gz"],
+    "scopes": ["collections.read", "documents.read", "documents.write"]
+  }]
+}

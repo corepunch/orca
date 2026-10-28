@@ -85,27 +85,31 @@ function Posts.fillActions(app, row, post, entry)
         local button = C.area(C.row({ Spacing = space.inline, Height = ACTION_CONTENT_HEIGHT,
             MarginBottom = auto, IgnoreHitTest = true }, {
             C.icon(icon, 20, tint, { MarginLeft = 0, MarginRight = 0 }),
-            C.text(count > 0 and tostring(count) or "", { FontSize = 13, Foreground = tint }),
+            C.text(count == nil and "…" or (count > 0 and tostring(count) or ""), { FontSize = 13, Foreground = tint }),
         }), handler, { Name = name .. post.id, Height = ACTION_HEIGHT })
+        if name ~= "Comment" and entry.pending then button.IgnoreHitTest, button.Opacity = true, 0.5 end
         row:addChild(button)
     end
-    action("Comment", "message-circle", entry.comments or 0, false, colors.ink, function() app:openPost(post) end)
-    action("Repost", "repeat-2", entry.reposts or 0, entry.reposted ~= nil, colors.reposted,
+    action("Comment", "message-circle", entry.comments, false, colors.ink, function() app:openPost(post) end)
+    action("Repost", "repeat-2", entry.reposts, entry.reposted ~= nil, colors.reposted,
         function() Posts.toggle(app, post, entry, "repost", refill) end)
-    action("Like", "heart", entry.likes or 0, entry.liked ~= nil, colors.liked,
+    action("Like", "heart", entry.likes, entry.liked ~= nil, colors.liked,
         function() Posts.toggle(app, post, entry, "like", refill) end)
 end
 
 -- Like or repost, then call `done` to redraw whatever shows the counts.
 function Posts.toggle(app, post, entry, kind, done)
     if not app:requireSession(kind == "like" and "Sign in to like posts." or "Sign in to repost.") then return end
-    if entry.busy then return end
+    if entry.busy or entry.pending then return end
     entry.busy = true
+    local session = app.sessionEpoch
     app:task(function()
+        if app.sessionEpoch ~= session then entry.busy = false; return end
         local result, err
         if kind == "like" then result, err = app.client:toggleLike(post.id, "post", entry.liked)
         else result, err = app.client:toggleRepost(post.id, entry.reposted) end
         entry.busy = false
+        if app.sessionEpoch ~= session then return end
         if result == nil then app:notice(err.message, true); return end
         local field, count = kind == "like" and "liked" or "reposted", kind == "like" and "likes" or "reposts"
         local before = entry[field] ~= nil
@@ -140,7 +144,7 @@ function Posts.card(app, post, entry, repostedBy)
     local tags = Posts.tags(app, post)
     if tags then column:addChild(tags) end
     local actions = ui.Grid { Name = "Actions" .. post.id, Columns = "1fr 1fr 1fr", Height = ACTION_HEIGHT }
-    Posts.fillActions(app, actions, post, entry or { likes = 0, comments = 0, reposts = 0 })
+    Posts.fillActions(app, actions, post, entry or { pending = true })
     column:addChild(actions)
     card:addChild(column)
     return card
@@ -157,22 +161,59 @@ end
 function Posts.append(app, list, items, stats)
     for _, item in ipairs(items) do
         local post = item.post
-        stats[post.id] = stats[post.id] or { likes = 0, comments = 0, reposts = 0 }
+        stats[post.id] = stats[post.id] or { pending = true }
         list:addChild(Posts.card(app, post, stats[post.id], item.repostedBy))
     end
 end
 
--- Load a page of timeline items with their counts. The loader returns items
--- and a cursor; this returns items, stats, cursor or nil, error.
+-- Fetch content first. Counts and reader reaction IDs arrive independently.
 function Posts.fetch(app, loader)
     local items, cursor = loader()
     if not items then return nil, cursor end
-    local ids, seen = {}, {}
+    local stats = {}
     for _, item in ipairs(items) do
-        if not seen[item.post.id] then seen[item.post.id] = true; ids[#ids + 1] = item.post.id end
+        local entry = { pending = true }
+        for key, value in pairs(item.post.stats or {}) do entry[key] = value end
+        entry.pending = true
+        stats[item.post.id] = entry
     end
-    local stats = app.client:stats(ids)
-    return items, stats or {}, cursor
+    return items, stats, cursor
+end
+
+function Posts.refresh(app, list, items, stats)
+    for _, item in ipairs(items) do
+        local row = list:findChild("Actions" .. item.post.id, true)
+        if row then Posts.fillActions(app, row, item.post, stats[item.post.id]) end
+    end
+end
+
+-- Keep entry identities stable: visible cards and detail controls share them.
+-- Failed enrichment leaves unknown counts pending and reactions unavailable.
+function Posts.enrich(app, items, entries, current, changed)
+    local ids, posts, seen = {}, {}, {}
+    for _, item in ipairs(items) do
+        if not seen[item.post.id] then
+            seen[item.post.id] = true
+            ids[#ids + 1], posts[#posts + 1] = item.post.id, item.post
+        end
+    end
+    if #ids == 0 then return end
+    local session = app.sessionEpoch
+    app:task(function()
+        if app.sessionEpoch ~= session or not current() then return end
+        local stats = app.client:stats(ids, nil, posts)
+        if app.sessionEpoch ~= session or not current() then return end
+        if not stats then return end
+        for id, values in pairs(stats) do
+            local entry = entries[id]
+            if entry then
+                for key in pairs(entry) do entry[key] = nil end
+                for key, value in pairs(values) do entry[key] = value end
+            end
+        end
+        changed()
+        app:repaint()
+    end)
 end
 
 return Posts

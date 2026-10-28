@@ -18,6 +18,7 @@ function Identity.auth(self, mode)
     local function remember()
         if fields.Email then draft.email = fields.Email.Text end
         if fields.DisplayName then draft.name = fields.DisplayName.Text end
+        if fields.AccountName then draft.handle = fields.AccountName.Text end
     end
     local function field(label, node)
         return C.stack({ Spacing = 8 }, { C.text(label, { FontSize = 14, Foreground = colors.muted }), node })
@@ -34,7 +35,12 @@ function Identity.auth(self, mode)
     self.statusBar, self.authReason = nil, nil
 
     local form = C.stack({ Name = signup and "SignUpPage" or "SignInPage", Spacing = 16 })
-    if signup then form:addChild(field("Your name", input("DisplayName", "How people will see you", draft.name))) end
+    if signup then
+        form:addChild(field("Account name", input("AccountName", "Your unique account name", draft.handle)))
+        form:addChild(C.text("1–36 letters, digits, dots, underscores or hyphens. This is your permanent account ID.", {
+            FontSize = 12, Foreground = colors.muted, WordWrap = true }))
+        form:addChild(field("Display name", input("DisplayName", "How people will see you", draft.name)))
+    end
     local email = input("Email", "you@example.com", draft.email)
     local password = input("Password", signup and "At least 8 characters" or "Your password", nil, { Type = "Password" })
     form:addChild(field("Email address", email))
@@ -55,7 +61,7 @@ function Identity.auth(self, mode)
         local epoch = self.sessionEpoch
         self:task(function()
             local session, err
-            if signup then session, err = self.client:signUp(fields.DisplayName.Text, email.Text, password.Text, confirm.Text)
+            if signup then session, err = self.client:signUp(fields.DisplayName.Text, email.Text, password.Text, confirm.Text, fields.AccountName.Text)
             else session, err = self.client:signIn(email.Text, password.Text) end
             busy = false
             if self.sessionEpoch ~= epoch then return end
@@ -73,6 +79,7 @@ function Identity.auth(self, mode)
     form:addChild(submit)
     form:addChild(self.status)
     if signup then
+        fields.AccountName.Submit = function() fields.DisplayName:setFocus() end
         fields.DisplayName.Submit = function() email:setFocus() end
         email.Submit = function() password:setFocus() end
         password.Submit = function() confirm:setFocus() end

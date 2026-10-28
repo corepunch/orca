@@ -115,13 +115,13 @@ assert(not app.client:getSession(), "Octopus starts as a guest")
 assert(find(app, "Feedhome") and find(app, "Feedconnect") and find(app, "Feeddiscover"))
 assert(app.pivot.SelectedIndex == 2, "Guests start on discover")
 assert(find(app, "Postp-reef") and find(app, "Postp-quote"), "The discover timeline lists posts for guests")
-assert(not app.media:path("f-reef"), "Building the timeline must not fetch offscreen photos")
+assert(not app.media:path("photo:f-reef"), "Building the timeline must not fetch offscreen photos")
 collectgarbage("collect")
 collectgarbage("collect")
 home:UpdateLayout(390, 844)
 app:afterPaint()
 drain(app)
-assert(find(app, "Imagep-reef").Src == app.media:path("f-reef"), "Visible photo posts load their image")
+assert(find(app, "Imagep-reef").Src == app.media:path("photo:f-reef"), "Visible photo posts load their image")
 assert(find(app, "Imagep-reef").Source, "Downloaded photos must resolve a native image resource")
 home:UpdateLayout(390, 844)
 local reef, reefImage = find(app, "Photop-reef"), find(app, "Imagep-reef")
@@ -318,7 +318,7 @@ assert(find(app, "ProfileEditor") and find(app, "EditName").Text == "Ada Reef")
 find(app, "EditBio").Text = "Testing the phone app"
 click(app, "SaveProfile")
 assert(find(app, "ProfileBio"):getTextContent() == "Testing the phone app")
-assert(find(app, "Countposts"):getTextContent() == "2")
+assert(find(app, "Countposts"):getTextContent() == "2", "Own profile post count: " .. find(app, "Countposts"):getTextContent())
 
 -- A new profile photo replaces the bundled portrait, on the profile and posts.
 local photoBytes = assert(app.client:getImage("f-reef"))
@@ -329,7 +329,7 @@ assert(find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == previous
     "Cancelling keeps the current photo")
 app.media.pick = function() return { jpeg = photoBytes } end
 click(app, "ChangePhoto")
-local adaPhoto = app.media:path(assert(app.client:getProfile("u-ada").avatarId))
+local adaPhoto = app.media:path("avatar:" .. assert(app.client:getProfile("u-ada").avatarId))
 assert(adaPhoto and find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == adaPhoto,
     "The uploaded photo shows on your profile")
 
@@ -352,6 +352,7 @@ local fresh = newApp()
 click(fresh, "AppBarMe")
 click(fresh, "MeSignUp")
 find(fresh, "DisplayName").Text = "Pat Example"
+find(fresh, "AccountName").Text = "new-octopus"
 find(fresh, "Email").Text = "pat@example.invalid"
 find(fresh, "Password").Text = "password123"
 find(fresh, "ConfirmPassword").Text = "password124"
@@ -538,6 +539,12 @@ delayed.client.listPosts = function(self, query)
     if failRefresh then return nil, { message = "Temporarily offline" } end
     return listPosts(self, query)
 end
+local stats, failStats = delayed.client.stats, false
+delayed.client.stats = function(self, ...)
+    coroutine.yield()
+    if failStats then return nil, { message = "Counts unavailable" } end
+    return stats(self, ...)
+end
 local function step(request)
     local ok, err = coroutine.resume(request)
     assert(ok, err)
@@ -563,6 +570,14 @@ assert(delayed.screen == searchScreen and delayed.currentRoute == "/search",
     "A finished timeline fetch cannot navigate away from the current page")
 delayed:show("/")
 local retainedScreen, retainedPost = delayed.screen, find(delayed, "Postp-reef")
+local firstStats = requests[#requests]
+assert(delayed.feeds.discover.stats["p-reef"].pending and find(delayed, "Likep-reef").IgnoreHitTest,
+    "Feed cards appear before counters, with unknown reader actions disabled")
+step(firstStats)
+assert(delayed.feeds.discover.stats["p-reef"].pending, "A yielding stats request never hides the feed")
+step(firstStats)
+assert(not delayed.feeds.discover.stats["p-reef"].pending and not find(delayed, "Likep-reef").IgnoreHitTest,
+    "Counters enable reactions only after reader state arrives")
 failRefresh = true
 delayed:refresh()
 local refreshRequest = requests[#requests]
@@ -578,19 +593,36 @@ delayed:refresh()
 refreshRequest = requests[#requests]
 step(refreshRequest); step(refreshRequest)
 assert(find(delayed, "Postp-reef") and not find(delayed, "Loadingdiscover").Visible)
+local failedStats = requests[#requests]
+failStats = true
+step(failedStats); step(failedStats)
+assert(find(delayed, "Postp-reef") and delayed.feeds.discover.stats["p-reef"].pending
+    and find(delayed, "Likep-reef").IgnoreHitTest, "Counter failure preserves content and blocks unsafe toggles")
+failStats = false
 -- Post counts populate while the comments section is still waiting.
 local listComments = delayed.client.listComments
 delayed.client.listComments = function(self, id) coroutine.yield(); return listComments(self, id) end
 local hello
 for _, post in ipairs(listPosts(delayed.client, { limit = 100 })) do if post.id == "p-hello" then hello = post end end
-delayed:openPost(assert(hello))
+local threadStart = #requests + 1
+local summary = {}
+for key, value in pairs(assert(hello)) do summary[key] = value end
+summary.content = "Only the feed excerpt"
+delayed:openPost(summary)
 drain(delayed)
-local threadRequest = requests[#requests]
+local threadRequest = requests[threadStart + 2]
+assert(delayed.thread.post.content == "Only the feed excerpt")
+step(requests[threadStart])
+assert(delayed.thread.post.content == hello.content and delayed.post == delayed.thread.post,
+    "Full detail replaces the feed summary in both the displayed view and current post")
+step(requests[threadStart + 1]); step(requests[threadStart + 1])
 step(threadRequest)
 assert(find(delayed, "Statlikes"):getTextContent() == "2" and find(delayed, "CommentsLoading"),
     "Post counts populate before comments finish loading")
 step(threadRequest)
-assert(find(delayed, "Commentc-welcome") and not delayed.screen:findChild("CommentsLoading", true))
+assert(find(delayed, "Commentc-welcome") and not delayed.screen:findChild("CommentsLoading", true),
+    "Comments appear before their like counters return")
+step(threadRequest)
 -- Search posts populate before the independent people lookup finishes.
 delayed:show("/search")
 local searchPeople = delayed.client.searchPeople
@@ -640,6 +672,56 @@ click(delayed, "RunSearch")
 step(searchRequest)
 assert(not delayed.searchState.results and not find(delayed, "Searching").Visible,
     "A cleared query cannot be replaced by an older response")
+-- Profile posts do not wait for metadata/count requests, and stale metadata
+-- cannot overwrite a profile after navigation has changed.
+local getProfile = delayed.client.getProfile
+delayed.client.getProfile = function(self, id) coroutine.yield(); return getProfile(self, id) end
+local profileStart = #requests + 1
+delayed:openProfile("u-sam", "Sam Rivera")
+drain(delayed)
+local profileView = delayed.profileView
+step(requests[profileStart])
+step(requests[profileStart + 2])
+assert(find(delayed, "ProfilePosts"):findChild("Postp-reef", true) and not profileView.profile,
+    "Profile timelines paint while the metadata request is still suspended")
+delayed:show("/search")
+local afterProfile = delayed.screen
+step(requests[profileStart])
+assert(delayed.screen == afterProfile and not profileView.profile,
+    "A late profile response cannot update a page after navigating away")
+delayed.client.getProfile = getProfile
+-- Late counter results from a signed-out reader cannot alter a new shell.
+delayed:show("/")
+delayed:refresh()
+local staleFeed = requests[#requests]
+step(staleFeed); step(staleFeed)
+local staleStats = requests[#requests]
+step(staleStats)
+local previousEntries = delayed.feeds.discover.stats
+delayed:resetSessionViews()
+delayed:show("/")
+step(staleStats)
+assert(previousEntries["p-reef"].pending and delayed.feeds.discover.stats ~= previousEntries,
+    "Session reset discards an already suspended enrichment result")
 orca.async = asyncInline
+
+-- Disk snapshots paint before the initial network request and survive failure.
+local cacheClient = Octopus.mock { clock = function() return NOW end }
+local freshPosts = assert(cacheClient:listPosts { limit = 20 })
+local cachedItems = require("Octopus/views/posts").items { freshPosts[1], freshPosts[2] }
+cacheClient.readFeedCache = function() return cachedItems, "cached-cursor" end
+cacheClient.listPosts = function() return nil, { message = "Offline with cache" } end
+local cachedApp = App { client = cacheClient }
+cachedApp.activate_controller = function(self, controller) self.screen = controller.view; return controller end
+cachedApp.repaint = function() end
+cachedApp:show("/")
+drain(cachedApp)
+assert(find(cachedApp, "Post" .. cachedItems[1].post.id) and #cachedApp.feeds.discover.items == 2
+    and not find(cachedApp, "Loadingdiscover").Visible,
+    "An initial refresh failure keeps the cached discover page readable")
+cacheClient.listPosts = function() return freshPosts end
+cachedApp:refresh()
+assert(#cachedApp.feeds.discover.items == #freshPosts,
+    "A successful refresh replaces cached items without duplicating rows")
 
 print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up, delayed fetches, retained refresh and errors passed")

@@ -89,10 +89,14 @@ permissions as the browser; there is no server function and no API key.
 | Profile photos | `profiles.avatarId`, a `post-images` file shared with the website and Chat |
 | Photos | `post-images`; JPEG and PNG are shown directly, other formats through the preview endpoint |
 
-Sign-up asks for a name, email and a confirmed password of at least eight
-characters, creates the account, signs in and creates the profile, as the
-website does. The session cookie stays in memory for the client that created
-it, so restarting signs you out.
+Sign-up asks for a permanent account name, an editable display name, email and
+a confirmed password of at least eight characters. The lowercased account name
+becomes the unique Appwrite account ID (1–36 ASCII letters, digits, dots,
+underscores or hyphens, starting with a letter or digit). Existing accounts keep
+their IDs. The account works on the website too; other registration clients
+must adopt the same handle policy to offer the same signup experience. Profile
+edits synchronize the account/session display name used for new posts and
+comments. The session cookie stays in memory, so restarting signs you out.
 
 The four compose forms match the
 [website's composer](https://github.com/corepunch/octopus/blob/main/js/pages/create.js):
@@ -133,8 +137,38 @@ and inputs stay available while requests are suspended. Feed refresh keeps the
 existing posts until a successful response replaces them; failures keep those
 posts and expose an error with refresh still available. Each request checks its
 page, request and session before applying results.
-Sections populate as results arrive: profile details appear before the timeline,
-post counts before comments, and search posts before the people lookup finishes.
+Posts appear as soon as their page arrives; counters and reader reaction IDs
+load independently. Unknown counts show an ellipsis, and like/repost controls
+stay disabled until the reader state is known. Failed counters do not discard
+posts or invent zero counts. Profile details, timelines, full post bodies,
+comments and reactions load independently with session/request guards. Opening a
+post replaces a cached feed excerpt with the original full body.
+
+The native HTTP transport shares its connection/DNS/TLS pool, negotiates
+compression with automatic decoding, and bounds connection/transfer waits.
+Independent timeline/reaction requests run concurrently. Legacy count queries
+select only IDs and relation keys, skip unused exact list totals, and page through all matching
+rows instead of silently stopping at 1,000. Profile name/avatar lookups select
+only those fields; author labels already come from the posts.
+
+For a bounded startup response, deploy and backfill the optional
+[public feed materializer](backend/README.md), verify its schema/indexes, then
+set `OCTOPUS_FEED_COLLECTION_ID=post-feed`. It maintains short summaries,
+public avatar IDs and counts from website/mobile writes. Guests need only one
+feed request; signed-in readers query only their own reaction state afterward.
+Leaving this variable unset uses the existing collections. Deployment is
+separate from building the client; the PR does not change the live project.
+
+Live clients cache the guest discover page for up to 24 hours and guest image
+variants for seven days, scoped to endpoint/project/database/bucket/feed. The
+first cached page paints immediately while a fresh page is requested. The
+cache holds at most 128 entries/50 MiB with atomic private files and bounded
+recovery after interrupted writes. Authenticated feeds and credentials are not
+persisted. Signing in/out clears temporary media. `OCTOPUS_CACHE_DIR` overrides
+the OS cache directory; unavailable storage falls back to ordinary network
+loading and private temporary images. Two processes should use different cache
+directories. Account-specific data continues to use the original source access
+checks; the materialized feed is for content intended to remain public.
 
 `photo_loader.lua` checks unloaded photo frames after painting, including scroll
 offsets, clipping, Pivot positions and hidden pages. Only photos intersecting
@@ -143,6 +177,10 @@ share a request and cached file; each card owns its image view. Downloads that
 finish after navigation or sign-out cannot update an inactive view. Failed
 downloads or image decode failures show a centered broken-image icon in the reserved photo area; tapping
 that area retries the download. Photos use a white image tint in both themes.
+Avatars request 192-pixel square previews and post photos request previews up to
+780 pixels wide, in JPEG at quality 80, falling back to original JPEG/PNG when
+preview processing is unavailable. Variant keys prevent an avatar thumbnail
+being reused as a full post photo.
 Visible pending photos show a centered activity indicator. Once loaded, the
 placeholder background disappears and the full image is centered without
 cropping or changing the reserved height. Offscreen indicators stop animating.
@@ -151,6 +189,9 @@ cropping or changing the reserved height. Offscreen indicators stop animating.
 
 ```sh
 make test-octopus
+make test-octopus-startup-api test-octopus-cache  # standalone Lua, no engine
+make test-octopus-backend                       # offline Node unit tests
+make test-network-headers                       # localhost HTTP fixture
 ```
 
 The API suite covers guest reads, home and profile timelines with reposts and
@@ -165,7 +206,7 @@ and replies, likes, reposts, following, profile editing, delete confirmation,
 sign-up and service errors.
 The photo suite covers viewport loading, concurrent requests, cache reuse,
 retries and stale sessions, including native image resources. None of these
-suites contacts the network.
+suites contacts Appwrite. The transport suite uses only its localhost fixture.
 
 ## Demo portraits
 

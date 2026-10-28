@@ -32,6 +32,13 @@ function M.new(options)
         for i, query in ipairs(request.query or {}) do
             params[#params + 1] = "queries[" .. (i - 1) .. "]=" .. urlEncode(json.encode(query))
         end
+        local keys = {}
+        for key in pairs(request.params or {}) do
+            if key ~= "total" and key ~= "ttl" then error("Unsupported Octopus list parameter", 0) end
+            keys[#keys + 1] = key
+        end
+        table.sort(keys)
+        for _, key in ipairs(keys) do params[#params + 1] = key .. "=" .. urlEncode(request.params[key]) end
         if #params > 0 then url = url .. (url:find("?", 1, true) and "&" or "?") .. table.concat(params, "&") end
         local headers = { ["X-Appwrite-Project"] = options.projectId, ["Content-Type"] = "application/json" }
         for name, value in pairs(request.headers or {}) do headers[name] = value end

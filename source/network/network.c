@@ -116,6 +116,7 @@ StopService(struct network_service* service)
 }
 
 #include <curl/curl.h>
+#include <source/network/network.h>
 
 #define INITIAL_BUFFER_SIZE 1024
 
@@ -126,23 +127,104 @@ typedef struct
   size_t capacity; // Capacity of the buffer
 } buffer_t;
 
-// Struct to hold the curl handle and dynamic response buffer
-typedef struct
+typedef struct request_s
 {
   CURL* easy_handle;
   CURLM* multi_handle;
   struct curl_slist* headers;
   buffer_t response;
   buffer_t header;
+  struct request_s* next;
+  struct request_s* previous;
+  CURLcode result;
+  long code;
+  bool_t done;
 } request_t;
 
-void
+static CURLM* fetch_pool;
+static request_t* fetch_requests;
+static int curl_initialized;
+
+static void
 free_request(request_t* req)
 {
+  if (req->multi_handle) {
+    curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+  }
+  if (req->previous) req->previous->next = req->next;
+  else if (fetch_requests == req) fetch_requests = req->next;
+  if (req->next) req->next->previous = req->previous;
+  if (req->easy_handle) curl_easy_cleanup(req->easy_handle);
   curl_slist_free_all(req->headers);
   free(req->header.data);
   free(req->response.data);
   free(req);
+}
+
+static request_t*
+alloc_request(void)
+{
+  request_t* req = calloc(1, sizeof(*req));
+  if (!req) return NULL;
+  req->next = fetch_requests;
+  if (fetch_requests) fetch_requests->previous = req;
+  fetch_requests = req;
+  return req;
+}
+
+/* The multi handle owns connection, DNS and TLS caches across requests. All
+   fetches run on the event-loop thread; completion belongs to the easy handle,
+   never to the aggregate number of transfers still running. */
+static void
+poll_requests(void)
+{
+  if (!fetch_pool) return;
+  int running;
+  CURLMcode result = curl_multi_perform(fetch_pool, &running);
+  if (result != CURLM_OK) {
+    for (request_t* req = fetch_requests; req; req = req->next) {
+      req->result = CURLE_FAILED_INIT;
+      req->done = TRUE;
+    }
+    return;
+  }
+  CURLMsg* message;
+  while ((message = curl_multi_info_read(fetch_pool, &running))) {
+    if (message->msg != CURLMSG_DONE) continue;
+    request_t* req = NULL;
+    curl_easy_getinfo(message->easy_handle, CURLINFO_PRIVATE, &req);
+    if (!req) continue;
+    req->result = message->data.result;
+    req->done = TRUE;
+    curl_easy_getinfo(message->easy_handle, CURLINFO_RESPONSE_CODE, &req->code);
+  }
+}
+
+static bool_t
+start_request(request_t* req)
+{
+  NET_Init();
+  if (!curl_initialized) return FALSE;
+  if (!fetch_pool) fetch_pool = curl_multi_init();
+  if (!fetch_pool) return FALSE;
+  curl_easy_setopt(req->easy_handle, CURLOPT_PRIVATE, req);
+  curl_easy_setopt(req->easy_handle, CURLOPT_ACCEPT_ENCODING, "");
+  curl_easy_setopt(req->easy_handle, CURLOPT_CONNECTTIMEOUT, 15L);
+  curl_easy_setopt(req->easy_handle, CURLOPT_TIMEOUT, 120L);
+  curl_easy_setopt(req->easy_handle, CURLOPT_NOSIGNAL, 1L);
+  if (curl_multi_add_handle(fetch_pool, req->easy_handle) != CURLM_OK) return FALSE;
+  req->multi_handle = fetch_pool;
+  poll_requests();
+  return TRUE;
+}
+
+static int
+collect_request(lua_State* L)
+{
+  request_t** owner = lua_touserdata(L, 1);
+  if (*owner) free_request(*owner);
+  *owner = NULL;
+  return 0;
 }
 
 void
@@ -153,29 +235,20 @@ alloc_buffer(buffer_t* buffer)
   buffer->capacity = INITIAL_BUFFER_SIZE;
 }
 
-// Helper function to grow the response buffer as needed
-void
-grow_response_buffer(buffer_t* buffer, size_t additional_size)
-{
-  // If we need more space for the response, resize the buffer
-  if (buffer->size + additional_size + 1 > buffer->capacity) {
-    buffer->capacity =
-    (buffer->size + additional_size + 1) * 2; // Double the capacity
-    buffer->data = realloc(buffer->data, buffer->capacity);
-    if (!buffer->data) {
-      // Handle memory allocation failure
-      Con_Error("Failed to allocate memory for response buffer");
-      exit(1);
-    }
-  }
-}
-
-// Callback function to write data into the response buffer
-size_t
+static size_t
 write_callback(void* ptr, size_t size, size_t nmemb, buffer_t* buffer)
 {
+  if (size && nmemb > SIZE_MAX / size) return 0;
   size_t total_size = size * nmemb;
-  grow_response_buffer(buffer, total_size);
+  if (total_size >= SIZE_MAX - buffer->size) return 0;
+  size_t needed = buffer->size + total_size + 1;
+  if (needed > buffer->capacity) {
+    size_t capacity = needed <= SIZE_MAX / 2 ? needed * 2 : needed;
+    void* data = realloc(buffer->data, capacity);
+    if (!data) return 0;
+    buffer->data = data;
+    buffer->capacity = capacity;
+  }
   memcpy(buffer->data + buffer->size, ptr, total_size);
   buffer->size += total_size;
   return total_size;
@@ -199,69 +272,42 @@ header_callback(void* ptr, size_t size, size_t nmemb, buffer_t* buffer)
 #define HTTP_NOT_FOUND 404
 #define HTTP_INTERNAL_SERVER_ERROR 500
 
-// Helper function to resume the Lua coroutine with the result
-int resume_fetch_http(lua_State* L, int status, lua_KContext ctx)
+static int
+resume_fetch_http(lua_State* L, int status, lua_KContext ctx)
 {
-  request_t* req = (request_t*)ctx;
-  int running_handles;
-  // Perform the transfer
-  CURLMcode res = curl_multi_perform(req->multi_handle, &running_handles);
-  if (res != CURLM_OK) {
-    curl_multi_cleanup(req->multi_handle);
-    curl_easy_cleanup(req->easy_handle);
+  request_t** owner = (request_t**)ctx;
+  request_t* req = *owner;
+  poll_requests();
+  if (!req->done) return lua_yieldk(L, 0, ctx, resume_fetch_http);
+  if (req->result != CURLE_OK) {
+    CURLcode result = req->result;
     free_request(req);
-    return luaL_error(L, "curl_multi_perform error: %s", curl_multi_strerror(res));
+    *owner = NULL;
+    return luaL_error(L, "HTTP transport error: %s", curl_easy_strerror(result));
   }
-  // If the transfer is not complete, yield again
-  if (running_handles > 0) {
-    //    curl_multi_wait(req->multi_handle, NULL, 0, 1000, NULL);
-    return lua_yieldk(L, 0, (lua_KContext)req, resume_fetch_http);
+
+  response_t* response =
+    lua_newuserdata(L, sizeof(response_t) + req->response.size + req->header.size + 2);
+  luaL_setmetatable(L, API_TYPE_RESPONSE);
+  response->size = req->response.size;
+  response->header_size = req->header.size;
+  response->code = req->code;
+  memcpy(response->data, req->response.data, req->response.size);
+  response->data[response->size] = '\0';
+  memcpy(response->data + response->size + 1, req->header.data, req->header.size);
+  response->data[response->size + response->header_size + 1] = '\0';
+  free_request(req);
+  *owner = NULL;
+
+  switch (response->code) {
+    case HTTP_OK:
+    case HTTP_CREATED:
+    case HTTP_NO_CONTENT:
+      lua_pushinteger(L, response->code);
+      return 2;
+    default:
+      return lua_error(L);
   }
-  // Transfer completed
-  CURLMsg* msg;
-  while ((msg = curl_multi_info_read(req->multi_handle, &running_handles))) {
-    if (msg->msg == CURLMSG_DONE) {
-      long response_code;
-      curl_easy_getinfo(
-                        req->easy_handle, CURLINFO_RESPONSE_CODE, &response_code);
-      
-      // Null-terminate the response
-      req->response.data[req->response.size] = '\0';
-      
-      // Null-terminate the header
-      req->header.data[req->header.size] = '\0';
-      
-      //      puts(req->header.data);
-      
-      // Push response data to Lua
-      response_t* response =
-      lua_newuserdata(L, sizeof(response_t) + req->response.size + req->header.size + 2);
-      luaL_setmetatable(L, API_TYPE_RESPONSE);
-      response->size = req->response.size;
-      response->header_size = req->header.size;
-      response->code = response_code;
-      memcpy(response->data, req->response.data, req->response.size + 1);
-      memcpy(response->data + response->size + 1, req->header.data, req->header.size + 1);
-      
-      curl_multi_remove_handle(req->multi_handle, req->easy_handle);
-      curl_easy_cleanup(req->easy_handle);
-      curl_multi_cleanup(req->multi_handle);
-      free_request(req);
-      
-      switch (response_code) {
-        case HTTP_OK:
-        case HTTP_CREATED:
-        case HTTP_NO_CONTENT:
-          // Push HTTP status code
-          lua_pushinteger(L, response_code);
-          return 2;
-        default:
-          return lua_error(L);
-      }
-    }
-  }
-  
-  return 0;
 }
 
 // Function to fetch HTTP/HTTPS content using libcurl and Lua coroutine
@@ -273,20 +319,28 @@ int fetch_http(lua_State* L)
   Con_Error("Fetching %s", url);
 #endif
   
-  //  CURLcode res;
-  // Allocate the initial request structure
-  request_t* req = calloc(1, sizeof(*req));
+  if (!lua_isyieldable(L)) return luaL_error(L, "network.fetch requires a coroutine");
+  lua_settop(L, 2);
+  /* Keep the owner on the suspended C frame. Unreachable coroutines then
+     cancel their curl handle during GC, including argument/setup failures. */
+  request_t** owner = lua_newuserdata(L, sizeof(*owner));
+  *owner = NULL;
+  if (luaL_newmetatable(L, "orca.network.Request")) {
+    lua_pushcfunction(L, collect_request);
+    lua_setfield(L, -2, "__gc");
+  }
+  lua_setmetatable(L, -2);
+  request_t* req = alloc_request();
   if (!req) return luaL_error(L, "Failed to allocate HTTP request");
+  *owner = req;
   alloc_buffer(&req->response);
   alloc_buffer(&req->header);
   if (!req->response.data || !req->header.data) {
-    free_request(req);
     return luaL_error(L, "Failed to allocate HTTP response buffers");
   }
   
   // Initialize libcurl
   if (!(req->easy_handle = curl_easy_init())) {
-    free_request(req);
     return luaL_error(L, "curl_easy_init() failed");
   }
   
@@ -303,19 +357,11 @@ int fetch_http(lua_State* L)
         lpcString_t value = luaL_checkstring(L, -1);
         size_t entry_size = strlen(key) + strlen(value) + 3;
         char* entry = malloc(entry_size);
-        if (!entry) {
-          curl_easy_cleanup(req->easy_handle);
-          free_request(req);
-          return luaL_error(L, "Failed to allocate HTTP header");
-        }
+        if (!entry) return luaL_error(L, "Failed to allocate HTTP header");
         snprintf(entry, entry_size, "%s: %s", key, value);
         struct curl_slist* headers = curl_slist_append(req->headers, entry);
         free(entry);
-        if (!headers) {
-          curl_easy_cleanup(req->easy_handle);
-          free_request(req);
-          return luaL_error(L, "Failed to append HTTP header");
-        }
+        if (!headers) return luaL_error(L, "Failed to append HTTP header");
         req->headers = headers;
         lua_pop(L, 1);
       }
@@ -376,53 +422,38 @@ int fetch_http(lua_State* L)
                      2L); // Check the host against the certificate
   }
   
-  if (!(req->multi_handle = curl_multi_init())) {
-    curl_easy_cleanup(req->easy_handle);
-    free_request(req);
-    return luaL_error(L, "curl_multi_init() failed");
-  }
-  curl_multi_add_handle(req->multi_handle, req->easy_handle);
-  
-  // Start the transfer
-  int running_handles;
-  curl_multi_perform(req->multi_handle, &running_handles);
-  
-  // If the transfer is not complete, yield
-  if (running_handles > 0) {
-    return lua_yieldk(L, 0, (lua_KContext)req, resume_fetch_http);
-  }
-  
-  // Cleanup in case of immediate completion
-  curl_easy_cleanup(req->easy_handle);
-  curl_multi_cleanup(req->multi_handle);
-  
-  free_request(req);
-  
-  return 0;
+  if (!start_request(req)) return luaL_error(L, "Failed to start HTTP request");
+  return resume_fetch_http(L, LUA_OK, (lua_KContext)owner);
 }
-
-static int curl_initialized = 0;
 
 ORCA_API void
 NET_Init(void)
 {
+  if (curl_initialized) return;
   Con_Printf("Initializing network");
-
-  if (!curl_initialized) {
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl_initialized = 1;
-  }
+  if (curl_global_init(CURL_GLOBAL_DEFAULT) == CURLE_OK) curl_initialized = 1;
 }
 
 ORCA_API void
 NET_Shutdown(void)
 {
+  if (!curl_initialized) return;
   Con_Printf("Shutting down network");
-
-  if (curl_initialized) {
-    curl_global_cleanup();
-    curl_initialized = 0;
+  while (fetch_requests) {
+    request_t* req = fetch_requests;
+    fetch_requests = req->next;
+    if (req->multi_handle) curl_multi_remove_handle(fetch_pool, req->easy_handle);
+    if (req->easy_handle) curl_easy_cleanup(req->easy_handle);
+    req->easy_handle = NULL;
+    req->multi_handle = NULL;
+    req->next = req->previous = NULL;
+    req->result = CURLE_ABORTED_BY_CALLBACK;
+    req->done = TRUE;
   }
+  if (fetch_pool) curl_multi_cleanup(fetch_pool);
+  fetch_pool = NULL;
+  curl_global_cleanup();
+  curl_initialized = 0;
 }
 
 /* ----------------------------------------------------------------------- *
@@ -438,7 +469,7 @@ NET_FetchBegin(const char *url)
 
   NET_Init();
 
-  request_t *req = calloc(1, sizeof(*req));
+  request_t *req = alloc_request();
   if (!req) return NULL;
   alloc_buffer(&req->response);
   alloc_buffer(&req->header);
@@ -446,12 +477,7 @@ NET_FetchBegin(const char *url)
   req->easy_handle = curl_easy_init();
   if (!req->easy_handle) { free_request(req); return NULL; }
 
-  req->multi_handle = curl_multi_init();
-  if (!req->multi_handle) {
-    curl_easy_cleanup(req->easy_handle);
-    free_request(req);
-    return NULL;
-  }
+  if (!req->response.data || !req->header.data) { free_request(req); return NULL; }
 
   curl_easy_setopt(req->easy_handle, CURLOPT_URL, url);
   curl_easy_setopt(req->easy_handle, CURLOPT_WRITEFUNCTION, write_callback);
@@ -463,11 +489,7 @@ NET_FetchBegin(const char *url)
     curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYHOST, 2L);
   }
 
-  curl_multi_add_handle(req->multi_handle, req->easy_handle);
-
-  int running = 0;
-  curl_multi_perform(req->multi_handle, &running);
-
+  if (!start_request(req)) { free_request(req); return NULL; }
   return (fetch_handle_t)req;
 }
 
@@ -475,79 +497,33 @@ ORCA_API bool_t
 NET_FetchPoll(fetch_handle_t handle)
 {
   if (!handle) return FALSE;
-  request_t *req = (request_t *)handle;
-  int running = 0;
-  curl_multi_perform(req->multi_handle, &running);
-  return running > 0;
+  poll_requests();
+  return !((request_t*)handle)->done;
 }
 
 ORCA_API long
 NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
 {
-  if (!handle || !data_out || !size_out) {
-    if (data_out)  *data_out  = NULL;
-    if (size_out)  *size_out  = 0;
-    if (handle) {
-      request_t *req = (request_t *)handle;
-      curl_multi_remove_handle(req->multi_handle, req->easy_handle);
-      curl_easy_cleanup(req->easy_handle);
-      curl_multi_cleanup(req->multi_handle);
-      free_request(req);
-    }
-    return -1;
-  }
-
-  request_t *req = (request_t *)handle;
+  if (data_out) *data_out = NULL;
+  if (size_out) *size_out = 0;
+  if (!handle) return -1;
+  request_t* req = (request_t*)handle;
   long code = -1;
-
-  CURLcode result = CURLE_OK;
-  int done = 0;
-  int msgs_left = 0;
-  CURLMsg *msg;
-  while ((msg = curl_multi_info_read(req->multi_handle, &msgs_left))) {
-    if (msg->msg == CURLMSG_DONE) {
-      done = 1;
-      result = msg->data.result;
-      if (result == CURLE_OK) {
-        curl_easy_getinfo(req->easy_handle, CURLINFO_RESPONSE_CODE, &code);
-      } else {
-        code = -1;
-      }
-      break;
-    }
-  }
-
-  *data_out = NULL;
-  *size_out = 0;
-  if (done && result == CURLE_OK) {
+  if (data_out && size_out && req->done && req->result == CURLE_OK) {
+    *data_out = req->response.data;
     *size_out = req->response.size;
-    *data_out = malloc(req->response.size + 1);
-    if (*data_out) {
-      memcpy(*data_out, req->response.data, req->response.size);
-      ((char *)*data_out)[req->response.size] = '\0';
-    } else {
-      *size_out = 0;
-      code = -1;
-    }
+    ((char*)*data_out)[*size_out] = '\0';
+    req->response.data = NULL;
+    code = req->code;
   }
-
-  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
-  curl_easy_cleanup(req->easy_handle);
-  curl_multi_cleanup(req->multi_handle);
   free_request(req);
-
   return code;
 }
 
 ORCA_API void
 NET_FetchCancel(fetch_handle_t handle)
 {
-  if (!handle) return;
-  request_t *req = (request_t *)handle;
-  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
-  curl_easy_cleanup(req->easy_handle);
-  curl_multi_cleanup(req->multi_handle);
-  free_request(req);
+  if (handle) free_request((request_t*)handle);
 }
 
 #else // __EMSCRIPTEN__

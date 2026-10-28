@@ -14,7 +14,7 @@ local function statTiles()
     local tiles = ui.Grid { Name = "PostStats", Columns = "1fr 1fr 1fr", Height = 64 }
     local labels = {}
     for _, key in ipairs { "likes", "reposts", "comments" } do
-        labels[key] = { number = C.text("0", { Name = "Stat" .. key, FontSize = 28 }),
+        labels[key] = { number = C.text("…", { Name = "Stat" .. key, FontSize = 28 }),
             label = C.text(key, { FontSize = 13, Foreground = colors.dim }) }
         tiles:addChild(C.stack({ Spacing = 0, JustifyContent = "Center" }, { labels[key].number, labels[key].label }))
     end
@@ -23,8 +23,8 @@ local function statTiles()
     return frame, function(entry)
         local singular = { likes = "like", reposts = "repost", comments = "comment" }
         for key, view in pairs(labels) do
-            local count = entry[key] or 0
-            view.number:setTextContent(tostring(count))
+            local count = entry[key]
+            view.number:setTextContent(count == nil and "…" or tostring(count))
             view.label:setTextContent(count == 1 and singular[key] or key)
         end
     end
@@ -41,7 +41,7 @@ local function renderComments(self, view, comments, likes)
         else top[#top + 1] = comment end
     end
     local function item(comment, nested)
-        local entry = likes[comment.id] or { likes = 0 }
+        local entry = likes[comment.id] or { pending = true }
         likes[comment.id] = entry
         local row = ui.Grid { Name = "Comment" .. comment.id, Columns = "36px 1fr", Spacing = 12, MarginLeft = nested and 48 or 0 }
         local function author() self:openProfile(comment.authorId, comment.authorName) end
@@ -56,13 +56,18 @@ local function renderComments(self, view, comments, likes)
             local tint = entry.liked and colors.liked or colors.dim
             actions:addChild(C.area(C.row({ Spacing = 6, IgnoreHitTest = true }, {
                 C.icon("heart", 16, tint, { MarginLeft = 0, MarginRight = 0 }),
-                C.text(entry.likes > 0 and tostring(entry.likes) or "like", { FontSize = 13, Foreground = tint }),
+                C.text(entry.likes == nil and "…" or (entry.likes > 0 and tostring(entry.likes) or "like"), { FontSize = 13, Foreground = tint }),
             }), function()
-                if not self:requireSession("Sign in to like comments.") or entry.busy then return end
+                if not self:requireSession("Sign in to like comments.") or entry.busy or entry.pending then return end
                 entry.busy = true
+                local session, navigation = self.sessionEpoch, self.navigationEpoch
                 self:task(function()
+                    if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then
+                        entry.busy = false; return
+                    end
                     local result, err = self.client:toggleLike(comment.id, "comment", entry.liked)
                     entry.busy = false
+                    if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then return end
                     if result == nil then self:notice(err.message, true); return end
                     entry.likes = math.max(0, entry.likes + (result and 1 or 0) - (entry.liked and 1 or 0))
                     entry.liked = result or nil
@@ -102,56 +107,56 @@ end
 
 function Thread.load(self, view)
     if view.loading then return end
-    view.loading = true
+    view.loading, view.request = true, {}
+    view.entry.pending = true
+    view.refreshStats()
+    local request = view.request
     local loading = view.comments:findChild("CommentsLoading")
     if not loading then
         loading = C.loading { Name = "CommentsLoading", Height = 64 }
         view.comments:addChild(loading)
     end
     local post, session, navigation = view.post, self.sessionEpoch, self.navigationEpoch
+    local function current()
+        return self.thread == view and self.sessionEpoch == session and self.navigationEpoch == navigation
+            and view.request == request
+    end
+    -- A feed can contain only an excerpt. Replace the displayed body as soon
+    -- as the full document arrives; comments and reactions need not wait.
     self:task(function()
+        if not current() then return end
         local fresh, err = self.client:getPost(post.id)
-        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then
-            view.loading = false
-            return
-        end
-        if not fresh then
-            view.loading = false
-            loading:removeFromParent()
-            if not view.commentsLoaded then
-                C.clear(view.comments):addChild(C.empty(err.status == 404 and "this post is gone" or "can't load this post",
-                    err.message))
-            end
-            self:notice(err.message, true); self:repaint()
-            return
-        end
-        local stats = self.client:stats { post.id }
-        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then
-            view.loading = false
-            return
-        end
-        if stats and stats[post.id] then
-            for key, value in pairs(stats[post.id]) do view.entry[key] = value end
-            view.refreshStats()
-            self:repaint()
-        end
-        local comments, commentError = self.client:listComments(post.id)
-        local ids = {}
-        for _, comment in ipairs(comments or {}) do ids[#ids + 1] = comment.id end
-        local likes = comments and self.client:stats(ids, "comment") or {}
-        view.loading = false
-        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then return end
-        loading:removeFromParent()
-        if comments then
-            view.commentsLoaded = true
-            view.entry.comments = #comments
-            view.refreshStats()
-            renderComments(self, view, comments, likes or {})
-            self:notice("")
+        if not current() then return end
+        if fresh then
+            view.post, self.post = fresh, fresh
+            C.clear(view.postBody):addChild(Posts.body(self, fresh, true))
         else
-            if not view.commentsLoaded then C.clear(view.comments):addChild(C.empty("can't load comments", commentError.message)) end
-            self:notice(commentError.message, true)
+            self:notice(err.message, true)
         end
+        self:repaint()
+    end)
+    Posts.enrich(self, { { post = post } }, { [post.id] = view.entry }, current, view.refreshStats)
+    self:task(function()
+        if not current() then return end
+        local comments, err = self.client:listComments(post.id)
+        if not current() then return end
+        view.loading = false
+        loading:removeFromParent()
+        if not comments then
+            if not view.commentsLoaded then C.clear(view.comments):addChild(C.empty("can't load comments", err.message)) end
+            self:notice(err.message, true); self:repaint(); return
+        end
+        view.commentsLoaded = true
+        local likes, ids = {}, {}
+        for _, comment in ipairs(comments) do
+            ids[#ids + 1], likes[comment.id] = comment.id, { pending = true }
+        end
+        renderComments(self, view, comments, likes)
+        self:repaint()
+        if #ids == 0 then return end
+        local resolved = self.client:stats(ids, "comment")
+        if not current() or not resolved then return end
+        renderComments(self, view, comments, resolved)
         self:repaint()
     end)
 end
@@ -162,10 +167,14 @@ function Thread.send(self, view)
     if not text:match("%S") then return end
     view.sending = true
     self:notice("Posting…")
+    local session, navigation = self.sessionEpoch, self.navigationEpoch
     self:task(function()
+        if self.sessionEpoch ~= session or self.navigationEpoch ~= navigation or self.thread ~= view then
+            view.sending = false; return
+        end
         local comment, err = self.client:addComment(view.post.id, text, view.replyTo and view.replyTo.id)
         view.sending = false
-        if self.thread ~= view then return end
+        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then return end
         if not comment then self:notice(err.message .. " Your comment is still here.", true); return end
         self.commentDrafts[view.post.id] = nil
         view.input.Text, view.replyTo, view.replyBar.Visible = "", nil, false
@@ -179,7 +188,9 @@ function Thread.page(self)
     if not post then return self:home() end
     local session = self.client:getSession()
     local mine = session and session.user.id == post.authorId
-    local view = { post = post, entry = { likes = 0, comments = 0, reposts = 0 } }
+    local view = { post = post, entry = { pending = true } }
+    for key, value in pairs(post.stats or {}) do view.entry[key] = value end
+    view.entry.pending = true
     self.thread = view
     -- The status line only takes room in the comment bar while it has text.
     self.status = C.text("", { Name = "PostStatus", FontSize = 11, Foreground = colors.dim,
@@ -194,9 +205,10 @@ function Thread.page(self)
     }))
     local stats, showStats = statTiles()
     view.comments = C.stack({ Name = "Comments", Spacing = 18 }, { C.loading { Name = "CommentsLoading", Height = 160 } })
+    view.postBody = C.stack({ Name = "PostBody" }, { Posts.body(self, post, true) })
     local content = C.stack({ Name = "PostPage", Spacing = 16, Overflow = "hidden scroll" }, {
         C.area(author, function() self:openProfile(post.authorId, post.authorName) end, { Name = "PostAuthor", Height = 60 }),
-        Posts.body(self, post, true),
+        view.postBody,
     })
     local tags = Posts.tags(self, post)
     if tags then content:addChild(tags) end
@@ -260,7 +272,7 @@ function Thread.page(self)
                 return
             end
             self:task(function()
-                local ok, err = self.client:deletePost(post)
+                local ok, err = self.client:deletePost(view.post)
                 if not ok then self:notice(err.message, true); return end
                 self:invalidate()
                 self.post = nil
@@ -272,6 +284,10 @@ function Thread.page(self)
         showStats(view.entry)
         bar:findChild("LikePost").Text = view.entry.liked and "unlike" or "like"
         bar:findChild("RepostPost").Text = view.entry.reposted and "undo" or "repost"
+        for _, name in ipairs { "LikePost", "RepostPost" } do
+            local action = bar:findChild(name)
+            action.IgnoreHitTest, action.Opacity = view.entry.pending == true, view.entry.pending and 0.5 or 1
+        end
     end
     view.refreshStats()
     local screen = self:frame()
