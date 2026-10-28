@@ -7,6 +7,9 @@
 
 #include <float.h>
 #include <string.h>
+#ifdef AX_PLATFORM_IOS
+#include <source/ios_scroll.h>
+#endif
 
 #define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 // Normal UIScrollView retention is 0.998 per millisecond: -1000 * log(0.998).
@@ -514,6 +517,9 @@ HANDLER(Node2D, Node, UpdateMatrix)
 
 HANDLER(Node2D, Object, Destroy)
 {
+#ifdef AX_PLATFORM_IOS
+  ORCA_IOS_ForgetScrollView(hObject);
+#endif
   SafeDelete(pNode2D->_shadowTexture, Texture_Release);
   SafeDelete(pNode2D->_backdrop, R_ReleaseBackdrop);
   if (!pNode2D->OffscreenRendering) {
@@ -642,6 +648,9 @@ HANDLER(Node2D, Object, PropertyChanged)
     pNode2D->_scrollVelocity.y = 0;
   if (id == ID_Node2D_ContentOffset) {
     pNode2D->_scrollTracking = pNode2D->_scrollAnimating = FALSE;
+#ifdef AX_PLATFORM_IOS
+    ORCA_IOS_NativeScrollOffsetChanged(hObject);
+#endif
     pNode2D->_scrollVelocity.y = 0;
   }
   return FALSE;
@@ -649,6 +658,9 @@ HANDLER(Node2D, Object, PropertyChanged)
 
 HANDLER(Node2D, Object, Animate)
 {
+#ifdef AX_PLATFORM_IOS
+  if (ORCA_IOS_ApplyNativeScroll(hObject)) return TRUE;
+#endif
   if (!pNode2D->_scrollAnimating) return FALSE;
   uint32_t now = axGetMilliseconds();
   float dt = MIN((uint32_t)(now - pNode2D->_scrollAnimTime), 64u) / 1000.0f;
@@ -914,6 +926,9 @@ HANDLER(Node2D, Node2D, Arrange)
   // as the keyboard or a bottom bar grows. A touch in progress is left alone.
   bool_t anchored = n->ScrollAnchor == kScrollAnchorBottom && n->Overflow.y == kOverflowScroll &&
     !n->_scrollTracking && !n->_scrollAnimating;
+#ifdef AX_PLATFORM_IOS
+  if (ORCA_IOS_IsNativeScrollActive(hObject)) anchored = FALSE;
+#endif
   bool_t atEnd = anchored && fabsf(n->ContentOffset.y - Node2D_ScrollLimit(n)) < 1;
   float visibleBottom = Node2D_GetFrame(n, kBox3FieldHeight) - NODE2D_INSET(n)._LEFT;
 

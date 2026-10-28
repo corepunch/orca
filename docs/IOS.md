@@ -117,8 +117,9 @@ touch is shown in the frame that handled it instead of one display interval
 later. A paint posted by a paint waits for the next callback. The queue
 boundary also applies to peeking and explicit queue flushes.
 The display link asks for 80–120 Hz, and the generated Info.plist sets
-`CADisableMinimumFrameDurationOnPhone`, so ProMotion iPhones animate at 120 Hz
-instead of the 60 Hz iPhone default. File-change monitoring is compiled out on
+`CADisableMinimumFrameDurationOnPhone`, enabling rates above the 60 Hz iPhone
+default. The system still chooses the actual rate; requesting 120 Hz does not
+establish that callbacks or presented frames run at 120 Hz. File-change monitoring is compiled out on
 iOS: the bundle is read-only, and the per-message `stat` of every opened file
 only slowed each frame.
 
@@ -207,3 +208,31 @@ make test-chat
 `test-ios-tools` runs offline packaging, signing-selection and device-selection
 tests. Runtime smoke checks should include both an iPhone and an iPad simulator:
 open a conversation, focus the composer, type/send text and scroll the history.
+
+## Native motion
+
+The iOS host uses Core Animation for turnstile page snapshots and `UIScrollView`
+for vertical touch scrolling, including deceleration, bouncing and stopping a
+fling with a new touch. Other platforms retain the engine animation backend.
+
+A turnstile captures the freshly rendered page before the OpenGL buffer is
+presented, then animates that snapshot as a native layer. It rotates the page as
+one plane; the engine backend's staggered per-element feather is not reproduced
+by a single page snapshot. Navigation still exits the old page before entering
+the new one. The snapshot freezes page contents for the transition; content
+loaded meanwhile is visible after the snapshot is removed.
+
+Scroll containers use native gesture recognition and physics while ORCA retains
+content rendering. Native offsets update the engine's content position and
+request paints, so this does not eliminate layout/render costs or convert the
+feed's rows into UIKit controls. The native deceleration retention is chosen to
+give 1.5 times the unbounded coast distance of UIKit's normal rate for the same
+release velocity. Content boundaries and bouncing can shorten that distance;
+finger tracking and edge resistance are not multiplied.
+
+On a physical ProMotion device, compare the same gesture with screen recording
+off, on, and off again. Record callback/paint rates and frame intervals as well
+as visual behavior. Verify forward/back navigation, cancellation, backgrounding,
+rotation, tapping a moving list, horizontal Pivot swipes, and the keyboard
+opening while reading history. Simulator compilation and portable policy tests
+do not certify physical-device smoothness or a sustained 120 Hz refresh rate.

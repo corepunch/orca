@@ -15,6 +15,8 @@
 #include <libs/platform/ios/ios_local.h>
 #include <float.h>
 #include <unistd.h>
+#include "ios_scroll.h"
+#include "ios_page_transition.h"
 
 int luaopen_orca(lua_State *L);
 
@@ -119,6 +121,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
 @interface OrcaSceneDelegate : UIResponder <UIWindowSceneDelegate> {
   lua_State *_lua, *_coroutine;
   CADisplayLink *_displayLink;
+  CGSize _nativeViewport;
   CFRunLoopObserverRef _wakeObserver;
   BOOL _stepping, _booted, _active;
   struct OrcaFrameProfile _frameProfile;
@@ -146,6 +149,9 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)stop
 {
+  ORCA_IOS_ClearPageTransition();
+  ORCA_IOS_CancelPageTransitionRequests();
+  ORCA_IOS_ClearScrollViews();
   if (_wakeObserver) {
     CFRunLoopRemoveObserver(CFRunLoopGetMain(), _wakeObserver, kCFRunLoopCommonModes);
     CFRelease(_wakeObserver);
@@ -209,6 +215,13 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 {
   if (_stepping || !_coroutine) return;
   _stepping = YES;
+  CGSize viewport = ios_view.bounds.size;
+  if (!CGSizeEqualToSize(viewport, _nativeViewport)) {
+    ORCA_IOS_ClearPageTransition();
+    ORCA_IOS_CancelPageTransitionRequests();
+    ORCA_IOS_ClearScrollViews();
+    _nativeViewport = viewport;
+  }
   ios_begin_message_frame();
   // Nothing changed: draw nothing and sleep until the next message.
   if (_booted && !ios_messages_ready()) {
@@ -243,6 +256,9 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
     BOOL reload = status == LUA_OK && lua_type(_coroutine, -1) == LUA_TSTRING;
     if (status != LUA_OK) NSLog(@"ORCA: %s", lua_tostring(_coroutine, -1));
     if (reload) {
+      ORCA_IOS_ClearPageTransition();
+      ORCA_IOS_CancelPageTransitionRequests();
+      ORCA_IOS_ClearScrollViews();
       lua_close(_lua);
       _lua = _coroutine = NULL;
       if (![self start]) [self stop];
@@ -269,6 +285,9 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
+  ORCA_IOS_ClearPageTransition();
+  ORCA_IOS_CancelPageTransitionRequests();
+  ORCA_IOS_ClearScrollViews();
   axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
   _active = NO;
   _displayLink.paused = YES;

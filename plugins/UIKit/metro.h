@@ -100,5 +100,9 @@ Metro_Show(struct Object *o, bool_t visible, float opacity)
 // finishes. A type without motion for a mode lasts 0 ms.
 float PageTransition_Duration(struct Object *page, enum TransitionType type, enum TransitionMode mode);
 void PageTransition_Apply(struct Object *page, enum TransitionType type, enum TransitionMode mode, float elapsed);
+void PageTransition_NativeChanged(struct Object *page, enum TransitionType type, enum TransitionMode mode);
+bool_t PageTransition_NativeAnimate(struct Object *page);
+bool_t PageTransition_NativeActive(struct Object *page);
+void PageTransition_NativePresent(struct Object *screen, uint32_t width, uint32_t height);
 
 #endif

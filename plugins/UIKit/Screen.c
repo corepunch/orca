@@ -4,6 +4,10 @@
 #include <filesystem/filesystem.h>
 #include <source/core/object/object_internal.h>
 #include <source/core/property/property_internal.h>
+#ifdef AX_PLATFORM_IOS
+#include "metro.h"
+#include <source/ios_scroll.h>
+#endif
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -277,6 +281,12 @@ HANDLER(Screen, Window, Paint) {
   if (R_BeginFrame(pScreen->ClearColor) != NOERROR) return TRUE;
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
+
+#ifdef AX_PLATFORM_IOS
+  ORCA_IOS_SyncScrollViews(hObject);
+  // Capture before presenting: iOS discards the non-retained GL backing.
+  PageTransition_NativePresent(hObject, pPaint->WindowWidth, pPaint->WindowHeight);
+#endif
 
   TRACE_Begin(kTracePhasePresent);
   R_EndFrame();

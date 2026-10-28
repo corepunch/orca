@@ -225,7 +225,7 @@ function Thread.page(self)
     local stats, showStats = statTiles()
     view.comments = C.stack({ Name = "Comments", Spacing = 18 }, { C.loading { Name = "CommentsLoading", Height = 160 } })
     view.postBody = C.stack({ Name = "PostBody" }, { Posts.body(self, post, true) })
-    local content = C.stack({ Name = "PostPage", Spacing = 16, Overflow = "hidden scroll" }, {
+    local content = C.stack({ Name = "PostPage", PaddingTop = C.spacing.column, Spacing = 16, Overflow = "hidden scroll" }, {
         C.area(author, function() self:openProfile(post.authorId, post.authorName) end, { Name = "PostAuthor", Height = 60 }),
         view.postBody,
     })
