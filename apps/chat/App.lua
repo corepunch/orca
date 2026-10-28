@@ -11,6 +11,7 @@ local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
 local Timeline = require "Chat/views/timeline"
+local PhotoViewer = require "Chat/views/photo_viewer"
 local Diagnostics = require "Chat/diagnostics"
 local async = require "orca.core.async"
 local orca = require "orca"
@@ -47,6 +48,7 @@ local App = Application:extend {
     end,
 
     resetSessionViews = function(self)
+        PhotoViewer.close(self)
         if self.polling then self.polling:stop() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         if self.avatars then self.avatars:clear() end
@@ -141,6 +143,7 @@ local App = Application:extend {
     end,
 
     dispatch = function(self, request)
+        PhotoViewer.close(self)
         self:installErrorHandler()
         self.currentRoute = type(request) == "string" and request
             or type(request) == "table" and request.path or "/"
@@ -172,6 +175,7 @@ local App = Application:extend {
     -- conversation or its info, "Backward" coming back out. The page in view goes out
     -- first and the next page comes in once it has gone.
     show = function(self, route, direction)
+        PhotoViewer.close(self)
         local request = {}
         self.pendingShow = request
         local leaving = PageTransition.leave(self.screen, direction, function()
@@ -525,6 +529,10 @@ local App = Application:extend {
 
     getMedia = function(self)
         return self.media
+    end,
+
+    openPhoto = function(self, attachment)
+        return PhotoViewer.open(self, attachment)
     end,
 
     attachPhoto = function(self)

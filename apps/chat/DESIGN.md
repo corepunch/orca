@@ -57,6 +57,10 @@ claiming historical fidelity.
   footer and no tail**. Place its timestamp over the bottom-right of the image
   on a dark translucent backing so it remains readable. Captioned photos
   retain their caption and timestamp below the image.
+- Tapping a message photo opens the full stored JPEG on black, fitted without
+  cropping and letterboxed as needed. Keep a clear back action, preserve the
+  conversation on close, and leave edit/delete commands in a compact photo menu.
+  Conversation photos use the full JPEG rather than enlarging a thumbnail.
 
 These are Chat decisions agreed during the 2026-10-28 review, rather than
 requirements established by the linked Microsoft article. Clipping an image

@@ -161,17 +161,38 @@ static void test_large_photo(lua_State *L) {
   if (input) CFRelease(input);
   if (lua_istable(L, -2)) {
     size_t w = result_integer(L, "width"), h = result_integer(L, "height");
-    check(w > 0 && h > 0 && w <= 1600 && h <= 1600, "Downsample while decoding to bounded output dimensions");
+    check(w > 0 && h > 0 && w <= 1600 && h <= 1600 && w * h <= 1500000,
+        "Downsample while decoding to the 1.5-megapixel and 1600-edge limits");
+    check(MAX(w, h) >= 800, "Noisy images keep a useful resolution instead of becoming tiny thumbnails");
     check(fabs((double)w / h - 4.0 / 3) < .01, "Downsampling preserves the photo aspect ratio");
     CFDataRef jpeg = result_data(L, "jpeg");
-    check(jpeg && CFDataGetLength(jpeg) <= 1000000, "Actual high-entropy JPEG fits the hard byte limit");
-    check(jpeg && CFDataGetLength(jpeg) <= 500000, "Adaptive encoding reaches the preferred budget for the noisy fixture");
+    check(jpeg && CFDataGetLength(jpeg) <= 250000, "Actual high-entropy JPEG fits the hard 250 KB limit");
     CGImageRef image = inspect_jpeg(jpeg, w, h);
     if (image) CGImageRelease(image);
     CFRelease(jpeg);
     lua_getfield(L, -2, "quality");
-    check(lua_tonumber(L, -1) >= .6 && lua_tonumber(L, -1) <= .8, "Adaptive encoding observes the quality floor");
+    check(lua_tonumber(L, -1) >= .6 && lua_tonumber(L, -1) <= .82, "Adaptive encoding observes the quality floor");
     lua_pop(L, 1);
+  }
+  lua_settop(L, 0);
+}
+
+static void test_megapixel_photo(lua_State *L) {
+  CFDataRef input = fixture(2400, 1800, 1, 0, 0);
+  check(input && process(L, input), "Process a detailed-size photo without unnecessary shrinking");
+  if (input) CFRelease(input);
+  if (lua_istable(L, -2)) {
+    size_t w = result_integer(L, "width"), h = result_integer(L, "height");
+    check(w * h <= 1500000 && w * h >= 1450000, "Compressible photos retain close to 1.5 megapixels");
+    check(fabs((double)w / h - 4.0 / 3) < .01, "Megapixel cap preserves aspect ratio");
+    lua_getfield(L, -2, "quality");
+    check(lua_tonumber(L, -1) == .82, "Photos that fit retain the preferred JPEG quality");
+    lua_pop(L, 1);
+    CFDataRef jpeg = result_data(L, "jpeg");
+    check(jpeg && CFDataGetLength(jpeg) <= 250000, "Full-resolution JPEG fits 250 KB");
+    CGImageRef image = inspect_jpeg(jpeg, w, h);
+    if (image) CGImageRelease(image);
+    if (jpeg) CFRelease(jpeg);
   }
   lua_settop(L, 0);
 }
@@ -208,6 +229,7 @@ int main(void) {
     luaL_requiref(L, "orca.media", luaopen_orca_media, 1); lua_setglobal(L, "media");
     test_oriented_photo(L);
     test_large_photo(L);
+    test_megapixel_photo(L);
     test_alpha_and_small_photo(L);
     int status = luaL_dostring(L,
         "local p,e=media.processPhoto('not an image'); assert(p==nil and e.code=='invalid_image')\n"
