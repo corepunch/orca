@@ -15,6 +15,8 @@ static inline size_t CMP_PropertyOffset(size_t classSize)
 int _bind_handler_closure(lua_State *L);
 void OBJ_NotifyCollectionChanged(struct Object *object);
 void OBJ_ClearCollectionObservers(struct Object *object);
+// Wrap the handler at the top of the Lua stack so cancellation can drop it before it starts.
+void OBJ_GuardTimerCallback(lua_State *L, struct Object *owner, int timerId);
 
 struct component
 {

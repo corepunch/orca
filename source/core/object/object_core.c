@@ -250,6 +250,62 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
   return tags;
 }
 
+struct TimerCallback {
+  struct TimerCallback *next, **previous;
+  struct Object *owner;
+  int timerId;
+};
+static struct TimerCallback *timer_callbacks;
+
+static void unlink_timer_callback(struct TimerCallback *call)
+{
+  if (!call->previous) return;
+  *call->previous = call->next;
+  if (call->next) call->next->previous = call->previous;
+  call->previous = NULL;
+}
+
+static int collect_timer_callback(lua_State *L)
+{
+  unlink_timer_callback(lua_touserdata(L, 1));
+  return 0;
+}
+
+static int finish_timer_callback(lua_State *L, int status, lua_KContext context) { return 0; }
+
+static int run_timer_callback(lua_State *L)
+{
+  struct TimerCallback *call = lua_touserdata(L, lua_upvalueindex(2));
+  if (!call->previous) return 0;
+  // Once started, cancellation must not interrupt a yielding handler.
+  unlink_timer_callback(call);
+  int arguments = lua_gettop(L);
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
+  lua_callk(L, arguments, 0, 0, finish_timer_callback);
+  return 0;
+}
+
+void OBJ_GuardTimerCallback(lua_State *L, struct Object *owner, int timerId)
+{
+  // Install finalization before linking a token; later Lua allocations may fail.
+  if (luaL_newmetatable(L, "orca.TimerCallback")) {
+    lua_pushcfunction(L, collect_timer_callback);
+    lua_setfield(L, -2, "__gc");
+  }
+  lua_pop(L, 1);
+  struct TimerCallback *call = lua_newuserdata(L, sizeof(*call));
+  *call = (struct TimerCallback){ .owner = owner, .timerId = timerId };
+  luaL_getmetatable(L, "orca.TimerCallback");
+  lua_setmetatable(L, -2);
+  call->next = timer_callbacks;
+  call->previous = &timer_callbacks;
+  if (call->next) call->next->previous = &call->next;
+  timer_callbacks = call;
+  // Queued coroutine arguments retain the sender until this callback runs.
+  lua_pushcclosure(L, run_timer_callback, 2);
+}
+
 int OBJ_SetTimer(struct Object *self, int duration)
 {
   return axSetTimer(self, MAX(duration, 1), NULL, TRUE);
@@ -261,6 +317,12 @@ void OBJ_CancelTimer(struct Object *self, int timerId)
   axCancelTimer((uint32_t)timerId);
   // A tick queued before cancellation must not reach the handler.
   axRemoveMessages(self, kEventTimer, (uint32_t)timerId);
+  // Native ticks may already have become queued Lua callback coroutines.
+  for (struct TimerCallback *call = timer_callbacks, *next; call; call = next) {
+    next = call->next;
+    if (call->owner != self || call->timerId != timerId) continue;
+    unlink_timer_callback(call);
+  }
 }
 
 struct Object *
