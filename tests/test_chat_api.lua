@@ -118,6 +118,37 @@ check(not page and err.code == "invalid_response", "Inconsistent response cursor
 
 client, requests = backend {
   { status = 200, body = session() },
+  { status = 404, body = { code = "not_found" } },
+  { status = 200, body = { { id = "m2" }, { id = "m1" } } },
+  { status = 200, body = { { id = "m2" }, { id = "m1" } } },
+  { status = 200, body = { messages = { { id = "m1" }, { id = "m2" } }, has_more = true, next_cursor = "m1" } },
+}
+assert(client:signIn("a@b.test", "password"))
+page = assert(client:listMessagePage("room-1"))
+check(#page.messages == 2 and page.messages[1].id == "m1" and not page.has_more,
+  "Older deployed Functions keep a bounded recent conversation usable")
+check(requests[3].method == "GET" and requests[3].url:match("limit=30$"),
+  "Legacy fallback must retain the requested page limit")
+assert(client:listMessagePage("room-1"))
+check(#requests == 4 and requests[4].method == "GET", "Missing RPC is cached briefly instead of requested on each poll")
+page, err = client:listMessagePage("room-1", { before = "m1" })
+check(not page and err.code == "history_unavailable" and #requests == 4,
+  "Legacy endpoints must never fabricate older cursor pages")
+client.clock = function() return 1061 end
+page = assert(client:listMessagePage("room-1"))
+check(page.has_more and requests[5].method == "POST" and client.messagePageRetryAt == nil,
+  "Cursor pagination must activate automatically after the new Function rolls out")
+
+client, requests = backend {
+  { status = 200, body = session() },
+  { status = 403, body = { code = "forbidden" } },
+}
+assert(client:signIn("a@b.test", "password"))
+page, err = client:listMessagePage("room-1")
+check(not page and err.status == 403 and #requests == 2, "Access failures must never trigger a legacy fallback")
+
+client, requests = backend {
+  { status = 200, body = session() },
   { status = 200, body = { { id = "m3", body = "edited", edited_at = "2026-10-27T10:00:00Z" } } },
   { status = 200, body = true },
   { status = 403, body = { code = "forbidden", message = "You cannot delete this message." } },

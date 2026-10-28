@@ -204,9 +204,24 @@ function Client:listMessagePage(roomId, options)
     return failure("validation", "Message limit must be between 1 and 100.")
   end
   if options.before ~= nil and not validId(options.before) then return failure("validation", "Choose a valid message cursor.") end
-  local page, err = self:_request("POST", "/rest/v1/rpc/list_chat_messages", {
-    target_room = roomId, limit = limit, before = options.before,
-  }, true)
+  local page, err
+  if not self.messagePageRetryAt or self.clock() >= self.messagePageRetryAt then
+    page, err = self:_request("POST", "/rest/v1/rpc/list_chat_messages", {
+      target_room = roomId, limit = limit, before = options.before,
+    }, true)
+    if not page and err.status == 404 then self.messagePageRetryAt = self.clock() + 60
+    elseif page then self.messagePageRetryAt = nil end
+  end
+  -- Keep recent conversations usable while the new Function rolls out. The
+  -- old endpoint has no cursor support: never pretend it can serve older pages.
+  if not page and self.messagePageRetryAt and self.clock() < self.messagePageRetryAt
+      and (not err or err.status == 404) then
+    if options.before then return failure("history_unavailable", "Older messages are unavailable. Try again later.", 404) end
+    local messages
+    messages, err = self:listMessages(roomId, { limit = limit })
+    if not messages then return nil, err end
+    page = { messages = messages, has_more = false }
+  end
   if not page then return nil, err end
   if type(page) ~= "table" or type(page.messages) ~= "table" or type(page.has_more) ~= "boolean"
       or #page.messages > limit or (page.has_more and (#page.messages == 0 or not validId(page.next_cursor))) then
