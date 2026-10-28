@@ -203,6 +203,11 @@ and make keyboard focus visible. For touch-oriented screens, aim for roughly
 44-unit control targets; icon artwork can be smaller inside them. This is
 design guidance, not a universal engine minimum for every desktop control.
 
+Set `TrimLeading="true"` on a `TextBlock` when its first visible glyphs must
+align with the top of an adjacent image or tile. This removes the unused space
+above the first line while preserving glyph proportions and line spacing.
+It is opt-in; ordinary text retains its full font metrics.
+
 ## State and native verification
 
 Give loading, empty, and error states meaningful content: explain what is

@@ -158,6 +158,22 @@ FontFace_GetGlyphKerning(struct fontface* face,
 }
 
 int
+FontFace_GetGlyphBounds(struct fontface* face,
+                        uint32_t glyph,
+                        float scale,
+                        struct font_glyph* output)
+{
+  if (!face || !glyph || !output) return FALSE;
+  int right, bottom;
+  memset(output, 0, sizeof(*output));
+  stbtt_GetGlyphBitmapBox(&face->info, (int)glyph, scale, scale,
+                          &output->xoff, &output->yoff, &right, &bottom);
+  output->width = right - output->xoff;
+  output->height = bottom - output->yoff;
+  return output->width > 0 && output->height > 0;
+}
+
+int
 FontFace_RenderGlyph(struct fontface* face,
                      uint32_t glyph,
                      float scale,

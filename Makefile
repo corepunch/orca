@@ -291,6 +291,7 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_api.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_templates.lua
+	$(TARGET) -test=tests/test_octopus_alignment.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
@@ -514,11 +515,14 @@ test-macos-retina:
 endif
 
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
+.PHONY: test-text-leading
+$(eval $(call C_TEST_RULE,test-text-leading,tests/test_text_leading.c,$(BINDIR)/test_text_leading,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/test_timer_cancel,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform))
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-text-leading
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
