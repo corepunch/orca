@@ -31,7 +31,10 @@ function exifOrientation(bytes) {
     if (u16(entry) !== 0x112) continue;
     if (u16(entry + 2) !== 3 || u32(entry + 4) !== 1) invalid('Invalid JPEG EXIF orientation field.');
     const orientation = u16(entry + 8);
-    if (orientation < 1 || orientation > 8) invalid('Invalid JPEG EXIF orientation.');
+    // Unknown optional orientation values do not invalidate the JPEG frame.
+    // Image decoders such as libvips default these to upright; match the Lua
+    // upload parser and preserve the encoded dimensions when no valid tag exists.
+    if (orientation < 1 || orientation > 8) return null;
     return orientation;
   }
   return null;
