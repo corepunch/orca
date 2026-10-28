@@ -99,6 +99,14 @@ class SigningTests(unittest.TestCase):
         self.assertEqual(chat, {'application-identifier': 'ORCASIM000.org.orca.chat'})
         self.assertNotEqual(chat, other)
 
+    def test_push_entitlement_is_copied_only_from_a_development_profile(self):
+        entitlements = sign.signing_entitlements('TEAM.org.orca.chat', 'TEAM', ['TEAM.*'], 'development')
+        self.assertEqual(entitlements['aps-environment'], 'development')
+        self.assertNotIn('aps-environment', sign.signing_entitlements('TEAM.org.orca.chat', 'TEAM', ['TEAM.*']))
+        for value in ('production', '', 'sandbox'):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                sign.signing_entitlements('TEAM.org.orca.chat', 'TEAM', ['TEAM.*'], value)
+
     @unittest.skipUnless(shutil.which('derq'), 'derq is part of macOS')
     def test_simulated_entitlements_are_rewritten_only_when_the_app_changes(self):
         with tempfile.TemporaryDirectory() as folder:

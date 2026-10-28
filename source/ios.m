@@ -3,6 +3,7 @@
 #import <UIKit/UIScene.h>
 #import <UIKit/UISceneSession.h>
 #import <UIKit/UISceneConfiguration.h>
+#import <UserNotifications/UserNotifications.h>
 #import <UIKit/UIWindowScene.h>
 #import <QuartzCore/CADisplayLink.h>
 #import <QuartzCore/QuartzCore.h>
@@ -17,6 +18,7 @@
 #include <unistd.h>
 #include "ios_scroll.h"
 #include "ios_page_transition.h"
+#include "notifications/notifications_native.h"
 
 int luaopen_orca(lua_State *L);
 
@@ -271,6 +273,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session
       options:(UISceneConnectionOptions *)options
 {
+  if (options.notificationResponse) Notifications_AppleOpen(options.notificationResponse);
   if (![scene isKindOfClass:[UIWindowScene class]] || ![self start]) return;
   _displayLink = [[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)] retain];
   // Ask for the panel's full rate on ProMotion devices; iPhones also need
@@ -308,6 +311,22 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 @end
 
 @implementation OrcaAppDelegate
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)options
+{
+  (void)application; (void)options;
+  Notifications_AppleInitialize();
+  return YES;
+}
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)token
+{
+  (void)application;
+  Notifications_AppleToken(token);
+}
+- (void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error
+{
+  (void)application;
+  Notifications_AppleError(error);
+}
 - (UISceneConfiguration *)application:(UIApplication *)application
     configurationForConnectingSceneSession:(UISceneSession *)session
                                   options:(UISceneConnectionOptions *)options

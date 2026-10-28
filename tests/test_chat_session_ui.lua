@@ -117,5 +117,36 @@ click(app, "RetrySignOut")
 assert(attempts == 2 and not app.logoutPending and app.screen:findChild("RequestCode", true),
     "Successful erasure retry must finish logout and show authentication")
 
+client, attempts = mock(), 0
+login(client)
+signOut = client.signOut
+client.signOut = function(self)
+    attempts = attempts + 1
+    if attempts == 1 then return nil, { code = "push_cleanup", message = "Reconnect to disable notifications." } end
+    return signOut(self)
+end
+app = appFor(client)
+app:show("/")
+app:signOut()
+assert(app.logoutPending and client:getSession() and app.screen:findChild("RetrySignOut", true)
+    and not app.screen:findChild("Room1", true), "Offline target cleanup hides chats and preserves login for retry")
+click(app, "RetrySignOut")
+assert(not client:getSession() and not app.logoutPending and app.screen:findChild("RequestCode", true),
+    "Notification cleanup retry can finish signing out")
+
+client = mock()
+login(client)
+signOut = client.signOut
+client.signOut = function(self)
+    assert(signOut(self))
+    return nil, { code = "push_reauthenticate", message = "Sign in with the previous account to disable notifications." }
+end
+app = appFor(client)
+app:show("/")
+app:signOut()
+assert(not app.logoutPending and not client:getSession() and app.screen:findChild("RequestCode", true)
+    and not app.screen:findChild("RetrySignOut", true), "Revoked target cleanup offers reauthentication instead of an impossible logout retry")
+assert(app.status:getTextContent():find("previous account", 1, true), "Revoked cleanup explains which account must authenticate")
+
 orca.async = savedAsync
 print("PASS: Chat session restoration and logout routing")

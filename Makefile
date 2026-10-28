@@ -64,7 +64,7 @@ CFLAGS += $(SANITIZER_FLAGS)
 LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -90,6 +90,8 @@ ifeq ($(UNAME_S),Darwin)
 	LIBS += -framework OpenGL -framework IOSurface
 	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
 	UNITEOBJECTS += media_apple.o
+	UNITEOBJECTS += notifications_apple.o
+	LIBS += -framework AppKit -framework UserNotifications
 	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
 else
 	LIBS += -lGL
@@ -134,6 +136,9 @@ buildunite: modules $(SOURCEMODULES2)
 ifeq ($(UNAME_S),Darwin)
 buildunite: $(OBJECTDIR)/media_apple.o
 $(OBJECTDIR)/media_apple.o: source/media/media_apple.m source/media/media_native.h | directories
+	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
+buildunite: $(OBJECTDIR)/notifications_apple.o
+$(OBJECTDIR)/notifications_apple.o: source/notifications/notifications_apple.m source/notifications/notifications_native.h | directories
 	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
 endif
 
@@ -248,6 +253,7 @@ chat: copyshare
 	$(TARGET) apps/chat
 
 test-chat: copyshare
+	$(LUA) tests/test_chat_push.lua
 	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_polling.lua
 	$(TARGET) -test=tests/test_chat_sync.lua
@@ -276,6 +282,7 @@ test-chat-ui: copyshare
 LUA ?= lua
 test-chat-appwrite:
 	$(LUA) tests/test_chat_appwrite.lua
+	$(LUA) tests/test_chat_push.lua
 
 # Explicitly opted in: real native HTTP and secure session storage against
 # Appwrite. Never make this a dependency of test/test-headless/test-chat.
@@ -537,6 +544,7 @@ HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-t
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
 
 HEADLESS_LUA_TESTS += test-credentials
+HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
@@ -587,6 +595,13 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_loading.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
+.PHONY: test-notifications
+$(eval $(call LUA_TEST_RULE,test-notifications,tests/test_notifications.lua,unite))
+ifeq ($(UNAME_S),Darwin)
+.PHONY: test-notifications-native
+$(eval $(call C_TEST_RULE,test-notifications-native,tests/test_notifications.m,$(BINDIR)/test_notifications,unite,,$(TEST_LDFLAGS) -framework Foundation -framework UserNotifications))
+test-headless: test-notifications-native
+endif
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
 .PHONY: test-screen-paint-lifecycle

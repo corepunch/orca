@@ -16,6 +16,7 @@
 #include <emscripten.h>
 #elif __APPLE__
 #include <mach-o/dyld.h>
+#include <CoreFoundation/CoreFoundation.h>
 #endif
 #if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 #include <unistd.h>
@@ -182,6 +183,20 @@ int main(int argc, LPSTR *argv) {
   if (g_args.new_proj) return scaffold(g_args.new_proj);
 
   lpcString_t szProject = proj_idx ? argv[proj_idx] : NULL;
+#if defined(__APPLE__)
+  path_t bundled_project = {0};
+  CFBundleRef bundle = CFBundleGetMainBundle();
+  CFTypeRef relative = bundle ? CFBundleGetValueForInfoDictionaryKey(bundle, CFSTR("ORCAProject")) : NULL;
+  int bundled_layout = relative && CFGetTypeID(relative) == CFStringGetTypeID();
+  if (!szProject && !g_args.test && bundled_layout) {
+    CFURLRef resources = CFBundleCopyResourcesDirectoryURL(bundle);
+    CFURLRef project = resources ? CFURLCreateCopyAppendingPathComponent(NULL, resources, relative, true) : NULL;
+    if (project && CFURLGetFileSystemRepresentation(project, true, (UInt8 *)bundled_project, sizeof(bundled_project)))
+      szProject = bundled_project;
+    if (project) CFRelease(project);
+    if (resources) CFRelease(resources);
+  }
+#endif
 #ifndef PROJECTDIR
   if (!szProject && !g_args.test) {
     fprintf(stderr,
@@ -228,6 +243,8 @@ int main(int argc, LPSTR *argv) {
     /* LIBDIR */
 #ifdef LIBDIR
     lua_pushstring(L, LIBDIR);
+#elif defined(__APPLE__)
+    lua_pushfstring(L, "%s/%s", exename, bundled_layout ? "Frameworks" : "lib");
 #elif __EMSCRIPTEN__
     lua_pushstring(L, axLibDirectory());
 #elif defined(XCODE)
@@ -240,6 +257,8 @@ int main(int argc, LPSTR *argv) {
     /* SHAREDIR */
 #ifdef SHAREDIR
     lua_pushstring(L, SHAREDIR);
+#elif defined(__APPLE__)
+    lua_pushfstring(L, "%s/%s", exename, bundled_layout ? "Resources/share" : "share");
 #elif __EMSCRIPTEN__
     lua_pushstring(L, axShareDirectory());
 #else
@@ -249,7 +268,11 @@ int main(int argc, LPSTR *argv) {
 
     /* PLUGDIR */
     if (g_args.plugins) lua_pushstring(L, g_args.plugins);
+#if defined(__APPLE__)
+    else lua_pushfstring(L, "%s/%s", exename, bundled_layout ? "Frameworks/liborca" : "plugins");
+#else
     else lua_pushfstring(L, "%s/plugins", exename);
+#endif
     lua_setglobal(L, "PLUGDIR");
 
     if (szProject) { lua_pushstring(L, szProject); lua_setglobal(L, "PROJECTDIR"); }

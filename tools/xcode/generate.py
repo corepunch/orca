@@ -49,11 +49,14 @@ class Project:
             values = dict(settings, GCC_OPTIMIZATION_LEVEL='0' if name == 'Debug' else 's',
                           DEBUG_INFORMATION_FORMAT='dwarf' if name == 'Debug' else 'dwarf-with-dsym',
                           ONLY_ACTIVE_ARCH='YES' if name == 'Debug' else 'NO')
+            if 'ORCA_APNS_ENVIRONMENT' in settings:
+                values['ORCA_APNS_ENVIRONMENT'] = 'development' if name == 'Debug' else 'production'
             uid = self.add(key + '/' + name, 'XCBuildConfiguration', name=name, buildSettings=values)
             for field, value in self.existing.get(uid, {}).get('buildSettings', {}).items():
                 if field.startswith(('CODE_SIGN', 'DEVELOPMENT_TEAM', 'PROVISIONING_PROFILE',
                                      'PRODUCT_BUNDLE_IDENTIFIER', 'MARKETING_VERSION',
-                                     'CURRENT_PROJECT_VERSION', 'ASSETCATALOG_COMPILER_APPICON')):
+                                     'CURRENT_PROJECT_VERSION', 'ASSETCATALOG_COMPILER_APPICON',
+                                     'ORCA_APNS_ENVIRONMENT')):
                     values[field] = value
             for field in tuple(values):
                 if any(field.startswith(key + '[') for key in (overrides or {})):
@@ -152,15 +155,22 @@ def generate(args, app):
     root_configs = project.configurations('project', common, overrides)
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
-                  'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox')
+                  'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
+                  'UserNotifications')
     linker = ['$(inherited)', '-llua', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
-    target_configs = project.configurations(target_name, {
+    target_settings = {
         'INFOPLIST_FILE': '$(PROJECT_FILE_PATH)/Generated/ios-Info.plist',
         'GENERATE_INFOPLIST_FILE': 'NO', 'OTHER_LDFLAGS': linker,
         'SKIP_INSTALL': 'NO', 'INSTALL_PATH': '$(LOCAL_APPS_DIR)',
-    }, overrides)
+    }
+    if (app_dir / 'Push.entitlements').is_file():
+        target_settings.update({
+            'CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]': '$(ORCA_PROJECT)/Push.entitlements',
+            'ORCA_APNS_ENVIRONMENT': 'development',
+        })
+    target_configs = project.configurations(target_name, target_settings, overrides)
     plugin_units = {'u_' + name + '.c' for name in configuration()['PLUGINS']}
     sources, engine_references, plugin_references, native_references = [], [], [], []
     for filename in units:

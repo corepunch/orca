@@ -173,8 +173,18 @@ Polling uses a retained `core.Timer` component and `Timer.Tick`, canceling each
 native repeating timer before fetching or scheduling another. Unchanged results
 retain their existing rows; changed timelines preserve reading position and
 drafts, following new messages only if the reader was already at the bottom.
-Realtime subscriptions, push notifications, older-history pagination, read
-receipts and end-to-end encryption are not implemented.
+Realtime subscriptions, older-history pagination, read receipts and end-to-end
+encryption are not implemented.
+
+Apple push notifications use Appwrite Messaging and the native
+`orca.notifications` module. Set the public `pushProviderId` in `config.lua`
+(`APPWRITE_PUSH_PROVIDER_ID` for terminal launches) and configure the matching
+APNs provider and app signing; see [push setup](backend/appwrite/README.md#new-message-push-apns).
+The backend must also enable `CHAT_PUSH_ENABLED=true`. Push payloads contain
+`conversationId`, `messageId` and the recipient's `userId`, with a generic
+notification body. Opening a notification requires the matching signed-in
+account and loads the conversation through the normal authorized API. Push
+delivery is best-effort; foreground polling remains the source of fresh history.
 
 ## Private photos
 

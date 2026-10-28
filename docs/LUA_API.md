@@ -64,6 +64,25 @@ MIME type and quality. Input and output bounds, metadata behavior, and platform
 support are declared in `source/media/media.cgen`. These functions prepare
 bytes; storage and messaging remain application API responsibilities.
 
+## Native push notifications
+
+`require "orca.notifications"` exposes `supported()`,
+`requestAuthorization()` and `poll()`. On iOS and macOS, authorization is
+asynchronous: a successful request means it was queued, not that permission
+or APNs registration succeeded. Poll returns one queued event or `nil`.
+Token events contain `{type="token", token=...}`; notification events contain
+`type="open"` or `"received"` and the application's `conversationId`,
+`messageId` and `userId`. Errors arrive as `{type="error", code=..., message=...}`;
+codes distinguish denied permission from retryable registration failures.
+Native callbacks queue data without calling Lua from another thread.
+
+Command-line tools report unsupported. Delivery requires a signed application
+bundle with APNs capabilities and a matching
+provider. Apps own authenticated device-target registration, token updates,
+logout cleanup and authorization when navigating from a notification. Other
+platforms report unsupported. The API contract is declared in
+`source/notifications/notifications.cgen`.
+
 ## Secure credentials
 
 `require "orca.credentials"` exposes `supported()`, `get(key)`,

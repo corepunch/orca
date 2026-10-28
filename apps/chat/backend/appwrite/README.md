@@ -55,7 +55,8 @@ and requests these dynamic-key scopes:
 | `users.write` | Apply an email/phone change after ownership proof; synchronize the account display name |
 | `documents.read`, `documents.write` | Read and update shared profiles and private conversation documents |
 | `files.read`, `files.write` | Store encrypted objects and serve member-authorized plaintext |
-| `targets.write`, `messages.write` | Deliver staged identifier-link challenges through Messaging |
+| `targets.write` | Create temporary identifier-link challenge targets |
+| `messages.write` | Deliver identifier-link challenges and new-message push through Messaging |
 
 Appwrite scopes apply to the project, including its other collections/users;
 they cannot be limited to the shared collection allowlist. The handler constructs all backend
@@ -81,19 +82,83 @@ Set the following **server function variables**, without committing secrets:
 | `CHAT_OTP_HMAC_KEY` | A stable random secret of at least 32 characters, required for identity linking |
 | `CHAT_EMAIL_PROVIDER_ID` | Configured Appwrite Messaging email provider ID, required to link/change email |
 | `CHAT_SMS_PROVIDER_ID` | Configured Appwrite Messaging SMS provider ID, required to link/change phone |
+| `CHAT_PUSH_ENABLED` | `true` enables new-message push; absent/other values keep it disabled |
 
 `APPWRITE_FUNCTION_PROJECT_ID` and `APPWRITE_FUNCTION_API_ENDPOINT` come from the
 runtime; the source defaults to this Octopus project and Frankfurt endpoint.
 The desktop stores only the endpoint, project ID and function ID
 `orca-chat-api`, with no API key. Configure it through `Chat.appwrite`.
 
-The project currently has **zero Messaging providers**. Linking returns a clear
+Messaging providers require separate operator configuration. Linking returns a clear
 configuration error until the matching provider and HMAC secret are configured.
 Native email/password and email OTP use Appwrite Auth's delivery configuration;
 phone OTP additionally needs a working Appwrite Auth SMS provider. Native Auth
 delivery and Messaging providers are separate configurations. Six-digit OTPs
 must be enabled for the existing desktop verification form. Delivery was not
 tested against real addresses or phone numbers.
+
+## New-message push (APNs)
+
+The Apple client registers its native APNs token as an Appwrite Account push
+target using its ordinary authenticated session. The public client configuration
+`pushProviderId` in [`apps/chat/config.lua`](../../config.lua)
+(or `APPWRITE_PUSH_PROVIDER_ID` in a local run)
+selects the provider. Neither device registration nor the app contains a server
+key. Registering, rotating and removing targets is owned by the client, including
+removal on sign-out.
+
+To activate push for a signed Apple build:
+
+1. Enable Apple's Push Notifications capability for that build's explicit App ID
+   and provision the app with the corresponding push entitlement. See the
+   [native push API](../../../../docs/LUA_API.md#native-push-notifications) and
+   `apps/chat/Push.entitlements` (iOS),
+   `Push-macOS-development.entitlements` or `Push-macOS-production.entitlements`
+   for the matching Apple build. Xcode defaults `ORCA_APNS_ENVIRONMENT` to
+   `development` in Debug and `production` in Release; override it when the
+   selected signing profile uses a different environment. `make ios-install`
+   requires a development profile with APNs enabled. For macOS use a signed
+   application bundle; see [local macOS packaging and signing](../../../../tools/macos/README.md).
+   The unbundled `make chat` executable does not register for remote notifications.
+2. Create an [Appwrite APNs provider](https://appwrite.io/docs/products/messaging/apns)
+   in the target project using the Apple Team ID, Bundle ID, key ID and `.p8`
+   authentication key. Keep the key in Appwrite; never commit or bundle it.
+   Match the provider's sandbox/production setting to the build's signing
+   environment. Use separate provider IDs when shipping both environments.
+3. Set the matching provider ID in the public Chat client configuration and
+   allow notifications in the OS permission prompt.
+4. Deploy this Function source with the manifest's existing `messages.write`
+   dynamic-key scope, then set its server variable `CHAT_PUSH_ENABLED=true`.
+   Restart/redeploy the Function as required for the variable to take effect.
+
+After a text or photo message commits, the Function queues one
+[Messaging push](https://appwrite.io/docs/products/messaging/send-push-notifications)
+per current conversation member except the author. It resolves recipients from
+the private membership collection under the room lock, with cursor pagination;
+request JSON cannot choose recipients. The alert is always `ORCA Chat` /
+`New message`, with the default sound and no message text, sender name, room
+name or photo. Data contains only `conversationId`, `messageId` and the recipient
+`userId`. The client checks the signed-in account before opening the conversation;
+the ordinary history route still enforces current membership. Edits and deletions
+do not notify, and a failed message commit never queues a push.
+
+Queueing is best-effort: recipient lookup and eight concurrent queue requests
+share a three-second deadline. A Messaging/provider failure or timeout never
+turns a persisted message into a failed send. Appwrite then owns asynchronous
+delivery to every push target of the selected user. A deterministic Messaging
+message ID per committed message/recipient makes dispatch replay idempotent;
+an already-created notification is not queued again. There is no durable outbox
+or automatic retry worker, and the existing post route does not deduplicate a
+new client send after a lost response. Provider failures, revoked OS permission,
+absent targets or deadline exhaustion can therefore leave a message without an
+alert. Inspect Appwrite Messaging delivery status/errors when diagnosing
+delivery; Function diagnostics use only a fixed message and numeric HTTP status
+when Function logging is enabled.
+
+Unit checks use injected REST/repositories and cover publication, membership,
+privacy, disabled configuration, deduplication, deadline and failure behavior.
+No APNs credentials, provider activation or real-device delivery were verified
+as part of this implementation. Live provider/device verification is on demand.
 
 ## Shared storage migration
 
@@ -189,10 +254,14 @@ session refresh and logout. It talks to native `/account`, `/account/sessions/*`
 therefore enforces its native Auth delivery, session and rate-limit policies.
 Native session cookies remain private to the adapter, with synchronous Apple
 Keychain persistence in the iOS/macOS app. Launch restores the credential and
-obtains a fresh short-lived user JWT for authenticated function execution. Sign-out
-revokes the current native session and clears local credentials, including on
-network failure. Backend deployment and database availability do not participate
-in those Account operations.
+obtains a fresh short-lived user JWT for authenticated function execution. When
+a push target is registered, sign-out removes it before revoking the native
+session. A failed target cleanup retains the credentials and offers a retry;
+an expired session instead requires the original target owner to sign in again
+to complete cleanup. Once target removal succeeds, local login credentials are
+cleared even if native session revocation encounters a network failure. Backend
+deployment and database availability do not participate in those Account
+operations.
 
 Password-only accounts may initially have an unverified email; self profiles
 expose email/phone only when Appwrite marks them verified. Public profiles
@@ -248,9 +317,9 @@ between validation and listing, return `409 stale_cursor`; the client must
 explicitly reload the newest page to establish a fresh cursor. New messages do
 not move an existing older-page anchor. Attachment hydration is bounded by the
 page and four attachments per message, with eight concurrent message views.
-History performs no per-message profile or directory reads. Realtime
-subscriptions, push, receipts and end-to-end encryption remain outside the
-existing Chat feature set.
+History performs no per-message profile or directory reads. New-message push is
+available with the APNs setup above. Realtime subscriptions, receipts and
+end-to-end encryption remain outside the existing Chat feature set.
 
 New database and bucket creation were denied by the current plan quotas. The
 existing `post-images` bucket has public read and no per-file security, so it

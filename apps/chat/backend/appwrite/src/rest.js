@@ -13,7 +13,7 @@ export class AppwriteRest {
   constructor({ endpoint, projectId, apiKey, fetch: fetcher = fetch }) {
     this.endpoint = endpoint.replace(/\/$/, ''); this.projectId = projectId; this.apiKey = apiKey; this.fetch = fetcher;
   }
-  async request(method, path, { body, jwt, admin = true, binary = false } = {}) {
+  async request(method, path, { body, jwt, admin = true, binary = false, signal } = {}) {
     const headers = { 'X-Appwrite-Project': this.projectId };
     if (admin) headers['X-Appwrite-Key'] = this.apiKey;
     if (jwt) headers['X-Appwrite-JWT'] = jwt;
@@ -21,7 +21,7 @@ export class AppwriteRest {
     if (body !== undefined && !multipart) headers['Content-Type'] = 'application/json';
     const response = await this.fetch(this.endpoint + path, {
       method, headers, body: body === undefined ? undefined : multipart ? body : JSON.stringify(body),
-      signal: AbortSignal.timeout(20000), redirect: 'error',
+      signal: signal || AbortSignal.timeout(20000), redirect: 'error',
     });
     if (!response.ok) {
       let error = {}; try { error = await response.json(); } catch { /* Non-JSON upstream failure. */ }
@@ -118,16 +118,16 @@ export class Repository {
     try { await this.rest.request('DELETE', this.path(collection, id)); return true; }
     catch (error) { if (error.status === 404) return false; throw error; }
   }
-  async list(collection, queries = [], limit) {
+  async list(collection, queries = [], limit, options = {}) {
     if (collection === 'profiles') {
       const filters = queries.map(query => ({ ...query,
         ...(query.attribute === 'username' ? { attribute: 'handle' } : {}) }));
-      const docs = await this.listDocuments('directory', filters, limit);
+      const docs = await this.listDocuments('directory', filters, limit, options);
       return (await Promise.all(docs.map(doc => this.get('profiles', doc.$id)))).filter(Boolean);
     }
-    return (await this.listDocuments(collection, queries, limit)).map(unpack);
+    return (await this.listDocuments(collection, queries, limit, options)).map(unpack);
   }
-  async listDocuments(collection, queries = [], limit) {
+  async listDocuments(collection, queries = [], limit, options = {}) {
     const rows = []; let cursor = queries.find(query => query.method === 'cursorAfter')?.values?.[0];
     queries = queries.filter(query => query.method !== 'cursorAfter');
     // Cursor pagination prevents Appwrite's default 25-row page from hiding members.
@@ -138,7 +138,7 @@ export class Repository {
       if (collection === 'messages') filters.push({ method: 'select', values: ['$id', 'payload'] });
       if (cursor) filters.push({ method: 'cursorAfter', values: [cursor] });
       const params = new URLSearchParams({ total: 'false' }); filters.forEach(query => params.append('queries[]', JSON.stringify(query)));
-      const result = await this.rest.request('GET', this.path(collection) + '?' + params);
+      const result = await this.rest.request('GET', this.path(collection) + '?' + params, options);
       rows.push(...result.documents);
       if (result.documents.length < count || (limit && rows.length === limit)) return rows;
       cursor = result.documents.at(-1).$id;
