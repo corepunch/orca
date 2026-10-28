@@ -195,7 +195,8 @@ local decoded = {}
 for value in url:gmatch("queries%[%d+%]=([^&]+)") do
     decoded[#decoded + 1] = json.decode((value:gsub("%%(%x%x)", function(h) return string.char(tonumber(h, 16)) end)))
 end
-assert(decoded[1].method == "equal" and decoded[1].attribute == "tags" and decoded[1].values[1] == "news")
+assert(decoded[1].method == "contains" and decoded[1].attribute == "tags" and decoded[1].values[1] == "news",
+    "Array tags must use Appwrite's contains predicate")
 assert(decoded[2].method == "orderDesc" and decoded[2].attribute == "$createdAt")
 assert(decoded[3].method == "orderDesc" and decoded[3].attribute == "$id")
 assert(decoded[4].method == "limit" and decoded[4].values[1] == 3)

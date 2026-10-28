@@ -34,7 +34,7 @@ end
 
 local function matches(doc, query)
     local value, values = doc[query.attribute], query.values or {}
-    if query.method == "equal" then
+    if query.method == "equal" or query.method == "contains" then
         for _, wanted in ipairs(values) do if contains(value, wanted) then return true end end
         return false
     elseif query.method == "lessThan" then
