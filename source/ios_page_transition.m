@@ -216,15 +216,13 @@ bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const *spec,
   snapshot.overlay = [[[UIView alloc] initWithFrame:ios_view.frame] autorelease];
   snapshot.overlay.userInteractionEnabled = NO;
   snapshot.overlay.clipsToBounds = YES;
-  snapshot.overlay.backgroundColor = UIColor.clearColor;
+  // A sibling cover at z=0 occludes the page when its positive turn takes
+  // it behind that plane. The container background stays behind every turn.
+  snapshot.overlay.backgroundColor = [UIColor colorWithRed:spec->background[0] green:spec->background[1]
+    blue:spec->background[2] alpha:1];
   CAShapeLayer *clip = [CAShapeLayer layer];
   clip.path = [UIBezierPath bezierPathWithRect:rect].CGPath;
   snapshot.overlay.layer.mask = clip;
-  CALayer *cover = [CALayer layer];
-  cover.frame = rect;
-  cover.backgroundColor = [UIColor colorWithRed:spec->background[0] green:spec->background[1]
-    blue:spec->background[2] alpha:1].CGColor;
-  [snapshot.overlay.layer addSublayer:cover];
   snapshot.page = [CALayer layer];
   snapshot.page.contents = (id)cropped;
   snapshot.page.contentsScale = scale;
