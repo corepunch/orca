@@ -34,8 +34,10 @@ function Sync.refreshInbox(app, current, quiet)
             app:renderRoomList()
             for key, list in pairs(app.roomLists) do list.ContentOffset = offsets[key] end
         end
-        -- Rooms are usable before the separate contacts request completes.
-        local contacts, contactError = app.models.Contacts:select()
+        -- Contacts come from shared rooms; skip their request when the inbox is empty.
+        local contacts, contactError
+        if #rooms == 0 then contacts = {}
+        else contacts, contactError = app.models.Contacts:select() end
         if not current() then return true end
         if not contacts then return nil, contactError end
         app.contacts, app.contactsById = contacts, {}

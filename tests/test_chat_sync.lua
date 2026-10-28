@@ -18,7 +18,7 @@ local function fixture()
     local session = { user = { id = "me" } }
     local screen = {}
     local app = { screen = screen, navigationEpoch = 1, sessionEpoch = 1, rooms = {}, contacts = {},
-        rows = { { id = "one", name = "One" } }, directory = {}, reads = 0, renders = 0,
+        rows = { { id = "one", name = "One" } }, directory = {}, reads = 0, contactReads = 0, renders = 0,
         query = "one", filter = "Unread", composer = { Text = "draft" } }
     app.client = { getSession = function() return session end }
     app.shell = { screen = screen, active = "Chats" }
@@ -29,7 +29,10 @@ local function fixture()
         if app.readHook then app.readHook() end
         return app.rows, app.readError
     end
-    function app.models.Contacts:select() return app.directory end
+    function app.models.Contacts:select()
+        app.contactReads = app.contactReads + 1
+        return app.directory
+    end
     function app:renderRoomList() self.renders = self.renders + 1; self.roomLists.All.ContentOffset = { X = 0, Y = 0 } end
     function app:notice() error("Quiet polling must not replace foreground status") end
     function app:resetSessionViews() self.sessionEpoch = self.sessionEpoch + 1 end
@@ -42,6 +45,23 @@ local function fire(id)
     if owner.Tick then owner.Tick(owner, { timerId = id }) end
 end
 local app = fixture()
+local empty = fixture()
+empty.rows, empty.rooms = {}, nil
+empty.contacts, empty.contactsById = { { id = "old-peer" } }, { ["old-peer"] = { id = "old-peer" } }
+assert(Sync.refreshInbox(empty, function() return true end, true))
+assert(empty.reads == 1 and empty.contactReads == 0 and #empty.rooms == 0,
+    "An empty inbox must finish with one room request and no contacts request")
+assert(empty.renders == 1, "The first empty response must replace the inbox loading state")
+assert(#empty.contacts == 0 and next(empty.contactsById) == nil,
+    "Leaving the last shared room must discard the old contact directory")
+empty.rows, empty.directory = { { id = "new-room", name = "New room" } }, { { id = "new-peer" } }
+assert(Sync.refreshInbox(empty, function() return true end, true))
+assert(empty.contactReads == 1 and empty.contactsById["new-peer"],
+    "Contacts must still load when the inbox gains a room")
+empty.rows = {}
+assert(Sync.refreshInbox(empty, function() return true end, true))
+assert(empty.contactReads == 1 and #empty.contacts == 0 and next(empty.contactsById) == nil,
+    "Losing the last shared room must clear contacts without another directory request")
 local sync = Sync.new(app)
 sync:activate()
 assert(owner.delays[1] == 15000 and app.reads == 0)
