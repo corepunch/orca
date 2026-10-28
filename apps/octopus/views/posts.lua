@@ -4,6 +4,7 @@ local colors, space = C.colors, C.spacing
 local ACTION_HEIGHT = 44
 local ACTION_CONTENT_HEIGHT = 28
 local REPOSTED_HEIGHT = 20
+local AUTHOR_HEIGHT = 24
 local auto = 0/0
 local Posts = {}
 
@@ -125,10 +126,11 @@ end
 function Posts.card(app, post, entry, repostedBy)
     local card = ui.Grid { Name = "Post" .. post.id, Columns = C.AVATAR .. "px 1fr", Spacing = space.inline }
     local function author() app:openProfile(post.authorId, post.authorName) end
-    -- A repost's avatar lines up with the author, below the "reposted" line.
+    -- The avatar lines up with the post content, below the author line and,
+    -- on a repost, the "reposted" line above it.
+    local above = AUTHOR_HEIGHT + space.tight + (repostedBy and REPOSTED_HEIGHT + space.tight or 0)
     card:addChild(C.area(C.avatar(post.authorName, C.AVATAR, post.authorId, app), author, {
-        Name = "Avatar" .. post.id, Width = C.AVATAR, Height = C.AVATAR,
-        MarginTop = repostedBy and REPOSTED_HEIGHT + space.tight or 0 }))
+        Name = "Avatar" .. post.id, Width = C.AVATAR, Height = C.AVATAR, MarginTop = above }))
     local header = ui.Grid { Columns = "1fr auto", Spacing = space.inline, IgnoreHitTest = true }
     header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
     header:addChild(C.text(C.ago(post.createdAt, app.clock()), { FontSize = 13, Foreground = colors.dim }))
@@ -139,7 +141,7 @@ function Posts.card(app, post, entry, repostedBy)
             C.text(repostedBy.name .. " reposted", { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
         }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = REPOSTED_HEIGHT }))
     end
-    column:addChild(C.area(header, author, { Name = "Author" .. post.id, Height = 24 }))
+    column:addChild(C.area(header, author, { Name = "Author" .. post.id, Height = AUTHOR_HEIGHT }))
     column:addChild(C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }))
     local tags = Posts.tags(app, post)
     if tags then column:addChild(tags) end
