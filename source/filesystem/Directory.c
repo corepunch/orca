@@ -1,17 +1,11 @@
 #include "fs_local.h"
 #include <filesystem/filesystem.h>
 
+// Hot reload watches every opened file for edits; an installed iOS bundle is
+// read-only, and the stat per file per message only slowed each frame.
+#ifndef ORCA_IOS
 #define MONITOR_FILES
-
-#ifdef MONITOR_FILES
-struct _MONITOREDFILE
-{
-  path_t Filename;
-  longTime_t Modified;
-  struct _MONITOREDFILE* next;
-};
-bool_t
-FS_GetModifiedTime(lpcString_t, longTime_t*);
+#endif
 
 static int
 FS_FileLength(FILE* f)
@@ -34,6 +28,16 @@ _ReadOnDisk(FILE *fp)
   fread(pFile->data, dwFileSize, 1, fp);
   return pFile;
 }
+
+#ifdef MONITOR_FILES
+struct _MONITOREDFILE
+{
+  path_t Filename;
+  longTime_t Modified;
+  struct _MONITOREDFILE* next;
+};
+bool_t
+FS_GetModifiedTime(lpcString_t, longTime_t*);
 
 static void
 _WatchFile(struct Directory* psrch, lpcString_t filename)

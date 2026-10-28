@@ -78,6 +78,7 @@ def main():
         'UIDeviceFamily': [1, 2], 'MinimumOSVersion': args.minimum,
         'CFBundleSupportedPlatforms': ['iPhoneOS' if args.sdk == 'iphoneos' else 'iPhoneSimulator'],
         'LSRequiresIPhoneOS': True, 'UIRequiredDeviceCapabilities': ['opengles-3'],
+        'CADisableMinimumFrameDurationOnPhone': True,  # ProMotion iPhones otherwise cap at 60 Hz
         'UILaunchScreen': {}, 'UISupportedInterfaceOrientations': orientations,
         'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown'],
         'ORCAProject': 'project', 'ITSAppUsesNonExemptEncryption': False,

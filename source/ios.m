@@ -19,7 +19,7 @@ int luaopen_orca(lua_State *L);
 
 struct OrcaFrameProfile {
   BOOL enabled;
-  unsigned callbacks, gaps;
+  unsigned callbacks, gaps, paints;
   double start, last, lastTimestamp;
   double resumeTotal, resumeMax, callbackTotal, callbackMax;
   double gapTotal, gapMax, timestampGapTotal, timestampGapMax;
@@ -55,11 +55,12 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
   double elapsed = finished - p->start;
   if (elapsed < 1) return;
   double count = p->callbacks, gaps = MAX(p->gaps, 1u);
-  fprintf(stderr, "[ios frames] callbacks=%u elapsed=%.3fs rate=%.2f/s "
+  unsigned paints = ios_paint_count();
+  fprintf(stderr, "[ios frames] callbacks=%u paints=%u elapsed=%.3fs rate=%.2f/s paint_rate=%.2f/s "
     "resume_ms=%.2f/max%.2f callback_ms=%.2f/max%.2f "
     "wall_gap_ms=%.2f/max%.2f display_gap_ms=%.2f/max%.2f "
     "duration_ms=%.2f target_interval_ms=%.2f target_lead_ms=%.2f/min%.2f preferred_fps=%ld\n",
-    p->callbacks, elapsed, count / elapsed,
+    p->callbacks, paints - p->paints, elapsed, count / elapsed, (paints - p->paints) / elapsed,
     p->resumeTotal * 1000 / count, p->resumeMax * 1000,
     p->callbackTotal * 1000 / count, p->callbackMax * 1000,
     p->gapTotal * 1000 / gaps, p->gapMax * 1000,
@@ -67,7 +68,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
     p->durationTotal * 1000 / count, p->intervalTotal * 1000 / count,
     p->targetLeadTotal * 1000 / count, p->targetLeadMin * 1000,
     (long)link.preferredFramesPerSecond);
-  *p = (struct OrcaFrameProfile){ .enabled = YES, .start = finished,
+  *p = (struct OrcaFrameProfile){ .enabled = YES, .start = finished, .paints = paints,
     .last = started, .lastTimestamp = link.timestamp, .targetLeadMin = DBL_MAX };
 }
 
@@ -209,6 +210,9 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 {
   if (![scene isKindOfClass:[UIWindowScene class]] || ![self start]) return;
   _displayLink = [[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)] retain];
+  // Ask for the panel's full rate on ProMotion devices; iPhones also need
+  // CADisableMinimumFrameDurationOnPhone in Info.plist, or they stay at 60 Hz.
+  if (@available(iOS 15.0, *)) _displayLink.preferredFrameRateRange = CAFrameRateRangeMake(80, 120, 120);
   [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
   CFRunLoopObserverContext context = { .info = self };
   _wakeObserver = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting,
