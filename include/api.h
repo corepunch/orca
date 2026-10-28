@@ -132,4 +132,17 @@ API_PrintStackTrace(lua_State*);
 //     return LUA_OK;
 // }
 
+// Engine phases traced as Instruments signposts (Points of Interest track) on
+// Apple platforms; no-ops elsewhere. Begin and end one phase at a time.
+enum TracePhase {
+  kTracePhaseFrame,      // one display callback's message batch
+  kTracePhasePrograms,   // property programs before a paint
+  kTracePhaseLayout,     // measure and arrange
+  kTracePhaseRender,     // draw calls
+  kTracePhasePresent,    // swap or present
+  kTracePhaseCount
+};
+ORCA_API void TRACE_Begin(enum TracePhase phase);
+ORCA_API void TRACE_End(enum TracePhase phase);
+
 #endif

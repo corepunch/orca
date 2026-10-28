@@ -123,8 +123,15 @@ iOS: the bundle is read-only, and the per-message `stat` of every opened file
 only slowed each frame.
 
 Set `ORCA_PROFILE_FRAMES=1` in the Xcode scheme's Run environment to log
-display callback rates, frame durations and missed display intervals once per
-second. This works with optimized builds and is disabled by default.
+display callback rates, paint rates, frame durations and missed display
+intervals once per second. This works with optimized builds and is disabled by
+default. For Instruments, profile a Release build on a device (Product >
+Profile) with the Time Profiler template: the engine marks each display
+callback's Lua batch and every paint's Programs, Layout, Render and Present
+phases as signposts, which appear on the Points of Interest track aligned with
+the samples, so a slow frame shows which phase took the time. The simulator
+runs OpenGL ES on a software rasterizer, so its paint times do not represent
+devices.
 
 The platform backend uses UIWindowScene and OpenGL ES 3, Retina backing buffers,
 tap/drag events, vertical swipe scrolling and UIKeyInput. The drawable fills the

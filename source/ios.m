@@ -175,7 +175,9 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int nresults = 0;
   double resumeStarted = _frameProfile.enabled ? CACurrentMediaTime() : 0;
+  TRACE_Begin(kTracePhaseFrame);
   int status = lua_resume(_coroutine, _lua, 0, &nresults);
+  TRACE_End(kTracePhaseFrame);
   double resumed = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   if (status == LUA_YIELD) {
     lua_pop(_coroutine, nresults);

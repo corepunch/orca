@@ -228,6 +228,7 @@ draw_screen(struct Object* hObject,
 
   uint32_t const _size = pScreen->_size;
 
+  TRACE_Begin(kTracePhaseLayout);
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
 
   // If screen size has changed, we need to make sure all properties
@@ -238,13 +239,16 @@ draw_screen(struct Object* hObject,
     PROP_RunAllPrograms(hObject);
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
+  TRACE_End(kTracePhaseLayout);
 
+  TRACE_Begin(kTracePhaseRender);
   _SendMessage(hObject, Screen, RenderScreen,
                .width = WindowWidth,
                .height = WindowHeight,
                .stereo = 0,
                .target = 0,
                .angle = 0);
+  TRACE_End(kTracePhaseRender);
 
   //  int tmp = 0;
   //  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }
@@ -263,7 +267,9 @@ draw_screen(struct Object* hObject,
 HANDLER(Screen, Window, Paint) {
   // Every painted frame moves the engine clock; time-based animation reads it.
   core_AdvanceFrame();
+  TRACE_Begin(kTracePhasePrograms);
   PROP_RunAllPrograms(hObject);
+  TRACE_End(kTracePhasePrograms);
 
 #ifdef AX_PLATFORM_IOS
   axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
@@ -272,7 +278,9 @@ HANDLER(Screen, Window, Paint) {
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
 
+  TRACE_Begin(kTracePhasePresent);
   R_EndFrame();
+  TRACE_End(kTracePhasePresent);
 
   return TRUE;
 }
