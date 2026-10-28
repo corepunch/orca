@@ -106,6 +106,9 @@ jobs:
       - name: Build
         run: make
 
+      - name: Build iOS Simulator
+        run: make -f tools/ios/Makefile SDK=iphonesimulator ARCH=$(uname -m) app
+
       - name: Test (headless layout)
         run: make test-headless
 

@@ -350,7 +350,7 @@ ios-install:
 ios-devices:
 	$(MAKE) -f tools/ios/Makefile list-devices
 
-test-ios-tools: test-ios-tmpname test-ios-message-frame
+test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
 test-octopus-cache:
@@ -470,6 +470,9 @@ endef
 .PHONY: test-ios-tmpname
 $(eval $(call C_TEST_RULE,test-ios-tmpname,tests/test_ios_tmpname.c,$(BINDIR)/test_ios_tmpname,directories tools/ios/lua_config.h,,))
 
+.PHONY: test-ios-scroll-policy
+$(eval $(call C_TEST_RULE,test-ios-scroll-policy,tests/test_ios_scroll_policy.c,$(BINDIR)/test_ios_scroll_policy,directories,,-lm))
+
 ifeq ($(UNAME_S),Darwin)
 .PHONY: test-ios-message-frame
 $(eval $(call C_TEST_RULE,test-ios-message-frame,tests/test_ios_message_frame.c source/sysutil/queue.c libs/platform/ios/ios_message_queue.m,$(BINDIR)/test_ios_message_frame,unite,-DORCA_IOS,$(TEST_LDFLAGS) -lplatform -framework CoreFoundation))
@@ -515,6 +518,8 @@ test-macos-retina:
 endif
 
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
+.PHONY: test-ios-page-transition
+$(eval $(call C_TEST_RULE,test-ios-page-transition,tests/test_ios_page_transition.c,$(BINDIR)/test_ios_page_transition,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 .PHONY: test-text-leading
 $(eval $(call C_TEST_RULE,test-text-leading,tests/test_text_leading.c,$(BINDIR)/test_text_leading,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
@@ -524,6 +529,7 @@ HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations
 HEADLESS_LUA_TESTS += test-imageview
 HEADLESS_LUA_TESTS += test-text-leading
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
+HEADLESS_LUA_TESTS += test-ios-page-transition
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
 

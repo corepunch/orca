@@ -210,6 +210,7 @@ HANDLER(Pivot, Object, PropertyChanged)
   if (id == ID_Pivot_TransitionMode) {
     // The clock starts with the first frame, after the page is built.
     pPivot->_transitionElapsed = -1;
+    PageTransition_NativeChanged(hObject, pPivot->NavigationTransition, pPivot->TransitionMode);
     if (pPivot->TransitionMode != kTransitionModeNone) OBJ_RequestAnimate(hObject);
   }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
@@ -221,6 +222,8 @@ HANDLER(Pivot, Object, PropertyChanged)
 
 HANDLER(Pivot, Object, Animate)
 {
+  // Core Animation owns intermediate frames; its completion wakes this handler.
+  if (PageTransition_NativeAnimate(hObject)) return TRUE;
   pPivot->_progress = MIN(Metro_Elapsed(pPivot->_animStart), 1);
   bool_t moving = FALSE;
   enum TransitionMode mode = pPivot->TransitionMode;
@@ -250,6 +253,7 @@ HANDLER(Pivot, Node, UpdateMatrix)
 {
   if (pPivot->TransitionMode == kTransitionModeNone) return FALSE;
   Node2D_UpdateMatrix(hObject, GetNode2D(hObject), wParam, pUpdateMatrix);
+  if (PageTransition_NativeActive(hObject)) return TRUE;
   PageTransition_Apply(hObject, pPivot->NavigationTransition, pPivot->TransitionMode,
     MAX(pPivot->_transitionElapsed, 0));
   return TRUE;
