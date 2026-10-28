@@ -243,7 +243,7 @@ weather: copyshare
 	fi
 	$(TARGET) apps/Book
 
-.PHONY: chat test-chat test-chat-appwrite test-network-headers
+.PHONY: chat test-chat test-chat-ui test-chat-appwrite test-network-headers
 chat: copyshare
 	$(TARGET) apps/chat
 
@@ -263,8 +263,17 @@ test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_loading.lua
 	$(TARGET) -test=tests/test_chat_session_ui.lua
 
-test-chat-appwrite: copyshare
-	$(TARGET) -test=tests/test_chat_appwrite.lua
+# Fast offline presentation checks. Reuse the current binary for app-only edits;
+# rebuild separately with `make unite` after native changes or on a fresh checkout.
+test-chat-ui: copyshare
+	$(TARGET) -test=tests/test_chat_timeline.lua
+	$(TARGET) -test=tests/test_chat_photo_loader.lua
+	$(TARGET) -test=tests/test_footer.lua
+
+# Adapter unit tests need only Lua: no engine startup, resource copy or rebuild.
+LUA ?= lua
+test-chat-appwrite:
+	$(LUA) tests/test_chat_appwrite.lua
 
 # Explicitly opted in: real native HTTP and secure session storage against
 # Appwrite. Never make this a dependency of test/test-headless/test-chat.

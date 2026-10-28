@@ -22,6 +22,13 @@ Messaging providers are not configured, so verified identity linking still needs
 delivery setup.
 The sections below retain the design rationale and distinguish the remaining roadmap from current behavior.
 
+## Visual direction
+
+Chat currently follows Windows Phone / Metro. The [design reference](DESIGN.md)
+records source links, an archived Telegram image, evidence limits, and the
+agreed footer, composer and photo-message presentation. Use it when extending
+or reviewing the interface.
+
 ## Current scope and deferred work
 
 The current acceptance target is reliable core messaging on real Appwrite:
@@ -29,9 +36,11 @@ find a person by username or verified opted-in identifier, open a canonical
 direct conversation, exchange text/photos, edit/delete, manage groups/channels,
 invite people, change roles, rename and leave. Contacts currently come from
 shared conversations; there is no separate friendship-request system.
-Use the manual [live suites](backend/appwrite/live/README.md) and the actual
-Lua/native client test before calling those flows verified. Neither the offline
-emulator nor non-failing parity TODO probes establish live feature coverage.
+Routine changes use focused unit tests only; Appwrite integration is trusted.
+Run the manual [live suites](backend/appwrite/live/README.md) or actual
+Lua/native client integration test only on an explicit user request. Unit
+results do not establish fresh live verification, and non-failing parity TODO
+probes do not establish live feature coverage.
 
 Videos and calls are excluded. Full Telegram parity is a longer-term reference,
 not the acceptance requirement for this release. Prioritize these additions

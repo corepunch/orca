@@ -18,17 +18,18 @@ Appwrite account.
 
 ## Validation
 
+For routine Appwrite changes, run only the affected unit tests:
+
 ```sh
-make test-chat
+make test-chat-appwrite           # Lua adapter; no ORCA startup or rebuild
 make test-chat-appwrite-backend   # Node.js: Appwrite Function, offline
-make test-media                   # Native Apple ImageIO tests on macOS
-make test-network-headers         # Localhost-only headers and binary-byte regression
-make test-headless
 ```
 
-Live checks against the deployed backend are manual and never run in CI:
-`make test-live-setup` once, then `make test-live`. See
-[live tests](appwrite/live/README.md).
+Select individual Function cases with Node's `--test-name-pattern` when possible.
+UI-only changes need no Appwrite tests. Do not repeat passing checks without
+relevant changes. Integration and end-to-end tests, including the offline
+live-suite emulator, run only on explicit user request and never automatically
+after edits, builds or deployments. See [live tests](appwrite/live/README.md).
 
 App/API/mock tests use no network. The HTTP regression deliberately uses a
 loopback echo server to test the engine transport, with no external service.

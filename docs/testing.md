@@ -36,6 +36,34 @@ xvfb-run make test
 - Headless Lua/UI/layout work: use `make test-headless`.
 - Display-backed behavior: use `xvfb-run make test`.
 
+## Fast Chat iteration
+
+Appwrite validation is **unit-only by default**. Use
+`make test-chat-appwrite` for the Lua adapter (standalone Lua; no engine build
+or startup), or `make test-chat-appwrite-backend` for Function logic with
+injected dependencies. Select affected backend cases with
+`node --test --test-name-pattern='PATTERN' apps/chat/backend/appwrite/test/backend.test.js`.
+Do not run Appwrite checks for unrelated UI changes or repeat passing tests
+without a relevant code change. Integration, end-to-end and live-suite emulator
+runs require an explicit user request, even when they are offline.
+
+For app-only Chat presentation changes, `make test-chat-ui` runs the offline
+timeline, photo-loader, and footer checks using the existing binary. It does
+not rebuild the engine or contact Appwrite. Run only the affected test file
+when possible, for example `lua tests/test_chat_timeline.lua` or
+`build/bin/orca -test=tests/test_chat_photo_loader.lua`.
+
+Rebuild with `make unite` when native code/API changes or the binary is
+missing. Some individual engine test targets depend on `unite`, so invoking
+the existing binary directly avoids those rebuilds during app-only work.
+Use `make test-chat` for broader offline Chat changes; do not repeat passing
+suites without a relevant change or unresolved concern.
+
+Live Appwrite setup, cleanup, Node/native suites, and two-account device checks
+run only when the user explicitly requests them. Never start them as an
+automatic follow-up to an edit, build, deployment, or offline test. See the
+[live test guide](../apps/chat/backend/appwrite/live/README.md).
+
 ## String property ownership
 
 Run the focused allocation and binding suites with:

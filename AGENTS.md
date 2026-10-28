@@ -12,6 +12,11 @@ choice or an established project architecture when doing local feature work.
 ## UI design skill
 
 For designing or reviewing screens and components, use the [`orca-ui-design`](.opencode/skills/orca-ui-design/SKILL.md) skill (adapted from Apple HIG principles for ORCA's declarative modern UI).
+
+For `apps/chat`, preserve its current Windows Phone / Metro direction. Read
+[Chat design decisions and references](apps/chat/DESIGN.md) for the visual
+baseline, historical sources, and footer/photo-message rules.
+
 ## Agents and skills
 
 Agents are classic implementation roles under `.opencode/agents/`; skills are
@@ -104,12 +109,37 @@ After `.cgen` changes, run `make modules`.
 - In change mode, coordinate agents for independent work and run the relevant
   lint, type check, build, and tests after each feature.
 
-## Chat: manual Appwrite integration checks
+## Chat: fast Appwrite unit tests
 
-For changes to `apps/chat` authentication, discovery/contacts, conversations,
-roles, invitations, messages, or photos, use the real Appwrite suite after the
-focused offline checks. It is manual for now; keep it out of default tests and
-PR CI. See [live test instructions](apps/chat/backend/appwrite/live/README.md).
+For Appwrite work, run only the smallest affected unit tests by default.
+`make test-chat-appwrite` runs the adapter directly in standalone Lua, without
+starting or rebuilding ORCA. `make test-chat-appwrite-backend` tests Function
+logic with injected REST/repository doubles. For a specific backend change,
+use Node's `--test-name-pattern` to select the affected cases. UI-only edits
+do not require Appwrite tests. Reuse passing results until relevant code changes.
+
+Do not run integration or end-to-end suites, including the offline live-suite
+emulator, unless the user explicitly asks for integration verification.
+Appwrite integration is trusted for routine work; do not retest deployments,
+accounts, native HTTP, Keychain or devices as part of unit validation.
+
+### Manual integration checks (explicit request only)
+
+Live Appwrite checks are strictly on demand: run them only when the user
+explicitly requests live verification. Do not automatically run or propose
+them after Chat edits, offline tests, builds, or deployments. This applies to
+setup, cleanup, Node tests, native tests, and two-account device checks. Keep
+them out of default tests and PR CI. See
+[live test instructions](apps/chat/backend/appwrite/live/README.md).
+
+For ordinary `apps/chat` work, run the smallest affected offline checks.
+For timeline, photo presentation, or footer changes, `make test-chat-ui` runs
+focused offline tests using the existing binary, without rebuilding the
+engine. Run a single test file directly when only that behavior is affected.
+Rebuild when native code/API changes or the binary is missing; broaden offline
+testing only for shared behavior, failures, or unresolved concerns. Do not
+repeat successful checks without a relevant change. A UI-only edit does not
+require live backend, Keychain, or device verification.
 
 ```bash
 make test-live-setup                       # once, or reconnect expired sessions
@@ -118,13 +148,15 @@ CHAT_LIVE_ONLY=discovery,direct,messages make test-live  # focused iteration
 CHAT_LIVE=1 make test-chat-live             # actual Lua/native client, macOS
 ```
 
-Run the affected suites while iterating and the full live suite before claiming
-the Chat integration works end to end. Run Node and native live suites
+During an explicitly requested live check, select the affected suites. Run the
+full suite only when full live verification is requested. Run Node and native live suites
 sequentially when they share accounts: normalization, locks and lookup rate
-limits can interfere with concurrent runs. Run the native suite after changes to
-Account authentication, session storage/renewal, native HTTP, or photo handling;
-finish UI changes with a two-account device pass. Network and macOS Keychain
-access must be available. A skipped or emulated run is not live verification.
+limits can interfere with concurrent runs. Choose native checks for requested
+verification of Account authentication, session storage/renewal, native HTTP,
+or photo processing/transport. Include a two-account device pass only when
+requested. Network and macOS Keychain access must be available. A skipped or
+emulated run is not live verification; focused checks do not establish full
+end-to-end integration coverage.
 
 Reuse Alice/Bob/Carol/Dave in the ignored
 `apps/chat/backend/.live-accounts.json` (mode 0600). The Appwrite plugin can
@@ -139,7 +171,7 @@ test results. Deployments must contain the routes being tested; record stale
 deployment failures rather than substituting mocks. Preserve existing project
 permissions and unrelated users/data.
 
-The default suite tests supported features. `CHAT_LIVE_ONLY=parity make test-live`
+When requested, `make test-live` tests supported features. `CHAT_LIVE_ONLY=parity make test-live`
 is an optional exploratory backlog, whose TODO probes do not establish parity.
 Reactions/emoji, videos and calls are not current acceptance requirements; see
 [the scoped roadmap](apps/chat/PRODUCT.md#current-scope-and-deferred-work).

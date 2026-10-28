@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme LastUpgradeVersion="1600" version="1.3">
+  <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES">
+    <BuildActionEntries>
+      <BuildActionEntry buildForTesting="YES" buildForRunning="YES" buildForProfiling="YES" buildForArchiving="YES" buildForAnalyzing="YES">
+        <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="0BB7EA8A50E5FDC56168F5B5" BuildableName="Weather.app" BlueprintName="Weather-ios" ReferencedContainer="container:Weather.xcodeproj" />
+      </BuildActionEntry>
+    </BuildActionEntries>
+  </BuildAction>
+  <LaunchAction buildConfiguration="Debug" useCustomWorkingDirectory="NO" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" launchStyle="0">
+    <BuildableProductRunnable runnableDebuggingMode="0">
+      <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="0BB7EA8A50E5FDC56168F5B5" BuildableName="Weather.app" BlueprintName="Weather-ios" ReferencedContainer="container:Weather.xcodeproj" />
+    </BuildableProductRunnable>
+  </LaunchAction>
+  <ProfileAction buildConfiguration="Release" useCustomWorkingDirectory="NO">
+    <BuildableProductRunnable runnableDebuggingMode="0">
+      <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="0BB7EA8A50E5FDC56168F5B5" BuildableName="Weather.app" BlueprintName="Weather-ios" ReferencedContainer="container:Weather.xcodeproj" />
+    </BuildableProductRunnable>
+  </ProfileAction>
+  <AnalyzeAction buildConfiguration="Debug" />
+  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES" />
+</Scheme>
