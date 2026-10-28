@@ -219,8 +219,10 @@ A turnstile captures the freshly rendered page before the OpenGL buffer is
 presented, then animates that snapshot as a native layer. It rotates the page as
 one plane; the engine backend's staggered per-element feather is not reproduced
 by a single page snapshot. Navigation still exits the old page before entering
-the new one. The snapshot freezes page contents for the transition; content
-loaded meanwhile is visible after the snapshot is removed.
+the new one. Incoming snapshots refresh when newly loaded content triggers an
+actual paint, so it participates in the ongoing rotation without restarting
+the animation. Outgoing snapshots remain fixed. Core Animation still owns the
+motion between paints; this does not schedule engine frames just to animate.
 
 Scroll containers use native gesture recognition and physics while ORCA retains
 content rendering. Native offsets update the engine's content position and

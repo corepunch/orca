@@ -9,6 +9,7 @@
 @interface OrcaPageSnapshot : NSObject <CAAnimationDelegate>
 @property(nonatomic, retain) UIView *overlay;
 @property(nonatomic, retain) CALayer *page;
+@property(nonatomic) CGRect captureRect;
 @property(nonatomic) uint64_t generation;
 @property(nonatomic) BOOL hold;
 @property(nonatomic) BOOL presentsWithTransaction;
@@ -16,6 +17,13 @@
 @end
 
 static OrcaPageSnapshot *page_snapshot;
+
+static void Snapshot_Log(NSString *event, uint64_t generation, BOOL hold)
+{
+  char const *profile = getenv("ORCA_PROFILE_FRAMES");
+  if (profile && *profile && strcmp(profile, "0"))
+    NSLog(@"ORCA transition %@ generation=%llu hold=%d", event, (unsigned long long)generation, hold);
+}
 
 @implementation OrcaPageSnapshot
 - (void)animationDidStop:(CAAnimation *)animation finished:(BOOL)finished
@@ -25,6 +33,7 @@ static OrcaPageSnapshot *page_snapshot;
   OrcaIOSPageTransitionCompletion completion = self.completion;
   self.completion = NULL;
   uint64_t generation = self.generation;
+  Snapshot_Log(finished ? @"completed" : @"cancelled", generation, self.hold);
   // Keep an exit's opaque cover until the next page has been rendered. An
   // entrance exposes the current live framebuffer when it reaches identity.
   if (!self.hold || !finished) {
@@ -69,6 +78,7 @@ void ORCA_IOS_ClearPageTransition(void)
   OrcaIOSPageTransitionCompletion completion = old.completion;
   old.completion = NULL; // removing animations can invoke the delegate
   uint64_t generation = old.generation;
+  if (completion) Snapshot_Log(@"cancelled", generation, old.hold);
   [old.page removeAllAnimations];
   [old.overlay removeFromSuperview];
   ((CAEAGLLayer *)ios_view.layer).presentsWithTransaction = old.presentsWithTransaction;
@@ -114,6 +124,37 @@ static CGImageRef Snapshot_CopyFramebuffer(void)
   return image;
 }
 
+static CGImageRef Snapshot_CopyPage(CGRect rect)
+{
+  CGImageRef image = Snapshot_CopyFramebuffer();
+  if (!image) return NULL;
+  CGFloat scale = ios_view.contentScaleFactor;
+  CGImageRef cropped = CGImageCreateWithImageInRect(image,
+    CGRectMake(rect.origin.x * scale, rect.origin.y * scale, rect.size.width * scale, rect.size.height * scale));
+  CGImageRelease(image);
+  return cropped;
+}
+
+void ORCA_IOS_UpdatePageTransition(uint64_t generation)
+{
+  OrcaPageSnapshot *snapshot = page_snapshot;
+  if (!snapshot || snapshot.generation != generation || snapshot.hold ||
+      !snapshot.completion || !ORCA_IOS_CanPageTransition()) return;
+  CGImageRef image = Snapshot_CopyPage(snapshot.captureRect);
+  if (!image) {
+    Snapshot_Log(@"refresh-capture-failed", generation, snapshot.hold);
+    return;
+  }
+  // Only replace pixels. The existing transform animation keeps its clock
+  // and presentation state while asynchronous content becomes available.
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  snapshot.page.contents = (id)image;
+  [CATransaction commit];
+  CGImageRelease(image);
+  Snapshot_Log(@"refreshed", generation, snapshot.hold);
+}
+
 static CATransform3D Snapshot_Transform(float angle, float perspective)
 {
   CATransform3D transform = CATransform3DIdentity;
@@ -128,19 +169,19 @@ bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const *spec,
   CGRect rect = CGRectIntersection(ios_view.bounds,
     CGRectMake(spec->x, spec->y, spec->width, spec->height));
   if (CGRectIsEmpty(rect) || spec->duration <= 0) return FALSE;
-  CGImageRef image = Snapshot_CopyFramebuffer();
-  if (!image) return FALSE;
+  CGImageRef cropped = Snapshot_CopyPage(rect);
+  if (!cropped) {
+    Snapshot_Log(@"start-capture-failed", generation, spec->hold);
+    return FALSE;
+  }
   CGFloat scale = ios_view.contentScaleFactor;
-  CGImageRef cropped = CGImageCreateWithImageInRect(image,
-    CGRectMake(rect.origin.x * scale, rect.origin.y * scale, rect.size.width * scale, rect.size.height * scale));
-  CGImageRelease(image);
-  if (!cropped) return FALSE;
 
   // Replace the held exit only after the new page's capture is ready.
   ORCA_IOS_ClearPageTransition();
   ORCA_IOS_SetScrollViewsEnabled(FALSE);
   OrcaPageSnapshot *snapshot = [OrcaPageSnapshot new];
   snapshot.generation = generation;
+  snapshot.captureRect = rect;
   snapshot.completion = completion;
   snapshot.hold = spec->hold;
   snapshot.presentsWithTransaction = ((CAEAGLLayer *)ios_view.layer).presentsWithTransaction;
@@ -186,5 +227,6 @@ bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const *spec,
   page_snapshot = snapshot;
   [snapshot.page addAnimation:turn forKey:@"orca.page-transition"];
   [CATransaction commit];
+  Snapshot_Log(@"started", generation, snapshot.hold);
   return TRUE;
 }

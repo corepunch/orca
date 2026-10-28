@@ -17,6 +17,8 @@ typedef void (*OrcaIOSPageTransitionCompletion)(uint64_t generation, bool_t fini
 ORCA_API bool_t ORCA_IOS_CanPageTransition(void);
 ORCA_API bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const *spec,
   uint64_t generation, OrcaIOSPageTransitionCompletion completion);
+// Refresh newly rendered incoming content without restarting its native turn.
+ORCA_API void ORCA_IOS_UpdatePageTransition(uint64_t generation);
 ORCA_API void ORCA_IOS_ClearPageTransition(void);
 // Lifecycle teardown also cancels a request that has not reached its capture
 // paint yet. This private hook is implemented by UIKit's transition owner.

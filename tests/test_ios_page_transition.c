@@ -24,6 +24,13 @@ static bool_t capture_ok = TRUE, overlay;
 static uint64_t captured_generation;
 static OrcaIOSPageTransitionCompletion captured_completion;
 static struct OrcaIOSPageTransition captured_spec;
+static unsigned updates;
+
+void ORCA_IOS_UpdatePageTransition(uint64_t generation)
+{
+  assert(overlay && generation == captured_generation && !captured_spec.hold);
+  updates++;
+}
 
 bool_t ORCA_IOS_CanPageTransition(void) { return TRUE; }
 bool_t ORCA_IOS_PageTransitionActive(void) { return overlay; }
@@ -82,10 +89,15 @@ int main(void)
   luaL_requiref(L, "orca.UIKit", luaopen_orca_UIKit, 1); lua_pop(L, 1);
   struct Object *screen = OBJ_Create(ID_Screen), *other = OBJ_Create(ID_Screen);
   struct Object *page = OBJ_Create(ID_Pivot);
+  struct Object *incoming = OBJ_Create(ID_Pivot);
   OBJ_AddChild(screen, page);
+  OBJ_AddChild(other, incoming);
   GetNode(page)->Size.Axis[0].Actual = 390;
   GetNode(page)->Size.Axis[1].Actual = 844;
   GetNode2D(page)->Matrix = MAT4_Identity();
+  GetNode(incoming)->Size.Axis[0].Actual = 390;
+  GetNode(incoming)->Size.Axis[1].Actual = 844;
+  GetNode2D(incoming)->Matrix = MAT4_Identity();
   struct Object *footer = OBJ_Create(ID_Node2D);
   OBJ_AddChild(screen, footer);
   GetNode2D(footer)->SafeAreaEdge = kSafeAreaEdgeBottom;
@@ -146,14 +158,53 @@ int main(void)
   ORCA_IOS_CancelPageTransitionRequests();
   assert(!PageTransition_NativeActive(page) && completions(page) == 1);
 
+  // Real navigation crosses two Screens/Pivots. The completed exit stays
+  // covered until the incoming page's own paint starts its independent clock.
+  for (int backwards = 0; backwards < 2; backwards++) {
+    mode(page, backwards ? kTransitionModeBackwardOut : kTransitionModeForwardOut);
+    PageTransition_NativePresent(screen, 390, 844);
+    uint64_t exit_generation = captured_generation;
+    OrcaIOSPageTransitionCompletion exit_completion = captured_completion;
+    unsigned before = updates;
+    PageTransition_NativePresent(screen, 390, 844);
+    assert(updates == before); // don't refresh an outgoing/held snapshot
+    finish(); PageTransition_NativeAnimate(page);
+    assert(completions(page) == 1 && overlay);
+    mode(incoming, backwards ? kTransitionModeBackwardIn : kTransitionModeForwardIn);
+    // Clearing the retired page must not cancel the next page's pending In.
+    mode(page, kTransitionModeNone);
+    assert(PageTransition_NativeActive(incoming));
+    PageTransition_NativePresent(screen, 390, 844); // stale old-screen paint
+    assert(captured_generation == exit_generation && overlay);
+    PageTransition_NativePresent(other, 390, 844);
+    assert(captured_generation != exit_generation && !captured_spec.hold);
+    assert(captured_spec.fromAngle == (backwards ? -50 : 80) && captured_spec.toAngle == 0);
+    assert(fabsf(captured_spec.duration - .300f) < .00001f);
+    exit_completion(exit_generation, TRUE);
+    assert(PageTransition_NativeActive(incoming));
+    mode(page, kTransitionModeNone); // nor its already-playing In
+    assert(PageTransition_NativeActive(incoming));
+    PageTransition_NativePresent(screen, 390, 844);
+    assert(updates == before);
+    uint64_t entrance_generation = captured_generation;
+    OrcaIOSPageTransitionCompletion entrance_completion = captured_completion;
+    PageTransition_NativePresent(other, 390, 844); // async content was painted
+    assert(updates == before + 1 && captured_generation == entrance_generation);
+    assert(captured_completion == entrance_completion);
+    finish(); PageTransition_NativeAnimate(incoming);
+    assert(GetPivot(incoming)->TransitionMode == kTransitionModeNone && completions(incoming) == 1);
+    PageTransition_NativePresent(other, 390, 844);
+    assert(updates == before + 1 && !overlay);
+  }
+
   capture_ok = FALSE;
   mode(page, kTransitionModeForwardIn);
   PageTransition_NativePresent(screen, 390, 844);
   assert(!PageTransition_NativeActive(page) && !overlay);
   assert(GetPivot(page)->TransitionMode == kTransitionModeForwardIn && completions(page) == 0);
   mode(page, kTransitionModeNone);
-  OBJ_ReleaseRef(page); OBJ_ReleaseRef(footer); OBJ_ReleaseRef(screen); OBJ_ReleaseRef(other);
+  OBJ_ReleaseRef(page); OBJ_ReleaseRef(incoming); OBJ_ReleaseRef(footer); OBJ_ReleaseRef(screen); OBJ_ReleaseRef(other);
   lua_close(L);
-  puts("PASS: native transition capture, exactly-once completion, held exits, stale callbacks, cancellation and renderer fallback");
+  puts("PASS: native transition capture, two-screen navigation, entrance content updates, exactly-once completion, held exits, stale callbacks, cancellation and renderer fallback");
   return 0;
 }

@@ -251,6 +251,9 @@ void
 PageTransition_NativeChanged(struct Object *page, enum TransitionType type, enum TransitionMode mode)
 {
   bool_t start = type == kTransitionTypeTurnstile && mode != kTransitionModeNone && ORCA_IOS_CanPageTransition();
+  // A retained or retiring page must not cancel another page's entrance when
+  // its own transition mode is cleared.
+  if (!start && native_transition.page != page) return;
   // A completed exit remains covered until the incoming capture is ready.
   NativeTransition_Reset(!start);
   if (!start) return;
@@ -295,6 +298,13 @@ PageTransition_NativePresent(struct Object *screen, uint32_t width, uint32_t hei
   if (NativeTransition_Screen(page) != screen) {
     // A route without an entrance releases the old cover after it is drawn.
     if (native_transition.phase == NativeTransitionHeld) NativeTransition_Reset(TRUE);
+    return;
+  }
+  if (native_transition.phase == NativeTransitionPlaying) {
+    // Network/content paints may arrive after the entrance's first capture.
+    // Replace only its pixels; Core Animation keeps the original motion clock.
+    if (native_transition.mode == kTransitionModeForwardIn || native_transition.mode == kTransitionModeBackwardIn)
+      ORCA_IOS_UpdatePageTransition(native_transition.generation);
     return;
   }
   if (native_transition.phase != NativeTransitionWaiting) return;
