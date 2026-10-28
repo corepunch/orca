@@ -26,6 +26,15 @@ local palettes = {
     },
 }
 
-local appearance = os.getenv("OCTOPUS_APPEARANCE")
-if appearance ~= "light" and appearance ~= "dark" then appearance = system.is_dark_theme() and "dark" or "light" end
-return palettes[appearance]
+-- Views retain this table, so update its values rather than replacing it.
+local colors = {}
+function colors.refresh()
+    local appearance = os.getenv("OCTOPUS_APPEARANCE")
+    if appearance ~= "light" and appearance ~= "dark" then appearance = system.is_dark_theme() and "dark" or "light" end
+    if colors.appearance == appearance then return false end
+    for key, value in pairs(palettes[appearance]) do colors[key] = value end
+    colors.appearance = appearance
+    return true
+end
+colors.refresh()
+return colors

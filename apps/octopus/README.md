@@ -59,6 +59,12 @@ blocks with [Chat](../chat/README.md):
 
 `theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.
+Appearance changes rebuild the current page and invalidate retained tabs with
+the same palette for content and chrome, preserving the session and post/comment
+drafts without restarting the application.
+While an authenticated editor, authentication form, comment draft, reply target,
+or comment submission is active, appearance changes wait until it is left or
+completed. Chrome keeps using the same app palette throughout that wait.
 
 Post cards and comments use XML templates under `Templates/`, with typed
 presentation records in `views/presentation.lua`. `orca.UIKit.ItemsView` maps

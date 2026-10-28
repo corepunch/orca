@@ -731,4 +731,39 @@ cachedApp:refresh()
 assert(#cachedApp.feeds.discover.items == #freshPosts,
     "A successful refresh replaces cached items without duplicating rows")
 
+-- Chrome follows the app palette even when the OS appearance differs.
+local system, colors = require "orca.system", require "Octopus/theme"
+local isDark, getenv = system.is_dark_theme, os.getenv
+local appearance
+os.getenv = function(key) if key == "OCTOPUS_APPEARANCE" then return appearance end; return getenv(key) end
+system.is_dark_theme = function() return appearance ~= "dark" end
+for _, selected in ipairs { "dark", "light" } do
+    appearance = selected
+    cachedApp:updateAppearance()
+    drain(cachedApp)
+    cachedApp.screen:UpdateLayout(390, 844)
+    cachedApp:openPost(assert(cacheClient:getPost("p-hello")))
+    drain(cachedApp)
+    cachedApp.screen:UpdateLayout(390, 844)
+    cachedApp.screen:send("StyleController.ThemeChanged", { recursive = true })
+    local expected = selected == "dark" and 0x16 / 255 or 0xf7 / 255
+    for _, name in ipairs { "AppBar", "CommentBar" } do
+        assert(math.abs(find(cachedApp, name).BackgroundColor.R - expected) < 0.01,
+            name .. " must match the app palette, not the OS appearance")
+    end
+    local function header(node)
+        if (node.StyleClass or ""):find("pivot-bar", 1, true) then return node end
+        local child = node:getFirstChild()
+        while child do
+            local found = header(child)
+            if found then return found end
+            child = child:getNext()
+        end
+    end
+    assert(math.abs(assert(header(find(cachedApp, "PostView"))).BackgroundColor.R - expected) < 0.01,
+        "Post header and footers must use the same palette")
+end
+system.is_dark_theme, os.getenv = isDark, getenv
+colors.refresh()
+
 print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up, delayed fetches, retained refresh and errors passed")

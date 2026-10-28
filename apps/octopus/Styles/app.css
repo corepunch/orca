@@ -1,16 +1,16 @@
 .octopus-action:hover { opacity: 0.78; }
 .octopus-action:focus { ring: 0 2 #0a7068; }
 .octopus-input:focus { border-color: #0e8f86; background-color: #ffffff; }
-.octopus-action:focus:dark { ring: 0 2 #2cc5b8; }
-.octopus-input:focus:dark { border-color: #0e8f86; background-color: #ffffff; }
+.octopus-dark .octopus-action:focus { ring: 0 2 #2cc5b8; }
+.octopus-dark .octopus-input:focus { border-color: #0e8f86; background-color: #ffffff; }
 /* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */
 .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
-.frosted:dark { background-color: #16161695; }
+.octopus-dark .frosted { background-color: #16161695; }
 .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
-.pivot-bar:dark { background-color: #16161695; border-color: #38383a; }
+.octopus-dark .pivot-bar { background-color: #16161695; border-color: #38383a; }
 .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
-.bar-top:dark { border-color: #38383a; }
+.octopus-dark .bar-top { border-color: #38383a; }
 .bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }
-.bar-bottom:dark { border-color: #38383a; }
+.octopus-dark .bar-bottom { border-color: #38383a; }
 /* A docked toolbar continues the header, so the hairline moves below it. */
 .toolbar-page .pivot-bar { border-bottom-width: 0; }
