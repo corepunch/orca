@@ -244,6 +244,9 @@ stored encrypted in the shared bucket with thumbnails. Owners can rename
 groups/channels; other members can leave from conversation info. History
 loads the latest 30 messages and pages backward as you scroll. Video, live
 subscriptions and push remain future work.
+During a Function rollout, a missing history RPC falls back to a bounded recent
+page through the existing endpoint. Older cursor pages become available when
+the new Function is deployed; the client retries capability discovery after a minute.
 
 Installed iOS apps do not inherit terminal environment variables, so the public
 Appwrite values are defaults in `config.lua`. Set `CHAT_BACKEND=mock` for the
