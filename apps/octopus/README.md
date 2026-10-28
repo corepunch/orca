@@ -31,8 +31,11 @@ blocks with [Chat](../chat/README.md):
   bar holds like, repost and comment, with the author, refresh and
   delete (for your own posts) in the menu. Delete asks for a second tap.
 - Opening a post or a profile plays the Windows Phone turnstile: the page in
-  view turns away on a hinge at the left edge of the screen, top to bottom,
-  then the post turns in the same way. Going back plays it in reverse.
+  view turns away on a hinge at the left edge of the screen, then the next
+  page turns in. Going back reverses the rotation. Desktop feathers elements
+  from top to bottom; iOS turns page snapshots through Core Animation. Content
+  loaded during the entrance refreshes its snapshot without restarting the turn.
+  See [native motion](../../docs/IOS.md#native-motion).
   Those pages get a round back button before the small OCTOPUS title; the
   title line and a swipe in from the left edge go back too.
 - Cards show a square avatar tile (the author's profile photo, or their
