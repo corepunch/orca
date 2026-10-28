@@ -156,14 +156,15 @@ For an administrator performing the deployment:
    minutes; adjust the schedule to your Appwrite plan's supported frequency.
    `OCTOPUS_FEED_RECONCILE_BATCH_SIZE` defaults to 10, maximum 100. Large
    installations need a batch size/schedule whose complete sweep meets their
-   freshness target. Each batch checkpoints per post, yields before the
+   freshness target. Each batch refreshes up to four posts concurrently and
+   checkpoints after the whole group settles. It yields before the
    Function's 600-second timeout, and traverses both source and feed collections.
    The five-minute trigger is a batch interval, not a five-minute freshness
    guarantee: a sweep over 100 source posts plus 100 cached rows at the default
    batch size takes about 100–110 minutes if event processing is unavailable.
    Monitor sweep progress and choose the batch size/schedule accordingly.
 
-Indexes cover feed ordering, author+ordering, tags+ordering and title fulltext
+Indexes cover feed ordering, author+ordering and title fulltext
 search, plus the exact relation filters and viewer queries. Migration adds no
 unique constraints to existing reaction collections and leaves their data and
 permissions untouched. Appwrite attribute/index schemas are asynchronous;
