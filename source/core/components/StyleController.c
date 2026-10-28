@@ -152,6 +152,7 @@ _PseudoFlagFromToken(lpcString_t token, size_t len)
 {
   if      (len == 5 && !strncmp(token, "hover",  5)) return STYLE_HOVER;
   else if (len == 5 && !strncmp(token, "focus",  5)) return STYLE_FOCUS;
+  else if (len == 13 && !strncmp(token, "focus-visible", 13)) return STYLE_FOCUS_VISIBLE;
   else if (len == 6 && !strncmp(token, "active", 6)) return STYLE_SELECT;
   else if (len == 4 && !strncmp(token, "dark",   4)) return STYLE_DARK;
   return 0;
@@ -321,6 +322,7 @@ OBJ_GetStyleFlags(struct Object *pobj)
   uint32_t dwValue = 0;
   if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
   if (core_GetFocus() == pobj) dwValue |= STYLE_FOCUS;
+  if (core_GetFocus() == pobj && core.keyboardNavigation) dwValue |= STYLE_FOCUS_VISIBLE;
   if (OBJ_GetFlags(pobj) & OF_SELECTED) dwValue |= STYLE_SELECT;
   if (axIsDarkTheme()) dwValue |= STYLE_DARK;
   return dwValue;

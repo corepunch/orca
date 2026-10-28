@@ -371,6 +371,9 @@ UI_HandleMouseEvent(lua_State* L, struct Object *root, struct AXmessage* e)
   // A finger leaves no pointer behind, so touch never hovers; it also clears
   // a hover left by a trackpad or pencil.
   bool_t const touch = (e->pointer.flags & AX_POINTER_TOUCH) != 0;
+  if (touch || e->message == kEventLeftButtonDown ||
+      e->message == kEventRightButtonDown || e->message == kEventOtherButtonDown)
+    CORE_SetKeyboardNavigation(FALSE);
   if (touch) {
     OBJ_SetHover(NULL);
     CORE_UpdateHover();
@@ -461,6 +464,7 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
   if (!build_key_msg(e, &key, &msg)) {
     return FALSE;
   }
+  if (msg == ID_Node_KeyDown) CORE_SetKeyboardNavigation(TRUE);
   bool_t handled = core_GetFocus() && CORE_HandleObjectMessage(L, &(struct AXmessage) {
     .target = core_GetFocus(),
     .message = msg,

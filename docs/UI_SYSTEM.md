@@ -68,6 +68,16 @@ Touch never hovers. A finger leaves no pointer behind, so an event carrying
 `:hover` rules apply only to a mouse, trackpad or pencil. Give touch feedback
 through the pressed or selected state, not `:hover`.
 
+Focus and a visible keyboard-navigation ring are separate states. `:focus`
+matches the focused object, including a text field tapped for editing.
+`:focus-visible` matches it only in keyboard mode. Key-down events enable
+keyboard mode; mouse button-down and direct-touch events clear it, updating
+the current object's styles even when focus itself does not move. Text-input
+events alone do not enable keyboard mode. Programmatic focus follows the
+current mode. Use `:focus-visible` for button rings and `:focus` for editing
+feedback such as text-field borders. This also lets hardware keyboards reveal
+button focus on a touch device.
+
 ## Safe area and docked bars
 
 Edge-to-edge screens (`Screen.RespectSafeArea = false`) let scrolling content

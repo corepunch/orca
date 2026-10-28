@@ -31,6 +31,7 @@ _ParsePseudoClass(lpcString_t pseudo)
     size_t len = end ? (size_t)(end - tok) : strlen(tok);
     if      (len == 5 && !strncmp(tok, "hover",  5)) flags |= STYLE_HOVER;
     else if (len == 5 && !strncmp(tok, "focus",  5)) flags |= STYLE_FOCUS;
+    else if (len == 13 && !strncmp(tok, "focus-visible", 13)) flags |= STYLE_FOCUS_VISIBLE;
     else if (len == 6 && !strncmp(tok, "active", 6)) flags |= STYLE_SELECT;
     else if (len == 4 && !strncmp(tok, "dark",   4)) flags |= STYLE_DARK;
     tok = end ? end + 1 : NULL;

@@ -41,8 +41,9 @@ claiming historical fidelity.
 ## Current product decisions
 
 - App branding uses the existing orca-in-a-chat-bubble artwork on its purple
-  gradient tile. Reuse the app icon in authentication and startup loading;
-  keep the launch/loading canvas solid purple (`#7430ff`) in both themes.
+  gradient tile in authentication. Launch and session loading use the artwork
+  with its square background removed over the same full-screen diagonal purple
+  gradient in both themes. The fallback canvas is the gradient midpoint (`#7930ff`).
   Messenger blue remains the accent for controls and conversations.
 - Keep the footer focused on commands or composing a message. Do not show
   permanent captions such as “Conversations update automatically” or
@@ -54,6 +55,18 @@ claiming historical fidelity.
 - Use prominent Pivot titles, square avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.
+- Button rings use `:focus-visible`: keyboard use reveals them, while touch
+  and mouse clicks clear them. Text fields retain `:focus` editing feedback.
+  WPF separates focus from its keyboard-only
+  [FocusVisualStyle](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/advanced/styling-for-focus-in-controls-and-focusvisualstyle).
+  Our programmatic focus follows the current input mode rather than exactly
+  reproducing WPF's programmatic-focus suppression. Windows Phone's shared
+  Silverlight API retains focused/unfocused states, but Microsoft Press's
+  [Programming Windows Phone 7, p. 601](https://fizyka.umk.pl/~jacek/docs/net/Microsoft_Press_ebook_Programming_Windows_Phone_7_PDF.pdf)
+  identifies pressed and disabled feedback as relevant for phone buttons.
+  This supports the touch interaction choice; an exact WP8 default-template
+  comparison has not been verified, and this is not a claim that Phone had
+  no focus system.
 - Group consecutive messages from the same sender, with one tail per run
   where applicable. Show sender names in group conversations. Text and
   captioned-photo bubbles keep a separate trailing timestamp row.

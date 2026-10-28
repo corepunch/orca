@@ -1,6 +1,14 @@
 #include "object_internal.h"
 #include "source/core/property/property_internal.h"
 
+void CORE_SetKeyboardNavigation(bool_t enabled)
+{
+  if (core.keyboardNavigation == enabled) return;
+  core.keyboardNavigation = enabled;
+  if (core.focus)
+    _SendMessage(core.focus, StyleController, ThemeChanged, .recursive = FALSE);
+}
+
 void OBJ_SetFocus(struct Object *pobj)
 {
   if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))
