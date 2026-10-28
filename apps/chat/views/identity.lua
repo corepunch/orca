@@ -139,8 +139,7 @@ function Identity.auth(self, mode)
         phone.Submit = function() form:findChild("RequestCode"):send("Node.LeftButtonUp") end
     end
     local brand = ui.Grid { Name = "AuthBrand", Columns = "36px 1fr", Height = 36, Spacing = 12, MarginBottom = 12 }
-    local logo = ui.Grid { Width = 36, Height = 36, Background = colors.accent }
-    logo:addChild(C.icon("message-circle", 22, colors.onAccent))
+    local logo = C.appIcon(36)
     logo.Name = "AuthLogo"
     brand:addChild(logo)
     brand:addChild(C.text("ORCA / CHAT", { Name = "AuthWordmark", FontSize = 14, FontWeight = "Bold", LetterSpacing = 1.2,

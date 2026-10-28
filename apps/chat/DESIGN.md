@@ -40,6 +40,10 @@ claiming historical fidelity.
 
 ## Current product decisions
 
+- App branding uses the existing orca-in-a-chat-bubble artwork on its purple
+  gradient tile. Reuse the app icon in authentication and startup loading;
+  keep the launch/loading canvas solid purple (`#7430ff`) in both themes.
+  Messenger blue remains the accent for controls and conversations.
 - Keep the footer focused on commands or composing a message. Do not show
   permanent captions such as “Conversations update automatically” or
   “Synced · updates automatically”, and do not reserve an empty status row.

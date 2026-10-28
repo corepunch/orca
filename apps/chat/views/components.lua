@@ -1,5 +1,5 @@
 local ui = require "orca.UIKit"
-local C = { colors = require "Chat/theme" }
+local C = { colors = require "Chat/theme", brandBackground = "#7430ff" }
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
@@ -30,6 +30,13 @@ function C.icon(name, size, color)
         Width = size or 20, Height = size or 20, Foreground = color or colors.muted,
         MarginLeft = auto, MarginRight = auto, MarginTop = auto, MarginBottom = auto,
         IgnoreHitTest = true,
+    }
+end
+
+function C.appIcon(size)
+    return ui.ImageView {
+        Src = "Chat/assets/app-icon.png", Width = size, Height = size,
+        Stretch = "Uniform", Foreground = "#ffffff", IgnoreHitTest = true,
     }
 end
 

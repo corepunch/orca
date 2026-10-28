@@ -292,9 +292,17 @@ local App = Application:extend {
             })))
         end
         if self.restorePending then
-            local screen = self:frame(C.page("connecting", ui.ActivityIndicator {
-                Name = "SessionLoading", Foreground = colors.muted,
+            local mark = C.appIcon(128)
+            mark.Name = "LoadingLogo"
+            mark.MarginLeft, mark.MarginRight, mark.MarginTop, mark.MarginBottom = auto, auto, auto, auto
+            local loading = ui.Grid { Name = "SessionSplash", Background = C.brandBackground }
+            loading:addChild(mark)
+            loading:addChild(C.stack({ MarginLeft = auto, MarginRight = auto, MarginTop = auto,
+                MarginBottom = auto, PaddingTop = 216, IgnoreHitTest = true }, {
+                ui.ActivityIndicator { Name = "SessionLoading", Foreground = "#ffffff" },
             }))
+            local screen = self:frame(loading)
+            screen.RespectSafeArea, screen.ClearColor = false, C.brandBackground
             local epoch = self.sessionEpoch
             self:load(function()
                 if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return end
@@ -305,6 +313,7 @@ local App = Application:extend {
                     self:show("/")
                 else
                     while screen:getFirstChild() do screen:getFirstChild():removeFromParent() end
+                    screen.RespectSafeArea, screen.ClearColor = true, colors.background
                     screen:addChild(C.page("reconnect", C.stack({ Spacing = 16 }, {
                         C.text("Couldn't restore your session. Please try again.", { WordWrap = true, Foreground = colors.muted }),
                         C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
