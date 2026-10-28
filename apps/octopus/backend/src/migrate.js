@@ -15,7 +15,8 @@ export function indexes(config) {
   return [
     { collection: config.feedId, key: 'feed_created', attributes: ['sourceCreatedAt'], orders: ['DESC'] },
     { collection: config.feedId, key: 'feed_author_created', attributes: ['authorId', 'sourceCreatedAt'], orders: ['ASC', 'DESC'] },
-    { collection: config.feedId, key: 'feed_tags_created', attributes: ['tags', 'sourceCreatedAt'], orders: ['ASC', 'DESC'] },
+    // Appwrite Cloud rejects custom indexes on array attributes. Tag queries use
+    // the native array predicate and the separate creation-time index.
     { collection: config.feedId, key: 'feed_title_search', type: 'fulltext', attributes: ['title'] },
     { collection: 'posts', key: 'feed_author_created', attributes: ['authorId', '$createdAt'], orders: ['ASC', 'DESC'] },
     { collection: 'reposts', key: 'feed_user_created', attributes: ['userId', '$createdAt'], orders: ['ASC', 'DESC'] },

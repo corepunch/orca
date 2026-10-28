@@ -30,6 +30,11 @@ including counts above 1,000. It does not fetch comment text to count it.
 Viewer like/repost state is specific to the current session and remains a
 separate client query; never store it in this shared public feed.
 
+Appwrite Cloud rejects custom indexes on array attributes. Tag filters keep the
+native array predicate and the separate creation-time index, with bounded
+responses. At large scale, add a scalar per-tag lookup collection for indexed
+tag timelines; this deployment does not claim an indexed array filter.
+
 ### Counter updates
 
 The Function runs on source changes and scheduled reconciliation. Feed reads

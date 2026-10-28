@@ -205,7 +205,7 @@ test('schema/index verification accepts covering indexes and rejects unsafe sche
   assert.equal(coversIndex({ type: 'key', status: 'failed', attributes: ['postId'] }, { type: 'key', attributes: ['postId'] }), false);
 });
 
-test('migration is idempotent and verify performs no writes', async () => {
+test('migration avoids unsupported array indexes, is idempotent and verify performs no writes', async () => {
   const config = { feedId: 'feed', controlId: 'control', databaseId: 'db' };
   const data = new Map(), collections = new Map();
   let writes = 0;
@@ -224,6 +224,8 @@ test('migration is idempotent and verify performs no writes', async () => {
         collections.set(body.collectionId, value); return value;
       }
       if (path.endsWith('/indexes')) {
+        assert.ok(!body.attributes.some(key => feedAttributes.some(attribute => attribute.key === key && attribute.array)),
+          'Appwrite Cloud rejects custom indexes on array attributes');
         const value = { ...body, status: 'available', path: `${path}/${body.key}` };
         data.set(value.path, value); return value;
       }
