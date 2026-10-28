@@ -1,6 +1,6 @@
 # Public feed materializer
 
-This optional Appwrite Function moves feed summaries and counts out of client
+This Appwrite Function moves feed summaries and counts out of client
 startup. The client can render one bounded `post-feed` page rather than full
 post bodies and every comment/like/repost. It remains compatible with website
 writes: source collection events rebuild the affected document. No website
@@ -8,8 +8,9 @@ write path needs to maintain a counter.
 
 The existing `posts`, `likes`, `comments`, `reposts` and `profiles` collections
 remain authoritative. Do not point the client at the feed until provisioning,
-backfill and index verification complete. Leaving
-`OCTOPUS_FEED_COLLECTION_ID` unset keeps the existing source path available.
+backfill and index verification complete. Octopus uses `post-feed` by default;
+set `OCTOPUS_FEED_COLLECTION_ID` to an empty string to use the original source
+path during rollback or when provisioning a separate project.
 
 ## Data contract
 
@@ -110,9 +111,8 @@ disconnected on a failed migration or build so a
 rerun can repair the same state. `--drop-legacy` removes old prefixed collections
 only after verified copies and both deployments are ready; omit it to retain
 them during rollout. API-key holders can still invoke a disabled Function, so
-stop other administrative writers during migration. Set
-`OCTOPUS_FEED_COLLECTION_ID=post-feed` in the app environment only after the
-command succeeds. This command does not create test accounts, send OTPs, or
+stop other administrative writers during migration. Enable the default
+`post-feed` client path only after the command succeeds. This command does not create test accounts, send OTPs, or
 run the manual Chat live suite.
 
 For an administrator performing the deployment:
