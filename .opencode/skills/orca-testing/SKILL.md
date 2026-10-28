@@ -37,6 +37,10 @@ Read `docs/TESTING.md` before editing tests.
 - For queued Lua, rebuild, or binding behavior, call `core.flushQueue()` before
   asserting.
 - For renderer behavior, tolerate an uninitialized renderer in headless tests.
+- For staged image loading, suspend the full response and verify a decoded,
+  painted preview; exercise queue priority across records and cancellation before
+  a worker starts. See [image loading validation](../../../docs/app/image-loading.md#focused-validation-and-build-provenance)
+  for cache, corrupt-image and binary/build provenance checks.
 
 Do not call `removeFromParent()` on roots returned by
 `loadObjectFromLispString()` or `loadObjectFromXmlString()`. Do not weaken

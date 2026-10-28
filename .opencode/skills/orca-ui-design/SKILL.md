@@ -52,6 +52,10 @@ utilities rather than native AppKit/UIKit controls.
 - Alignment: elements that are almost aligned should share an exact edge, center, or text baseline. Keep comparable gaps equal, including gaps across nested containers; check rendered bounds rather than only individual spacing values.
 - Color: use theme or semantic roles (primary, secondary, error, success, surface) rather than raw hex when the system supports it.
 - Icons: Lucide stroke-based SVGs with `currentColor` so they inherit tint.
+- Remote photos: preserve usable previews during loading and failures; reserve
+  geometry from known dimensions and remove loading decoration when appropriate.
+  Read [Loading image previews](../../../docs/app/image-loading.md) for delivery,
+  repaint and cache constraints before choosing a loading treatment.
 - Interactive controls: buttons, inputs, lists, cards should have adequate hit areas and visible focus indicators.
 
 ## Typical patterns
