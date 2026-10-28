@@ -186,5 +186,33 @@ detached:removeFromParent()
 loader:loadVisible()
 assert(not loader.watching[detached] and not calls.detached)
 assert(next(loader.watching) == nil, "Completed, detached and stale frames must leave the registry")
+-- Known dimensions reserve the final display frame before any network work.
+workers, calls = {}, {}
+app.sessionEpoch = app.sessionEpoch + 1
+app.screen = ui.Screen { Width = 200, Height = 450, ResizeMode = "NoResize" }
+loader = Loader.new(app)
+assert(math.abs(loader:aspect("known", 1600, 900) - 16 / 9) < 0.001)
+assert(loader:aspect("portrait", 600, 1200) == 4 / 5 and loader:aspect("wide", 4000, 1000) == 1.91,
+    "Metadata preserves the established portrait and landscape crop limits")
+assert(loader:aspect("invalid", 0, 100) == 4 / 3 and loader:aspect("invalid", 1 / 0, 1) == 4 / 3
+    and loader:aspect("invalid", 1.5, 2) == 4 / 3, "Invalid dimensions cannot poison layout")
+local known = ui.Grid { AspectRatio = loader:aspect("known"), Background = colors.raised }
+app.screen:addChild(known)
+loader:watch(known, "known", "Known")
+app.screen:UpdateLayout(200, 450)
+local reserved = known.ActualHeight
+assert(math.abs(reserved - 112.5) < 1 and known.BackgroundColor.A > 0 and #workers == 0,
+    "A gray rectangle has the final height before image requests start")
+loader:loadVisible()
+local pending = workers[1]
+resume(pending)
+app.screen:UpdateLayout(200, 450)
+assert(not known:findChild("Known") and math.abs(known.ActualHeight - reserved) < 0.1,
+    "A pending download must preserve the metadata-defined frame")
+resume(pending)
+app.screen:UpdateLayout(200, 450)
+assert(known:findChild("Known") and math.abs(known.ActualHeight - reserved) < 0.1,
+    "Decoding must not replace metadata dimensions or shift the feed")
+assert(calls.known == 1, "Photos load once without a separate thumbnail request")
 app.media:clear()
-print("PASS: viewport photo loading, bounded concurrency, deduplication, native resources, cache, retry and stale sessions")
+print("PASS: stable metadata layout, bounded viewport loading, native resources, cache, retry and stale sessions")

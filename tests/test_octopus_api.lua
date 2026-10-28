@@ -88,6 +88,8 @@ local text = assert(client:createPost { postType = "text", title = "Quotes \"and
 assert((client:listPosts { limit = 1 })[1].id == text.id, "A new post tops the timeline")
 local photo = assert(client:createPost { postType = "photo", content = "Shared from ORCA", photo = { jpeg = image } })
 assert(photo.imageId and client:getImage(photo.imageId) == image, "Uploaded photos round-trip through storage")
+assert(photo.imageWidth == 156 and photo.imageHeight == 104,
+    "Uploaded PNG dimensions must persist for correctly sized placeholders")
 
 -- Each composer type enforces its own required fields and ignores hidden images.
 _, err = client:createPost { postType = "text", title = "Title", content = "   " }

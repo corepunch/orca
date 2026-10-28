@@ -14,11 +14,11 @@ function Posts.body(app, post, full, data)
     body.DataContext = data
     local frame = body:findChild("PhotoFrame", true)
     frame.Name = "Photo" .. post.id
-    frame.AspectRatio, frame.Background = app.photos:aspect(post.imageId), colors.raised
+    frame.AspectRatio, frame.Background = app.photos:aspect(post.imageId, post.imageWidth, post.imageHeight), colors.raised
     if post.imageId and (post.postType == "photo" or post.postType == "quote") then
         app.photos:watch(frame, post.imageId, "Image" .. post.id)
     end
-    return body
+    return body, frame
 end
 
 function Posts.tags(app, post)
@@ -73,10 +73,11 @@ local function updateCard(app, entry, item, created)
         -- Keep decoded photos during ordinary refresh; a changed media identity
         -- gets a new frame so late downloads can only reach the detached body.
         C.clear(controls.Open)
-        entry.body = Posts.body(app, post, false, entry.data)
+        entry.body, entry.photoFrame = Posts.body(app, post, false, entry.data)
         controls.Open:addChild(entry.body)
         entry.imageId = post.imageId
     end
+    entry.photoFrame.AspectRatio = app.photos:aspect(post.imageId, post.imageWidth, post.imageHeight)
     for name, control in pairs(controls) do
         if name ~= "TagsHost" then control.Name = name .. post.id end
     end

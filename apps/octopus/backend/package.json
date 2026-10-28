@@ -8,6 +8,7 @@
     "test": "node --test test/*.test.js",
     "migrate": "node src/migrate.js",
     "reconcile": "node src/admin.js reconcile",
+    "backfill:image-metadata": "node src/backfill-image-metadata.js",
     "deploy": "node src/deploy.js",
     "deploy:all": "node src/deploy-all.js"
   }

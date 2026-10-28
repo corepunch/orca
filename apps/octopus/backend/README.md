@@ -17,12 +17,29 @@ path during rollback or when provisioning a separate project.
 Feed documents use their source post's `$id`. Sort and paginate by
 `sourceCreatedAt` rather than the feed document's `$createdAt` (backfill time).
 Fields are `sourceCreatedAt`, `title`, `content`, `postType`, `authorId`,
-`authorName`, `tags`, `imageId`, `linkUrl`, `quoteSource`, `userText`, `avatarId`,
+`authorName`, `tags`, `imageId`, `imageWidth`, `imageHeight`, `linkUrl`, `quoteSource`, `userText`, `avatarId`,
 `likeCount`, `commentCount`, `repostCount` and `statsUpdatedAt`.
 `content`, `quoteSource` and `userText` are at most 320 Unicode code points;
 open the original post to read its full body. Optional strings are `""` and
 tags are an array. Counts are nonnegative integers. `authorName` is already on
 the post; author account/profile downloads are unnecessary for that label.
+Optional `imageWidth`/`imageHeight` are paired integers from 1 to 65535, or null
+for older posts without metadata. The migration adds these columns to both
+source posts and summaries while preserving source permissions. New photo
+uploads derive display dimensions from image headers, including EXIF rotation,
+so feed cards can reserve their final frame before downloading the image.
+
+For existing images, pause the feed Function and run `npm run
+backfill:image-metadata` with an operator key scoped to collection/document
+reads, document writes and file reads, then restore the Function. This explicit
+operator uses cursor pages of 25, scans at most 1000 posts per run, deduplicates
+image IDs and reads at most 256 KiB of each original's headers. It supports
+JPEG (including EXIF rotation), PNG, GIF and WebP without EXIF. Unsupported or
+invalid headers are reported per post while processing continues. Only dimension
+fields are patched on source posts and matching summaries; content, permissions
+and counters are preserved. `--cursor` resumes a bounded run, and rerunning
+repairs failed or missing metadata without rereading valid pairs. No thumbnail
+files are generated or stored.
 
 Counts come from public, filtered queries using `limit(1)` and `select($id)`
 with Appwrite's exact `total`. The server transfers at most one ID per count,

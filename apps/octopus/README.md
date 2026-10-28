@@ -200,13 +200,17 @@ share a request and cached file; each card owns its image view. Downloads that
 finish after navigation or sign-out cannot update an inactive view. Failed
 downloads or image decode failures show a centered broken-image icon in the reserved photo area; tapping
 that area retries the download. Photos use a white image tint in both themes.
-Avatars request 192-pixel square previews and post photos request previews up to
-780 pixels wide, in JPEG at quality 80, falling back to original JPEG/PNG when
-preview processing is unavailable. Variant keys prevent an avatar thumbnail
-being reused as a full post photo.
-Visible pending photos show a centered activity indicator. Once loaded, the
-placeholder background disappears and the full image is centered without
-cropping or changing the reserved height. Offscreen indicators stop animating.
+Posts and feed summaries store optional `imageWidth`/`imageHeight`, derived from
+uploaded image headers with EXIF rotation applied. These dimensions reserve a
+gray frame before loading, preserving the feed's 4:5 to 1.91:1 crop limits.
+Legacy rows without metadata use a fallback ratio until a photo is decoded.
+There is no separate thumbnail upload or request. Avatars retain their 192-pixel
+square preview and post photos their 780-pixel preview/original fallback; on
+plans without image transformations the existing original-image path is used.
+Variant keys keep avatars from being reused as post photos.
+The gray placeholder shows a centered activity indicator until the image is
+ready. Known metadata keeps its frame unchanged when the image decodes.
+Offscreen indicators stop animating, and stale session responses are discarded.
 
 ## Verify
 

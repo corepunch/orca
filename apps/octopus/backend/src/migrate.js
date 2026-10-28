@@ -1,12 +1,16 @@
 import { pathToFileURL } from 'node:url';
 import { configuration, createRepository, query } from './repository.js';
 
+export const imageAttributes = ['imageWidth', 'imageHeight']
+  .map(key => ({ key, type: 'integer', min: 1, max: 65535, required: false }));
+
 export const feedAttributes = [
   { key: 'sourceCreatedAt', type: 'datetime', required: true },
   ...Object.entries({ title: 256, content: 320, postType: 16, authorId: 36, authorName: 256,
     imageId: 36, linkUrl: 2048, quoteSource: 320, userText: 320, avatarId: 36 })
     .map(([key, size]) => ({ key, size, type: 'string', required: false, default: '' })),
   { key: 'tags', type: 'string', size: 64, required: false, array: true },
+  ...imageAttributes,
   ...['likeCount', 'commentCount', 'repostCount'].map(key => ({ key, type: 'integer', min: 0, required: false, default: 0 })),
   { key: 'statsUpdatedAt', type: 'datetime', required: true },
 ];
@@ -31,7 +35,9 @@ export function indexes(config) {
 export function compatibleAttribute(actual, expected) {
   return actual.type === expected.type && Boolean(actual.array) === Boolean(expected.array) &&
     Boolean(actual.required) === Boolean(expected.required) &&
-    (expected.size === undefined || actual.size >= expected.size);
+    (expected.size === undefined || actual.size >= expected.size) &&
+    (expected.min === undefined || actual.min === expected.min) &&
+    (expected.max === undefined || actual.max === expected.max);
 }
 
 export function coversIndex(actual, expected) {
@@ -58,6 +64,9 @@ export async function migrate(repo, { verify = false, wait = ms => new Promise(r
     }
     if (!existing.documentSecurity || existing.enabled === false || existing.$permissions?.length)
       throw new Error(`${id} must use document security, be enabled, and have no collection permissions.`);
+    await ensureAttributes(id, attributes);
+  }
+  async function ensureAttributes(id, attributes) {
     for (const attribute of attributes) {
       const path = `${repo.collectionPath(id)}/attributes/${encodeURIComponent(attribute.key)}`;
       let actual;
@@ -75,6 +84,9 @@ export async function migrate(repo, { verify = false, wait = ms => new Promise(r
         throw new Error(`Incompatible or unavailable attribute ${id}.${attribute.key}; resolve without deleting data.`);
     }
   }
+  // Source posts retain their existing collection permissions. Optional columns
+  // allow old records and old clients to keep publishing without dimensions.
+  await ensureAttributes('posts', imageAttributes);
   await collection(config.feedId, feedAttributes);
   await collection(config.controlId, [{ key: 'value', type: 'string', size: 1024, required: true }]);
   for (const expected of indexes(config)) {
