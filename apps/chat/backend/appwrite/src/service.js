@@ -24,7 +24,10 @@ async function mapConcurrent(items, action, width = 8) {
 }
 
 export class ChatService {
-  constructor(repo, auth, { now = Date.now } = {}) { this.repo = repo; this.auth = auth; this.now = now; }
+  constructor(repo, auth, { now = Date.now, pushEnabled = false, pushError = () => {}, pushTimeoutMs = 3000 } = {}) {
+    this.repo = repo; this.auth = auth; this.now = now;
+    this.pushEnabled = pushEnabled; this.pushError = pushError; this.pushTimeoutMs = pushTimeoutMs;
+  }
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {
     const email = user.emailVerification ? user.email.toLowerCase() : null, phone = user.phoneVerification ? user.phone : null;
@@ -322,8 +325,37 @@ export class ChatService {
       // The single immutable message document is the commit marker. Attachment rows
       // referencing an absent message remain private and may be retried or discarded.
       const message = await this.repo.create('messages', { room_id: roomId, sender_id: user.$id, body: text, created_at: this.timestamp(), attachment_ids: attachmentIds }, messageId);
+      await this.notifyMessage(message);
       return [await this.messageView(message, room)];
     });
+  }
+  // Called only after publication, under the room lock: recipients remain
+  // members until their notifications have been queued. Appwrite owns delivery.
+  async notifyMessage(message) {
+    if (!this.pushEnabled) return;
+    const report = error => {
+      // Never log upstream bodies, message content, identifiers or device tokens.
+      try { this.pushError('Chat push could not be queued' + (Number.isInteger(error?.status) ? ` (HTTP ${error.status})` : '') + '.'); }
+      catch { /* Notification diagnostics must not fail a committed send. */ }
+    };
+    try {
+      const signal = AbortSignal.timeout(this.pushTimeoutMs);
+      const members = await this.repo.list('members', [eq('room_id', message.room_id)], undefined, { signal });
+      const recipients = [...new Set(members.map(member => member.user_id))].filter(userId => userId !== message.sender_id);
+      await mapConcurrent(recipients, async userId => {
+        if (signal.aborted) return;
+        try {
+          await this.auth.rest.request('POST', '/messaging/messages/push', { signal, body: {
+            messageId: key('push:' + message.id + ':' + userId), users: [userId],
+            title: 'ORCA Chat', body: 'New message', sound: 'default', draft: false,
+            data: { conversationId: message.room_id, messageId: message.id, userId },
+          } });
+        } catch (error) {
+          // A lost response can safely be replayed with the same delivery ID.
+          if (error.status !== 409) report(error);
+        }
+      });
+    } catch (error) { report(error); }
   }
   // Edit and delete serialize on the room lock and re-read the message inside it,
   // so they never race a concurrent post, edit, delete or membership change.

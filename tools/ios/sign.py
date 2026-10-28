@@ -15,15 +15,20 @@ def matches(pattern, identifier):
     return pattern == identifier or (pattern.endswith('.*') and identifier.startswith(pattern[:-1]))
 
 
-def signing_entitlements(identifier, team, allowed_groups):
+def signing_entitlements(identifier, team, allowed_groups, push_environment=None):
     if not any(matches(group, identifier) for group in allowed_groups):
         raise ValueError('Provisioning profile does not allow the app Keychain group ' + identifier)
-    return {
+    entitlements = {
         'application-identifier': identifier,
         'com.apple.developer.team-identifier': team,
         'keychain-access-groups': [identifier],
         'get-task-allow': True,
     }
+    if push_environment is not None:
+        if push_environment != 'development':
+            raise ValueError('Development signing requires an APNs development provisioning profile')
+        entitlements['aps-environment'] = push_environment
+    return entitlements
 
 
 def simulated_entitlements(bundle_id):
@@ -82,6 +87,7 @@ def main():
     app = args.app.resolve()
     bundle = plistlib.loads((app / 'Info.plist').read_bytes())
     bundle_id = bundle['CFBundleIdentifier']
+    push_required = bool(bundle.get('ORCARemoteNotifications'))
     entitlement_path = app.parent / (app.stem + '.entitlements.plist')
     if args.simulator:
         try:
@@ -129,20 +135,25 @@ def main():
             continue
         if not matches(entitlements.get('application-identifier', ''), identifier):
             continue
+        push_environment = entitlements.get('aps-environment') if push_required else None
+        if push_required and push_environment != 'development':
+            continue
         groups = entitlements.get('keychain-access-groups', [])
         if not any(matches(group, identifier) for group in groups):
             continue
         certificates = {hashlib.sha1(cert).hexdigest().upper() for cert in profile.get('DeveloperCertificates', [])}
         available = sorted(valid & certificates)
         if available:
-            candidates.append((profile['ExpirationDate'], str(path), available[0], identifier, team, groups))
+            candidates.append((profile['ExpirationDate'], str(path), available[0], identifier, team, groups,
+                               push_environment))
     if not candidates:
-        raise SystemExit('No matching development profile and signing identity for ' + bundle_id +
+        raise SystemExit('No matching development profile' + (' with APNs development enabled' if push_required else '') +
+                         ' and signing identity for ' + bundle_id +
                          '. Install a valid profile/certificate or pass PROFILE=/path/to/profile.mobileprovision'
                          ' (and TEAM=... if needed). Simulator builds need neither.')
-    _, profile, identity, identifier, team, groups = max(candidates)
+    _, profile, identity, identifier, team, groups, push_environment = max(candidates)
     shutil.copy2(profile, app / 'embedded.mobileprovision')
-    entitlement_path.write_bytes(plistlib.dumps(signing_entitlements(identifier, team, groups)))
+    entitlement_path.write_bytes(plistlib.dumps(signing_entitlements(identifier, team, groups, push_environment)))
     subprocess.run(['codesign', '--force', '--sign', identity, '--entitlements', str(entitlement_path),
                     '--generate-entitlement-der', str(app)], check=True)
     subprocess.run(['codesign', '--verify', '--strict', str(app)], check=True)

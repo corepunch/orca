@@ -33,13 +33,13 @@ FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORC
 CFLAGS := $(FLAGS) -Igenerated
 # UIKit/UIKit.h in generated/ is the engine API, not Apple's framework header.
 OBJCFLAGS := $(FLAGS) -idirafter generated -fmodules-cache-path=$(ROOT)/module-cache
-MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials
+MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials notifications
 PLUGINS := UIKit SceneKit SpriteKit
-OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o
+OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o $(ROOT)/obj/source/notifications/notifications_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_page_transition.o ios_scroll.o)
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules

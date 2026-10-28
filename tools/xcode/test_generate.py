@@ -185,6 +185,19 @@ class GenerateProjectTests(unittest.TestCase):
         native = {objects[uid]['path'] for uid in groups['Native Sources']['children']}
         self.assertEqual(compiled, paths | plugin_paths | native)
 
+    def test_chat_device_signing_has_matching_debug_and_release_push_environments(self):
+        bundle = self.generate('chat')
+        for name, settings in self.effective_configurations(self.read_project(bundle)).items():
+            self.assertEqual(settings['ORCA_APNS_ENVIRONMENT'], 'development' if name == 'Debug' else 'production')
+            self.assertEqual(settings['CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]'], '$(ORCA_PROJECT)/Push.entitlements')
+            self.assertNotIn('CODE_SIGN_ENTITLEMENTS', settings, 'Simulators must not carry device push entitlements')
+            self.assertIn('UserNotifications', settings['OTHER_LDFLAGS'])
+        with (ROOT / 'apps/chat/Push.entitlements').open('rb') as stream:
+            self.assertEqual(plistlib.load(stream)['aps-environment'], '$(ORCA_APNS_ENVIRONMENT)')
+        other = self.generate('cluster-demo')
+        for settings in self.effective_configurations(self.read_project(other)).values():
+            self.assertNotIn('CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]', settings)
+
     def test_chat_icon_catalog_is_compiled_as_a_native_resource(self):
         catalog = ROOT / 'apps/chat/Assets.xcassets'
         self.assertTrue((catalog / 'AppIcon.appiconset').is_dir())

@@ -1,13 +1,15 @@
 # Messenger: identity, discovery, conversations, and media
 
-Implementation status, 2026-10-27. The app now implements phone/email OTP,
+Implementation status, 2026-10-28. The app now implements phone/email OTP,
 verified linking, usernames and opt-in exact discovery, direct/group/channel
 conversations, roles/invitations/public channel subscriptions, JPEG photo
 messages, editing and deleting messages, owner renaming and non-owner leaving
 groups/channels through the shared client and
 offline mock. Native processing and
 selection are available on macOS. Video, QR/profile sharing links, address-book
-matching, block/report UI, push, and live subscriptions remain later work.
+matching, block/report UI, and live subscriptions remain later work. Apple push
+support is implemented behind APNs provider configuration; delivery remains
+disabled until the provider and signed app are configured.
 
 The [API contract](API.md) and [backend setup](backend/README.md) describe the
 implemented interfaces. Appwrite's Octopus project is the default backend; its
@@ -57,7 +59,7 @@ separately:
 | Polls, scheduled messages and channel comments/view counts | New domain models, jobs and interaction flows |
 | Blocking/reporting, contact naming and prefix/name search | Privacy/abuse policy, personal contact storage and discovery changes |
 | Files, voice messages and non-JPEG media | Upload validation, playback/recording, storage limits and native adapters |
-| Realtime and push | Authorized subscriptions, provider/device-token setup and lifecycle handling; polling remains supported |
+| Realtime subscriptions | Authorized subscriptions; polling remains supported. Apple push has native token/notification handling and Appwrite delivery, pending provider and signing setup |
 | OTP delivery and identity linking verification | Readable test inbox/SMS provider and delivery configuration; admin-marked email fixtures test discovery only |
 
 Group/channel rename and leave require no schema changes and are included in

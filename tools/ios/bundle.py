@@ -13,7 +13,7 @@ def resource_filter(directory, names):
     """Keep runtime assets, excluding developer credentials and server-only trees."""
     patterns = ('.git', '.DS_Store', '.env', '.env.*', '.live-*', '.appwrite',
                 '__pycache__', 'node_modules', 'build', '*.mobileprovision',
-                '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', 'ci_scripts')
+                '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', '*.entitlements', 'ci_scripts')
     ignored = [name for name in names if any(fnmatch.fnmatchcase(name, pattern) for pattern in patterns)]
     # Chat's Appwrite Function, fixtures and local account sessions never run on-device.
     backend = Path(directory) / 'backend'
@@ -90,6 +90,8 @@ def main():
         },
     }
     info.update(compile_assets(project, bundle, args.sdk, args.minimum))
+    if (project / 'Push.entitlements').is_file():
+        info['ORCARemoteNotifications'] = True
     (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))
     (bundle / 'PkgInfo').write_bytes(b'APPL????')
     print('Packaged ' + str(bundle))

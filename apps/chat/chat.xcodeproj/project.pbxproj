@@ -11,7 +11,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -61,7 +61,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -153,9 +153,13 @@
 "UniformTypeIdentifiers",
 "-framework",
 "AudioToolbox",
+"-framework",
+"UserNotifications",
 );
 "SKIP_INSTALL" = "NO";
 "INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
+"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]" = "$(ORCA_PROJECT)/Push.entitlements";
+"ORCA_APNS_ENVIRONMENT" = "development";
 "GCC_OPTIMIZATION_LEVEL" = "0";
 "DEBUG_INFORMATION_FORMAT" = "dwarf";
 "ONLY_ACTIVE_ARCH" = "YES";
@@ -202,9 +206,13 @@
 "UniformTypeIdentifiers",
 "-framework",
 "AudioToolbox",
+"-framework",
+"UserNotifications",
 );
 "SKIP_INSTALL" = "NO";
 "INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
+"CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]" = "$(ORCA_PROJECT)/Push.entitlements";
+"ORCA_APNS_ENVIRONMENT" = "production";
 "GCC_OPTIMIZATION_LEVEL" = "s";
 "DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
 "ONLY_ACTIVE_ARCH" = "NO";
@@ -390,6 +398,19 @@
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
+"55756AA7337153DBB7168B6E" = {
+"isa" = "PBXFileReference";
+"path" = "u_notifications.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"E880787F360A80EB563C9D51" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "55756AA7337153DBB7168B6E";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
 "162B92800E3AD53CEC9CB5BC" = {
 "isa" = "PBXFileReference";
 "path" = "u_UIKit.c";
@@ -493,6 +514,7 @@
 "$(DERIVED_FILE_DIR)/u_data.c",
 "$(DERIVED_FILE_DIR)/u_media.c",
 "$(DERIVED_FILE_DIR)/u_credentials.c",
+"$(DERIVED_FILE_DIR)/u_notifications.c",
 "$(DERIVED_FILE_DIR)/u_UIKit.c",
 "$(DERIVED_FILE_DIR)/u_SceneKit.c",
 "$(DERIVED_FILE_DIR)/u_SpriteKit.c",
@@ -520,6 +542,7 @@
 "4ACD369103D458DCF7F60CE9",
 "FEF57507BE2F55D969D8B592",
 "480BCB49654A5F61FDA6F4F0",
+"E880787F360A80EB563C9D51",
 "A338AA3F9DCFD32CA0E3E6C2",
 "DBD48EDB615D4D3FFB4140F0",
 "E1331E22DDDAAB2050635741",
@@ -629,6 +652,7 @@
 "EF46FF2EF79FF736DA7D848A",
 "564321233673841F3EAAA9D9",
 "A1A1B0A559963F72918AC739",
+"55756AA7337153DBB7168B6E",
 "F99A1494E406C50D0A5CE0FD",
 );
 "sourceTree" = "<group>";

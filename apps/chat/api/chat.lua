@@ -131,6 +131,7 @@ function Client:signOut()
   -- Appwrite revocation uses the private cookie; an expired JWT must not stop
   -- local erasure or cause a refresh before logout.
   local result, err = self:_request("POST", "/auth/v1/logout?scope=local", nil, self.mode ~= "appwrite")
+  if not result and err.code == "push_cleanup" then return nil, err end
   -- The local device must forget its credentials even when the server is offline.
   self.session = nil
   return result, err
@@ -141,6 +142,15 @@ function Client:listRooms()
   if not data then return nil, err end
   if type(data) ~= "table" then return failure("invalid_response", "The chat service returned invalid conversations.") end
   return data
+end
+
+-- This adapter-only route uses the private Account session, never the Function.
+function Client:registerPushTarget(token)
+  if self.mode ~= "appwrite" or not self.session then return failure("unauthenticated", "Sign in to continue.") end
+  if type(token) ~= "string" or #token < 32 or #token > 512 or token:find("[^%x]") then
+    return failure("validation", "Invalid push device token.")
+  end
+  return self:_request("POST", "/auth/v1/push", { token = token, userId = self.session.user.id })
 end
 
 function Client:listContacts()

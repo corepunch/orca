@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
+<module name="notifications" namespace="orca" prefix="notifications_">
+  <includes><include file="include/api.h"/></includes>
+  <functions>
+    <function name="Supported" lua="true">
+      <summary>Reports whether this application supports native remote notifications.</summary>
+      <details>True for Apple application bundles; false for other platforms and command-line tools. APNs registration additionally requires a matching signed push entitlement, provisioning profile and provider.</details>
+      <returns type="nresults">A boolean indicating support.</returns>
+    </function>
+    <function name="RequestAuthorization" lua="true">
+      <summary>Requests notification permission and registers this device with APNs asynchronously.</summary>
+      <details>Returns true when queued, or nil and an error string when unsupported. Poll for a token or error after completion. Call on each launch and account restoration; APNs may rotate the token. Repeated requests replay the latest token while refreshing registration. Permission is requested only by this explicit call.</details>
+      <returns type="nresults">True when queued, or nil and an error string.</returns>
+    </function>
+    <function name="Poll" lua="true">
+      <summary>Dequeues one native notification event on the Lua thread.</summary>
+      <details>Returns nil when empty. Events have type token (token), received or open (conversationId, messageId, userId), or error (code, message). Error codes include permission_denied, authorization_failed, registration_failed, invalid_token and unsupported. Notification payload identifiers are untrusted routing hints and must be authorized by the application. Open events survive startup before Lua initialization. Platform callbacks never access Lua.</details>
+      <returns type="nresults">An event table, or nil.</returns>
+    </function>
+  </functions>
+</module>

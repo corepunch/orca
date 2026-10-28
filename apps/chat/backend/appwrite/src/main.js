@@ -20,7 +20,7 @@ export async function execute(envelope, service, identity) {
   }
 }
 
-export default async ({ req, res }) => {
+export default async ({ req, res, error: reportError = () => {} }) => {
   try {
     const envelope = req.bodyJson ?? JSON.parse(req.bodyText || req.bodyRaw || '{}');
     // Only platform-authenticated execution headers supply identity. Request JSON
@@ -33,7 +33,9 @@ export default async ({ req, res }) => {
     const repository = new Repository(rest, process.env.CHAT_DATABASE_ID || 'octopus-db', process.env.CHAT_BUCKET_ID || 'post-images');
     const auth = new Auth(rest, repository, { otpHmacKey: process.env.CHAT_OTP_HMAC_KEY,
       emailProviderId: process.env.CHAT_EMAIL_PROVIDER_ID, smsProviderId: process.env.CHAT_SMS_PROVIDER_ID });
-    return res.json(await execute(envelope, new ChatService(repository, auth), identity));
+    return res.json(await execute(envelope, new ChatService(repository, auth, {
+      pushEnabled: process.env.CHAT_PUSH_ENABLED === 'true', pushError: reportError,
+    }), identity));
   } catch (error) {
     if (error instanceof Failure) return res.json({ status: error.status, body: { code: error.code, message: error.message } });
     return res.json({ status: 400, body: { code: 'invalid_request', message: 'Provide a valid Chat request envelope.' } });

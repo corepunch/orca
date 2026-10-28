@@ -250,8 +250,10 @@ survive relaunch in Keychain and obtain a fresh JWT after validation. Messages
 support text and JPEG photos, prepared with native resizing/compression and
 stored encrypted in the shared bucket with thumbnails. Owners can rename
 groups/channels; other members can leave from conversation info. History
-loads the latest 30 messages and pages backward as you scroll. Video, live
-subscriptions and push remain future work.
+loads the latest 30 messages and pages backward as you scroll. Apple push
+notifications are available after configuring an Appwrite APNs provider and
+signing the app with push entitlements; see [push setup](backend/appwrite/README.md#new-message-push-apns).
+Video and live subscriptions remain future work.
 During a Function rollout, a missing history RPC falls back to a bounded recent
 page through the existing endpoint. Older cursor pages become available when
 the new Function is deployed; the client retries capability discovery after a minute.

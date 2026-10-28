@@ -46,7 +46,7 @@ function jpeg(width = 1, height = 1) {
   return Buffer.from([255, 216, 255, 192, 0, 11, 8, height >> 8, height & 255, width >> 8, width & 255, 1, 1, 17, 0,
     255, 218, 0, 8, 1, 1, 0, 0, 63, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 255, 217]);
 }
-function setup() {
+function setup(serviceOptions = {}) {
   const repo = new MemoryRepository(), clock = { now: 1700000000000 }, calls = [], users = new Map();
   for (const name of ['owner', 'alice', 'bob', 'eve']) users.set(name, { $id: name, name, email: name + '@example.invalid', emailVerification: true, phone: '', phoneVerification: false });
   const rest = { async request(method, path, options = {}) {
@@ -70,7 +70,7 @@ function setup() {
     throw new Error('Unexpected fake REST route: ' + method + ' ' + path);
   } };
   const auth = new Auth(rest, repo, { now: () => clock.now, otpHmacKey: 'test-secret-never-use-in-production-123', emailProviderId: 'email-provider', smsProviderId: 'sms-provider' });
-  const service = new ChatService(repo, auth, { now: () => clock.now });
+  const service = new ChatService(repo, auth, { now: () => clock.now, ...serviceOptions });
   const call = (jwt, path, body = {}, method = 'POST', extra = {}) => execute({ method, path, body, ...extra }, service, { jwt, userId: jwt });
   return { repo, auth, service, clock, calls, users, call };
 }
@@ -78,6 +78,131 @@ async function room(fixture, kind = 'group', others = ['alice'], visibility = 'p
   const response = await fixture.call('owner', '/rest/v1/rpc/create_chat_room', { room_name: 'Conversation', room_kind: kind, room_visibility: visibility, member_ids: others });
   assert.equal(response.status, 200); return response.body[0];
 }
+
+const pushCalls = fixture => fixture.calls.filter(call => call.path === '/messaging/messages/push');
+
+test('push is disabled by default and rejects client-selected recipients', async () => {
+  const fixture = setup(), conversation = await room(fixture);
+  const result = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', {
+    target_room: conversation.id, message_body: 'Private text', users: ['eve'], pushEnabled: true,
+  });
+  assert.equal(result.status, 200); assert.equal(pushCalls(fixture).length, 0);
+});
+
+test('push queues generic per-recipient notifications only after text and photo publication', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, 'group', ['alice', 'bob']);
+  const request = fixture.auth.rest.request.bind(fixture.auth.rest);
+  fixture.auth.rest.request = async (method, path, options) => {
+    if (path === '/messaging/messages/push') {
+      assert.ok(await fixture.repo.get('messages', options.body.data.messageId));
+      assert.ok(fixture.repo.locks.has('room:' + conversation.id));
+    }
+    return request(method, path, options);
+  };
+  const post = body => fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, ...body });
+  const first = await post({ message_body: 'Private text', users: ['eve'] });
+  assert.equal(first.status, 200);
+  const deliveries = pushCalls(fixture);
+  assert.deepEqual(deliveries.map(call => call.options.body.users[0]).sort(), ['alice', 'bob']);
+  for (const call of deliveries) {
+    const payload = call.options.body;
+    assert.equal(call.method, 'POST'); assert.equal(payload.title, 'ORCA Chat'); assert.equal(payload.body, 'New message');
+    assert.equal(payload.sound, 'default'); assert.equal(payload.draft, false);
+    assert.match(payload.messageId, /^[a-f0-9]{36}$/);
+    assert.deepEqual(payload.data, { conversationId: conversation.id, messageId: first.body[0].id, userId: payload.users[0] });
+    assert.ok(await fixture.repo.get('messages', payload.data.messageId));
+  }
+  const { photo } = await upload(fixture, conversation.id);
+  const next = await post({ attachment_ids: [photo.id] });
+  assert.equal(next.status, 200); assert.equal(pushCalls(fixture).length, 4);
+  assert.equal(pushCalls(fixture).at(-1).options.body.data.messageId, next.body[0].id);
+  await fixture.call('owner', '/rest/v1/rpc/edit_chat_message', { target_message: first.body[0].id, message_body: 'Changed text' });
+  await fixture.call('owner', '/rest/v1/rpc/delete_chat_message', { target_message: first.body[0].id });
+  assert.equal(pushCalls(fixture).length, 4, 'edits and deletion do not notify');
+});
+
+test('push never queues failed publication or unauthorized posts and enumerates the complete member list', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture);
+  for (let index = 0; index < 125; index++) await fixture.repo.create('members', {
+    room_id: conversation.id, user_id: 'recipient-' + index, role: 'member', created_at: fixture.service.timestamp(),
+  });
+  await fixture.call('eve', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Rejected' });
+  assert.equal(pushCalls(fixture).length, 0);
+  const create = fixture.repo.create.bind(fixture.repo);
+  fixture.repo.create = async (name, ...args) => { if (name === 'messages') throw new Error('Failed commit'); return create(name, ...args); };
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Rejected' })).status, 503);
+  assert.equal(pushCalls(fixture).length, 0);
+  fixture.repo.create = create;
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Published' })).status, 200);
+  assert.equal(pushCalls(fixture).length, 126);
+  assert.equal(new Set(pushCalls(fixture).map(call => call.options.body.users[0])).size, 126);
+});
+
+test('push failures preserve committed sends and replay uses stable delivery IDs with current membership', async () => {
+  const reports = [], fixture = setup({ pushEnabled: true, pushError: message => reports.push(message) });
+  const conversation = await room(fixture, 'group', ['alice', 'bob']), request = fixture.auth.rest.request.bind(fixture.auth.rest);
+  const accepted = new Set(); let failAlice = true;
+  fixture.auth.rest.request = async (method, path, options) => {
+    if (path !== '/messaging/messages/push') return request(method, path, options);
+    if (options.body.users[0] === 'alice' && failAlice) throw new Failure(503, 'unavailable', 'Secret upstream body and token');
+    if (accepted.has(options.body.messageId)) throw new Failure(409, 'message_already_exists', 'Exists');
+    accepted.add(options.body.messageId); return request(method, path, options);
+  };
+  const result = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Private text' });
+  assert.equal(result.status, 200); assert.ok(await fixture.repo.get('messages', result.body[0].id));
+  assert.deepEqual(reports, ['Chat push could not be queued (HTTP 503).']);
+  const message = await fixture.repo.get('messages', result.body[0].id), firstId = pushCalls(fixture)[0].options.body.messageId;
+  failAlice = false;
+  await fixture.repo.lock('room:' + conversation.id, () => fixture.service.notifyMessage(message));
+  assert.equal(accepted.size, 2); assert.equal(pushCalls(fixture).length, 2);
+  assert.equal(pushCalls(fixture)[0].options.body.messageId, firstId);
+  await fixture.call('owner', '/rest/v1/rpc/remove_chat_member', { target_room: conversation.id, target_user: 'alice' });
+  const requests = [];
+  fixture.auth.rest.request = async (method, path, options) => {
+    if (path === '/messaging/messages/push') requests.push(options.body.users[0]);
+    return request(method, path, options);
+  };
+  await fixture.repo.lock('room:' + conversation.id, () => fixture.service.notifyMessage(message));
+  assert.deepEqual(requests, ['bob']);
+});
+
+test('push shares one deadline across bounded fan-out and swallows lookup or diagnostic failures', async () => {
+  const fixture = setup({ pushEnabled: true, pushTimeoutMs: 20, pushError: () => { throw new Error('Logger failed'); } });
+  const conversation = await room(fixture), request = fixture.auth.rest.request.bind(fixture.auth.rest);
+  let active = 0, maximum = 0, signals = new Set();
+  for (let index = 0; index < 12; index++) await fixture.repo.create('members', { room_id: conversation.id, user_id: 'recipient-' + index });
+  fixture.auth.rest.request = async (method, path, options) => {
+    if (path !== '/messaging/messages/push') return request(method, path, options);
+    signals.add(options.signal); active++; maximum = Math.max(maximum, active);
+    try {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 100);
+        options.signal.addEventListener('abort', () => { clearTimeout(timer); reject(options.signal.reason); }, { once: true });
+      });
+    } finally { active--; }
+  };
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Saved' })).status, 200);
+  assert.equal(maximum, 8); assert.equal(active, 0); assert.equal(signals.size, 1);
+  const list = fixture.repo.list.bind(fixture.repo);
+  fixture.repo.list = async (name, ...args) => { if (name === 'members') throw new Error('Directory unavailable'); return list(name, ...args); };
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Also saved' })).status, 200);
+});
+
+test('push recipient pagination forwards its deadline through every REST page', async () => {
+  const signal = AbortSignal.timeout(3000), requests = [], members = Array.from({ length: 137 }, (_, index) => ({
+    $id: 'member-' + index, payload: JSON.stringify({ room_id: 'room', user_id: 'user-' + index }),
+  }));
+  const rest = new AppwriteRest({ endpoint: 'https://example.invalid/v1', projectId: 'project', apiKey: 'test-key',
+    fetch: async (url, options) => {
+      requests.push(url); assert.equal(options.signal, signal);
+      const queries = new URL(url).searchParams.getAll('queries[]').map(JSON.parse);
+      const cursor = queries.find(query => query.method === 'cursorAfter')?.values[0];
+      const start = cursor ? members.findIndex(row => row.$id === cursor) + 1 : 0;
+      return new Response(JSON.stringify({ documents: members.slice(start, start + 100) }));
+    } });
+  const rows = await new Repository(rest, 'database', 'bucket').list('members', [], undefined, { signal });
+  assert.equal(rows.length, 137); assert.equal(requests.length, 2);
+});
 
 test('every protected request validates the platform JWT, including deleted or forged accounts', async () => {
   const fixture = setup();

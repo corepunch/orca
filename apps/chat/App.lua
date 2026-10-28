@@ -35,6 +35,9 @@ local App = Application:extend {
             for key, value in pairs(config) do settings[key] = value end
             settings.sessionStore, self.configurationError = require("Chat/session_store").new(config)
             if not self.configurationError then
+                settings.pushStore = require("Chat/push_store").new(config)
+            end
+            if not self.configurationError then
                 self.client, self.configurationError = Chat.appwrite(settings)
                 self.restorePending = self.client ~= nil and settings.sessionStore ~= nil
             end
@@ -45,6 +48,9 @@ local App = Application:extend {
         if self.client then self.models = Models.new(self.client) end
         self:resetSessionViews()
         if self.remote then self.polling = Sync.new(self) end
+        if self.remote and self.client and self.client.mode == "appwrite" then
+            self.push = require("Chat/push").new(self, config, options.push)
+        end
     end,
 
     resetSessionViews = function(self)
@@ -132,6 +138,7 @@ local App = Application:extend {
         self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
         if self.polling then self.polling:activate() end
+        if self.push then self.push:activate() end
         return result
     end,
 
@@ -292,7 +299,7 @@ local App = Application:extend {
         end
         if self.logoutPending then
             return self:frame(C.page("sign out", C.stack({ Spacing = 16 }, {
-                C.text("Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, Foreground = colors.muted }),
+                C.text(self.logoutError or "Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, Foreground = colors.muted }),
                 C.button("Retry sign out", function() self:signOut() end, { Name = "RetrySignOut" }),
             })))
         end
@@ -402,10 +409,12 @@ local App = Application:extend {
 
     signOut = function(self)
         if self.polling then self.polling:stop() end
+        if self.push then self.push:suspend() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
         self.restorePending = false
-        self.logoutPending = not ok and err.code == "session_storage"
+        self.logoutPending = not ok and (err.code == "session_storage" or err.code == "push_cleanup")
+        self.logoutError = self.logoutPending and err.message or nil
         self:resetSessionViews(); self:show()
         if not ok and not self.logoutPending then self:notice(err.message, true) end
     end,
@@ -681,12 +690,17 @@ local App = Application:extend {
         for message in system.getMessage do
             if message:is("Window.Closed") then
                 if self.polling then self.polling:stop() end
+                if self.push then self.push:suspend() end
                 async.set_error_handler(nil)
                 return
             end
             if self.polling then
                 if message:is("Window.Deactivated") then self.polling:setForeground(false)
                 elseif message:is("Window.Activated") then self.polling:setForeground(true) end
+            end
+            if self.push then
+                if message:is("Window.Deactivated") then self.push:setForeground(false)
+                elseif message:is("Window.Activated") then self.push:setForeground(true) end
             end
             local ok, failure = xpcall(function()
                 local result = system.dispatchMessage(self.screen, message)
