@@ -31,6 +31,7 @@
 #include <include/orca.h>
 #include <include/shared.h>
 #include <source/core/core_local.h>
+#include <source/core/animation.h>
 
 #define USE_ELASTIC_BLEND
 
@@ -279,8 +280,6 @@ anim_interpolate(enum InterpolationMode ipo, enum Easing easing, float time)
   return 1.0f;
 }
 
-extern struct game core;
-
 // Scalar lerp helper (non-struct types)
 static float float_lerp(float a, float b, float t) { return a + (b - a) * t; }
 
@@ -308,7 +307,7 @@ HANDLER(PropertyAnimation, Object, Animate) {
     int duration = pPropertyAnimation->Duration;
     float t = (duration <= 0)
         ? 1.0f
-        : (float)(core.realtime - pPropertyAnimation->Start) / (float)duration;
+        : (float)(uint32_t)(ANIM_GetTime() - (uint32_t)pPropertyAnimation->Start) / (float)duration;
     if (t > 1.0f) t = 1.0f;
 
     float interp_t = anim_interpolate(pPropertyAnimation->Interpolation,
@@ -379,7 +378,7 @@ OBJ_DoTween(lua_State* L,
   anim->Duration = duration;
   anim->Interpolation = ipo;
   anim->Easing = easing;
-  anim->Start = (uint32_t)core.realtime;
+  anim->Start = (int32_t)ANIM_GetTime();
   if (PROP_GetType(hprop) == kDataTypeFloat) {
 //    luaX_parsefield(float, to, 2, luaL_checknumber);
     float to = luaL_checknumber(L, 6);

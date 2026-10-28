@@ -10,14 +10,14 @@
 
 static NSMutableDictionary<NSValue *, OrcaNativeScrollView *> *scroll_views;
 static struct Object *scroll_screen;
-static bool_t scroll_enabled = TRUE;
 static unsigned scroll_generation;
 
 static bool_t orca_scroll_native_visible(struct Object *object)
 {
-  if (!scroll_enabled || !scroll_screen) return FALSE;
+  if (!scroll_screen) return FALSE;
   for (struct Object *node = object; node; node = OBJ_GetParent(node)) {
     if (GetNode(node) && OBJ_IsHidden(node)) return FALSE;
+    if (GetPivot(node) && GetPivot(node)->TransitionMode != kTransitionModeNone) return FALSE;
     if (node == scroll_screen) return TRUE;
   }
   return FALSE;
@@ -216,21 +216,6 @@ void ORCA_IOS_ClearScrollViews(void)
   scroll_screen = NULL;
 }
 
-void ORCA_IOS_SetScrollViewsEnabled(bool_t enabled)
-{
-  scroll_enabled = enabled;
-  for (OrcaNativeScrollView *scroll in scroll_views.allValues) {
-    scroll.hidden = !enabled;
-    if (!enabled) {
-      scroll.syncing = YES;
-      [scroll setContentOffset:scroll.contentOffset animated:NO];
-      scroll.syncing = NO;
-      struct Node2D *node = GetNode2D(scroll.object);
-      if (node) node->_scrollTracking = node->_scrollAnimating = FALSE;
-    }
-  }
-}
-
 static CGRect orca_scroll_native_rect(struct Node2D *node)
 {
   return CGRectMake(node->Matrix.v[12], node->Matrix.v[13],
@@ -246,6 +231,7 @@ static bool_t orca_scroll_axis_aligned(struct Node2D *node)
 
 static void orca_scroll_sync_node(struct Object *object, CGRect clip)
 {
+  if (GetPivot(object) && GetPivot(object)->TransitionMode != kTransitionModeNone) return;
   struct Node2D *node = GetNode2D(object);
   if (!node || OBJ_IsHidden(object) || node->_opacity <= 0 || node->IgnoreHitTest || !orca_scroll_axis_aligned(node)) return;
   CGRect rect = orca_scroll_native_rect(node);
@@ -299,7 +285,6 @@ static void orca_scroll_sync_node(struct Object *object, CGRect clip)
     if (!moving || fabs(node->ContentOffset.y - scroll.appliedOffset) > 0.01)
       [scroll setContentOffset:CGPointMake(0, ORCA_IOS_ScrollOffset(node->ContentOffset.y)) animated:NO];
     scroll.appliedOffset = node->ContentOffset.y;
-    scroll.hidden = !scroll_enabled;
     scroll.syncing = NO;
   }
   FOR_EACH_OBJECT(child, object) orca_scroll_sync_node(child, clip);

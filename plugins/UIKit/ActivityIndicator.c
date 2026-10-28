@@ -1,3 +1,4 @@
+#include <source/core/animation.h>
 #include <include/orca.h>
 #include <include/renderer.h>
 #include <source/core/core_local.h>
@@ -46,7 +47,7 @@ HANDLER(ActivityIndicator, Object, Animate)
       core.frame - pActivityIndicator->_drawnFrame > 1)
     return FALSE;
   OBJ_RequestAnimate(hObject);
-  uint32_t step = axGetMilliseconds() / 80;
+  uint32_t step = ANIM_GetTime() / 80;
   if (step == pActivityIndicator->_step) return FALSE;
   pActivityIndicator->_step = step;
   OBJ_SetDirty(hObject);
@@ -68,7 +69,7 @@ HANDLER(ActivityIndicator, Node2D, DrawForeground)
   struct ViewEntity entity;
   Node2D_GetViewEntity(view, &entity, NULL, &pDrawForeground->brush);
   entity.radius = (struct vec4){diameter / 2, diameter / 2, diameter / 2, diameter / 2};
-  uint32_t step = axGetMilliseconds() / 80;
+  uint32_t step = ANIM_GetTime() / 80;
   pActivityIndicator->_step = step;
   pActivityIndicator->_drawnFrame = core.frame;
   for (int i = 0; i < 12; i++) {

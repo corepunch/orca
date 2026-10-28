@@ -1,6 +1,5 @@
 #include <source/core/core_local.h>
-
-extern struct game core;
+#include <source/core/animation.h>
 
 // tangentMode == 0 means cubic bezier (Unity default); any other value uses linear.
 #define TANGENT_MODE_BEZIER 0
@@ -117,7 +116,7 @@ HANDLER(AnimationPlayer, Object, Start) {
     }
     if (pAnimationPlayer->AutoplayEnabled) {
         pAnimationPlayer->Playing = TRUE;
-        pAnimationPlayer->_prevRealtime = 0;
+        pAnimationPlayer->_clockPrimed = FALSE;
         OBJ_RequestAnimate(hObject);
         _SendMessage(hObject, AnimationPlayer, Started);
     }
@@ -127,21 +126,23 @@ HANDLER(AnimationPlayer, Object, Start) {
 // AnimationPlayer_Animate
 HANDLER(AnimationPlayer, Object, Animate) {
     if (!pAnimationPlayer->Playing) {
-        pAnimationPlayer->_prevRealtime = 0;
+        pAnimationPlayer->_clockPrimed = FALSE;
         return FALSE;
     }
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (!clip) return FALSE;
 
     // Initialise timing on the first frame after playback starts
-    if (pAnimationPlayer->_prevRealtime == 0) {
-        pAnimationPlayer->_prevRealtime = core.realtime;
+    if (!pAnimationPlayer->_clockPrimed) {
+        pAnimationPlayer->_prevRealtime = ANIM_GetTime();
+        pAnimationPlayer->_clockPrimed = TRUE;
         OBJ_RequestAnimate(hObject);   // keep the loop alive: this frame only primes the clock
         return TRUE;
     }
 
-    float dt = (float)(core.realtime - pAnimationPlayer->_prevRealtime) / 1000.0f;
-    pAnimationPlayer->_prevRealtime = core.realtime;
+    uint32_t now = ANIM_GetTime();
+    float dt = (float)(uint32_t)(now - (uint32_t)pAnimationPlayer->_prevRealtime) / 1000.0f;
+    pAnimationPlayer->_prevRealtime = now;
     float scale = pAnimationPlayer->DurationScale > 0.0f ? pAnimationPlayer->DurationScale : 1.0f;
     pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed * scale;
 
@@ -164,14 +165,14 @@ HANDLER(AnimationPlayer, Object, Animate) {
             if (pingpong) {
                 pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
                 pAnimationPlayer->CurrentTime = clip->StopTime;
-                pAnimationPlayer->_prevRealtime = 0;
+                pAnimationPlayer->_clockPrimed = FALSE;
             } else if (looping) {
                 pAnimationPlayer->CurrentTime = clip->StartTime;
-                pAnimationPlayer->_prevRealtime = 0;
+                pAnimationPlayer->_clockPrimed = FALSE;
             } else {
                 pAnimationPlayer->CurrentTime = clip->StopTime;
                 pAnimationPlayer->Playing = FALSE;
-                pAnimationPlayer->_prevRealtime = 0;
+                pAnimationPlayer->_clockPrimed = FALSE;
                 _SendMessage(hObject, AnimationPlayer, Completed);
             }
         } else if (pAnimationPlayer->CurrentTime <= clip->StartTime &&
@@ -179,12 +180,12 @@ HANDLER(AnimationPlayer, Object, Animate) {
             if (pingpong) {
                 pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
                 pAnimationPlayer->CurrentTime = clip->StartTime;
-                pAnimationPlayer->_prevRealtime = 0;
+                pAnimationPlayer->_clockPrimed = FALSE;
             } else {
                 // Reverse or ping-pong back-pass reached start — stop.
                 pAnimationPlayer->CurrentTime = clip->StartTime;
                 pAnimationPlayer->Playing = FALSE;
-                pAnimationPlayer->_prevRealtime = 0;
+                pAnimationPlayer->_clockPrimed = FALSE;
                 _SendMessage(hObject, AnimationPlayer, Completed);
             }
         }
@@ -193,7 +194,7 @@ HANDLER(AnimationPlayer, Object, Animate) {
     if (pAnimationPlayer->Playing) {
         OBJ_RequestAnimate(hObject);
     }
-    // Handled: the app loop answers with a paint, which is what advances core.realtime.
+    // Handled: the app loop paints the values evaluated on this clock tick.
     return TRUE;
 }
 
@@ -223,7 +224,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Play) {
         pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
     }
     pAnimationPlayer->Playing = TRUE;
-    pAnimationPlayer->_prevRealtime = 0;
+    pAnimationPlayer->_clockPrimed = FALSE;
     OBJ_RequestAnimate(hObject);
     _SendMessage(hObject, AnimationPlayer, Started);
     return FALSE;
@@ -233,7 +234,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Play) {
 HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
     // Resume differs from Play: it continues from the current position without resetting CurrentTime.
     pAnimationPlayer->Playing = TRUE;
-    pAnimationPlayer->_prevRealtime = 0;
+    pAnimationPlayer->_clockPrimed = FALSE;
     OBJ_RequestAnimate(hObject);
     _SendMessage(hObject, AnimationPlayer, Started);
     return FALSE;
@@ -242,7 +243,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
 // AnimationPlayer_Stop
 HANDLER(AnimationPlayer, AnimationPlayer, Stop) {
     pAnimationPlayer->Playing = FALSE;
-    pAnimationPlayer->_prevRealtime = 0;
+    pAnimationPlayer->_clockPrimed = FALSE;
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
     _SendMessage(hObject, AnimationPlayer, Stopped);
@@ -252,7 +253,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Stop) {
 // AnimationPlayer_Pause
 HANDLER(AnimationPlayer, AnimationPlayer, Pause) {
     pAnimationPlayer->Playing = FALSE;
-    pAnimationPlayer->_prevRealtime = 0;
+    pAnimationPlayer->_clockPrimed = FALSE;
     _SendMessage(hObject, AnimationPlayer, Stopped);
     return FALSE;
 }

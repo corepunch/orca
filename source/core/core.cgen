@@ -619,6 +619,7 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
         </message>
         <message name="Animate">
           <summary>Requested when an animation update is needed.</summary>
+          <details>Delivered to every component on the object using one shared animation-clock sample. A component reporting the tick as handled requests a paint but does not prevent other components from advancing.</details>
         </message>
         <message name="ThemeChanged">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
@@ -758,7 +759,8 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
         <property name="RepeatCount" type="int">Number of times the animation should repeat. Use -1 to indicate infinite looping.</property>
       </properties>
       <fields>
-        <field name="_prevRealtime" type="long">The last real time when the animation was updated, used to calculate delta time for advancing CurrentTime</field>
+        <field name="_prevRealtime" type="uint">The last shared animation-clock timestamp, in milliseconds</field>
+        <field name="_clockPrimed" type="bool">Whether the shared animation clock has been sampled for this playback pass</field>
       </fields>
       <messages>
         <message name="Play">

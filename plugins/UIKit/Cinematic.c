@@ -1,12 +1,10 @@
 #include <include/orca.h>
+#include <source/core/animation.h>
 
 #include <UIKit/UIKit.h>
 
 
 typedef struct Cinematic* PCINEMATIC;
-
-longTime_t
-UI_GetTime(void);
 
 HANDLER(Cinematic, Node2D, DrawForeground)
 {
@@ -17,7 +15,7 @@ HANDLER(Cinematic, Node2D, DrawForeground)
 
   struct ViewEntity entity;
 
-  longTime_t realtime = UI_GetTime();
+  longTime_t realtime = ANIM_GetTime();
   longTime_t endtime =
     pCinematic->_starttime + pCinematic->FrameRate * pCinematic->NumFrames;
 

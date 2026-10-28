@@ -528,8 +528,8 @@ test-macos-retina:
 endif
 
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
-.PHONY: test-ios-page-transition
-$(eval $(call C_TEST_RULE,test-ios-page-transition,tests/test_ios_page_transition.c,$(BINDIR)/test_ios_page_transition,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
+.PHONY: test-animation-clock
+$(eval $(call C_TEST_RULE,test-animation-clock,tests/test_animation_clock.c,$(BINDIR)/test_animation_clock,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 .PHONY: test-text-leading
 $(eval $(call C_TEST_RULE,test-text-leading,tests/test_text_leading.c,$(BINDIR)/test_text_leading,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
@@ -539,7 +539,7 @@ HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations
 HEADLESS_LUA_TESTS += test-imageview
 HEADLESS_LUA_TESTS += test-text-leading
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
-HEADLESS_LUA_TESTS += test-ios-page-transition
+HEADLESS_LUA_TESTS += test-animation-clock
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
 

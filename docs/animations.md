@@ -6,6 +6,25 @@ This page explains how ORCA's keyframe animation system works — from the data 
 
 ## Overview
 
+All animation consumers use one shared animation clock: property tweens,
+keyframe players, page transitions, Metro controls, scroll inertia, activity
+indicators and sprite frames. `Object.Animate` reaches every component on an
+object, even when another component handles the tick. Requests remain
+coalesced per object.
+
+The clock driver supplies time; easing, stagger, transforms, property updates
+and completion stay in the shared implementation. The default driver uses the
+platform monotonic clock through the event loop. On iOS, a `CAAnimation`
+animates one scalar timeline, sampled by the existing display-link frame pump.
+The whole iOS message batch and its paints share that sample. This still
+evaluates and renders ORCA content each frame; it does not rotate a captured
+page or move engine rendering to the Core Animation compositor.
+
+Changing drivers preserves animation time. Backgrounding iOS pauses the shared
+clock, so returning to the app resumes every animation without counting time
+spent suspended. macOS uses the default event-loop driver through the same
+clock interface.
+
 The animation system is composed of three building blocks:
 
 | Component | Role |

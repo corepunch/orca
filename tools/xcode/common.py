@@ -31,7 +31,7 @@ def unity_sources(root=ROOT):
         for name in names:
             units['u_' + name + '.c'] = sorted((root / folder / name).rglob('*.c'))
     units['u_platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
-    units['ios_runtime.m'] = [root / 'source/ios.m', root / 'source/ios_page_transition.m',
+    units['ios_runtime.m'] = [root / 'source/ios.m', root / 'source/ios_animation.m',
                               root / 'source/ios_scroll.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
     units['native_modules.m'] = [path for name in config['MODULES']
                                   for path in sorted((root / 'source' / name).rglob('*.m'))]
