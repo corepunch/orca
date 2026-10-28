@@ -109,7 +109,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-texture-downscale test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -428,6 +428,8 @@ TEST_EDITOR_BIN = $(BINDIR)/test_editor
 TEST_XML_SERIALIZATION_BIN = $(BINDIR)/test_xml_serialization
 TEST_SHADER_UNIFORMS_BIN = $(BINDIR)/test_shader_uniforms
 .PHONY: test-shader-uniforms
+TEST_TEXTURE_DOWNSCALE_BIN = $(BINDIR)/test_texture_downscale
+.PHONY: test-texture-downscale
 TEST_SCREEN_SPACE_CAPTURE_BIN = $(BINDIR)/test_screen_space_capture
 TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),-framework OpenGL,-lGL)
 .PHONY: test-screen-space-capture
@@ -493,6 +495,7 @@ $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TE
 $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT),$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-texture-downscale,tests/test_texture_downscale.c,$(TEST_TEXTURE_DOWNSCALE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
@@ -582,7 +585,7 @@ $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

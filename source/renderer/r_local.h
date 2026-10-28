@@ -364,6 +364,9 @@ R_TexImage(GLenum target,
 struct AXsize
 texture_make_error(GLenum target);
 
+void*
+texture_downscale(void const* src, int w, int h, int bpp, int dw, int dh);
+
 extern struct renderer tr;
 
 #endif

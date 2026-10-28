@@ -141,14 +141,85 @@ R_ApplyImageParms(struct Texture* image, GLenum target, bool_t mipmaps)
   }
 }
 
+/* GL_MAX_TEXTURE_SIZE, queried once a GL context exists; 0 while unknown. */
+static GLint
+texture_size_limit(void)
+{
+  static GLint limit;
+  if (!limit && tr.buffer) {
+    R_Call(glGetIntegerv, GL_MAX_TEXTURE_SIZE, &limit);
+    Con_Printf("GL_MAX_TEXTURE_SIZE: %d", limit);
+  }
+  return limit;
+}
+
+static int
+format_bytes(enum TextureFormat format)
+{
+  switch (format) {
+    case kTextureFormatAlpha8: return 1;
+    case kTextureFormatRgb8: return 3;
+    default: return 4;
+  }
+}
+
+/* Box-filter a w×h image of bpp-byte pixels into a new dw×dh buffer. */
+void*
+texture_downscale(void const* src, int w, int h, int bpp, int dw, int dh)
+{
+  uint8_t const* s = src;
+  uint8_t* dst = malloc((size_t)dw * dh * bpp);
+  if (!dst) return NULL;
+  for (int y = 0; y < dh; y++) {
+    int const y0 = (int)((int64_t)y * h / dh);
+    int const y1 = MAX(y0 + 1, (int)((int64_t)(y + 1) * h / dh));
+    for (int x = 0; x < dw; x++) {
+      int const x0 = (int)((int64_t)x * w / dw);
+      int const x1 = MAX(x0 + 1, (int)((int64_t)(x + 1) * w / dw));
+      uint32_t sum[4] = { 0 };
+      for (int sy = y0; sy < y1; sy++)
+        for (int sx = x0; sx < x1; sx++)
+          for (int c = 0; c < bpp; c++)
+            sum[c] += s[((size_t)sy * w + sx) * bpp + c];
+      uint32_t const n = (uint32_t)(y1 - y0) * (uint32_t)(x1 - x0);
+      for (int c = 0; c < bpp; c++)
+        dst[((size_t)y * dw + x) * bpp + c] = (uint8_t)(sum[c] / n);
+    }
+  }
+  return dst;
+}
+
 void
 Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
 {
   GLenum const fmt = format_to_gl(_in->Format);
-  GLsizei const w = _in->Width;
-  GLsizei const h = _in->Height;
+  GLsizei w = _in->Width;
+  GLsizei h = _in->Height;
   GLenum const datatype = GL_UNSIGNED_BYTE;
   GLvoid const* data = _in->ImageData;
+  void* scaled = NULL;
+  GLint const limit = texture_size_limit();
+
+  if (w < 0 || h < 0) {
+    Con_Error("invalid texture size %dx%d (format %d)", w, h, _in->Format);
+    return;
+  }
+  if (limit && (w > limit || h > limit)) {
+    /* glTexImage2D rejects sizes above GL_MAX_TEXTURE_SIZE with
+     * GL_INVALID_VALUE (the iOS simulator's software renderer allows 4096).
+     * Keep the whole image by box-filtering the oversized axis down; callers
+     * keep their own logical size, so it draws at full extent, only softer. */
+    int const dw = MIN(w, limit), dh = MIN(h, limit);
+    Con_Printf("texture %dx%d (format %d) exceeds GL_MAX_TEXTURE_SIZE %d, "
+               "downscaled to %dx%d", w, h, _in->Format, limit, dw, dh);
+    if (data && !(scaled = texture_downscale(data, w, h, format_bytes(_in->Format), dw, dh))) {
+      Con_Error("out of memory downscaling %dx%d texture", w, h);
+      return;
+    }
+    data = scaled;
+    w = dw;
+    h = dh;
+  }
 
 #ifdef __EMSCRIPTEN__
   if (_in->Format == kTextureFormatAlpha8) {
@@ -174,6 +245,7 @@ Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
       R_Call(glTexImage2D, GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba);
     }
     free(rgba);
+    free(scaled);
     img->loaded = TRUE;
     img->Width = w;
     img->Height = h;
@@ -202,10 +274,7 @@ Texture_Reallocate(struct Texture* img, PCREATEIMGSTRUCT _in)
   }
 #endif
 
-  //    uint32_t error = 0xff00ffff;
-  //    R_Call(glTexImage2D,
-  //    GL_TEXTURE_2D,0,GL_RGBA,1,1,0,GL_RGBA,GL_UNSIGNED_BYTE,&error);
-
+  free(scaled);
   img->loaded = TRUE;
   img->Width = w;
   img->Height = h;
