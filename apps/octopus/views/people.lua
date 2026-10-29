@@ -88,69 +88,17 @@ function People.me(self)
         return self:tab("Me", C.page("me", body, { ExtendBodyBehindHeader = true }))
     end
     if self.meScope then self.meScope:dispose() end
-    local scope = self:octopusScope("Octopus/Data/Profile.xml")
+    local scope = self:octopusScope("Octopus/Data/Me.xml")
     self.meScope = scope
     local content = profileContent(self, scope, session.user.id, session.user.name, true)
-    local person = scope:exposedRecord("Profile")
-    local view = { userId = session.user.id, scope = scope, own = true }
-    self.profileView = view
-    local nameInput = C.input("EditName", "Your name", { Text = session.user.name })
-    local bioInput = C.input("EditBio", "A short bio", { Multiline = true, Height = 96 })
-    -- The editor starts from the loaded profile once.
-    local filled = false
-    scope:member("Person"):listen(function(query)
-        if filled or not query.loaded then return end
-        filled = true
-        nameInput.Text, bioInput.Text = person.values.DisplayName or nameInput.Text, person.values.Bio or ""
-    end)
-    local save
-    save = C.primary("Save profile", function()
-        if view.saving then return end
-        view.saving = true
-        save:setTextContent("Saving…")
-        self:task(function()
-            local profile, err = self.client:updateProfile { username = nameInput.Text, bio = bioInput.Text }
-            view.saving = false
-            save:setTextContent("Save profile")
-            if self.profileView ~= view or scope.disposed then return end
-            if not profile then self:notice(err.message, true); return end
-            scope.store:put("OctopusProfile", { userId = view.userId, username = profile.username, bio = profile.bio },
-                { partial = true })
-            self:notice("Profile saved. New posts use your account name.")
-            self:repaint()
-        end)
-    end, { Name = "SaveProfile" })
-    local photo
-    photo = C.outline("Change photo", function()
-        if view.uploading then return end
-        local picked, err = self.media:pick()
-        if not picked then
-            if not (type(err) == "table" and err.code == "cancelled") then
-                self:notice(type(err) == "table" and err.message or tostring(err), true)
-            end
-            return
-        end
-        view.uploading = true
-        photo:setTextContent("Uploading photo…")
-        self:task(function()
-            local profile
-            profile, err = self.client:setAvatar(picked)
-            view.uploading = false
-            photo:setTextContent("Change photo")
-            if self.profileView ~= view or scope.disposed then return end
-            if not profile then self:notice(err.message, true); return end
-            self:avatarChanged(session.user.id)
-            self:notice("Photo updated. It shows on the website and in Chat too.")
-            self:repaint()
-        end)
-    end, { Name = "ChangePhoto" })
-    content:findChild("ProfileActions", true):addChild(C.stack({ Name = "ProfileEditor", Spacing = 10 }, {
-        C.eyebrow("edit profile", { MarginTop = 0 }), photo,
-        C.text("name", { FontSize = 14, Foreground = colors.muted }), nameInput,
-        C.text("bio", { FontSize = 14, Foreground = colors.muted }), bioInput, save, self.status,
-    }))
-    content:addChild(C.outline("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error,
-        BorderColor = colors.error, MarginTop = 12 }))
+    self.profileView = { userId = session.user.id, scope = scope, own = true }
+    -- The form: an edit copy of the reader's profile (Data/Me.xml).
+    local editor = assert(filesystem.loadObject("Octopus/Pages/ProfileEditor"), "Missing Octopus/Pages/ProfileEditor")
+    scope:member("ProfileForm"):begin(scope:exposedRecord("Profile"))
+    scope:attach(editor)
+    content:findChild("ProfileActions", true):addChild(editor)
+    self.status = editor:findChild("MeStatus", true)
+    self.status:setTextContent("")
     return self:tab("Me", C.page("me", content))
 end
 

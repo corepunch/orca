@@ -116,6 +116,8 @@ local App = Application:extend {
                     self:show("/post", "Forward")
                 else self:notice("Published. Your newer edits are kept.") end
             end,
+            avatarChanged = function(userId) self:avatarChanged(userId) end,
+            signOut = function() self:signOut() end,
             copyLink = function(url)
                 system.set_clipboard(url)
                 self:notice("Link copied: " .. url)

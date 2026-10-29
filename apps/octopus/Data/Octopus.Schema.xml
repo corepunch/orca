@@ -203,6 +203,10 @@
     <Column Name="HasPhoto" Type="bool"/>
     <Column Name="PhotoPath" Type="string"/>
   </Entity>
+  <Entity Name="OctopusProfileDraft" Description="The reader's profile form on the me tab.">
+    <Column Name="DisplayName" Type="string"/>
+    <Column Name="Bio" Type="string"/>
+  </Entity>
   <Entity Name="OctopusReader" Key="Id" Description="Who is reading: a guest or a signed-in account.">
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="SignedIn" Type="bool" Source="signedIn"/>

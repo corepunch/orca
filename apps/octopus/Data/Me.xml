@@ -1,0 +1,13 @@
+<!-- The reader's own page (route /me): the profile page plus its editor.
+     The form is an edit copy of the reader's profile; it follows the
+     profile as it loads until the reader changes a field. -->
+<DataScope Name="Me" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Include Path="Octopus/Data/Profile.xml"/>
+  <Edit Name="ProfileForm" Entity="OctopusProfileDraft" Submit="SaveProfile" Submitted="profileSaved">
+    <Copy Field="DisplayName" From="DisplayName"/>
+    <Copy Field="Bio" From="Bio"/>
+  </Edit>
+  <Command Name="SaveProfile" Operation="saveProfile" Description="Saves name and bio; new posts use the name."/>
+  <Command Name="ChangePhoto" Operation="changePhoto" Description="Picks a photo and uploads it as the profile photo."/>
+  <Handler Name="SignOut"/>
+</DataScope>
