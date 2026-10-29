@@ -172,6 +172,36 @@ function Scope:expose(name, record)
     end
 end
 
+-- Opens the scope for a route: exposes the records its parameters name,
+-- starts edit copies of them and sets the query parameters that follow
+-- route parameters. Missing records are created from their key, so a
+-- page can present what it has before its queries load the rest.
+function Scope:open(params)
+    params = params or {}
+    for _, exposure in ipairs(self.routeExposures or {}) do
+        local key = params[exposure.key]
+        local record
+        if key ~= nil then
+            record = self.store:get(exposure.entity, key)
+            if not record then
+                local entity = self.store:entity(exposure.entity)
+                local column = entity.byName[entity.key]
+                record = self.store:put(exposure.entity, { [column and column.source or entity.key] = key },
+                    { partial = true })
+            end
+        end
+        self:expose(exposure.name, record)
+    end
+    for _, begin in ipairs(self.beginEdits or {}) do
+        local record = self:exposedRecord(begin.record)
+        if record then self:member(begin.edit):begin(record) end
+    end
+    for _, param in ipairs(self.routeParams or {}) do
+        if params[param.route] ~= nil then self:member(param.member):set(param.param, params[param.route]) end
+    end
+    return self
+end
+
 -- A subtree that presents one exposed record, as a list row presents its
 -- item: its bindings read the record's fields (DataContext/Title) and its
 -- handlers receive the record. Expose the record first; the scope keeps no

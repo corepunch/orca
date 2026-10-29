@@ -14,7 +14,7 @@ Edit.STATE = { "IsDirty", "IsValid", "HasError", "ErrorMessage", "IsSubmitting",
 -- clearOnSuccess (default true), canSubmit(values, context),
 -- submitted(ok, result, err, info, edit) after each submit finishes, where
 -- info is { key, visible (its draft is the current one), cleared (nothing
--- was typed while it was pending) }.
+-- was typed while it was pending), target (the record an edit copy saved) }.
 local NOKEY = {}
 local function id(key) if key == nil then return NOKEY end return key end
 
@@ -112,19 +112,36 @@ function Edit:switch(key)
     self:publish()
 end
 
--- Starts an edit copy of a committed record. The unsent new draft is kept
--- and comes back after save or cancel.
-function Edit:begin(record)
-    if not self.target then self.stashed = self:values() end
-    self.target, self.errors = record, {}
+local function copyOf(self, record)
     local values = {}
     for field, column in pairs(self.def.copy or {}) do values[field] = record.values[column] end
-    self:write(values)
+    return values
+end
+
+local function unfollow(self)
+    if self.unfollow then self.unfollow(); self.unfollow = nil end
+end
+
+-- Starts an edit copy of a committed record. The unsent new draft is kept
+-- and comes back after save or cancel. Until a field is changed the copy
+-- follows the record, so a form opened before its record loads fills in.
+function Edit:begin(record)
+    if not self.target then self.stashed = self:values() end
+    unfollow(self)
+    self.target, self.errors = record, {}
+    self:write(copyOf(self, record))
     self.base = self:values()
+    self.unfollow = self.scope.store:listen(function(changed)
+        if changed ~= self.target or self.submitting or self:dirty() then return end
+        self:write(copyOf(self, changed))
+        self.base = self:values()
+        self:publish()
+    end)
     self:publish()
 end
 
 function Edit:cancel()
+    unfollow(self)
     if self.target then
         self.target = nil
         self:write(self.stashed or {})
@@ -176,6 +193,7 @@ function Edit:submit(params)
             local keep = settle(self, snapshot)
             cleared = next(keep) == nil
             if target and self.target == target then
+                unfollow(self)
                 self.target = nil
                 self:write(self.stashed or {})
                 self.stashed = nil
@@ -198,7 +216,7 @@ function Edit:submit(params)
         end
         if not self.disposed then self:publish() end
         if self.def.submitted then
-            self.def.submitted(ok, result, err, { key = key, visible = visible, cleared = cleared }, self)
+            self.def.submitted(ok, result, err, { key = key, visible = visible, cleared = cleared, target = target }, self)
         end
     end)
     if not started then
@@ -210,12 +228,13 @@ end
 
 -- Forget saved drafts (sign-out).
 function Edit:clear()
+    unfollow(self)
     self.drafts, self.key, self.target, self.stashed, self.errors = {}, nil, nil, nil, {}
     self.pending = {}
     self:write({})
     self:publish()
 end
 
-function Edit:dispose() self.disposed = true end
+function Edit:dispose() unfollow(self); self.disposed = true end
 
 return Edit
