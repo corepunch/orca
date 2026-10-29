@@ -64,14 +64,33 @@ Panorama_Sync(struct Object *hObject, struct Panorama *pPanorama, struct Object 
   return count;
 }
 
-// Horizontal slot of section i relative to the one in view: 0 is in view,
-// 1 is the peeking next section and -1 the previous one.
-static int
-Panorama_Slot(struct Panorama *pPanorama, int i, int count, float offset)
+static float
+Panorama_Width(struct Object *item, float viewport)
 {
-  int slot = (i - pPanorama->SelectedIndex + count) % count;
-  if (slot == count - 1 && slot > 0 && (count > 2 || offset > 0)) slot = -1;
-  return slot;
+  return MAX(GetPanoramaItem(item)->_width, viewport * PANORAMA_ITEM_WIDTH);
+}
+
+static float
+Panorama_Position(struct Object **items, int count, int index, float viewport)
+{
+  float position = 0;
+  for (int i = 0; i < MIN(index, count); i++) position += Panorama_Width(items[i], viewport);
+  return position;
+}
+
+static float
+Panorama_End(struct Object *item, float viewport)
+{
+  return MAX(Panorama_Width(item, viewport) - viewport, 0);
+}
+
+static void
+Panorama_AnimateTo(struct Object *hObject, struct Panorama *pPanorama, float offset)
+{
+  pPanorama->_offsetFrom = offset;
+  pPanorama->_animStart = (int32_t)ANIM_GetTime();
+  pPanorama->_progress = 0;
+  OBJ_RequestAnimate(hObject);
 }
 
 HANDLER(Panorama, Object, Create)
@@ -101,16 +120,20 @@ HANDLER(Panorama, Object, PropertyChanged)
     struct Object *items[PANORAMA_MAX_ITEMS];
     int count = Panorama_Items(hObject, items), old = pPanorama->_current;
     int sel = pPanorama->SelectedIndex;
-    float width = Node2D_GetRect(GetNode2D(hObject)).width * PANORAMA_ITEM_WIDTH;
+    float viewport = Node2D_GetRect(GetNode2D(hObject)).width;
+    float width = viewport * PANORAMA_ITEM_WIDTH;
     if (width <= 0) pPanorama->_current = sel;  // not laid out yet: nothing to animate
     else if (count && old != sel && old >= 0 && old < count && sel >= 0 && sel < count) {
-      bool_t forward = (sel - old + count) % count <= count / 2;
+      bool_t forward = pPanorama->_dragX ? pPanorama->_dragX < 0 : (sel - old + count) % count <= count / 2;
       // Keep the swipe position when a drag committed this change.
-      pPanorama->_offsetFrom = pPanorama->_dragX + (forward ? width : -width);
-      pPanorama->_animStart = (int32_t)ANIM_GetTime();
-      pPanorama->_progress = 0;
+      float from = Panorama_Position(items, count, old, viewport) + pPanorama->_sectionOffset;
+      float to = Panorama_Position(items, count, sel, viewport);
+      float total = Panorama_Position(items, count, count, viewport);
+      if (forward && to < from) to += total;
+      if (!forward && to > from) to -= total;
+      pPanorama->_sectionOffset = 0;
+      Panorama_AnimateTo(hObject, pPanorama, pPanorama->_dragX + to - from);
       pPanorama->_current = sel;
-      OBJ_RequestAnimate(hObject);
       axPostMessageDataW(hObject, ID_Panorama_SelectionChanged, 0, &(struct Panorama_SelectionChangedEventArgs) {
         .SelectedIndex = sel, .OldIndex = old,
       }, sizeof(struct Panorama_SelectionChangedEventArgs));
@@ -136,8 +159,14 @@ HANDLER(Panorama, Node2D, MeasureOverride)
   float top = HIWORD(Metro_Measure(pPanorama->_title, 4096, 4096)) + PANORAMA_TITLE_TOP, height = 0;
   for (int i = 0; i < count; i++) {
     float header = HIWORD(Metro_Measure(GetPanoramaItem(items[i])->_header, 4096, 4096));
-    LRESULT size = Metro_Measure(items[i], MAX(itemWidth - METRO_INSET, 0),
+    struct PanoramaItem *item = GetPanoramaItem(items[i]);
+    LRESULT size = Metro_Measure(items[i], item->Orientation == kDirectionHorizontal ? INFINITY : MAX(itemWidth - METRO_INSET, 0),
       MAX(pMeasureOverride->Height - top - header, 0));
+    item->_width = item->Orientation == kDirectionHorizontal ? MAX(itemWidth, LOWORD(size) + METRO_INSET) : itemWidth;
+    // Once its natural width is known, wrapping and aspect ratios use that width.
+    if (item->Orientation == kDirectionHorizontal)
+      size = Metro_Measure(items[i], MAX(item->_width - METRO_INSET, 0),
+        MAX(pMeasureOverride->Height - top - header, 0));
     height = MAX(height, header + PANORAMA_HEADER_TOP + PANORAMA_CONTENT_TOP + HIWORD(size));
   }
   return MAKEDWORD(pMeasureOverride->Width, top + height);
@@ -149,29 +178,40 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
   int count = Panorama_Sync(hObject, pPanorama, items);
   float x = pArrangeOverride->X, y = pArrangeOverride->Y;
   float w = pArrangeOverride->Width, h = pArrangeOverride->Height;
-  float itemWidth = w * PANORAMA_ITEM_WIDTH;
   float offset = pPanorama->_offsetFrom * (1 - Metro_Ease(pPanorama->_progress)) + pPanorama->_dragX;
+  float selected = Panorama_Position(items, count, pPanorama->SelectedIndex, w);
+  float total = Panorama_Position(items, count, count, w);
+  if (count) pPanorama->_sectionOffset = MIN(pPanorama->_sectionOffset,
+    Panorama_End(items[pPanorama->SelectedIndex], w));
 
   // The title scrolls through its overflow more slowly than the sections.
   LRESULT title = Metro_Measure(pPanorama->_title, 4096, 4096);
   float travel = MAX(LOWORD(title) - w * PANORAMA_PARALLAX, 0);
-  float position = count > 1 ? (pPanorama->SelectedIndex - offset / itemWidth) / (count - 1) : 0;
+  float range = count ? MAX(total - MIN(Panorama_Width(items[count - 1], w), w), 0) : 0;
+  float position = range > 0 ? (selected + pPanorama->_sectionOffset - offset) / range : 0;
   Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * position, y + PANORAMA_TITLE_TOP,
     LOWORD(title), HIWORD(title));
 
   float top = y + PANORAMA_TITLE_TOP + HIWORD(title);
   for (int i = 0; i < count; i++) {
     struct Object *header = GetPanoramaItem(items[i])->_header;
-    int slot = Panorama_Slot(pPanorama, i, count, offset);
-    bool_t near = slot >= -1 && slot <= 1;
+    float distance = Panorama_Position(items, count, i, w) - selected;
+    float width = Panorama_Width(items[i], w);
+    float contentWidth = MAX(width - METRO_INSET, 0);
+    float left = distance - pPanorama->_sectionOffset + offset + METRO_INSET;
+    if (total > 0) {
+      // Choose the circular copy at the animated viewport, including skipped sections.
+      left -= floorf((left + contentWidth) / total) * total;
+      if (left + contentWidth <= 0) left += total;
+    }
+    bool_t near = left < w && left + contentWidth > 0;
     Metro_Show(header, near, 1);
     Metro_Show(items[i], near, 1);
     if (!near) continue;
-    float left = x + slot * itemWidth + offset + METRO_INSET;
     LRESULT size = Metro_Measure(header, 4096, 4096);
-    Metro_Arrange(header, left, top + PANORAMA_HEADER_TOP, LOWORD(size), HIWORD(size));
+    Metro_Arrange(header, x + left, top + PANORAMA_HEADER_TOP, LOWORD(size), HIWORD(size));
     float contentY = top + PANORAMA_HEADER_TOP + HIWORD(size) + PANORAMA_CONTENT_TOP;
-    Metro_Arrange(items[i], left, contentY, MAX(itemWidth - METRO_INSET, 0), MAX(y + h - contentY, 0));
+    Metro_Arrange(items[i], x + left, contentY, contentWidth, MAX(y + h - contentY, 0));
   }
   return MAKEDWORD(w, h);
 }
@@ -189,7 +229,9 @@ HANDLER(Panorama, Node, LeftButtonDragged)
 {
   struct Object *items[PANORAMA_MAX_ITEMS];
   int count = Panorama_Items(hObject, items);
-  if (!pPanorama->_tracking || count < 2) return FALSE;
+  if (!pPanorama->_tracking || !count) return FALSE;
+  float viewport = Node2D_GetRect(GetNode2D(hObject)).width;
+  if (count < 2 && Panorama_Width(items[0], viewport) <= viewport) return FALSE;
   float dx = pLeftButtonDragged->x - pPanorama->_pressX;
   float dy = pLeftButtonDragged->y - pPanorama->_pressY;
   if (!pPanorama->_dragging) {
@@ -213,14 +255,22 @@ HANDLER(Panorama, Node, LeftButtonUp)
   int count = Panorama_Items(hObject, items);
   for (int i = 0; i < count; i++) GetNode2D(items[i])->IgnoreHitTest = FALSE;
   float dx = pPanorama->_dragX;
-  if (fabsf(dx) >= METRO_SWIPE && count > 1) {
+  float viewport = Node2D_GetRect(GetNode2D(hObject)).width;
+  float step = viewport;
+  float end = count ? Panorama_End(items[pPanorama->SelectedIndex], viewport) : 0;
+  float oldOffset = pPanorama->_sectionOffset;
+  if (fabsf(dx) >= METRO_SWIPE && (dx < 0 ? oldOffset < end : oldOffset > 0)) {
+    pPanorama->_sectionOffset = dx < 0 ? MIN(oldOffset + step, end) : MAX(oldOffset - step, 0);
+    Panorama_AnimateTo(hObject, pPanorama, dx + pPanorama->_sectionOffset - oldOffset);
+  } else if (fabsf(dx) >= METRO_SWIPE && count > 1) {
     int32_t next = (pPanorama->SelectedIndex + (dx < 0 ? 1 : count - 1)) % count;
     Metro_SetProperty(hObject, ID_Panorama_SelectedIndex, &next);
+    if (dx > 0) {
+      pPanorama->_sectionOffset = Panorama_End(items[next], viewport);
+      pPanorama->_offsetFrom += pPanorama->_sectionOffset;
+    }
   } else {
-    pPanorama->_offsetFrom = dx;
-    pPanorama->_animStart = (int32_t)ANIM_GetTime();
-    pPanorama->_progress = 0;
-    OBJ_RequestAnimate(hObject);
+    Panorama_AnimateTo(hObject, pPanorama, dx);
   }
   pPanorama->_dragX = 0;
   OBJ_SetDirty(hObject);

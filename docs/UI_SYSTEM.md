@@ -251,7 +251,17 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
 - `Panorama` with `PanoramaItem` children: an oversized lowercase `Title`
   scrolls with parallax over sections that are slightly narrower than the
   screen, so the next one peeks in. Swipes wrap from the last section to the
-  first. Generated parts carry `panorama-title` and `panorama-header`.
+  first. `PanoramaItem.Orientation="Horizontal"` allows content wider than
+  the screen, measured from the content's natural or explicit width. A swipe
+  reveals the next viewport within that section before proceeding to the next
+  section; backwards navigation enters its trailing edge. `SelectedIndex`
+  and `SelectionChanged` refer to sections, so panning within a wide section
+  keeps the same selection. This follows the original
+  [Windows Phone wide-section contract](https://learn.microsoft.com/en-us/previous-versions/windows/apps/ff941126(v=vs.105)).
+  Use a normal `Grid` inside the item for portrait or photo matrices.
+  Set `ContentInsetAdjustment="Always"` on an edge-to-edge panorama to keep
+  its title below the iPhone safe area. Generated parts carry
+  `panorama-title` and `panorama-header`.
 - `ApplicationBar` with `ApplicationBarIconButton` (`IconUri`, `Text`,
   `IsEnabled`, `Click`) and `ApplicationBarMenuItem` (`Text`, `IsEnabled`,
   `Click`). Collapsed, it shows outlined round buttons and an ellipsis. Tap

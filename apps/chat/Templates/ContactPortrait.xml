@@ -1,0 +1,6 @@
+<Button class="chat-action" BorderWidth="0" BackgroundColor="#00000000">
+  <Grid Name="ContactAvatar" BackgroundColor="{Binding DataContext/Tone}" IgnoreHitTest="true">
+    <TextBlock Text="{Binding DataContext/Initials}" ForegroundColor="{Binding DataContext/Ink}"
+               FontSize="24" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+  </Grid>
+</Button>

@@ -1245,16 +1245,18 @@
     </class>
     <class name="PanoramaItem" parent="Node2D">
       <summary>One section of a Panorama, titled by its Header</summary>
-      <details>Content container hosted by a Panorama. Items are laid out side by side, slightly narrower than the screen so the next section peeks in.</details>
+      <details>Content container hosted by a Panorama. Vertical sections are slightly narrower than the viewport so the next section peeks in. Orientation="Horizontal" measures the content at its natural width (including an explicit Width), allowing a portrait or photo grid to span several screens. Swipes pan within that section before selecting its neighbour.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Destroy"/>
       </handles>
       <properties>
         <property name="Header" type="string">Section header shown above the content in lowercase</property>
+        <property name="Orientation" type="Direction" default="Vertical">Vertical uses one viewport section; Horizontal allows wider measured content with internal horizontal panning.</property>
       </properties>
       <fields>
         <field name="_header" type="Object" pointer="true">Generated header TextBlock, a child of the Panorama; the item holds a reference (private)</field>
+        <field name="_width" type="float">Measured section stride, including the inter-section inset (private)</field>
       </fields>
     </class>
     <class name="Panorama" parent="Node2D">
@@ -1284,6 +1286,7 @@
         <field name="_tracking" type="bool">A press is being tracked (private)</field>
         <field name="_dragging" type="bool">A horizontal swipe is in progress (private)</field>
         <field name="_current" type="int">Section index the layout currently shows (private)</field>
+        <field name="_sectionOffset" type="float">Horizontal position within the selected wide section in points (private)</field>
         <field name="_offsetFrom" type="float">Scroll offset at the start of the animation (private)</field>
         <field name="_animStart" type="int">Animation start time in milliseconds (private)</field>
         <field name="_progress" type="float">Animation progress from 0 to 1 (private)</field>

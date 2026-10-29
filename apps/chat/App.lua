@@ -10,6 +10,7 @@ local C = require "Chat/views/components"
 local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
+local Contacts = require "Chat/views/contacts"
 local Timeline = require "Chat/views/timeline"
 local PhotoViewer = require "Chat/views/photo_viewer"
 local Diagnostics = require "Chat/diagnostics"
@@ -76,6 +77,7 @@ local App = Application:extend {
         self.messageList, self.composer, self.threadBody = nil, nil, nil
         self.timelineSnapshot, self.timelinePage, self.messageRefreshQueued, self.editing = nil, nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
+        self.contactsState, self.contactsPanorama, self.contactsStatus = nil, nil, nil
         self.inboxError, self.inboxIndicators, self.messageLoading = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
@@ -670,6 +672,7 @@ local App = Application:extend {
     end,
 
     newRoom = Conversations.newRoom,
+    contactsView = Contacts.show,
     profile = Identity.profile,
     auth = Identity.auth,
     details = Conversations.details,
@@ -677,6 +680,7 @@ local App = Application:extend {
     ["/"] = function(self) return self:home() end,
     ["/thread"] = function(self) return self:thread() end,
     ["/new"] = function(self) return self:newRoom() end,
+    ["/contacts"] = function(self) return self:contactsView() end,
     ["/profile"] = function(self) return self:profile() end,
     ["/auth"] = function(self) return self:auth() end,
     ["/auth/email"] = function(self) return Identity.auth(self, "email") end,

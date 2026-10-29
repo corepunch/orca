@@ -371,6 +371,115 @@ local function test_panorama()
   print("PASS: test_panorama")
 end
 
+local function test_panorama_wide_sections()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local changes, clicked = 0, 0
+  local panorama = screen + ui.Panorama {
+    Title = "Contacts", SelectionChanged = function () changes = changes + 1 end,
+  }
+  local recent = panorama + ui.PanoramaItem { Header = "recent", Orientation = "Horizontal" }
+  local content = recent + ui.Grid { Width = 720, Height = 200, Columns = "1fr 1fr" }
+  content:addChild(ui.Node2D {})
+  local lastPortrait = content + ui.Button { Click = function () clicked = clicked + 1 end }
+  local all = panorama + ui.PanoramaItem { Header = "all" }
+  all:addChild(ui.Node2D { Height = 200 })
+  local groups = panorama + ui.PanoramaItem { Header = "groups", Orientation = "Horizontal" }
+  groups:addChild(ui.Node2D { Width = 1010, Height = 200 })
+  layout(screen)
+  test.expect_eq(recent.ActualWidth, 720, "A horizontal item uses its measured content width")
+  test.expect(not all.Visible, "The next section stays beyond the wide portrait matrix")
+  swipe(screen, 300, 300, -150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 0, "One swipe reveals the second half of the same section")
+  test.expect(recent.ActualX < -300, "The whole wide section moves to reveal more portraits")
+  test.expect_eq(math.floor(recent.ActualX + recent.ActualWidth), 390,
+    "The second landing aligns the 720-point matrix's trailing edge with the viewport")
+  test.expect_eq(changes, 0, "Panning inside a section does not announce a new selection")
+  tap(screen, lastPortrait)
+  test.expect_eq(clicked, 1, "Portraits in the revealed half remain interactive")
+  swipe(screen, 300, 300, -150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 1, "After the wide section, the following section is selected")
+  test.expect_eq(math.floor(all.ActualX), 12, "Different section widths settle on the same leading inset")
+  swipe(screen, 100, 300, 150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 0, "Swiping back enters the trailing half of a wide section")
+  test.expect(recent.ActualX < -300, "Backward navigation preserves the adjacent trailing edge")
+  swipe(screen, 100, 300, 150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 0, "Backward panning stays within the wide section")
+  test.expect_eq(math.floor(recent.ActualX), 12, "Backward panning reaches the beginning")
+  swipe(screen, 100, 300, 150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 2, "Wrapping backwards enters the last section")
+  test.expect(groups.ActualX < -600, "Wrapping enters the trailing edge of a differently sized section")
+  swipe(screen, 300, 300, -150)
+  layout(screen)
+  test.expect_eq(panorama.SelectedIndex, 0, "Wrapping forward returns to the first wide section")
+  test.expect_eq(math.floor(recent.ActualX), 12, "Forward wrapping resets the internal position")
+  test.expect_eq(changes, 4, "Only section changes emit selection events")
+  screen.Width = 500
+  layout(screen)
+  test.expect_eq(recent.ActualWidth, 720, "Resizing remeasures the wide section without shrinking its content")
+  print("PASS: test_panorama_wide_sections")
+end
+
+local function test_panorama_wide_center()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local changes = 0
+  local panorama = screen + ui.Panorama {
+    Title = "Photos", SelectionChanged = function () changes = changes + 1 end,
+  }
+  local photos = panorama + ui.PanoramaItem { Header = "photos", Orientation = "Horizontal" }
+  photos:addChild(ui.Node2D { Width = 1010, Height = 200 })
+  local albums = panorama + ui.PanoramaItem { Header = "albums" }
+  albums:addChild(ui.Node2D { Height = 200 })
+  layout(screen)
+  swipe(screen, 300, 300, -150)
+  layout(screen)
+  test.expect_eq(math.floor(photos.ActualX), 12 - 390, "A larger section can rest at its center")
+  test.expect_eq(panorama.SelectedIndex, 0, "Center panning retains the same section")
+  test.expect_eq(changes, 0, "A center landing emits no selection change")
+  swipe(screen, 300, 300, -150)
+  layout(screen)
+  test.expect_eq(math.floor(photos.ActualX + photos.ActualWidth), 390, "The next landing aligns the right edge")
+  swipe(screen, 100, 300, 150)
+  layout(screen)
+  test.expect(photos.ActualX < 12 and photos.ActualX + photos.ActualWidth > 390,
+    "The center is also navigable backwards without selecting a new section")
+  test.expect_eq(changes, 0, "Reverse center panning emits no selection change")
+  screen.Width = 800
+  layout(screen)
+  test.expect(photos.ActualX + photos.ActualWidth >= 800, "Resizing clamps the internal offset to the new right edge")
+  print("PASS: test_panorama_wide_center")
+end
+
+local function test_panorama_programmatic_skip()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local panorama = screen + ui.Panorama { Title = "Sections" }
+  local items = {}
+  for i = 1, 5 do
+    items[i] = panorama + ui.PanoramaItem { Header = tostring(i) }
+    items[i]:addChild(ui.Node2D { Height = 200 })
+  end
+  layout(screen)
+  panorama.SelectedIndex = 2
+  layout(screen)
+  test.expect(items[1].Visible, "A nonadjacent forward selection keeps the outgoing section visible")
+  test.expect_eq(math.floor(items[1].ActualX), 12, "The forward animation starts from the outgoing position")
+  pump(screen)
+  layout(screen)
+  test.expect_eq(math.floor(items[3].ActualX), 12, "The forward skip settles on the requested section")
+  panorama.SelectedIndex = 0
+  layout(screen)
+  test.expect(items[3].Visible, "A nonadjacent backward selection keeps the outgoing section visible")
+  test.expect_eq(math.floor(items[3].ActualX), 12, "The backward animation starts from the outgoing position")
+  pump(screen)
+  layout(screen)
+  test.expect_eq(math.floor(items[1].ActualX), 12, "The backward skip settles on the requested section")
+  print("PASS: test_panorama_programmatic_skip")
+end
+
 -- Loads fonts so headers have real widths; runs last to leave the others unchanged.
 local function test_pivot_fill()
   require("orca.core.startup").load_plugins()
@@ -417,4 +526,7 @@ test_pivot_back()
 test_pivot_transitions()
 test_application_bar()
 test_panorama()
+test_panorama_wide_sections()
+test_panorama_wide_center()
+test_panorama_programmatic_skip()
 test_pivot_fill()

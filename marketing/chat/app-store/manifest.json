@@ -1,0 +1,211 @@
+{
+  "device": "6EDB3328-AAA8-4F05-BC9F-6B3074D6776A",
+  "bundle_id": "org.orca.chat.promoshots",
+  "offline": true,
+  "binary_sha256": "843b29a18bd3c5e2c317fd1373c0d03b6e6fd26d4417b1aec7223689c7b6cd1d",
+  "shots": [
+    {
+      "name": "01-contacts",
+      "stage": "contacts",
+      "appearance": "dark",
+      "title": "your people.\na little closer.",
+      "subtitle": "A familiar face. A conversation away.",
+      "capture": "captures/01-contacts.png",
+      "auxiliary": false,
+      "sha256": "27b9e10dbea83576cf034d031336db97b9a6c4e8b4b96a7a91a53ed9cedfb664"
+    },
+    {
+      "name": "02-contacts-wide",
+      "stage": "contacts-more",
+      "appearance": "dark",
+      "title": "more familiar\nfaces.",
+      "subtitle": "A wide view of the people in your world.",
+      "capture": "captures/02-contacts-wide.png",
+      "auxiliary": false,
+      "sha256": "7aa994c8b0e79232e8b43351048588c00ec037594b9ed1a75924944e596a4519"
+    },
+    {
+      "name": "03-inbox",
+      "stage": "inbox",
+      "appearance": "dark",
+      "title": "every chat.\none place.",
+      "subtitle": "Friends, plans, and the everyday in between.",
+      "capture": "captures/03-inbox.png",
+      "auxiliary": false,
+      "sha256": "3481e380942b034725788e54bf0a70247ec5ea6a86dee73598868b98b2a95474"
+    },
+    {
+      "name": "04-messages",
+      "stage": "direct",
+      "appearance": "dark",
+      "title": "small talk.\nbig connection.",
+      "subtitle": "Make time for the people who get you.",
+      "capture": "captures/04-messages.png",
+      "auxiliary": false,
+      "sha256": "2eb6058bd1019bd79d096415e3ad729abf4db3e234f331fe61e9e50fc21e28b7"
+    },
+    {
+      "name": "05-photos",
+      "stage": "photos",
+      "appearance": "dark",
+      "title": "some moments\nsay everything.",
+      "subtitle": "Share the view. Keep the memory.",
+      "capture": "captures/05-photos.png",
+      "auxiliary": false,
+      "sha256": "894b0e89346b39304d3f93af16bd5e28f831d54a3040132de10516761fe4816f"
+    },
+    {
+      "name": "06-groups",
+      "stage": "group",
+      "appearance": "dark",
+      "title": "good plans start\nin the group chat.",
+      "subtitle": "Keep the whole crew in the conversation.",
+      "capture": "captures/06-groups.png",
+      "auxiliary": false,
+      "sha256": "66ab9823a0c130975ecc0c2a0c8ab36db3d9325ceea3291ea4339b323e918964"
+    },
+    {
+      "name": "07-channels",
+      "stage": "channel",
+      "appearance": "dark",
+      "title": "a little more\nin the loop.",
+      "subtitle": "Follow the channels that bring you together.",
+      "capture": "captures/07-channels.png",
+      "auxiliary": false,
+      "sha256": "4a7923559c3a2f5384d4346d5480009aef4fcbe0283d21e97e89ebecefe0cacb"
+    },
+    {
+      "name": "08-light",
+      "stage": "inbox",
+      "appearance": "light",
+      "title": "a brighter\nkind of day.",
+      "subtitle": "A familiar place, in light or dark.",
+      "capture": "captures/08-light.png",
+      "auxiliary": false,
+      "sha256": "b5528112ab8c12582fe8b0064a0c6cc9f246295011493e70468cf164c8d703ab"
+    },
+    {
+      "name": "09-contacts-all",
+      "stage": "contacts-all",
+      "appearance": "dark",
+      "title": "",
+      "subtitle": "",
+      "capture": "captures/09-contacts-all.png",
+      "auxiliary": true,
+      "sha256": "49745a06b0615c64e433caf532579c0b280b20bd9f88e10c04ace8862e5c2438"
+    }
+  ],
+  "exports": [
+    {
+      "path": "en-US/iphone-1320x2868/01-contacts.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "ac8beab81c381df85a7a34e74fcddc7d35802f119efdc055487a81cdcb12d70b"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/01-contacts.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "9cb12bc29043d5a178c6db97e0520165c935ff3a05a1caa804698369ff15f635"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/02-contacts-wide.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "032f5636d44f57d247981965987c234436dc004d07b71af1033dceded380437b"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/02-contacts-wide.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "f76d06aea8beae511d43eebc5e2ff426c729b7c16a1bb2edff012a262afc4890"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/03-inbox.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "ad483f59c5939f3ad5d21bb27c4f1fbe1245be57c5ae495ac60748262797a151"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/03-inbox.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "f20898bb758093382e87a04f8ac77312eb851c93b970ac2affbdf62014b9525e"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/04-messages.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "e6c583ff9e04c5ce289af0894ef5ab58ec96ffbc5212d135982dacae0bec2790"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/04-messages.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "2e2d865adb8da68b999960b511cfaa36f1139c83c392096caa456d4ed655527a"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/05-photos.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "f51205050c34726519eb9fd93f96705aba965611292475a6a305abc006af671b"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/05-photos.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "526211b1f82f85c2495446e7dcb337360c3a5c98fbbe7a412abe3d4e7d4d4fc1"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/06-groups.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "c25686805434ca87aca96600f878d347af52c58de58ddb2308b0d2f95062ba49"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/06-groups.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "fd3b6c177c1d6f2fc943b1d645d7bc533ac019aefde46248f006b5a43680c9fe"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/07-channels.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "bceb820cb6b4e45519be0d721a86d026ffd70947f0f4c2888c73d812def04f34"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/07-channels.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "66c13f778e04b2ad84b4ad27f8f055f44eb1a93fe32816bd68f557a31c0d08cb"
+    },
+    {
+      "path": "en-US/iphone-1320x2868/08-light.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "3c410081227bf58f097f209c8b452e06bd8d689e02ec35ff6acd433602e7abf0"
+    },
+    {
+      "path": "en-US/iphone-1206x2622/08-light.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "0a5aa5c367d80e6b1407590a5e701123cfdbec0f29ab818d8a15b0a45cdfc7cf"
+    }
+  ],
+  "art_direction": "Unfolded Metro panorama with real iPhone captures and synthetic candid fixtures.",
+  "creative_exports": [
+    {
+      "path": "creatives/header-3840x1646.png",
+      "width": 3840,
+      "height": 1646,
+      "sha256": "e791d9d708cbd8ffcf9cd3b2ea68db224eb2897f51d0ce6eba988db6820052cd"
+    },
+    {
+      "path": "creatives/search-results-3840x2560.png",
+      "width": 3840,
+      "height": 2560,
+      "sha256": "f40b36f39bb461191b4bb7831bccd0b1d1ab374b65dba68633c793abae57e46b"
+    }
+  ]
+}
