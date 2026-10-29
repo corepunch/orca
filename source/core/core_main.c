@@ -52,31 +52,50 @@ CORE_FindFontFamily(lpcString_t name)
   return CORE_FindFontFamilyIndex(name, &index) ? core.fonts[index].path : NULL;
 }
 
-bool_t
-OBJ_RegisterPropertyType(struct PropertyType const *pt)
+/* Bindings resolve property types by identifier on every evaluation, so the
+ * lookup is an open-addressed hash over the slots rather than a table scan. */
+#define PTYPE_INDEX_MASK (MAX_PROPERTY_TYPES * 2 - 1)
+
+static void
+_IndexPropertyType(int slot)
 {
+  uint32_t h = (uint32_t)core.ptypes[slot].FullIdentifier & PTYPE_INDEX_MASK;
+  while (core.ptype_index[h]) h = (h + 1) & PTYPE_INDEX_MASK;
+  core.ptype_index[h] = (uint16_t)(slot + 1);
+}
+
+static void
+_ReindexPropertyTypes(void)
+{
+  memset(core.ptype_index, 0, sizeof(core.ptype_index));
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    if (!core.ptypes[i].Name) {
-      memcpy(&core.ptypes[i], pt, sizeof(struct PropertyType));
-      return TRUE;
-    } else if (core.ptypes[i].FullIdentifier == pt->FullIdentifier) {
-      return TRUE;
-    }
+    if (core.ptypes[i].Name) _IndexPropertyType(i);
   }
-  Con_Error("No space left to register property type %s", pt->Name);
-  return FALSE;
 }
 
 struct PropertyType const *
 core_FindPropertyType(int32_t ident)
 {
-  FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    struct PropertyType const *pt = &core.ptypes[i];
-    if (pt && pt->FullIdentifier == ident) {
-      return pt;
-    }
+  for (uint32_t h = (uint32_t)ident & PTYPE_INDEX_MASK; core.ptype_index[h]; h = (h + 1) & PTYPE_INDEX_MASK) {
+    struct PropertyType const *pt = &core.ptypes[core.ptype_index[h] - 1];
+    if (pt->FullIdentifier == ident) return pt;
   }
   return NULL;
+}
+
+bool_t
+OBJ_RegisterPropertyType(struct PropertyType const *pt)
+{
+  if (core_FindPropertyType(pt->FullIdentifier)) return TRUE;
+  FOR_LOOP(i, MAX_PROPERTY_TYPES) {
+    if (!core.ptypes[i].Name) {
+      memcpy(&core.ptypes[i], pt, sizeof(struct PropertyType));
+      _IndexPropertyType(i);
+      return TRUE;
+    }
+  }
+  Con_Error("No space left to register property type %s", pt->Name);
+  return FALSE;
 }
 
 bool_t
@@ -147,6 +166,7 @@ OBJ_UnregisterClass(uint32_t class_id)
           }
         }
       }
+      _ReindexPropertyTypes();
       core.classes[i] = NULL;
       return TRUE;
     }
