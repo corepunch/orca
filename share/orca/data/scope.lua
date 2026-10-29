@@ -171,6 +171,16 @@ function Scope:expose(name, record)
     end
 end
 
+-- A subtree that presents one exposed record, as a list row presents its
+-- item: its bindings read the record's fields (DataContext/Title) and its
+-- handlers receive the record. Expose the record first; the scope keeps no
+-- reference to the node, which may be destroyed with its page at any time.
+function Scope:present(node, name)
+    local mirror = assert(self.exposed and self.exposed[name], "present: nothing is exposed as " .. tostring(name))
+    node.DataContext = mirror.object
+    return node
+end
+
 function Scope:exposedRecord(name)
     local mirror = self.exposed and self.exposed[name]
     return mirror and mirror.record

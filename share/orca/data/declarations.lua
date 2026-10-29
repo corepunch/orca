@@ -199,6 +199,7 @@ function Declarations.build(spec, options)
             scope:edit { name = member.name, entity = a.Entity, submit = a.Submit, copy = member.copy,
                 validate = lookup(resource, node, provider, "validators", a.Validate),
                 canSubmit = lookup(resource, node, provider, "conditions", a.CanSubmit),
+                submitted = lookup(resource, node, provider, "hooks", a.Submitted),
                 clearOnSuccess = a.ClearOnSuccess ~= "false" }
         elseif member.kind == "Media" then
             for _, target in ipairs(member.targets) do

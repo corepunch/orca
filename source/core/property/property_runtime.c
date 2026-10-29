@@ -234,9 +234,18 @@ tok_op(assign)
   return TRUE;
 }
 
+/* A concatenation side as text: strings as they are, numbers in %g. */
+static lpcString_t
+vm_text(struct vm_register *reg, char *buf, size_t size)
+{
+  if (reg->type == kDataTypeString) return VM_REG_STR(reg) ? VM_REG_STR(reg) : "";
+  snprintf(buf, size, "%g", reg->value[0]);
+  return buf;
+}
 tok_op(CONCAT) {
-  char tmp[MAX_PROPERTY_STRING];
-  snprintf(tmp, sizeof(tmp), "%s%s", VM_REG_STR(&regs[0]), VM_REG_STR(&regs[1]));
+  char tmp[MAX_PROPERTY_STRING], left[32], right[32];
+  snprintf(tmp, sizeof(tmp), "%s%s", vm_text(&regs[0], left, sizeof(left)),
+           vm_text(&regs[1], right, sizeof(right)));
   InitOutput(output, kDataTypeString, sizeof(const char *));
   VM_REG_SET_STR(output, vm_strtmp(tmp));
   return TRUE;
@@ -346,6 +355,13 @@ tok_op(ANIMATE) {
 }
 
 OPERATOR(ADD, v[0] + v[1]);
+/* "+" joins text when either side holds a string and adds numbers otherwise.
+   It decides on every evaluation: a path that resolves only after the first
+   run (a record presented later) must not keep the first run's choice. */
+tok_op(PLUS) {
+  bool_t text = regs[0].type == kDataTypeString || regs[1].type == kDataTypeString;
+  return (text ? op_CONCAT : op_ADD)(token, regs, object, output);
+}
 OPERATOR(MUL, v[0] * v[1]);
 OPERATOR(SUB, v[0] - v[1]);
 OPERATOR(DIV, v[0] / v[1]);
@@ -406,10 +422,8 @@ tok_op(call)
     return token->cache.func(token, t, object, output);
   }
   
-  if (!strcmp(token->text, "ADD") && t[0].type == kDataTypeString && t[1].type == kDataTypeString) {
-    return (token->cache.func=op_CONCAT)(token, t, object, output);
-  }
-  CALL(ADD);
+  if (!strcmp(token->text, "ADD") && token->args[0])
+    return (token->cache.func=op_PLUS)(token, t, object, output);
   CALL(MUL);
   CALL(SUB);
   CALL(DIV);

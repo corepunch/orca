@@ -4,7 +4,9 @@
 --
 -- context: client, media (files), clock(), now(), photos (decoded ratios),
 -- openPost(raw), openProfile(id, name), openTag(tag), requireSession(reason),
--- notice(text, isError), signIn(route), signUp(route), selectFeed(name).
+-- notice(text, isError), signIn(route), signUp(route), selectFeed(name),
+-- readerId(), postLoaded(raw), commentSent(postId), postDeleted(postId),
+-- focusComment(), copyLink(url), published(post, info).
 local Format = require "Octopus/format"
 local Schema = require "orca.data.schema"
 local Provider = {}
@@ -50,6 +52,12 @@ function Provider.search(scope, text)
         local query = scope:member(name)
         if not query:set("Query", text) and text ~= "" then query:refresh() end
     end
+end
+
+-- Shows `kind`'s draft in the write tab.
+function Provider.selectKind(scope, kind)
+    scope:member("Draft"):switch(kind)
+    scope.store:put("OctopusComposer", { id = "composer", kind = kind })
 end
 
 function Provider.new(context)
@@ -121,6 +129,23 @@ function Provider.new(context)
         activityHasPost = function(v) return v.PostId ~= nil end,
         activitySummary = function(v) return v.PostSummary ~= nil and v.PostSummary ~= "" and v.PostSummary or "your photo" end,
         isGuest = function(v) return not v.SignedIn end,
+        isMine = function(v) return context.readerId ~= nil and v.AuthorId == context.readerId() end,
+        commentIndent = function(v) return v.Nested and 48 or 0 end,
+        composeHeading = function(v) return "new " .. (v.Kind == "text" and "post" or v.Kind) end,
+        composeText = function(v) return v.Kind == "text" end,
+        composePhoto = function(v) return v.Kind == "photo" end,
+        composeQuote = function(v) return v.Kind == "quote" end,
+        composeLink = function(v) return v.Kind == "link" end,
+        composeTakesPhoto = function(v) return v.Kind == "photo" or v.Kind == "quote" end,
+        composePhotoLabel = function(v) return v.Kind == "quote" and "background photo (optional)" or "photo" end,
+        composeTextTile = function(v) return v.Kind == "text" and "kind-on" or "kind-off" end,
+        composePhotoTile = function(v) return v.Kind == "photo" and "kind-on" or "kind-off" end,
+        composeQuoteTile = function(v) return v.Kind == "quote" and "kind-on" or "kind-off" end,
+        composeLinkTile = function(v) return v.Kind == "link" and "kind-on" or "kind-off" end,
+        commentLikes = function(v)
+            if v.Likes == nil then return "…" end
+            return v.Likes > 0 and tostring(v.Likes) or "like"
+        end,
         personName = function(v) return v.DisplayName or "" end,
         searchHeading = function(v)
             local tag = (v.Query or ""):match("^%s*#(.-)%s*$")
@@ -223,7 +248,12 @@ function Provider.new(context)
             return true
         end,
         openAuthor = function(params)
-            local post = postOf(params.item)
+            local item = params.item
+            if item.entity.name == "OctopusComment" then
+                context.openProfile(item.values.AuthorId, item.values.AuthorName)
+                return true
+            end
+            local post = postOf(item)
             context.openProfile(post.values.AuthorId, post.values.AuthorName)
             return true
         end,
@@ -309,6 +339,138 @@ function Provider.new(context)
         return true
     end
 
+    -- Post page ------------------------------------------------------------
+
+    operations.post = function(params, _, _, query)
+        local post, err = client:getPost(params.PostId)
+        if not post then
+            if context.notice then context.notice(err.message, true) end
+            return nil, err
+        end
+        local record = query.scope.store:put("OctopusPost", post)
+        if context.postLoaded then context.postLoaded(post) end
+        return { record }
+    end
+    -- Top-level comments in order, each followed by its replies; replies
+    -- whose parent was deleted keep their place at the top level.
+    operations.comments = function(params, _, _, query)
+        local comments, err = client:listComments(params.PostId)
+        if not comments then
+            if context.notice then context.notice(err.message, true) end
+            return nil, err
+        end
+        local replies, top, known, ordered = {}, {}, {}, {}
+        for _, comment in ipairs(comments) do
+            if (comment.parentId or "") ~= "" then
+                replies[comment.parentId] = replies[comment.parentId] or {}
+                table.insert(replies[comment.parentId], comment)
+            else top[#top + 1] = comment; known[comment.id] = true end
+        end
+        local function add(comment, nested)
+            ordered[#ordered + 1] = { comment = comment, nested = nested }
+            for _, reply in ipairs(replies[comment.id] or {}) do add(reply, true) end
+        end
+        for _, comment in ipairs(top) do add(comment, false) end
+        for _, comment in ipairs(comments) do
+            local parent = comment.parentId or ""
+            if parent ~= "" and not known[parent] then
+                for _, reply in ipairs(replies[parent] or {}) do add(reply, false) end
+                known[parent] = true
+            end
+        end
+        local store, rows = query.scope.store, {}
+        store:batch(function()
+            for index, item in ipairs(ordered) do
+                local existing = store:get("OctopusComment", item.comment.id)
+                rows[index] = store:put("OctopusComment", item.comment, { locals = { Nested = item.nested,
+                    StatsReady = existing and existing.values.StatsReady or false } })
+            end
+        end)
+        return rows
+    end
+    operations.likeComment = function(params, _, command)
+        local comment = params.item
+        if not context.requireSession("Sign in to like comments.") then return true end
+        if comment.values.Busy or not comment.values.StatsReady then return true end
+        local store, scope = comment.store, command.scope
+        local token = scope:token()
+        store:update(comment, { Busy = true })
+        local result, err = client:toggleLike(comment.key, "comment", comment.values.LikeId)
+        if not scope:valid(token) then return nil, { code = "stale" } end
+        store:update(comment, { Busy = false })
+        if result == nil then context.notice(err.message, true); return nil, err end
+        local likes = math.max(0, (comment.values.Likes or 0) + (result and 1 or 0) - (comment.values.LikeId and 1 or 0))
+        store:put("OctopusComment", { id = comment.key, stats = { likes = likes, liked = result or Schema.null } },
+            { partial = true })
+        return true
+    end
+    -- Replies attach to the top-level comment, as threads are one level deep.
+    operations.reply = function(params, _, command)
+        if not context.requireSession("Sign in to reply.") then return true end
+        local comment = params.item
+        local draft = command.scope:member("Draft")
+        local parent = comment.values.Nested and comment.values.ParentId or comment.key
+        draft.draft.ReplyToId, draft.draft.Replying = parent, true
+        draft.draft.ReplyLabel = "replying to " .. comment.values.AuthorName
+        if context.focusComment then context.focusComment() end
+        return true
+    end
+    operations.sendComment = function(params, _, command)
+        local post = command.scope:exposedRecord("Post")
+        local draft = params.draft
+        local reply = (draft.ReplyToId or "") ~= "" and draft.ReplyToId or nil
+        context.notice("Posting…")
+        local comment, err = client:addComment(post.key, draft.Text, reply)
+        if not comment then
+            err = { code = err.code, message = err.message .. " Your comment is still here." }
+            context.notice(err.message, true)
+            return nil, err
+        end
+        context.notice("")
+        if context.commentSent then context.commentSent(post.key) end
+        return true
+    end
+    -- The first tap asks; the second deletes.
+    operations.deletePost = function(_, _, command)
+        local post = command.scope:exposedRecord("Post")
+        if not command.confirming then
+            command.confirming = true
+            context.notice("Delete this post? Choose delete again to confirm. This cannot be undone.", true)
+            return true
+        end
+        command.confirming = nil
+        local ok, err = client:deletePost(post.raw)
+        if not ok then context.notice(err.message, true); return nil, err end
+        if context.postDeleted then context.postDeleted(post.key) end
+        return true
+    end
+
+    -- Write tab -------------------------------------------------------------
+
+    -- Picked photos stay with their kind's draft until it is published.
+    local photos = {}
+    local FIELDS = {
+        text = { title = "Title", content = "Content" },
+        quote = { content = "Content", quoteSource = "QuoteSource", userText = "UserText", photo = true },
+        link = { title = "Title", linkUrl = "LinkUrl", content = "Content" },
+        photo = { content = "Content", photo = true },
+    }
+    operations.publish = function(params)
+        local kind, draft = params.key or "text", params.draft
+        local values = { postType = kind, tags = draft.Tags }
+        for field, column in pairs(FIELDS[kind]) do
+            if column == true then values.photo = photos[kind] else values[field] = draft[column] end
+        end
+        context.notice(values.photo and "Uploading photo…" or "")
+        local post, err = client:createPost(values)
+        if not post then
+            local message = err.message .. (err.code == "validation" and "" or " Your draft is safe.")
+            context.notice(message, true)
+            return nil, { code = err.code, message = message }
+        end
+        return post
+    end
+
     -- Like or repost; counts adjust from the service's answer.
     local function react(kind)
         return function(params, _, command)
@@ -368,6 +530,31 @@ function Provider.new(context)
     end
     local hooks = {
         enrich = function(query, rows) enrich(query, rows) end,
+        published = function(ok, post, _, info)
+            if not ok then return end
+            if info.cleared then photos[info.key] = nil end
+            if context.published then context.published(post, info) end
+        end,
+        -- Comment like counts follow the comments, as feeds do for posts.
+        commentStats = function(query, rows)
+            local ids = {}
+            for index, row in ipairs(rows) do ids[index] = row.key end
+            if #ids == 0 then return end
+            local scope, token, store = query.scope, query.scope:token(), query.scope.store
+            scope:run(function()
+                local stats = client:stats(ids, "comment")
+                if not stats or not scope:valid(token) then return end
+                store:batch(function()
+                    for id, values in pairs(stats) do
+                        if store:get("OctopusComment", id) then
+                            store:put("OctopusComment", { id = id, stats = { likes = values.likes,
+                                liked = values.liked or Schema.null } }, { partial = true, locals = { StatsReady = true } })
+                        end
+                    end
+                end)
+                if context.repaint then context.repaint() end
+            end)
+        end,
         discoverLoaded = function(query, rows, mode)
             if mode ~= "more" and client.writeFeedCache then
                 local items = {}
@@ -411,14 +598,61 @@ function Provider.new(context)
         SignIn = function() context.signIn("/") end,
         SignUp = function() context.signUp("/") end,
         SignInToFollow = function() context.signIn("/user") end,
+        SignInToComment = function() context.signIn("/post") end,
+        SignInToWrite = function() context.signIn("/write") end,
+        SignUpToWrite = function() context.signUp("/write") end,
+        -- Kind tiles are named Kind<kind>; each kind has its own draft.
+        SelectKind = function(scope, params)
+            local kind = params.sender and params.sender.Name:match("^Kind(%a+)$")
+            if not kind or not FIELDS[kind] then return end
+            Provider.selectKind(scope, kind)
+            context.notice("")
+        end,
+        ChoosePhoto = function(scope)
+            local edit = scope:member("Draft")
+            if edit.submitting then return end
+            local kind = edit.key
+            context.notice("Opening photos…")
+            local photo, err = context.media:pick()
+            if not photo then
+                local cancelled = type(err) == "table" and err.code == "cancelled"
+                context.notice(cancelled and "" or (type(err) == "table" and err.message or tostring(err)), not cancelled)
+                return
+            end
+            if scope.disposed or edit.key ~= kind then return end
+            photos[kind] = photo
+            edit.draft.PhotoPath = context.media:store(photo.jpeg, "draft-" .. tostring(photo)) or ""
+            edit.draft.HasPhoto = true
+            context.notice("")
+        end,
+        RemovePhoto = function(scope)
+            local edit = scope:member("Draft")
+            if edit.submitting then return end
+            photos[edit.key] = nil
+            edit.draft.HasPhoto, edit.draft.PhotoPath = false, ""
+        end,
+        CancelReply = function(scope)
+            local draft = scope:member("Draft").draft
+            draft.ReplyToId, draft.ReplyLabel, draft.Replying = "", "", false
+        end,
+        CopyLink = function(scope)
+            local post = scope:exposedRecord("Post")
+            if post and post.values.LinkUrl then context.copyLink(post.values.LinkUrl) end
+        end,
         RunSearch = function(scope, params)
             local field = params.sender and (params.sender.Name == "SearchInput" and params.sender
                 or params.sender:getParent():findChild("SearchInput"))
             Provider.search(scope, field and field.Text or "")
         end,
     }
+    local validators = {
+        comment = function(values)
+            if not (values.Text or ""):match("%S") then return { Text = "Write a comment first." } end
+        end,
+    }
     return { computed = computed, operations = operations, hooks = hooks, caches = caches, media = media,
-        handlers = handlers, postOf = postOf, repaint = context.repaint }
+        handlers = handlers, validators = validators, postOf = postOf, repaint = context.repaint,
+        draftPhoto = function(kind) return photos[kind] end }
 end
 
 return Provider

@@ -67,7 +67,8 @@ for _, route in ipairs { "/auth", "/auth/signup", "/me", "/write" } do
         "Changing appearance must not discard the active form: " .. route)
 end
 app.currentRoute = "/post"
-for _, thread in ipairs { { replyTo = { id = "parent" } }, { sending = true }, { input = { Text = "reply draft" } } } do
+package.loaded["Octopus/views/thread"].busy = function(thread) return thread.busy end
+for _, thread in ipairs { { busy = "reply" }, { busy = "sending" }, { busy = "draft" } } do
     app.thread = thread
     assert(not app:updateAppearance() and colors.appearance == "light" and builds == 0,
         "Appearance must wait for pending comments and replies without changing their text or target")

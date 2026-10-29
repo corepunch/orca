@@ -57,6 +57,7 @@
     <Column Name="CommentsLabel" Type="string" Computed="commentsLabel" DependsOn="Comments"/>
     <Column Name="Liked" Type="bool" Computed="liked" DependsOn="LikeId"/>
     <Column Name="Reposted" Type="bool" Computed="reposted" DependsOn="RepostId"/>
+    <Column Name="IsMine" Type="bool" Computed="isMine" DependsOn="AuthorId" Description="The reader wrote it and may delete it."/>
     <Column Name="LikeText" Type="string" Computed="likeText" DependsOn="LikeId"/>
     <Column Name="RepostText" Type="string" Computed="repostText" DependsOn="RepostId"/>
     <Column Name="CanReact" Type="bool" Computed="canReact" DependsOn="StatsReady Busy"/>
@@ -77,6 +78,37 @@
   <Entity Name="OctopusTag" Key="Label">
     <Column Name="Label" Type="string" Source="value"/>
     <Column Name="Text" Type="string" Computed="hashTag" DependsOn="Label"/>
+  </Entity>
+  <Entity Name="OctopusComment" Key="Id" ObjectName="Id" Description="A comment or reply on a post page, in thread order.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="PostId" Type="string" Source="postId"/>
+    <Column Name="ParentId" Type="string" Source="parentId"/>
+    <Column Name="AuthorId" Type="string" Source="authorId"/>
+    <Column Name="AuthorName" Type="string" Source="authorName" Default="Someone"/>
+    <Column Name="Body" Type="string" Source="body"/>
+    <Column Name="CreatedAt" Type="string" Source="createdAt"/>
+    <Column Name="Likes" Type="int" Source="stats.likes" Nullable="true"/>
+    <Column Name="LikeId" Type="string" Source="stats.liked" Nullable="true"/>
+    <Column Name="Nested" Type="bool" Local="true" Description="A reply shown under its top-level comment."/>
+    <Column Name="StatsReady" Type="bool" Local="true"/>
+    <Column Name="Busy" Type="bool" Local="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="Indent" Type="float" Computed="commentIndent" DependsOn="Nested"/>
+    <Column Name="Age" Type="string" Computed="age" DependsOn="CreatedAt"/>
+    <Column Name="LikesLabel" Type="string" Computed="commentLikes" DependsOn="Likes"/>
+    <Column Name="Liked" Type="bool" Computed="liked" DependsOn="LikeId"/>
+    <Column Name="CanReact" Type="bool" Computed="canReact" DependsOn="StatsReady Busy"/>
+    <Column Name="Locked" Type="bool" Computed="locked" DependsOn="CanReact"/>
+    <Column Name="State" Type="string" Computed="postState" DependsOn="Liked CanReact"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="AuthorName"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="AuthorId"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+  </Entity>
+  <Entity Name="OctopusCommentDraft" Description="The comment bar: text and the comment being replied to.">
+    <Column Name="Text" Type="string"/>
+    <Column Name="ReplyToId" Type="string"/>
+    <Column Name="ReplyLabel" Type="string"/>
+    <Column Name="Replying" Type="bool"/>
   </Entity>
   <Entity Name="OctopusEntry" Key="Key" ObjectName="PostId"
           Description="One row of a timeline. Its key is per feed; a repost row and the post row share the post.">
@@ -145,6 +177,31 @@
     <Column Name="Query" Type="string" Source="query"/>
     <Column Name="Heading" Type="string" Computed="searchHeading" DependsOn="Query"/>
     <Column Name="Missing" Type="string" Computed="searchMissing" DependsOn="Query"/>
+  </Entity>
+  <Entity Name="OctopusComposer" Key="Id" Description="The write tab: which kind of post is being drafted.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Kind" Type="string" Source="kind" Default="text"/>
+    <Column Name="Heading" Type="string" Computed="composeHeading" DependsOn="Kind"/>
+    <Column Name="IsText" Type="bool" Computed="composeText" DependsOn="Kind"/>
+    <Column Name="IsPhoto" Type="bool" Computed="composePhoto" DependsOn="Kind"/>
+    <Column Name="IsQuote" Type="bool" Computed="composeQuote" DependsOn="Kind"/>
+    <Column Name="IsLink" Type="bool" Computed="composeLink" DependsOn="Kind"/>
+    <Column Name="TakesPhoto" Type="bool" Computed="composeTakesPhoto" DependsOn="Kind"/>
+    <Column Name="PhotoLabel" Type="string" Computed="composePhotoLabel" DependsOn="Kind"/>
+    <Column Name="TextTile" Type="string" Computed="composeTextTile" DependsOn="Kind" Description="kind-on or kind-off."/>
+    <Column Name="PhotoTile" Type="string" Computed="composePhotoTile" DependsOn="Kind"/>
+    <Column Name="QuoteTile" Type="string" Computed="composeQuoteTile" DependsOn="Kind"/>
+    <Column Name="LinkTile" Type="string" Computed="composeLinkTile" DependsOn="Kind"/>
+  </Entity>
+  <Entity Name="OctopusPostDraft" Description="One kind's draft; each kind keeps its own while you switch.">
+    <Column Name="Title" Type="string"/>
+    <Column Name="Content" Type="string"/>
+    <Column Name="QuoteSource" Type="string"/>
+    <Column Name="UserText" Type="string"/>
+    <Column Name="LinkUrl" Type="string"/>
+    <Column Name="Tags" Type="string"/>
+    <Column Name="HasPhoto" Type="bool"/>
+    <Column Name="PhotoPath" Type="string"/>
   </Entity>
   <Entity Name="OctopusReader" Key="Id" Description="Who is reading: a guest or a signed-in account.">
     <Column Name="Id" Type="string" Source="id"/>

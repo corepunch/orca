@@ -30,6 +30,8 @@ end
 local function collect(self, node, x, y, clip, scope, found, seen)
     if node.Visible == false then return end
     local w, h = size(node)
+    -- Nothing is visible before the first layout.
+    if w <= 0 and h <= 0 then return end
     local t = node.RenderTransformTranslation
     local left, top = x + (node.ActualX or 0) + (t and t.X or 0), y + (node.ActualY or 0) + (t and t.Y or 0)
     local right, bottom = left + w, top + h

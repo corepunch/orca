@@ -89,6 +89,8 @@ function Command:execute(params, done)
         if nextItem and not self.disposed then self:execute(nextItem.params, nextItem.done) end
     end
     local function run()
+        -- Work queued for a replaced reader or a disposed page never starts.
+        if self.disposed or not self.scope:valid(token) then return finish(nil, { code = "stale" }) end
         local called, result, err = xpcall(self.def.operation, debug.traceback, params, self.scope.context, self)
         if not called then
             finish(nil, { code = "error", message = "Something went wrong. Please try again." }, result)
