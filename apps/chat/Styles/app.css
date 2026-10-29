@@ -11,6 +11,18 @@
 .chat-light .chat-badge { background-color: #0078e7; color: #ffffff; }
 .chat-light .chat-field { background-color: #d9d9d9; color: #000000; border-color: #d9d9d9; placeholder-color: #6e6e6e; }
 .chat-light .chat-field-ink { color: #000000; }
+.chat-light .chat-accent-text { color: #006ad1; }
+.chat-light .chat-soft { background-color: #dcebff; }
+.chat-light .chat-chrome { background-color: #dddddd; }
+.chat-light .chat-error { color: #e51400; }
+.chat-light .sent .bubble { background-color: #0078e7; }
+.chat-light .sent .bubble-tail { color: #0078e7; }
+.chat-light .sent .bubble-ink { color: #ffffff; }
+.chat-light .sent .bubble-meta { color: #d4e9ff; }
+.chat-light .received .bubble { background-color: #e6e6e6; }
+.chat-light .received .bubble-tail { color: #e6e6e6; }
+.chat-light .received .bubble-ink { color: #000000; }
+.chat-light .received .bubble-meta { color: #7a7a7a; }
 .chat-dark .chat-background { background-color: #000000; }
 .chat-dark .conversation { background-color: #000000; }
 .chat-dark .chat-ink { color: #ffffff; }
@@ -22,6 +34,22 @@
 .chat-dark .chat-badge { background-color: #0084ff; color: #ffffff; }
 .chat-dark .chat-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
 .chat-dark .chat-field-ink { color: #000000; }
+.chat-dark .chat-accent-text { color: #3d9eff; }
+.chat-dark .chat-soft { background-color: #0a2a4d; }
+.chat-dark .chat-chrome { background-color: #1f1f1f; }
+.chat-dark .chat-error { color: #ff5c5c; }
+.chat-dark .sent .bubble { background-color: #0084ff; }
+.chat-dark .sent .bubble-tail { color: #0084ff; }
+.chat-dark .sent .bubble-ink { color: #ffffff; }
+.chat-dark .sent .bubble-meta { color: #cfe6ff; }
+.chat-dark .received .bubble { background-color: #2e2e2e; }
+.chat-dark .received .bubble-tail { color: #2e2e2e; }
+.chat-dark .received .bubble-ink { color: #ffffff; }
+.chat-dark .received .bubble-meta { color: #8a8a8a; }
+/* Message photo controls sit on the image, so they are dark in both palettes. */
+.message-actions { background-color: #00000000; color: #ffffff; }
+.message-actions.photo-actions { background-color: #00000099; }
+.photo-time { background-color: #00000099; color: #ffffff; }
 /* Avatar tiles share one set of colours in both palettes. */
 .avatar-initials { color: #ffffff; }
 .tone1 { background-color: #0084ff; }

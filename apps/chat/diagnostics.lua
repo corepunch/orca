@@ -54,7 +54,7 @@ end
 function Diagnostics:controller(err, stage)
     local app = self.app
     if self.screen and app.screen == self.screen then return { view = self.screen } end
-    if app.polling then app.polling:stop() end
+    if app.closeThread then app:closeThread() end
     if app.room and app.composer then app.drafts[app.room.id] = app.composer.Text or "" end
     local details = Diagnostics.redact((stage or "Application") .. "\nRoute: " .. (app.currentRoute or "/")
         .. "\nPlatform: " .. tostring(PLATFORM or "unknown") .. "\n\n" .. message(err))

@@ -1,0 +1,29 @@
+<!-- The open conversation (Pages/Thread.xml): its messages oldest first, the
+     composer and message commands. A new scope per visit, sharing the inbox
+     store so the room record is the one the inbox shows. -->
+<DataScope Name="Conversation" Schema="Chat/Data/Chat.Schema.xml">
+  <Query Name="Messages" Entity="ChatMessage" Operation="messages" Require="RoomId" PageSize="30"
+         Order="newest" Window="latest" Prefetch="true" PrefetchEdge="start" Poll="3000" PollWhen="idle"
+         Arrange="arrangeThread" Loaded="messagesLoaded"
+         Description="The newest 30 messages, refreshed every 3 seconds; older pages load near the top.">
+    <Param Name="RoomId" Type="string"/>
+  </Query>
+  <Command Name="Send" Operation="send" Succeeded="sent"
+           Description="Sends the composer (uploading a photo first), or saves an edit."/>
+  <Command Name="DeleteMessage" Operation="deleteMessage" Parameter="Item" Description="Deletes for everyone."/>
+  <Edit Name="Composer" Entity="ChatComposerDraft" Submit="Send" Validate="message">
+    <Copy Field="Text" From="Body"/>
+  </Edit>
+  <Handler Name="LoadHistory"/>
+  <Handler Name="MessageActions"/>
+  <Handler Name="OpenPhoto"/>
+  <Handler Name="AttachPhoto"/>
+  <Handler Name="RemovePhoto"/>
+  <Handler Name="CancelEdit"/>
+  <Media Name="Photos" Fetch="photoFetch" Store="photoStore" Cached="photoCached" Validate="photoValidate"
+         Stages="preview full">
+    <Target Entity="ChatAttachment" Id="Id" Revision="UpdatedAt" Path="PhotoPath" State="PhotoState"/>
+  </Media>
+  <Expose Name="Room" Entity="ChatRoom"/>
+  <Expose Name="Thread" Entity="ChatThread"/>
+</DataScope>

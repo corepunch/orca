@@ -42,11 +42,11 @@ assert(#requests == 2 and requests[2].cursor == "20" and discover.items:count() 
 assert(not discover:prefetch(600, 5000, -3900), "An unchanged viewport must not cascade through pages")
 fail = true
 discover:prefetch(600, 5000, -4000); settle()
-assert(not discover:prefetch(600, 5000, -4100) and discover.error and discover.items:count() == 40,
-    "Failure must pause automatic paging and keep the loaded rows")
+assert(not discover:prefetch(600, 5000, -4100) and discover.moreError and not discover.error
+    and discover.items:count() == 40, "Failure must pause automatic paging and keep the loaded rows")
 fail = false
 discover:loadMore(); settle()
-assert(#requests == 4 and not discover.error and discover.items:count() == 60, "An explicit load more resumes")
+assert(#requests == 4 and not discover.moreError and discover.items:count() == 60, "An explicit load more resumes")
 -- Repeated posts across pages do not duplicate rows.
 client.listPosts = function()
     local posts = {}

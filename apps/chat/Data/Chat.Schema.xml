@@ -40,4 +40,76 @@
     <Column Name="AvatarId" Type="string" Computed="contactAvatar" DependsOn="Id"/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
   </Entity>
+  <Entity Name="ChatMessage" Key="Id" ObjectName="Id" Description="A message in the open conversation, oldest first.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="RoomId" Type="string" Source="room_id" Nullable="true"/>
+    <Column Name="Body" Type="string" Source="body" Nullable="true"/>
+    <Column Name="SenderId" Type="string" Source="sender_id" Nullable="true"/>
+    <Column Name="CreatedAt" Type="string" Source="created_at" Nullable="true"/>
+    <Column Name="UpdatedAt" Type="string" Source="updated_at" Nullable="true"/>
+    <Column Name="EditedAt" Type="string" Source="edited_at" Nullable="true"/>
+    <Column Name="Mine" Type="bool" Local="true" Description="Sent by the reader (never in a channel)."/>
+    <Column Name="First" Type="bool" Local="true" Description="Starts a run of messages from one sender."/>
+    <Column Name="Last" Type="bool" Local="true" Description="Ends a run of messages from one sender."/>
+    <Column Name="Leading" Type="bool" Local="true" Description="The first message shown."/>
+    <Column Name="Group" Type="bool" Local="true"/>
+    <Column Name="Sender" Type="string" Local="true"/>
+    <Column Name="CanEdit" Type="bool" Local="true"/>
+    <Column Name="CanDelete" Type="bool" Local="true"/>
+    <Column Name="HasPhotos" Type="bool" Computed="hasPhotos"/>
+    <Column Name="HasBody" Type="bool" Computed="hasBody" DependsOn="Body"/>
+    <Column Name="ShowCaption" Type="bool" Computed="showCaption" DependsOn="Body"/>
+    <Column Name="Timestamp" Type="string" Computed="timestamp" DependsOn="CreatedAt EditedAt"/>
+    <Column Name="ShowSender" Type="bool" Computed="showSender" DependsOn="Group First Mine"/>
+    <Column Name="IncomingTail" Type="bool" Computed="incomingTail" DependsOn="First Mine Body"/>
+    <Column Name="OutgoingTail" Type="bool" Computed="outgoingTail" DependsOn="Last Mine Body"/>
+    <Column Name="Alignment" Type="string" Computed="alignment" DependsOn="Mine"/>
+    <Column Name="Gap" Type="float" Computed="gap" DependsOn="Leading First"/>
+    <Column Name="LeftInset" Type="float" Computed="leftInset" DependsOn="Mine"/>
+    <Column Name="RightInset" Type="float" Computed="rightInset" DependsOn="Mine"/>
+    <Column Name="BubbleWidth" Type="float" Computed="bubbleWidth" Description="Photo messages are as wide as their photos."/>
+    <Column Name="Inset" Type="float" Computed="inset"/>
+    <Column Name="VerticalInset" Type="float" Computed="verticalInset"/>
+    <Column Name="SectionGap" Type="float" Computed="sectionGap"/>
+    <Column Name="PhotoInset" Type="float" Computed="photoInset"/>
+    <Column Name="PhotoVerticalInset" Type="float" Computed="photoVerticalInset"/>
+    <Column Name="Tone" Type="string" Computed="bubbleTone" DependsOn="Mine" Description="sent or received."/>
+    <Column Name="CanAct" Type="bool" Computed="canAct" DependsOn="CanEdit CanDelete"/>
+    <Column Name="ActionsWidth" Type="float" Computed="actionsSize" Description="A corner button over photos; the whole bubble otherwise."/>
+    <Column Name="ActionsMargin" Type="float" Computed="actionsMargin"/>
+    <Column Name="ActionsText" Type="string" Computed="actionsText"/>
+    <Column Name="ActionsStyle" Type="string" Computed="actionsStyle"/>
+    <Relation Name="Attachments" Entity="ChatAttachment" Many="true" Source="attachments"/>
+  </Entity>
+  <Entity Name="ChatAttachment" Key="Id" ObjectName="Id" Description="A photo in a message.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="UpdatedAt" Type="string" Source="updated_at" Nullable="true"/>
+    <Column Name="Width" Type="int" Source="width" Nullable="true"/>
+    <Column Name="Height" Type="int" Source="height" Nullable="true"/>
+    <Column Name="ThumbnailWidth" Type="int" Source="thumbnail_width" Nullable="true"/>
+    <Column Name="ThumbnailHeight" Type="int" Source="thumbnail_height" Nullable="true"/>
+    <Column Name="PhotoPath" Type="string" Local="true"/>
+    <Column Name="PhotoState" Type="string" Local="true"/>
+    <Column Name="ShowTime" Type="bool" Local="true" Description="The last photo of a message without text carries its time."/>
+    <Column Name="Timestamp" Type="string" Local="true"/>
+    <Column Name="FrameHeight" Type="float" Computed="photoHeight" DependsOn="Width Height ThumbnailWidth ThumbnailHeight"/>
+    <Column Name="HasPhoto" Type="bool" Computed="hasPhoto" DependsOn="PhotoPath"/>
+    <Column Name="Pending" Type="bool" Computed="photoPending" DependsOn="PhotoPath PhotoState"/>
+    <Column Name="Failed" Type="bool" Computed="photoFailed" DependsOn="PhotoState"
+            Description="The full photo could not be loaded; a thumbnail may still show."/>
+  </Entity>
+  <Entity Name="ChatThread" Key="Id" Description="What the open conversation shows besides its messages.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Date" Type="string" Source="date"/>
+    <Column Name="EmptyTitle" Type="string" Source="emptyTitle"/>
+    <Column Name="EmptyHint" Type="string" Source="emptyHint"/>
+    <Column Name="ReadOnly" Type="bool" Source="readOnly"/>
+    <Column Name="HistoryText" Type="string" Source="historyText"/>
+    <Column Name="CanPost" Type="bool" Computed="canPost" DependsOn="ReadOnly"/>
+  </Entity>
+  <Entity Name="ChatComposerDraft" Description="The composer: text, an attached photo, and edits of sent messages.">
+    <Column Name="Text" Type="string"/>
+    <Column Name="HasPhoto" Type="bool"/>
+    <Column Name="PhotoLabel" Type="string"/>
+  </Entity>
 </Schema>

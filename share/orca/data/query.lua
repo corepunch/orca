@@ -10,7 +10,8 @@ Query.__index = Query
 
 local STATE = { "IsLoading", "IsRefreshing", "IsLoadingMore", "IsBusy", "HasLoaded", "IsEmpty", "HasItems",
     "HasError", "ErrorMessage", "ErrorCode", "HasMore", "CanLoadMore", "Count", "ShowLoading", "ShowEmpty",
-    "ShowError", "IsStale", "ShowProgress", "IsIdle" }
+    "ShowError", "IsStale", "ShowProgress", "IsIdle", "HasMoreError", "MoreErrorMessage", "MoreErrorCode",
+    "HasGap", "ShowHistory" }
 Query.STATE = STATE
 
 local function structured(err)
@@ -25,6 +26,17 @@ Query.structured = structured
 -- params (Params declarations), pageSize, poll (ms), require (param names that
 -- must be non-empty), rowKey(record, item) for rows distinct from entities,
 -- keepOnRefresh (default true), invalidatedBy (command names).
+--
+-- order = "newest" loads the newest page first; more pages are older and go
+-- before the loaded rows (a conversation). With window = "latest" a refresh
+-- re-reads only the newest page: it replaces the newest rows and keeps the
+-- history loaded before them, and a page that no longer overlaps leaves the
+-- rows alone and reports a gap (HasGap) until reset(). A failed older page
+-- is its own state (HasMoreError) so polling the newest page cannot hide it.
+-- prefetchEdge = "start" prefetches near the start of the list.
+-- arrange(query, records, mode) sees the final ordered records before the
+-- collection changes, for fields that depend on neighbours (runs of one
+-- sender); loaded(query, rows, mode) runs after.
 function Query.new(scope, def)
     local self = setmetatable({ scope = scope, def = def, name = assert(def.name, "Query needs a name"),
         generation = 0, cursor = nil, error = nil, loaded = false, listeners = {} }, Query)
@@ -79,6 +91,11 @@ function Query:publish()
     values.ShowEmpty = values.IsEmpty and not values.HasError and mode == nil
     -- Rows that loaded once stay visible through a failed refresh.
     values.ShowError = values.HasError and not self.loaded and mode == nil
+    local more = self.moreError
+    values.HasMoreError, values.MoreErrorMessage = more ~= nil, more and more.message or ""
+    values.MoreErrorCode, values.HasGap = more and more.code or "", self.gap == true
+    -- Older history, a failed older page or a gap: a list offers a way on.
+    values.ShowHistory = values.HasMore or values.HasMoreError or values.HasGap
     self.scope:write(self.state, values)
     self:emit()
 end
@@ -89,6 +106,16 @@ function Query:status()
     local visible = not self.quiet and self.mode or nil
     return { loading = visible == "load" and not self.loaded and count == 0, busy = visible ~= nil,
         loaded = self.loaded, error = self.error, failed = self.error ~= nil and not self.loaded and visible == nil }
+end
+
+local function recordOf(row) return row.record or row end
+
+-- Lets the definition see the rows a change will present, in order.
+local function arrange(self, rows, mode)
+    if not self.def.arrange then return end
+    local records = {}
+    for index, row in ipairs(rows) do records[index] = recordOf(row) end
+    self.def.arrange(self, records, mode)
 end
 
 local function normalize(result)
@@ -153,6 +180,8 @@ function Query:request(mode, options)
         end
     end
     local page = { cursor = mode == "more" and self.cursor or nil, size = self.def.pageSize }
+    if mode == "more" then self.moreError = nil end
+    local reset = options.reset
     self.mode, self.quiet = mode, options.quiet and mode ~= "more"
     self:publish()
     self.scope:run(function()
@@ -165,6 +194,12 @@ function Query:request(mode, options)
         end
         local items, cursor, hasMore = normalize(result)
         if not items then
+            if mode == "more" then
+                self.moreError = structured(err)
+                self:publish()
+                self.scope:changed(self)
+                return self:afterRequest()
+            end
             self.error = structured(err)
             self.stale = self.loaded
             if self.replacing then self.replacing = nil; self.items:clear() end
@@ -174,8 +209,65 @@ function Query:request(mode, options)
         end
         local rows = self:rows(items)
         if hasMore == false then cursor = nil end
-        self.error, self.stale, self.cursor, self.loaded, self.replacing = nil, false, cursor, true, nil
-        if mode == "more" then self.items:append(rows) else self.items:set(rows) end
+        local newest = self.def.order == "newest"
+        if mode ~= "more" and not reset and self.history and self.def.window == "latest" and #rows > 0 then
+            -- The newest page against loaded history: replace the newest rows
+            -- where it overlaps, otherwise report a gap rather than a hole.
+            local first
+            for _, row in ipairs(rows) do
+                local index
+                for position, key in ipairs(self.items:keys()) do
+                    if key == (row.record and (row.key or row.record.key) or row.key) then index = position; break end
+                end
+                if index and (not first or index < first) then first = index end
+            end
+            self.error, self.stale, self.loaded = nil, false, true
+            if not first then
+                self.gap = true
+                self.scope:changed(self)
+                self:publish()
+                return self:afterRequest()
+            end
+            local keep, incoming = {}, {}
+            for _, row in ipairs(rows) do incoming[row.record and (row.key or row.record.key) or row.key] = true end
+            local records, keys = self.items:records(), self.items:keys()
+            for position = 1, first - 1 do
+                if not incoming[keys[position]] then keep[#keep + 1] = { key = keys[position], record = records[position] } end
+            end
+            for _, row in ipairs(rows) do keep[#keep + 1] = row end
+            arrange(self, keep, mode)
+            self.items:set(keep, { refreshed = true })
+            self.scope:changed(self)
+            if self.def.loaded then self.def.loaded(self, rows, mode) end
+            return self:afterRequest()
+        end
+        self.error, self.stale, self.loaded, self.replacing = nil, false, true, nil
+        if mode == "more" then
+            self.cursor, self.history = cursor, true
+            if self.def.arrange then
+                local fresh, combined, present = {}, {}, {}
+                for _, key in ipairs(self.items:keys()) do present[key] = true end
+                for _, row in ipairs(rows) do
+                    local record = recordOf(row)
+                    if not present[row.key or record.key] then fresh[#fresh + 1] = row end
+                end
+                local existing = self.items:records()
+                if newest then
+                    for _, row in ipairs(fresh) do combined[#combined + 1] = row end
+                    for _, record in ipairs(existing) do combined[#combined + 1] = record end
+                else
+                    for _, record in ipairs(existing) do combined[#combined + 1] = record end
+                    for _, row in ipairs(fresh) do combined[#combined + 1] = row end
+                end
+                arrange(self, combined, mode)
+            end
+            if newest then self.items:prepend(rows) else self.items:append(rows) end
+        else
+            self.cursor, self.history, self.gap = cursor, false, nil
+            if reset then self.moreError = nil end
+            arrange(self, rows, mode)
+            self.items:set(rows)
+        end
         self.scope:changed(self)
         if self.def.loaded then self.def.loaded(self, rows, mode) end
         self:afterRequest()
@@ -202,8 +294,12 @@ end
 -- waits for an explicit retry or refresh.
 function Query:prefetch(height, extent, y)
     if not self.def.prefetch or self.cursor == nil or self.mode ~= nil or self.error then return false end
-    if height <= 0 or extent <= height or y >= -1 or y == self.prefetchY then return false end
-    if extent + y - height > math.max(240, math.min(800, height)) then return false end
+    if self.moreError or self.gap or height <= 0 or y == self.prefetchY then return false end
+    if self.def.prefetchEdge == "start" then
+        -- Content offsets are negative: near the start means close to zero.
+        -- A short list is already at its start.
+        if y < -(self.def.prefetchDistance or 160) then return false end
+    elseif extent <= height or y >= -1 or extent + y - height > math.max(240, math.min(800, height)) then return false end
     self.prefetchY = y
     return self:loadMore()
 end
@@ -218,6 +314,9 @@ end
 
 -- Initial load (or reload after parameters change); keeps nothing stale.
 function Query:load() return self:request("load") end
+-- Re-reads the newest page and drops loaded history (after a gap or a
+-- history cursor the service no longer knows).
+function Query:reset() return self:request(self.loaded and "refresh" or "load", { force = true, reset = true }) end
 function Query:refresh(options) return self:request(self.loaded and "refresh" or "load", options) end
 function Query:retry() return self:request(self.loaded and "refresh" or "load", { force = true }) end
 function Query:loadMore() return self:request("more") end

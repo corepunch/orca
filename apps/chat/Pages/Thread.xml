@@ -1,0 +1,21 @@
+<!-- An open conversation over the Conversation scope (Data/Conversation.xml).
+     Messages scroll under the header; older history loads near the top. -->
+<Node2D Name="ThreadContent">
+  <StackView Name="Messages" Spacing="0" PaddingBottom="8" Overflow="hidden scroll" ScrollAnchor="Bottom" JustifyContent="Start">
+    <TextBlock Name="TimelineDate" Visible="{Binding DataContext/Messages/HasLoaded}" Text="{Binding DataContext/Thread/Date}"
+               FontSize="12" TextHorizontalAlignment="Center" MarginTop="4" MarginBottom="6" class="chat-dim" IgnoreHitTest="true"/>
+    <Button Name="EarlierMessages" Visible="{Binding DataContext/Messages/ShowHistory}" Click="LoadHistory"
+            IgnoreHitTest="{Binding DataContext/Messages/IsLoadingMore}" Height="44" BackgroundColor="#00000000" BorderWidth="0">
+      <TextBlock Name="HistoryText" Text="{Binding DataContext/Thread/HistoryText}" FontSize="12" TextHorizontalAlignment="Center"
+                 TextVerticalAlignment="Center" class="chat-muted" IgnoreHitTest="true"/>
+    </Button>
+    <StackView Name="EmptyState" Visible="{Binding DataContext/Messages/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
+      <TextBlock Name="EmptyTimeline" Text="{Binding DataContext/Thread/EmptyTitle}" FontSize="22" TextWrapping="Wrap"
+                 class="chat-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/Thread/EmptyHint}" FontSize="14" TextWrapping="Wrap" class="chat-dim" IgnoreHitTest="true"/>
+    </StackView>
+    <ItemsStack Name="MessageItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="MessageEntry"
+                ItemsSource="{Binding DataContext/Messages/Items}" ItemTemplate="Chat/Templates/Message"/>
+  </StackView>
+  <ActivityIndicator Name="MessagesLoading" Visible="{Binding DataContext/Messages/ShowLoading}" class="chat-muted"/>
+</Node2D>

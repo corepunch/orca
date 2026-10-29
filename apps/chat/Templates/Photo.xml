@@ -1,9 +1,19 @@
-<Grid Name="PhotoFrame" Width="260" Height="{Binding DataContext/Height}" BackgroundColor="{Binding DataContext/Soft}">
+<!-- One photo of a message, bound to a ChatAttachment. The Photos media
+     member fills PhotoPath with the thumbnail, then the full photo; when the
+     full photo fails, the thumbnail stays and retry appears. A photo without
+     text carries the message time on the image. -->
+<Grid Name="PhotoFrame" Width="260" Height="{Binding DataContext/FrameHeight}" class="chat-soft">
   <Grid Name="PhotoContent">
-    <VectorView Source="Chat/assets/icons/refresh-cw.svg" Width="32" Height="32"
-                ForegroundColor="{Binding DataContext/Muted}" Margin="auto" IgnoreHitTest="true"/>
+    <VectorView Name="PhotoLoading" Visible="{Binding DataContext/Pending}" Source="Chat/assets/icons/refresh-cw.svg"
+                Width="32" Height="32" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-muted" IgnoreHitTest="true"/>
+    <ImageView Name="Photo" Visible="{Binding DataContext/HasPhoto}" Src="{Binding DataContext/PhotoPath}"
+               ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
   </Grid>
+  <Button Name="OpenPhoto" Click="OpenPhoto" IgnoreHitTest="{Binding DataContext/Failed}" BackgroundColor="#00000000" BorderWidth="0"/>
+  <Button Name="RetryPhoto" Visible="{Binding DataContext/Failed}" Click="Photos.Retry" Height="44" FontSize="12"
+          MarginTop="auto" MarginBottom="auto" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+          BorderWidth="0" class="chat-action chat-link">photo unavailable · retry</Button>
   <TextBlock Name="PhotoTime" Visible="{Binding DataContext/ShowTime}" Text="{Binding DataContext/Timestamp}"
-             FontSize="11" ForegroundColor="#ffffff" BackgroundColor="#00000099" Padding="4 2"
-             MarginLeft="auto" MarginTop="auto" MarginRight="6" MarginBottom="6" IgnoreHitTest="true"/>
+             FontSize="11" Padding="4 2" MarginLeft="auto" MarginTop="auto" MarginRight="6" MarginBottom="6"
+             class="photo-time" IgnoreHitTest="true"/>
 </Grid>

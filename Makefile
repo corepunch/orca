@@ -256,7 +256,6 @@ test-chat: copyshare
 	$(LUA) tests/test_chat_push.lua
 	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_polling.lua
-	$(TARGET) -test=tests/test_chat_sync.lua
 	$(TARGET) -test=tests/test_chat_inbox.lua
 	$(TARGET) -test=tests/test_chat_refresh_race.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua
@@ -276,7 +275,6 @@ test-chat: copyshare
 test-chat-ui: copyshare
 	$(LUA) tests/test_chat_photo_policy.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua
-	$(TARGET) -test=tests/test_chat_photo_loader.lua
 	$(TARGET) -test=tests/test_chat_photo_viewer.lua
 	$(TARGET) -test=tests/test_footer.lua
 
@@ -570,11 +568,10 @@ HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 .PHONY: test-scene-format
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
-HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader test-chat-photo-loader
+HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader
 
 $(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))
-$(eval $(call LUA_TEST_RULE,test-chat-photo-loader,tests/test_chat_photo_loader.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))
@@ -590,7 +587,6 @@ $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,
 .PHONY: test-chat-polling
 test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_polling.lua
-	$(TARGET) -test=tests/test_chat_sync.lua
 	$(TARGET) -test=tests/test_chat_inbox.lua
 	$(TARGET) -test=tests/test_chat_refresh_race.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua

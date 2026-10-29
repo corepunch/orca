@@ -170,6 +170,11 @@ function Media:pump()
         end
         self.active = self.active + 1
         self.scope:run(function()
+            -- Work queued before a sign-out or a closed page never starts.
+            if not self.scope:valid(request.token) or self.requests[request.key] ~= request then
+                self.active = self.active - 1
+                return
+            end
             local stage = self.stages[request.stage]
             local path, err
             local ok = pcall(function()
@@ -230,6 +235,14 @@ function Media:retry(record)
     self.failed[key] = nil
     self:want(record)
     self:pump()
+end
+
+-- Forgets every failure, so the next visible pass asks again (a list that
+-- refreshed retries photos that failed before).
+function Media:retryFailed()
+    if next(self.failed) == nil then return false end
+    self.failed = {}
+    return true
 end
 
 -- Drops cached results for an id (a new profile photo).
