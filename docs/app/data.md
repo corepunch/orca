@@ -14,6 +14,11 @@ and controllers; they use the same operations in both modes. Keep mode checks
 for user-facing status/configuration, rather than alternate data paths inside
 pages. Never silently fall back to mock data when a real service fails.
 
+Screens reach these models through a provider and declared data scopes:
+queries, views, commands and drafts that XML binds directly. See
+[data-driven screens](datasources.md); `orca.data.fixtures` serves a provider
+contract from fixtures for previews and offline tests.
+
 ## Lapis-inspired model boundary
 
 [Lapis](https://github.com/leafo/lapis) and its

@@ -76,12 +76,26 @@ view. Root pages keep their instances and form drafts when you switch pages.
 Conversation and sign-in screens are separate flows, and returning to the root
 reuses the same shell.
 
+Screens are declared data (see [data-driven screens](../../docs/app/datasources.md)):
+`Data/Chat.Schema.xml` holds the entities; `Data/Inbox.xml`,
+`Data/Conversation.xml` and `Data/Details.xml` declare each screen's queries,
+views, commands, drafts and media; `Data/Routes.xml` registers the details
+route. `providers/chat.lua` implements the operations over the Appwrite client.
+
 Message and photo rows live in `Templates/Message.xml` and `Templates/Photo.xml`.
-The timeline computes presentation fields and maps message IDs to stable typed
-DataObjects through `orca.UIKit.ItemsView`; native ItemsControl observes source
-changes and owns the rows. Polls update existing fields and neighboring grouping
-without replacing unaffected messages or loaded photo content. Text, captioned
-photos and photo-only messages use bound section visibility in the same template.
+The conversation's `Messages` query is newest-first with a latest window: polls
+re-read the newest page, keep loaded history and update existing records in
+place; `LoadHistory` prepends older pages. Computed columns and the `Arrange`
+hook derive bubble direction, sender runs and tails. `orca.data.scroll.keep`
+follows new messages when the reader is at the end and keeps the first visible
+message in place otherwise. The composer is an edit with one draft per room;
+photos load through the `Photos` media member with preview and full stages.
+Text, captioned photos and photo-only messages use bound section visibility in
+the same template.
+
+The details page (rename, members, roles, invites, pin, leave) has no Lua of
+its own: it is a route, a scope and a page. New conversation, discovery, sign-in
+and the photo viewer remain Lua flows over the same provider.
 
 The inbox prepares all three filtered lists when data or search changes. Swiping
 only updates selection, keeping row instances and scroll positions intact instead

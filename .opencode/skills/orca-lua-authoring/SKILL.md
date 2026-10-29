@@ -59,8 +59,8 @@ return Card
   or subsystems.
 - Plain Lua state is not an observable binding source. Define its adapter to
   `DataContext` explicitly. ItemsControl observes native DataObject collection
-  mutations; use ItemsView to map service keys to stable records, and batch
-  membership edits with beginUpdate/endUpdate.
+  mutations; prefer declared data scopes (`docs/app/datasources.md`), whose
+  store maps service keys to stable records, over hand-written row code.
 - Preserve object ownership and lifecycle; do not retain stale scene objects
   across rebuild or removal.
 

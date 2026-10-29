@@ -106,11 +106,11 @@ considered; that preference does not yet select or implement a migration.
 
 ## Implemented ORCA slice
 
-Chat's message and attachment lists now use XML templates, typed presentation
-DataObjects, and bound ItemsSource collections. Octopus uses the same path for
-post cards and comments, with a shared post-body template for the detail page.
-`orca.UIKit.ItemsView` preserves records by service key; native ItemsControl
-observes membership changes and retains generated rows by DataObject identity.
+Chat's message and attachment lists now use XML templates, typed schema
+records, and bound ItemsSource collections declared in `Data/Conversation.xml`.
+Octopus uses the same path for post cards and comments. The data runtime's
+store preserves records by service key; native ItemsControl observes
+membership changes and retains generated rows by DataObject identity.
 Appending, removing, moving, clearing and replacing a source are supported,
 with nested collection update batches. See [collection behavior](../../../docs/app/index.md#state-bindings-and-collections).
 

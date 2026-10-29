@@ -51,7 +51,7 @@ For app-only Chat presentation changes, `make test-chat-ui` runs the offline
 timeline, photo-loader, and footer checks using the existing binary. It does
 not rebuild the engine or contact Appwrite. Run only the affected test file
 when possible, for example `build/bin/orca -test=tests/test_chat_timeline.lua` or
-`build/bin/orca -test=tests/test_chat_photo_loader.lua`.
+`build/bin/orca -test=tests/test_chat_photo_viewer.lua`.
 
 Rebuild with `make unite` when native code/API changes or the binary is
 missing. Some individual engine test targets depend on `unite`, so invoking
