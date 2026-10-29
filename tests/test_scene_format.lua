@@ -245,7 +245,8 @@ local function check_mvvm_form()
   print('PASS: MvvmForms ' .. extension .. ' loading and two-way bindings')
 end
 
-check_mvvm_form()
+-- Applications other than Example are XML-only.
+if has_xml then check_mvvm_form() end
 
 if has_xml then
   for _, invalid in ipairs {
