@@ -549,12 +549,11 @@ $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicato
 
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
-HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
-HEADLESS_LUA_TESTS += test-itemscontrol test-data-runtime test-data-lint test-ledger-example
+HEADLESS_LUA_TESTS += test-itemscontrol test-data-runtime test-data-lint
 HEADLESS_LUA_TESTS += test-event-args
 .PHONY: test-event-args
 HEADLESS_LUA_TESTS += test-event-serialization test-controllers
@@ -569,6 +568,12 @@ FORMAT_LUA_TESTS := $(subst _,-,$(FORMAT_LUA_TESTS))
 $(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_FORMAT)/$(subst -,_,$(t)).lua,unite)))
 .PHONY: $(FORMAT_LUA_TESTS)
 HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
+# Applications are authored in XML; Lisp is an experimental scene format and
+# only apps/Example has Lisp twins. App tests that load pages run in XML builds.
+XML_APP_LUA_TESTS = test-chat-polling test-ledger-example
+ifeq ($(SCENE_FORMAT),xml)
+HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
+endif
 .PHONY: test-scene-format
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
