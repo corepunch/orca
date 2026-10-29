@@ -44,7 +44,7 @@ local function params(node)
         if child.tag == "Param" then
             list[#list + 1] = { name = child.attrs.Name, type = (child.attrs.Type or "string"):lower(),
                 default = child.attrs.Default, debounce = number(child.attrs.Debounce), bind = child.attrs.Bind,
-                description = child.attrs.Description, line = child.line }
+                route = child.attrs.Route, description = child.attrs.Description, line = child.line }
         end
     end
     return list
@@ -230,9 +230,24 @@ function Declarations.build(spec, options)
             end
             scope.declaredExposures = scope.declaredExposures or {}
             scope.declaredExposures[member.name] = a.Entity or true
+            -- A route parameter names the record (Key="RoomId").
+            if a.Key then
+                if not a.Entity then fail(resource, node, ("expose %s with Key needs Entity"):format(member.name)) end
+                scope.routeExposures = scope.routeExposures or {}
+                scope.routeExposures[#scope.routeExposures + 1] = { name = member.name, entity = a.Entity, key = a.Key }
+            end
         end
         for _, param in ipairs(member.params) do
             if param.bind then binds[#binds + 1] = { member = member, param = param } end
+            if param.route then
+                scope.routeParams = scope.routeParams or {}
+                scope.routeParams[#scope.routeParams + 1] = { member = member.name, param = param.name, route = param.route }
+            end
+        end
+        -- An edit copy of a record the route exposes (Begin="Room").
+        if member.kind == "Edit" and a.Begin then
+            scope.beginEdits = scope.beginEdits or {}
+            scope.beginEdits[#scope.beginEdits + 1] = { edit = member.name, record = a.Begin }
         end
     end
     -- Edits name the command they submit; validate once everything exists.
