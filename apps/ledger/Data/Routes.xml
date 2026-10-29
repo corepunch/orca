@@ -1,0 +1,4 @@
+<!-- The ledger's pages. A new screen is a route, a scope and a page. -->
+<Routes>
+  <Route Path="/" Name="LedgerPage" Page="Ledger/Pages/Ledger" Scope="Ledger/Data/Ledger.xml"/>
+</Routes>
