@@ -1,0 +1,24 @@
+<!-- What the ledger shows: accounts and their entries. Amounts are cents;
+     computed text columns format them (providers/ledger.lua). -->
+<Schema>
+  <Entity Name="LedgerAccount" Key="Id" ObjectName="Id" Description="An account with its running balance.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Title" Type="string" Source="name"/>
+    <Column Name="Kind" Type="string" Source="kind" Default="asset"/>
+    <Column Name="Balance" Type="int" Source="balance" ReadOnly="true"/>
+    <Column Name="BalanceText" Type="string" Computed="money" DependsOn="Balance"/>
+  </Entity>
+  <Entity Name="LedgerEntry" Key="Id" ObjectName="Id" Description="One movement on an account, newest first.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="AccountId" Type="string" Source="account_id"/>
+    <Column Name="Memo" Type="string" Source="memo"/>
+    <Column Name="Amount" Type="int" Source="amount"/>
+    <Column Name="Date" Type="string" Source="date"/>
+    <Column Name="AmountText" Type="string" Computed="entryMoney" DependsOn="Amount"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="Amount" Description="credit or debit."/>
+  </Entity>
+  <Entity Name="LedgerEntryDraft" Description="The new-entry form.">
+    <Column Name="Memo" Type="string"/>
+    <Column Name="Amount" Type="string" Description="Typed as text; validated as dollars and cents."/>
+  </Entity>
+</Schema>

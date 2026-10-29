@@ -1,0 +1,12 @@
+/* Ledger palette: everything visual lives here, not in the data. */
+.ledger-page { background-color: #ffffff; }
+.ledger-ink { color: #111111; }
+.ledger-dim { color: #6b6b6b; }
+.ledger-accent { color: #0a6e5c; }
+.ledger-error { color: #c62828; }
+.ledger-link { background-color: #00000000; color: #0a6e5c; }
+.ledger-primary { background-color: #0a6e5c; color: #ffffff; }
+.ledger-row { background-color: #f1f1f1; }
+.ledger-field { background-color: #e6e6e6; color: #111111; border-color: #e6e6e6; placeholder-color: #6b6b6b; }
+.credit .ledger-amount { color: #2e7d32; }
+.debit .ledger-amount { color: #c62828; }

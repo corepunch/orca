@@ -1,0 +1,9 @@
+<!-- One entry, bound to a LedgerEntry; credits and debits differ by state class. -->
+<Grid Columns="1fr auto" Spacing="12" Height="44" StateClasses="{Binding DataContext/Tone}">
+  <StackView Spacing="0" JustifyContent="Center">
+    <TextBlock Name="Memo" Text="{Binding DataContext/Memo}" FontSize="16" class="ledger-ink" IgnoreHitTest="true"/>
+    <TextBlock Text="{Binding DataContext/Date}" FontSize="12" class="ledger-dim" IgnoreHitTest="true"/>
+  </StackView>
+  <TextBlock Name="Amount" Text="{Binding DataContext/AmountText}" FontSize="16" TextVerticalAlignment="Center"
+             class="ledger-amount" IgnoreHitTest="true"/>
+</Grid>

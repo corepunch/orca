@@ -1,0 +1,13 @@
+<!-- The ledger screen: accounts, the selected account's entries, and a form
+     that adds an entry. Selecting an account sets the entries' AccountId. -->
+<DataScope Name="Ledger" Schema="Ledger/Data/Ledger.Schema.xml">
+  <Query Name="Accounts" Entity="LedgerAccount" Operation="accounts" Description="Every account with its balance."/>
+  <View Name="AccountList" Source="Accounts" Selection="first"/>
+  <Query Name="Entries" Entity="LedgerEntry" Operation="entries" Require="AccountId" PageSize="5"
+         Description="The selected account's entries, newest first, five at a time.">
+    <Param Name="AccountId" Type="string" Bind="AccountList.Selected.Id"/>
+  </Query>
+  <Edit Name="NewEntry" Entity="LedgerEntryDraft" Submit="AddEntry" Validate="entry"/>
+  <Command Name="AddEntry" Operation="addEntry" Invalidates="Entries Accounts"
+           Description="Adds an entry to the selected account."/>
+</DataScope>
