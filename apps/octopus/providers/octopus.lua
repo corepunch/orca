@@ -6,7 +6,8 @@
 -- openPost(raw), openProfile(id, name), openTag(tag), requireSession(reason),
 -- notice(text, isError), signIn(route), signUp(route), selectFeed(name),
 -- readerId(), postLoaded(raw), commentSent(postId), postDeleted(postId),
--- focusComment(), copyLink(url), published(post, info).
+-- focusComment(), copyLink(url), published(post, info), avatarChanged(userId),
+-- signOut().
 local Format = require "Octopus/format"
 local Schema = require "orca.data.schema"
 local Provider = {}
@@ -339,6 +340,35 @@ function Provider.new(context)
         return true
     end
 
+    -- Me ------------------------------------------------------------------
+
+    operations.saveProfile = function(params, _, command)
+        local person = params.target or command.scope:exposedRecord("Profile")
+        local draft = params.draft
+        local profile, err = client:updateProfile { username = draft.DisplayName, bio = draft.Bio }
+        if not profile then context.notice(err.message, true); return nil, err end
+        command.scope.store:put("OctopusProfile", { userId = person.key, username = profile.username, bio = profile.bio },
+            { partial = true })
+        context.notice("Profile saved. New posts use your account name.")
+        return true
+    end
+    operations.changePhoto = function(_, _, command)
+        local person = command.scope:exposedRecord("Profile")
+        local picked, err = context.media:pick()
+        if not picked then
+            if not (type(err) == "table" and err.code == "cancelled") then
+                context.notice(type(err) == "table" and err.message or tostring(err), true)
+            end
+            return true
+        end
+        local profile
+        profile, err = client:setAvatar(picked)
+        if not profile then context.notice(err.message, true); return nil, err end
+        context.avatarChanged(person.key)
+        context.notice("Photo updated. It shows on the website and in Chat too.")
+        return true
+    end
+
     -- Post page ------------------------------------------------------------
 
     operations.post = function(params, _, _, query)
@@ -530,6 +560,10 @@ function Provider.new(context)
     end
     local hooks = {
         enrich = function(query, rows) enrich(query, rows) end,
+        -- A saved form starts a new copy of what was stored.
+        profileSaved = function(_, _, _, info, edit)
+            if info.target and not edit.disposed then edit:begin(info.target) end
+        end,
         published = function(ok, post, _, info)
             if not ok then return end
             if info.cleared then photos[info.key] = nil end
@@ -599,6 +633,7 @@ function Provider.new(context)
         SignUp = function() context.signUp("/") end,
         SignInToFollow = function() context.signIn("/user") end,
         SignInToComment = function() context.signIn("/post") end,
+        SignOut = function() context.signOut() end,
         SignInToWrite = function() context.signIn("/write") end,
         SignUpToWrite = function() context.signUp("/write") end,
         -- Kind tiles are named Kind<kind>; each kind has its own draft.

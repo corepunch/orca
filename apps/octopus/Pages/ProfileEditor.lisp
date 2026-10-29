@@ -1,0 +1,10 @@
+(StackView Name="ProfileEditor" Spacing=10 JustifyContent="Start"
+  (TextBlock Text="edit profile" FontSize=20 class="octopus-accent-text" IgnoreHitTest=true)
+  (Button Name="ChangePhoto" Click="ChangePhoto" IgnoreHitTest=(bind "DataContext/ChangePhoto/IsExecuting") Height=44 BorderWidth=2 FontSize=15 FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline" Text=(if (bind "DataContext/ChangePhoto/IsExecuting") "Uploading photo…" "Change photo"))
+  (TextBlock Text="name" FontSize=14 class="octopus-muted" IgnoreHitTest=true)
+  (Input Name="EditName" PlaceholderText="Your name" Height=44 FontSize=15 Padding="12 0" BorderWidth=2 Text=(bind "DataContext/ProfileForm/DisplayName" Mode=TwoWay) class="octopus-input octopus-field")
+  (TextBlock Text="bio" FontSize=14 class="octopus-muted" IgnoreHitTest=true)
+  (Input Name="EditBio" PlaceholderText="A short bio" Multiline=true Height=92 FontSize=15 Padding="12 10" BorderWidth=2 Text=(bind "DataContext/ProfileForm/Bio" Mode=TwoWay) class="octopus-input octopus-field")
+  (Button Name="SaveProfile" Click="ProfileForm.Submit" IgnoreHitTest=(bind "DataContext/ProfileForm/Status/IsSubmitting") Height=48 FontSize=15 FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary" Text=(if (bind "DataContext/ProfileForm/Status/IsSubmitting") "Saving…" "Save profile"))
+  (TextBlock Name="MeStatus" FontSize=13 WordWrap=true class="octopus-dim")
+  (Button Name="SignOut" Click="SignOut" Height=44 BorderWidth=2 FontSize=15 FontWeight="Bold" MarginTop=12 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-danger" "Sign out"))
