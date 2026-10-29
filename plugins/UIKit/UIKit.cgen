@@ -1401,6 +1401,7 @@
         <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
         <property name="ItemTemplate" type="Node2D" pointer="true">The template used to represent each item</property>
         <property name="SelectedItem" type="DataObject" pointer="true">The DataObject of the currently selected item. Set automatically by ListBox on selection. Bind a detail view's ItemsSource or DataContext to this for master-detail.</property>
+        <property name="ItemNamePrefix" type="string">When set, each generated view is named this prefix followed by its record's Name (for example "Room" + "alex" gives "Roomalex"), so tests, tools and accessibility can address the view of one record regardless of its position. Empty keeps the template's name.</property>
       </properties>
       <fields>
         <field name="_entries" type="ItemsControlEntry" pointer="true">Owned generated views and their source identities.</field>

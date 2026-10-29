@@ -3,56 +3,6 @@ local Polling = require "Chat/polling"
 local Sync = {}
 Sync.__index = Sync
 
-local function equal(left, right)
-    if type(left) ~= type(right) then return false end
-    if type(left) ~= "table" then return left == right end
-    for key, value in pairs(left) do
-        if key ~= "_model" and not equal(value, right[key]) then return false end
-    end
-    for key in pairs(right) do
-        if key ~= "_model" and left[key] == nil then return false end
-    end
-    return true
-end
-
--- All inbox reads share a lock, including manual refresh/navigation.
-function Sync.refreshInbox(app, current, quiet)
-    if app.inboxRefreshBusy and app.inboxRefreshBusy.epoch == app.sessionEpoch then return true end
-    local request = { epoch = app.sessionEpoch }
-    app.inboxRefreshBusy = request
-    local ok, result, err = xpcall(function()
-        local rooms, roomError = app.models.Rooms:select()
-        if not current() then return true end
-        if not rooms then return nil, roomError end
-        local changed = not equal(rooms, app.rooms)
-        app.rooms = rooms
-        if changed and app.roomLists then
-            local offsets = {}
-            for key, list in pairs(app.roomLists) do
-                offsets[key] = { X = list.ContentOffset.X, Y = list.ContentOffset.Y }
-            end
-            app:renderRoomList()
-            for key, list in pairs(app.roomLists) do list.ContentOffset = offsets[key] end
-        end
-        -- Contacts come from shared rooms; skip their request when the inbox is empty.
-        local contacts, contactError
-        if #rooms == 0 then contacts = {}
-        else contacts, contactError = app.models.Contacts:select() end
-        if not current() then return true end
-        if not contacts then return nil, contactError end
-        app.contacts, app.contactsById = contacts, {}
-        for _, contact in ipairs(contacts) do app.contactsById[contact.id] = contact end
-        return true
-    end, debug.traceback)
-    if app.inboxRefreshBusy == request then app.inboxRefreshBusy = nil end
-    if not ok then
-        if current() and app.reportError then app:reportError(result, "Syncing conversations") end
-        result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." }
-    end
-    if not result and not quiet and current() then app:notice(err.message, true) end
-    return result, err
-end
-
 function Sync.new(app, options)
     options = options or {}
     local self = setmetatable({ app = app }, Sync)
@@ -105,27 +55,22 @@ function Sync:activate()
     local session = app.client and app.client:getSession()
     if not session then self:stop(); return end
     local navigation, epoch, user = app.navigationEpoch, app.sessionEpoch, session.user.id
+    -- The inbox polls through its Rooms query; this job covers the open thread.
     local thread = app.room and app.messageList and app.messageList:getRoot() == screen
-    local inbox = app.shell and app.shell.screen == screen and app.shell.active == "Chats"
-    if not thread and not inbox then self:stop(); return end
+    if not thread then self:stop(); return end
     local room, node = app.room, app.messageList
     local function valid()
         local active = app.client:getSession()
         return app.screen == screen and app.navigationEpoch == navigation and app.sessionEpoch == epoch
             and active ~= nil and active.user.id == user
-            and (not thread or (app.room == room and app.messageList == node))
+            and app.room == room and app.messageList == node
     end
     self.scheduler:start {
-        interval = thread and 3000 or 15000,
+        interval = 3000,
         valid = valid,
         run = function(current)
             if app.sending then return true end
-            local result, err
-            if thread then
-                result, err = app:renderMessages { current = current, preserveScroll = true, quiet = true }
-            else
-                result, err = Sync.refreshInbox(app, current, true)
-            end
+            local result, err = app:renderMessages { current = current, preserveScroll = true, quiet = true }
             if not result and err and current() then app:notice(err.message, true) end
             -- A revoked session stops the job's valid predicate, but still
             -- needs to remove authenticated views from the active screen.

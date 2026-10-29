@@ -266,7 +266,7 @@ local function detailsBody(self, room, members)
             if self.sessionEpoch ~= epoch or self.room ~= room or self.screen ~= screen then return end
             if not updated then self:notice(renameError.message, true); return end
             room.name = updated.name
-            for _, row in ipairs(self.rooms or {}) do if row.id == room.id then row.name = updated.name end end
+            self:roomChanged(room.id, { name = updated.name })
             self:show("/details")
         end, { Name = "RenameRoom", Background = colors.surface }))
     end
@@ -337,9 +337,7 @@ local function detailsBody(self, room, members)
             busy = false
             if self.sessionEpoch ~= epoch or self.room ~= room or self.screen ~= screen then return end
             if not ok then self:notice(leaveError.message, true); return end
-            for index = #(self.rooms or {}), 1, -1 do
-                if self.rooms[index].id == room.id then table.remove(self.rooms, index) end
-            end
+            self:roomChanged(room.id, false)
             self.room, self.drafts[room.id], self.photoDrafts[room.id] = nil, nil, nil
             self.readRooms[room.id], self.pinned[room.id], self.inviteCodes[room.id] = nil, nil, nil
             self:show("/")
@@ -363,6 +361,7 @@ function Conversations.details(self)
     bar = C.appBar({
         { "PinConversation", "pin", self.pinned[room.id] and "unpin" or "pin", function()
             self.pinned[room.id] = not self.pinned[room.id] or nil
+            self:roomChanged(room.id)
             bar:findChild("PinConversation").Text = self.pinned[room.id] and "unpin" or "pin"
         end },
     })

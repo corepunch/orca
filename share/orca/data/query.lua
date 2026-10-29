@@ -156,7 +156,7 @@ function Query:request(mode, options)
             self.stale = self.loaded
             self:publish()
             self.scope:changed(self)
-            return self:afterRequest()
+            return self:afterRequest(true)
         end
         local rows = self:rows(items)
         if hasMore == false then cursor = nil end
@@ -169,10 +169,25 @@ function Query:request(mode, options)
     return true
 end
 
-function Query:afterRequest()
+function Query:afterRequest(failed)
+    self.failures = failed and math.min((self.failures or 0) + 1, 8) or 0
+    -- A different outcome changes the cadence of an already scheduled poll.
+    if self.pollHandle and self.def.poll
+        and self.pollDelay ~= math.min(self.def.maxPoll or 60000, self.def.poll * 2 ^ self.failures) then
+        self.pollHandle:cancel(); self.pollHandle = nil
+    end
     local pending = self.pendingRefresh
     self.pendingRefresh = nil
     if pending and not self.disposed then self:request(pending, { quiet = true }) end
+    self:schedule()
+end
+
+-- Publishes rows produced locally (a dependent result that needs no
+-- request, such as no contacts for an empty inbox).
+function Query:assign(rows)
+    self.generation = self.generation + 1
+    self.mode, self.error, self.stale, self.cursor, self.loaded = nil, nil, false, nil, true
+    self.items:set(self:rows(rows or {}))
 end
 
 -- Initial load (or reload after parameters change); keeps nothing stale.
@@ -214,7 +229,7 @@ end
 function Query:activate()
     self.active = true
     if self.stale and self.loaded then self.stale = false; self:refresh { quiet = true } end
-    if not self.loaded and self.mode == nil then self:load() end
+    if not self.loaded and self.mode == nil and self.def.autoLoad ~= false then self:load() end
     self:schedule()
 end
 
@@ -223,18 +238,23 @@ function Query:deactivate()
     if self.pollHandle then self.pollHandle:cancel(); self.pollHandle = nil end
 end
 
+-- The next poll waits for the previous request; failures back off
+-- exponentially up to MaxPoll (60 seconds by default).
 function Query:schedule()
     if not self.def.poll or self.disposed or not self.active or self.pollHandle then return end
-    if self.scope.foreground == false then return end
-    self.pollHandle = self.scope:after(self.def.poll, function()
+    if self.foreground == false or self.scope.foreground == false or self.mode ~= nil then return end
+    local delay = math.min(self.def.maxPoll or 60000, self.def.poll * 2 ^ (self.failures or 0))
+    self.pollDelay = delay
+    self.pollHandle = self.scope:after(delay, function()
         self.pollHandle = nil
         if self.disposed or not self.active then return end
-        if self.mode == nil and (not self.def.pollWhen or self.def.pollWhen(self)) then self:refresh { quiet = true } end
-        self:schedule()
+        if self.def.pollWhen and not self.def.pollWhen(self) then return self:schedule() end
+        if not self:refresh { quiet = true } then self:schedule() end
     end)
 end
 
 function Query:setForeground(active)
+    self.foreground = active
     if active then
         if self.active then
             if self.def.poll then self:refresh { quiet = true } end

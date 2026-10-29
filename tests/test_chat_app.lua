@@ -37,6 +37,10 @@ local function drain(app)
     end
     flushQueue()
     if app.screen then
+        -- Bindings run on paint; this suite does not paint.
+        core.advanceFrame()
+        core.runAllPrograms(app.screen)
+        flushQueue()
         app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
         app:afterPaint()
         flushQueue()
@@ -65,7 +69,7 @@ local function mockApp(media, client)
     login:findChild("Password", true).Text = "password123"
     login:findChild("SignIn", true):send("Node.LeftButtonUp")
     drain(app)
-    assert(app.client:getSession() and app.screen:findChild("Room1", true),
+    assert(app.client:getSession() and app.screen:findChild("Roomalex", true),
         "Mock login must reach API-backed conversations: " .. tostring(app.client:getSession()) .. " / " .. app.status:getTextContent())
     return app
 end
@@ -73,14 +77,17 @@ local app = mockApp()
 local home = app.screen
 assert(home.Width == 390 and home.Height == 844)
 assert(home.ResizeMode == "NoResize")
-assert(home:findChild("Room1", true), "Conversation list must be rendered")
+assert(home:findChild("Roomalex", true), "Conversation list must be rendered")
 assert(not app.homeStatus.Visible and app.homeStatus:getTextContent() == "",
     "A healthy inbox must not show a routine sync caption")
 home:UpdateLayout(390, 844)
 assert(home:getFirstChild().ActualHeight >= 843, "App content must fill the portrait viewport")
-local firstRoom = home:findChild("Room1", true)
+drain(app) -- the repaint that follows loaded avatars
+local firstRoom = home:findChild("Roomalex", true)
 local firstAvatar = assert(firstRoom:findChild("AvatarPhoto", true), "Bundled demo portraits must appear in chat rows")
-assert(firstAvatar.Source and firstAvatar.Source.Width > 100, "Chat portraits must resolve real image resources")
+firstAvatar:send("Node.LoadView") -- what the next paint does with a bound Src
+assert(firstAvatar.Visible and firstAvatar.Source and firstAvatar.Source.Width > 100,
+    "Chat portraits must resolve real image resources")
 assert(firstRoom.ActualWidth > 300 and firstRoom.ActualHeight > 60, "Conversation rows need usable hit areas")
 assert(home.StyleSheet, "The shared interactive stylesheet must load")
 local savedPlatform = PLATFORM
@@ -95,44 +102,44 @@ assert(mobile.Width == 390 and mobile.Height == 844 and mobile:getFirstChild().A
     "Keyboard avoidance must reserve content space while preserving the physical viewport")
 PLATFORM = savedPlatform
 assert(home:findChild("Search", true) and home:findChild("FilterUnread", true))
-app.searchInput.Text = "Jules"
-app:updateSearch()
-assert(not home:findChild("Room1", true) and home:findChild("Room3", true), "Search must filter conversations")
-app.searchInput.Text = ""
-app:updateSearch()
-app.filter = "Unread"
-app:renderRoomList()
-assert(app.roomLists.Unread:findChild("Room1", true) and not app.roomLists.Unread:findChild("Room2", true), "Unread filter must use unread counts")
-app.readRooms.alex = true
-app:renderRoomList()
-assert(not app.roomLists.Unread:findChild("Room1", true), "Opening a chat must clear its local unread state")
-app.filter = "Pinned"
-app:renderRoomList()
-assert(app.roomLists.Pinned:findChild("Room1", true) and app.roomLists.Pinned:findChild("Room2", true) and not app.roomLists.Pinned:findChild("Room3", true))
-app.filter = "All"
-app:renderRoomList()
+local search = home:findChild("Search", true)
+search.Text = "Jules"
+drain(app)
+assert(not home:findChild("Roomalex", true) and home:findChild("Roomjules", true), "Search must filter conversations")
+search.Text = ""
+drain(app)
+local lists = {}
+for _, filter in ipairs { "All", "Unread", "Pinned" } do lists[filter] = home:findChild("ConversationList" .. filter, true) end
+assert(lists.Unread:findChild("Roomalex") and not lists.Unread:findChild("Roomweekend"), "Unread filter must use unread counts")
+assert(lists.Unread:findChild("Roomalex"):findChild("UnreadBadge", true).Visible, "Unread rooms show their badge")
+assert(lists.Pinned:findChild("Roomalex") and lists.Pinned:findChild("Roomweekend") and not lists.Pinned:findChild("Roomjules"))
+assert(lists.Pinned:findChild("Roomweekend"):findChild("PinIcon", true).Visible
+    and not lists.Pinned:findChild("Roomalex"):findChild("PinIcon", true).Visible, "Pins show unless an unread badge does")
 
 -- Pivot selection must reuse prepared pages, without rebuilding any rows.
 drain(app)
 home:UpdateLayout(390, 844)
 local retained = {}
-for filter, list in pairs(app.roomLists) do retained[filter] = list:getFirstChild() end
-assert(app.roomLists.All:findChild("Room3", true), "All conversations must stay prepared offscreen")
-assert(app.roomLists.Pinned:findChild("Room1", true), "Pinned conversations must be prepared before swiping")
-local renders, renderRoomList = 0, app.renderRoomList
-app.renderRoomList = function(self) renders = renders + 1; return renderRoomList(self) end
+for filter, list in pairs(lists) do retained[filter] = list:findChild("Roomalex") end
+assert(lists.All:findChild("Roomjules"), "All conversations must stay prepared offscreen")
+assert(lists.Pinned:findChild("Roomalex"), "Pinned conversations must be prepared before swiping")
 for _, index in ipairs { 1, 2, 0 } do
     app.pivot.SelectedIndex = index
     drain(app)
     home:UpdateLayout(390, 844)
-    assert(app.filter == ({ "All", "Unread", "Pinned" })[index + 1])
-    for filter, list in pairs(app.roomLists) do
-        assert(list:getFirstChild() == retained[filter], "Swiping must retain rows in " .. filter)
+    for filter, list in pairs(lists) do
+        assert(list:findChild("Roomalex") == retained[filter], "Swiping must retain rows in " .. filter)
     end
 end
-app:updateSearch()
-assert(renders == 0, "Selection and unchanged search input must not rebuild conversation rows")
-app.renderRoomList = renderRoomList
+search.Text = ""
+drain(app)
+for filter, list in pairs(lists) do
+    assert(list:findChild("Roomalex") == retained[filter], "Unchanged search input must not rebuild conversation rows")
+end
+-- A polling refresh with new data updates fields in place.
+app.scope:member("Rooms"):refresh()
+drain(app)
+assert(lists.All:findChild("Roomalex") == retained.All, "Refresh keeps row identity")
 
 app.room = app.client:listRooms()[1]
 local screen = app:dispatch("/thread").view
@@ -647,7 +654,7 @@ click(otpApp, "VerifyCode")
 assert(not otpApp.client:getSession(), "A wrong code must not log in")
 otpApp.screen:findChild("VerificationCode", true).Text = "123456"
 click(otpApp, "VerifyCode")
-assert(otpApp.client:getSession() and otpApp.screen:findChild("Room1", true), "Verified OTP must reach the mock inbox")
+assert(otpApp.client:getSession() and otpApp.screen:findChild("Roomalex", true), "Verified OTP must reach the mock inbox")
 otpApp:show("/profile")
 otpApp.screen:findChild("Username", true).Text = "test_person"
 click(otpApp, "DiscoverableEmail")
@@ -939,15 +946,20 @@ local photoApp = mockApp(nil, Chat.mock { clock = function() return 1700000000 e
     data.avatars, data.profilePhotos, data.photoFiles = {}, { alex = "photo-alex" }, { ["photo-alex"] = jpeg }
     return data
 end })
-local function avatarPhoto(node) return node and node:findChild("AvatarPhoto", true) end
-local alexPhoto = avatarPhoto(photoApp.screen:findChild("Room1", true))
+-- Template rows keep an AvatarPhoto that shows only once a photo loads.
+local function avatarPhoto(node)
+    local photo = node and node:findChild("AvatarPhoto", true)
+    return photo and photo.Visible ~= false and photo or nil
+end
+drain(photoApp)
+local alexPhoto = avatarPhoto(photoApp.screen:findChild("Roomalex", true))
 assert(alexPhoto and alexPhoto.Src == photoApp.media.keys["avatar-photo-alex"], "Direct chats show the other person's photo")
-assert(not avatarPhoto(photoApp.screen:findChild("Room2", true)), "Groups keep their initials")
-assert(not avatarPhoto(photoApp.screen:findChild("Room3", true)), "People without a photo keep their initials")
+assert(not avatarPhoto(photoApp.screen:findChild("Roomweekend", true)), "Groups keep their initials")
+assert(not avatarPhoto(photoApp.screen:findChild("Roomjules", true)), "People without a photo keep their initials")
 assert(photoApp.avatarPaths.jules == false, "People without a photo are remembered for the session")
 photoApp.screen = photoApp:dispatch("/new").view
 assert(avatarPhoto(photoApp.screen:findChild("Contactalex", true):getParent()), "Contacts show their photos")
-photoApp.room = photoApp.rooms[1]
+photoApp.room = photoApp.client:listRooms()[1]
 photoApp.screen = photoApp:dispatch("/details").view
 assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
     "Conversation members show their photos")
@@ -963,7 +975,7 @@ historyClient.listMessagePage = function(self, id, options)
     return originalPage(self, id, options)
 end
 local historyApp = mockApp(nil, historyClient)
-press(historyApp, "Room1")
+press(historyApp, "Roomalex")
 assert(#historyApp.timelinePage.messages == 30 and #historyReads == 1 and historyReads[1].limit == 30,
     "Opening a long conversation must request and render only the latest 30 messages")
 local historyList = historyApp.messageList

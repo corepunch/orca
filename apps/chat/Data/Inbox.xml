@@ -1,0 +1,21 @@
+<!-- The signed-in reader's conversations. One scope per session: the store
+     is keyed by account, so another login never shows these records. -->
+<DataScope Name="Inbox" Schema="Chat/Data/Chat.Schema.xml">
+  <Query Name="Rooms" Entity="ChatRoom" Operation="rooms" Poll="15000" Loaded="roomsLoaded"
+         Description="Rooms the reader belongs to, refreshed every 15 seconds while the inbox is visible."/>
+  <Query Name="Contacts" Entity="ChatContact" Operation="contacts" AutoLoad="false"/>
+  <View Name="Matching" Source="Rooms" Filter="search"
+        Description="Local search over loaded rooms; the service returns every room at once.">
+    <Param Name="Search" Type="string"/>
+  </View>
+  <View Name="AllRooms" Source="Matching"/>
+  <View Name="UnreadRooms" Source="Matching" Filter="unread"/>
+  <View Name="PinnedRooms" Source="Matching" Filter="pinned"/>
+  <Command Name="OpenRoom" Operation="openRoom" Parameter="Item" Sync="true"/>
+  <Handler Name="ClearSearch"/>
+  <Media Name="Avatars" Lookup="avatarLookup" Fetch="avatarFetch" Store="avatarStore" Cached="avatarCached"
+         Missing="avatarMissing">
+    <Target Entity="ChatRoom" Id="AvatarId" Path="AvatarPath"/>
+    <Target Entity="ChatContact" Id="AvatarId" Path="AvatarPath"/>
+  </Media>
+</DataScope>

@@ -1,3 +1,33 @@
+/* Palette roles for XML views. The Screen carries chat-light or chat-dark
+   (theme.lua, CHAT_APPEARANCE), so rules follow the app palette. */
+.chat-light .chat-background { background-color: #ffffff; }
+.chat-light .conversation { background-color: #ffffff; }
+.chat-light .chat-ink { color: #000000; }
+.chat-light .chat-muted { color: #555555; }
+.chat-light .chat-dim { color: #7a7a7a; }
+.chat-light .room-preview { color: #7a7a7a; }
+.chat-light .unread .room-preview { color: #006ad1; }
+.chat-light .chat-link { color: #006ad1; background-color: #00000000; }
+.chat-light .chat-badge { background-color: #0078e7; color: #ffffff; }
+.chat-light .chat-field { background-color: #d9d9d9; color: #000000; border-color: #d9d9d9; placeholder-color: #6e6e6e; }
+.chat-light .chat-field-ink { color: #000000; }
+.chat-dark .chat-background { background-color: #000000; }
+.chat-dark .conversation { background-color: #000000; }
+.chat-dark .chat-ink { color: #ffffff; }
+.chat-dark .chat-muted { color: #a6a6a6; }
+.chat-dark .chat-dim { color: #8a8a8a; }
+.chat-dark .room-preview { color: #8a8a8a; }
+.chat-dark .unread .room-preview { color: #3d9eff; }
+.chat-dark .chat-link { color: #3d9eff; background-color: #00000000; }
+.chat-dark .chat-badge { background-color: #0084ff; color: #ffffff; }
+.chat-dark .chat-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
+.chat-dark .chat-field-ink { color: #000000; }
+/* Avatar tiles share one set of colours in both palettes. */
+.avatar-initials { color: #ffffff; }
+.tone1 { background-color: #0084ff; }
+.tone2 { background-color: #00aba9; }
+.tone3 { background-color: #a200ff; }
+.tone4 { background-color: #f09609; }
 .chat-action:hover { opacity: 0.78; }
 .chat-action:focus-visible { ring: 0 2 #0078e7; }
 .chat-input:focus { border-color: #0078e7; background-color: #ffffff; }

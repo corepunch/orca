@@ -21,6 +21,11 @@ local function nextRequest()
     resume(co)
     return co
 end
+-- Bindings run on paint; this suite does not paint.
+local function programs(screen)
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+end
 local function settle()
     while #pending > 0 do
         local co = nextRequest()
@@ -45,8 +50,9 @@ app.models.Contacts.select = function(self, ...)
 end
 app:show("/")
 local shell = app.screen
+programs(shell)
 assert(shell:findChild("Search", true) and shell:findChild("AppBarNew", true), "Inbox chrome must mount before requests")
-assert(shell:findChild("InboxLoadingAll", true).Visible and not shell:findChild("Room1", true))
+assert(shell:findChild("InboxLoadingAll", true).Visible and not shell:findChild("Roomalex", true))
 shell:UpdateLayout(390, 844)
 local indicator = shell:findChild("InboxLoadingAll", true)
 local area = indicator:getParent()
@@ -56,19 +62,24 @@ assert(math.abs(indicator.ActualX + indicator.ActualWidth / 2 - area.ActualWidth
     "The loading indicator must be centered in the allocated list area")
 local inbox = nextRequest()
 assert(coroutine.status(inbox) == "suspended")
-app.searchInput.Text = "Alex"
-app:updateSearch()
-assert(app.query == "Alex", "Search remains editable while inbox loads")
+shell:findChild("Search", true).Text = "Alex"
+core.flushQueue()
+assert(app.scope:member("Matching"):get("Search") == "Alex", "Search remains editable while inbox loads")
 app:show("/new")
 assert(app.screen == shell and app.shell.active == "New" and shell:findChild("CreateConversation", true),
     "Navigation and new conversation controls must work while the inbox request is suspended")
 settle()
 resume(inbox)
-assert(coroutine.status(inbox) == "suspended" and app.rooms and shell:findChild("Room1", true),
+local contactsRequest = nextRequest()
+assert(coroutine.status(contactsRequest) == "suspended" and shell:findChild("Roomalex", true),
     "Room rows must appear before the contacts request finishes")
-resume(inbox)
-assert(app.shell.active == "New" and not shell:findChild("InboxLoadingAll", true).Visible,
+assert(not shell:findChild("Roomweekend", true), "The search typed while loading applies to the late rows")
+resume(contactsRequest)
+programs(shell)
+assert(app.shell.active == "New" and not shell:findChild("InboxLoadingAll", true).Visible and app.contactsById.alex,
     "A late inbox response must update its retained list without changing the active tab")
+shell:findChild("Search", true).Text = ""
+core.flushQueue()
 app.models.Rooms.select, app.models.Contacts.select = roomsSelect, contactsSelect
 
 local getProfile = client.getProfile
@@ -83,7 +94,7 @@ assert(app.shell.active == "New" and app.status == status and shell:findChild("S
     "Profile completion must retain the user's current tab and status")
 client.getProfile = getProfile
 
-local room = app.rooms[1]
+local room = app.scope.store:get("ChatRoom", "alex").raw
 local messagesPage = app.models.Messages.page
 app.models.Messages.page = function(self, ...) coroutine.yield("messages"); return messagesPage(self, ...) end
 app:openRoom(room)
@@ -163,7 +174,7 @@ assert(coroutine.status(restoration) == "suspended" and restored.restorePending)
 resume(restoration)
 assert(restored.screen:findChild("InboxLoadingAll", true) and not restored.restorePending)
 settle()
-assert(restored.screen:findChild("Room1", true), "Restoration must transition through the usable inbox shell")
+assert(restored.screen:findChild("Roomalex", true), "Restoration must transition through the usable inbox shell")
 
 -- Inbox failures are retryable failures, never successful empty results.
 local failed = App { client = restoring }
@@ -172,12 +183,17 @@ local selectRooms = failed.models.Rooms.select
 failed.models.Rooms.select = function() return nil, { message = "Offline" } end
 failed:show("/")
 settle()
-assert(failed.rooms == nil and failed.screen:findChild("RetryInboxAll", true)
-    and not failed.screen:findChild("InboxLoadingAll", true).Visible)
+programs(failed.screen)
+assert(not failed.screen:findChild("Roomalex", true) and failed.screen:findChild("InboxErrorAll", true).Visible
+    and not failed.screen:findChild("InboxEmptyAll", true).Visible
+    and not failed.screen:findChild("InboxLoadingAll", true).Visible, "A failed first load shows retry, not empty")
 failed.models.Rooms.select = selectRooms
-failed:show("/")
+failed.screen:findChild("RetryInboxAll", true):send("Node.LeftButtonUp")
+core.flushQueue()
 settle()
-assert(failed.screen:findChild("Room1", true) and not failed.screen:findChild("RetryInboxAll", true))
+programs(failed.screen)
+assert(failed.screen:findChild("Roomalex", true) and not failed.screen:findChild("InboxErrorAll", true).Visible,
+    "Retry loads the inbox")
 
 assert(#failures == 0, table.concat(failures, "\n"))
 orca.async = savedAsync

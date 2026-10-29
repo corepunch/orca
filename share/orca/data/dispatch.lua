@@ -17,10 +17,19 @@ function Dispatch.lookup(node)
     end
 end
 
+-- Member actions a handler name can address as Member.Action.
 local ACTIONS = {
-    Load = "load", Refresh = "refresh", Retry = "retry", LoadMore = "loadMore", Invalidate = "invalidate",
-    Submit = "submit", Cancel = "cancel", Clear = "clear",
+    Load = function(member) return member:load() end,
+    Refresh = function(member) return member:refresh() end,
+    Retry = function(member, params) return member:retry(params.item) end,
+    LoadMore = function(member) return member:loadMore() end,
+    Invalidate = function(member) return member:invalidate() end,
+    Submit = function(member, params) return member:submit(params) end,
+    Cancel = function(member) return member:cancel() end,
+    Clear = function(member) return member:clear() end,
 }
+local METHODS = { Load = "load", Refresh = "refresh", Retry = "retry", LoadMore = "loadMore",
+    Invalidate = "invalidate", Submit = "submit", Cancel = "cancel", Clear = "clear" }
 
 -- Resolves a handler name to a function(scope, params), or nil so the
 -- lookup continues to an outer controller.
@@ -38,8 +47,10 @@ function Dispatch.resolve(scope, name)
         if action == "Begin" and member.begin then
             return function(_, params) if params.item then return member:begin(params.item) end end
         end
-        local method = ACTIONS[action]
-        if method and member[method] then return function() return member[method](member) end end
+        local adapter = ACTIONS[action]
+        if adapter and member[METHODS[action]] then
+            return function(_, params) return adapter(member, params) end
+        end
         return nil
     end
     local member = scope:member(name)

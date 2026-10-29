@@ -18,6 +18,10 @@ local async = require "orca.core.async"
 local orca = require "orca"
 local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local PageTransition = require "orca.UIKit.PageTransition"
+local data = require "orca.data"
+local Visibility = require "orca.data.visibility"
+local filesystem = require "orca.filesystem"
+local ChatProvider = require "Chat/providers/chat"
 local colors = C.colors
 local auto = 0/0
 
@@ -57,6 +61,9 @@ local App = Application:extend {
     resetSessionViews = function(self)
         PhotoViewer.close(self)
         if self.polling then self.polling:stop() end
+        -- Records belong to one account: the next session gets a new store.
+        if self.scope then self.scope:dispose() end
+        self.scope, self.visibility = nil, Visibility.new()
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         if self.avatars then self.avatars:clear() end
         self.avatarPaths = {}
@@ -73,16 +80,74 @@ local App = Application:extend {
         self.messagePhotos = require("Chat/photo_loader").new(self)
         if self.media and self.media.clear then self.media:clear() end
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
-        self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
+        self.pivot = nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
         self.timelineSnapshot, self.timelinePage, self.messageRefreshQueued, self.editing = nil, nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.contactsState, self.contactsPanorama, self.contactsStatus = nil, nil, nil
-        self.inboxError, self.inboxIndicators, self.messageLoading = nil, nil, nil
+        self.messageLoading = nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
-        self.filter, self.query = "All", ""
+    end,
+
+    -- The signed-in account's data scope (Data/Inbox.xml): rooms, contacts,
+    -- local views and avatars. Late results from another session never apply.
+    dataScope = function(self)
+        local session = self.client and self.client:getSession()
+        if not session then return nil end
+        if self.scope and not self.scope.disposed then return self.scope end
+        local epoch, user = self.sessionEpoch, session.user.id
+        local provider = ChatProvider.new {
+            client = self.client, models = self.models, media = self.media, avatarPaths = self.avatarPaths,
+            read = self.readRooms, pinned = self.pinned,
+            openRoom = function(room) self:openRoom(room) end,
+            sessionLost = function()
+                if self.sessionEpoch == epoch then self:resetSessionViews(); self:show("/") end
+            end,
+        }
+        provider.repaint = function() self:repaint() end
+        local host = data.Scope.defaultHost()
+        host.run = function(fn) self:load(fn) end
+        host.report = function(err, stage) self:reportError(err, stage) end
+        self.scope = data.scope("Chat/Data/Inbox.xml", { provider = provider, identity = "chat:" .. user, host = host,
+            valid = function()
+                local active = self.client:getSession()
+                return self.sessionEpoch == epoch and active ~= nil and active.user.id == user
+            end })
+        self.scope:member("Rooms"):listen(function(query) self:inboxStatus(query) end)
+        self.scope:member("Contacts"):listen(function(query)
+            self.contacts, self.contactsById = {}, {}
+            for _, record in ipairs(query:records()) do
+                self.contacts[#self.contacts + 1] = record.raw
+                self.contactsById[record.key] = record.raw
+            end
+        end)
+        return self.scope
+    end,
+
+    -- The inbox status line reports a failed refresh; rows stay visible.
+    inboxStatus = function(self, query)
+        local status = self.homeStatus
+        if not status or query.mode ~= nil and not query.quiet then return end
+        local err = query.error
+        status:setTextContent(err and err.message or "")
+        status.Foreground = err and colors.error or colors.dim
+        status.Visible = err ~= nil
+    end,
+
+    -- A room changed elsewhere (renamed, left, pinned): update its record.
+    roomChanged = function(self, id, values)
+        local store = self.scope and self.scope.store
+        if not store then return end
+        if values == false then return store:remove("ChatRoom", id) end
+        if values then values.id = id; store:put("ChatRoom", values, { partial = true }) end
+        local record = store:get("ChatRoom", id)
+        if record then store:refresh(record) end
+    end,
+
+    repaint = function(self)
+        if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end
     end,
 
     -- Route constructors attach their controls before any request can yield.
@@ -131,6 +196,7 @@ local App = Application:extend {
     end,
 
     afterPaint = function(self)
+        if self.visibility then self.visibility:update() end
         if self.avatars then self.avatars:loadVisible() end
         if self.messagePhotos then self.messagePhotos:loadVisible() end
         if self.currentRoute == "/thread" then Timeline.loadNearTop(self) end
@@ -175,7 +241,7 @@ local App = Application:extend {
         local screen = ui.Screen {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             ClearColor = colors.background,
-            StyleSheet = "Chat/Styles/app.css",
+            StyleSheet = "Chat/Styles/app.css", class = "chat-" .. colors.appearance,
         }
         if content then screen:addChild(content) end
         return screen
@@ -196,6 +262,8 @@ local App = Application:extend {
 
     navigate = function(self, route, direction)
         if self.polling then self.polling:stop() end
+        -- Inbox polling follows the visible page; home() reactivates it.
+        if self.scope then self.scope:deactivate() end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
         local controller = self:dispatch(route or "/")
@@ -228,67 +296,6 @@ local App = Application:extend {
 
     roomTime = function(self, room)
         return C.time(room.updated_at or room.created_at)
-    end,
-
-    updateSearch = function(self)
-        local query = self.searchInput.Text or ""
-        if query == self.query then return end
-        self.query = query
-        self:renderRoomList()
-    end,
-
-    renderRoomList = function(self)
-        for _, list in pairs(self.roomLists) do
-            while list:getFirstChild() do list:getFirstChild():removeFromParent() end
-        end
-        local index = ({ All = 0, Unread = 1, Pinned = 2 })[self.filter]
-        if self.pivot.SelectedIndex ~= index then self.pivot.SelectedIndex = index end
-        -- Prepare neighboring pages before a swipe; selection only changes the viewport.
-        local query = self.query:lower()
-        for filter, list in pairs(self.roomLists) do
-            local visible = 0
-            for index, room in ipairs(self.rooms or {}) do
-                local unread = self:unread(room)
-                local matches = (room.name .. " " .. (room.subtitle or "")):lower():find(query, 1, true)
-                local inFilter = filter == "All" or (filter == "Unread" and unread > 0)
-                    or (filter == "Pinned" and self.pinned[room.id])
-                if matches and inFilter then
-                    visible = visible + 1
-                    local row = ui.Button {
-                        Name = "Room" .. index, Height = 76, Background = colors.background,
-                        class = "conversation", Click = function() self:openRoom(room) end,
-                    }
-                    local content = ui.Grid { Columns = "56px 1fr 44px", Spacing = 14, Padding = "0 10", IgnoreHitTest = true }
-                    content:addChild(C.avatar(room.name, 56, room.id, self, room.kind == "direct" and room.peer_id or nil))
-                    content:addChild(C.stack({ JustifyContent = "Center", Spacing = 2, IgnoreHitTest = true }, {
-                        C.text(room.name, { FontSize = 22, TextOverflow = "Ellipsis" }),
-                        C.text(room.subtitle or "Start the conversation", {
-                            FontSize = 14, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
-                        }),
-                    }))
-                    local meta = C.stack({ AlignItems = "End", Spacing = 8, Padding = "0 6", IgnoreHitTest = true }, {
-                        C.text(self:roomTime(room), { FontSize = 12, Foreground = unread > 0 and colors.accentText or colors.dim }),
-                    })
-                    if unread > 0 then meta:addChild(C.badge(unread, { Width = 20, Height = 20 }))
-                    elseif self.pinned[room.id] then meta:addChild(C.icon("pin", 14, colors.dim)) end
-                    content:addChild(meta); row:addChild(content); list:addChild(row)
-                end
-            end
-            if self.inboxIndicators then self.inboxIndicators[filter].Visible = self.rooms == nil and self.inboxError == nil end
-            if self.inboxError and not self.rooms then
-                list:addChild(C.stack({ Spacing = 12, Padding = "0 8" }, {
-                    C.text("Couldn't load conversations.", { FontSize = 22, Foreground = colors.muted }),
-                    C.button("Retry", function() self:show("/") end, { Name = "RetryInbox" .. filter }),
-                }))
-            elseif visible == 0 and self.rooms ~= nil then
-                list:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
-                    C.text(self.query ~= "" and "no conversations found" or "you're all caught up", { FontSize = 22, Foreground = colors.muted }),
-                    C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or swipe to another list.", {
-                        FontSize = 14, Foreground = colors.dim, WordWrap = true,
-                    }),
-                }))
-            end
-        end
     end,
 
     home = function(self)
@@ -338,74 +345,21 @@ local App = Application:extend {
             return screen
         end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
-        local epoch = self.sessionEpoch
-        local function refresh()
-            self.inboxError = nil
-            self:renderRoomList()
-            self:load(function()
-                local function current() return self.sessionEpoch == epoch and self.client:getSession() ~= nil end
-                if not current() then return end
-                local _, err = Sync.refreshInbox(self, current, true)
-                if self.sessionEpoch ~= epoch then return end
-                if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
-                self.inboxError = err
-                if err and not self.rooms then self:renderRoomList() end
-                self.homeStatus:setTextContent(err and err.message or "")
-                self.homeStatus.Foreground = err and colors.error or colors.dim
-                self.homeStatus.Visible = err ~= nil
-            end)
-        end
+        local scope = self:dataScope()
         if self.shell and self.shell:has("Chats") then
             self.status = self.homeStatus
-            self:renderRoomList()
-            refresh()
+            -- Returning to the inbox refreshes it quietly; rows stay in place.
+            scope:activate()
+            scope:member("Rooms"):refresh { quiet = true }
             return self.shell:show("Chats")
         end
-        self.status = C.text("", {
-            Name = "InboxStatus", Height = 24, SafeAreaEdge = "Bottom", class = "frosted", Visible = false,
-            FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
-        })
-        self.homeStatus = self.status
-        self.searchInput = C.input("Search", "search", {
-            Text = self.query, Submit = function() self:updateSearch() end, KeyUp = function() self:updateSearch() end,
-        })
-        local search = ui.Grid { Columns = "1fr 44px", Height = 48 }
-        search:addChild(self.searchInput)
-        search:addChild(C.iconButton("x", function()
-            self.query, self.searchInput.Text = "", ""; self:renderRoomList(); self.searchInput:setFocus()
-        end, { Name = "ClearSearch", Height = 48, Foreground = colors.textboxInk, Background = colors.textbox }))
-        -- The filters are pivot items: swipe or tap a header to switch lists.
-        local filters = { "All", "Unread", "Pinned" }
-        self.pivot = ui.Pivot { Name = "Inbox", Title = "Messenger", Foreground = colors.ink,
-            ExtendBodyBehindHeader = true, class = "toolbar-page",
-            SelectionChanged = function(pivot)
-                local filter = filters[pivot.SelectedIndex + 1]
-                self.filter = filter
-            end,
-        }
-        self.roomLists, self.inboxIndicators = {}, {}
-        for _, filter in ipairs(filters) do
-            local item = ui.PivotItem { Name = "Filter" .. filter, Header = filter }
-            self.roomLists[filter] = C.stack({ Name = "ConversationList" .. filter, Overflow = "hidden scroll" })
-            local area = ui.Node2D {}
-            area:addChild(self.roomLists[filter])
-            self.inboxIndicators[filter] = ui.ActivityIndicator { Name = "InboxLoading" .. filter, Foreground = colors.muted }
-            area:addChild(self.inboxIndicators[filter])
-            if filter == "All" then
-                local body = ui.Node2D {}
-                body:addChild(area)
-                body:addChild(C.toolbar("Top", { search }, { Name = "SearchBar", Padding = "20 0 20 12" }))
-                item:addChild(body)
-            else
-                item:addChild(area)
-            end
-            self.pivot:addChild(item)
-        end
-        local grid = ui.Node2D { Background = colors.background }
-        grid:addChild(self.pivot); grid:addChild(self.status)
-        local screen = self:frame(grid, "Chats")
-        self:renderRoomList()
-        refresh()
+        local page = assert(filesystem.loadObject("Chat/Pages/Inbox"), "Missing Chat/Pages/Inbox")
+        scope:attach(page)
+        self.status = assert(page:findChild("InboxStatus"))
+        self.homeStatus, self.pivot = self.status, page:findChild("Inbox")
+        self.visibility:watch(page, scope)
+        local screen = self:frame(page, "Chats")
+        scope:activate()
         return screen
     end,
 
@@ -701,6 +655,10 @@ local App = Application:extend {
             if self.polling then
                 if message:is("Window.Deactivated") then self.polling:setForeground(false)
                 elseif message:is("Window.Activated") then self.polling:setForeground(true) end
+            end
+            if self.scope then
+                if message:is("Window.Deactivated") then self.scope:setForeground(false)
+                elseif message:is("Window.Activated") then self.scope:setForeground(true) end
             end
             if self.push then
                 if message:is("Window.Deactivated") then self.push:setForeground(false)
