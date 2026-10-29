@@ -56,10 +56,12 @@ Record timings and request identity without logging credentials or private URLs.
   coroutine finishes can conceal the preview until the full image arrives.
   Request a paint from the preview update using the app's existing repaint path.
 
-Relevant implementations are [Chat loader](../../apps/chat/photo_loader.lua),
-[Chat viewer](../../apps/chat/views/photo_viewer.lua),
-[photo API](../../apps/chat/api/features.lua) and
-[Octopus loader](../../apps/octopus/photo_loader.lua).
+Relevant implementations are the [media runtime](../../share/orca/data/media.lua)
+(declared as `<Media>` in a scope, see [data-driven screens](datasources.md)),
+the media functions of the [Chat provider](../../apps/chat/providers/chat.lua) and
+[Octopus provider](../../apps/octopus/providers/octopus.lua),
+[Chat viewer](../../apps/chat/views/photo_viewer.lua) and
+[photo API](../../apps/chat/api/features.lua).
 
 ## Keep the two stages distinct
 
@@ -139,7 +141,7 @@ before a queued worker starts. Assert that preview callbacks neither complete
 the operation nor populate the final cache.
 
 Use the smallest affected offline suites: `tests/test_chat_api.lua`,
-`tests/test_chat_appwrite.lua`, `tests/test_chat_photo_loader.lua`,
+`tests/test_chat_appwrite.lua`, `tests/test_data_runtime.lua`,
 `tests/test_chat_photo_viewer.lua`, `tests/test_chat_timeline.lua`, or the matching
 Octopus API/photo tests. Follow [Testing](../TESTING.md); live backend checks
 remain explicitly requested work.

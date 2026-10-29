@@ -171,20 +171,17 @@ property binding system and do not recreate the row. A source replacement can
 retain rows if it contains the same DataObjects; a fresh service table with the
 same ID is not itself the same native record.
 
-The [ItemsView adapter](../../share/orca/UIKit/ItemsView.lua) is the small Lua
-presentation boundary used by Chat and Octopus. It maps service keys to stable,
-typed DataObjects and batches membership edits. Native ItemsControl owns view
-creation and ordering; XML owns the layout. Its `record(name, columns)` registers
-a presentation schema once, and `new { node, template, record, key, fields,
-update }` creates a collection presenter. `presenter:refresh(values)` updates
-bound fields and returns retained `{ key, data, node, value }` entries. An
-optional update hook wires actions or photo loading; it must not duplicate the
-XML row layout. Give this adapter a container whose children it owns.
+Application collections come from the data runtime: a declared query or view
+is the `ItemsSource`, the store keeps one typed DataObject per record key, and
+rows are retained while their record stays in the collection. See
+[data-driven screens](datasources.md) for schemas, scopes, queries, commands,
+drafts, media, routes and the scroll policy. Lua code does not create rows or
+wire per-row callbacks; a row's buttons name commands and receive the record
+the row presents.
 
 Templates can share sections with bound `Visible` properties. Chat derives
 text, captioned-photo and photo-only presentation flags, sender grouping and
-tails from the message model; it keeps the last photo's timestamp overlay
-outside the loader's replaceable content. StateManager remains useful for
+tails in computed columns and the conversation query's `Arrange` hook. StateManager remains useful for
 property overrides controlled by a host state. Neither mechanism requires
 recreating a whole screen when a caption or delivery field changes.
 
@@ -195,13 +192,12 @@ node's DataContext through `DataContext/...` reads the inherited context rather
 than its own previous binding result. Missing object sources clear the target.
 
 This is a retained collection and binding foundation, not full WPF parity:
-there is no virtualizing item panel, collection-view sorting/filtering layer,
-automatic template selector, or automatic observation of arbitrary Lua tables.
-Low-level collection observers receive native messages; assigning a Lua
-`CollectionChanged` callback alone does not register synchronous observation.
-Use ItemsControl/ItemsView for Lua application collection presentation.
-Preserve reading anchors, focus, drafts and selection deliberately at the app
-boundary; retained row identity alone does not define a scrolling policy.
+there is no virtualizing item panel, automatic template selector, or automatic
+observation of arbitrary Lua tables. Filtering, sorting and selection are
+declared `<View>` members. Low-level collection observers receive native
+messages; assigning a Lua `CollectionChanged` callback alone does not register
+synchronous observation. Reading anchors are a policy
+(`orca.data.scroll.keep`); drafts and selection belong to edits and views.
 
 ## Requests and view lifetimes
 

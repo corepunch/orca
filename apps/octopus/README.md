@@ -66,12 +66,18 @@ While an authenticated editor, authentication form, comment draft, reply target,
 or comment submission is active, appearance changes wait until it is left or
 completed. Chrome keeps using the same app palette throughout that wait.
 
-Post cards and comments use XML templates under `Templates/`, with typed
-presentation records in `views/presentation.lua`. `orca.UIKit.ItemsView` maps
-service IDs to retained DataObjects; native ItemsControl owns repeated rows and
-observes source changes. Refreshing a feed or a comment thread keeps surviving
-rows and updates their bindings. The detail page shares `PostBody.xml`, whose
-bound sections support text, photos, links, and quotes with optional photos.
+Screens are declared data (see [data-driven screens](../../docs/app/datasources.md)).
+`Data/Octopus.Schema.xml` holds posts, people, comments and drafts; `Data/*.xml`
+declares Discover, feeds, search, profiles, the post page (`Post.xml`),
+writing (`Compose.xml`) and the profile editor (`Me.xml`). `providers/octopus.lua`
+implements their operations over the API client. Post cards and comments use
+XML templates under `Templates/`; the store keeps one record per post, so a
+like or comment count updates every feed that shows it. Refreshing a feed or a
+comment thread keeps surviving rows and updates their bindings. The post page
+presents the `Post` record in `PostDetail`, whose bound sections support text,
+photos, links, and quotes with optional photos. Comment, post and profile forms
+are edits: they keep input on failure and text typed while a submit is pending.
+The guest welcome, authentication forms and page chrome remain Lua.
 
 ## Run
 
@@ -202,13 +208,13 @@ loading and private temporary images. Two processes should use different cache
 directories. Account-specific data continues to use the original source access
 checks; the materialized feed is for content intended to remain public.
 
-`photo_loader.lua` checks unloaded photo frames after painting, including scroll
-offsets, clipping, Pivot positions and hidden pages. Only photos intersecting
-the viewport are requested, with at most two requests at once. Repeated photos
-share a request and cached file; each card owns its image view. Downloads that
-finish after navigation or sign-out cannot update an inactive view. Failed
-downloads or image decode failures show a centered broken-image icon in the reserved photo area; tapping
-that area retries the download. Photos use a white image tint in both themes.
+Photos are the `Photos` media member in `Data/Posts.xml`. After painting, the
+visibility tracker reports which rows intersect the viewport, including scroll
+offsets, clipping, Pivot positions and hidden pages; only those are requested,
+with a bounded number of requests at once. Repeated photos share a request and
+cached file. Downloads that finish after navigation or sign-out are discarded.
+Failed downloads or image decode failures show a centered broken-image icon in
+the reserved photo area; tapping that area retries the download. Photos use a white image tint in both themes.
 Posts and feed summaries store optional `imageWidth`/`imageHeight`, derived from
 uploaded image headers with EXIF rotation applied. These dimensions reserve a
 gray frame before loading, preserving the feed's 4:5 to 1.91:1 crop limits.

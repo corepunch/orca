@@ -348,6 +348,28 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 - **Tree or nested structures** where depth is a property of data, not of layout.
 - **Data that may change** — binding keeps the layout static and lets data drive appearance.
 
+### Service data: ItemsStack and data scopes
+
+For lists that come from a service, bind a declared query or view instead of a
+static data file:
+
+```xml
+<ItemsStack Name="Rooms" ItemNamePrefix="Room"
+            ItemsSource="{Binding DataContext/AllRooms/Items}"
+            ItemTemplate="Chat/Templates/RoomRow"/>
+```
+
+- `ItemsStack` is a vertical `StackView` with an `ItemsControl`; rows are
+  retained while their record stays in the collection.
+- `ItemNamePrefix` names each row after its record's `ObjectName`
+  (`Room<id>`), so tests and tools can find rows by data.
+- `StateClasses="{Binding DataContext/State}"` adds style classes from data
+  (`liked pending`) and restyles the subtree; keep the colours in CSS.
+- Loading, empty and error views bind query state
+  (`DataContext/Rooms/ShowLoading`, `ShowEmpty`, `ShowError`).
+
+See [data-driven screens](app/datasources.md).
+
 ### When to keep explicit layout
 
 - **Unique, non-repeating sections** (hero, header, footer) — the layout *is* the structure, not a template.

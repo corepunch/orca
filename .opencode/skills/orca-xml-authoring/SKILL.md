@@ -38,8 +38,9 @@ or browser behavior.
 5. Bind repeated layout to data with `ItemsSource`, `ItemTemplate`, and
    `{Binding DataContext/...}` instead of duplicating nodes. ItemsControl
    observes native DataObject collection changes and retains rows by record
-   identity; replacing ItemTemplate recreates generated rows. Plain Lua tables
-   need a typed presentation adapter such as ItemsView.
+   identity; replacing ItemTemplate recreates generated rows. Bind a declared
+   data query or view (`docs/app/datasources.md`); plain Lua tables are not
+   sources. Pages loaded by the Lisp build need `.lisp` twins.
 6. Use exact generated property names. Qualify inherited properties when it
    removes ambiguity, such as `Node.PaddingLeft`.
 

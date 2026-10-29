@@ -71,9 +71,12 @@ return Controller
   actions. Use the controller for computation, validation, runtime state, or
   data mutation.
 - Native ItemsControl observes DataObject membership and source/template
-  changes and retains generated rows by record identity. Use typed records;
-  ItemsView maps service keys to stable DataObjects. Batch multiple membership
-  edits with beginUpdate/endUpdate; send ItemsControl.Refresh for immediate rows.
+  changes and retains generated rows by record identity. Bind a declared
+  query or view (`docs/app/datasources.md`); the data store maps service keys to
+  stable DataObjects. Handler names resolve through the scope (`Cmd`,
+  `Member.Action`) and receive the row's record. Check pages with
+  `orca.data.lint`. For hand-built sources, batch membership edits with
+  beginUpdate/endUpdate; send ItemsControl.Refresh for immediate rows.
   Adventure's manual rows are not a template ownership standard.
 
 ## Diagnose in layers

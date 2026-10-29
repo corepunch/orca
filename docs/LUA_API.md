@@ -37,7 +37,7 @@ Use this file when changing Lua-visible behavior.
 - Schema files (`DS_ParseSchema`, `DS_ParseSchemaFromString` in `source/data/data_schema.c`) register `ClassDesc` entries with typed column properties.
 - Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself. Root and child collection bindings export Object pointers; missing object sources clear the destination.
 - DataObject child changes notify ItemsControl automatically. Use `addChild`, `removeFromParent`, `clear`, and `moveBefore(sibling)`; moving within a parent preserves lifecycle and references. `beginUpdate()` / `endUpdate()` batch membership notifications, including nested batches.
-- `orca.UIKit.ItemsView` maps keyed Lua records to stable typed presentation DataObjects and native item templates. See [collections](app/index.md#state-bindings-and-collections).
+- `orca.data` declares schemas, scopes, queries, views, commands, edits, media and routes for data-driven screens; `orca.data.lint` checks page bindings and `orca.data.fixtures` previews providers offline. See [data-driven screens](app/datasources.md).
 
 ## HTTP responses and private sessions
 

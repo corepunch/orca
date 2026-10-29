@@ -32,10 +32,11 @@ documents rather than duplicating them in skills.
 3. Separate UI composition, event handling, application state, and service
    transport. Add only the modules the application actually needs.
 4. Define how service data reaches bindings. Plain Lua tables are not automatic
-   observable `DataContext` sources. Use typed DataObjects and native
-   ItemsControl for retained collection updates; ItemsView maps service keys to
-   stable records and batches membership edits. Keep row layout in templates,
-   and actions/presentation calculations in the controller.
+   observable `DataContext` sources. For lists, details and forms, declare a
+   schema and scope (`Data/*.xml`) over a provider and bind queries, views,
+   commands and edits from XML; see `docs/app/datasources.md` and the
+   `apps/ledger` example. Keep row layout in templates, domain rules in the
+   provider, and only page chrome and multi-step flows in Lua.
 5. Keep requests out of layout construction where possible. Use the supported
    coroutine context, explicit loading/error state, and a view/request lifetime
    check when results can arrive after navigation or a newer request.
