@@ -17,6 +17,10 @@ in the Lisp build. When a test file mixes both kinds of case, keep the
 format-independent cases in `tests/` and move the others to
 `tests/<format>/test_<name>_<format>.lua`.
 
+Applications other than `apps/Example` are XML-only (Lisp is an experiment).
+A test that loads such an app's pages joins `XML_APP_LUA_TESTS` in the
+Makefile and runs only in the XML build.
+
 ```bash
 make test-headless                                              # XML build
 make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless # Lisp build

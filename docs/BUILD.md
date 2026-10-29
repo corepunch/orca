@@ -54,7 +54,8 @@ make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless
 
 Use separate output directories to keep both binaries. `test-headless` runs the
 common engine tests and the selected-format loader regression in both builds;
-Lisp application/fixture tests run only in the Lisp build. `test-scene-format`
+Lisp fixture tests run only in the Lisp build, and application tests that load
+pages (`XML_APP_LUA_TESTS`) run only in the XML build. `test-scene-format`
 is the focused selection test.
 
 Define `ORCA_USE_LISP` in any build system to choose Lisp, as declared in
@@ -72,9 +73,10 @@ reader. Parser selection lives in one `fs_scene.c` block; the configuration
 header contains the other format-selection block. The readers share object
 construction and registration through one immutable descriptor.
 
-Example and MvvmForms include both XML and Lisp scenes; extensionless startup
-paths select the matching assets. Other applications still using XML require
-the default XML build. This switch concerns scene
+Applications are authored in XML. Lisp is an experimental format: only
+`apps/Example` includes Lisp scenes, and its extensionless startup paths select
+the matching assets. Every other application requires the default XML build;
+do not add `.lisp` twins to them. This switch concerns scene
 reading only. XML data/schema parsing, libxml2, and both serialization utilities
 remain available independently.
 
