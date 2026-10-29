@@ -1,0 +1,24 @@
+<!-- A post page (Pages/Post.xml): the post record, its comments in thread
+     order and the comment bar. A new scope per visit; the post record is the
+     one feeds share, so reactions show everywhere. -->
+<DataScope Name="Post" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Include Path="Octopus/Data/Posts.xml"/>
+  <Query Name="Detail" Entity="OctopusPost" Operation="post" Require="PostId" Loaded="enrich"
+         Description="The full post; a feed may only have an excerpt.">
+    <Param Name="PostId" Type="string"/>
+  </Query>
+  <Query Name="Comments" Entity="OctopusComment" Operation="comments" Require="PostId" Loaded="commentStats"
+         Description="Comments with their replies; like counts arrive separately.">
+    <Param Name="PostId" Type="string"/>
+  </Query>
+  <Command Name="LikeComment" Operation="likeComment" Parameter="Item" Concurrency="parallel"/>
+  <Command Name="Reply" Operation="reply" Parameter="Item" Sync="true"/>
+  <Command Name="SendComment" Operation="sendComment" Invalidates="Comments Detail"
+           Description="Posts the comment bar; the draft stays when it fails."/>
+  <Command Name="DeletePost" Operation="deletePost" Description="Deletes the post after a second tap."/>
+  <Edit Name="Draft" Entity="OctopusCommentDraft" Submit="SendComment" Validate="comment"/>
+  <Handler Name="CancelReply"/>
+  <Handler Name="CopyLink"/>
+  <Handler Name="SignInToComment"/>
+  <Expose Name="Post" Entity="OctopusPost"/>
+</DataScope>

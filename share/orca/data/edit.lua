@@ -11,10 +11,16 @@ Edit.STATE = { "IsDirty", "IsValid", "HasError", "ErrorMessage", "IsSubmitting",
 -- def: name, entity (draft entity), validate(values, context) -> errors | nil
 -- (field -> message, `_` for the form), submit (command name), copy
 -- (draft field -> record column for edit copies), keyed (per-key drafts),
--- clearOnSuccess (default true), canSubmit(values, context).
+-- clearOnSuccess (default true), canSubmit(values, context),
+-- submitted(ok, result, err, info, edit) after each submit finishes, where
+-- info is { key, visible (its draft is the current one), cleared (nothing
+-- was typed while it was pending) }.
+local NOKEY = {}
+local function id(key) if key == nil then return NOKEY end return key end
+
 function Edit.new(scope, def)
     local self = setmetatable({ scope = scope, def = def, name = assert(def.name, "Edit needs a name"),
-        drafts = {}, base = {}, errors = {} }, Edit)
+        drafts = {}, base = {}, errors = {}, pending = {} }, Edit)
     self.entity = scope.store:entity(assert(def.entity, "Edit " .. self.name .. " needs Entity"))
     self.draft = self.entity:instantiate()
     self.draft.Name = self.name
@@ -62,6 +68,8 @@ function Edit:dirty()
 end
 
 function Edit:publish()
+    -- Each keyed draft has its own submission; the current key's shows.
+    self.submitting = self.pending[id(self.key)] ~= nil
     local values = self:values()
     local valid = true
     if self.def.validate then valid = self.def.validate(values, self.scope.context) == nil end
@@ -145,7 +153,8 @@ local function settle(self, snapshot)
 end
 
 function Edit:submit(params)
-    if self.submitting then return false, "busy" end
+    local key = self.key
+    if self.pending[id(key)] then return false, "busy" end
     local snapshot = self:values()
     local errors = self.def.validate and self.def.validate(snapshot, self.scope.context)
     if errors then
@@ -157,12 +166,15 @@ function Edit:submit(params)
     local target = self.target
     params = params or {}
     params.draft, params.edit, params.target = snapshot, self, target
-    self.submitting, self.errors = true, {}
+    params.key = key
+    self.pending[id(key)], self.errors = true, {}
     self:publish()
-    local started = command:execute(params, function(ok, _, err)
-        self.submitting = false
-        if ok then
+    local started = command:execute(params, function(ok, result, err)
+        self.pending[id(key)] = nil
+        local visible, cleared = self.key == key, true
+        if ok and visible then
             local keep = settle(self, snapshot)
+            cleared = next(keep) == nil
             if target and self.target == target then
                 self.target = nil
                 self:write(self.stashed or {})
@@ -173,13 +185,24 @@ function Edit:submit(params)
             self.base = {}
             for _, column in ipairs(self.entity.columns) do self.base[column.name] = column.default end
             if self.key ~= nil then self.drafts[self.key] = nil end
-        elseif err and err.code ~= "stale" and err.message then
+        elseif ok and self.def.clearOnSuccess ~= false then
+            -- Another draft is showing: settle the saved one the same way.
+            local keep = {}
+            for name, value in pairs(self.drafts[key] or {}) do
+                if value ~= snapshot[name] then keep[name] = value end
+            end
+            cleared = next(keep) == nil
+            self.drafts[key] = not cleared and keep or nil
+        elseif visible and err and err.code ~= "stale" and err.message then
             self.errors = { _ = err.message or "Could not save. Your changes are still here." }
         end
-        self:publish()
+        if not self.disposed then self:publish() end
+        if self.def.submitted then
+            self.def.submitted(ok, result, err, { key = key, visible = visible, cleared = cleared }, self)
+        end
     end)
     if not started then
-        self.submitting = false
+        self.pending[id(key)] = nil
         self:publish()
     end
     return started
@@ -188,6 +211,7 @@ end
 -- Forget saved drafts (sign-out).
 function Edit:clear()
     self.drafts, self.key, self.target, self.stashed, self.errors = {}, nil, nil, nil, {}
+    self.pending = {}
     self:write({})
     self:publish()
 end

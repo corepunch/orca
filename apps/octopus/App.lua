@@ -11,7 +11,6 @@ local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
-local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local PageTransition = require "orca.UIKit.PageTransition"
 local data = require "orca.data"
 local Visibility = require "orca.data.visibility"
@@ -42,7 +41,6 @@ local App = Application:extend {
         self.clock = self.client and self.client.clock or os.time
         self.media = options.media or require("Octopus/media").new { cache = cache }
         self.publicCache = cache
-        self.photos = require("Octopus/photo_loader").new(self)
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         self:resetSessionViews()
     end,
@@ -54,6 +52,7 @@ local App = Application:extend {
         -- Each reader (a guest or an account) gets its own records.
         self:eachScope(function(scope) scope:dispose() end)
         self.reader, self.scope, self.transientScope, self.searchScope, self.meScope = nil, nil, nil, nil, nil
+        self.composeScope = nil
         self.visibility = Visibility.new()
         if self.media and self.media.clear then self.media:clear() end
         -- Persist only public guest images; authenticated media stays temporary.
@@ -61,21 +60,9 @@ local App = Application:extend {
             if self.client and self.client:getSession() then self.media.cache = nil
             else self.media.cache = self.publicCache end
         end
-        if self.avatars then self.avatars:clear() end
-        self.avatarPaths = {}
-        self.avatars = AvatarLoader.new(self, {
-            lookup = function(ids) return self.client:avatars(ids) end,
-            fetch = function(id) return self.client:getImage(id, "avatar") end,
-            cached = function(id) return self.media:path("avatar:" .. id) end,
-            store = function(bytes, id) return self.media:store(bytes, "avatar:" .. id) end,
-            apply = C.photo,
-            schedule = function(fn) self:task(fn) end,
-            repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
-        })
         self.shell, self.status, self.statusBar, self.pivot = nil, nil, nil, nil
-        self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
-        self.composeDrafts = { text = self.composeDraft }
-        self.thread, self.profileView, self.composeView = nil, nil, nil
+        self.searchState, self.commentDrafts = { query = "" }, {}
+        self.thread, self.profileView = nil, nil
         -- Readers start on their own timeline; guests on discover.
         self.feed = self.client and self.client:getSession() and "home" or "discover"
     end,
@@ -83,9 +70,13 @@ local App = Application:extend {
     -- One provider and store per reader (a guest or an account): every page
     -- scope shares them, so a post or person has one record across pages.
     readerData = function(self)
-        if self.reader and self.reader.epoch == self.sessionEpoch then return self.reader end
         local session = self.client:getSession()
         local user = session and session.user.id or "guest"
+        if self.reader and self.reader.epoch == self.sessionEpoch then
+            if self.reader.user == user then return self.reader end
+            -- The session changed underneath the views: start them over.
+            self:resetSessionViews()
+        end
         local provider = OctopusProvider.new {
             client = self.client, media = self.media, now = function() return self.clock() end,
             openPost = function(post) self:openPost(post) end,
@@ -98,6 +89,37 @@ local App = Application:extend {
             signUp = function(route) self.authReturn = route; self:show("/auth/signup") end,
             invalidateFeeds = function(names) self:invalidateFeeds(names) end,
             repaint = function() self:repaint() end,
+            readerId = function() return session and session.user.id end,
+            -- The full post replaces a feed excerpt as the page's current post.
+            postLoaded = function(post)
+                if self.thread and self.thread.post.id == post.id then self.thread.post, self.post = post, post end
+            end,
+            commentSent = function(postId)
+                self.commentDrafts[postId] = nil
+                self:invalidateFeeds()
+            end,
+            postDeleted = function()
+                self:invalidate()
+                self.post = nil
+                self:goBack(self.postReturn and self.postReturn ~= "/post" and self.postReturn or "/")
+            end,
+            focusComment = function()
+                local input = self.thread and self.thread.input
+                if input then input:setFocus() end
+            end,
+            -- A publish whose draft is showing and fully sent opens the post.
+            published = function(post, info)
+                self:invalidate()
+                if not info.visible or self.currentRoute ~= "/write" then return end
+                if info.cleared then
+                    self.post, self.postReturn = post, "/"
+                    self:show("/post", "Forward")
+                else self:notice("Published. Your newer edits are kept.") end
+            end,
+            copyLink = function(url)
+                system.set_clipboard(url)
+                self:notice("Link copied: " .. url)
+            end,
         }
         local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"),
             scope = "octopus:" .. user, computed = provider.computed }
@@ -143,9 +165,8 @@ local App = Application:extend {
         return self.transientScope
     end,
 
-    -- A new profile photo: Lua-built tiles and every scope's records reload it.
+    -- A new profile photo: every scope's records reload it.
     avatarChanged = function(self, userId)
-        self.avatars:invalidate(userId)
         self:eachScope(function(scope)
             local avatars = scope:member("Avatars")
             if avatars then avatars:invalidate(userId) end
@@ -196,14 +217,8 @@ local App = Application:extend {
         if self.screen then pcall(function() self.screen:post("Window.Paint", renderer.getSize()) end) end
     end,
 
-    avatarPhoto = function(self, tile, userId)
-        if self.client and self.media then self.avatars:watch(tile, userId) end
-    end,
-
     afterPaint = function(self)
         if self.visibility then self.visibility:update() end
-        if self.avatars then self.avatars:loadVisible() end
-        if self.photos then self.photos:loadVisible() end
     end,
 
     frame = function(self, content, tab)
@@ -304,10 +319,10 @@ local App = Application:extend {
     invalidate = function(self)
         self.searchState.results = nil
         self:invalidateFeeds()
-        -- The home page is bound to the feeds; other root pages rebuild.
+        -- Home and Write are bound to their scopes; other root pages rebuild.
         if self.shell then
             for _, page in ipairs(Shell.pages) do
-                if page.key ~= "Home" then C.clear(self.shell.pages[page.key]) end
+                if page.key ~= "Home" and page.key ~= "Write" then C.clear(self.shell.pages[page.key]) end
             end
         end
     end,
@@ -359,7 +374,7 @@ local App = Application:extend {
         if route == "/auth" or route == "/auth/signup" then return false end
         if (route == "/me" or route == "/write") and self.client and self.client:getSession() then return false end
         local thread = route == "/post" and self.thread
-        if thread and (thread.sending or thread.replyTo or (thread.input and (thread.input.Text or "") ~= "")) then return false end
+        if thread and Thread.busy(thread) then return false end
         if not colors.refresh() then return false end
         -- Rebuild retained pages too; navigation captures input drafts and
         -- invalidates pending view work without replacing the client/session.

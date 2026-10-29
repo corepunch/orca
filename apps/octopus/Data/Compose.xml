@@ -1,0 +1,15 @@
+<!-- The write tab (Pages/Write.xml): one draft per kind of post. Publishing
+     sends a snapshot; text typed meanwhile stays, and a publish that is
+     still running belongs to its own kind's draft. -->
+<DataScope Name="Compose" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Command Name="Publish" Operation="publish" Concurrency="queue"
+           Description="Creates the post; a photo uploads first. Failures keep the draft."/>
+  <Edit Name="Draft" Entity="OctopusPostDraft" Submit="Publish" Submitted="published"/>
+  <Handler Name="SelectKind"/>
+  <Handler Name="ChoosePhoto"/>
+  <Handler Name="RemovePhoto"/>
+  <Handler Name="SignInToWrite"/>
+  <Handler Name="SignUpToWrite"/>
+  <Expose Name="Composer" Entity="OctopusComposer"/>
+  <Expose Name="Reader" Entity="OctopusReader"/>
+</DataScope>

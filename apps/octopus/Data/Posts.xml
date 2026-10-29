@@ -17,5 +17,6 @@
     <Target Entity="OctopusPost" Id="AuthorId" Path="AvatarPath"/>
     <Target Entity="OctopusActivity" Id="UserId" Path="AvatarPath"/>
     <Target Entity="OctopusProfile" Id="UserId" Path="AvatarPath"/>
+    <Target Entity="OctopusComment" Id="AuthorId" Path="AvatarPath"/>
   </Media>
 </DataScope>

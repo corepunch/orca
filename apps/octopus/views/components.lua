@@ -123,35 +123,6 @@ function C.input(name, placeholder, props)
     return ui.Input(props)
 end
 
-local function tone(key)
-    return colors.avatar[Format.tone(key, #colors.avatar)]
-end
-
-C.initials = Format.initials
-
--- Square Metro avatar tile: the person's initials until `app` has their
--- profile photo. `key` is their user ID.
-function C.avatar(name, size, key, app)
-    local color = tone(key or name or "")
-    size = size or C.AVATAR
-    local tile = ui.Grid { Width = size, Height = size, Background = color.background, IgnoreHitTest = true }
-    tile:addChild(C.text(C.initials(name), {
-        FontSize = size < 40 and 13 or (size > 80 and 34 or 19), Foreground = color.foreground,
-        TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
-    }))
-    if app and key then app:avatarPhoto(tile, key) end
-    return tile
-end
-
--- Replace an avatar tile's initials with a photo file. White keeps the
--- photo's own colours under the theme's ink.
-function C.photo(tile, path)
-    local image = ui.ImageView { Name = "AvatarPhoto", Src = path, Foreground = "#ffffff",
-        Stretch = "UniformToFill", IgnoreHitTest = true }
-    image:send("Node.LoadView")
-    if image.Source then C.clear(tile):addChild(image) end
-end
-
 -- Group header, as in a Windows Phone long list: lowercase in the accent.
 function C.eyebrow(value, props)
     props = props or {}

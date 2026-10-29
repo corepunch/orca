@@ -255,7 +255,7 @@ find(app, "SearchInput").Text = "maya"
 click(app, "RunSearch")
 assert(find(app, "Personu-maya"), "Search finds people")
 click(app, "AppBarWrite")
-assert(find(app, "WriteSignIn"), "Writing needs an account")
+assert(isShown(find(app, "WriteSignIn")) and not isShown(find(app, "WriteForm")), "Writing needs an account")
 
 -- Sign in from the write page and come back to it.
 click(app, "WriteSignInButton")
@@ -270,7 +270,7 @@ assert(find(app, "AppBarSignOut") and not app.screen:findChild("AppBarSignIn", t
 
 -- Publish a quote, which opens the new post.
 click(app, "Kindquote")
-assert(find(app, "QuoteText") and not app.screen:findChild("PostTitle", true))
+assert(isShown(find(app, "QuoteText")) and not isShown(find(app, "PostTitle")))
 click(app, "Publish")
 assert(text(find(app, "WriteStatus")) == "Quote text is required.")
 find(app, "QuoteText").Text = "Less, but better."
@@ -297,7 +297,7 @@ assert(stat("comments") == "1")
 local comments = app.client:listComments(published)
 assert(#comments == 1 and comments[1].body == "Adding a source link later.")
 local retainedComment = find(app, "Comment" .. comments[1].id)
-click(app, "Reply" .. comments[1].id)
+clickIn(app, "Comment" .. comments[1].id, "Reply")
 assert(isShown(find(app, "ReplyBar")))
 find(app, "CommentInput").Text = "Done."
 require("Octopus/views/thread").send(app, app.thread)
@@ -411,7 +411,7 @@ local fields = { "PostTitle", "PostContent", "PhotoCaption", "QuoteText", "Quote
     "LinkTitle", "LinkUrl", "LinkDescription", "ChoosePhoto" }
 local function form(expected)
     for _, name in ipairs(fields) do
-        assert((writer.screen:findChild(name, true) ~= nil) == (expected[name] == true), "Wrong field: " .. name)
+        assert(isShown(find(writer, name)) == (expected[name] == true), "Wrong field: " .. name)
     end
     assert(find(writer, "PostTags") and find(writer, "Publish"))
 end
@@ -454,7 +454,7 @@ local imageBytes = assert(writer.client:getImage("f-reef"))
 writer.media.pick = function() return { jpeg = imageBytes } end
 click(writer, "ChoosePhoto")
 assert(isShown(find(writer, "PhotoPreview")) and find(writer, "RemovePhoto"))
-local photoDraft = writer.composeDraft
+local function draftKind() return writer.composeScope:member("Draft").key end
 click(writer, "Kindquote")
 form { QuoteText = true, QuoteSource = true, QuoteThoughts = true, ChoosePhoto = true }
 assert(find(writer, "QuoteText").Text == "" and not isShown(find(writer, "QuotePhotoPreview")),
@@ -485,19 +485,19 @@ assert(writer.post.postType == "link" and writer.post.linkUrl == "https://exampl
 back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindphoto")
-assert(writer.composeDraft == photoDraft and isShown(find(writer, "PhotoPreview")))
+assert(draftKind() == "photo" and isShown(find(writer, "PhotoPreview")))
 local upload = writer.client.uploadImage
 writer.client.uploadImage = function() return nil, { code = "network", message = "Upload failed." } end
 click(writer, "Publish")
 assert(writer.currentRoute == "/write" and text(find(writer, "WriteStatus")) == "Upload failed. Your draft is safe."
-    and writer.composeDraft.photo and find(writer, "PhotoCaption").Text == "A photo draft"
+    and writer.reader.provider.draftPhoto("photo") and find(writer, "PhotoCaption").Text == "A photo draft"
     and not find(writer, "Publish").IgnoreHitTest, "Upload failures keep the complete draft and allow retry")
 writer.client.uploadImage = upload
 click(writer, "Publish")
 writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
 writer:afterPaint()
 drain(writer)
-assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "Image" .. writer.post.id))
+assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "PostDetail"):findChild("Image", true))
 back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindquote")
@@ -507,7 +507,7 @@ writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
 writer:afterPaint()
 drain(writer)
 assert(writer.post.postType == "quote" and writer.post.quoteSource == "A friend" and writer.post.userText == "A good reminder."
-    and writer.post.imageId and find(writer, "Image" .. writer.post.id), "Quote photos are published and displayed")
+    and writer.post.imageId and find(writer, "PostDetail"):findChild("Image", true), "Quote photos are published and displayed")
 
 -- A pending publish belongs to its draft, even after leaving and returning to it.
 back(writer)
@@ -529,7 +529,7 @@ click(writer, "Kindlink")
 writer.task = inline
 pending[1]()
 drain(writer)
-assert(writer.currentRoute == "/write" and writer.composeDraft.postType == "link"
+assert(writer.currentRoute == "/write" and draftKind() == "link"
     and find(writer, "LinkTitle").Text == "A different draft", "Finishing a publish preserves the current form")
 click(writer, "Kindtext")
 assert(find(writer, "PostContent").Text == "Newer edits" and not find(writer, "Publish").IgnoreHitTest,
@@ -650,22 +650,27 @@ for key, value in pairs(assert(hello)) do summary[key] = value end
 summary.content = "Only the feed excerpt"
 delayed:openPost(summary)
 drain(delayed)
-local threadRequest = requests[threadStart + 2]
+-- The full post and the comments are independent requests.
+local detailRequest, commentsRequest = requests[threadStart], requests[threadStart + 1]
 assert(delayed.thread.post.content == "Only the feed excerpt")
-step(requests[threadStart])
+step(detailRequest)
 assert(delayed.thread.post.content == hello.content and delayed.post == delayed.thread.post,
     "Full detail replaces the feed summary in both the displayed view and current post")
-step(requests[threadStart + 1]); step(requests[threadStart + 1])
-step(threadRequest)
-assert(text(find(delayed, "Statlikes")) == "2" and find(delayed, "CommentsLoading"),
+local postStats = requests[#requests]
+step(postStats); step(postStats)
+programs(delayed)
+assert(text(find(delayed, "Statlikes")) == "2" and find(delayed, "CommentsLoading").Visible,
     "Post counts populate before comments finish loading")
-step(threadRequest)
+step(commentsRequest); step(commentsRequest)
+programs(delayed)
 local retainedComment = find(delayed, "Commentc-welcome")
-assert(retainedComment and not delayed.screen:findChild("CommentsLoading", true)
-    and find(delayed, "LikeCommentc-welcome").IgnoreHitTest,
+assert(retainedComment and not find(delayed, "CommentsLoading").Visible
+    and inside(delayed, "Commentc-welcome", "Like").IgnoreHitTest,
     "Comments appear before their like counters return, with unsafe reactions disabled")
-step(threadRequest)
-assert(find(delayed, "Commentc-welcome") == retainedComment and not find(delayed, "LikeCommentc-welcome").IgnoreHitTest,
+local commentStats = requests[#requests]
+step(commentStats); step(commentStats)
+programs(delayed)
+assert(find(delayed, "Commentc-welcome") == retainedComment and not inside(delayed, "Commentc-welcome", "Like").IgnoreHitTest,
     "Comment counter enrichment updates the retained row and enables reactions")
 -- Search posts populate before the independent people lookup finishes.
 delayed:show("/search")

@@ -377,6 +377,79 @@ do
     check(draft.Body == "room one draft" and post.values.Title == "Original", "Cancel restores the unsent draft")
 end
 
+-- Keyed drafts submit independently; a result settles its own draft.
+do
+    local h = host()
+    local scope = scopeWith(h)
+    local sent, outcomes = {}, {}
+    scope:command { name = "Publish", concurrency = "queue", operation = function(params)
+        coroutine.yield()
+        sent[#sent + 1] = params.key .. ":" .. params.draft.Body
+        return true
+    end }
+    local edit = scope:edit { name = "Writer", entity = "TestDraft", submit = "Publish",
+        submitted = function(ok, _, _, info) outcomes[#outcomes + 1] = info end }
+    local draft = edit.draft
+    edit:switch("text"); draft.Body = "submitted"
+    check(edit:submit(), "A keyed draft submits")
+    check(not edit:submit() and draft:findChild("Status").IsSubmitting, "The same draft cannot submit twice")
+    draft.Body = "newer"
+    edit:switch("link"); draft.Body = "other"
+    check(not draft:findChild("Status").IsSubmitting, "Another kind's draft is not submitting")
+    h.resume()
+    check(sent[1] == "text:submitted" and draft.Body == "other", "A result for a hidden draft leaves the shown one alone")
+    check(outcomes[1].key == "text" and not outcomes[1].visible and not outcomes[1].cleared,
+        "Submitted reports the draft, its visibility and kept edits")
+    edit:switch("text")
+    check(draft.Body == "newer" and not draft:findChild("Status").IsSubmitting, "Edits made while publishing remain")
+    edit:submit()
+    h.resume()
+    check(outcomes[2].visible and outcomes[2].cleared and draft.Body == "", "A fully sent shown draft clears")
+end
+
+-- Work queued for an invalidated scope (a replaced reader) never starts.
+do
+    local queued = {}
+    local h = host()
+    h.run = function(fn) queued[#queued + 1] = fn end
+    local scope = scopeWith(h)
+    local ran = false
+    scope:command { name = "Publish", operation = function() ran = true; return true end }
+    local edit = scope:edit { name = "Writer", entity = "TestDraft", submit = "Publish" }
+    edit.draft.Body = "queued"
+    edit:submit()
+    scope:invalidateRequests()
+    queued[1]()
+    check(not ran and edit.draft.Body == "queued" and not edit.draft:findChild("Status").IsSubmitting,
+        "A command queued before invalidation does not run its operation")
+end
+
+-- A subtree presents an exposed record: bindings and handlers see the record.
+do
+    local h = host()
+    local scope = scopeWith(h)
+    local post = scope.store:put("TestPost", { id = "shown", title = "Presented", author_id = "a" })
+    local opened
+    scope:command { name = "Open", sync = true, operation = function(params) opened = params.item; return true end }
+    scope:expose("Current", post)
+    local page = ui.StackView {}
+    local detail = ui.StackView {}
+    page:addChild(detail)
+    local title = ui.TextBlock {}
+    detail:addChild(title)
+    title:attachPropertyProgram("TextRun.Text", "{DataContext/Title}", "OneWay", true)
+    local open = ui.Button {}
+    open.Click = "Open"
+    detail:addChild(open)
+    scope:present(detail, "Current")
+    scope:attach(page)
+    core.advanceFrame(); core.runAllPrograms(page)
+    check(title.Text == "Presented", "A presented subtree binds the record's fields")
+    open:send("Node.LeftButtonUp")
+    core.flushQueue()
+    check(opened == post, "Handlers inside it receive the presented record")
+end
+
 -- XML handler names dispatch to scope members through real events.
 do
     local h = host()
@@ -440,6 +513,18 @@ do
         "Concatenation compiles")
     core.advanceFrame(); core.runAllPrograms(joined)
     check(joined.Text == "Offline.  Try again.", "String literals keep leading spaces")
+    -- "+" re-decides between joining and adding when its paths start to resolve.
+    local empty = data.Schema.define("TestNothing", { { "Z", "float" } }):instantiate()
+    local post = data.Schema.define("TestKind", { { "Kind", "string" }, { "Age", "string" } }):instantiate()
+    post.Kind, post.Age = "photo", "2h"
+    local line = ui.TextBlock {}
+    check(line:attachPropertyProgram("TextRun.Text", '{DataContext/Kind} + " · " + {DataContext/Age}', "Expression", true),
+        "A chained join compiles")
+    for _, context in ipairs { empty, post } do
+        line.DataContext = context
+        core.advanceFrame(); core.runAllPrograms(line)
+    end
+    check(line.Text == "photo · 2h", "A join over paths that resolve later shows the text")
 end
 
 print(("PASS: data runtime (%d checks)"):format(checks))
