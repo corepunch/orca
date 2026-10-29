@@ -121,6 +121,7 @@ struct game
   struct ClassDesc const *classes[MAX_CLASSES];
   struct StructDesc *structs[MAX_STRUCTS];
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
+  uint16_t ptype_index[MAX_PROPERTY_TYPES * 2]; /* FullIdentifier hash -> slot + 1 */
   struct PropertyShorthand shorthands[MAX_PROPERTY_SHORTHANDS];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
