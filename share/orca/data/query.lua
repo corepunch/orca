@@ -10,7 +10,7 @@ Query.__index = Query
 
 local STATE = { "IsLoading", "IsRefreshing", "IsLoadingMore", "IsBusy", "HasLoaded", "IsEmpty", "HasItems",
     "HasError", "ErrorMessage", "ErrorCode", "HasMore", "CanLoadMore", "Count", "ShowLoading", "ShowEmpty",
-    "ShowError", "IsStale" }
+    "ShowError", "IsStale", "ShowProgress", "IsIdle" }
 Query.STATE = STATE
 
 local function structured(err)
@@ -72,6 +72,10 @@ function Query:publish()
         CanLoadMore = self.cursor ~= nil and self.mode == nil, Count = count, IsStale = self.stale == true,
     }
     values.ShowLoading = values.IsLoading and count == 0
+    -- A spinner over the list: the first load, or a refresh the reader asked for.
+    values.ShowProgress = values.ShowLoading or values.IsRefreshing
+    -- Nothing asked yet (a search before its first query).
+    values.IsIdle = not self.loaded and self.mode == nil and self.error == nil
     values.ShowEmpty = values.IsEmpty and not values.HasError and mode == nil
     -- Rows that loaded once stay visible through a failed refresh.
     values.ShowError = values.HasError and not self.loaded and mode == nil
@@ -139,6 +143,15 @@ function Query:request(mode, options)
     self.generation = self.generation + 1
     local generation, token = self.generation, self.scope:token()
     local params = self.params:snapshot()
+    -- A cache shows the last result at once; the request still replaces it.
+    if mode == "load" and not self.loaded and self.def.cached and not self.cacheRead then
+        self.cacheRead = true
+        local rows, cursor = self.def.cached(params, self.scope.context, self)
+        if rows and #rows > 0 then
+            self.cursor = cursor
+            self.items:set(self:rows(rows))
+        end
+    end
     local page = { cursor = mode == "more" and self.cursor or nil, size = self.def.pageSize }
     self.mode, self.quiet = mode, options.quiet and mode ~= "more"
     self:publish()
@@ -154,13 +167,14 @@ function Query:request(mode, options)
         if not items then
             self.error = structured(err)
             self.stale = self.loaded
+            if self.replacing then self.replacing = nil; self.items:clear() end
             self:publish()
             self.scope:changed(self)
             return self:afterRequest(true)
         end
         local rows = self:rows(items)
         if hasMore == false then cursor = nil end
-        self.error, self.stale, self.cursor, self.loaded = nil, false, cursor, true
+        self.error, self.stale, self.cursor, self.loaded, self.replacing = nil, false, cursor, true, nil
         if mode == "more" then self.items:append(rows) else self.items:set(rows) end
         self.scope:changed(self)
         if self.def.loaded then self.def.loaded(self, rows, mode) end
@@ -182,11 +196,23 @@ function Query:afterRequest(failed)
     self:schedule()
 end
 
+-- Loads the next page when a prefetching list nears its end. The reader
+-- must have moved since the last prefetch, so short pages or repeated rows
+-- cannot drain the history while the viewport stands still; a failed page
+-- waits for an explicit retry or refresh.
+function Query:prefetch(height, extent, y)
+    if not self.def.prefetch or self.cursor == nil or self.mode ~= nil or self.error then return false end
+    if height <= 0 or extent <= height or y >= -1 or y == self.prefetchY then return false end
+    if extent + y - height > math.max(240, math.min(800, height)) then return false end
+    self.prefetchY = y
+    return self:loadMore()
+end
+
 -- Publishes rows produced locally (a dependent result that needs no
 -- request, such as no contacts for an empty inbox).
 function Query:assign(rows)
     self.generation = self.generation + 1
-    self.mode, self.error, self.stale, self.cursor, self.loaded = nil, nil, false, nil, true
+    self.mode, self.error, self.stale, self.cursor, self.loaded, self.replacing = nil, nil, false, nil, true, nil
     self.items:set(self:rows(rows or {}))
 end
 
@@ -209,7 +235,9 @@ function Query:get(name) return self.params:get(name) end
 -- A parameter change starts a new result: the cursor and rows of other
 -- parameters do not apply. Debounced parameters wait for the pause.
 function Query:paramsChanged(name)
-    self.cursor = nil
+    -- Rows of the old parameters stay on screen until the new result
+    -- arrives, but they no longer count as this query's result.
+    self.cursor, self.loaded, self.replacing = nil, false, self.items:count() > 0 or nil
     local delay = self.params:debounce(name)
     if self.debounceHandle then self.debounceHandle:cancel(); self.debounceHandle = nil end
     if delay and delay > 0 then

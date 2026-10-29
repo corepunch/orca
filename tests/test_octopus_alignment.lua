@@ -6,10 +6,24 @@ local ui = require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 fs.init("apps/octopus")
 require("orca.core.startup").load_plugins()
-local Posts = require "Octopus/views/posts"
-local app = { clock = function() return 1761400000 end,
-    photos = { aspect = function() return 4 / 3 end, watch = function() end } }
-function app:avatarPhoto() end
+local data = require "orca.data"
+local OctopusProvider = require "Octopus/providers/octopus"
+
+-- Every post type, and a repost, through the real Home query and PostCard.
+local items = {}
+for _, kind in ipairs { "text", "photo", "quote", "link", "repost" } do
+    items[#items + 1] = { post = { id = kind, postType = kind == "repost" and "link" or kind,
+        title = "Хаос Русского мира", content = "Body text", tags = {},
+        authorId = "reader", authorName = "Reader", createdAt = "2025-10-25T00:00:00Z",
+        linkUrl = "https://example.com/read" },
+        repostedBy = kind == "repost" and { id = "other", name = "Another Reader" } or nil }
+end
+local client = { homeTimeline = function() return items end, stats = function() return {} end }
+local provider = OctopusProvider.new { client = client, media = {}, now = function() return 1761400000 end }
+local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"), scope = "octopus:test",
+    computed = provider.computed }
+local scope = data.scope("Octopus/Data/Feeds.xml", { provider = provider, store = store })
+scope:member("Home"):refresh()
 
 local function top(node, screen)
     local y = 0
@@ -30,21 +44,23 @@ local function left(node, screen)
 end
 
 for _, width in ipairs { 390, 320 } do
-    local screen = ui.Screen { Width = width, Height = 844, ResizeMode = "NoResize" }
-    local host = ui.StackView { Spacing = 12 }
-    screen:addChild(host)
-    for _, kind in ipairs { "text", "photo", "quote", "link", "repost" } do
-        local post = { id = kind, postType = kind == "repost" and "link" or kind,
-            title = "Хаос Русского мира", content = "Body text", tags = {},
-            authorId = "reader", authorName = "Reader", createdAt = "2025-10-25T00:00:00Z",
-            linkUrl = "https://example.com/read" }
-        local row = Posts.card(app, post, nil, kind == "repost" and { id = "other", name = "Another Reader" } or nil)
-        host:addChild(row)
-        core.flushQueue()
-        core.runAllPrograms(screen)
-        screen:UpdateLayout(width, 844)
-        local avatar = assert(row:findChild("Avatar" .. kind, true))
-        local body = assert(row:findChild("Open" .. kind, true))
+    local screen = assert(fs.loadObjectFromXmlString(([[
+<Screen Width="%d" Height="844" ResizeMode="NoResize">
+  <StackView Overflow="hidden scroll">
+    <ItemsStack Name="PostItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Post"
+                ItemsSource="{Binding DataContext/Home/Items}" ItemTemplate="Octopus/Templates/PostCard"/>
+  </StackView>
+</Screen>]]):format(width)))
+    scope:attach(screen)
+    core.flushQueue()
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(width, 844)
+    for _, item in ipairs(items) do
+        local kind, post = item.post.id, item.post
+        local row = assert(screen:findChild("Post" .. kind, true), "Missing row " .. kind)
+        local avatar = assert(row:findChild("Avatar", true))
+        local body = assert(row:findChild("Open", true))
         local author = assert(row:findChild("PostAuthorName", true))
         local timestamp = assert(row:findChild("PostTimestamp", true))
         assert(math.abs(top(author, screen) - top(timestamp, screen)) < 0.01
@@ -53,13 +69,13 @@ for _, width in ipairs { 390, 320 } do
         assert(left(timestamp, screen) >= left(author, screen) + author.ActualWidth,
             "The timestamp stays clear of the author at narrow widths")
         assert(math.abs(top(avatar, screen) - top(body, screen)) < 0.01,
-            "Portraits start at the body, below the author and optional repost lines")
+            "Portraits start at the body, below the author and optional repost lines: " .. kind)
         local name = post.postType == "link" and "PostBodyLinkTitle"
             or post.postType == "quote" and "PostBodyQuote" or post.postType == "text" and "PostBodyTitle"
         if name then
             local leading = assert(row:findChild(name, true))
             assert(math.abs(top(avatar, screen) - top(leading, screen)) < 0.01,
-                "Leading text starts at the portrait top")
+                "Leading text starts at the portrait top: " .. kind)
         end
         if post.postType == "link" then
             local tile = assert(row:findChild("PostBodyLinkTile", true))
@@ -75,4 +91,5 @@ for _, width in ipairs { 390, 320 } do
         end
     end
 end
+scope:dispose()
 print("PASS: Octopus text, photo, quote, link and repost alignment at 390 and 320 points")

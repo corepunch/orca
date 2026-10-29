@@ -1,0 +1,17 @@
+<!-- The search tab (Pages/Search.xml). Posts and people are separate queries:
+     posts show while people load, and a people failure keeps the posts. -->
+<DataScope Name="Search" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Include Path="Octopus/Data/Posts.xml"/>
+  <Query Name="SearchPosts" Entity="OctopusEntry" Operation="searchPosts" Require="Query" AutoLoad="false"
+         Loaded="enrich" Description="Titles that match, or posts with a #tag.">
+    <Param Name="Query" Type="string"/>
+  </Query>
+  <Query Name="SearchPeople" Entity="OctopusProfile" Operation="searchPeople" Require="Query" AutoLoad="false"
+         Description="Names that match; a #tag search skips people.">
+    <Param Name="Query" Type="string"/>
+  </Query>
+  <Query Name="Trending" Entity="OctopusTag" Operation="trending" Description="Tags from posts already loaded."/>
+  <Command Name="OpenPerson" Operation="openPerson" Parameter="Item" Sync="true"/>
+  <Handler Name="RunSearch"/>
+  <Expose Name="Search" Entity="OctopusSearch"/>
+</DataScope>

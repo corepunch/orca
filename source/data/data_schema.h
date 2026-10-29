@@ -3,8 +3,6 @@
 
 #include <include/orca.h>
 
-#define DS_MAX_ENTITIES   32
-#define DS_MAX_COLUMNS    64
 #define DS_MAX_FIELD_SIZE 256  /* max bytes for one column value in component block */
 
 typedef enum {
@@ -22,18 +20,20 @@ struct ds_column {
   bool_t       is_key;
 };
 
+/* Registered classes point into entity and column names, so each entity is
+   allocated separately and its columns once, before registration. */
 struct ds_entity {
-  char             name[64];
-  struct ds_column columns[DS_MAX_COLUMNS];
-  int              num_columns;
+  char              name[64];
+  struct ds_column *columns;
+  int               num_columns;
 };
 
 struct ds_schema {
-  struct ds_entity entities[DS_MAX_ENTITIES];
-  int              num_entities;
+  struct ds_entity **entities;
+  int                num_entities;
   /* dynamically registered ClassDesc pointers — unregistered on schema free */
-  struct ClassDesc *classes[DS_MAX_ENTITIES];
-  int               num_classes;
+  struct ClassDesc **classes;
+  int                num_classes;
 };
 
 /* Parse a Schema XML file and register one ClassDesc per entity into the class

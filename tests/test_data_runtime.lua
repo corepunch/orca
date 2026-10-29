@@ -411,4 +411,35 @@ do
     check(loads == 2, "Member actions dispatch by Name.Action")
 end
 
+-- Expressions over boolean record fields (state flags combine in bindings).
+do
+    local state = data.Schema.define("TestFlags", { { "A", "bool" }, { "B", "bool" } }):instantiate()
+    local node = ui.TextBlock {}
+    node.DataContext = state
+    check(node:attachPropertyProgram("Node.Visible", "OR({DataContext/A}, {DataContext/B})", "Expression", true),
+        "OR compiles over booleans")
+    local label = ui.TextBlock {}
+    label.DataContext = state
+    check(label:attachPropertyProgram("TextRun.Text", 'IF(AND({DataContext/A}, {DataContext/B}), "both", "not both")',
+        "Expression", true), "AND and IF compile over booleans")
+    local function run() core.advanceFrame(); core.runAllPrograms(node); core.runAllPrograms(label) end
+    state.A, state.B = false, false
+    run()
+    check(node.Visible == false and label.Text == "not both", "OR and AND of false flags")
+    state.B = true
+    run()
+    check(node.Visible == true and label.Text == "not both", "OR of one true flag")
+    state.A = true
+    run()
+    check(label.Text == "both", "AND of two true flags")
+    -- Literal text keeps its leading spaces when joined to a field.
+    local message = data.Schema.define("TestMessage", { { "Text", "string" } }):instantiate()
+    local joined = ui.TextBlock {}
+    joined.DataContext, message.Text = message, "Offline."
+    check(joined:attachPropertyProgram("TextRun.Text", '{DataContext/Text} + "  Try again."', "Expression", true),
+        "Concatenation compiles")
+    core.advanceFrame(); core.runAllPrograms(joined)
+    check(joined.Text == "Offline.  Try again.", "String literals keep leading spaces")
+end
+
 print(("PASS: data runtime (%d checks)"):format(checks))

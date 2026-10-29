@@ -197,7 +197,7 @@ function Thread.send(self, view)
         if not comment then self:notice(err.message .. " Your comment is still here.", true); return end
         self.commentDrafts[view.post.id] = nil
         view.input.Text, view.replyTo, view.replyBar.Visible = "", nil, false
-        self.feeds = {}
+        self:invalidateFeeds()
         Thread.load(self, view)
     end)
 end

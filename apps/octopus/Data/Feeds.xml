@@ -1,0 +1,13 @@
+<!-- The reader's timelines (Pages/Home.xml). Retained with the home tab. -->
+<DataScope Name="Feeds" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Include Path="Octopus/Data/Posts.xml"/>
+  <Query Name="Home" Entity="OctopusEntry" Operation="home" PageSize="20" Prefetch="true" AutoLoad="false"
+         Loaded="enrich" Description="You and the people you follow, with their reposts."/>
+  <Query Name="Discover" Entity="OctopusEntry" Operation="discover" PageSize="20" Prefetch="true" AutoLoad="false"
+         Cached="discover" Loaded="discoverLoaded" Description="Everyone's posts, newest first."/>
+  <Query Name="Connect" Entity="OctopusActivity" Operation="connect" AutoLoad="false"
+         Description="Likes, reposts and replies to your posts, and new followers."/>
+  <Handler Name="SelectFeed"/>
+  <Handler Name="SignIn"/>
+  <Handler Name="SignUp"/>
+</DataScope>

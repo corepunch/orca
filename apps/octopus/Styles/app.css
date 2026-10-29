@@ -1,3 +1,69 @@
+/* Palette roles for XML views; the Screen carries octopus-light or octopus-dark
+   (theme.lua, OCTOPUS_APPEARANCE). Base roles first, then states. */
+.octopus-light .octopus-background { background-color: #ffffff; }
+.octopus-light .octopus-ink { color: #000000; }
+.octopus-light .octopus-muted { color: #555555; }
+.octopus-light .octopus-dim { color: #767676; }
+.octopus-light .octopus-accent-text { color: #0a7068; }
+.octopus-light .octopus-error { color: #e51400; }
+.octopus-light .octopus-link { color: #0a7068; background-color: #00000000; }
+.octopus-light .octopus-primary { background-color: #0e8f86; color: #ffffff; }
+.octopus-light .octopus-outline { background-color: #00000000; color: #000000; border-color: #000000; }
+.octopus-light .octopus-accent-fill { background-color: #0e8f86; }
+.octopus-light .octopus-on-accent { color: #ffffff; }
+.octopus-light .octopus-rule { background-color: #cccccc; }
+.octopus-light .octopus-field { background-color: #d9d9d9; color: #000000; border-color: #d9d9d9; placeholder-color: #6e6e6e; }
+.octopus-light .post-content { color: #555555; }
+.octopus-light .post-detail .post-content { color: #000000; }
+.octopus-light .photo-frame { background-color: #ececec; }
+.octopus-light .loaded { background-color: #00000000; }
+.octopus-light .reaction { color: #767676; }
+.octopus-light .liked .like-reaction { color: #d80032; }
+.octopus-light .reposted .repost-reaction { color: #3c8a00; }
+.octopus-light .activity-icon { color: #0a7068; }
+.octopus-light .like .activity-icon { color: #d80032; }
+.octopus-light .repost .activity-icon { color: #3c8a00; }
+.octopus-dark .octopus-background { background-color: #000000; }
+.octopus-dark .octopus-ink { color: #ffffff; }
+.octopus-dark .octopus-muted { color: #a6a6a6; }
+.octopus-dark .octopus-dim { color: #8a8a8a; }
+.octopus-dark .octopus-accent-text { color: #2cc5b8; }
+.octopus-dark .octopus-error { color: #ff5c5c; }
+.octopus-dark .octopus-link { color: #2cc5b8; background-color: #00000000; }
+.octopus-dark .octopus-primary { background-color: #0e8f86; color: #ffffff; }
+.octopus-dark .octopus-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
+.octopus-dark .octopus-accent-fill { background-color: #0e8f86; }
+.octopus-dark .octopus-on-accent { color: #ffffff; }
+.octopus-dark .octopus-rule { background-color: #3a3a3a; }
+.octopus-dark .octopus-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
+.octopus-dark .post-content { color: #a6a6a6; }
+.octopus-dark .post-detail .post-content { color: #ffffff; }
+.octopus-dark .photo-frame { background-color: #1f1f1f; }
+.octopus-dark .loaded { background-color: #00000000; }
+.octopus-dark .reaction { color: #8a8a8a; }
+.octopus-dark .liked .like-reaction { color: #ff4f6d; }
+.octopus-dark .reposted .repost-reaction { color: #7ed321; }
+.octopus-dark .activity-icon { color: #2cc5b8; }
+.octopus-dark .like .activity-icon { color: #ff4f6d; }
+.octopus-dark .repost .activity-icon { color: #7ed321; }
+/* Cards and the post page share the body; the page sets larger type. */
+.post-quote { font-size: 21; }
+.post-detail .post-quote { font-size: 26; }
+.post-link-title { font-size: 17; }
+.post-detail .post-link-title { font-size: 22; }
+.post-title { font-size: 20; }
+.post-detail .post-title { font-size: 30; }
+.post-content { font-size: 15; }
+.post-detail .post-content { font-size: 16; }
+.post-detail .link-body .post-content { font-size: 15; }
+.pending .reaction-button { opacity: 0.5; }
+.avatar-initials { color: #ffffff; }
+.tone1 { background-color: #0e8f86; }
+.tone2 { background-color: #1ba1e2; }
+.tone3 { background-color: #a200ff; }
+.tone4 { background-color: #f09609; }
+.tone5 { background-color: #d80073; }
+.tone6 { background-color: #60a917; }
 .octopus-action:hover { opacity: 0.78; }
 .octopus-action:focus { ring: 0 2 #0a7068; }
 .octopus-input:focus { border-color: #0e8f86; background-color: #ffffff; }

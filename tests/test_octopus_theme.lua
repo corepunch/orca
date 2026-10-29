@@ -36,9 +36,11 @@ local modules = {
     ["orca"] = {}, ["orca.UIKit"] = { Screen = screen },
     ["orca.core.application"] = Application, ["orca.renderer"] = { getSize = function() return 390, 844 end },
     ["Octopus/views/components"] = { colors = colors }, ["orca.UIKit.PageTransition"] = transitions,
+    ["orca.data.visibility"] = { new = function() return { watch = function() end, update = function() end } end },
 }
 for _, name in ipairs { "Octopus/api/octopus", "Octopus/views/shell", "Octopus/views/home", "Octopus/views/thread",
-    "Octopus/views/people", "Octopus/views/compose", "Octopus/views/identity", "orca.UIKit.AvatarLoader" } do
+    "Octopus/views/people", "Octopus/views/compose", "Octopus/views/identity", "orca.UIKit.AvatarLoader",
+    "orca.data", "Octopus/providers/octopus" } do
     modules[name] = {}
 end
 for name, value in pairs(modules) do package.loaded[name] = value end
@@ -47,7 +49,7 @@ local session, client, draft = {}, {}, { content = "unfinished post" }
 client.session = session
 function client:getSession() return self.session end
 local app = setmetatable({ client = client, composeDraft = draft, commentDrafts = { post = "unfinished comment" },
-    currentRoute = "/post", navigationEpoch = 1, sessionEpoch = 4, shell = {}, feeds = { discover = {} },
+    currentRoute = "/post", navigationEpoch = 1, sessionEpoch = 4, shell = {},
     pendingShow = {}, screen = screen {} }, { __index = App })
 local captured, builds = 0, 0
 app.leaving = function() captured = captured + 1; draft.content = "captured input" end
@@ -78,7 +80,7 @@ assert(captured == 1 and builds == 1 and app.navigationEpoch == 2 and app.sessio
 assert(app.client == client and app.client.session == session and app.composeDraft == draft
     and draft.content == "captured input" and app.commentDrafts.post == "unfinished comment",
     "Theme changes must preserve authentication and drafts")
-assert(app.shell == nil and next(app.feeds) == nil and app.pendingShow == nil,
+assert(app.shell == nil and app.pendingShow == nil,
     "Retained pages and pending navigation must not resurrect the previous theme")
 assert(app.screen.class == "octopus-dark"
     and app.screen.ClearColor == colors.background and entered == app.screen)

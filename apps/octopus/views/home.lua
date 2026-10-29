@@ -1,199 +1,18 @@
-local ui = require "orca.UIKit"
-local C = require "Octopus/views/components"
-local Posts = require "Octopus/views/posts"
-local colors = C.colors
+-- After Twitter for Windows Phone: home (you and the people you follow, with
+-- their reposts), connect (what happened to your posts) and discover. The
+-- page is Pages/Home.xml over the Feeds scope; this module only owns which
+-- feed is selected and when a feed loads.
+local filesystem = require "orca.filesystem"
 local Home = {}
 
--- After Twitter for Windows Phone: home (you and the people you follow, with
--- their reposts), connect (what happened to your posts) and discover.
 Home.feeds = { "home", "connect", "discover" }
-local PAGE_SIZE = 20
+local QUERIES = { home = "Home", connect = "Connect", discover = "Discover" }
 
-local PROMPTS = {
-    home = { "your timeline lives here", "Sign in to follow people and see their posts and reposts in one place." },
-    connect = { "likes, reposts and replies", "Sign in to see who interacts with your posts and who follows you." },
-}
-
-local ACTIVITY = {
-    like = { icon = "heart", color = "liked", text = " liked your post" },
-    repost = { icon = "repeat-2", color = "reposted", text = " reposted your post" },
-    comment = { icon = "message-circle", color = "accentText", text = " replied" },
-    follow = { icon = "user-round", color = "accentText", text = " followed you" },
-}
-
-local function guestPrompt(self, name)
-    local prompt = PROMPTS[name]
-    return C.stack({ Spacing = 16 }, {
-        C.empty(prompt[1], prompt[2]),
-        C.primary("Sign in", function() self.authReturn = "/"; self:show("/auth") end, { Name = "SignIn" .. name }),
-        C.button("Create an account", function() self.authReturn = "/"; self:show("/auth/signup") end, {
-            Name = "SignUp" .. name }),
-    })
-end
-
--- One connect row: the person's tile, what they did and the post it touched.
-local function activityRow(self, item, index)
-    local style = ACTIVITY[item.kind]
-    local row = ui.Grid { Columns = C.AVATAR .. "px 1fr", Spacing = C.spacing.inline, IgnoreHitTest = true }
-    row:addChild(C.avatar(item.name, C.AVATAR, item.userId, self))
-    local line = ui.Grid { Columns = "18px 1fr auto", Spacing = 8, IgnoreHitTest = true }
-    line:addChild(C.icon(style.icon, 16, colors[style.color], { MarginLeft = 0, MarginRight = 0 }))
-    line:addChild(C.text(item.name .. style.text, { FontSize = 15, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
-    line:addChild(C.text(C.ago(item.at, self.clock()), { FontSize = 13, Foreground = colors.dim }))
-    local details = C.stack({ Spacing = 4, JustifyContent = "Center", IgnoreHitTest = true }, { line })
-    if item.body then details:addChild(C.text(C.excerpt(item.body, 140), { FontSize = 15, WordWrap = true })) end
-    if item.post then
-        local summary = item.post.title ~= "" and item.post.title or C.excerpt(item.post.content, 90)
-        details:addChild(C.text(summary ~= "" and summary or "your photo", {
-            FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }))
-    end
-    row:addChild(details)
-    return C.area(row, function()
-        if item.post then self:openPost(item.post) else self:openProfile(item.userId, item.name) end
-    end, { Name = "Activity" .. index })
-end
-
-function Home.loadConnect(self, list)
-    local session = self.sessionEpoch
-    local feed = self.feeds.connect or {}
-    if feed.loading then return end
-    self.feeds.connect = feed
-    feed.loading = true
-    self.timelineLoading.connect.Visible = true
-    self:task(function()
-        local items, err = self.client:activity()
-        feed.loading = false
-        if self.sessionEpoch ~= session or self.timelines.connect ~= list or self.feeds.connect ~= feed then return end
-        self.timelineLoading.connect.Visible = false
-        if not items then
-            if not feed.items then
-                C.clear(list):addChild(C.empty("can't load activity", err.message .. " Use refresh to try again."))
-            end
-            if self.currentRoute == "/" then self:notice(err.message, true) end
-        else
-            feed.items = items
-            C.clear(list)
-            if #items == 0 then
-                list:addChild(C.empty("nothing yet", "When people like, repost or reply to your posts, or follow you, it shows up here."))
-            else
-                for index, item in ipairs(items) do list:addChild(activityRow(self, item, index)) end
-            end
-        end
-        self:repaint()
-    end)
-end
-
-function Home.load(self, name, more)
-    local list = self.timelines[name]
-    if not list then return end
-    if name == "connect" then return Home.loadConnect(self, list) end
-    local feed = self.feeds[name] or { items = {}, stats = {} }
-    self.feeds[name] = feed
-    if not feed.cacheRead and #feed.items == 0 and name == "discover" and self.client.readFeedCache then
-        feed.cacheRead = true
-        local items, cursor = self.client:readFeedCache(name)
-        if items and #items > 0 then
-            local cached, stats = Posts.fetch(self, function() return items, cursor end)
-            feed.items, feed.stats, feed.cursor = cached, stats, cursor
-            Posts.append(self, list, cached, stats)
-        end
-    end
-    if feed.loading or (more and not feed.cursor) then return end
-    feed.autoPaused = false
-    feed.loading = true
-    local session = self.sessionEpoch
-    local request = {}
-    feed.request = request
-    if more then list:addChild(C.loading { Name = "LoadingMore", Height = 64 })
-    else self.timelineLoading[name].Visible = true end
-    self:task(function()
-        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed
-            or feed.request ~= request then feed.loading = false; return end
-        local cursor = more and feed.cursor or nil
-        local items, stats, nextCursor = Posts.fetch(self, function()
-            if name == "home" then return self.client:homeTimeline { limit = PAGE_SIZE, before = cursor } end
-            local posts, err = self.client:listPosts { limit = PAGE_SIZE, cursor = cursor }
-            if not posts then return nil, err end
-            return Posts.items(posts), #posts == PAGE_SIZE and posts[#posts].id or nil
-        end)
-        feed.loading = false
-        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed or feed.request ~= request then return end
-        self.timelineLoading[name].Visible = false
-        local loadingMore = list:findChild("LoadingMore")
-        if loadingMore then loadingMore:removeFromParent() end
-        if not items then
-            feed.autoPaused = true
-            if #feed.items == 0 then
-                C.clear(list):addChild(C.empty("can't load posts", stats.message .. " Use refresh to try again."))
-            end
-            if self.currentRoute == "/" then self:notice(stats.message, true) end
-            self:repaint()
-            return
-        end
-        if not more then
-            -- Keep the bound collection and its native rows through refresh.
-            local child = list:getFirstChild()
-            while child do
-                local nextChild = child:getNext()
-                if child.Name ~= "PostItems" then child:removeFromParent() end
-                child = nextChild
-            end
-            feed.items, feed.stats, feed.prefetchY = {}, {}, nil
-        end
-        local loadMore = list:findChild("LoadMore" .. name)
-        if loadMore then loadMore:removeFromParent() end
-        local empty = list:findChild("EmptyTimeline" .. name)
-        if empty then empty:removeFromParent() end
-        for id, entry in pairs(stats) do feed.stats[id] = entry end
-        local seen = {}
-        for _, item in ipairs(feed.items) do seen[item.post.id] = true end
-        for _, item in ipairs(items) do
-            if not seen[item.post.id] then
-                seen[item.post.id] = true
-                feed.items[#feed.items + 1] = item
-            end
-        end
-        feed.cursor = nextCursor
-        Posts.refresh(self, list, feed.items, feed.stats)
-        if not more and self.client.writeFeedCache then self.client:writeFeedCache(name, items, nextCursor) end
-        local entries = feed.stats
-        Posts.enrich(self, items, entries, function()
-            return self.sessionEpoch == session and self.feeds[name] == feed and feed.stats == entries
-                and self.timelines[name] == list
-        end, function() Posts.refreshStats(self, list, items, entries) end)
-        if #feed.items == 0 then
-            if name == "home" then
-                list:addChild(C.empty("your timeline is quiet", "Follow people from discover or search to see their posts here.", {
-                    Name = "EmptyTimeline" .. name }))
-            else
-                list:addChild(C.empty("no posts yet", "Be the first to write something.", { Name = "EmptyTimeline" .. name }))
-            end
-        end
-        if feed.cursor then
-            list:addChild(C.button("load more posts", function() Home.load(self, name, true) end, {
-                Name = "LoadMore" .. name, FontSize = 16 }))
-        end
-        if self.currentRoute == "/" then self:notice(self.remote and "" or "Offline mock · posts stay in this session") end
-        self:repaint()
-    end)
-end
-
--- Layout exposes the scroll geometry after paint, including touch inertia.
--- Require reader movement so short pages and duplicate reposts cannot drain
--- the whole history while the viewport stands still.
-function Home.prefetch(self)
-    if self.currentRoute ~= "/" or self.feed == "connect" then return end
-    local name = self.feed
-    local feed, list = self.feeds[name], self.timelines[name]
-    if not feed or not list or feed.loading or feed.autoPaused or not feed.cursor then return end
-    local height, extent = list.ActualHeight, list.ScrollHeight
-    if height <= 0 or extent <= height then return end
-    local y = list.ContentOffset.Y
-    if y >= -1 or y == feed.prefetchY then return end
-    local threshold = math.max(240, math.min(800, height))
-    if extent + y - height > threshold then return end
-    feed.prefetchY = y
-    Home.load(self, name, true)
+-- A refresh the reader asked for: the spinner shows over the kept rows.
+function Home.load(self, name)
+    local scope = self:feedsScope()
+    if (name == "home" or name == "connect") and not self.client:getSession() then return end
+    scope:member(QUERIES[name]):refresh()
 end
 
 function Home.select(self, name)
@@ -203,8 +22,11 @@ function Home.select(self, name)
         for i, feed in ipairs(Home.feeds) do if feed == name then index = i - 1 end end
         if self.pivot.SelectedIndex ~= index then self.pivot.SelectedIndex = index end
     end
+    local scope = self:feedsScope()
+    local query = scope:member(QUERIES[name])
+    if (name == "home" or name == "connect") and not self.client:getSession() then return end
     -- Connect is always fresh; timelines keep their place until refreshed.
-    if name == "connect" or not self.feeds[name] then Home.load(self, name) end
+    if name == "connect" or not query.loaded then query:refresh() end
 end
 
 function Home.page(self)
@@ -214,32 +36,14 @@ function Home.page(self)
         Home.select(self, self.feed)
         return screen
     end
-    self.status = C.text("", { Name = "HomeStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
-    self.homeStatus = self.status
-    local signedIn = self.client:getSession() ~= nil
-    self.pivot = ui.Pivot { Name = "Timeline", Title = "Octopus", Foreground = colors.ink, ExtendBodyBehindHeader = true,
-        SelectionChanged = function(pivot) Home.select(self, Home.feeds[pivot.SelectedIndex + 1]) end,
-    }
-    self.timelines, self.timelineLoading = {}, {}
-    for _, name in ipairs(Home.feeds) do
-        local item = ui.PivotItem { Name = "Feed" .. name, Header = name }
-        local list = C.stack({ Name = "Timeline" .. name, Spacing = C.spacing.post, Overflow = "hidden scroll" })
-        if name ~= "discover" and not signedIn then list:addChild(guestPrompt(self, name))
-        else self.timelines[name] = list end
-        local area = ui.Grid()
-        local loading = C.loading { Name = "Loading" .. name, Visible = false }
-        self.timelineLoading[name] = loading
-        area:addChild(list); area:addChild(loading)
-        item:addChild(area)
-        self.pivot:addChild(item)
-    end
-    local status = ui.Grid { Name = "HomeStatusBar", Rows = "20px", SafeAreaEdge = "Bottom", class = "frosted",
-        Visible = false }
-    status:addChild(self.status)
-    self.statusBar, self.homeStatusBar = status, status
-    local grid = ui.Node2D {}
-    grid:addChild(self.pivot); grid:addChild(status)
-    local screen = self:frame(grid, "Home")
+    local scope = self:feedsScope()
+    local page = assert(filesystem.loadObject("Octopus/Pages/Home"), "Missing Octopus/Pages/Home")
+    scope:attach(page)
+    self.status, self.statusBar = page:findChild("HomeStatus", true), page:findChild("HomeStatusBar", true)
+    self.homeStatus, self.homeStatusBar = self.status, self.statusBar
+    self.pivot = page:findChild("Timeline", true)
+    self.visibility:watch(page, scope)
+    local screen = self:frame(page, "Home")
     Home.select(self, self.feed)
     return screen
 end

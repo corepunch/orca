@@ -1,0 +1,93 @@
+<!-- The timelines: home, connect and discover over the Feeds scope
+     (Data/Feeds.xml). Guests see sign-in prompts where a feed needs an account. -->
+<Node2D Name="HomeContent">
+  <Pivot Name="Timeline" Title="Octopus" ExtendBodyBehindHeader="true" SelectionChanged="SelectFeed" class="octopus-ink">
+    <PivotItem Name="Feedhome" Header="home">
+      <Grid>
+        <StackView Name="Timelinehome" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
+          <StackView Name="Guesthome" Visible="{Binding DataContext/Reader/IsGuest}" Spacing="16" JustifyContent="Start">
+            <StackView Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+              <TextBlock Text="your timeline lives here" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+              <TextBlock Text="Sign in to follow people and see their posts and reposts in one place." FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+            </StackView>
+            <Button Name="SignInhome" Click="SignIn" Height="48" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary">Sign in</Button>
+            <Button Name="SignUphome" Click="SignUp" Height="48" FontSize="15" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" class="octopus-action octopus-link">Create an account</Button>
+          </StackView>
+          <ItemsStack Name="PostItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Post" ItemsSource="{Binding DataContext/Home/Items}" ItemTemplate="Octopus/Templates/PostCard"/>
+          <StackView Name="EmptyTimelinehome" Visible="{Binding DataContext/Home/ShowEmpty}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="your timeline is quiet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock Text="Follow people from discover or search to see their posts here." FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+          </StackView>
+          <StackView Name="TimelineErrorhome" Visible="{Binding DataContext/Home/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="can't load posts" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true">
+              <BindingExpression Target="Text">{DataContext/Home/ErrorMessage} + " Use refresh to try again."</BindingExpression>
+            </TextBlock>
+          </StackView>
+          <Grid Name="LoadingMorehome" Visible="{Binding DataContext/Home/IsLoadingMore}" Height="64" IgnoreHitTest="true">
+            <ActivityIndicator class="octopus-dim"/>
+          </Grid>
+          <Button Name="LoadMorehome" Visible="{Binding DataContext/Home/CanLoadMore}" Click="Home.LoadMore" Height="48" FontSize="16" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" class="octopus-action octopus-link">load more posts</Button>
+        </StackView>
+        <Grid Name="Loadinghome" Visible="{Binding DataContext/Home/ShowProgress}" IgnoreHitTest="true">
+          <ActivityIndicator Name="LoadinghomeIndicator" class="octopus-dim"/>
+        </Grid>
+      </Grid>
+    </PivotItem>
+    <PivotItem Name="Feedconnect" Header="connect">
+      <Grid>
+        <StackView Name="Timelineconnect" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
+          <StackView Name="Guestconnect" Visible="{Binding DataContext/Reader/IsGuest}" Spacing="16" JustifyContent="Start">
+            <StackView Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+              <TextBlock Text="likes, reposts and replies" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+              <TextBlock Text="Sign in to see who interacts with your posts and who follows you." FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+            </StackView>
+            <Button Name="SignInconnect" Click="SignIn" Height="48" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary">Sign in</Button>
+            <Button Name="SignUpconnect" Click="SignUp" Height="48" FontSize="15" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" class="octopus-action octopus-link">Create an account</Button>
+          </StackView>
+          <ItemsStack Name="ActivityItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Activity" ItemsSource="{Binding DataContext/Connect/Items}" ItemTemplate="Octopus/Templates/Activity"/>
+          <StackView Name="EmptyTimelineconnect" Visible="{Binding DataContext/Connect/ShowEmpty}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="nothing yet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock Text="When people like, repost or reply to your posts, or follow you, it shows up here." FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+          </StackView>
+          <StackView Name="TimelineErrorconnect" Visible="{Binding DataContext/Connect/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="can't load activity" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true">
+              <BindingExpression Target="Text">{DataContext/Connect/ErrorMessage} + " Use refresh to try again."</BindingExpression>
+            </TextBlock>
+          </StackView>
+        </StackView>
+        <Grid Name="Loadingconnect" Visible="{Binding DataContext/Connect/ShowProgress}" IgnoreHitTest="true">
+          <ActivityIndicator Name="LoadingconnectIndicator" class="octopus-dim"/>
+        </Grid>
+      </Grid>
+    </PivotItem>
+    <PivotItem Name="Feeddiscover" Header="discover">
+      <Grid>
+        <StackView Name="Timelinediscover" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
+          <ItemsStack Name="PostItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Post" ItemsSource="{Binding DataContext/Discover/Items}" ItemTemplate="Octopus/Templates/PostCard"/>
+          <StackView Name="EmptyTimelinediscover" Visible="{Binding DataContext/Discover/ShowEmpty}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="no posts yet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock Text="Be the first to write something." FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+          </StackView>
+          <StackView Name="TimelineErrordiscover" Visible="{Binding DataContext/Discover/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+            <TextBlock Text="can't load posts" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+            <TextBlock FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true">
+              <BindingExpression Target="Text">{DataContext/Discover/ErrorMessage} + " Use refresh to try again."</BindingExpression>
+            </TextBlock>
+          </StackView>
+          <Grid Name="LoadingMorediscover" Visible="{Binding DataContext/Discover/IsLoadingMore}" Height="64" IgnoreHitTest="true">
+            <ActivityIndicator class="octopus-dim"/>
+          </Grid>
+          <Button Name="LoadMorediscover" Visible="{Binding DataContext/Discover/CanLoadMore}" Click="Discover.LoadMore" Height="48" FontSize="16" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" class="octopus-action octopus-link">load more posts</Button>
+        </StackView>
+        <Grid Name="Loadingdiscover" Visible="{Binding DataContext/Discover/ShowProgress}" IgnoreHitTest="true">
+          <ActivityIndicator Name="LoadingdiscoverIndicator" class="octopus-dim"/>
+        </Grid>
+      </Grid>
+    </PivotItem>
+  </Pivot>
+  <Grid Name="HomeStatusBar" Rows="20px" SafeAreaEdge="Bottom" Visible="false" class="frosted">
+    <TextBlock Name="HomeStatus" FontSize="11" TextHorizontalAlignment="Center" class="octopus-dim" IgnoreHitTest="true"/>
+  </Grid>
+</Node2D>

@@ -82,8 +82,8 @@ struct vm_register
   float value[MAX_PROPERTY_STRING / sizeof(float)];
 };
 
-#define MAX_CLASSES 256
-#define MAX_PROPERTY_TYPES 1024
+#define MAX_CLASSES 1024 /* engine classes plus one per data schema entity */
+#define MAX_PROPERTY_TYPES 8192 /* every schema column registers one */
 #define MAX_PROPERTY_SHORTHANDS 1024
 #define MAX_STRUCTS 256
 #define MAX_STRUCT_PARSERS 256
