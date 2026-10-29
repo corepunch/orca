@@ -558,7 +558,6 @@ HEADLESS_LUA_TESTS += test-event-args
 .PHONY: test-event-args
 HEADLESS_LUA_TESTS += test-event-serialization test-controllers
 .PHONY: test-itemscontrol
-HEADLESS_LUA_TESTS += test-mvvm-form
 HEADLESS_LUA_TESTS += test-scene-format
 # Tests in tests/ run in both scene formats. Tests that need one format's loader
 # or fixtures live in tests/<format>/ and run only in that build; tests/lisp/
@@ -570,7 +569,7 @@ $(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_F
 HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 # Applications are authored in XML; Lisp is an experimental scene format and
 # only apps/Example has Lisp twins. App tests that load pages run in XML builds.
-XML_APP_LUA_TESTS = test-chat-polling test-ledger-example
+XML_APP_LUA_TESTS = test-chat-polling test-ledger-example test-mvvm-form
 ifeq ($(SCENE_FORMAT),xml)
 HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
 endif

@@ -4,9 +4,9 @@ Run `build/bin/orca apps/MvvmForms` after `make unite`.
 
 The schema in `Models/Profile.schema` defines the view-model's string and bool
 fields. `Models/Profile.xml` supplies initial values through a managed XML
-datasource. `Views/Form.lisp` owns the complete view, bindings and command wiring.
+datasource. `Views/Form.xml` owns the complete view, bindings and command wiring.
 
-Editors use `(bind "…" Mode=TwoWay)`; the preview and status use the default `OneWay`.
+Editors use `{Binding …, Mode=TwoWay}`; the preview and status use the default `OneWay`.
 Keystrokes and checkbox clicks update the draft immediately. `App.lua` owns a
 separate committed snapshot and validates before saving. The controller
 only forwards Save and Discard commands; it never copies fields from controls.
