@@ -265,6 +265,7 @@ test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_mock.lua
 	$(TARGET) -test=tests/test_chat_models.lua
 	$(TARGET) -test=tests/test_chat_features.lua
+	$(TARGET) -test=tests/test_chat_contacts.lua
 	$(TARGET) -test=tests/test_chat_app.lua
 	$(TARGET) -test=tests/test_chat_loading.lua
 	$(TARGET) -test=tests/test_chat_session_ui.lua
