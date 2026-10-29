@@ -298,6 +298,7 @@ octopus: copyshare
 
 test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus-backend test-octopus-theme
 	$(TARGET) -test=tests/test_octopus_api.lua
+	$(TARGET) -test=tests/test_octopus_pagination.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_templates.lua
 	$(TARGET) -test=tests/test_octopus_alignment.lua
@@ -309,7 +310,6 @@ test-octopus-theme:
 
 test-octopus-startup-api:
 	$(LUA) tests/test_octopus_startup_api.lua
-	$(LUA) tests/test_octopus_pagination.lua
 
 test-octopus-backend:
 	$(NODE) --test apps/octopus/backend/test/*.test.js

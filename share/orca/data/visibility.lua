@@ -37,7 +37,33 @@ local function collect(self, node, x, y, clip, scope, found, seen)
     local context = node.DataContext
     if context then
         local record = scope.store:recordFor(context)
-        if record and not seen[record] then seen[record] = true; found[#found + 1] = record end
+        if record and not seen[record] then
+            seen[record] = true
+            found[#found + 1] = record
+            -- Records a row presents through embedded relations are visible too.
+            for _, related in pairs(record.related or {}) do
+                if not seen[related] then seen[related] = true; found[#found + 1] = related end
+            end
+        end
+    end
+    -- A scrolling list of a prefetching query (the list itself, or a list
+    -- inside a scrolling page with header and footer content) loads its next
+    -- page near the end.
+    if node.OverflowY == "Scroll" then
+        local list = node.ItemsSource and node or nil
+        if not list then
+            local child = node:getFirstChild()
+            while child and not list do
+                if child.ItemsSource then list = child end
+                child = child:getNext()
+            end
+        end
+        local state = list and list.ItemsSource:getParent()
+        local member = state and scope:member(state.Name)
+        if member and member.prefetch then
+            local offset = node.ContentOffset
+            member:prefetch(h, node.ScrollHeight or 0, offset and offset.Y or 0)
+        end
     end
     local child = node:getFirstChild()
     if not child then return end
@@ -55,11 +81,17 @@ local function collect(self, node, x, y, clip, scope, found, seen)
     end
 end
 
+local function attached(node)
+    while node:getParent() do node = node:getParent() end
+    return node:getClassName() == "Screen"
+end
+
 -- The records visible in a watched page, in tree order.
 function Visibility:records(entry)
     local w, h = size(entry.node)
     local found = {}
-    if entry.node:getParent() == nil and entry.node:getRoot() ~= entry.node then return found end
+    -- Pages that left the screen (a rebuilt tab) have nothing visible.
+    if not attached(entry.node) then return found end
     local m = self.margin
     collect(self, entry.node, -(entry.node.ActualX or 0), -(entry.node.ActualY or 0), { -m, -m, w + m, h + m },
         entry.scope, found, {})
@@ -67,6 +99,11 @@ function Visibility:records(entry)
 end
 
 function Visibility:update()
+    -- Rebuilt or closed pages leave the screen; stop watching them.
+    for index = #self.pages, 1, -1 do
+        local entry = self.pages[index]
+        if entry.scope.disposed or not attached(entry.node) then table.remove(self.pages, index) end
+    end
     for _, entry in ipairs({ table.unpack(self.pages) }) do
         if not entry.scope.disposed then
             local records = self:records(entry)

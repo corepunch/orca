@@ -15,15 +15,17 @@ Media.__index = Media
 -- lookup(ids) -> id -> file id | false (optional, batched; false means none),
 -- fetch(file, record, stage) -> bytes | nil, err; store(bytes, file, stage, id) -> path;
 -- cached(file, id) -> path; without lookup the file is the record's media id. stages ({ "full" } by default, e.g. { "preview", "full" });
--- maxActive (2), validate(path) -> bool (decoding check), missing(id) after a
--- lookup reports no media for an id.
+-- maxActive (2), validate(path) -> ok, width, height (decoding check),
+-- missing(id) after a lookup reports no media for an id, preview(bytes, file)
+-- -> path for progressive previews fetch reports through its fourth argument.
+-- A target's `ratio` local column receives width / height once decoded.
 function Media.new(scope, options)
     local self = setmetatable({ scope = scope, options = options, name = options.name or "Media",
         targets = options.targets, pending = {}, requests = {}, paths = {}, failed = {}, known = {},
         active = 0, maxActive = options.maxActive or 2, stages = options.stages or { "full" } }, Media)
     for _, target in ipairs(self.targets) do
         local entity = scope.store:entity(target.entity)
-        for _, column in ipairs { target.path, target.state } do
+        for _, column in ipairs { target.path, target.state, target.ratio } do
             if column and not (entity.byName[column] and entity.byName[column].isLocal) then
                 error(("Media %s: %s.%s must be a Local column"):format(self.name, target.entity, column), 0)
             end
@@ -38,8 +40,29 @@ local function targetFor(self, record)
     end
 end
 
+-- A row may present the media record through an embedded relation (a feed
+-- entry and its post); look through it.
+local function mediaRecord(self, record)
+    if targetFor(self, record) then return record end
+    for _, related in pairs(record.related or {}) do
+        if targetFor(self, related) then return related end
+    end
+end
+
+-- Whether a file decodes to a native image; returns ok, width, height. A
+-- download that succeeded can still be corrupt.
+function Media.decodes(path)
+    local ui = require "orca.UIKit"
+    local image = ui.ImageView { Src = path }
+    image:send("Node.LoadView")
+    local source = image.Source
+    if not source then return false end
+    return true, source.Width, source.Height
+end
+
 function Media:identity(record)
-    local target = targetFor(self, record)
+    record = mediaRecord(self, record)
+    local target = record and targetFor(self, record)
     local id = target and record.values[target.id]
     if id == nil or id == "" then return nil end
     local revision = target.revision and record.values[target.revision]
@@ -57,6 +80,7 @@ function Media:publish(id, key, values)
                     local locals = {}
                     if target.path and values.path ~= nil then locals[target.path] = values.path end
                     if target.state and values.state then locals[target.state] = values.state end
+                    if target.ratio and values.ratio then locals[target.ratio] = values.ratio end
                     if next(locals) then store:update(record, locals) end
                 end
             end
@@ -66,12 +90,14 @@ end
 
 -- Requests media for a record the presentation shows (or is about to).
 function Media:want(record)
+    record = mediaRecord(self, record)
+    if not record then return end
     local id, key = self:identity(record)
     if not id or self.scope.disposed then return end
     if self.paths[key] then
         local target = targetFor(self, record)
         if target.path and record.values[target.path] ~= self.paths[key] then
-            self:publish(id, key, { path = self.paths[key], state = "ready" })
+            self:publish(id, key, { path = self.paths[key], state = "ready", ratio = self.ratios and self.ratios[key] })
         end
         return
     end
@@ -93,7 +119,14 @@ function Media:want(record)
 end
 
 -- Visible ids missing from a batched lookup have no media; ask once.
+-- `records` is what the presentation shows now: queued requests for records
+-- that scrolled away are dropped before they start.
 function Media:lookup(records)
+    self.visible = {}
+    for _, record in ipairs(records) do
+        local _, key = self:identity(record)
+        if key then self.visible[key] = true end
+    end
     if not self.options.lookup then
         for _, record in ipairs(records) do self:want(record) end
         return self:pump()
@@ -130,17 +163,33 @@ end
 function Media:pump()
     while self.active < self.maxActive and #self.pending > 0 do
         local request = table.remove(self.pending, 1)
+        if self.visible and not self.visible[request.key] then
+            self.requests[request.key] = nil
+            self:publish(request.id, request.key, { state = "" })
+            goto continue
+        end
         self.active = self.active + 1
         self.scope:run(function()
             local stage = self.stages[request.stage]
             local path, err
             local ok = pcall(function()
                 local bytes
-                bytes, err = self.options.fetch(request.file, request.record, stage)
+                bytes, err = self.options.fetch(request.file, request.record, stage, function(preview)
+                    if not self.scope:valid(request.token) or self.requests[request.key] ~= request
+                        or (self.visible and not self.visible[request.key]) or not self.options.preview then return false end
+                    local snapshot = self.options.preview(preview, request.file)
+                    if snapshot then self:publish(request.id, request.key, { path = snapshot, state = "preview" }) end
+                end)
                 if not bytes or not self.scope:valid(request.token) then return end
                 path, err = self.options.store(bytes, request.file, stage, request.id)
-                if path and self.options.validate and not self.options.validate(path) then
-                    path, err = nil, { code = "decode", message = "This photo could not be decoded." }
+                if path and self.options.validate then
+                    local ok, width, height = self.options.validate(path)
+                    if not ok then
+                        if self.options.discard then self.options.discard(request.file) end
+                        path, err = nil, { code = "decode", message = "This photo could not be decoded." }
+                    elseif width and height and width > 0 and height > 0 then
+                        request.ratio = width / height
+                    end
                 end
             end)
             self.active = self.active - 1
@@ -149,7 +198,9 @@ function Media:pump()
             if ok and path then
                 if last then
                     self.paths[request.key], self.requests[request.key] = path, nil
-                    self:publish(request.id, request.key, { path = path, state = "ready" })
+                    self.ratios = self.ratios or {}
+                    self.ratios[request.key] = request.ratio
+                    self:publish(request.id, request.key, { path = path, state = "ready", ratio = request.ratio })
                 else
                     -- A preview shows at once; the full stage follows.
                     self:publish(request.id, request.key, { path = path, state = "preview" })
@@ -166,11 +217,14 @@ function Media:pump()
             if self.options.repaint then self.options.repaint() end
             self:pump()
         end)
+        ::continue::
     end
 end
 
 -- Explicit retry after a failure (a Retry button bound to Photos.Retry).
 function Media:retry(record)
+    record = record and mediaRecord(self, record)
+    if not record then return end
     local id, key = self:identity(record)
     if not id then return end
     self.failed[key] = nil

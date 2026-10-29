@@ -191,12 +191,14 @@ _BindingTemplateOrRoot(struct Object *object)
   return root;
 }
 
+/* A call needs an argument; kDataTypeBool is 0, so test the argument itself
+   rather than its register type, or AND/OR/IF over booleans never dispatch. */
 #define CALL(NAME) \
-if (!strcmp(token->text, #NAME) && t->type) \
+if (!strcmp(token->text, #NAME) && token->args[0]) \
 return (token->cache.func=op_##NAME)(token, t, object, output);
 
 #define CALL_XYZ(NAME, FUNC, COMP) \
-if (!strcmp(token->text, #NAME) && t->type) {\
+if (!strcmp(token->text, #NAME) && token->args[0]) {\
 token->cache.component = COMP; \
 return (token->cache.func=op_##FUNC)(token, t, object, output); \
 }

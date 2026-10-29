@@ -1,165 +1,64 @@
+-- Profiles, the reader's own page and search. Content is XML over a data
+-- scope (Pages/Profile.xml with Data/Profile.xml, Pages/Search.xml with
+-- Data/Search.xml); this module owns the page chrome and which person or
+-- query a page shows.
 local ui = require "orca.UIKit"
 local Footer = require "orca.UIKit.Footer"
+local filesystem = require "orca.filesystem"
 local C = require "Octopus/views/components"
-local Posts = require "Octopus/views/posts"
+local OctopusProvider = require "Octopus/providers/octopus"
 local colors = C.colors
 local People = {}
 
-local function number(value)
-    if value == nil then return "–" end
-    if value >= 10000 then return string.format("%.0fk", value / 1000) end
-    if value >= 1000 then return string.format("%.1fk", value / 1000) end
-    return tostring(value)
+-- The profile content for `userId`: header, counts, follow and posts.
+local function profileContent(self, scope, userId, name, own)
+    local store = scope.store
+    local person = store:put("OctopusProfile", { userId = userId, username = name }, { partial = true,
+        locals = { Own = own == true } })
+    scope:expose("Profile", person)
+    local page = assert(filesystem.loadObject("Octopus/Pages/Profile"), "Missing Octopus/Pages/Profile")
+    scope:attach(page)
+    self.visibility:watch(page, scope)
+    -- Metadata, follow state and posts load independently.
+    scope:member("ProfilePosts"):set("AuthorId", userId)
+    scope:member("Person"):set("UserId", userId)
+    if not own and self.client:getSession() then scope:member("FollowState"):set("UserId", userId) end
+    return page
 end
 
--- Avatar, name, bio, counts and the person's posts. `own` adds the editor.
-local function profileView(self, userId, name, own)
-    local view = { userId = userId, own = own }
-    view.avatar = ui.Grid { Name = "ProfileAvatar", Width = 96, Height = 96 }
-    view.avatar:addChild(C.avatar(name or "?", 96, userId, self))
-    view.name = C.text(name or "", { Name = "ProfileName", FontSize = 26, WordWrap = true })
-    view.bio = C.text("", { Name = "ProfileBio", FontSize = 14, Foreground = colors.muted, WordWrap = true })
-    local header = ui.Grid { Columns = "96px 1fr", Spacing = 16 }
-    header:addChild(view.avatar)
-    header:addChild(C.stack({ Spacing = 6, JustifyContent = "Center" }, { view.name, view.bio }))
-    local counts = ui.Grid { Name = "ProfileCounts", Columns = "1fr 1fr 1fr", Height = 64 }
-    view.counts = {}
-    for _, key in ipairs { "posts", "followers", "following" } do
-        view.counts[key] = C.text("–", { Name = "Count" .. key, FontSize = 30 })
-        counts:addChild(C.stack({ Spacing = 0 }, { view.counts[key], C.text(key, { FontSize = 13, Foreground = colors.dim }) }))
+local function refreshProfile(scope)
+    for _, name in ipairs { "Person", "FollowState", "ProfilePosts" } do
+        local query = scope:member(name)
+        if query.loaded or query.error then query:refresh() end
     end
-    view.actions = C.stack({ Name = "ProfileActions", Spacing = 12 })
-    view.posts = C.stack({ Name = "ProfilePosts", Spacing = C.spacing.post }, { C.loading { Name = "ProfileLoading", Height = 160 } })
-    view.content = C.stack({ Name = "ProfilePage", Spacing = 18, Overflow = "hidden scroll" }, {
-        header, counts, view.actions, C.eyebrow("posts"), view.posts,
-    })
-    return view
-end
-
-local function followButton(self, view)
-    C.clear(view.actions)
-    if not self.client:getSession() then
-        view.actions:addChild(C.primary("Sign in to follow", function()
-            self.authReturn = "/user"; self:show("/auth")
-        end, { Name = "SignInToFollow" }))
-        return
-    end
-    local following = view.follow
-    local button = (following and C.outline or C.primary)(following and "Unfollow" or "Follow", function()
-        if view.busy then return end
-        view.busy = true
-        self:task(function()
-            local result, err
-            if view.follow then result, err = self.client:unfollow(view.userId, view.follow)
-            else result, err = self.client:follow(view.userId) end
-            view.busy = false
-            if result == nil then self:notice(err.message, true); return end
-            local before = view.follow ~= nil
-            view.follow = result or nil
-            if view.profile and view.profile.followers then
-                view.profile.followers = view.profile.followers + (view.follow and 1 or 0) - (before and 1 or 0)
-                view.counts.followers:setTextContent(number(view.profile.followers))
-            end
-            self.feeds.home = nil
-            followButton(self, view)
-            self:notice(view.follow and "You'll see their posts in your following timeline." or "Unfollowed.")
-            self:repaint()
-        end)
-    end, { Name = "FollowButton" })
-    view.actions:addChild(button)
-end
-
-local function loadProfile(self, view, after)
-    if view.loading then return end
-    view.loading = true
-    view.request = {}
-    local request = view.request
-    local loading = view.posts:findChild("ProfileLoading")
-    if not loading then
-        loading = C.loading { Name = "ProfileLoading", Height = 64 }
-        view.posts:addChild(loading)
-    end
-    local session, navigation = self.sessionEpoch, self.navigationEpoch
-    local function current()
-        if self.profileView == view and self.sessionEpoch == session and self.navigationEpoch == navigation
-            and view.request == request then return true end
-        return false
-    end
-    -- Profile metadata and the timeline have independent loading/error states.
-    self:task(function()
-        if not current() then return end
-        local profile, err = self.client:getProfile(view.userId)
-        if not current() then return end
-        if not profile then self:notice(err.message, true); self:repaint(); return end
-        view.profile = profile
-        if profile.exists or not view.name:getTextContent():match("%S") then
-            view.name:setTextContent(profile.username)
-            C.clear(view.avatar):addChild(C.avatar(profile.username, 96, view.userId, self))
-        end
-        view.bio:setTextContent(profile.bio ~= "" and profile.bio or (view.own and "Add a short bio below." or ""))
-        for key, label in pairs(view.counts) do label:setTextContent(number(profile[key])) end
-        if after then after(profile) end
-        self:repaint()
-    end)
-    if not view.own then
-        self:task(function()
-            if not current() then return end
-            local follow = self.client:followState(view.userId)
-            if not current() then return end
-            view.follow = follow or nil
-            followButton(self, view)
-            self:repaint()
-        end)
-    end
-    self:task(function()
-        if not current() then return end
-        local posts, stats = Posts.fetch(self, function()
-            return self.client:userTimeline(view.userId, { limit = 30 })
-        end)
-        if not current() then return end
-        view.loading = false
-        loading:removeFromParent()
-        if not posts then
-            if not view.postsLoaded then C.clear(view.posts):addChild(C.empty("can't load posts", stats.message)) end
-            self:notice(stats.message, true)
-        else
-            C.clear(view.posts)
-            view.postsLoaded = true
-            if #posts == 0 then
-                view.posts:addChild(C.empty("no posts yet", view.own and "Use write to share your first post." or nil))
-            else Posts.append(self, view.posts, posts, stats) end
-            Posts.enrich(self, posts, stats, current, function() Posts.refreshStats(self, view.posts, posts, stats) end)
-        end
-        self:repaint()
-    end)
 end
 
 function People.refresh(self)
-    if self.profileView then loadProfile(self, self.profileView) end
+    local scope = self.currentRoute == "/me" and self.meScope or self.transientScope
+    if scope and not scope.disposed and scope:member("Person") then refreshProfile(scope) end
 end
 
 function People.profile(self)
     local userId = self.profileId
     if not userId then return self:home() end
-    local view = profileView(self, userId, self.profileName)
-    self.profileView = view
+    local scope = self:pageScope("Octopus/Data/Profile.xml")
+    local content = profileContent(self, scope, userId, self.profileName)
+    self.profileView = { userId = userId, scope = scope }
     self.status = C.text("", { Name = "ProfileStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
     local body = ui.Node2D {}
     self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "ProfileStatusBar", Visible = false })
-    body:addChild(view.content); body:addChild(self.statusBar)
+    body:addChild(content); body:addChild(self.statusBar)
     local function back()
         local route = self.profileReturn
         self:goBack(route and route ~= "/user" and route or "/")
     end
     local bar = C.appBar({
-        { "RefreshProfile", "refresh-cw", "refresh", function() loadProfile(self, view) end },
+        { "RefreshProfile", "refresh-cw", "refresh", function() refreshProfile(scope) end },
     })
     local screen = self:frame()
     Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body,
         { Name = "ProfileView", ExtendBodyBehindHeader = true, back = back }), bar,
         { Background = colors.background, Foreground = colors.ink })
-    followButton(self, view)
-    loadProfile(self, view)
     return screen
 end
 
@@ -188,10 +87,22 @@ function People.me(self)
         self.profileView = nil
         return self:tab("Me", C.page("me", body, { ExtendBodyBehindHeader = true }))
     end
-    local view = profileView(self, session.user.id, session.user.name, true)
+    if self.meScope then self.meScope:dispose() end
+    local scope = self:octopusScope("Octopus/Data/Profile.xml")
+    self.meScope = scope
+    local content = profileContent(self, scope, session.user.id, session.user.name, true)
+    local person = scope:exposedRecord("Profile")
+    local view = { userId = session.user.id, scope = scope, own = true }
     self.profileView = view
     local nameInput = C.input("EditName", "Your name", { Text = session.user.name })
     local bioInput = C.input("EditBio", "A short bio", { Multiline = true, Height = 96 })
+    -- The editor starts from the loaded profile once.
+    local filled = false
+    scope:member("Person"):listen(function(query)
+        if filled or not query.loaded then return end
+        filled = true
+        nameInput.Text, bioInput.Text = person.values.DisplayName or nameInput.Text, person.values.Bio or ""
+    end)
     local save
     save = C.primary("Save profile", function()
         if view.saving then return end
@@ -201,10 +112,10 @@ function People.me(self)
             local profile, err = self.client:updateProfile { username = nameInput.Text, bio = bioInput.Text }
             view.saving = false
             save:setTextContent("Save profile")
-            if self.profileView ~= view then return end
+            if self.profileView ~= view or scope.disposed then return end
             if not profile then self:notice(err.message, true); return end
-            view.name:setTextContent(profile.username)
-            view.bio:setTextContent(profile.bio)
+            scope.store:put("OctopusProfile", { userId = view.userId, username = profile.username, bio = profile.bio },
+                { partial = true })
             self:notice("Profile saved. New posts use your account name.")
             self:repaint()
         end)
@@ -226,174 +137,46 @@ function People.me(self)
             profile, err = self.client:setAvatar(picked)
             view.uploading = false
             photo:setTextContent("Change photo")
-            if self.profileView ~= view then return end
+            if self.profileView ~= view or scope.disposed then return end
             if not profile then self:notice(err.message, true); return end
-            self.avatars:invalidate(session.user.id)
-            C.clear(view.avatar):addChild(C.avatar(profile.username, 96, session.user.id, self))
+            self:avatarChanged(session.user.id)
             self:notice("Photo updated. It shows on the website and in Chat too.")
             self:repaint()
         end)
     end, { Name = "ChangePhoto" })
-    view.actions:addChild(C.stack({ Name = "ProfileEditor", Spacing = 10 }, {
+    content:findChild("ProfileActions", true):addChild(C.stack({ Name = "ProfileEditor", Spacing = 10 }, {
         C.eyebrow("edit profile", { MarginTop = 0 }), photo,
         C.text("name", { FontSize = 14, Foreground = colors.muted }), nameInput,
         C.text("bio", { FontSize = 14, Foreground = colors.muted }), bioInput, save, self.status,
     }))
-    view.content:addChild(C.outline("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error,
+    content:addChild(C.outline("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error,
         BorderColor = colors.error, MarginTop = 12 }))
-    local screen = self:tab("Me", C.page("me", view.content))
-    loadProfile(self, view, function(profile)
-        nameInput.Text, bioInput.Text = profile.username, profile.bio
-    end)
-    return screen
+    return self:tab("Me", C.page("me", content))
 end
 
 -- Search -----------------------------------------------------------------------
 
-local function personRow(self, person)
-    local row = ui.Grid { Columns = C.AVATAR .. "px 1fr", Spacing = C.spacing.inline, IgnoreHitTest = true }
-    row:addChild(C.avatar(person.username, C.AVATAR, person.userId, self))
-    row:addChild(C.stack({ Spacing = 2, JustifyContent = "Center", IgnoreHitTest = true }, {
-        C.text(person.username, { FontSize = 20, TextOverflow = "Ellipsis" }),
-        person.bio ~= "" and C.text(C.excerpt(person.bio, 80), {
-            FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }) or nil,
-    }))
-    return C.area(row, function() self:openProfile(person.userId, person.username) end, { Name = "Person" .. person.userId, Height = 56 })
-end
-
-local function trendingTags(self)
-    local counts, tags = {}, {}
-    local feed = self.feeds.discover
-    for _, post in ipairs(feed and feed.posts or {}) do
-        for _, tag in ipairs(post.tags) do
-            if not counts[tag] then tags[#tags + 1] = tag end
-            counts[tag] = (counts[tag] or 0) + 1
-        end
-    end
-    table.sort(tags, function(a, b) return counts[a] > counts[b] or (counts[a] == counts[b] and a < b) end)
-    if #tags == 0 then tags = { "design", "software", "reef" } end
-    return { table.unpack(tags, 1, math.min(#tags, 6)) }
-end
-
-local function renderPeopleError(self, list, results)
-    list:addChild(C.stack({ Name = "PeopleSearchError", Spacing = 8 }, {
-        C.empty("can't load people", results.peopleError.message),
-        C.button("retry search", function() People.runSearch(self, list) end, { Name = "RetryPeopleSearch" }),
-    }))
-end
-
-local function renderResults(self, list)
-    local state = self.searchState
-    C.clear(list)
-    if not state.results then
-        list:addChild(C.eyebrow("trending tags", { MarginTop = 0 }))
-        for _, tag in ipairs(trendingTags(self)) do
-            list:addChild(C.button("#" .. tag, function() self:openTag(tag) end, {
-                Name = "Trending" .. tag, FontSize = 22, Height = 44 }))
-        end
-        list:addChild(C.text("Search post titles and people, or start with # to browse a tag.", {
-            FontSize = 13, Foreground = colors.dim, WordWrap = true, MarginTop = 8 }))
-        return
-    end
-    local results = state.results
-    if results.error then
-        list:addChild(C.empty("search failed", results.error.message))
-        return
-    end
-    if #results.people > 0 then
-        list:addChild(C.eyebrow("people", { MarginTop = 0 }))
-        for _, person in ipairs(results.people) do list:addChild(personRow(self, person)) end
-    end
-    if #results.posts > 0 then
-        list:addChild(C.eyebrow(results.tag and ("#" .. results.tag) or "posts", { MarginTop = #results.people > 0 and 8 or 0 }))
-        local posts = C.stack({ Name = "SearchPosts", Spacing = C.spacing.post })
-        list:addChild(posts)
-        Posts.append(self, posts, results.posts, results.stats)
-    end
-    if results.peopleError then renderPeopleError(self, list, results)
-    elseif #results.people == 0 and #results.posts == 0 then
-        list:addChild(C.empty("nothing found", "No posts or people match “" .. results.query .. "”. Try another word or tag."))
-    end
-end
-
-function People.runSearch(self, list)
-    local query = (self.searchState.query or ""):match("^%s*(.-)%s*$")
-    local session, navigation = self.sessionEpoch, self.navigationEpoch
-    self.searchEpoch = (self.searchEpoch or 0) + 1
-    local epoch = self.searchEpoch
-    local loading = self.searchLoading
-    local function current()
-        return self.searchEpoch == epoch and self.sessionEpoch == session and self.navigationEpoch == navigation
-            and self.searchList == list
-    end
-    if query == "" then
-        loading.Visible = false
-        self.searchState.results = nil
-        renderResults(self, list)
-        return
-    end
-    loading.Visible = true
-    self:task(function()
-        if not current() then return end
-        local tag = query:match("^#(.+)$")
-        local posts, stats = Posts.fetch(self, function()
-            local found, err = self.client:listPosts(tag and { tag = tag, limit = 30 } or { search = query, limit = 20 })
-            return found and Posts.items(found), err
-        end)
-        if not current() then return end
-        if posts then
-            self.searchState.results = { query = query, tag = tag and tag:lower(), posts = posts, stats = stats, people = {} }
-            renderResults(self, list)
-            self:repaint()
-            Posts.enrich(self, posts, stats, current, function() Posts.refreshStats(self, list, posts, stats) end)
-        end
-        local people, peopleError = {}, nil
-        if posts and not tag then people, peopleError = self.client:searchPeople(query) end
-        if not current() then return end
-        loading.Visible = false
-        if not posts and self.searchState.results then self:notice(stats.message, true); self:repaint(); return end
-        self.searchState.results = not posts and { error = stats, query = query } or {
-            query = query, tag = tag and tag:lower(), posts = posts, stats = stats,
-            people = people or {}, peopleError = peopleError }
-        if self.searchList == list then
-            if posts and not people then
-                -- The post section is already on screen; only add the failed section.
-                renderPeopleError(self, list, self.searchState.results)
-            else renderResults(self, list) end
-        end
-        self:repaint()
-    end)
+function People.runSearch(self)
+    local scope = self.searchScope
+    if not scope or scope.disposed then return end
+    OctopusProvider.search(scope, self.searchState.query)
 end
 
 function People.search(self)
     local state = self.searchState
-    self.status = C.text("", { FontSize = 11, Foreground = colors.dim })
-    local list = C.stack({ Name = "SearchResults", Spacing = 14, Overflow = "hidden scroll" })
-    self.searchList = list
-    local results = ui.Grid()
-    self.searchLoading = C.loading { Name = "Searching", Visible = false }
-    results:addChild(list); results:addChild(self.searchLoading)
-    local input
-    input = C.input("SearchInput", "Posts, people or #tags", {
-        Text = state.query, Submit = function() state.query = input.Text; People.runSearch(self, list) end,
-        KeyUp = function() state.query = input.Text end,
-    })
+    if not self.searchScope or self.searchScope.disposed then self.searchScope = self:octopusScope("Octopus/Data/Search.xml") end
+    local scope = self.searchScope
+    local page = assert(filesystem.loadObject("Octopus/Pages/Search"), "Missing Octopus/Pages/Search")
+    scope:attach(page)
+    self.visibility:watch(page, scope)
+    self.status, self.statusBar = page:findChild("SearchStatus", true), page:findChild("SearchStatusBar", true)
+    local input = page:findChild("SearchInput", true)
+    input.Text = state.query or ""
     self.leaving = function() state.query = input.Text end
-    local bar = ui.Grid { Columns = "1fr 48px", Height = 48 }
-    bar:addChild(input)
-    local go = C.button("", function() state.query = input.Text; People.runSearch(self, list) end, {
-        Name = "RunSearch", Width = 48, Height = 48, Background = colors.accent })
-    go:addChild(C.icon("search", 20, colors.onAccent))
-    bar:addChild(go)
-    local body = ui.Node2D {}
-    body:addChild(results)
-    body:addChild(C.toolbar("Top", { bar }, { Name = "SearchBar", Padding = "20 0 20 16" }))
-    self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "SearchStatusBar", Visible = false })
-    body:addChild(self.statusBar)
-    local screen = self:tab("Search", C.page("search", body, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
+    scope:member("Trending"):refresh()
+    local screen = self:tab("Search", C.page("search", page, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
     -- A tag opened from a post searches straight away.
-    if state.results == nil and state.query:match("^#") then People.runSearch(self, list)
-    else renderResults(self, list) end
+    if (state.query or ""):match("^#") then OctopusProvider.search(scope, state.query) end
     return screen
 end
 

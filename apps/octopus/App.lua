@@ -13,6 +13,9 @@ local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
 local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local PageTransition = require "orca.UIKit.PageTransition"
+local data = require "orca.data"
+local Visibility = require "orca.data.visibility"
+local OctopusProvider = require "Octopus/providers/octopus"
 local colors = C.colors
 
 
@@ -48,6 +51,10 @@ local App = Application:extend {
     -- fresh shell, timelines and drafts.
     resetSessionViews = function(self)
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
+        -- Each reader (a guest or an account) gets its own records.
+        self:eachScope(function(scope) scope:dispose() end)
+        self.reader, self.scope, self.transientScope, self.searchScope, self.meScope = nil, nil, nil, nil, nil
+        self.visibility = Visibility.new()
         if self.media and self.media.clear then self.media:clear() end
         -- Persist only public guest images; authenticated media stays temporary.
         if self.media then
@@ -65,12 +72,109 @@ local App = Application:extend {
             schedule = function(fn) self:task(fn) end,
             repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
         })
-        self.shell, self.status, self.statusBar, self.feeds, self.timelines, self.pivot = nil, nil, nil, {}, {}, nil
+        self.shell, self.status, self.statusBar, self.pivot = nil, nil, nil, nil
         self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
         self.composeDrafts = { text = self.composeDraft }
         self.thread, self.profileView, self.composeView = nil, nil, nil
         -- Readers start on their own timeline; guests on discover.
         self.feed = self.client and self.client:getSession() and "home" or "discover"
+    end,
+
+    -- One provider and store per reader (a guest or an account): every page
+    -- scope shares them, so a post or person has one record across pages.
+    readerData = function(self)
+        if self.reader and self.reader.epoch == self.sessionEpoch then return self.reader end
+        local session = self.client:getSession()
+        local user = session and session.user.id or "guest"
+        local provider = OctopusProvider.new {
+            client = self.client, media = self.media, now = function() return self.clock() end,
+            openPost = function(post) self:openPost(post) end,
+            openProfile = function(id, name) self:openProfile(id, name) end,
+            openTag = function(tag) self:openTag(tag) end,
+            requireSession = function(reason) return self:requireSession(reason) end,
+            notice = function(text, isError) self:notice(text, isError) end,
+            selectFeed = function(name) Home.select(self, name) end,
+            signIn = function(route) self.authReturn = route; self:show("/auth") end,
+            signUp = function(route) self.authReturn = route; self:show("/auth/signup") end,
+            invalidateFeeds = function(names) self:invalidateFeeds(names) end,
+            repaint = function() self:repaint() end,
+        }
+        local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"),
+            scope = "octopus:" .. user, computed = provider.computed }
+        self.reader = { epoch = self.sessionEpoch, user = user, provider = provider, store = store,
+            record = store:put("OctopusReader", { id = user, signedIn = session ~= nil }), scopes = {} }
+        return self.reader
+    end,
+
+    -- A data scope for a page, over the reader's store. Results for a
+    -- previous reader never apply.
+    octopusScope = function(self, declaration)
+        local reader = self:readerData()
+        local epoch, user = reader.epoch, reader.user
+        local host = data.Scope.defaultHost()
+        host.run = function(fn) self:task(fn) end
+        host.report = function(err) io.stderr:write("octopus: " .. tostring(err) .. "\n") end
+        local scope = data.scope(declaration, { provider = reader.provider, store = reader.store, host = host,
+            valid = function()
+                local active = self.client:getSession()
+                return self.sessionEpoch == epoch and (active and active.user.id or "guest") == user
+            end })
+        scope:expose("Reader", reader.record)
+        reader.scopes[scope] = true
+        return scope
+    end,
+
+    -- The timelines (Data/Feeds.xml), retained with the home tab.
+    feedsScope = function(self)
+        if self.scope and not self.scope.disposed then return self.scope end
+        self.scope = self:octopusScope("Octopus/Data/Feeds.xml")
+        self.provider = self:readerData().provider
+        for name, feed in pairs { Home = "home", Connect = "connect", Discover = "discover" } do
+            self.scope:member(name):listen(function(query) self:feedStatus(feed, query) end)
+        end
+        return self.scope
+    end,
+
+    -- Pushed pages (a profile, later a post) get a scope that ends with the
+    -- page; tabs keep theirs while retained.
+    pageScope = function(self, declaration)
+        if self.transientScope then self.transientScope:dispose() end
+        self.transientScope = self:octopusScope(declaration)
+        return self.transientScope
+    end,
+
+    -- A new profile photo: Lua-built tiles and every scope's records reload it.
+    avatarChanged = function(self, userId)
+        self.avatars:invalidate(userId)
+        self:eachScope(function(scope)
+            local avatars = scope:member("Avatars")
+            if avatars then avatars:invalidate(userId) end
+        end)
+    end,
+
+    -- Every live scope of this reader, for changes that cross pages.
+    eachScope = function(self, fn)
+        for scope in pairs(self.reader and self.reader.scopes or {}) do
+            if not scope.disposed then fn(scope) end
+        end
+    end,
+
+    -- The home page's status line follows the selected feed's last request.
+    feedStatus = function(self, feed, query)
+        if self.currentRoute ~= "/" or self.feed ~= feed or query.mode ~= nil then return end
+        if query.error then self:notice(query.error.message, true)
+        elseif query.loaded then self:notice(self.remote and "" or "Offline mock · posts stay in this session") end
+    end,
+
+    -- A post changed elsewhere (a comment, a publish): reload feeds that
+    -- loaded; others load fresh on their next visit.
+    invalidateFeeds = function(self, names)
+        self:eachScope(function(scope)
+            for _, name in ipairs(names or { "Home", "Discover", "Connect", "ProfilePosts", "SearchPosts" }) do
+                local query = scope:member(name)
+                if query and query.loaded then query:invalidate() end
+            end
+        end)
     end,
 
     -- Run work that may wait on the network in an ORCA coroutine.
@@ -97,7 +201,7 @@ local App = Application:extend {
     end,
 
     afterPaint = function(self)
-        Home.prefetch(self)
+        if self.visibility then self.visibility:update() end
         if self.avatars then self.avatars:loadVisible() end
         if self.photos then self.photos:loadVisible() end
     end,
@@ -148,6 +252,8 @@ local App = Application:extend {
         local leaving = self.leaving
         self.leaving = nil
         if leaving then leaving() end
+        -- A pushed page's scope ends with it; late results cannot reach it.
+        if self.transientScope then self.transientScope:dispose(); self.transientScope = nil end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
         local controller = self:dispatch(route or "/")
@@ -196,15 +302,21 @@ local App = Application:extend {
 
     -- Drop cached timelines and pages so the next visit reloads them.
     invalidate = function(self)
-        self.feeds, self.searchState.results = {}, nil
-        if self.shell then for _, page in ipairs(Shell.pages) do C.clear(self.shell.pages[page.key]) end end
+        self.searchState.results = nil
+        self:invalidateFeeds()
+        -- The home page is bound to the feeds; other root pages rebuild.
+        if self.shell then
+            for _, page in ipairs(Shell.pages) do
+                if page.key ~= "Home" then C.clear(self.shell.pages[page.key]) end
+            end
+        end
     end,
 
     refresh = function(self)
         local route = self.currentRoute or "/"
         if route == "/" then Home.load(self, self.feed); return end
         if route == "/me" or route == "/user" then People.refresh(self); return end
-        if route == "/search" then People.runSearch(self, self.searchList); return end
+        if route == "/search" then People.runSearch(self); return end
         self:invalidate()
         self:show(route)
     end,
@@ -253,7 +365,7 @@ local App = Application:extend {
         -- invalidates pending view work without replacing the client/session.
         self.pendingShow = nil
         PageTransition.enter(self.screen)
-        self.shell, self.feeds = nil, {}
+        self.shell = nil
         self:navigate(route or "/")
         return true
     end,

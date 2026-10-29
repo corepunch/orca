@@ -1,0 +1,21 @@
+<!-- What every list of posts offers: opening a post, its author, reposter or
+     tag, liking and reposting, and loading photos and avatars. Pages include
+     it in their own scope; the store they share keeps one record per post. -->
+<DataScope Name="Posts" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Command Name="OpenPost" Operation="openPost" Parameter="Item" Sync="true"/>
+  <Command Name="OpenAuthor" Operation="openAuthor" Parameter="Item" Sync="true"/>
+  <Command Name="OpenReposter" Operation="openReposter" Parameter="Item" Sync="true"/>
+  <Command Name="OpenTag" Operation="openTag" Parameter="Item" Sync="true"/>
+  <Command Name="Like" Operation="like" Parameter="Item" Concurrency="parallel"/>
+  <Command Name="Repost" Operation="repost" Parameter="Item" Concurrency="parallel"/>
+  <Expose Name="Reader" Entity="OctopusReader"/>
+  <Media Name="Photos" Fetch="photoFetch" Store="photoStore" Cached="photoCached" Preview="photoPreview"
+         Discard="photoDiscard" Validate="photoValidate">
+    <Target Entity="OctopusPost" Id="ImageId" Path="PhotoPath" State="PhotoState" Ratio="PhotoRatio"/>
+  </Media>
+  <Media Name="Avatars" Lookup="avatarLookup" Fetch="avatarFetch" Store="avatarStore" Cached="avatarCached">
+    <Target Entity="OctopusPost" Id="AuthorId" Path="AvatarPath"/>
+    <Target Entity="OctopusActivity" Id="UserId" Path="AvatarPath"/>
+    <Target Entity="OctopusProfile" Id="UserId" Path="AvatarPath"/>
+  </Media>
+</DataScope>

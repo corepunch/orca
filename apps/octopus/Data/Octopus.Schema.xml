@@ -1,0 +1,154 @@
+<!-- Octopus entities as the phone presents them. Service fields map through
+     Source; Local columns are client state (photos, pending reactions);
+     Computed columns are small functions in providers/octopus.lua. -->
+<Schema>
+  <Entity Name="OctopusPost" Key="Id" Description="A post. Feed entries, detail pages and search share one record per post.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="PostType" Type="string" Source="postType" Default="text"/>
+    <Column Name="Title" Type="string" Source="title"/>
+    <Column Name="Content" Type="string" Source="content"/>
+    <Column Name="AuthorId" Type="string" Source="authorId"/>
+    <Column Name="AuthorName" Type="string" Source="authorName" Default="Someone"/>
+    <Column Name="CreatedAt" Type="string" Source="createdAt"/>
+    <Column Name="ImageId" Type="string" Source="imageId" Nullable="true"/>
+    <Column Name="ImageWidth" Type="int" Source="imageWidth" Nullable="true"/>
+    <Column Name="ImageHeight" Type="int" Source="imageHeight" Nullable="true"/>
+    <Column Name="QuoteSource" Type="string" Source="quoteSource" Nullable="true"/>
+    <Column Name="UserText" Type="string" Source="userText" Nullable="true"/>
+    <Column Name="LinkUrl" Type="string" Source="linkUrl" Nullable="true"/>
+    <Column Name="Likes" Type="int" Source="stats.likes" Nullable="true"/>
+    <Column Name="Reposts" Type="int" Source="stats.reposts" Nullable="true"/>
+    <Column Name="Comments" Type="int" Source="stats.comments" Nullable="true"/>
+    <Column Name="LikeId" Type="string" Source="stats.liked" Nullable="true" Description="The reader's like, needed to undo it."/>
+    <Column Name="RepostId" Type="string" Source="stats.reposted" Nullable="true"/>
+    <Column Name="StatsReady" Type="bool" Local="true" Description="Counts and the reader's reactions are current."/>
+    <Column Name="Busy" Type="bool" Local="true" Description="A like or repost is in flight."/>
+    <Column Name="PhotoPath" Type="string" Local="true"/>
+    <Column Name="PhotoState" Type="string" Local="true"/>
+    <Column Name="PhotoRatio" Type="float" Local="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="HasPhoto" Type="bool" Computed="hasPhoto" DependsOn="PostType ImageId"/>
+    <Column Name="IsQuote" Type="bool" Computed="isQuote" DependsOn="PostType"/>
+    <Column Name="IsLink" Type="bool" Computed="isLink" DependsOn="PostType"/>
+    <Column Name="IsText" Type="bool" Computed="isText" DependsOn="PostType"/>
+    <Column Name="KindLabel" Type="string" Computed="kindLabel" DependsOn="PostType"/>
+    <Column Name="HasCaption" Type="bool" Computed="hasCaption" DependsOn="PostType Content"/>
+    <Column Name="Excerpt" Type="string" Computed="excerpt" DependsOn="Content" Description="Card text."/>
+    <Column Name="Body" Type="string" Computed="plain" DependsOn="Content" Description="Detail page text."/>
+    <Column Name="Quote" Type="string" Computed="quote" DependsOn="Content"/>
+    <Column Name="HasQuoteSource" Type="bool" Computed="hasQuoteSource" DependsOn="PostType QuoteSource"/>
+    <Column Name="QuoteSourceText" Type="string" Computed="quoteSource" DependsOn="QuoteSource"/>
+    <Column Name="HasThoughts" Type="bool" Computed="hasThoughts" DependsOn="PostType UserText"/>
+    <Column Name="Thoughts" Type="string" Computed="thoughts" DependsOn="UserText"/>
+    <Column Name="LinkTitle" Type="string" Computed="linkTitle" DependsOn="Title LinkUrl"/>
+    <Column Name="Domain" Type="string" Computed="domain" DependsOn="LinkUrl"/>
+    <Column Name="HasContent" Type="bool" Computed="hasContent" DependsOn="PostType Content"/>
+    <Column Name="Age" Type="string" Computed="age" DependsOn="CreatedAt"/>
+    <Column Name="Stamp" Type="string" Computed="stamp" DependsOn="CreatedAt"/>
+    <Column Name="HasTags" Type="bool" Computed="hasTags"/>
+    <Column Name="LikesText" Type="string" Computed="likesText" DependsOn="Likes"/>
+    <Column Name="RepostsText" Type="string" Computed="repostsText" DependsOn="Reposts"/>
+    <Column Name="CommentsText" Type="string" Computed="commentsText" DependsOn="Comments"/>
+    <Column Name="LikeCount" Type="string" Computed="likeCount" DependsOn="Likes" Description="Detail page tile: … until known."/>
+    <Column Name="RepostCount" Type="string" Computed="repostCount" DependsOn="Reposts"/>
+    <Column Name="CommentCount" Type="string" Computed="commentCount" DependsOn="Comments"/>
+    <Column Name="LikesLabel" Type="string" Computed="likesLabel" DependsOn="Likes"/>
+    <Column Name="RepostsLabel" Type="string" Computed="repostsLabel" DependsOn="Reposts"/>
+    <Column Name="CommentsLabel" Type="string" Computed="commentsLabel" DependsOn="Comments"/>
+    <Column Name="Liked" Type="bool" Computed="liked" DependsOn="LikeId"/>
+    <Column Name="Reposted" Type="bool" Computed="reposted" DependsOn="RepostId"/>
+    <Column Name="LikeText" Type="string" Computed="likeText" DependsOn="LikeId"/>
+    <Column Name="RepostText" Type="string" Computed="repostText" DependsOn="RepostId"/>
+    <Column Name="CanReact" Type="bool" Computed="canReact" DependsOn="StatsReady Busy"/>
+    <Column Name="Locked" Type="bool" Computed="locked" DependsOn="CanReact" Description="Reactions wait for counts."/>
+    <Column Name="State" Type="string" Computed="postState" DependsOn="Liked Reposted CanReact"
+            Description="Style classes: liked, reposted, pending."/>
+    <Column Name="AspectRatio" Type="float" Computed="aspect" DependsOn="ImageWidth ImageHeight PhotoRatio"/>
+    <Column Name="PhotoShown" Type="bool" Computed="photoShown" DependsOn="PhotoPath"/>
+    <Column Name="PhotoFrame" Type="string" Computed="photoFrame" DependsOn="PhotoPath" Description="loaded once an image shows."/>
+    <Column Name="PhotoLoading" Type="bool" Computed="photoLoading" DependsOn="PhotoState"/>
+    <Column Name="PhotoFailed" Type="bool" Computed="photoFailed" DependsOn="PhotoState"/>
+    <Column Name="PhotoPending" Type="bool" Computed="photoPending" DependsOn="PhotoPath PhotoState"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="AuthorName"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="AuthorId"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+    <Relation Name="Tags" Entity="OctopusTag" Many="true" Source="tags"/>
+  </Entity>
+  <Entity Name="OctopusTag" Key="Label">
+    <Column Name="Label" Type="string" Source="value"/>
+    <Column Name="Text" Type="string" Computed="hashTag" DependsOn="Label"/>
+  </Entity>
+  <Entity Name="OctopusEntry" Key="Key" ObjectName="PostId"
+          Description="One row of a timeline. Its key is per feed; a repost row and the post row share the post.">
+    <Column Name="Key" Type="string" Source="key"/>
+    <Column Name="PostId" Type="string" Source="postId"/>
+    <Column Name="RepostedById" Type="string" Source="repostedBy.id" Nullable="true"/>
+    <Column Name="RepostedByName" Type="string" Source="repostedBy.name" Nullable="true"/>
+    <Column Name="IsRepost" Type="bool" Computed="isRepost" DependsOn="RepostedById"/>
+    <Column Name="RepostedText" Type="string" Computed="repostedText" DependsOn="RepostedByName"/>
+    <Column Name="AvatarTop" Type="float" Computed="avatarTop" DependsOn="IsRepost"/>
+    <Relation Name="Post" Entity="OctopusPost" Key="PostId" Embed="true"/>
+  </Entity>
+  <Entity Name="OctopusActivity" Key="Key" ObjectName="Position" Description="Someone interacting with the reader's posts.">
+    <Column Name="Key" Type="string" Source="key"/>
+    <Column Name="Position" Type="string" Source="position"/>
+    <Column Name="Kind" Type="string" Source="kind"/>
+    <Column Name="UserId" Type="string" Source="userId"/>
+    <Column Name="Person" Type="string" Source="name" Default="Someone"/>
+    <Column Name="At" Type="string" Source="at"/>
+    <Column Name="Body" Type="string" Source="body" Nullable="true"/>
+    <Column Name="PostId" Type="string" Source="post.id" Nullable="true"/>
+    <Column Name="PostSummary" Type="string" Source="summary" Nullable="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="Line" Type="string" Computed="activityLine" DependsOn="Person Kind"/>
+    <Column Name="Icon" Type="string" Computed="activityIcon" DependsOn="Kind"/>
+    <Column Name="Age" Type="string" Computed="activityAge" DependsOn="At"/>
+    <Column Name="HasBody" Type="bool" Computed="activityHasBody" DependsOn="Body"/>
+    <Column Name="Excerpt" Type="string" Computed="activityExcerpt" DependsOn="Body"/>
+    <Column Name="HasSummary" Type="bool" Computed="activityHasPost" DependsOn="PostId"/>
+    <Column Name="Summary" Type="string" Computed="activitySummary" DependsOn="PostSummary"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="Person"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="UserId"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+  </Entity>
+  <Entity Name="OctopusProfile" Key="UserId" ObjectName="UserId"
+          Description="A person: profile pages, search results and the reader's own page share one record.">
+    <Column Name="UserId" Type="string" Source="userId"/>
+    <Column Name="DisplayName" Type="string" Source="username" Nullable="true"/>
+    <Column Name="Bio" Type="string" Source="bio" Nullable="true"/>
+    <Column Name="PostCount" Type="int" Source="posts" Nullable="true"/>
+    <Column Name="Followers" Type="int" Source="followers" Nullable="true"/>
+    <Column Name="FollowingCount" Type="int" Source="following" Nullable="true"/>
+    <Column Name="Exists" Type="bool" Source="exists"/>
+    <Column Name="FollowId" Type="string" Local="true" Description="The reader's follow, needed to undo it."/>
+    <Column Name="FollowKnown" Type="bool" Local="true"/>
+    <Column Name="FollowBusy" Type="bool" Local="true"/>
+    <Column Name="Own" Type="bool" Local="true" Description="The reader's own profile."/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="Title" Type="string" Computed="personName" DependsOn="DisplayName"/>
+    <Column Name="BioText" Type="string" Computed="bioText" DependsOn="Bio Own"/>
+    <Column Name="BioExcerpt" Type="string" Computed="bioExcerpt" DependsOn="Bio"/>
+    <Column Name="HasBio" Type="bool" Computed="hasBio" DependsOn="Bio"/>
+    <Column Name="PostsText" Type="string" Computed="postsText" DependsOn="PostCount"/>
+    <Column Name="FollowersText" Type="string" Computed="followersText" DependsOn="Followers"/>
+    <Column Name="FollowingText" Type="string" Computed="followingText" DependsOn="FollowingCount"/>
+    <Column Name="IsFollowing" Type="bool" Computed="isFollowing" DependsOn="FollowId"/>
+    <Column Name="FollowText" Type="string" Computed="followText" DependsOn="FollowId"/>
+    <Column Name="FollowStyle" Type="string" Computed="followStyle" DependsOn="FollowId"/>
+    <Column Name="CanFollow" Type="bool" Computed="canFollow" DependsOn="FollowKnown Own"/>
+    <Column Name="Initials" Type="string" Computed="personInitials" DependsOn="DisplayName"/>
+    <Column Name="Tone" Type="string" Computed="personTone" DependsOn="UserId"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+  </Entity>
+  <Entity Name="OctopusSearch" Key="Id" Description="The search tab's last query.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Query" Type="string" Source="query"/>
+    <Column Name="Heading" Type="string" Computed="searchHeading" DependsOn="Query"/>
+    <Column Name="Missing" Type="string" Computed="searchMissing" DependsOn="Query"/>
+  </Entity>
+  <Entity Name="OctopusReader" Key="Id" Description="Who is reading: a guest or a signed-in account.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="SignedIn" Type="bool" Source="signedIn"/>
+    <Column Name="IsGuest" Type="bool" Computed="isGuest" DependsOn="SignedIn"/>
+  </Entity>
+</Schema>

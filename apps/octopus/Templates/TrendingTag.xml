@@ -1,0 +1,3 @@
+<!-- A suggested tag on the empty search page. -->
+<Button Height="44" FontSize="22" TextHorizontalAlignment="Left" TextVerticalAlignment="Center"
+        Click="OpenTag" Text="{Binding DataContext/Text}" class="octopus-action octopus-link"/>

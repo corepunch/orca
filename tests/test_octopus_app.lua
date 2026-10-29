@@ -14,6 +14,14 @@ local Octopus = require "Octopus/api/octopus"
 orca.async = function(fn, ...) return fn(...) end
 local NOW = 1761400000
 
+-- Bindings run on paint; this suite does not paint.
+local function programs(app)
+    if not app.screen then return end
+    core.advanceFrame()
+    core.runAllPrograms(app.screen)
+    if app.shell and app.shell.screen ~= app.screen then core.runAllPrograms(app.shell.screen) end
+end
+
 local function drain(app)
     core.flushQueue()
     while true do
@@ -22,19 +30,35 @@ local function drain(app)
         if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
     end
     core.flushQueue()
+    programs(app)
 end
 
 local function find(app, name)
     return assert(app.screen:findChild(name, true), "Missing " .. name)
 end
 
-local function click(app, name)
-    find(app, name):send("Node.LeftButtonUp")
+-- Bound labels set Text; Lua-built ones set text content.
+local function text(node)
+    local value = node.Text
+    if value ~= nil and value ~= "" then return value end
+    return node:getTextContent()
+end
+
+-- A named control inside a template row, such as a post's Like button.
+local function inside(app, row, name)
+    return assert(find(app, row):findChild(name, true), "Missing " .. name .. " in " .. row)
+end
+
+local function press(app, node)
+    node:send("Node.LeftButtonUp")
     drain(app)
     app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
     app:afterPaint()
     drain(app)
 end
+
+local function click(app, name) press(app, find(app, name)) end
+local function clickIn(app, row, name) press(app, inside(app, row, name)) end
 
 -- Pages you go into go back from their round title button, like a user would.
 local function back(app)
@@ -121,17 +145,20 @@ collectgarbage("collect")
 home:UpdateLayout(390, 844)
 app:afterPaint()
 drain(app)
-assert(find(app, "Imagep-reef").Src == app.media:path("photo:f-reef"), "Visible photo posts load their image")
-assert(find(app, "Imagep-reef").Source, "Downloaded photos must resolve a native image resource")
+assert(inside(app, "Postp-reef", "Image").Src == app.media:path("photo:f-reef"), "Visible photo posts load their image")
+inside(app, "Postp-reef", "Image"):send("Node.LoadView") -- what the next paint does with a bound Src
+assert(inside(app, "Postp-reef", "Image").Source, "Downloaded photos must resolve a native image resource")
 home:UpdateLayout(390, 844)
-local reef, reefImage = find(app, "Photop-reef"), find(app, "Imagep-reef")
+local reef, reefImage = inside(app, "Postp-reef", "Photo"), inside(app, "Postp-reef", "Image")
 assert(math.abs(reef.AspectRatio - 156 / 104) < 0.01 and math.abs(reef.ActualWidth / reef.ActualHeight - 1.5) < 0.02,
     "A photo frame takes the photo's shape instead of leaving empty space beneath it")
 assert(reefImage.Stretch == "UniformToFill" and math.abs(reefImage.ActualHeight - reef.ActualHeight) < 1,
     "A shaped frame is filled edge to edge")
-assert(app.photos:aspect("f-reef") == reef.AspectRatio, "Rebuilt cards reserve the decoded shape")
-local profilePhoto = assert(find(app, "Postp-reef"):findChild("AvatarPhoto", true),
-    "Bundled demo portraits must appear beside Octopus posts")
+assert(app.scope.store:get("OctopusPost", "p-reef").values.AspectRatio == reef.AspectRatio,
+    "Rebuilt cards reserve the decoded shape")
+local profilePhoto = inside(app, "Postp-reef", "AvatarPhoto")
+assert(profilePhoto.Visible, "Bundled demo portraits must appear beside Octopus posts")
+profilePhoto:send("Node.LoadView")
 assert(profilePhoto.Source and profilePhoto.Source.Width > 100, "Octopus portraits must resolve real image resources")
 home:UpdateLayout(390, 844)
 local card = find(app, "Postp-small")
@@ -197,25 +224,25 @@ drain(app)
 assert(PageTransition.page(home).TransitionMode == "None")
 
 -- Guests can read a post and its comments, but writing asks them to sign in.
-click(app, "Openp-hello")
+clickIn(app, "Postp-hello", "Open")
 assert(app.currentRoute == "/post" and find(app, "PostPage"))
 assert(find(app, "Commentc-welcome") and find(app, "SignInToComment"))
 assertDetailFooter(app)
-local function stat(key) return find(app, "Stat" .. key):getTextContent() end
+local function stat(key) return text(find(app, "Stat" .. key)) end
 assert(stat("likes") == "2" and stat("reposts") == "1" and stat("comments") == "3", "Post pages show live counts")
-assert(find(app, "PostTime"):getTextContent():match("^%d%d:%d%d · %d+ %a+ %d%d%d%d$"), "Posts show their full time")
+assert(text(find(app, "PostTime")):match("^%d%d:%d%d · %d+ %a+ %d%d%d%d$"), "Posts show their full time")
 click(app, "LikePost")
 assert(app.currentRoute == "/auth" and find(app, "SignInPage"), "Liking as a guest opens sign in")
-assert(find(app, "AuthStatus"):getTextContent() == "Sign in to like posts.")
+assert(text(find(app, "AuthStatus")) == "Sign in to like posts.")
 click(app, "ContinueAsGuest")
 assert(app.currentRoute == "/post", "Continuing as a guest returns to the post")
 back(app)
 assert(app.currentRoute == "/" and app.screen == home, "Back returns to the retained timeline")
 
 -- Profiles and tags are public too.
-click(app, "Authorp-reef")
-assert(app.currentRoute == "/user" and find(app, "ProfileName"):getTextContent() == "Sam Rivera")
-assert(find(app, "Countposts"):getTextContent() == "2" and find(app, "Countfollowers"):getTextContent() == "–")
+clickIn(app, "Postp-reef", "Author")
+assert(app.currentRoute == "/user" and text(find(app, "ProfileName")) == "Sam Rivera")
+assert(text(find(app, "Countposts")) == "2" and text(find(app, "Countfollowers")) == "–")
 assert(find(app, "Postp-tide") and find(app, "SignInToFollow"))
 assertDetailFooter(app)
 back(app)
@@ -245,7 +272,7 @@ assert(find(app, "AppBarSignOut") and not app.screen:findChild("AppBarSignIn", t
 click(app, "Kindquote")
 assert(find(app, "QuoteText") and not app.screen:findChild("PostTitle", true))
 click(app, "Publish")
-assert(find(app, "WriteStatus"):getTextContent() == "Quote text is required.")
+assert(text(find(app, "WriteStatus")) == "Quote text is required.")
 find(app, "QuoteText").Text = "Less, but better."
 find(app, "QuoteSource").Text = "Dieter Rams"
 find(app, "PostTags").Text = "design"
@@ -261,7 +288,7 @@ local published = app.post.id
 find(app, "CommentInput").Text = "Adding a source link later."
 back(app)
 assert(find(app, "Post" .. published), "New posts top the timeline")
-click(app, "Open" .. published)
+clickIn(app, "Post" .. published, "Open")
 assert(find(app, "CommentInput").Text == "Adding a source link later.", "Comment drafts survive navigation")
 local thread = app.thread
 require("Octopus/views/thread").send(app, thread)
@@ -286,15 +313,16 @@ assert(find(app, "LikePost").Text == "unlike")
 click(app, "LikePost")
 assert(stat("likes") == "0")
 back(app)
-click(app, "Likep-small")
+clickIn(app, "Postp-small", "Like")
 local stats = app.client:stats { "p-small" }
 assert(stats["p-small"].likes == 2 and stats["p-small"].liked, "Timeline likes reach the service")
-click(app, "Repostp-small")
+clickIn(app, "Postp-small", "Repost")
 assert(app.client:stats({ "p-small" })["p-small"].reposted)
 
 -- Signed-in readers land on home, with reposts from the people they follow.
 assert(app.pivot.SelectedIndex == 0 and app.feed == "home")
-assert(find(app, "RepostedByp-small") and find(app, "RepostedByp-arms"), "Reposts show who reposted them")
+assert(inside(app, "Postp-small", "RepostedBy").Visible and inside(app, "Postp-arms", "RepostedBy").Visible,
+    "Reposts show who reposted them")
 
 -- Connect lists interactions with your posts, newest first.
 app:selectFeed("connect")
@@ -306,11 +334,12 @@ back(app)
 app:selectFeed("home")
 
 -- Following adds people to the home timeline.
-click(app, "Authorp-small")
-assert(find(app, "Countfollowers"):getTextContent() == "0")
+clickIn(app, "Postp-small", "Author")
+assert(text(find(app, "Countfollowers")) == "0")
 click(app, "FollowButton")
-assert(find(app, "Countfollowers"):getTextContent() == "1" and app.client:followState("u-jules"))
-assert(not app.feeds.home, "Following reloads the home timeline")
+assert(text(find(app, "Countfollowers")) == "1" and app.client:followState("u-jules"))
+assert(app.shell.screen:findChild("Timelinehome", true):findChild("Postp-quote", true),
+    "Following reloads the home timeline")
 back(app)
 assert(find(app, "Timelinehome"):findChild("Postp-quote", true), "Home includes people you just followed")
 
@@ -319,8 +348,8 @@ click(app, "AppBarMe")
 assert(find(app, "ProfileEditor") and find(app, "EditName").Text == "Ada Reef")
 find(app, "EditBio").Text = "Testing the phone app"
 click(app, "SaveProfile")
-assert(find(app, "ProfileBio"):getTextContent() == "Testing the phone app")
-assert(find(app, "Countposts"):getTextContent() == "2", "Own profile post count: " .. find(app, "Countposts"):getTextContent())
+assert(text(find(app, "ProfileBio")) == "Testing the phone app")
+assert(text(find(app, "Countposts")) == "2", "Own profile post count: " .. text(find(app, "Countposts")))
 
 -- A new profile photo replaces the bundled portrait, on the profile and posts.
 local photoBytes = assert(app.client:getImage("f-reef"))
@@ -337,7 +366,7 @@ assert(adaPhoto and find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Sr
 
 -- Deleting needs a second tap.
 click(app, "AppBarHome")
-click(app, "Open" .. published)
+clickIn(app, "Post" .. published, "Open")
 assert(find(app, "PostAuthor"):findChild("AvatarPhoto", true).Src == adaPhoto, "Posts show the author's photo")
 click(app, "DeletePost")
 assert(app.client:getPost(published), "The first tap only asks for confirmation")
@@ -359,11 +388,11 @@ find(fresh, "Email").Text = "pat@example.invalid"
 find(fresh, "Password").Text = "password123"
 find(fresh, "ConfirmPassword").Text = "password124"
 click(fresh, "SignUp")
-assert(not fresh.client:getSession() and find(fresh, "AuthStatus"):getTextContent() == "Passwords do not match.")
+assert(not fresh.client:getSession() and text(find(fresh, "AuthStatus")) == "Passwords do not match.")
 find(fresh, "ConfirmPassword").Text = "password123"
 click(fresh, "SignUp")
 assert(fresh.client:getSession() and fresh.currentRoute == "/me", "Sign-up returns to the profile")
-assert(find(fresh, "ProfileName"):getTextContent() == "Pat Example" and find(fresh, "Countposts"):getTextContent() == "0")
+assert(text(find(fresh, "ProfileName")) == "Pat Example" and text(find(fresh, "Countposts")) == "0")
 
 -- Service errors stay visible rather than falling back to demo data.
 local offline = App { client = Octopus.client { projectId = "p", transport = function() error("offline") end } }
@@ -406,21 +435,21 @@ assert(find(writer, "LinkTitle").Text == "" and find(writer, "LinkDescription").
 find(writer, "LinkTitle").Text = "A link draft"
 find(writer, "LinkUrl").Text = "javascript:alert(1)"
 click(writer, "Publish")
-assert(find(writer, "WriteStatus"):getTextContent() == "URL must start with http:// or https://")
+assert(text(find(writer, "WriteStatus")) == "URL must start with http:// or https://")
 find(writer, "LinkUrl").Text = "https://example.com"
 find(writer, "LinkDescription").Text = "A useful read."
 click(writer, "Kindphoto")
 form { ChoosePhoto = true, PhotoCaption = true }
 click(writer, "Publish")
-assert(find(writer, "WriteStatus"):getTextContent() == "Choose a photo to share.")
+assert(text(find(writer, "WriteStatus")) == "Choose a photo to share.")
 find(writer, "PhotoCaption").Text = "A photo draft"
 writer.media.pick = function() return nil, { code = "cancelled", message = "Cancelled" } end
 click(writer, "ChoosePhoto")
 assert(not isShown(find(writer, "PhotoPreview")) and find(writer, "PhotoCaption").Text == "A photo draft"
-    and find(writer, "WriteStatus"):getTextContent() == "", "Cancelling preserves the form without an error")
+    and text(find(writer, "WriteStatus")) == "", "Cancelling preserves the form without an error")
 writer.media.pick = function() return nil, { code = "unsupported", message = "Photo picker unavailable." } end
 click(writer, "ChoosePhoto")
-assert(find(writer, "WriteStatus"):getTextContent() == "Photo picker unavailable.")
+assert(text(find(writer, "WriteStatus")) == "Photo picker unavailable.")
 local imageBytes = assert(writer.client:getImage("f-reef"))
 writer.media.pick = function() return { jpeg = imageBytes } end
 click(writer, "ChoosePhoto")
@@ -460,7 +489,7 @@ assert(writer.composeDraft == photoDraft and isShown(find(writer, "PhotoPreview"
 local upload = writer.client.uploadImage
 writer.client.uploadImage = function() return nil, { code = "network", message = "Upload failed." } end
 click(writer, "Publish")
-assert(writer.currentRoute == "/write" and find(writer, "WriteStatus"):getTextContent() == "Upload failed. Your draft is safe."
+assert(writer.currentRoute == "/write" and text(find(writer, "WriteStatus")) == "Upload failed. Your draft is safe."
     and writer.composeDraft.photo and find(writer, "PhotoCaption").Text == "A photo draft"
     and not find(writer, "Publish").IgnoreHitTest, "Upload failures keep the complete draft and allow retry")
 writer.client.uploadImage = upload
@@ -553,6 +582,7 @@ local function step(request)
 end
 delayed:show("/")
 local firstRequest = requests[1]
+programs(delayed)
 assert(delayed.screen and find(delayed, "Loadingdiscover").Visible and #requests == 1,
     "The shell and indicator must exist before the fetch begins")
 delayed.screen:UpdateLayout(390, 844)
@@ -571,36 +601,43 @@ step(firstRequest)
 assert(delayed.screen == searchScreen and delayed.currentRoute == "/search",
     "A finished timeline fetch cannot navigate away from the current page")
 delayed:show("/")
+programs(delayed)
 local retainedScreen, retainedPost = delayed.screen, find(delayed, "Postp-reef")
+local function ready() return delayed.scope.store:get("OctopusPost", "p-reef").values.StatsReady end
 local firstStats = requests[#requests]
-assert(delayed.feeds.discover.stats["p-reef"].pending and find(delayed, "Likep-reef").IgnoreHitTest,
+assert(not ready() and inside(delayed, "Postp-reef", "Like").IgnoreHitTest,
     "Feed cards appear before counters, with unknown reader actions disabled")
 step(firstStats)
-assert(delayed.feeds.discover.stats["p-reef"].pending, "A yielding stats request never hides the feed")
+assert(not ready(), "A yielding stats request never hides the feed")
 step(firstStats)
-assert(not delayed.feeds.discover.stats["p-reef"].pending and not find(delayed, "Likep-reef").IgnoreHitTest,
+programs(delayed)
+assert(ready() and not inside(delayed, "Postp-reef", "Like").IgnoreHitTest,
     "Counters enable reactions only after reader state arrives")
 failRefresh = true
 delayed:refresh()
 local refreshRequest = requests[#requests]
 step(refreshRequest)
+programs(delayed)
 assert(delayed.screen == retainedScreen and find(delayed, "Postp-reef") == retainedPost
     and find(delayed, "Loadingdiscover").Visible, "Refreshing keeps the existing feed visible")
 step(refreshRequest)
+programs(delayed)
 assert(find(delayed, "Postp-reef") == retainedPost and not find(delayed, "Loadingdiscover").Visible
-    and find(delayed, "HomeStatus"):getTextContent() == "Temporarily offline",
+    and text(find(delayed, "HomeStatus")) == "Temporarily offline",
     "A refresh error preserves content and leaves refresh available")
 failRefresh = false
 delayed:refresh()
 refreshRequest = requests[#requests]
 step(refreshRequest); step(refreshRequest)
+programs(delayed)
 assert(find(delayed, "Postp-reef") == retainedPost and not find(delayed, "Loadingdiscover").Visible,
     "A successful feed refresh updates the collection without replacing retained posts")
 local failedStats = requests[#requests]
 failStats = true
 step(failedStats); step(failedStats)
-assert(find(delayed, "Postp-reef") == retainedPost and delayed.feeds.discover.stats["p-reef"].pending
-    and find(delayed, "Likep-reef").IgnoreHitTest, "Counter failure preserves content and blocks unsafe toggles")
+programs(delayed)
+assert(find(delayed, "Postp-reef") == retainedPost and not ready()
+    and inside(delayed, "Postp-reef", "Like").IgnoreHitTest, "Counter failure preserves content and blocks unsafe toggles")
 failStats = false
 -- Post counts populate while the comments section is still waiting.
 local listComments = delayed.client.listComments
@@ -620,7 +657,7 @@ assert(delayed.thread.post.content == hello.content and delayed.post == delayed.
     "Full detail replaces the feed summary in both the displayed view and current post")
 step(requests[threadStart + 1]); step(requests[threadStart + 1])
 step(threadRequest)
-assert(find(delayed, "Statlikes"):getTextContent() == "2" and find(delayed, "CommentsLoading"),
+assert(text(find(delayed, "Statlikes")) == "2" and find(delayed, "CommentsLoading"),
     "Post counts populate before comments finish loading")
 step(threadRequest)
 local retainedComment = find(delayed, "Commentc-welcome")
@@ -635,13 +672,16 @@ delayed:show("/search")
 local searchPeople = delayed.client.searchPeople
 delayed.client.searchPeople = function(self, query) coroutine.yield(); return searchPeople(self, query) end
 find(delayed, "SearchInput").Text = "reef"
-local partialIndex = #requests + 1
+local searchStart = #requests + 1
 click(delayed, "RunSearch")
-local partialSearch = requests[partialIndex]
-step(partialSearch); step(partialSearch)
-assert(delayed.searchState.results and delayed.searchState.results.posts and find(delayed, "Searching").Visible,
+local postsRequest, peopleRequest = requests[searchStart], requests[searchStart + 1]
+step(postsRequest); step(postsRequest)
+programs(delayed)
+assert(delayed.searchScope:member("SearchPosts").loaded and delayed.searchScope:member("SearchPeople").mode
+    and find(delayed, "Searching").Visible,
     "Search posts populate while people are still loading")
-step(partialSearch)
+step(peopleRequest); step(peopleRequest)
+programs(delayed)
 assert(not find(delayed, "Searching").Visible)
 -- A failed people lookup must not remove the successful post section.
 delayed.client.searchPeople = function()
@@ -649,36 +689,41 @@ delayed.client.searchPeople = function()
     return nil, { message = "People lookup unavailable" }
 end
 find(delayed, "SearchInput").Text = hello.title
-partialIndex = #requests + 1
+searchStart = #requests + 1
 click(delayed, "RunSearch")
-partialSearch = requests[partialIndex]
-step(partialSearch); step(partialSearch)
+postsRequest, peopleRequest = requests[searchStart], requests[searchStart + 1]
+step(postsRequest); step(postsRequest)
+programs(delayed)
 local partialPost = find(delayed, "Post" .. hello.id)
-step(partialSearch)
-assert(find(delayed, "Post" .. hello.id) == partialPost
-    and delayed.searchState.results.peopleError.message == "People lookup unavailable"
+step(peopleRequest); step(peopleRequest)
+programs(delayed)
+assert(find(delayed, "Post" .. hello.id) == partialPost and find(delayed, "PeopleSearchError").Visible
     and find(delayed, "RetryPeopleSearch") and not find(delayed, "Searching").Visible,
     "People lookup failure keeps the rendered posts and offers retry")
+assert(delayed.searchScope:member("SearchPeople").error.message == "People lookup unavailable")
 delayed.client.searchPeople = searchPeople
-partialIndex = #requests + 1
+searchStart = #requests + 1
 click(delayed, "RetryPeopleSearch")
-partialSearch = requests[partialIndex]
-step(partialSearch); step(partialSearch)
-assert(find(delayed, "Post" .. hello.id) and not delayed.searchState.results.peopleError
-    and not delayed.screen:findChild("PeopleSearchError", true), "Retry clears the people error while retaining post results")
+peopleRequest = requests[searchStart]
+step(peopleRequest)
+programs(delayed)
+assert(find(delayed, "Post" .. hello.id) and not find(delayed, "PeopleSearchError").Visible,
+    "Retry clears the people error while retaining post results")
 -- Clearing a search invalidates its in-flight response.
 delayed:show("/search")
 find(delayed, "SearchInput").Text = "reef"
-local searchIndex = #requests + 1
+searchStart = #requests + 1
 click(delayed, "RunSearch")
-local searchRequest = requests[searchIndex]
+local searchRequest = requests[searchStart]
 step(searchRequest)
+programs(delayed)
 assert(find(delayed, "Searching").Visible)
 find(delayed, "SearchInput").Text = ""
 click(delayed, "RunSearch")
 step(searchRequest)
-assert(not delayed.searchState.results and not find(delayed, "Searching").Visible,
-    "A cleared query cannot be replaced by an older response")
+programs(delayed)
+assert(delayed.searchScope:member("SearchPosts").items:count() == 0 and find(delayed, "SearchSuggestions").Visible
+    and not find(delayed, "Searching").Visible, "A cleared query cannot be replaced by an older response")
 -- Profile posts do not wait for metadata/count requests, and stale metadata
 -- cannot overwrite a profile after navigation has changed.
 local getProfile = delayed.client.getProfile
@@ -686,15 +731,19 @@ delayed.client.getProfile = function(self, id) coroutine.yield(); return getProf
 local profileStart = #requests + 1
 delayed:openProfile("u-sam", "Sam Rivera")
 drain(delayed)
-local profileView = delayed.profileView
-step(requests[profileStart])
-step(requests[profileStart + 2])
-assert(find(delayed, "ProfilePosts"):findChild("Postp-reef", true) and not profileView.profile,
-    "Profile timelines paint while the metadata request is still suspended")
+local profilePosts, profileMeta = requests[profileStart], requests[profileStart + 1]
+step(profileMeta)
+step(profilePosts)
+programs(delayed)
+local sam = delayed.reader.store:get("OctopusProfile", "u-sam")
+assert(find(delayed, "ProfilePosts"):findChild("Postp-reef", true) and sam.values.PostCount == nil
+    and text(find(delayed, "Countposts")) == "–", "Profile timelines paint while the metadata request is still suspended")
+local profileScope = delayed.transientScope
 delayed:show("/search")
 local afterProfile = delayed.screen
-step(requests[profileStart])
-assert(delayed.screen == afterProfile and not profileView.profile,
+assert(profileScope.disposed and delayed.transientScope == nil, "Navigation ends a pushed page's scope")
+step(profileMeta)
+assert(delayed.screen == afterProfile and not profileScope:member("Person").loaded,
     "A late profile response cannot update a page after navigating away")
 delayed.client.getProfile = getProfile
 -- Late counter results from a signed-out reader cannot alter a new shell.
@@ -704,18 +753,20 @@ local staleFeed = requests[#requests]
 step(staleFeed); step(staleFeed)
 local staleStats = requests[#requests]
 step(staleStats)
-local previousEntries = delayed.feeds.discover.stats
+local previousScope = delayed.scope
+local previousPost = previousScope.store:get("OctopusPost", "p-reef")
 delayed:resetSessionViews()
 delayed:show("/")
 step(staleStats)
-assert(previousEntries["p-reef"].pending and delayed.feeds.discover.stats ~= previousEntries,
+local current = delayed.scope.store:get("OctopusPost", "p-reef")
+assert(not previousPost.values.StatsReady and delayed.scope ~= previousScope and not (current and current.values.StatsReady),
     "Session reset discards an already suspended enrichment result")
 orca.async = asyncInline
 
 -- Disk snapshots paint before the initial network request and survive failure.
 local cacheClient = Octopus.mock { clock = function() return NOW end }
 local freshPosts = assert(cacheClient:listPosts { limit = 20 })
-local cachedItems = require("Octopus/views/posts").items { freshPosts[1], freshPosts[2] }
+local cachedItems = { { post = freshPosts[1] }, { post = freshPosts[2] } }
 cacheClient.readFeedCache = function() return cachedItems, "cached-cursor" end
 cacheClient.listPosts = function() return nil, { message = "Offline with cache" } end
 local cachedApp = App { client = cacheClient }
@@ -723,12 +774,13 @@ cachedApp.activate_controller = function(self, controller) self.screen = control
 cachedApp.repaint = function() end
 cachedApp:show("/")
 drain(cachedApp)
-assert(find(cachedApp, "Post" .. cachedItems[1].post.id) and #cachedApp.feeds.discover.items == 2
+assert(find(cachedApp, "Post" .. cachedItems[1].post.id) and cachedApp.scope:member("Discover").items:count() == 2
     and not find(cachedApp, "Loadingdiscover").Visible,
     "An initial refresh failure keeps the cached discover page readable")
 cacheClient.listPosts = function() return freshPosts end
 cachedApp:refresh()
-assert(#cachedApp.feeds.discover.items == #freshPosts,
+drain(cachedApp)
+assert(cachedApp.scope:member("Discover").items:count() == #freshPosts,
     "A successful refresh replaces cached items without duplicating rows")
 
 -- Chrome follows the app palette even when the OS appearance differs.

@@ -227,8 +227,10 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
     return expr;
   }
 
-  if (eat_token(str, '"')) {
-    beg = *str;
+  skip_space(str);
+  if (**str == '"') {
+    /* Leading spaces inside the literal are part of the string. */
+    beg = ++(*str);
     *str = strchr(*str, '"');
     if (!strncmp(beg, "kzb://", 6))
       beg += 6;

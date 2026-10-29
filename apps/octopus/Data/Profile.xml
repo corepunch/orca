@@ -1,0 +1,19 @@
+<!-- One person's page (Pages/Profile.xml): metadata, follow state and
+     posts load independently. A new scope per visit; the Me tab keeps its own. -->
+<DataScope Name="Profile" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Include Path="Octopus/Data/Posts.xml"/>
+  <Query Name="Person" Entity="OctopusProfile" Operation="person" Require="UserId"
+         Description="Name, bio and counts; follower counts need an account.">
+    <Param Name="UserId" Type="string"/>
+  </Query>
+  <Query Name="FollowState" Entity="OctopusProfile" Operation="followState" Require="UserId">
+    <Param Name="UserId" Type="string"/>
+  </Query>
+  <Query Name="ProfilePosts" Entity="OctopusEntry" Operation="profilePosts" Require="AuthorId" Loaded="enrich"
+         Description="The person's posts and reposts.">
+    <Param Name="AuthorId" Type="string"/>
+  </Query>
+  <Command Name="Follow" Operation="follow" Description="Follow or unfollow; the home timeline reloads."/>
+  <Handler Name="SignInToFollow"/>
+  <Expose Name="Profile" Entity="OctopusProfile"/>
+</DataScope>

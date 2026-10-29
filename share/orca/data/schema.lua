@@ -90,7 +90,13 @@ local function parseEntity(node, label)
         end
     end
     entity.key = node.attrs.Key or entity.key
+    -- Mirrors are named by this column (default: the key); ItemNamePrefix and
+    -- child paths use the name.
+    entity.objectName = node.attrs.ObjectName
     if #entity.columns == 0 then error(("%s:%d: entity %s has no columns"):format(label, node.line, entity.name), 0) end
+    if entity.objectName and not entity.byName[entity.objectName] then
+        error(("%s:%d: entity %s ObjectName '%s' is not a column"):format(label, node.line, entity.name, entity.objectName), 0)
+    end
     if entity.key and not entity.byName[entity.key] then
         error(("%s:%d: entity %s key '%s' is not a column"):format(label, node.line, entity.name, entity.key), 0)
     end

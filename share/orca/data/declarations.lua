@@ -58,7 +58,14 @@ function Declarations.parse(text, resource)
         resource = resource, members = {} }
     for _, node in ipairs(root.children) do
         local a = node.attrs
-        local member = { kind = node.tag, name = a.Name, line = node.line, node = node, attrs = a, params = params(node) }
+        if node.tag == "Include" then
+            -- Shared declarations (for example the actions every post list offers).
+            local included = Declarations.load(assert(a.Path, resource .. ":" .. node.line .. ": <Include> needs Path"))
+            for _, member in ipairs(included.members) do spec.members[#spec.members + 1] = member end
+            goto continue
+        end
+        local member = { kind = node.tag, name = a.Name, line = node.line, node = node, attrs = a, params = params(node),
+            resource = resource }
         if not member.name then fail(resource, node, "<" .. node.tag .. "> needs Name") end
         if node.tag == "Edit" then
             member.copy = {}
@@ -77,7 +84,8 @@ function Declarations.parse(text, resource)
             for _, child in ipairs(node.children) do
                 if child.tag == "Target" then
                     member.targets[#member.targets + 1] = { entity = child.attrs.Entity, id = child.attrs.Id,
-                        path = child.attrs.Path, state = child.attrs.State, revision = child.attrs.Revision, line = child.line }
+                        path = child.attrs.Path, state = child.attrs.State, revision = child.attrs.Revision,
+                        ratio = child.attrs.Ratio, line = child.line }
                 end
             end
         end
@@ -86,6 +94,7 @@ function Declarations.parse(text, resource)
             fail(resource, node, "unknown declaration <" .. node.tag .. ">")
         end
         spec.members[#spec.members + 1] = member
+        ::continue::
     end
     return spec
 end
@@ -136,6 +145,7 @@ function Declarations.build(spec, options)
     local binds = {}
     for _, member in ipairs(spec.members) do
         local a, node = member.attrs, member.node
+        local resource = member.resource or resource
         if member.kind == "Query" then
             if not a.Entity or not schema.entities[a.Entity] then
                 fail(resource, node, ("query %s names unknown entity '%s'"):format(member.name, tostring(a.Entity)))
@@ -144,7 +154,8 @@ function Declarations.build(spec, options)
                 operation = lookup(resource, node, provider, "operations", a.Operation or member.name),
                 pageSize = number(a.PageSize), poll = number(a.Poll), require = words(a.Require),
                 pollWhen = lookup(resource, node, provider, "conditions", a.PollWhen),
-                autoLoad = a.AutoLoad ~= "false",
+                autoLoad = a.AutoLoad ~= "false", prefetch = flag(a.Prefetch),
+                cached = lookup(resource, node, provider, "caches", a.Cached),
                 loaded = lookup(resource, node, provider, "hooks", a.Loaded) }
         elseif member.kind == "View" then
             if not scope:member(a.Source or "") then
@@ -205,6 +216,8 @@ function Declarations.build(spec, options)
                 cached = lookup(resource, node, provider, "media", a.Cached),
                 validate = lookup(resource, node, provider, "media", a.Validate),
                 missing = lookup(resource, node, provider, "media", a.Missing),
+                preview = lookup(resource, node, provider, "media", a.Preview),
+                discard = lookup(resource, node, provider, "media", a.Discard),
                 repaint = provider.repaint }
         elseif member.kind == "Handler" then
             scope.handlers[member.name] = lookup(resource, node, provider, "handlers", a.Function or member.name)
@@ -221,6 +234,7 @@ function Declarations.build(spec, options)
     end
     -- Edits name the command they submit; validate once everything exists.
     for _, member in ipairs(spec.members) do
+        local resource = member.resource or resource
         if member.kind == "Edit" and member.attrs.Submit and not scope:member(member.attrs.Submit) then
             fail(resource, member.node, ("edit %s submits unknown command '%s'"):format(member.name, member.attrs.Submit))
         end
@@ -233,6 +247,7 @@ function Declarations.build(spec, options)
     -- Master-detail: Bind="Rooms.Selected.Id" feeds a parameter from a view's
     -- selection, so the dependent query follows it without app code.
     for _, item in ipairs(binds) do
+        local resource = item.member.resource or resource
         local source, column = item.param.bind:match("^([%w_]+)%.Selected%.([%w_]+)$")
         local view = source and scope:member(source)
         if not view or not view.select then

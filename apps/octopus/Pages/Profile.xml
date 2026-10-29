@@ -1,0 +1,55 @@
+<!-- A person's page over the Profile scope (Data/Profile.xml): header from the
+     exposed Profile record, posts from ProfilePosts. The Me tab adds its editor
+     to ProfileActions. -->
+<StackView Name="ProfilePage" Spacing="18" Overflow="hidden scroll" JustifyContent="Start">
+  <Grid Columns="96px 1fr" Spacing="16">
+    <Grid Name="ProfileAvatar" Width="96" Height="96" StateClasses="{Binding DataContext/Profile/Tone}">
+      <TextBlock Text="{Binding DataContext/Profile/Initials}" FontSize="34" class="avatar-initials"
+                 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/Profile/HasAvatar}" Src="{Binding DataContext/Profile/AvatarPath}"
+                 ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+    </Grid>
+    <StackView Spacing="6" JustifyContent="Center">
+      <TextBlock Name="ProfileName" Text="{Binding DataContext/Profile/Title}" FontSize="26" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+      <TextBlock Name="ProfileBio" Text="{Binding DataContext/Profile/BioText}" FontSize="14" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <Grid Name="ProfileCounts" Columns="1fr 1fr 1fr" Height="64">
+    <StackView Spacing="0" JustifyContent="Start">
+      <TextBlock Name="Countposts" Text="{Binding DataContext/Profile/PostsText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
+      <TextBlock Text="posts" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+    </StackView>
+    <StackView Spacing="0" JustifyContent="Start">
+      <TextBlock Name="Countfollowers" Text="{Binding DataContext/Profile/FollowersText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
+      <TextBlock Text="followers" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+    </StackView>
+    <StackView Spacing="0" JustifyContent="Start">
+      <TextBlock Name="Countfollowing" Text="{Binding DataContext/Profile/FollowingText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
+      <TextBlock Text="following" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <StackView Name="ProfileActions" Spacing="12" JustifyContent="Start">
+    <Button Name="SignInToFollow" Visible="{Binding DataContext/Reader/IsGuest}" Click="SignInToFollow" Height="48" FontSize="15"
+            FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary">Sign in to follow</Button>
+    <Button Name="FollowButton" Visible="{Binding DataContext/Profile/CanFollow}" Click="Follow" Height="44" BorderWidth="2" FontSize="15"
+            FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" Text="{Binding DataContext/Profile/FollowText}"
+            StateClasses="{Binding DataContext/Profile/FollowStyle}" class="octopus-action"/>
+  </StackView>
+  <TextBlock Text="posts" FontSize="20" MarginTop="8" class="octopus-accent-text" IgnoreHitTest="true"/>
+  <StackView Name="ProfilePosts" Spacing="12" JustifyContent="Start">
+    <ItemsStack Name="PostItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Post"
+                ItemsSource="{Binding DataContext/ProfilePosts/Items}" ItemTemplate="Octopus/Templates/PostCard"/>
+    <Grid Name="ProfileLoading" Visible="{Binding DataContext/ProfilePosts/ShowLoading}" Height="160" IgnoreHitTest="true">
+      <ActivityIndicator Name="ProfileLoadingIndicator" class="octopus-dim"/>
+    </Grid>
+    <StackView Name="NoProfilePosts" Visible="{Binding DataContext/ProfilePosts/ShowEmpty}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+      <TextBlock Text="no posts yet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Visible="{Binding DataContext/Profile/Own}" Text="Use write to share your first post." FontSize="14" WordWrap="true"
+                 class="octopus-dim" IgnoreHitTest="true"/>
+    </StackView>
+    <StackView Name="ProfilePostsError" Visible="{Binding DataContext/ProfilePosts/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
+      <TextBlock Text="can't load posts" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/ProfilePosts/ErrorMessage}" FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+    </StackView>
+  </StackView>
+</StackView>

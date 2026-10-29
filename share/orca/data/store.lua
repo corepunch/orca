@@ -334,7 +334,8 @@ end
 function Store:mirror(record)
     Collection = Collection or require "orca.data.collection"
     local mirror = { record = record, object = record.entity:instantiate(), written = {}, children = {}, embedded = {} }
-    mirror.object.Name = tostring(record.key)
+    local named = record.entity.objectName and record.values[record.entity.objectName]
+    mirror.object.Name = tostring(named ~= nil and named or record.key)
     for _, relation in ipairs(record.entity.relations) do
         if relation.many then
             mirror.children[relation.name] = Collection.new(self, { name = relation.name, parent = mirror.object })

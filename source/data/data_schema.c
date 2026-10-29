@@ -132,9 +132,20 @@ find_entity_mut(struct ds_schema *s, const char *name)
 {
   if (!s || !name) return NULL;
   for (int i = 0; i < s->num_entities; i++) {
-    if (!strcmp(s->entities[i].name, name)) return &s->entities[i];
+    if (!strcmp(s->entities[i]->name, name)) return s->entities[i];
   }
   return NULL;
+}
+
+/* Appends to a pointer array; the pointed-to objects never move. */
+static bool_t
+append_pointer(void ***items, int *count, void *item)
+{
+  void **grown = realloc(*items, (size_t)(*count + 1) * sizeof(void *));
+  if (!grown) return FALSE;
+  grown[(*count)++] = item;
+  *items = grown;
+  return TRUE;
 }
 
 static bool_t
@@ -205,10 +216,6 @@ parse_schema_doc(xmlDocPtr doc, const char *source_label, struct ds_schema *sche
     }
 
     if (strcmp((const char *)en->name, "Entity") != 0) continue;
-    if (schema->num_entities >= DS_MAX_ENTITIES) {
-      Con_Warning("DS_ParseSchema: too many entities in '%s', ignoring remainder", source_label);
-      break;
-    }
 
     xmlChar *ename = xmlGetProp(en, XMLSTR("Name"));
     if (!ename) continue;
@@ -218,14 +225,25 @@ parse_schema_doc(xmlDocPtr doc, const char *source_label, struct ds_schema *sche
       continue;
     }
 
-    struct ds_entity *entity = &schema->entities[schema->num_entities++];
+    int capacity = 0;
+    for (xmlNodePtr cn = en->children; cn; cn = cn->next)
+      if (cn->type == XML_ELEMENT_NODE && !strcmp((const char *)cn->name, "Column")) capacity++;
+    struct ds_entity *entity = calloc(1, sizeof(struct ds_entity));
+    if (entity && capacity) entity->columns = calloc((size_t)capacity, sizeof(struct ds_column));
+    if (!entity || (capacity && !entity->columns) ||
+        !append_pointer((void ***)&schema->entities, &schema->num_entities, entity)) {
+      if (entity) free(entity->columns);
+      free(entity);
+      xmlFree(ename);
+      Con_Error("DS_ParseSchema: out of memory in '%s'", source_label);
+      return NULL;
+    }
     strncpy(entity->name, (const char *)ename, sizeof(entity->name) - 1);
     xmlFree(ename);
 
     for (xmlNodePtr cn = en->children; cn; cn = cn->next) {
       if (cn->type != XML_ELEMENT_NODE) continue;
       if (strcmp((const char *)cn->name, "Column") != 0) continue;
-      if (entity->num_columns >= DS_MAX_COLUMNS) continue;
 
       xmlChar *cname   = xmlGetProp(cn, XMLSTR("Name"));
       xmlChar *ctype   = xmlGetProp(cn, XMLSTR("Type"));
@@ -250,8 +268,11 @@ parse_schema_doc(xmlDocPtr doc, const char *source_label, struct ds_schema *sche
 
     if (has_leaf) {
       struct ClassDesc *cls = register_entity_class(entity);
-      if (cls && schema->num_classes < DS_MAX_ENTITIES)
-        schema->classes[schema->num_classes++] = cls;
+      if (cls && !append_pointer((void ***)&schema->classes, &schema->num_classes, cls)) {
+        OBJ_UnregisterClass(cls->ClassID);
+        free((void *)cls->Properties);
+        free(cls);
+      }
     }
   }
 
@@ -269,14 +290,10 @@ DS_ParseSchema(const char *path)
   }
   struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
   if (!schema) { xmlFreeDoc(doc); return NULL; }
-  schema = parse_schema_doc(doc, path, schema, 0);
-  if (!schema) {
-    free(schema);
-    xmlFreeDoc(doc);
-    return NULL;
-  }
+  struct ds_schema *parsed = parse_schema_doc(doc, path, schema, 0);
   xmlFreeDoc(doc);
-  return schema;
+  if (!parsed) DS_FreeSchema(schema);
+  return parsed;
 }
 
 struct ds_schema *
@@ -290,14 +307,10 @@ DS_ParseSchemaFromString(const char *xml)
   }
   struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
   if (!schema) { xmlFreeDoc(doc); return NULL; }
-  schema = parse_schema_doc(doc, "<string>", schema, 0);
-  if (!schema) {
-    free(schema);
-    xmlFreeDoc(doc);
-    return NULL;
-  }
+  struct ds_schema *parsed = parse_schema_doc(doc, "<string>", schema, 0);
   xmlFreeDoc(doc);
-  return schema;
+  if (!parsed) DS_FreeSchema(schema);
+  return parsed;
 }
 
 void
@@ -312,6 +325,12 @@ DS_FreeSchema(struct ds_schema *schema)
       free(cls);
     }
   }
+  for (int i = 0; i < schema->num_entities; i++) {
+    free(schema->entities[i]->columns);
+    free(schema->entities[i]);
+  }
+  free(schema->classes);
+  free(schema->entities);
   free(schema);
 }
 
@@ -322,10 +341,11 @@ DS_FindColumn(const struct ds_schema *schema,
 {
   if (!schema || !column) return NULL;
   for (int e = 0; e < schema->num_entities; e++) {
-    if (entity && strcmp(schema->entities[e].name, entity) != 0) continue;
-    for (int c = 0; c < schema->entities[e].num_columns; c++) {
-      if (strcmp(schema->entities[e].columns[c].name, column) == 0)
-        return &schema->entities[e].columns[c];
+    const struct ds_entity *candidate = schema->entities[e];
+    if (entity && strcmp(candidate->name, entity) != 0) continue;
+    for (int c = 0; c < candidate->num_columns; c++) {
+      if (strcmp(candidate->columns[c].name, column) == 0)
+        return &candidate->columns[c];
     }
   }
   return NULL;
@@ -336,7 +356,7 @@ DS_FindEntity(const struct ds_schema *schema, const char *name)
 {
   if (!schema || !name) return NULL;
   for (int i = 0; i < schema->num_entities; i++)
-    if (strcmp(schema->entities[i].name, name) == 0)
-      return &schema->entities[i];
+    if (strcmp(schema->entities[i]->name, name) == 0)
+      return schema->entities[i];
   return NULL;
 }

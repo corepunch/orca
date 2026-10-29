@@ -1,42 +1,105 @@
-<Grid Columns="44px 1fr" Spacing="8" ForegroundColor="{Binding DataContext/Ink}">
-  <Button Name="Avatar" Width="44" Height="44" MarginTop="{Binding DataContext/AvatarTop}" BackgroundColor="#00000000" class="octopus-row"/>
+<!-- One timeline row, bound to an OctopusEntry. The entry's post is the
+     embedded DataContext/Post record, shared with every row and page that
+     shows it. Actions are handler names on the Feeds scope. -->
+<Grid Columns="44px 1fr" Spacing="8" class="post-card">
+  <Button Name="Avatar" Width="44" Height="44" MarginTop="{Binding DataContext/AvatarTop}" Click="OpenAuthor"
+          BackgroundColor="#00000000" class="octopus-row">
+    <Grid Width="44" Height="44" StateClasses="{Binding DataContext/Post/Tone}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Post/Initials}" FontSize="19" class="avatar-initials"
+                 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/Post/HasAvatar}" Src="{Binding DataContext/Post/AvatarPath}"
+                 ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+    </Grid>
+  </Button>
   <StackView Spacing="4">
-    <Button Name="RepostedBy" Visible="{Binding DataContext/IsRepost}" Height="20" BackgroundColor="#00000000" class="octopus-row">
+    <Button Name="RepostedBy" Visible="{Binding DataContext/IsRepost}" Height="20" Click="OpenReposter"
+            BackgroundColor="#00000000" class="octopus-row">
       <StackView Direction="Horizontal" AlignItems="Center" Spacing="4" IgnoreHitTest="true">
         <VectorView Source="Octopus/assets/icons/repeat-2.svg" Width="14" Height="14" MarginTop="auto" MarginBottom="auto"
-                    ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
-        <TextBlock Text="{Binding DataContext/RepostedText}" FontSize="13" ForegroundColor="{Binding DataContext/Dim}"
+                    class="octopus-dim" IgnoreHitTest="true"/>
+        <TextBlock Text="{Binding DataContext/RepostedText}" FontSize="13" class="octopus-dim"
                    TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
       </StackView>
     </Button>
-    <Button Name="Author" Height="24" BackgroundColor="#00000000" class="octopus-row">
+    <Button Name="Author" Height="24" Click="OpenAuthor" BackgroundColor="#00000000" class="octopus-row">
       <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
-        <TextBlock Name="PostAuthorName" ForegroundColor="{Binding DataContext/Ink}" Text="{Binding DataContext/AuthorName}" FontSize="16" FontWeight="Bold" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-        <TextBlock Name="PostTimestamp" Text="{Binding DataContext/Age}" FontSize="16" TextWrapping="NoWrap" ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
+        <TextBlock Name="PostAuthorName" Text="{Binding DataContext/Post/AuthorName}" FontSize="16" FontWeight="Bold"
+                   TextOverflow="Ellipsis" TextWrapping="NoWrap" class="octopus-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="PostTimestamp" Text="{Binding DataContext/Post/Age}" FontSize="16" TextWrapping="NoWrap"
+                   class="octopus-dim" IgnoreHitTest="true"/>
       </Grid>
     </Button>
-    <Button Name="Open" BackgroundColor="#00000000" class="octopus-row"/>
-    <StackView Name="TagsHost" Visible="{Binding DataContext/HasTags}"/>
-    <Grid Name="Actions" Columns="1fr 1fr 1fr" Height="44">
-      <Button Name="Comment" Height="44" BackgroundColor="#00000000" class="octopus-row">
+    <Button Name="Open" Click="OpenPost" BackgroundColor="#00000000" class="octopus-row">
+      <StackView Spacing="8" IgnoreHitTest="true">
+        <Grid Name="Photo" Visible="{Binding DataContext/Post/HasPhoto}" AspectRatio="{Binding DataContext/Post/AspectRatio}"
+              class="photo-frame" StateClasses="{Binding DataContext/Post/PhotoFrame}" IgnoreHitTest="true">
+          <VectorView Source="Octopus/assets/icons/image.svg" Visible="{Binding DataContext/Post/PhotoPending}" Width="28" Height="28"
+                      MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="octopus-dim" IgnoreHitTest="true"/>
+          <ImageView Name="Image" Visible="{Binding DataContext/Post/PhotoShown}" Src="{Binding DataContext/Post/PhotoPath}"
+                     ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+          <ActivityIndicator Name="PhotoLoading" Visible="{Binding DataContext/Post/PhotoLoading}" class="octopus-dim"/>
+          <Button Name="RetryPhoto" Visible="{Binding DataContext/Post/PhotoFailed}" Click="Photos.Retry"
+                  BackgroundColor="#00000000" class="octopus-row">
+            <VectorView Name="PhotoUnavailable" Source="Octopus/assets/icons/image-off.svg" Width="28" Height="28"
+                        MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="octopus-dim" IgnoreHitTest="true"/>
+          </Button>
+        </Grid>
+        <TextBlock Name="PostBodyCaption" Visible="{Binding DataContext/Post/HasCaption}" Text="{Binding DataContext/Post/Excerpt}"
+                   FontSize="15" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+        <Grid Visible="{Binding DataContext/Post/IsQuote}" Columns="4px 1fr" Spacing="12" IgnoreHitTest="true">
+          <Grid class="octopus-accent-fill" IgnoreHitTest="true"/>
+          <StackView Spacing="4" IgnoreHitTest="true">
+            <TextBlock Name="PostBodyQuote" Text="{Binding DataContext/Post/Quote}" TrimLeading="true" WordWrap="true"
+                       class="post-quote octopus-ink" IgnoreHitTest="true"/>
+            <TextBlock Name="PostBodyQuoteSource" Visible="{Binding DataContext/Post/HasQuoteSource}"
+                       Text="{Binding DataContext/Post/QuoteSourceText}" FontSize="14" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+          </StackView>
+        </Grid>
+        <TextBlock Name="PostBodyThoughts" Visible="{Binding DataContext/Post/HasThoughts}" Text="{Binding DataContext/Post/Thoughts}"
+                   FontSize="15" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+        <Grid Visible="{Binding DataContext/Post/IsLink}" Columns="44px 1fr" Spacing="8" IgnoreHitTest="true">
+          <Grid Name="PostBodyLinkTile" Width="44" Height="44" class="octopus-accent-fill" IgnoreHitTest="true">
+            <VectorView Source="Octopus/assets/icons/link.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
+                        MarginTop="auto" MarginBottom="auto" class="octopus-on-accent" IgnoreHitTest="true"/>
+          </Grid>
+          <StackView Spacing="4" IgnoreHitTest="true">
+            <TextBlock Name="PostBodyLinkTitle" Text="{Binding DataContext/Post/LinkTitle}" TrimLeading="true" WordWrap="true"
+                       class="post-link-title octopus-accent-text" IgnoreHitTest="true"/>
+            <TextBlock Name="PostBodyDomain" Text="{Binding DataContext/Post/Domain}" FontSize="13" TextOverflow="Ellipsis"
+                       TextWrapping="NoWrap" class="octopus-dim" IgnoreHitTest="true"/>
+          </StackView>
+        </Grid>
+        <TextBlock Name="PostBodyTitle" Visible="{Binding DataContext/Post/IsText}" Text="{Binding DataContext/Post/Title}"
+                   TrimLeading="true" WordWrap="true" class="post-title octopus-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="PostBodyContent" Visible="{Binding DataContext/Post/HasContent}" Text="{Binding DataContext/Post/Excerpt}"
+                   WordWrap="true" class="post-content" IgnoreHitTest="true"/>
+      </StackView>
+    </Button>
+    <ItemsStack Name="Tags" Visible="{Binding DataContext/Post/HasTags}" Direction="Horizontal" AlignItems="Center"
+                Spacing="8" Height="28" ItemNamePrefix="Tag" ItemsSource="{Binding DataContext/Post/Tags}"
+                ItemTemplate="Octopus/Templates/Tag"/>
+    <Grid Name="Actions" Columns="1fr 1fr 1fr" Height="44" StateClasses="{Binding DataContext/Post/State}">
+      <Button Name="Comment" Height="44" Click="OpenPost" BackgroundColor="#00000000" class="octopus-row">
         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" Height="28" MarginBottom="auto" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/message-circle.svg" Width="20" Height="20" MarginTop="auto" MarginBottom="auto"
-                      ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
-          <TextBlock Text="{Binding DataContext/Comments}" FontSize="13" ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
+                      class="reaction" IgnoreHitTest="true"/>
+          <TextBlock Text="{Binding DataContext/Post/CommentsText}" FontSize="13" class="reaction" IgnoreHitTest="true"/>
         </StackView>
       </Button>
-      <Button Name="Repost" Height="44" BackgroundColor="#00000000" class="octopus-row">
+      <Button Name="Repost" Height="44" Click="Repost" IgnoreHitTest="{Binding DataContext/Post/Locked}"
+              BackgroundColor="#00000000" class="octopus-row reaction-button">
         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" Height="28" MarginBottom="auto" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/repeat-2.svg" Width="20" Height="20" MarginTop="auto" MarginBottom="auto"
-                      ForegroundColor="{Binding DataContext/RepostColor}" IgnoreHitTest="true"/>
-          <TextBlock Text="{Binding DataContext/Reposts}" FontSize="13" ForegroundColor="{Binding DataContext/RepostColor}" IgnoreHitTest="true"/>
+                      class="reaction repost-reaction" IgnoreHitTest="true"/>
+          <TextBlock Text="{Binding DataContext/Post/RepostsText}" FontSize="13" class="reaction repost-reaction" IgnoreHitTest="true"/>
         </StackView>
       </Button>
-      <Button Name="Like" Height="44" BackgroundColor="#00000000" class="octopus-row">
+      <Button Name="Like" Height="44" Click="Like" IgnoreHitTest="{Binding DataContext/Post/Locked}"
+              BackgroundColor="#00000000" class="octopus-row reaction-button">
         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" Height="28" MarginBottom="auto" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/heart.svg" Width="20" Height="20" MarginTop="auto" MarginBottom="auto"
-                      ForegroundColor="{Binding DataContext/LikeColor}" IgnoreHitTest="true"/>
-          <TextBlock Text="{Binding DataContext/Likes}" FontSize="13" ForegroundColor="{Binding DataContext/LikeColor}" IgnoreHitTest="true"/>
+                      class="reaction like-reaction" IgnoreHitTest="true"/>
+          <TextBlock Text="{Binding DataContext/Post/LikesText}" FontSize="13" class="reaction like-reaction" IgnoreHitTest="true"/>
         </StackView>
       </Button>
     </Grid>
