@@ -104,6 +104,28 @@ function Provider.new(context)
         photoPending = function(values) return (values.PhotoPath or "") == "" and values.PhotoState ~= "error" end,
         photoFailed = function(values) return values.PhotoState == "error" end,
         canPost = function(values) return not values.ReadOnly end,
+        -- Conversation info.
+        kindText = function(values) return (values.Kind or "group"):upper() end,
+        roomAbout = function(values)
+            return values.Kind == "channel" and "Only owners and admins can publish here."
+                or "A space for everyone in this conversation."
+        end,
+        isOwner = function(values) return values.Role == "owner" end,
+        canRename = function(values) return values.Kind ~= "direct" and values.Role == "owner" end,
+        canInvite = function(values) return values.Kind ~= "direct" and (values.Role == "owner" or values.Role == "admin") end,
+        canLeave = function(values) return values.Kind ~= "direct" and values.Role ~= "owner" end,
+        leaveText = function(values) return values.Kind == "channel" and "Leave channel" or "Leave group" end,
+        pinText = function(values) return values.IsPinned and "unpin" or "pin" end,
+        hasInvite = function(values) return (values.InviteCode or "") ~= "" end,
+        inviteText = function(values)
+            if (values.InviteCode or "") ~= "" then
+                return "Invitation: " .. values.InviteCode .. "\nShare this code with someone you trust."
+            end
+            return values.InviteRevoked and "Invitation revoked." or "Invitations expire and can be revoked."
+        end,
+        memberTone = function(values) return tone(values.UserId) end,
+        memberAvatar = function(values) return values.UserId end,
+        roleAction = function(values) return values.Role == "admin" and "Make member" or "Make admin" end,
     }
     local function signedIn()
         if client:getSession() then return true end
@@ -127,6 +149,79 @@ function Provider.new(context)
             context.read[params.item.key] = true
             params.item.store:refresh(params.item)
             context.openRoom(params.item.raw)
+            return true
+        end,
+        -- Conversation info ------------------------------------------------
+        members = function(params, _, _, query)
+            local rows, err = client:listMembers(params.RoomId)
+            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
+            if not rows then return nil, err end
+            local room = query.scope:exposedRecord("Room")
+            local me = client:getSession().user.id
+            local owner = room and room.values.Role == "owner"
+            local manage = room and (owner or room.values.Role == "admin") and room.values.Kind ~= "direct"
+            local list, store = {}, query.scope.store
+            for _, member in ipairs(rows) do
+                local id = member.user_id or member.id
+                local info = member.profile or member
+                local mayChange = manage and id ~= me and member.role ~= "owner"
+                list[#list + 1] = store:put("ChatMember", { key = params.RoomId .. ":" .. id, user_id = id,
+                    display_name = info.display_name, username = info.username, role = member.role or "member" },
+                    { locals = { CanChangeRole = mayChange and owner or false, CanRemove = mayChange or false } })
+            end
+            return list
+        end,
+        renameRoom = function(params)
+            local room = params.target
+            local updated, err = client:renameRoom(room.key, params.draft.Title)
+            if not updated then context.notice(err.message, true); return nil, err end
+            room.store:put("ChatRoom", { id = room.key, name = updated.name }, { partial = true })
+            if context.roomRenamed then context.roomRenamed(room.key, updated.name) end
+            return true
+        end,
+        setRole = function(params, _, command)
+            local member, room = params.item, command.scope:exposedRecord("Room")
+            local ordinary = room.values.Kind == "channel" and "subscriber" or "member"
+            local ok, err = client:setMemberRole(room.key, member.values.UserId,
+                member.values.Role == "admin" and ordinary or "admin")
+            if not ok then context.notice(err.message, true); return nil, err end
+            return true
+        end,
+        removeMember = function(params, _, command)
+            local ok, err = client:removeMember(command.scope:exposedRecord("Room").key, params.item.values.UserId)
+            if not ok then context.notice(err.message, true); return nil, err end
+            return true
+        end,
+        createInvite = function(_, _, command)
+            local room = command.scope:exposedRecord("Room")
+            if room.values.HasInvite then
+                context.notice("Revoke the current invitation before creating a new one.")
+                return true
+            end
+            local result, err = client:createInvite(room.key)
+            if not result then context.notice(err.message, true); return nil, err end
+            room.store:update(room, { InviteCode = tostring(result.code or result.token), InviteRevoked = false })
+            return true
+        end,
+        revokeInvite = function(_, _, command)
+            local room = command.scope:exposedRecord("Room")
+            if not room.values.HasInvite then context.notice("Create an invitation first."); return true end
+            local ok, err = client:revokeInvite(room.key, room.values.InviteCode)
+            if not ok then context.notice(err.message, true); return nil, err end
+            room.store:update(room, { InviteCode = "", InviteRevoked = true })
+            return true
+        end,
+        leaveRoom = function(_, _, command)
+            local room = command.scope:exposedRecord("Room")
+            local ok, err = client:leaveRoom(room.key)
+            if not ok then context.notice(err.message, true); return nil, err end
+            context.roomLeft(room.key)
+            return true
+        end,
+        togglePin = function(_, _, command)
+            local room = command.scope:exposedRecord("Room")
+            context.pinned[room.key] = not context.pinned[room.key] or nil
+            room.store:refresh(room)
             return true
         end,
         -- The newest page first; `page.cursor` reads the page before it.
@@ -219,6 +314,10 @@ function Provider.new(context)
 
     local hooks = {
         arrangeThread = function(query, records) layoutThread(query, records) end,
+        -- A saved name starts a new edit of the room, showing what was stored.
+        renamed = function(_, _, _, info, edit)
+            if info.target and not edit.disposed then edit:begin(info.target) end
+        end,
         messagesLoaded = function(query, _, mode)
             local thread = query.scope:exposedRecord("Thread")
             local first = query.items:records()[1]
@@ -308,6 +407,14 @@ function Provider.new(context)
         AttachPhoto = function(scope) context.attachPhoto(scope) end,
         RemovePhoto = function(scope) context.removePhoto(scope) end,
         CancelEdit = function(scope) scope:member("Composer"):cancel() end,
+        AskLeave = function(scope)
+            local room = scope:exposedRecord("Room")
+            room.store:update(room, { ConfirmLeave = true })
+        end,
+        CancelLeave = function(scope)
+            local room = scope:exposedRecord("Room")
+            room.store:update(room, { ConfirmLeave = false })
+        end,
         -- Clearing the search returns focus to the field, as typing continues there.
         ClearSearch = function(scope, params)
             scope:member("Matching"):set("Search", "")

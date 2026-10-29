@@ -1,0 +1,8 @@
+<!-- Data pages Chat opens by route. Each names its page and scope; the app
+     supplies page chrome and navigation. Parameters come from the app. -->
+<Routes>
+  <Route Path="/details" Name="DetailsPage" Page="Chat/Pages/Details" Scope="Chat/Data/Details.xml"
+         HeaderFrom="Room.Title" Back="/thread" Status="DetailsStatus" Description="A conversation's people, invitations and settings.">
+    <Param Name="RoomId" From="room.id"/>
+  </Route>
+</Routes>

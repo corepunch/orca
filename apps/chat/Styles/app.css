@@ -15,6 +15,7 @@
 .chat-light .chat-soft { background-color: #dcebff; }
 .chat-light .chat-chrome { background-color: #dddddd; }
 .chat-light .chat-error { color: #e51400; }
+.chat-light .chat-outline { background-color: #00000000; color: #000000; border-color: #000000; }
 .chat-light .sent .bubble { background-color: #0078e7; }
 .chat-light .sent .bubble-tail { color: #0078e7; }
 .chat-light .sent .bubble-ink { color: #ffffff; }
@@ -38,6 +39,7 @@
 .chat-dark .chat-soft { background-color: #0a2a4d; }
 .chat-dark .chat-chrome { background-color: #1f1f1f; }
 .chat-dark .chat-error { color: #ff5c5c; }
+.chat-dark .chat-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
 .chat-dark .sent .bubble { background-color: #0084ff; }
 .chat-dark .sent .bubble-tail { color: #0084ff; }
 .chat-dark .sent .bubble-ink { color: #ffffff; }

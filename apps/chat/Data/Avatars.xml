@@ -1,0 +1,10 @@
+<!-- Profile photos for every tile that stands for a person or a conversation.
+     Scopes include it; the store keeps one photo path per record. -->
+<DataScope Name="Avatars" Schema="Chat/Data/Chat.Schema.xml">
+  <Media Name="Avatars" Lookup="avatarLookup" Fetch="avatarFetch" Store="avatarStore" Cached="avatarCached"
+         Missing="avatarMissing">
+    <Target Entity="ChatRoom" Id="AvatarId" Path="AvatarPath"/>
+    <Target Entity="ChatContact" Id="AvatarId" Path="AvatarPath"/>
+    <Target Entity="ChatMember" Id="AvatarId" Path="AvatarPath"/>
+  </Media>
+</DataScope>

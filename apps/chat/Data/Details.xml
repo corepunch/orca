@@ -1,0 +1,23 @@
+<!-- A conversation's info (Pages/Details.xml, route /details): its people,
+     and for owners and admins renaming, roles and invitations. The room is
+     the inbox's record, so a rename or pin shows there at once. -->
+<DataScope Name="Details" Schema="Chat/Data/Chat.Schema.xml">
+  <Include Path="Chat/Data/Avatars.xml"/>
+  <Query Name="Members" Entity="ChatMember" Operation="members" Require="RoomId"
+         Description="The people in the conversation, with what the reader may change.">
+    <Param Name="RoomId" Type="string" Route="RoomId"/>
+  </Query>
+  <Edit Name="Rename" Entity="ChatRoomName" Submit="SaveName" Begin="Room" Submitted="renamed">
+    <Copy Field="Title" From="Title"/>
+  </Edit>
+  <Command Name="SaveName" Operation="renameRoom" Description="Owners rename groups and channels."/>
+  <Command Name="SetRole" Operation="setRole" Parameter="Item" Invalidates="Members"/>
+  <Command Name="RemoveMember" Operation="removeMember" Parameter="Item" Invalidates="Members"/>
+  <Command Name="CreateInvite" Operation="createInvite"/>
+  <Command Name="RevokeInvite" Operation="revokeInvite"/>
+  <Command Name="Leave" Operation="leaveRoom"/>
+  <Command Name="TogglePin" Operation="togglePin" Sync="true"/>
+  <Handler Name="AskLeave"/>
+  <Handler Name="CancelLeave"/>
+  <Expose Name="Room" Entity="ChatRoom" Key="RoomId"/>
+</DataScope>

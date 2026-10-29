@@ -19,6 +19,7 @@ local PageTransition = require "orca.UIKit.PageTransition"
 local data = require "orca.data"
 local Visibility = require "orca.data.visibility"
 local Scroll = require "orca.data.scroll"
+local Routes = require "orca.data.routes"
 local filesystem = require "orca.filesystem"
 local ChatProvider = require "Chat/providers/chat"
 local colors = C.colors
@@ -50,6 +51,11 @@ local App = Application:extend {
         self.media = options.media or require("Chat/media").new()
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
+        -- Data pages open by route (Data/Routes.xml); no route needs Lua of its own.
+        self.routes = Routes.load("Chat/Data/Routes.xml")
+        for _, route in ipairs(self.routes.list) do
+            self:match(route.path, route.path, function(app) return app:openRoute(route.path) end)
+        end
         self:resetSessionViews()
         if self.remote and self.client and self.client.mode == "appwrite" then
             self.push = require("Chat/push").new(self, config, options.push)
@@ -59,7 +65,7 @@ local App = Application:extend {
     resetSessionViews = function(self)
         PhotoViewer.close(self)
         -- Records belong to one account: the next session gets a new store.
-        self:closeThread()
+        self:closePages()
         if self.scope then self.scope:dispose() end
         self.scope, self.visibility = nil, Visibility.new()
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
@@ -82,7 +88,7 @@ local App = Application:extend {
         self.contactsState, self.contactsPanorama, self.contactsStatus = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
-        self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
+        self.newSelection, self.profileStatus, self.pendingIdentity = {}, nil, nil
     end,
 
     -- The signed-in account's data scope (Data/Inbox.xml): rooms, contacts,
@@ -108,7 +114,16 @@ local App = Application:extend {
             photoSent = function(roomId, photo)
                 if photo and self.photoDrafts[roomId] == photo then self.photoDrafts[roomId] = nil end
             end,
-            notice = function(text, isError) if self.currentRoute == "/thread" then self:notice(text, isError) end end,
+            notice = function(text, isError)
+                if self.threadScope or self.routeScope then self:notice(text, isError) end
+            end,
+            roomRenamed = function(id, name) if self.room and self.room.id == id then self.room.name = name end end,
+            roomLeft = function(id)
+                self:roomChanged(id, false)
+                self.room, self.drafts[id], self.photoDrafts[id] = nil, nil, nil
+                self.readRooms[id], self.pinned[id] = nil, nil
+                self:show("/")
+            end,
             focusComposer = function() if self.composer then self.composer:setFocus() end end,
             openPhoto = function(attachment) self:openPhoto(attachment) end,
             openMessageActions = function(message) self:openMessageActions(message) end,
@@ -231,7 +246,7 @@ local App = Application:extend {
     dispatch = function(self, request)
         PhotoViewer.close(self)
         -- Every route change ends the open conversation's scope.
-        self:closeThread()
+        self:closePages()
         self:installErrorHandler()
         self.currentRoute = type(request) == "string" and request
             or type(request) == "table" and request.path or "/"
@@ -275,7 +290,7 @@ local App = Application:extend {
     navigate = function(self, route, direction)
         -- Polling follows the visible page: home() reactivates the inbox and
         -- each visit to a conversation starts its own scope.
-        self:closeThread()
+        self:closePages()
         if self.scope then self.scope:deactivate() end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
@@ -377,7 +392,7 @@ local App = Application:extend {
     end,
 
     signOut = function(self)
-        self:closeThread()
+        self:closePages()
         if self.push then self.push:suspend() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
@@ -498,13 +513,47 @@ local App = Application:extend {
         self:notice("Photo removed. Your message is still here.")
     end,
 
-    -- The open conversation's scope ends with its page.
-    closeThread = function(self)
+    -- Page scopes (the open conversation, a routed page) end with their page.
+    closePages = function(self)
+        local route = self.routeScope
+        self.routeScope = nil
+        if route then route:dispose() end
         local scope = self.threadScope
         if not scope then return end
         self.threadScope = nil
         if self.keepScroll then self.keepScroll(); self.keepScroll = nil end
         scope:dispose()
+    end,
+
+    -- A page from Data/Routes.xml: its scope shares the session's records;
+    -- an ApplicationBar in the page docks to the bottom, as on every page.
+    openRoute = function(self, path)
+        if not self:dataScope() then return self:home() end
+        local shared = self.sessionData
+        local page, scope, route = self.routes:open(path, self, { provider = shared.provider, store = shared.store,
+            host = shared.host, valid = shared.valid })
+        self.routeScope = scope
+        self.status = page:findChild(route.status or "PageStatus", true)
+        if self.status then self.status:setTextContent("") end
+        self.visibility:watch(page, scope)
+        local bar = page:findChild("AppBar")
+        if bar then
+            bar:removeFromParent()
+            scope:attach(bar)
+        end
+        local back = route.back and function() self:goBack(route.back) end
+        local pivot = C.page(route.header or "", page, { Name = route.name, back = back })
+        if route.headerFrom then
+            local record, field = route.headerFrom:match("^(%w+)%.(%w+)$")
+            local item = pivot:getFirstChild()
+            scope:present(item, record)
+            item:attachPropertyProgram("PivotItem.Header", "{DataContext/" .. field .. "}", "OneWay", true)
+        end
+        local screen = self:frame()
+        if bar then Footer.layout(screen, pivot, bar, { Background = colors.background, Foreground = colors.ink })
+        else screen:addChild(pivot) end
+        scope:activate()
+        return screen
     end,
 
     thread = function(self)
@@ -580,7 +629,6 @@ local App = Application:extend {
     contactsView = Contacts.show,
     profile = Identity.profile,
     auth = Identity.auth,
-    details = Conversations.details,
 
     ["/"] = function(self) return self:home() end,
     ["/thread"] = function(self) return self:thread() end,
@@ -591,14 +639,13 @@ local App = Application:extend {
     ["/auth/email"] = function(self) return Identity.auth(self, "email") end,
     ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,
     ["/auth/code"] = function(self) return Identity.auth(self, "code") end,
-    ["/details"] = function(self) return self:details() end,
 
     run = function(self)
         self:installErrorHandler()
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
             if message:is("Window.Closed") then
-                self:closeThread()
+                self:closePages()
                 if self.push then self.push:suspend() end
                 async.set_error_handler(nil)
                 return

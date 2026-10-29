@@ -13,9 +13,5 @@
   <View Name="PinnedRooms" Source="Matching" Filter="pinned"/>
   <Command Name="OpenRoom" Operation="openRoom" Parameter="Item" Sync="true"/>
   <Handler Name="ClearSearch"/>
-  <Media Name="Avatars" Lookup="avatarLookup" Fetch="avatarFetch" Store="avatarStore" Cached="avatarCached"
-         Missing="avatarMissing">
-    <Target Entity="ChatRoom" Id="AvatarId" Path="AvatarPath"/>
-    <Target Entity="ChatContact" Id="AvatarId" Path="AvatarPath"/>
-  </Media>
+  <Include Path="Chat/Data/Avatars.xml"/>
 </DataScope>

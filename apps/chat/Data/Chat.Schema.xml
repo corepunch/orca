@@ -28,6 +28,38 @@
     <Column Name="AvatarId" Type="string" Computed="roomAvatar" DependsOn="Kind PeerId" Description="The person a direct chat's tile stands for."/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
     <Column Name="SearchText" Type="string" Computed="roomSearch" DependsOn="Title Subtitle"/>
+    <Column Name="InviteCode" Type="string" Local="true" Description="The invitation this device created and has not revoked."/>
+    <Column Name="InviteRevoked" Type="bool" Local="true"/>
+    <Column Name="ConfirmLeave" Type="bool" Local="true" Description="Leaving asks once more."/>
+    <Column Name="KindText" Type="string" Computed="kindText" DependsOn="Kind"/>
+    <Column Name="About" Type="string" Computed="roomAbout" DependsOn="Kind"/>
+    <Column Name="IsOwner" Type="bool" Computed="isOwner" DependsOn="Role"/>
+    <Column Name="CanRename" Type="bool" Computed="canRename" DependsOn="Kind Role"/>
+    <Column Name="CanInvite" Type="bool" Computed="canInvite" DependsOn="Kind Role"/>
+    <Column Name="CanLeave" Type="bool" Computed="canLeave" DependsOn="Kind Role"/>
+    <Column Name="LeaveText" Type="string" Computed="leaveText" DependsOn="Kind"/>
+    <Column Name="PinText" Type="string" Computed="pinText" DependsOn="IsPinned"/>
+    <Column Name="HasInvite" Type="bool" Computed="hasInvite" DependsOn="InviteCode"/>
+    <Column Name="InviteText" Type="string" Computed="inviteText" DependsOn="InviteCode InviteRevoked"/>
+  </Entity>
+  <Entity Name="ChatMember" Key="Key" ObjectName="UserId" Description="A person in one conversation; roles differ per room.">
+    <Column Name="Key" Type="string" Source="key"/>
+    <Column Name="UserId" Type="string" Source="user_id"/>
+    <Column Name="DisplayName" Type="string" Source="display_name" Nullable="true"/>
+    <Column Name="Username" Type="string" Source="username" Nullable="true"/>
+    <Column Name="Role" Type="string" Source="role" Default="member"/>
+    <Column Name="CanChangeRole" Type="bool" Local="true" Description="The reader owns the room and this member is not the owner."/>
+    <Column Name="CanRemove" Type="bool" Local="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="Title" Type="string" Computed="publicName" DependsOn="DisplayName Username"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
+    <Column Name="Tone" Type="string" Computed="memberTone" DependsOn="UserId"/>
+    <Column Name="AvatarId" Type="string" Computed="memberAvatar" DependsOn="UserId"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+    <Column Name="RoleAction" Type="string" Computed="roleAction" DependsOn="Role"/>
+  </Entity>
+  <Entity Name="ChatRoomName" Description="The rename form of a group or channel.">
+    <Column Name="Title" Type="string"/>
   </Entity>
   <Entity Name="ChatContact" Key="Id" Description="A person who shares a conversation with the reader.">
     <Column Name="Id" Type="string" Source="id"/>

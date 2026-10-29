@@ -1,0 +1,22 @@
+<!-- One person in a conversation's info, bound to a ChatMember. Owners see
+     role changes; owners and admins can remove members. -->
+<StackView Spacing="6" Padding="0 6" JustifyContent="Start">
+  <Grid Columns="52px 1fr" Spacing="12">
+    <Grid Name="Avatar" Width="52" Height="52" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials}" FontSize="18" class="avatar-initials"
+                 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+                 ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+    </Grid>
+    <StackView Spacing="2" JustifyContent="Center">
+      <TextBlock Name="MemberName" Text="{Binding DataContext/Title}" FontSize="22" TextOverflow="Ellipsis" TextWrapping="NoWrap"
+                 class="chat-ink" IgnoreHitTest="true"/>
+      <TextBlock Name="MemberRole" Text="{Binding DataContext/Role}" FontSize="14" class="chat-dim" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <Button Name="Role" Visible="{Binding DataContext/CanChangeRole}" Click="SetRole" Text="{Binding DataContext/RoleAction}"
+          Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+          class="chat-action chat-outline"/>
+  <Button Name="Remove" Visible="{Binding DataContext/CanRemove}" Click="RemoveMember" Height="48" FontSize="15"
+          TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error">Remove</Button>
+</StackView>

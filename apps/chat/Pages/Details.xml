@@ -1,0 +1,62 @@
+<!-- A conversation's info over the Details scope (Data/Details.xml). Its
+     application bar pins the conversation; the route docks it to the bottom. -->
+<Node2D Name="DetailsContent">
+  <StackView Name="DetailsBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+    <Grid Name="RoomAvatar" Width="72" Height="72" StateClasses="{Binding DataContext/Room/Tone}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Room/Initials}" FontSize="22" class="avatar-initials"
+                 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+      <ImageView Visible="{Binding DataContext/Room/HasAvatar}" Src="{Binding DataContext/Room/AvatarPath}"
+                 ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+    </Grid>
+    <TextBlock Name="RoomKind" Text="{Binding DataContext/Room/KindText}" Width="100" Height="24" FontSize="11" FontWeight="Bold"
+               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-soft chat-accent-text" IgnoreHitTest="true"/>
+    <TextBlock Name="RoomAbout" Text="{Binding DataContext/Room/About}" FontSize="14" WordWrap="true" class="chat-muted" IgnoreHitTest="true"/>
+    <TextBlock Name="DetailsStatus" Visible="false" FontSize="14" WordWrap="true" class="chat-muted"/>
+    <StackView Name="RenameSection" Visible="{Binding DataContext/Room/CanRename}" Spacing="14" JustifyContent="Start">
+      <TextBlock Text="conversation name" FontSize="18" MarginTop="8" class="chat-accent-text" IgnoreHitTest="true"/>
+      <Input Name="RenameRoomName" PlaceholderText="Conversation name" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
+             Text="{Binding DataContext/Rename/Title, Mode=TwoWay}" class="chat-input chat-field"/>
+      <Button Name="RenameRoom" Click="Rename.Submit" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
+              TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-action chat-outline">Save name</Button>
+    </StackView>
+    <TextBlock Text="people" FontSize="18" MarginTop="8" class="chat-accent-text" IgnoreHitTest="true"/>
+    <ItemsStack Name="Members" Spacing="14" JustifyContent="Start" ItemNamePrefix="Member"
+                ItemsSource="{Binding DataContext/Members/Items}" ItemTemplate="Chat/Templates/MemberRow"/>
+    <Grid Name="ContentLoading" Visible="{Binding DataContext/Members/ShowLoading}" Height="80" IgnoreHitTest="true">
+      <ActivityIndicator class="chat-muted"/>
+    </Grid>
+    <StackView Name="MembersFailed" Visible="{Binding DataContext/Members/ShowError}" Spacing="16" JustifyContent="Start">
+      <TextBlock Text="{Binding DataContext/Members/ErrorMessage}" FontSize="14" WordWrap="true" class="chat-error" IgnoreHitTest="true"/>
+      <Button Name="RetryContent" Click="Members.Retry" Height="48" FontSize="15" TextHorizontalAlignment="Left"
+              TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link">Retry</Button>
+    </StackView>
+    <StackView Name="InviteSection" Visible="{Binding DataContext/Room/CanInvite}" Spacing="14" JustifyContent="Start">
+      <TextBlock Text="invite people" FontSize="18" MarginTop="8" class="chat-accent-text" IgnoreHitTest="true"/>
+      <TextBlock Name="Invitation" Text="{Binding DataContext/Room/InviteText}" FontSize="14" WordWrap="true" class="chat-muted"/>
+      <Input Name="InvitationCode" Visible="{Binding DataContext/Room/HasInvite}" Text="{Binding DataContext/Room/InviteCode}"
+             PlaceholderText="Invitation code" Height="44" FontSize="15" Padding="12 0" BorderWidth="2" class="chat-input chat-field"/>
+      <Button Name="CreateInvite" Click="CreateInvite" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
+              TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-action chat-outline">Create invitation</Button>
+      <Button Name="RevokeInvite" Click="RevokeInvite" Height="48" FontSize="15" TextHorizontalAlignment="Left"
+              TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error">Revoke invitation</Button>
+    </StackView>
+    <StackView Name="LeaveSection" Visible="{Binding DataContext/Room/CanLeave}" Spacing="8" JustifyContent="Start">
+      <Button Name="LeaveRoom" Click="AskLeave" Text="{Binding DataContext/Room/LeaveText}" Height="48" FontSize="15"
+              TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error"/>
+      <StackView Name="LeaveRoomConfirmation" Visible="{Binding DataContext/Room/ConfirmLeave}" Spacing="8" JustifyContent="Start">
+        <TextBlock Text="Leave this conversation? You will need an invitation to return to a private conversation."
+                   FontSize="14" WordWrap="true" class="chat-muted" IgnoreHitTest="true"/>
+        <Button Name="ConfirmLeaveRoom" Click="Leave" Height="48" FontSize="15" TextHorizontalAlignment="Left"
+                TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error">Leave conversation</Button>
+        <Button Name="CancelLeaveRoom" Click="CancelLeave" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
+                TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-action chat-outline">Cancel</Button>
+      </StackView>
+    </StackView>
+  </StackView>
+  <ApplicationBar Name="AppBar" SafeAreaEdge="Bottom" ContentInsetAdjustment="Always" class="frosted bar-top chat-ink">
+    <BindingExpression Target="PaddingLeft">{Screen.SafeAreaLeft}</BindingExpression>
+    <BindingExpression Target="PaddingRight">{Screen.SafeAreaRight}</BindingExpression>
+    <ApplicationBarIconButton Name="PinConversation" IconUri="Chat/assets/icons/pin.svg" Text="{Binding DataContext/Room/PinText}"
+                              Click="TogglePin"/>
+  </ApplicationBar>
+</Node2D>
