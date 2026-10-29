@@ -52,10 +52,10 @@ app.restorePending = true
 app:show("/")
 assert(app.restorePending and attempts == 1 and app.screen:findChild("RetrySessionRestore", true),
     "An offline restore must offer retry and keep restoration pending")
-assert(not app.screen:findChild("RequestCode", true) and not app.screen:findChild("Room1", true),
+assert(not app.screen:findChild("RequestCode", true) and not app.screen:findChild("Roomalex", true),
     "An offline restore must not expose login or stale conversation views")
 click(app, "RetrySessionRestore")
-assert(attempts == 2 and not app.restorePending and client:getSession() and app.screen:findChild("Room1", true),
+assert(attempts == 2 and not app.restorePending and client:getSession() and app.screen:findChild("Roomalex", true),
     "Retry must restore the session and open conversations without another login")
 app:show("/")
 assert(attempts == 2, "A restored session must not be reloaded on every navigation")
@@ -91,10 +91,10 @@ client.signOut = function(self)
 end
 app = appFor(client)
 app:show("/")
-assert(app.screen:findChild("Room1", true))
+assert(app.screen:findChild("Roomalex", true))
 app:signOut()
 assert(not client:getSession() and not app.shell and app.screen:findChild("RequestCode", true)
-    and not app.screen:findChild("Room1", true),
+    and not app.screen:findChild("Roomalex", true),
     "Offline logout must remove authenticated views after local credentials are cleared")
 assert(app.status:getTextContent() == "Offline revocation", "Offline revocation failure must remain visible")
 
@@ -111,7 +111,7 @@ app = appFor(client)
 app:show("/")
 app:signOut()
 assert(not client:getSession() and not app.shell and app.logoutPending
-    and app.screen:findChild("RetrySignOut", true) and not app.screen:findChild("Room1", true),
+    and app.screen:findChild("RetrySignOut", true) and not app.screen:findChild("Roomalex", true),
     "Failed secure erasure must hide conversations and offer an explicit sign-out retry")
 click(app, "RetrySignOut")
 assert(attempts == 2 and not app.logoutPending and app.screen:findChild("RequestCode", true),
@@ -129,7 +129,7 @@ app = appFor(client)
 app:show("/")
 app:signOut()
 assert(app.logoutPending and client:getSession() and app.screen:findChild("RetrySignOut", true)
-    and not app.screen:findChild("Room1", true), "Offline target cleanup hides chats and preserves login for retry")
+    and not app.screen:findChild("Roomalex", true), "Offline target cleanup hides chats and preserves login for retry")
 click(app, "RetrySignOut")
 assert(not client:getSession() and not app.logoutPending and app.screen:findChild("RequestCode", true),
     "Notification cleanup retry can finish signing out")

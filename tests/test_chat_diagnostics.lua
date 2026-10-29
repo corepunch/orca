@@ -137,7 +137,7 @@ for _, secret in ipairs { "secret-value", "with spaces", "token-value", "bearer-
 end
 assert(Diagnostics.redact("apps/chat/App.lua:123: test error"):find("App.lua:123", 1, true))
 app:show("/")
-app.room = app.rooms[1]
+app.room = app.client:listRooms()[1]
 app:show("/thread")
 app.composer.Text = "Typed since last navigation"
 app:reportError("thread failed", "Test")

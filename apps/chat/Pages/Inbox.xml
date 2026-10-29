@@ -1,0 +1,84 @@
+<!-- The inbox: three pivot lists over one Rooms query. Each list binds a local
+     view; loading, error, empty and retry come from the view's state. The
+     DataContext is the session's Inbox scope (Data/Inbox.xml). -->
+<Node2D Name="InboxContent" class="chat-background">
+  <Pivot Name="Inbox" Title="Messenger" ExtendBodyBehindHeader="true" class="toolbar-page chat-ink">
+    <PivotItem Name="FilterAll" Header="All">
+      <Node2D>
+        <Node2D>
+          <ItemsStack Name="ConversationListAll" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
+                      ItemsSource="{Binding DataContext/AllRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
+            <StackView Name="InboxErrorAll" Visible="{Binding DataContext/AllRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
+              <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+              <Button Name="RetryInboxAll" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
+                      TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+            </StackView>
+            <StackView Name="InboxEmptyAll" Visible="{Binding DataContext/AllRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
+              <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
+                <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+              </TextBlock>
+              <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
+                <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+              </TextBlock>
+            </StackView>
+          </ItemsStack>
+          <ActivityIndicator Name="InboxLoadingAll" Visible="{Binding DataContext/AllRooms/ShowLoading}" class="chat-muted"/>
+        </Node2D>
+        <Node2D Name="SearchBar" SafeAreaEdge="Top" class="frosted bar-bottom" MarginLeft="-20" MarginRight="-20" Padding="20 0 20 12">
+          <Grid Columns="1fr 44px" Height="48">
+            <Input Name="Search" PlaceholderText="search" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
+                   class="chat-input chat-field" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
+            <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field">
+              <VectorView Source="Chat/assets/icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
+                          MarginTop="auto" MarginBottom="auto" class="chat-field-ink" IgnoreHitTest="true"/>
+            </Button>
+          </Grid>
+        </Node2D>
+      </Node2D>
+    </PivotItem>
+    <PivotItem Name="FilterUnread" Header="Unread">
+      <Node2D>
+        <ItemsStack Name="ConversationListUnread" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
+                    ItemsSource="{Binding DataContext/UnreadRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
+          <StackView Name="InboxErrorUnread" Visible="{Binding DataContext/UnreadRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
+            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+            <Button Name="RetryInboxUnread" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
+                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+          </StackView>
+          <StackView Name="InboxEmptyUnread" Visible="{Binding DataContext/UnreadRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
+            <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
+              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+            </TextBlock>
+            <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
+              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+            </TextBlock>
+          </StackView>
+        </ItemsStack>
+        <ActivityIndicator Name="InboxLoadingUnread" Visible="{Binding DataContext/UnreadRooms/ShowLoading}" class="chat-muted"/>
+      </Node2D>
+    </PivotItem>
+    <PivotItem Name="FilterPinned" Header="Pinned">
+      <Node2D>
+        <ItemsStack Name="ConversationListPinned" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
+                    ItemsSource="{Binding DataContext/PinnedRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
+          <StackView Name="InboxErrorPinned" Visible="{Binding DataContext/PinnedRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
+            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+            <Button Name="RetryInboxPinned" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
+                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+          </StackView>
+          <StackView Name="InboxEmptyPinned" Visible="{Binding DataContext/PinnedRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
+            <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
+              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+            </TextBlock>
+            <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
+              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+            </TextBlock>
+          </StackView>
+        </ItemsStack>
+        <ActivityIndicator Name="InboxLoadingPinned" Visible="{Binding DataContext/PinnedRooms/ShowLoading}" class="chat-muted"/>
+      </Node2D>
+    </PivotItem>
+  </Pivot>
+  <TextBlock Name="InboxStatus" Height="24" SafeAreaEdge="Bottom" Visible="false" FontSize="11"
+             TextHorizontalAlignment="Center" class="frosted chat-dim" IgnoreHitTest="true"/>
+</Node2D>

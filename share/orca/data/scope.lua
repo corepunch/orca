@@ -64,6 +64,8 @@ local function defaultHost()
     return host
 end
 
+Scope.defaultHost = defaultHost
+
 local serial = 0
 
 -- options: name, schema, store (or scope/computed/context to create one),
@@ -96,6 +98,8 @@ function Scope:attach(node, handlers)
     local ok, err = pcall(node.loadController, node, "orca.data.controller")
     Dispatch.pending = nil
     if not ok then error(err, 2) end
+    -- Resolve bound collections now, so the page is complete before its first paint.
+    core.runAllPrograms(node)
     return node
 end
 
@@ -136,6 +140,7 @@ function Scope:view(def)
 end
 function Scope:command(def) return add(self, Command.new(self, def)) end
 function Scope:edit(def) return add(self, Edit.new(self, def)) end
+function Scope:media(def) return add(self, require("orca.data.media").new(self, def)) end
 
 function Scope:member(name, purpose)
     local member = self.members[name]

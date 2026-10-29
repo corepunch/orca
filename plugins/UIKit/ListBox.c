@@ -100,6 +100,11 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
       }
       entry->seen = TRUE;
       ordered[index] = entry;
+      if (ic->ItemNamePrefix && *ic->ItemNamePrefix) {
+        char name[MAX_PROPERTY_STRING];
+        snprintf(name, sizeof(name), "%s%s", ic->ItemNamePrefix, OBJ_GetName(data));
+        if (strcmp(OBJ_GetName(entry->view), name)) OBJ_SetName(entry->view, name);
+      }
       if (OBJ_GetParent(entry->view) != hObject) OBJ_AddChild(hObject, entry->view);
     }
     struct ItemsControlEntry **link = &ic->_entries;

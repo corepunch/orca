@@ -9,6 +9,8 @@ local Entity = {}
 Entity.__index = Entity
 
 local TYPES = { string = true, int = true, float = true, bool = true }
+-- Native object properties a record column cannot shadow.
+local RESERVED = { Name = true, id = true, class = true, StyleClass = true, DataContext = true }
 local DEFAULTS = { string = "", int = 0, float = 0, bool = false }
 -- An explicit null in a partial update; a missing field leaves the value alone.
 Schema.null = setmetatable({}, { __tostring = function() return "null" end })
@@ -62,6 +64,10 @@ local function parseEntity(node, label)
             if entity.byName[name] then
                 error(("%s:%d: duplicate column %s.%s"):format(label, child.line, entity.name, name), 0)
             end
+            if RESERVED[name] then
+                error(("%s:%d: column %s.%s uses a reserved object property name; choose another (for example Title)")
+                    :format(label, child.line, entity.name, name), 0)
+            end
             local column = {
                 name = name, type = kind, source = a.Source, nullable = flag(a.Nullable),
                 readOnly = flag(a.ReadOnly) or a.Computed ~= nil or a.From ~= nil,
@@ -76,7 +82,7 @@ local function parseEntity(node, label)
             local relation = {
                 name = assert(a.Name, label .. ":" .. child.line .. ": <Relation> needs Name"),
                 entity = assert(a.Entity, label .. ":" .. child.line .. ": <Relation> needs Entity"),
-                key = a.Key, source = a.Source, many = flag(a.Many), line = child.line,
+                key = a.Key, source = a.Source, many = flag(a.Many), embed = flag(a.Embed), line = child.line,
                 order = a.Order, description = a.Description,
             }
             entity.relations[#entity.relations + 1] = relation
@@ -110,6 +116,10 @@ function Schema:validate()
             end
             if relation.many and not relation.source then
                 error(("%s:%d: to-many relation %s.%s needs Source"):format(entity.resource, relation.line, entity.name, relation.name), 0)
+            end
+            if relation.embed and relation.many then
+                error(("%s:%d: only to-one relations embed; %s.%s is to-many"):format(entity.resource, relation.line,
+                    entity.name, relation.name), 0)
             end
             if relation.many and not target.key then
                 error(("%s:%d: relation %s.%s needs a keyed entity"):format(entity.resource, relation.line, entity.name, relation.name), 0)
@@ -253,7 +263,8 @@ function Schema:describe()
         end
         for _, relation in ipairs(entity.relations) do
             item.relations[#item.relations + 1] = { name = relation.name, entity = relation.entity,
-                cardinality = relation.many and "many" or "one", key = relation.key, source = relation.source }
+                cardinality = relation.many and "many" or "one", key = relation.key, source = relation.source,
+                embedded = relation.embed }
         end
         result.entities[#result.entities + 1] = item
     end

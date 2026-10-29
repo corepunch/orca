@@ -71,7 +71,7 @@ function Diagnostics:controller(err, stage)
     layout:addChild(list)
     layout:addChild(C.button("Return to chat", function()
         -- Rebuild the shell without signing out or discarding message drafts.
-        app.shell, app.roomLists, app.homeStatus, app.newStatus = nil, nil, nil, nil
+        app.shell, app.homeStatus, app.newStatus = nil, nil, nil
         app:show("/")
     end, { Name = "RecoverChat", Background = C.colors.accent }))
     local screen = app:frame(layout)

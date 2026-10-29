@@ -72,7 +72,17 @@ function Declarations.parse(text, resource)
                 if child.tag == "Argument" then member.arguments[child.attrs.Name] = child.attrs.Value end
             end
         end
-        if not ({ Query = true, View = true, Command = true, Edit = true, Expose = true, Handler = true })[node.tag] then
+        if node.tag == "Media" then
+            member.targets = {}
+            for _, child in ipairs(node.children) do
+                if child.tag == "Target" then
+                    member.targets[#member.targets + 1] = { entity = child.attrs.Entity, id = child.attrs.Id,
+                        path = child.attrs.Path, state = child.attrs.State, revision = child.attrs.Revision, line = child.line }
+                end
+            end
+        end
+        if not ({ Query = true, View = true, Command = true, Edit = true, Expose = true, Handler = true,
+            Media = true })[node.tag] then
             fail(resource, node, "unknown declaration <" .. node.tag .. ">")
         end
         spec.members[#spec.members + 1] = member
@@ -134,6 +144,7 @@ function Declarations.build(spec, options)
                 operation = lookup(resource, node, provider, "operations", a.Operation or member.name),
                 pageSize = number(a.PageSize), poll = number(a.Poll), require = words(a.Require),
                 pollWhen = lookup(resource, node, provider, "conditions", a.PollWhen),
+                autoLoad = a.AutoLoad ~= "false",
                 loaded = lookup(resource, node, provider, "hooks", a.Loaded) }
         elseif member.kind == "View" then
             if not scope:member(a.Source or "") then
@@ -178,6 +189,23 @@ function Declarations.build(spec, options)
                 validate = lookup(resource, node, provider, "validators", a.Validate),
                 canSubmit = lookup(resource, node, provider, "conditions", a.CanSubmit),
                 clearOnSuccess = a.ClearOnSuccess ~= "false" }
+        elseif member.kind == "Media" then
+            for _, target in ipairs(member.targets) do
+                local entity = schema.entities[target.entity or ""]
+                if not entity or not entity.byName[target.id or ""] then
+                    fail(resource, node, ("media %s target names unknown column %s.%s"):format(member.name,
+                        tostring(target.entity), tostring(target.id)))
+                end
+            end
+            scope:media { name = member.name, targets = member.targets, maxActive = number(a.MaxActive),
+                stages = a.Stages and words(a.Stages) or nil,
+                lookup = lookup(resource, node, provider, "media", a.Lookup),
+                fetch = lookup(resource, node, provider, "media", a.Fetch or "fetch"),
+                store = lookup(resource, node, provider, "media", a.Store or "store"),
+                cached = lookup(resource, node, provider, "media", a.Cached),
+                validate = lookup(resource, node, provider, "media", a.Validate),
+                missing = lookup(resource, node, provider, "media", a.Missing),
+                repaint = provider.repaint }
         elseif member.kind == "Handler" then
             scope.handlers[member.name] = lookup(resource, node, provider, "handlers", a.Function or member.name)
         elseif member.kind == "Expose" then

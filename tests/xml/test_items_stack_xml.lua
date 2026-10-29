@@ -10,7 +10,7 @@ local proto = root:findChild("Proto")
 local source = core.DataObject { Name = "Items" }
 local function row(title, state)
   local record = proto:instantiate()
-  record.Title, record.State = title, state
+  record.Title, record.State, record.Name = title, state, title:lower()
   source:addChild(record)
   return record
 end
@@ -36,7 +36,7 @@ local function settle()
 end
 local function rows()
   local result = {}
-  for child in list.children do if child.Name == "Row" then result[#result + 1] = child end end
+  for child in list.children do if child.Name ~= "Authored" then result[#result + 1] = child end end
   return result
 end
 settle()
@@ -50,6 +50,10 @@ settle()
 local moved = rows()
 assert(moved[1] == views[2] and moved[2] == views[1], "reordering keeps native row identity")
 assert(list.SelectedItem == nil, "ItemsStack has no implicit selection")
+list.ItemNamePrefix = "Row"
+list:send("ItemsControl.Refresh")
+assert(list:findChild("Rowone") == views[1] and list:findChild("Rowtwo") == views[2],
+  "ItemNamePrefix names each row after its record, independent of position")
 
 -- StateClasses replaces only the classes it added.
 local view = views[1]

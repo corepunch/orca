@@ -30,4 +30,5 @@ local palettes = {
 
 local appearance = os.getenv("CHAT_APPEARANCE")
 if appearance ~= "light" and appearance ~= "dark" then appearance = system.is_dark_theme() and "dark" or "light" end
+palettes[appearance].appearance = appearance
 return palettes[appearance]

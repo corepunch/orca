@@ -42,8 +42,8 @@ local schema = data.Schema.parse([[
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="DisplayName" Type="string" Source="name"/>
   </Entity>
-  <Entity Name="TestTag" Key="Name">
-    <Column Name="Name" Type="string" Source="value"/>
+  <Entity Name="TestTag" Key="Label">
+    <Column Name="Label" Type="string" Source="value"/>
   </Entity>
   <Entity Name="TestPost" Key="Id">
     <Column Name="Id" Type="string" Source="id"/>
@@ -62,7 +62,7 @@ local schema = data.Schema.parse([[
     <Column Name="RepostedBy" Type="string" Source="reposted_by" Nullable="true"/>
     <Column Name="Title" Type="string" From="Post.Title"/>
     <Column Name="LikeLabel" Type="string" From="Post.LikeLabel"/>
-    <Relation Name="Post" Entity="TestPost" Key="PostId"/>
+    <Relation Name="Post" Entity="TestPost" Key="PostId" Embed="true"/>
   </Entity>
   <Entity Name="TestDraft">
     <Column Name="Body" Type="string"/>
@@ -74,8 +74,10 @@ local schema = data.Schema.parse([[
 local described = schema:describe()
 check(#described.entities == 5 and described.entities[3].columns[5].from == "Author.DisplayName"
     and described.entities[3].relations[2].cardinality == "many", "Schema reports columns, projections and relations")
-check(not pcall(data.Schema.parse, [[<Schema><Entity Name="Bad" Key="Id"><Column Name="Name"/></Entity></Schema>]], "bad"),
+check(not pcall(data.Schema.parse, [[<Schema><Entity Name="Bad" Key="Id"><Column Name="Title"/></Entity></Schema>]], "bad"),
     "A key that is not a column is rejected at load")
+check(not pcall(data.Schema.parse, [[<Schema><Entity Name="Bad2"><Column Name="Name"/></Entity></Schema>]], "bad"),
+    "A column cannot shadow the native object name")
 local ok, err = pcall(data.Schema.parse, [[<Schema><Entity Name="BadRel"><Column Name="X" From="Nope.Y"/></Entity></Schema>]], "bad.xml")
 check(not ok and err:find("bad.xml:1", 1, true) and err:find("Nope.Y", 1, true), "Unknown projections name resource, line and path")
 
@@ -141,6 +143,10 @@ do
     check(#rows == 2 and rows[1].Title == "Shared" and rows[2].Title == "Shared", "Two feed entries show one post")
     store:put("TestPost", { id = "p1", title = "Edited", author_id = "a1", stats = { likes = 5 } })
     check(rows[1].Title == "Edited" and rows[2].LikeLabel == "5", "A post update reaches every entry presenting it")
+    local nested = rows[2]:findChild("Post")
+    check(nested and nested.Title == "Edited" and rows[1]:findChild("Post") ~= nested,
+        "Embedded relations give each row its own nested mirror of the shared record")
+    check(store:recordFor(nested) == store:get("TestPost", "p1"), "A nested mirror resolves to the related record")
     check(list.node:getFirstChild() == rows[1], "Field updates never recreate rows")
     check(not pcall(list.set, list, { entries[1], entries[1] }), "Duplicate row keys are rejected")
     local same = {}

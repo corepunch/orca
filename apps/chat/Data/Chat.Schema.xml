@@ -1,0 +1,43 @@
+<!-- Chat entities as the client presents them. Service field names map
+     through Source; Local columns are client state a refresh keeps;
+     Computed columns are small functions in providers/chat.lua. -->
+<Schema>
+  <Entity Name="ChatRoom" Key="Id" Description="A conversation the reader belongs to.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Title" Type="string" Source="name"/>
+    <Column Name="Subtitle" Type="string" Source="subtitle" Nullable="true"/>
+    <Column Name="Kind" Type="string" Source="kind" Default="group"/>
+    <Column Name="PeerId" Type="string" Source="peer_id" Nullable="true"/>
+    <Column Name="Unread" Type="int" Source="unread"/>
+    <Column Name="Role" Type="string" Source="role" Nullable="true"/>
+    <Column Name="CanPost" Type="bool" Source="can_post" Default="true"/>
+    <Column Name="UpdatedAt" Type="string" Source="updated_at" Nullable="true"/>
+    <Column Name="CreatedAt" Type="string" Source="created_at" Nullable="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="IsRead" Type="bool" Computed="read" Description="Opened on this device since the last unread count."/>
+    <Column Name="IsPinned" Type="bool" Computed="pinned"/>
+    <Column Name="UnreadCount" Type="int" Computed="unreadCount" DependsOn="Unread IsRead"/>
+    <Column Name="HasUnread" Type="bool" Computed="hasUnread" DependsOn="UnreadCount"/>
+    <Column Name="UnreadText" Type="string" Computed="unreadText" DependsOn="UnreadCount"/>
+    <Column Name="ShowPin" Type="bool" Computed="showPin" DependsOn="IsPinned HasUnread"/>
+    <Column Name="State" Type="string" Computed="roomState" DependsOn="HasUnread" Description="Style classes for the row."/>
+    <Column Name="Time" Type="string" Computed="roomTime" DependsOn="UpdatedAt CreatedAt"/>
+    <Column Name="Preview" Type="string" Computed="preview" DependsOn="Subtitle"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="Id"/>
+    <Column Name="AvatarId" Type="string" Computed="roomAvatar" DependsOn="Kind PeerId" Description="The person a direct chat's tile stands for."/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+    <Column Name="SearchText" Type="string" Computed="roomSearch" DependsOn="Title Subtitle"/>
+  </Entity>
+  <Entity Name="ChatContact" Key="Id" Description="A person who shares a conversation with the reader.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="DisplayName" Type="string" Source="display_name" Nullable="true"/>
+    <Column Name="Username" Type="string" Source="username" Nullable="true"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="Title" Type="string" Computed="publicName" DependsOn="DisplayName Username"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="Id"/>
+    <Column Name="AvatarId" Type="string" Computed="contactAvatar" DependsOn="Id"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+  </Entity>
+</Schema>

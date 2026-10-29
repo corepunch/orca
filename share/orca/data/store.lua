@@ -115,6 +115,26 @@ local function writeMirror(self, mirror, names)
     for name, children in pairs(mirror.children) do
         if not names or names[name] then children:set(record.children[name] or {}) end
     end
+    -- An embedded to-one relation is a nested mirror named after it, so a
+    -- template binds {Binding DataContext/Post/Title}.
+    for _, relation in ipairs(record.entity.relations) do
+        if relation.embed and (not names or names[relation.name]) then
+            local target, current = record.related[relation.name], mirror.embedded[relation.name]
+            if (current and current.record) ~= target then
+                if current then
+                    current.object:removeFromParent()
+                    self:release(current)
+                    mirror.embedded[relation.name] = nil
+                end
+                if target then
+                    local nested = self:mirror(target)
+                    nested.object.Name = relation.name
+                    object:addChild(nested.object)
+                    mirror.embedded[relation.name] = nested
+                end
+            end
+        end
+    end
 end
 
 -- Recomputes projections and computed columns, then updates mirrors and
@@ -142,6 +162,18 @@ local function recompute(self, record, depth)
             end
         end
     end
+    local embedded = {}
+    for _, relation in ipairs(entity.relations) do
+        if relation.embed then
+            local key = values[relation.key]
+            local target = key ~= nil and self:get(relation.entity, key) or nil
+            if target and target.deleted then target = nil end
+            if record.related[relation.name] ~= target then
+                record.related[relation.name] = target
+                embedded[relation.name] = true
+            end
+        end
+    end
     for _, column in ipairs(entity.columns) do
         if column.from then
             local relation = entity.relationsByName[column.relation]
@@ -164,6 +196,7 @@ local function recompute(self, record, depth)
         if values[column.name] ~= record.values[column.name] then changes[column.name] = true end
     end
     for name in pairs(record.childChanges or {}) do changes[name] = true end
+    for name in pairs(embedded) do changes[name] = true end
     record.childChanges = nil
     record.values = values
     if next(changes) then
@@ -208,7 +241,7 @@ function Store:put(entityName, raw, options)
     local record = records[key]
     if not record or record.deleted then
         record = { entity = entity, key = key, store = self, base = {}, locals = {}, values = {}, raw = {},
-            mirrors = {}, refs = 0, relatedKeys = {}, children = {} }
+            mirrors = {}, refs = 0, relatedKeys = {}, related = {}, children = {} }
         records[key] = record
         for _, column in ipairs(entity.columns) do
             if column.isLocal then record.locals[column.name] = column.default end
@@ -267,6 +300,12 @@ function Store:update(record, locals)
     return recompute(self, record)
 end
 
+-- Re-evaluates computed columns after context state they read changed
+-- (for example a set of locally read rooms).
+function Store:refresh(record)
+    return recompute(self, record)
+end
+
 -- Context values feed computed columns (the signed-in user, a clock).
 function Store:setContext(values)
     for key, value in pairs(values) do self.context[key] = value end
@@ -294,7 +333,7 @@ end
 -- A native presentation of `record`, kept current until released.
 function Store:mirror(record)
     Collection = Collection or require "orca.data.collection"
-    local mirror = { record = record, object = record.entity:instantiate(), written = {}, children = {} }
+    local mirror = { record = record, object = record.entity:instantiate(), written = {}, children = {}, embedded = {} }
     mirror.object.Name = tostring(record.key)
     for _, relation in ipairs(record.entity.relations) do
         if relation.many then
@@ -317,6 +356,8 @@ function Store:release(mirror)
     self.byObject[mirror.id] = nil
     record.refs = record.refs - 1
     for _, children in pairs(mirror.children) do children:dispose() end
+    for _, nested in pairs(mirror.embedded) do self:release(nested) end
+    mirror.embedded = {}
     touch(self, record)
 end
 
