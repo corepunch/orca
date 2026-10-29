@@ -1,4 +1,5 @@
--- Real native Contacts composition, retained collection rows and offline races.
+-- Contacts over the session scope (Pages/Contacts.xml, Data/Inbox.xml): native
+-- composition, retained rows, search, direct messages and offline races.
 local orca = require "orca"
 orca.init()
 local fs = require "orca.filesystem"
@@ -35,8 +36,11 @@ local function flushQueue()
         if not event:is("Window.Paint") then orca.system.dispatchMessage(nil, event) end
     end
 end
+local core = require "orca.core"
 local function drain()
     flushQueue()
+    -- One paint pass: bindings follow the scope's records and state.
+    core.advanceFrame(); core.runAllPrograms(app.screen); flushQueue()
     app.screen:UpdateLayout(390, 844)
     app:afterPaint()
     flushQueue()
@@ -53,13 +57,13 @@ assert(node("ContactsTilealex"):findChild("AvatarPhoto", true), "The portrait wa
 local portraitContent = node("ContactsTilealex"):getFirstChild()
 assert(portraitContent.Name == "ContactAvatar" and portraitContent:getNext() == nil,
     "Portraits must occupy the full tile without captions extending into the next row")
-assert(node("ContactsTilealex").DataContext.Label ~= "", "Portrait identity stays available in presentation data")
+assert(node("ContactsTilealex").DataContext.Title ~= "", "Portrait identity stays available in the record")
 local page = node("ContactsPage")
 assert(not node("ContactsFeedback").Visible
     and math.abs(node("ContactsPanorama").ActualHeight - (page.ActualHeight
         - page.AdjustedContentInsetTop - page.AdjustedContentInsetBottom)) < 1,
     "Healthy Contacts must not reserve feedback space")
-local state, panorama, portrait = app.contactsState, app.contactsPanorama, node("ContactsTilealex")
+local contactsPage, panorama, portrait = node("ContactsPage"), app.contactsPanorama, node("ContactsTilealex")
 local listRow = node("ContactsRowalex")
 app.contactsPanorama.SelectedIndex = 1
 drain()
@@ -68,12 +72,12 @@ drain()
 assert(node("ContactsRowalex") == listRow and not node("ContactsEmpty").Visible)
 node("ContactsSearch").Text = "unlikely name"
 drain()
-assert(node("ContactsEmpty").Visible and node("ContactsEmpty"):getTextContent() == "No matching contacts.", tostring(app.contactsState.query) .. " / " .. tostring(node("ContactsEmpty").Visible) .. " / " .. node("ContactsEmpty"):getTextContent())
+assert(node("ContactsEmpty").Visible and node("ContactsEmpty").Text == "No matching contacts.", node("ContactsEmpty").Text)
 node("ContactsSearch").Text = ""
 app:show("/new"); drain()
 assert(app.shell.active == "New" and node("KindGroup") and node("KindChannel"))
 app:show("/contacts"); drain()
-assert(app.contactsState == state and app.contactsPanorama == panorama and app.contactsPanorama.SelectedIndex == 1)
+assert(node("ContactsPage") == contactsPage and app.contactsPanorama == panorama and app.contactsPanorama.SelectedIndex == 1)
 assert(node("ContactsTilealex") == portrait, "Refreshing a retained Contacts page must preserve native tiles")
 node("ContactsRowalex"):send("Node.LeftButtonUp")
 drain()
@@ -82,7 +86,7 @@ app:show("/contacts"); drain()
 local create = app.models.Rooms.create
 app.models.Rooms.create = function() return nil, { message = "Try opening again" } end
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
-assert(node("ContactsStatus"):getTextContent() == "Try opening again" and node("ContactsStatus").Visible)
+assert(node("ContactsStatus").Text == "Try opening again" and node("ContactsStatus").Visible)
 assert(not node("ContactsOpening"):getParent().Visible)
 assert(node("ContactsStatus"):getParent() == node("ContactsFeedback"), "Feedback must stay outside horizontally moving sections")
 assert(node("ContactsFeedback").ActualHeight > 0 and node("ContactsFeedback").ActualWidth <= 390)
@@ -101,17 +105,32 @@ app.models.Rooms.create = create
 local originalContacts, pending = client.listContacts, {}
 client.listContacts = function(self) coroutine.yield("contacts"); return originalContacts(self) end
 orca.async = function(fn) pending[#pending + 1] = coroutine.create(fn) end
+-- Requests queue in order (rooms, then contacts); this runs them until the
+-- contacts request is waiting on the service.
+local function contactsRequest()
+    while #pending > 0 do
+        local co = table.remove(pending, 1)
+        local ok, waiting = coroutine.resume(co)
+        assert(ok, waiting)
+        if coroutine.status(co) == "suspended" and waiting == "contacts" then return co end
+    end
+end
+local function runPending()
+    while #pending > 0 do
+        local co = table.remove(pending, 1)
+        repeat assert(coroutine.resume(co)) until coroutine.status(co) == "dead"
+    end
+end
 app:resetSessionViews()
-app:show("/contacts")
+app:show("/contacts"); drain()
 assert(node("ContactsLoading"):getParent().Visible and node("ContactsSearch"))
-local request = assert(table.remove(pending, 1))
-assert(coroutine.resume(request))
-assert(coroutine.status(request) == "suspended")
+local request = assert(contactsRequest(), "Contacts load through a service request")
 app:show("/new")
 local status = app.status
 assert(coroutine.resume(request))
+runPending()
 assert(coroutine.status(request) == "dead" and app.shell.active == "New" and app.status == status)
-assert(app.contactsState.portraits.byKey.alex, "A late load may populate a retained inactive page")
+assert(app.scope:member("Recent").items:find("alex"), "A late load may populate a retained inactive page")
 client.listContacts = originalContacts
 orca.async = function(fn, ...) return fn(...) end
 
@@ -127,11 +146,11 @@ assert(not node("ContactsRetry").Visible and not node("ContactsStatus").Visible)
 client.listContacts = function(self) coroutine.yield("contacts"); return originalContacts(self) end
 orca.async = function(fn) pending[#pending + 1] = coroutine.create(fn) end
 pending = {}
-app.contactsState.refresh()
-request = assert(table.remove(pending, 1)); assert(coroutine.resume(request))
+app.scope:member("Contacts"):refresh()
+request = assert(contactsRequest(), "Refreshing contacts asks the service")
 app:resetSessionViews()
 assert(coroutine.resume(request))
-assert(coroutine.status(request) == "dead" and app.contactsState == nil, "A previous session cannot repopulate Contacts")
+assert(coroutine.status(request) == "dead" and app.scope == nil and not app.contactsPanorama, "A previous session cannot repopulate Contacts")
 client.listContacts = originalContacts
 orca.async = function(fn, ...) return fn(...) end
 app:show("/contacts"); drain()
@@ -140,7 +159,7 @@ app.models.Rooms.create = function()
     return nil, { code = "unauthenticated", message = "Sign in to continue." }
 end
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
-assert(not app.client:getSession() and not app.contactsState and not app.shell,
+assert(not app.client:getSession() and not app.contactsPanorama and not app.shell,
     "Session expiry during contact activation must clear retained authenticated records")
 assert(app.screen:findChild("RequestCode", true), "Expired contact activation must return to authentication")
 orca.async = savedAsync

@@ -4,7 +4,8 @@
 --
 -- context: client, models, media (preview files), avatarPaths (shared with
 -- Lua-built avatars), read/pinned (local room sets), openRoom(raw),
--- sessionLost(); for the open conversation: room(), contact(id),
+-- sessionLost(), show(route), navigation() (changes on every navigation);
+-- for the open conversation: room(), contact(id),
 -- attachment(id), photoDraft(roomId), photoSent(roomId, photo), notice(text,
 -- isError), focusComposer(), openPhoto(raw), openMessageActions(record),
 -- attachPhoto(scope), removePhoto(scope).
@@ -74,6 +75,7 @@ function Provider.new(context)
         publicName = function(values)
             return values.DisplayName ~= nil and values.DisplayName ~= "" and values.DisplayName or values.Username or "Member"
         end,
+        handle = function(values) return (values.Username or "") ~= "" and "@" .. values.Username or "" end,
         -- Messages: a photo message is as wide as its photos and has no tail
         -- unless it has text; runs of one sender share decoration.
         hasPhotos = function(_, record) return #(record.children.Attachments or {}) > 0 end,
@@ -144,6 +146,34 @@ function Provider.new(context)
             local contacts, err = models.Contacts:select()
             if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
             return contacts, err
+        end,
+        -- The portrait wall: people from the latest direct conversations,
+        -- then everyone else by name. Derived from loaded records.
+        recentContacts = function(_, _, _, query)
+            local people, byId, direct = query.scope:member("People"):records(), {}, {}
+            for _, record in ipairs(people) do byId[record.key] = record end
+            for _, room in ipairs(query.scope:member("Rooms"):records()) do
+                if room.values.Kind == "direct" then direct[#direct + 1] = room.values end
+            end
+            table.sort(direct, function(a, b) return (a.UpdatedAt or a.CreatedAt or "") > (b.UpdatedAt or b.CreatedAt or "") end)
+            local ordered, seen = {}, {}
+            local function add(record)
+                if record and not seen[record.key] and #ordered < 32 then ordered[#ordered + 1], seen[record.key] = record, true end
+            end
+            for _, room in ipairs(direct) do add(byId[room.PeerId]) end
+            for _, record in ipairs(people) do add(record) end
+            return ordered
+        end,
+        -- A reply that arrives after the reader moved elsewhere does not
+        -- navigate over their newer choice.
+        openContact = function(params)
+            local person, navigation = params.item, context.navigation()
+            local room, err = models.Rooms:create { name = person.values.Title, member_ids = { person.key },
+                kind = "direct", visibility = "private" }
+            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
+            if not room then return nil, err or { message = "Could not open this conversation. Try again." } end
+            if context.navigation() == navigation then context.openRoom(room) end
+            return room
         end,
         openRoom = function(params)
             context.read[params.item.key] = true
@@ -339,7 +369,13 @@ function Provider.new(context)
         end,
         roomsLoaded = function(query, rows)
             local contacts = query.scope:member("Contacts")
-            if #rows == 0 then contacts:assign {} else contacts:refresh { quiet = contacts.loaded } end
+            if #rows == 0 then contacts:assign {}; query.scope:member("Recent"):assign {}
+            else contacts:refresh { quiet = contacts.loaded } end
+        end,
+        -- The portrait wall follows contacts once the Contacts page asked for it.
+        contactsLoaded = function(query)
+            local recent = query.scope:member("Recent")
+            if recent.loaded or recent.mode then recent:refresh { quiet = recent.loaded } end
         end,
     }
     local filters = {
@@ -349,6 +385,17 @@ function Provider.new(context)
         end,
         unread = function(record) return record.values.HasUnread end,
         pinned = function(record) return record.values.IsPinned end,
+        person = function(record)
+            local session = client:getSession()
+            return not session or record.key ~= session.user.id
+        end,
+        contactSearch = function(record, params)
+            local query = (params.Search or ""):lower()
+            return query == "" or ((record.values.Title or "") .. " " .. (record.values.Username or "")):lower():find(query, 1, true) ~= nil
+        end,
+    }
+    local sorts = {
+        byName = function(a, b) return (a.values.Title or ""):lower() < (b.values.Title or ""):lower() end,
     }
     local media = {
         avatarLookup = function(ids) return client:getAvatars(ids) end,
@@ -393,6 +440,8 @@ function Provider.new(context)
     media.photoValidate = function(path) return require("orca.data.media").decodes(path) end
     local handlers = {
         -- The control above the messages: older history, or back to the newest page.
+        RefreshContacts = function(scope) scope:member("Contacts"):refresh() end,
+        FindSomeone = function() context.show("/new") end,
         LoadHistory = function(scope)
             local messages = scope:member("Messages")
             local more = messages.moreError
@@ -422,7 +471,7 @@ function Provider.new(context)
             if field then field:setFocus() end
         end,
     }
-    return { computed = computed, operations = operations, hooks = hooks, filters = filters, media = media,
+    return { computed = computed, operations = operations, hooks = hooks, filters = filters, sorts = sorts, media = media,
         handlers = handlers, conditions = conditions, validators = validators, layoutThread = layoutThread }
 end
 

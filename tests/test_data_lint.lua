@@ -11,6 +11,7 @@ local function check(value, message) assert(value, message); checks = checks + 1
 local apps = {
     { "apps/chat", {
         { "Chat/Pages/Inbox", "Chat/Data/Inbox.xml" },
+        { "Chat/Pages/Contacts", "Chat/Data/Inbox.xml" },
         { "Chat/Pages/Thread", "Chat/Data/Conversation.xml" },
         { "Chat/Pages/Composer", "Chat/Data/Conversation.xml" },
         { "Chat/Pages/Details", "Chat/Data/Details.xml" },

@@ -9,7 +9,6 @@ local C = require "Chat/views/components"
 local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
-local Contacts = require "Chat/views/contacts"
 local PhotoViewer = require "Chat/views/photo_viewer"
 local Diagnostics = require "Chat/diagnostics"
 local async = require "orca.core.async"
@@ -82,10 +81,9 @@ local App = Application:extend {
         })
         if self.media and self.media.clear then self.media:clear() end
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
-        self.pivot = nil
+        self.pivot, self.contactsPanorama, self.contactsStatus = nil, nil, nil
         self.messageList, self.composer = nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
-        self.contactsState, self.contactsPanorama, self.contactsStatus = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.profileStatus, self.pendingIdentity = {}, nil, nil
@@ -103,6 +101,8 @@ local App = Application:extend {
             client = self.client, models = self.models, media = self.media, avatarPaths = self.avatarPaths,
             read = self.readRooms, pinned = self.pinned, remote = self.remote,
             openRoom = function(room) self:openRoom(room) end,
+            show = function(route) self:show(route) end,
+            navigation = function() return self.navigationEpoch end,
             sessionLost = function()
                 if self.sessionEpoch == epoch then self:resetSessionViews(); self:show("/") end
             end,
@@ -626,7 +626,34 @@ local App = Application:extend {
     end,
 
     newRoom = Conversations.newRoom,
-    contactsView = Contacts.show,
+    -- Contacts (Pages/Contacts.xml) shares the session's Inbox scope; like the
+    -- inbox, the page is retained while the shell lives.
+    contactsView = function(self)
+        if not self.client or not self.client:getSession() then return self:home() end
+        local scope = self:dataScope()
+        local function refresh()
+            local contacts, recent = scope:member("Contacts"), scope:member("Recent")
+            scope:member("Rooms"):refresh { quiet = true }
+            contacts:refresh { quiet = contacts.loaded }
+            recent:refresh { quiet = recent.loaded }
+        end
+        if self.shell and self.shell:has("Contacts") then
+            self.status = self.contactsStatus
+            local screen = self.shell:show("Contacts")
+            refresh()
+            return screen
+        end
+        local page = assert(filesystem.loadObject("Chat/Pages/Contacts"), "Missing Chat/Pages/Contacts")
+        scope:attach(page)
+        self.contactsPanorama = page:findChild("ContactsPanorama", true)
+        self.contactsStatus = page:findChild("ContactsStatus", true)
+        self.status = self.contactsStatus
+        self.visibility:watch(page, scope)
+        local screen = self:frame(page, "Contacts")
+        scope:activate()
+        refresh()
+        return screen
+    end,
     profile = Identity.profile,
     auth = Identity.auth,
 

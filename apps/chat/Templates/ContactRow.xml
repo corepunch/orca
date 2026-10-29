@@ -1,13 +1,16 @@
-<Button class="chat-action" Height="56" BorderWidth="0" BackgroundColor="#00000000">
+<!-- One person in Contacts > all, bound to a ChatContact record. -->
+<Button class="chat-action" Height="56" BorderWidth="0" BackgroundColor="#00000000" Click="OpenContact">
   <Grid Columns="52px 1fr" Spacing="12" IgnoreHitTest="true">
-    <Grid Name="ContactAvatar" Height="52" BackgroundColor="{Binding DataContext/Tone}" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Initials}" ForegroundColor="{Binding DataContext/Ink}"
-                 FontSize="18" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+    <Grid Name="ContactAvatar" Height="52" class="avatar" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials}" FontSize="18" class="avatar-initials"
+                 TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+                 ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView Spacing="1" JustifyContent="Center" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Label}" ForegroundColor="{Binding DataContext/Text}" FontSize="22"
+      <TextBlock Text="{Binding DataContext/Title}" FontSize="22" class="chat-ink"
                  TrimLeading="true" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-      <TextBlock Text="{Binding DataContext/Username}" ForegroundColor="{Binding DataContext/Muted}" FontSize="14"
+      <TextBlock Text="{Binding DataContext/Handle}" FontSize="14" class="chat-muted"
                  TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
     </StackView>
   </Grid>

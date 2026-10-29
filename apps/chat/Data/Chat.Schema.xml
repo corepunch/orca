@@ -67,6 +67,7 @@
     <Column Name="Username" Type="string" Source="username" Nullable="true"/>
     <Column Name="AvatarPath" Type="string" Local="true"/>
     <Column Name="Title" Type="string" Computed="publicName" DependsOn="DisplayName Username"/>
+    <Column Name="Handle" Type="string" Computed="handle" DependsOn="Username"/>
     <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
     <Column Name="Tone" Type="string" Computed="tone" DependsOn="Id"/>
     <Column Name="AvatarId" Type="string" Computed="contactAvatar" DependsOn="Id"/>

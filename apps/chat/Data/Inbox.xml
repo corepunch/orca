@@ -3,7 +3,19 @@
 <DataScope Name="Inbox" Schema="Chat/Data/Chat.Schema.xml">
   <Query Name="Rooms" Entity="ChatRoom" Operation="rooms" Poll="15000" Loaded="roomsLoaded"
          Description="Rooms the reader belongs to, refreshed every 15 seconds while the inbox is visible."/>
-  <Query Name="Contacts" Entity="ChatContact" Operation="contacts" AutoLoad="false"/>
+  <Query Name="Contacts" Entity="ChatContact" Operation="contacts" AutoLoad="false" Loaded="contactsLoaded"/>
+  <!-- Contacts panorama: everyone but the reader, a searchable list and a
+       portrait wall led by recent direct conversations. -->
+  <View Name="People" Source="Contacts" Filter="person" Sort="byName"/>
+  <View Name="ContactList" Source="People" Filter="contactSearch">
+    <Param Name="Search" Type="string"/>
+  </View>
+  <Query Name="Recent" Entity="ChatContact" Operation="recentContacts" AutoLoad="false"
+         Description="People from the latest direct conversations, then the rest by name; at most 32. Local, no request."/>
+  <Command Name="OpenContact" Operation="openContact" Parameter="Item"
+           Description="Creates or reuses a private direct conversation and opens it."/>
+  <Handler Name="RefreshContacts"/>
+  <Handler Name="FindSomeone"/>
   <View Name="Matching" Source="Rooms" Filter="search"
         Description="Local search over loaded rooms; the service returns every room at once.">
     <Param Name="Search" Type="string"/>
