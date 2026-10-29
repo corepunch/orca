@@ -698,15 +698,16 @@ click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
 headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
 drain(otpApp)
-assert(otpApp.screen:findChild("RenameRoom", true) and not otpApp.screen:findChild("LeaveRoom", true), "Owners can rename and must retain ownership")
+assert(isShown(otpApp.screen:findChild("RenameRoom", true)) and not isShown(otpApp.screen:findChild("LeaveRoom", true)),
+    "Owners can rename and must retain ownership")
 otpApp.screen:findChild("RenameRoomName", true).Text = "Renamed group"
 click(otpApp, "RenameRoom")
 assert(otpApp.room.name == "Renamed group", "Saving a name must update the current conversation")
 assert(otpApp.screen:findChild("RenameRoomName", true).Text == "Renamed group", "Details must reload the persisted name")
 click(otpApp, "CreateInvite")
-assert(otpApp.screen:findChild("Invitation", true):getTextContent():find("Invitation:", 1, true), "Admins must be able to create invitations")
+assert((otpApp.screen:findChild("Invitation", true).Text or ""):find("Invitation:", 1, true), "Admins must be able to create invitations")
 click(otpApp, "RevokeInvite")
-assert(otpApp.screen:findChild("Invitation", true):getTextContent() == "Invitation revoked.")
+assert(otpApp.screen:findChild("Invitation", true).Text == "Invitation revoked.")
 otpApp:show("/new")
 click(otpApp, "KindChannel")
 otpApp.screen:findChild("RoomName", true).Text = "Our announcements"
@@ -736,7 +737,8 @@ assert(otpApp.screen:findChild("ThreadPage", true).Title == "Messenger · channe
 headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
 drain(otpApp)
 assert(otpApp.screen:findChild("PinConversation", true), "Subscribers can still open the info and pin the channel")
-assert(not otpApp.screen:findChild("RenameRoom", true) and otpApp.screen:findChild("LeaveRoom", true), "Subscribers can leave but cannot rename")
+assert(not isShown(otpApp.screen:findChild("RenameRoom", true)) and isShown(otpApp.screen:findChild("LeaveRoom", true)),
+    "Subscribers can leave but cannot rename")
 click(otpApp, "LeaveRoom")
 assert(otpApp.screen:findChild("LeaveRoomConfirmation", true).Visible, "Leaving must offer confirmation")
 click(otpApp, "CancelLeaveRoom")
@@ -984,6 +986,8 @@ photoApp.screen = photoApp:dispatch("/new").view
 assert(avatarPhoto(photoApp.screen:findChild("Contactalex", true):getParent()), "Contacts show their photos")
 photoApp.room = photoApp.client:listRooms()[1]
 photoApp.screen = photoApp:dispatch("/details").view
+drain(photoApp) -- visible member photos load after paint
+drain(photoApp)
 assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
     "Conversation members show their photos")
 
