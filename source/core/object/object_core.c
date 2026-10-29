@@ -435,9 +435,20 @@ OBJ_LoadController(lua_State *L, struct Object *self, const char *path)
   lua_getglobal(L, "fs_findmodule");
   lua_pushstring(L, path);
   if (lua_pcall(L, 1, 1, 0) != LUA_OK || lua_isnil(L, -1)) {
-    Con_Error("LoadController: cannot find '%s'", path);
+    // Shared modules (share/orca/...) live on package.path, not in a project.
     lua_pop(L, 1);
-    return;
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "searchpath");
+    lua_pushstring(L, path);
+    lua_getfield(L, -3, "path");
+    lua_remove(L, -4);
+    const char *file = lua_pcall(L, 2, 1, 0) == LUA_OK ? lua_tostring(L, -1) : NULL;
+    if (!file || luaL_loadfile(L, file) != LUA_OK) {
+      Con_Error("LoadController: cannot find '%s'", path);
+      lua_pop(L, file ? 2 : 1);
+      return;
+    }
+    lua_remove(L, -2);
   }
 
   // Execute the loaded chunk to get the controller table.

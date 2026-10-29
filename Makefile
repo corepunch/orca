@@ -551,7 +551,7 @@ HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
-HEADLESS_LUA_TESTS += test-itemscontrol
+HEADLESS_LUA_TESTS += test-itemscontrol test-data-runtime
 HEADLESS_LUA_TESTS += test-event-args
 .PHONY: test-event-args
 HEADLESS_LUA_TESTS += test-event-serialization test-controllers
@@ -581,6 +581,7 @@ $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-data-collection,tests/test_data_collection.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-data-runtime,tests/test_data_runtime.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
