@@ -13,11 +13,13 @@ describes horizontal items containing wide content and stopping within the same
 section before advancing. Chat consumes that engine control, rather than adding
 a second horizontal scroller or duplicating the page.
 
-`views/contacts.lua` owns view lifetime, local search, refresh and activation.
-`views/contact_items.lua` adapts authorized service records to typed presentation
-DataObjects through `ItemsView`; native `ItemsControl` retains and orders the
-portrait and contact rows. `Templates/ContactPortrait` and `ContactRow` own their
-visual structure. Recent uses uninterrupted portrait tiles; full names remain
+Contacts is declared data, with no view code of its own. `Pages/Contacts.xml`
+binds the session's Inbox scope (`Data/Inbox.xml`): `People` (everyone but the
+reader, by name), `ContactList` (a local search view), `Recent` (the portrait
+wall) and the `OpenContact` command. `providers/chat.lua` holds their
+operations, filters and sort. Native `ItemsControl` retains and orders the
+portrait and contact rows; `Templates/ContactPortrait` and `ContactRow` own
+their visual structure. Recent uses uninterrupted portrait tiles; full names remain
 in their presentation records and the All list. The existing avatar loader
 resolves profile photos, with initials while a photo is absent or loading.
 
@@ -41,7 +43,7 @@ page, search text, section selection and native item identities.
 For native capture, open `/contacts`. Public nodes are `ContactsPanorama`,
 `ContactsRecent`, `ContactsAll`, `ContactsMosaic`, `ContactsList`, `ContactsSearch`,
 `ContactsTile<user-id>` and `ContactsRow<user-id>`. The app exposes
-`contactsPanorama` and `contactsState`. `SelectedIndex=0` selects Recent;
+`contactsPanorama`; `app.scope:member("Contacts").loaded` reports loaded data. `SelectedIndex=0` selects Recent;
 `SelectedIndex=1` selects All. Swipe left within Recent to pan the wide portrait
 wall; the outer Panorama owns this motion. Its final internal snap remains
 SelectedIndex 0, and the next committed swipe reaches All.

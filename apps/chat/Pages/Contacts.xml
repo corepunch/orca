@@ -1,0 +1,51 @@
+<!-- Contacts panorama: a horizontal portrait wall and a searchable list over
+     the session's Inbox scope (People, ContactList, Recent, OpenContact).
+     Feedback sits outside the panorama so it stays visible while panning. -->
+<Grid Name="ContactsPage" Rows="1fr auto" ContentInsetAdjustment="Always">
+  <Panorama Name="ContactsPanorama" Title="contacts" ContentInsetAdjustment="Always" class="chat-ink">
+    <PanoramaItem Name="ContactsRecent" Header="recent" Orientation="Horizontal">
+      <!-- More than 16 people widen the wall to eight columns. -->
+      <StackView Name="ContactsRecentBody" Spacing="18" Overflow="hidden scroll">
+        <BindingExpression Target="Width">IF(STEP(17, {DataContext/Recent/Count}), 720, 320)</BindingExpression>
+        <GridBox Name="ContactsMosaic" ItemNamePrefix="ContactsTile" Spacing="5" Rows="1fr 1fr 1fr 1fr"
+                 Visible="{Binding DataContext/Recent/HasItems}"
+                 ItemsSource="{Binding DataContext/Recent/Items}" ItemTemplate="Chat/Templates/ContactPortrait">
+          <BindingExpression Target="Width">IF(STEP(17, {DataContext/Recent/Count}), 720, 320)</BindingExpression>
+          <BindingExpression Target="AspectRatio">IF(STEP(17, {DataContext/Recent/Count}), 2, 1)</BindingExpression>
+          <BindingExpression Target="Columns">IF(STEP(17, {DataContext/Recent/Count}), "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr")</BindingExpression>
+        </GridBox>
+        <TextBlock Name="ContactsRecentEmpty" Width="320" WordWrap="true" FontSize="18" class="chat-muted" IgnoreHitTest="true">
+          <BindingExpression Target="Visible">AND({DataContext/Recent/ShowEmpty}, {DataContext/Contacts/HasLoaded})</BindingExpression>Bring your people together. Find someone to start a conversation.</TextBlock>
+      </StackView>
+    </PanoramaItem>
+    <PanoramaItem Name="ContactsAll" Header="all">
+      <StackView Name="ContactsAllBody" Spacing="16" Overflow="hidden scroll">
+        <Input Name="ContactsSearch" PlaceholderText="search contacts" Height="44" FontSize="15" Padding="12 0"
+               BorderWidth="2" class="chat-input chat-field" Text="{Binding DataContext/ContactList/Params/Search, Mode=TwoWay}"/>
+        <ItemsStack Name="ContactsList" Spacing="12" JustifyContent="Start" ItemNamePrefix="ContactsRow"
+                    ItemsSource="{Binding DataContext/ContactList/Items}" ItemTemplate="Chat/Templates/ContactRow"/>
+        <TextBlock Name="ContactsEmpty" Visible="{Binding DataContext/ContactList/IsEmpty}" WordWrap="true" FontSize="16"
+                   class="chat-muted" IgnoreHitTest="true">
+          <BindingExpression Target="Text">IF({DataContext/Contacts/ShowError}, "Your contacts could not be loaded.", IF({DataContext/Contacts/HasLoaded}, IF({DataContext/ContactList/Params/Search}, "No matching contacts.", "Your contacts will appear here."), "Loading contacts…"))</BindingExpression>
+        </TextBlock>
+        <Button Name="ContactsFindNew" Click="FindSomeone" Height="48" FontSize="18" class="chat-action chat-link"
+                TextHorizontalAlignment="Left" TextVerticalAlignment="Center">find someone new</Button>
+      </StackView>
+    </PanoramaItem>
+  </Panorama>
+  <StackView Name="ContactsFeedback" Spacing="8" Padding="20 0">
+    <BindingExpression Target="Visible">OR(OR(OR({DataContext/OpenContact/HasError}, {DataContext/Contacts/HasError}), {DataContext/People/ShowLoading}), {DataContext/OpenContact/IsExecuting})</BindingExpression>
+    <TextBlock Name="ContactsStatus" WordWrap="true" FontSize="14" class="chat-error" IgnoreHitTest="true">
+      <BindingExpression Target="Visible">OR({DataContext/OpenContact/HasError}, {DataContext/Contacts/HasError})</BindingExpression>
+      <BindingExpression Target="Text">IF({DataContext/OpenContact/HasError}, {DataContext/OpenContact/ErrorMessage}, {DataContext/Contacts/ErrorMessage})</BindingExpression>
+    </TextBlock>
+    <Node2D Name="ContactsLoadingArea" Height="80" Visible="{Binding DataContext/People/ShowLoading}">
+      <ActivityIndicator Name="ContactsLoading" class="chat-muted"/>
+    </Node2D>
+    <Node2D Name="ContactsOpeningArea" Height="40" Visible="{Binding DataContext/OpenContact/IsExecuting}">
+      <ActivityIndicator Name="ContactsOpening" class="chat-muted"/>
+    </Node2D>
+    <Button Name="ContactsRetry" Click="RefreshContacts" Visible="{Binding DataContext/Contacts/HasError}" Height="48"
+            FontSize="15" class="chat-action chat-link" TextHorizontalAlignment="Left" TextVerticalAlignment="Center">retry</Button>
+  </StackView>
+</Grid>

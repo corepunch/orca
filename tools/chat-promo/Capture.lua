@@ -57,7 +57,7 @@ return setmetatable({}, {
             local afterPaint, panned = self.afterPaint, false
             self.afterPaint = function(app)
                 afterPaint(app)
-                if panned or not app.contactsState or not app.contactsState.contactsLoaded then return end
+                if panned or not app.contactsPanorama or not app.scope or not app.scope:member("Contacts").loaded then return end
                 panned = true
                 if stage == "contacts-all" then
                     app.contactsPanorama.SelectedIndex = 1
