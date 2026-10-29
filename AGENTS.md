@@ -9,6 +9,14 @@ and [App styling](docs/app/styling.md). They distinguish supported behavior,
 recommended defaults, and remaining engine gaps. Preserve an explicit user
 choice or an established project architecture when doing local feature work.
 
+### Scene format: XML only
+
+Author application pages, templates and scenes in XML. Lisp
+(`-DORCA_USE_LISP`) is an experimental scene format: only `apps/Example` has a
+Lisp version, which exercises the alternative reader. Do not add `.lisp` twins
+to other apps. Tests that load another app's pages belong in
+`XML_APP_LUA_TESTS` in the Makefile, which runs in XML builds only.
+
 ## UI design skill
 
 For designing or reviewing screens and components, use the [`orca-ui-design`](.opencode/skills/orca-ui-design/SKILL.md) skill (adapted from Apple HIG principles for ORCA's declarative modern UI).

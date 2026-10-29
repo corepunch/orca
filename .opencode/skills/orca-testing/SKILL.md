@@ -16,7 +16,8 @@ Read `docs/TESTING.md` before editing tests.
    style.
 3. Read `tests/test_local.h` only when using its shared macros.
    Put a case that needs one scene format's loader or fixtures in
-   `tests/lisp/` or `tests/xml/`; see `docs/TESTING.md`.
+   `tests/lisp/` or `tests/xml/`; see `docs/TESTING.md`. Apps other than
+   Example are XML-only: tests loading their pages join `XML_APP_LUA_TESTS`.
 4. Add the smallest arrange/act/assert case that proves the behavior and its
    important failure path.
 5. Use public aggregate headers in C tests. Declare a narrow local `extern`

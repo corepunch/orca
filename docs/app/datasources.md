@@ -235,8 +235,8 @@ every list of posts offers.
   (`{DataContext/A} + " · " + {DataContext/B}`, `IF(...)`, `AND`, `OR`);
   keep algorithms in provider operations.
 
-Pages and templates that the Lisp build loads need `.lisp` twins with the same
-structure.
+Author pages and templates in XML. Lisp is an experimental scene format used
+only by `apps/Example`; applications do not carry `.lisp` twins.
 
 ## Routes
 
