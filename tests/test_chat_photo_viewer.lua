@@ -107,7 +107,8 @@ click("ClosePhotoViewer")
 assert(not app.photoViewer and not app.screen:findChild("PhotoViewer", true))
 assert(composer.Text == "unsent draft", "Closing the viewer preserves the conversation and draft")
 
-app.messagePhotos = { cached = function(_, attachment) return attachment.id == "cached" and cached or nil end }
+-- The timeline's Photos media keeps full photos under this key.
+app.media.keys["message-photo-cached:"] = cached
 Viewer.open(app, { id = "cached" })
 assert(app.screen:findChild("PhotoViewerImage", true).Src == cached and calls == 1,
     "A displayed full JPEG is reused without a second request")
@@ -141,9 +142,9 @@ assert(app.screen:findChild("PhotoViewerImage", true).Src == retained,
 Viewer.close(app)
 finish(workers[#workers])
 
-app.messagePhotos.preview = function(_, attachment)
-    return (attachment.id == "reuse-preview" or attachment.id == "broken-preview-existing") and retained or nil
-end
+-- Thumbnails the timeline already stored.
+app.media.keys["message-photo-preview-reuse-preview:"] = retained
+app.media.keys["message-photo-preview-broken-preview-existing:"] = retained
 Viewer.open(app, { id = "reuse-preview" })
 assert(app.screen:findChild("PhotoViewerImage", true).Src == retained,
     "An existing message thumbnail is shown immediately in the viewer")

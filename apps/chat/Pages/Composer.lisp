@@ -1,0 +1,17 @@
+(StackView Name="ComposerArea" Spacing=0 JustifyContent="Start"
+  (TextBlock Name="ThreadStatus" Visible=false FontSize=11 TextHorizontalAlignment="Center" Margin="24 8" class="chat-dim")
+  (Grid Name="EditingMessage" Visible=(bind "DataContext/Composer/Status/IsEditing") Columns="1fr 40px" Height=40 Padding="12 0" class="chat-soft"
+    (TextBlock Text="Editing message" FontSize=13 TextVerticalAlignment="Center" class="chat-accent-text" IgnoreHitTest=true)
+    (Button Name="CancelEdit" Click="CancelEdit" Width=36 Height=36 BorderWidth=0 BackgroundColor="#00000000" class="chat-action"
+      (VectorView Source="Chat/assets/icons/x.svg" Width=20 Height=20 MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-ink" IgnoreHitTest=true)))
+  (Grid Name="PhotoDraft" Visible=(bind "DataContext/Composer/HasPhoto") Columns="1fr 40px" Height=40 Padding="12 0" class="chat-soft"
+    (TextBlock Name="PhotoLabel" Text=(bind "DataContext/Composer/PhotoLabel") FontSize=13 TextVerticalAlignment="Center" class="chat-accent-text" IgnoreHitTest=true)
+    (Button Name="RemovePhoto" Click="RemovePhoto" Width=36 Height=36 BorderWidth=0 BackgroundColor="#00000000" class="chat-action"
+      (VectorView Source="Chat/assets/icons/x.svg" Width=20 Height=20 MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-ink" IgnoreHitTest=true)))
+  (Grid Name="Composer" Visible=(bind "DataContext/Thread/CanPost") Columns="48px 1fr 48px" Height=58 PaddingTop=5 PaddingBottom=5
+    (Button Name="AttachPhoto" Click="AttachPhoto" Width=48 Height=48 BorderWidth=0 BackgroundColor="#00000000" class="chat-action"
+      (VectorView Source="Chat/assets/icons/plus.svg" Width=20 Height=20 MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-ink" IgnoreHitTest=true))
+    (Input Name="Message" PlaceholderText="type a message" Height=44 FontSize=15 Padding="12 0" BorderWidth=2 BorderRadius=0 Submit="Composer.Submit" Text=(bind "DataContext/Composer/Text" Mode=TwoWay) class="chat-input chat-field")
+    (Button Name="SendMessage" Click="Composer.Submit" Width=48 Height=48 BorderWidth=0 BackgroundColor="#00000000" class="chat-action"
+      (VectorView Source="Chat/assets/icons/arrow-up.svg" Width=20 Height=20 MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-accent-text" IgnoreHitTest=true)))
+  (TextBlock Name="ChannelReadOnly" Visible=(bind "DataContext/Thread/ReadOnly") Text="You’re subscribed · Only admins can publish" FontSize=13 WordWrap=true Padding="24 12" class="chat-muted"))

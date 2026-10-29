@@ -377,6 +377,66 @@ do
     check(draft.Body == "room one draft" and post.values.Title == "Original", "Cancel restores the unsent draft")
 end
 
+-- A conversation: newest page first, older pages before it, the newest page
+-- polled against loaded history, and history failures kept apart.
+do
+    local h = host()
+    local scope = scopeWith(h)
+    local pages, arranged = {}, {}
+    local function post(id) return { id = id, title = id, author_id = "a" } end
+    pages.latest = { post "4", post "5", post "6" }
+    pages["4"] = { post "1", post "2", post "3", post "4" }
+    local query = scope:query { name = "Thread", entity = "TestPost", pageSize = 3, order = "newest", window = "latest",
+        prefetch = true, prefetchEdge = "start",
+        arrange = function(_, records)
+            arranged = {}
+            for index, record in ipairs(records) do arranged[index] = record.key end
+        end,
+        operation = function(_, page)
+            if pages.error and page.cursor then return nil, pages.error end
+            local rows = page.cursor and pages[page.cursor] or pages.latest
+            return { items = rows, cursor = page.cursor and nil or "4", hasMore = page.cursor == nil }
+        end }
+    query:load()
+    check(table.concat(query.items:keys(), ",") == "4,5,6" and table.concat(arranged, ",") == "4,5,6",
+        "The newest page loads first and is arranged before it shows")
+    check(not query:prefetch(400, 1200, -400) and query:prefetch(400, 1200, -100), "Near the start loads older history")
+    check(table.concat(query.items:keys(), ",") == "1,2,3,4,5,6" and table.concat(arranged, ",") == "1,2,3,4,5,6",
+        "Older pages go before the loaded rows, without duplicates")
+    pages.latest = { post "5", post "6", post "7" }
+    query:refresh { quiet = true }
+    check(table.concat(query.items:keys(), ",") == "1,2,3,4,5,6,7", "The newest page keeps history it overlaps")
+    pages.latest = { post "9", post "10" }
+    query:refresh { quiet = true }
+    check(query.gap and query.state.HasGap and query.state.ShowHistory and query.items:count() == 7,
+        "A newest page that no longer overlaps reports a gap instead of a hole")
+    query:reset()
+    check(table.concat(query.items:keys(), ",") == "9,10" and not query.gap, "Reset shows only the newest page")
+    pages.error = { code = "network", message = "Offline" }
+    query:loadMore()
+    check(query.moreError and not query.error and query.state.HasMoreError and query.state.MoreErrorCode == "network"
+        and query.items:count() == 2, "A failed older page is its own state; the rows stay")
+    check(not query:prefetch(400, 1200, -50), "A failed older page waits for an explicit retry")
+    query:refresh { quiet = true }
+    check(query.moreError, "Refreshing the newest page keeps the history failure")
+    pages.error = nil
+    query:loadMore()
+    check(not query.moreError and query.items:count() == 6, "Loading more again clears the failure")
+end
+
+-- Media failures can all be retried at once (a list that refreshed).
+do
+    local h = host()
+    local scope = scopeWith(h)
+    local fetches = 0
+    local photos = scope:media { name = "Photos", targets = { { entity = "TestPost", id = "Title", path = "Liked" } },
+        fetch = function() fetches = fetches + 1; return nil, { message = "Offline" } end,
+        store = function() return "path" end }
+    photos.failed.k = { code = "unavailable" }
+    check(photos:retryFailed() and next(photos.failed) == nil and not photos:retryFailed(),
+        "retryFailed forgets failures once")
+end
+
 -- Keyed drafts submit independently; a result settles its own draft.
 do
     local h = host()

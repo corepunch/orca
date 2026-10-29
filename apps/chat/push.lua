@@ -66,7 +66,9 @@ function Push:tick(current)
             and validId(event.userId) then
             if not user or event.userId == user then self.pending = event end
         elseif event.type == "received" and user and event.userId == user then
-            if app.polling then app.polling.scheduler:refresh() end
+            -- A message arrived: the open conversation reads its newest page.
+            local thread = app.threadScope
+            if thread and not thread.disposed then thread:member("Messages"):refresh { quiet = true } end
         elseif event.type == "error" then
             self.nativeError = event.code or "notifications"
             if self.lastError ~= self.nativeError and app.notice then

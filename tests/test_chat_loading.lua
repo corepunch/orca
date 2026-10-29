@@ -108,6 +108,7 @@ local messages = nextRequest()
 assert(coroutine.status(messages) == "suspended", "The initial message page must remain pending while composing")
 app.composer.Text = "Draft written during loading"
 resume(messages)
+programs(thread)
 assert(app.composer.Text == "Draft written during loading" and not thread:findChild("MessagesLoading", true).Visible,
     "Loading messages must preserve new composer edits")
 app.models.Messages.page = messagesPage

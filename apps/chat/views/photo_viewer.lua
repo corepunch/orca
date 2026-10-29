@@ -77,9 +77,12 @@ function Viewer.open(app, attachment)
         if not current() then return end
         viewer.attempt = viewer.attempt + 1
         local attempt = viewer.attempt
-        local cached = app.messagePhotos and app.messagePhotos:cached(attachment)
+        -- The timeline's Photos media stored the thumbnail and the full photo under these keys.
+        local keys = app.media and app.media.keys or {}
+        local revision = attachment.id .. ":" .. tostring(attachment.updated_at or "")
+        local cached = keys["message-photo-" .. revision]
         if cached and display(cached) then return end
-        local preview = app.messagePhotos and app.messagePhotos.preview and app.messagePhotos:preview(attachment)
+        local preview = keys["message-photo-preview-" .. revision]
         if viewer.path then display(viewer.path)
         elseif preview then display(preview)
         else clear() end

@@ -3,7 +3,6 @@ local Footer = require "orca.UIKit.Footer"
 local Application = require "orca.core.application"
 local Chat = require "api.chat"
 local Models = require "Chat/models"
-local Sync = require "Chat/sync"
 local system = require "orca.system"
 local renderer = require "orca.renderer"
 local C = require "Chat/views/components"
@@ -11,7 +10,6 @@ local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
 local Contacts = require "Chat/views/contacts"
-local Timeline = require "Chat/views/timeline"
 local PhotoViewer = require "Chat/views/photo_viewer"
 local Diagnostics = require "Chat/diagnostics"
 local async = require "orca.core.async"
@@ -20,6 +18,7 @@ local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local PageTransition = require "orca.UIKit.PageTransition"
 local data = require "orca.data"
 local Visibility = require "orca.data.visibility"
+local Scroll = require "orca.data.scroll"
 local filesystem = require "orca.filesystem"
 local ChatProvider = require "Chat/providers/chat"
 local colors = C.colors
@@ -52,7 +51,6 @@ local App = Application:extend {
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
         self:resetSessionViews()
-        if self.remote then self.polling = Sync.new(self) end
         if self.remote and self.client and self.client.mode == "appwrite" then
             self.push = require("Chat/push").new(self, config, options.push)
         end
@@ -60,8 +58,8 @@ local App = Application:extend {
 
     resetSessionViews = function(self)
         PhotoViewer.close(self)
-        if self.polling then self.polling:stop() end
         -- Records belong to one account: the next session gets a new store.
+        self:closeThread()
         if self.scope then self.scope:dispose() end
         self.scope, self.visibility = nil, Visibility.new()
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
@@ -76,16 +74,12 @@ local App = Application:extend {
             schedule = function(fn) orca.async(fn) end,
             repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
         })
-        if self.messagePhotos then self.messagePhotos:clear() end
-        self.messagePhotos = require("Chat/photo_loader").new(self)
         if self.media and self.media.clear then self.media:clear() end
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.pivot = nil
-        self.messageList, self.composer, self.threadBody = nil, nil, nil
-        self.timelineSnapshot, self.timelinePage, self.messageRefreshQueued, self.editing = nil, nil, nil, nil
+        self.messageList, self.composer = nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.contactsState, self.contactsPanorama, self.contactsStatus = nil, nil, nil
-        self.messageLoading = nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
@@ -98,23 +92,42 @@ local App = Application:extend {
         if not session then return nil end
         if self.scope and not self.scope.disposed then return self.scope end
         local epoch, user = self.sessionEpoch, session.user.id
+        local store
         local provider = ChatProvider.new {
             client = self.client, models = self.models, media = self.media, avatarPaths = self.avatarPaths,
-            read = self.readRooms, pinned = self.pinned,
+            read = self.readRooms, pinned = self.pinned, remote = self.remote,
             openRoom = function(room) self:openRoom(room) end,
             sessionLost = function()
                 if self.sessionEpoch == epoch then self:resetSessionViews(); self:show("/") end
             end,
+            -- The open conversation.
+            room = function() return self.room end,
+            contact = function(id) local record = store:get("ChatContact", id); return record and record.values end,
+            attachment = function(id) return store:get("ChatAttachment", id) end,
+            photoDraft = function(roomId) return self.photoDrafts[roomId] end,
+            photoSent = function(roomId, photo)
+                if photo and self.photoDrafts[roomId] == photo then self.photoDrafts[roomId] = nil end
+            end,
+            notice = function(text, isError) if self.currentRoute == "/thread" then self:notice(text, isError) end end,
+            focusComposer = function() if self.composer then self.composer:setFocus() end end,
+            openPhoto = function(attachment) self:openPhoto(attachment) end,
+            openMessageActions = function(message) self:openMessageActions(message) end,
+            attachPhoto = function(scope) self:attachPhoto(scope) end,
+            removePhoto = function(scope) self:removePhoto(scope) end,
         }
         provider.repaint = function() self:repaint() end
         local host = data.Scope.defaultHost()
         host.run = function(fn) self:load(fn) end
         host.report = function(err, stage) self:reportError(err, stage) end
+        local function valid()
+            local active = self.client:getSession()
+            return self.sessionEpoch == epoch and active ~= nil and active.user.id == user
+        end
         self.scope = data.scope("Chat/Data/Inbox.xml", { provider = provider, identity = "chat:" .. user, host = host,
-            valid = function()
-                local active = self.client:getSession()
-                return self.sessionEpoch == epoch and active ~= nil and active.user.id == user
-            end })
+            valid = valid })
+        store = self.scope.store
+        -- The conversation page shares the session's provider, records and host.
+        self.sessionData = { provider = provider, store = store, host = host, valid = valid }
         self.scope:member("Rooms"):listen(function(query) self:inboxStatus(query) end)
         self.scope:member("Contacts"):listen(function(query)
             self.contacts, self.contactsById = {}, {}
@@ -198,14 +211,11 @@ local App = Application:extend {
     afterPaint = function(self)
         if self.visibility then self.visibility:update() end
         if self.avatars then self.avatars:loadVisible() end
-        if self.messagePhotos then self.messagePhotos:loadVisible() end
-        if self.currentRoute == "/thread" then Timeline.loadNearTop(self) end
     end,
 
     activate_controller = function(self, controller)
         self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
-        if self.polling then self.polling:activate() end
         if self.push then self.push:activate() end
         return result
     end,
@@ -220,6 +230,8 @@ local App = Application:extend {
 
     dispatch = function(self, request)
         PhotoViewer.close(self)
+        -- Every route change ends the open conversation's scope.
+        self:closeThread()
         self:installErrorHandler()
         self.currentRoute = type(request) == "string" and request
             or type(request) == "table" and request.path or "/"
@@ -261,8 +273,9 @@ local App = Application:extend {
     end,
 
     navigate = function(self, route, direction)
-        if self.polling then self.polling:stop() end
-        -- Inbox polling follows the visible page; home() reactivates it.
+        -- Polling follows the visible page: home() reactivates the inbox and
+        -- each visit to a conversation starts its own scope.
+        self:closeThread()
         if self.scope then self.scope:deactivate() end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
@@ -364,7 +377,7 @@ local App = Application:extend {
     end,
 
     signOut = function(self)
-        if self.polling then self.polling:stop() end
+        self:closeThread()
         if self.push then self.push:suspend() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
@@ -375,63 +388,28 @@ local App = Application:extend {
         if not ok and not self.logoutPending then self:notice(err.message, true) end
     end,
 
-    renderMessages = function(self, options)
-        local indicator, node, epoch = self.messageLoading, self.messageList, self.sessionEpoch
-        local result, err = Timeline.refresh(self, options)
-        if self.sessionEpoch == epoch and not self.client:getSession() then self:resetSessionViews(); self:show("/"); return result, err end
-        if indicator and (err or (self.timelineSnapshot and self.timelineSnapshot.node == node)) then indicator.Visible = false end
-        return result, err
+    -- Reads the open conversation's newest page; a quiet refresh keeps the
+    -- status line as it is.
+    refreshMessages = function(self, options)
+        local scope = self.threadScope
+        if not scope or scope.disposed then return false end
+        local messages = scope:member("Messages")
+        if not messages.loaded then return messages:load() end
+        return messages:refresh { quiet = options and options.quiet }
     end,
 
+    -- Sends the composer, or saves the message being edited.
     sendMessage = function(self)
-        if self.editing then return self:saveEdit() end
-        if self.room.can_post == false then self:notice("Only channel admins can publish.", true); return end
-        if self.sending then return end
-        local room, composer, epoch = self.room, self.composer, self.sessionEpoch
-        local text = composer.Text or ""
-        local draft = self.photoDrafts[room.id]
-        if not text:match("%S") and not draft then return end
-        self.sending = true
-        local attachments
-        if draft then
-            self:notice("Uploading photo…")
-            if not draft.attachment then
-                local attachment, uploadError = self.client:uploadPhoto(room.id, draft)
-                if self.sessionEpoch ~= epoch then self.sending = false; return end
-                if not attachment then
-                    self.sending = false
-                    if self.room == room and self.composer == composer then
-                        self:notice(uploadError.message .. " · Your draft is safe. Try sending again.", true)
-                    end
-                    return
-                end
-                draft.attachment = attachment
-            end
-            attachments = { draft.attachment.id }
-        end
-        local message, err = self.models.Messages:create { room_id = room.id, body = text, attachment_ids = attachments }
-        self.sending = false
-        if self.sessionEpoch ~= epoch then return end
-        if not message then
-            if self.room == room and self.composer == composer then self:notice(err.message, true) end
-            return
-        end
-        if self.photoDrafts[room.id] == draft then self.photoDrafts[room.id] = nil end
-        if self.room == room and self.composer ~= composer then return end
-        local remaining = composer.Text ~= text and composer.Text or ""
-        self.drafts[room.id] = remaining ~= "" and remaining or nil
-        if self.room ~= room or self.composer ~= composer then return end
-        composer.Text = remaining
-        if self.photoPreview then self.photoPreview.Visible = false end
-        self:renderMessages()
-        if self.room == room and self.composer == composer and self.sessionEpoch == epoch then composer:setFocus() end
+        local scope = self.threadScope
+        if not scope or scope.disposed then return false end
+        return scope:member("Composer"):submit()
     end,
 
     -- Message actions: tapping your own message (or any message, for group and
     -- channel staff) offers edit and delete; deletion asks once more.
-    openMessageActions = function(self, message, canEdit, canDelete)
-        local overlay, sheet = self.messageActions, self.messageActionSheet
-        if not overlay or self.sending then return end
+    openMessageActions = function(self, message)
+        local overlay, sheet, scope = self.messageActions, self.messageActionSheet, self.threadScope
+        if not overlay or not scope or scope:member("Composer").submitting then return end
         local function show(items)
             while sheet:getFirstChild() do sheet:getFirstChild():removeFromParent() end
             for _, item in ipairs(items) do
@@ -442,8 +420,8 @@ local App = Application:extend {
             sheet.Height, overlay.Visible = #items * 52 + 16, #items > 0
         end
         local items = {}
-        if canEdit then items[#items + 1] = { "EditMessage", "edit", function() self:startEdit(message) end } end
-        if canDelete then
+        if message.values.CanEdit then items[#items + 1] = { "EditMessage", "edit", function() self:startEdit(message) end } end
+        if message.values.CanDelete then
             -- Deleting removes the message for everyone, so confirm it first.
             items[#items + 1] = { "DeleteMessage", "delete", function()
                 show {
@@ -455,58 +433,25 @@ local App = Application:extend {
         show(items)
     end,
 
+    -- The composer edits a copy of the message; the unsent draft comes back
+    -- once the edit is saved or cancelled.
     startEdit = function(self, message)
-        local room, composer = self.room, self.composer
-        if not room or not composer or message.room_id ~= room.id then return end
+        local scope, room = self.threadScope, self.room
+        if not scope or not room or message.values.RoomId and message.values.RoomId ~= room.id then return end
         if self.photoDrafts[room.id] then self:notice("Send or remove the photo before editing a message.", true); return end
-        -- The unsent draft returns once the edit is saved or cancelled.
-        if not self.editing then self.drafts[room.id] = composer.Text ~= "" and composer.Text or nil end
-        self.editing = { room = room, message = message }
-        composer.Text = message.body or ""
-        self.editBanner.Visible = true
+        scope:member("Composer"):begin(message)
         self:notice("")
-        composer:setFocus()
-    end,
-
-    cancelEdit = function(self)
-        local editing = self.editing
-        if not editing then return end
-        self.editing = nil
-        if self.editBanner then self.editBanner.Visible = false end
-        if self.room and self.room.id == editing.room.id and self.composer then self.composer.Text = self.drafts[editing.room.id] or "" end
-    end,
-
-    saveEdit = function(self)
-        local editing, composer, epoch = self.editing, self.composer, self.sessionEpoch
-        if self.sending or not editing then return end
-        local text = composer.Text or ""
-        if text == (editing.message.body or "") then self:cancelEdit(); return end
-        self.sending = true
-        local edited, err = editing.message:edit(text)
-        self.sending = false
-        if self.sessionEpoch ~= epoch or self.editing ~= editing then return end
-        if not edited then self:notice(err.message, true); return end
-        self:cancelEdit()
-        self:renderMessages { preserveScroll = true }
+        if self.composer then self.composer:setFocus() end
     end,
 
     deleteMessage = function(self, message)
-        local room, epoch = self.room, self.sessionEpoch
-        if self.sending then return end
-        self.sending = true
-        local ok, err = message:delete()
-        self.sending = false
-        if self.sessionEpoch ~= epoch or not self.room or self.room.id ~= room.id then return end
-        if not ok then self:notice(err.message, true); return end
-        if self.editing and self.editing.message.id == message.id then self:cancelEdit() end
-        local page = self.timelinePage
-        if page then
-            for i, row in ipairs(page.messages) do
-                if row.id == message.id then table.remove(page.messages, i); break end
-            end
-        end
-        self:renderMessages { preserveScroll = true, quiet = true }
-        self:notice("Message deleted.")
+        local scope = self.threadScope
+        if not scope then return end
+        local composer = scope:member("Composer")
+        if composer.submitting then return end
+        scope:member("DeleteMessage"):execute({ item = message }, function(ok)
+            if ok and composer.target == message then composer:cancel() end
+        end)
     end,
 
     getMedia = function(self)
@@ -517,94 +462,105 @@ local App = Application:extend {
         return PhotoViewer.open(self, attachment)
     end,
 
-    attachPhoto = function(self)
-        if self.sending then self:notice("Finish sending before adding another photo."); return end
-        if self.editing then self:notice("Finish editing before adding a photo."); return end
+    attachPhoto = function(self, scope)
+        local composer = scope:member("Composer")
+        if composer.submitting then self:notice("Finish sending before adding another photo."); return end
+        if composer.target then self:notice("Finish editing before adding a photo."); return end
         local media = self:getMedia()
         if not media then self:notice("Photo selection is unavailable on this platform.", true); return end
         self:notice("Preparing photo…")
-        local room, composer = self.room, self.composer
+        local room = self.room
         local photo, err = media:pick()
-        if self.room ~= room or self.composer ~= composer then return end
+        if self.room ~= room or scope.disposed then return end
         if not photo then
             self:notice(type(err) == "table" and err.message or err or "Photo selection cancelled.",
                 err ~= nil and not (type(err) == "table" and err.code == "cancelled"))
             return
         end
-        local previous = self.photoDrafts[self.room.id]
+        local previous = self.photoDrafts[room.id]
         if previous and previous.attachment then self.client:discardPhoto(previous.attachment.id) end
-        self.photoDrafts[self.room.id] = photo
-        self.photoPreview.Visible = true
-        self.photoLabel:setTextContent("Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB")
+        self.photoDrafts[room.id] = photo
+        composer.draft.PhotoLabel = "Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB"
+        composer.draft.HasPhoto = true
         self:notice("Photo ready. Add a caption or send it as it is.")
+    end,
+
+    removePhoto = function(self, scope)
+        local composer, room = scope:member("Composer"), self.room
+        if composer.submitting then self:notice("The photo is being sent. Please wait."); return end
+        local photo = self.photoDrafts[room.id]
+        if photo and photo.attachment then
+            local ok, err = self.client:discardPhoto(photo.attachment.id)
+            if not ok then self:notice(err.message, true); return end
+        end
+        self.photoDrafts[room.id] = nil
+        composer.draft.HasPhoto, composer.draft.PhotoLabel = false, ""
+        self:notice("Photo removed. Your message is still here.")
+    end,
+
+    -- The open conversation's scope ends with its page.
+    closeThread = function(self)
+        local scope = self.threadScope
+        if not scope then return end
+        self.threadScope = nil
+        if self.keepScroll then self.keepScroll(); self.keepScroll = nil end
+        scope:dispose()
     end,
 
     thread = function(self)
         if not self.room then return self:home() end
         local room = self.room
-        self.timelinePage, self.timelineSnapshot = nil, nil
-        -- Leaving the thread abandons an edit but keeps the unsent draft.
-        local function keepDraft()
-            if self.editing then self.editing = nil
-            else self.drafts[room.id] = self.composer and self.composer.Text or "" end
+        if not self:dataScope() then return self:home() end
+        local shared = self.sessionData
+        local scope = data.scope("Chat/Data/Conversation.xml", { provider = shared.provider, store = shared.store,
+            host = shared.host, valid = shared.valid })
+        self.threadScope = scope
+        local store = scope.store
+        scope:expose("Room", store:get("ChatRoom", room.id) or store:put("ChatRoom", room))
+        local channel, readOnly = room.kind == "channel", room.can_post == false
+        scope:expose("Thread", store:put("ChatThread", { id = "thread:" .. room.id, date = "", readOnly = readOnly,
+            historyText = "Earlier messages",
+            emptyTitle = channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello",
+            emptyHint = channel and (readOnly and "New posts will appear here when the channel publishes."
+                or "Publish your first update below.") or "Send the first message below." }))
+        local content = assert(filesystem.loadObject("Chat/Pages/Thread"), "Missing Chat/Pages/Thread")
+        local composerArea = assert(filesystem.loadObject("Chat/Pages/Composer"), "Missing Chat/Pages/Composer")
+        self.messageList = content:findChild("Messages", true)
+        local messages = scope:member("Messages")
+        -- At the newest message the list follows new ones; otherwise the
+        -- reader keeps their place, also when history loads above.
+        self.keepScroll = Scroll.keep(self.messageList, content:findChild("MessageItems", true), messages.items)
+        messages:listen(function(query)
+            store:put("ChatThread", { id = "thread:" .. room.id, historyText = ChatProvider.historyText(query) },
+                { partial = true })
+        end)
+        -- The first page is requested before the page binds, so it mounts loading.
+        messages:set("RoomId", room.id)
+        scope:attach(content)
+        scope:attach(composerArea)
+        self.composer = composerArea:findChild("Message", true)
+        self.status = composerArea:findChild("ThreadStatus", true)
+        self.status:setTextContent("")
+        local composer = scope:member("Composer")
+        composer.draft.Text = self.drafts[room.id] or ""
+        local photo = self.photoDrafts[room.id]
+        if photo and not readOnly then
+            composer.draft.HasPhoto = true
+            composer.draft.PhotoLabel = "Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB"
         end
-        if self.editing and self.editing.room.id ~= room.id then self.editing = nil end
-        -- At the newest message, the list stays there as the keyboard and composer grow.
-        self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll",
-            ScrollAnchor = "Bottom" })
-        self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
-            Name = "ThreadStatus", Visible = false, Margin = "24 8" })
-        self.composer = C.input("Message", "type a message", {
-            Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end, BorderRadius = "0",
-        })
-        -- Match the compact ApplicationBar's 58-point height, with breathing
-        -- room around the 48-point controls. Footer adds system insets separately.
-        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 58,
-            PaddingTop = 5, PaddingBottom = 5 }
-        compose:addChild(C.iconButton("plus", function() self:attachPhoto() end,
-            { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.ink }))
-        compose:addChild(self.composer)
-        compose:addChild(C.iconButton("arrow-up", function() self:sendMessage() end,
-            { Name = "SendMessage", Width = 48, Height = 48, Foreground = colors.accentText }))
-        self.photoLabel = C.text("Photo ready", { FontSize = 13, Foreground = colors.accentText, TextVerticalAlignment = "Center" })
-        self.photoPreview = ui.Grid { Name = "PhotoDraft", Columns = "1fr 40px", Height = 40,
-            Visible = self.photoDrafts[room.id] ~= nil, Background = colors.soft, Padding = "12 0" }
-        self.photoPreview:addChild(self.photoLabel)
-        self.photoPreview:addChild(C.iconButton("x", function()
-            if self.sending then self:notice("The photo is being sent. Please wait."); return end
-            local photo = self.photoDrafts[room.id]
-            if photo and photo.attachment then
-                local ok, err = self.client:discardPhoto(photo.attachment.id)
-                if not ok then self:notice(err.message, true); return end
-            end
-            self.photoDrafts[room.id], self.photoPreview.Visible = nil, false
-            self:notice("Photo removed. Your message is still here.")
-        end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
-        self.editBanner = ui.Grid { Name = "EditingMessage", Columns = "1fr 40px", Height = 40,
-            Visible = self.editing ~= nil, Background = colors.soft, Padding = "12 0" }
-        self.editBanner:addChild(C.text("Editing message", { FontSize = 13, Foreground = colors.accentText, TextVerticalAlignment = "Center" }))
-        self.editBanner:addChild(C.iconButton("x", function() self:cancelEdit() end,
-            { Name = "CancelEdit", Width = 36, Height = 36, Foreground = colors.ink }))
-        if self.editing then self.composer.Text = self.editing.message.body or "" end
-        local readOnly = room.can_post == false
-        compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
+        -- Leaving the conversation abandons an edit but keeps the unsent draft.
+        local function keepDraft()
+            if composer.target then composer:cancel() end
+            self.drafts[room.id] = composer:values().Text
+        end
+        self.visibility:watch(content, scope)
         local footer = Footer { Name = "ThreadFooter", class = "frosted bar-top" }
-        footer:addChild(C.stack({ Spacing = 0 }, { self.status, self.editBanner, self.photoPreview, compose,
-            C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
-                FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
-        }))
+        footer:addChild(composerArea)
         -- After Messenger: no command row. The title line goes back, as does a
         -- swipe in from the left edge, and the conversation's name opens its info.
-        self.threadBody = ui.Node2D {}
-        local timeline = ui.Node2D {}
-        timeline:addChild(self.messageList)
-        self.messageLoading = ui.ActivityIndicator { Name = "MessagesLoading", Foreground = colors.muted }
-        timeline:addChild(self.messageLoading)
-        self.threadBody:addChild(timeline)
-        -- Keep the rectangular composer outside the page's horizontal content margins.
         local screen = self:frame()
         local kind = room.kind == "group" and "Messenger · group" or room.kind == "channel" and "Messenger · channel" or nil
-        Footer.layout(screen, C.page(room.name, self.threadBody, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
+        Footer.layout(screen, C.page(room.name, content, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
             back = function() keepDraft(); self:goBack() end,
             details = function() keepDraft(); self:show("/details", "Forward") end }), footer,
             { Background = colors.background, Foreground = colors.ink })
@@ -616,12 +572,7 @@ local App = Application:extend {
             Padding = "0 8", Background = colors.chrome })
         self.messageActions:addChild(self.messageActionSheet)
         screen:addChild(self.messageActions)
-        local node, epoch, navigation = self.messageList, self.sessionEpoch, self.navigationEpoch
-        self:load(function()
-            if self.messageList == node and self.sessionEpoch == epoch and self.navigationEpoch == navigation then
-                self:renderMessages()
-            end
-        end)
+        scope:activate()
         return screen
     end,
 
@@ -647,18 +598,14 @@ local App = Application:extend {
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
             if message:is("Window.Closed") then
-                if self.polling then self.polling:stop() end
+                self:closeThread()
                 if self.push then self.push:suspend() end
                 async.set_error_handler(nil)
                 return
             end
-            if self.polling then
-                if message:is("Window.Deactivated") then self.polling:setForeground(false)
-                elseif message:is("Window.Activated") then self.polling:setForeground(true) end
-            end
-            if self.scope then
-                if message:is("Window.Deactivated") then self.scope:setForeground(false)
-                elseif message:is("Window.Activated") then self.scope:setForeground(true) end
+            for _, scope in ipairs { self.scope, self.threadScope } do
+                if message:is("Window.Deactivated") then scope:setForeground(false)
+                elseif message:is("Window.Activated") then scope:setForeground(true) end
             end
             if self.push then
                 if message:is("Window.Deactivated") then self.push:setForeground(false)

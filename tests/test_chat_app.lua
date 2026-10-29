@@ -46,8 +46,16 @@ local function drain(app)
         flushQueue()
     end
 end
-local function press(app, name)
-    assert(app.screen:findChild(name, true), "Missing " .. name):send("Node.LeftButtonUp")
+-- A control inside one message's row, such as its bubble or actions button.
+local function inEntry(app, id, name)
+    local entry = assert(app.screen:findChild("MessageEntry" .. id, true), "Missing message " .. id)
+    return assert(entry:findChild(name, true), "Missing " .. name .. " in message " .. id)
+end
+-- Presses a control by name, or a control named `inner` inside it.
+local function press(app, name, inner)
+    local node = assert(app.screen:findChild(name, true), "Missing " .. name)
+    if inner then node = assert(node:findChild(inner, true), "Missing " .. inner .. " in " .. name) end
+    node:send("Node.LeftButtonUp")
     drain(app)
 end
 
@@ -144,7 +152,7 @@ assert(lists.All:findChild("Roomalex") == retained.All, "Refresh keeps row ident
 app.room = app.client:listRooms()[1]
 local screen = app:dispatch("/thread").view
 app.screen = screen
-assert(screen:findChild("MessageBubblea1", true), "Render history before the first thread paint")
+assert(inEntry(app, "a1", "MessageBubble"), "Render history before the first thread paint")
 flushQueue()
 screen:UpdateLayout(390, 844)
 assert(screen:findChild("Message", true), "Thread must have a composer")
@@ -295,7 +303,7 @@ end
 -- With a scrolling history, the keyboard keeps the newest message above the
 -- composer, and keeps what was being read in view when scrolled back.
 for i = 1, 14 do assert(app.client:sendMessage(app.room.id, "Keyboard history " .. i)) end
-assert(app:renderMessages())
+assert(app:refreshMessages())
 local list = app.messageList
 local function keyboard(inset)
     screen.KeyboardInsetBottom = inset
@@ -342,28 +350,29 @@ for _, body in ipairs { "Hi", ("A longer message that needs to wrap. "):rep(8),
     "First line\nSecond line\n", "Привет · 你好 · café", ("unbroken"):rep(40) } do
     layoutMessages[#layoutMessages + 1] = assert(app.client:sendMessage(app.room.id, body))
 end
-assert(app:renderMessages())
+assert(app:refreshMessages())
 for _, width in ipairs { 320, 390, 834 } do
     for _, fontSize in ipairs { 16, 24 } do
         screen.Width = width
         for _, message in ipairs(layoutMessages) do
-            local bubble = assert(screen:findChild("MessageBubble" .. message.id, true))
+            local bubble = inEntry(app, message.id, "MessageBubble")
             local body = assert(bubble:findChild("MessageBody", true))
             assert(body.Text == message.body, "Layout must not append padding characters to message text")
             body.FontSize = fontSize
             -- Metadata must remain separate even if its font metrics change.
-            bubble:findChild("MessageTime" .. message.id, true).FontSize = fontSize - 3
+            bubble:findChild("MessageTime", true).FontSize = fontSize - 3
         end
         screen:UpdateLayout(width, 844)
         for _, message in ipairs(layoutMessages) do
-            local bubble = screen:findChild("MessageBubble" .. message.id, true)
+            local bubble = inEntry(app, message.id, "MessageBubble")
             local holder, body, time = bubble:getParent(), bubble:findChild("MessageBody", true),
-                bubble:findChild("MessageTime" .. message.id, true)
+                bubble:findChild("MessageTime", true)
             local entry, x = holder:getParent(), holder.ActualX + bubble.ActualX
             assert(x >= entry.PaddingLeft - 1 and x + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
                 string.format("Message bubble %s must fit its gutter at %d/%d: x=%.1f width=%.1f entry=%.1f",
                     message.id, width, fontSize, x, bubble.ActualWidth, entry.ActualWidth))
-            local actions = assert(holder:findChild("MessageActions" .. message.id), "Own messages offer actions")
+            local actions = assert(holder:findChild("MessageActions"), "Own messages offer actions")
+            assert(actions.Visible, "Own messages offer actions")
             assert(math.abs(actions.ActualWidth - bubble.ActualWidth) < 1 and math.abs(actions.ActualHeight - bubble.ActualHeight) < 1,
                 "The action target must cover exactly its bubble")
             assert(time.ActualY >= body.ActualY + body.ActualHeight,
@@ -375,7 +384,7 @@ for _, width in ipairs { 320, 390, 834 } do
 end
 screen.Width = 390
 screen:UpdateLayout(390, 844)
-assert(app:renderMessages())
+assert(app:refreshMessages())
 
 -- Appending to a sender run moves its tail without moving an earlier reading anchor.
 -- Messages scroll under the header, so the reading position is just above its bottom edge.
@@ -387,27 +396,32 @@ assert(math.abs(visibleTop - (screenY(header) + header.ActualHeight + 8)) < 1,
 app.messageList.ContentOffset = { X = 0, Y = visibleTop - reading.ActualY - 5 }
 local readingY = reading.ActualY + app.messageList.ContentOffset.Y
 assert(app.client:sendMessage(app.room.id, "Another message from the same sender"))
-assert(app:renderMessages { preserveScroll = true, quiet = true })
+assert(app:refreshMessages { preserveScroll = true, quiet = true })
 reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
 assert(math.abs(reading.ActualY + app.messageList.ContentOffset.Y - readingY) < 1,
     "Moving a grouped sender's tail must preserve the visible message anchor")
 
 local incoming = app.client:listMessages(app.room.id)[1]
-local savedContact, savedKind = app.contactsById[incoming.sender_id], app.room.kind
-app.contactsById[incoming.sender_id] = { get_display_name = function() return ("LongName"):rep(20) end }
+local contacts, savedKind = app.scope.store, app.room.kind
+local savedContact = contacts:get("ChatContact", incoming.sender_id)
+local savedName = savedContact and savedContact.values.DisplayName
+contacts:put("ChatContact", { id = incoming.sender_id, display_name = ("LongName"):rep(20) }, { partial = true })
 app.room.kind, screen.Width = "group", 320
-assert(app:renderMessages())
-local namedBubble = screen:findChild("MessageBubble" .. incoming.id, true)
-assert(namedBubble.ActualWidth <= namedBubble:getParent():getParent().ActualWidth - 56 + 1,
+assert(app:refreshMessages())
+drain(app)
+local namedBubble = inEntry(app, incoming.id, "MessageBubble")
+assert(inEntry(app, incoming.id, "MessageSender").Text == ("LongName"):rep(20)
+    and namedBubble.ActualWidth <= namedBubble:getParent():getParent().ActualWidth - 56 + 1,
     "An unbroken sender name must wrap inside a narrow group-chat bubble")
-app.contactsById[incoming.sender_id], app.room.kind = savedContact, savedKind
+contacts:put("ChatContact", { id = incoming.sender_id, display_name = savedName or "" }, { partial = true })
+app.room.kind = savedKind
 screen.Width = 390
-assert(app:renderMessages())
+assert(app:refreshMessages())
 
 local before = #app.client:listMessages(app.room.id)
 app.composer.Text = "A quick hello from the UI test"
 app:sendMessage()
-flushQueue()
+drain(app)
 local messages = app.client:listMessages(app.room.id)
 assert(#messages == before + 1)
 assert(messages[#messages].body == "A quick hello from the UI test")
@@ -415,9 +429,11 @@ assert(app.composer.Text == "", "Clear composer only after successful send")
 
 app.composer.Text = "   "
 app:sendMessage()
+drain(app)
 assert(#app.client:listMessages(app.room.id) == before + 1, "Do not send whitespace")
 app.composer.Text = string.rep("x", 4001)
 app:sendMessage()
+drain(app)
 assert(#app.composer.Text == 4001, "An API-rejected send must retain input")
 
 local newRoom = app:dispatch("/new").view
@@ -710,6 +726,7 @@ local subscriberRoom
 for _, room in ipairs(otpApp.client:listRooms()) do if room.id == channelId then subscriberRoom = room end end
 assert(subscriberRoom and subscriberRoom.can_post == false, "The mock API must return subscriber publishing restrictions")
 otpApp:openRoom(subscriberRoom)
+drain(otpApp)
 assert(not otpApp.screen:findChild("Composer", true).Visible and otpApp.screen:findChild("ChannelReadOnly", true).Visible,
     "Channel subscribers must see a read-only timeline")
 assert(not isShown(otpApp.screen:findChild("AttachPhoto", true)), "Subscribers must not be offered media publishing")
@@ -795,13 +812,17 @@ click(photoApp, "SendMessage")
 assert(not photoApp.photoDrafts[photoApp.room.id] and photoApp.composer.Text == "", "Clear photo drafts only after successful send")
 local photoMessages = photoApp.client:listMessages(photoApp.room.id)
 assert(photoMessages[#photoMessages].attachments[1].id == attachmentId, "Retry must attach the already uploaded photo")
-local photoView = assert(photoApp.screen:findChild("Photo" .. attachmentId, true), "The timeline must render the full API photo")
+drain(photoApp) -- the photo loaded after the last paint's bindings ran
+local photoView = assert(photoApp.screen:findChild("PhotoFrame" .. attachmentId, true), "The timeline must render the photo")
+photoView = assert(photoView:findChild("Photo", true))
+assert(photoView.Visible and photoView.Src ~= "", "The timeline must render the full API photo")
+photoView:send("Node.LoadView") -- what the next paint does with a bound Src
 assert(photoView.Source, "The timeline photo must load a real image texture from the private preview file")
 assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
     "The loaded photo texture must be initialized with its actual image dimensions")
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
-local photoBubble = assert(photoApp.screen:findChild("MessageBubble" .. photoMessages[#photoMessages].id, true))
+local photoBubble = inEntry(photoApp, photoMessages[#photoMessages].id, "MessageBubble")
 local timeline, bubble = photoApp.messageList, assert(photoApp.screen:findChild("MessageEntry" .. photoMessages[#photoMessages].id, true))
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
@@ -815,7 +836,7 @@ local previewPath = photoView.Src
 local previewFile = assert(io.open(previewPath, "rb"))
 assert(previewFile:read("*a") == jpeg, "The rendered preview must contain the full mock API photo bytes")
 previewFile:close()
-click(photoApp, "OpenPhoto" .. attachmentId)
+press(photoApp, "PhotoFrame" .. attachmentId, "OpenPhoto")
 local enlarged = assert(photoApp.screen:findChild("PhotoViewerImage", true), "Tapping a message photo opens its viewer")
 assert(enlarged.Src == previewPath and enlarged.Stretch == "Uniform", "The viewer fits the cached full JPEG without cropping")
 click(photoApp, "ClosePhotoViewer")
@@ -827,14 +848,16 @@ click(photoApp, "SendMessage")
 photoMessages = photoApp.client:listMessages(photoApp.room.id)
 local photoOnly = photoMessages[#photoMessages]
 assert(photoOnly.body == "" or photoOnly.body == nil, "The photo-only fixture must send without a caption")
+drain(photoApp)
 local photoFrame = assert(photoApp.screen:findChild("PhotoFrame" .. photoOnly.attachments[1].id, true))
 local photoOnlyBubble = photoFrame:getParent():getParent():getParent()
 local photoOnlyEntry = assert(photoApp.screen:findChild("MessageEntry" .. photoOnly.id, true))
 local photoOnlyRow = assert(photoOnlyEntry:findChild("MessageRow", true))
-local photoTime = assert(photoFrame:findChild("MessageTime" .. photoOnly.id),
-    "The timestamp must survive replacement of the loading placeholder")
-assert(photoFrame:findChild("Photo" .. photoOnly.attachments[1].id, true).Source,
-    "Photo-only messages must load a real preview beneath the timestamp")
+local photoTime = assert(photoFrame:findChild("PhotoTime"), "The timestamp must survive replacement of the loading placeholder")
+assert(photoTime.Visible and photoTime.Text ~= "", "Photo-only messages carry their time on the image")
+local photoOnlyImage = photoFrame:findChild("Photo", true)
+photoOnlyImage:send("Node.LoadView")
+assert(photoOnlyImage.Visible and photoOnlyImage.Source, "Photo-only messages must load a real preview beneath the timestamp")
 for _, width in ipairs { 320, 390, 834 } do
     photoApp.screen.Width = width
     photoApp.screen:UpdateLayout(width, 844)
@@ -845,7 +868,7 @@ for _, width in ipairs { 320, 390, 834 } do
         and math.abs(photoTime.ActualX + photoTime.ActualWidth - (photoFrame.ActualWidth - 6)) < 1
         and math.abs(photoTime.ActualY + photoTime.ActualHeight - (photoFrame.ActualHeight - 6)) < 1,
         "The timestamp must overlay the image's bottom-right corner")
-    local actions = photoOnlyEntry:findChild("MessageActions" .. photoOnly.id, true)
+    local actions = photoOnlyEntry:findChild("MessageActions", true)
     assert(actions and actions.ActualHeight == 44 and actions.ActualWidth == 44,
         "Photo actions stay accessible in a compact menu while the image opens the viewer")
 end
@@ -867,7 +890,7 @@ local function storedBody(id)
 end
 assert(not actionsMenu.Visible, "Message actions stay hidden until a bubble is tapped")
 editApp.composer.Text = "unsent draft"
-click(editApp, "MessageActions" .. typo.id)
+press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 assert(actionsMenu.Visible and editApp.screen:findChild("EditMessage", true) and editApp.screen:findChild("DeleteMessage", true),
     "Tapping your own message offers edit and delete")
 editApp.screen:UpdateLayout(390, 844)
@@ -882,34 +905,34 @@ local body, stored = storedBody(typo.id)
 assert(body == "Typo here" and stored.edited_at, "Sending in edit mode saves the edit")
 assert(editApp.composer.Text == "unsent draft" and not editApp.screen:findChild("EditingMessage", true).Visible,
     "Saving an edit restores the unsent draft")
-local bubble = editApp.screen:findChild("MessageBubble" .. typo.id, true)
-local meta = assert(bubble:findChild("MessageTime" .. typo.id, true))
+local bubble = inEntry(editApp, typo.id, "MessageBubble")
+local meta = assert(bubble:findChild("MessageTime", true))
 assert(bubble:findChild("MessageBody", true).Text == "Typo here" and meta.Text:match("^edited "),
     "The timeline shows the new text with an edited mark")
-click(editApp, "MessageActions" .. typo.id)
+press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 click(editApp, "EditMessage")
 editApp.composer.Text = "never saved"
 click(editApp, "CancelEdit")
 assert(storedBody(typo.id) == "Typo here" and editApp.composer.Text == "unsent draft", "Cancelling an edit discards it")
-click(editApp, "MessageActions" .. typo.id)
+press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 click(editApp, "DeleteMessage")
 assert(actionsMenu.Visible and editApp.screen:findChild("ConfirmDeleteMessage", true), "Deleting asks for confirmation")
 click(editApp, "CancelDeleteMessage")
 assert(not actionsMenu.Visible and storedBody(typo.id), "Cancelling keeps the message")
-click(editApp, "MessageActions" .. typo.id)
+press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 click(editApp, "DeleteMessage")
 click(editApp, "ConfirmDeleteMessage")
-assert(not storedBody(typo.id) and not editApp.screen:findChild("MessageBubble" .. typo.id, true),
+assert(not storedBody(typo.id) and not editApp.screen:findChild("MessageEntry" .. typo.id, true),
     "Confirmed deletion removes the message for everyone and from the timeline")
 assert(editApp.composer.Text == "unsent draft", "Deleting a message keeps the draft")
-click(editApp, "MessageActionsw1")
+press(editApp, "MessageEntryw1", "MessageActions")
 assert(actionsMenu.Visible and not editApp.screen:findChild("EditMessage", true) and editApp.screen:findChild("DeleteMessage", true),
     "Group owners may delete, but not edit, other people's messages")
 click(editApp, "DismissMessageActions")
 assert(not actionsMenu.Visible, "Tapping outside dismisses the actions")
 editApp:openRoom(roomById("alex"))
 drain(editApp)
-assert(editApp.screen:findChild("MessageBubblea1", true) and not editApp.screen:findChild("MessageActionsa1", true),
+assert(inEntry(editApp, "a1", "MessageBubble") and not isShown(inEntry(editApp, "a1", "MessageActions")),
     "Other people's messages in a direct chat have no actions")
 
 -- Interleave a newer tab request inside the offline transport response. Both
@@ -976,24 +999,30 @@ historyClient.listMessagePage = function(self, id, options)
 end
 local historyApp = mockApp(nil, historyClient)
 press(historyApp, "Roomalex")
-assert(#historyApp.timelinePage.messages == 30 and #historyReads == 1 and historyReads[1].limit == 30,
+local historyMessages = historyApp.threadScope:member("Messages")
+assert(historyMessages.items:count() == 30 and #historyReads == 1 and historyReads[1].limit == 30,
     "Opening a long conversation must request and render only the latest 30 messages")
 local historyList = historyApp.messageList
+local historyRows = historyList:findChild("MessageItems", true)
 historyApp.composer.Text = "Keep this unsent draft"
 historyList.ContentOffset = { X = 0, Y = -120 }
 local visibleEntry
-for _, entry in ipairs(historyApp.timelineSnapshot.entries) do
-    if entry.node.ActualY + entry.node.ActualHeight - 120 > historyList.AdjustedContentInsetTop then visibleEntry = entry; break end
+for entry in historyRows.children do
+    if historyRows.ActualY + entry.ActualY + entry.ActualHeight - 120 > historyList.AdjustedContentInsetTop then
+        visibleEntry = entry
+        break
+    end
 end
 assert(visibleEntry, "The pagination fixture needs a visible message")
-local beforeY = visibleEntry.node.ActualY + historyList.ContentOffset.Y
+local visibleName = visibleEntry.Name
+local beforeY = historyRows.ActualY + visibleEntry.ActualY + historyList.ContentOffset.Y
 historyApp:afterPaint()
 assert(#historyReads == 2 and historyReads[2].limit == 30 and historyReads[2].before,
     "Scrolling near the top must request exactly one bounded older page")
-local afterEntry = assert(historyApp.screen:findChild("MessageEntry" .. visibleEntry.id, true))
-assert(math.abs(afterEntry.ActualY + historyList.ContentOffset.Y - beforeY) < 1,
+local afterEntry = assert(historyApp.screen:findChild(visibleName, true))
+assert(math.abs(historyRows.ActualY + afterEntry.ActualY + historyList.ContentOffset.Y - beforeY) < 1,
     "Prepending a real history page must preserve the visible message within one pixel")
-assert(#historyApp.timelinePage.messages == 60 and historyApp.composer.Text == "Keep this unsent draft")
+assert(historyMessages.items:count() == 60 and historyApp.composer.Text == "Keep this unsent draft")
 
 -- Typing q must reach the focused control rather than close the application.
 local system = require "orca.system"

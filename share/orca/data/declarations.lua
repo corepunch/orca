@@ -155,8 +155,10 @@ function Declarations.build(spec, options)
                 pageSize = number(a.PageSize), poll = number(a.Poll), require = words(a.Require),
                 pollWhen = lookup(resource, node, provider, "conditions", a.PollWhen),
                 autoLoad = a.AutoLoad ~= "false", prefetch = flag(a.Prefetch),
+                order = a.Order, window = a.Window, prefetchEdge = a.PrefetchEdge,
                 cached = lookup(resource, node, provider, "caches", a.Cached),
-                loaded = lookup(resource, node, provider, "hooks", a.Loaded) }
+                loaded = lookup(resource, node, provider, "hooks", a.Loaded),
+                arrange = lookup(resource, node, provider, "hooks", a.Arrange) }
         elseif member.kind == "View" then
             if not scope:member(a.Source or "") then
                 fail(resource, node, ("view %s names unknown source '%s'"):format(member.name, tostring(a.Source)))

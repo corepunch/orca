@@ -17,7 +17,8 @@ Scope.__index = Scope
 local STATE_TYPES = {
     DataQuery = Query.STATE, DataView = View.STATE, DataCommand = Command.STATE, DataEdit = Edit.STATE,
 }
-local STRING_FIELDS = { ErrorMessage = true, ErrorCode = true, SelectedKey = true, Reason = true }
+local STRING_FIELDS = { ErrorMessage = true, ErrorCode = true, SelectedKey = true, Reason = true,
+    MoreErrorMessage = true, MoreErrorCode = true }
 local INT_FIELDS = { Count = true }
 local stateEntities = {}
 
