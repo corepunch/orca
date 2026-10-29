@@ -52,6 +52,7 @@ struct style_class_selector
   shortStr_t value;    // base class name (without pseudo-states or opacity suffix)
   byte_t flags;        // STYLE_HOVER / STYLE_FOCUS / STYLE_DARK / STYLE_SELECT bits
   byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
+  bool_t state;        // added from StyleController.StateClasses, replaced with it
 };
 
 #define MAX_STYLE_SELECTOR_PARTS 16

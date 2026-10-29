@@ -531,6 +531,11 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Returns the unique identifier of this object. The identifier is a hash of the object's name and remains stable across sessions for consistent reference.</details>
           <returns type="uint">Hashed identifier of the object</returns>
         </method>
+        <method name="GetUniqueID" const="true">
+          <summary>Gets the object's process-unique number</summary>
+          <details>Returns a number assigned when the object was created and never reused while the process runs. Separate Lua handles of one native object return the same value, so Lua code can key tables by it (for example to map a row's DataContext back to an application record). It is not persisted or serialized.</details>
+          <returns type="uint">Unique creation number of this object</returns>
+        </method>
         <method name="GetAlias" const="true">
           <summary>Gets the alias identifier</summary>
           <details>Returns the alias ID of the object if one is defined.</details>
@@ -839,9 +844,11 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
         <handle message="StyleController.ThemeChanged"/>
         <handle message="StyleController.AddClass"/>
         <handle message="StyleController.AddClasses"/>
+        <handle message="Object.PropertyChanged"/>
       </handles>
       <properties>
         <property name="StyleSheet" type="StyleSheet" pointer="true">The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.</property>
+        <property name="StateClasses" type="string">Space-separated style classes derived from data, normally bound to a record field (for example StateClasses="{Binding DataContext/State}"). Replacing the value removes the classes it previously added, keeps authored classes, and restyles the object and its descendants. Bound values are not serialized as authored classes.</property>
       </properties>
       <fields>
         <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>

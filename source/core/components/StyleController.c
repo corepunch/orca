@@ -716,6 +716,34 @@ HANDLER(StyleController, StyleController, AddClasses)
   return TRUE;
 }
 
+/* StateClasses owns the classes it added: a new value replaces only those, so
+ * authored classes survive and descendant selectors restyle with the record. */
+HANDLER(StyleController, Object, PropertyChanged)
+{
+  if (!pPropertyChanged || !pPropertyChanged->Property ||
+      PROP_GetLongIdentifier(pPropertyChanged->Property) != ID_StyleController_StateClasses)
+    return FALSE;
+  struct style_class_selector **link = &pStyleController->classes;
+  while (*link) {
+    struct style_class_selector *cls = *link;
+    if (!cls->state) { link = &cls->next; continue; }
+    *link = cls->next;
+    free(cls);
+  }
+  if (pStyleController->StateClasses && *pStyleController->StateClasses) {
+    WITH(char, classes, strdup(pStyleController->StateClasses), free)
+    {
+      for (lpcString_t s = strtok(classes, " "); s; s = strtok(NULL, " ")) {
+        struct style_class_selector *cls = _ParseClass(s);
+        cls->state = TRUE;
+        _AddClass(hObject, cls);
+      }
+    }
+  }
+  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = TRUE);
+  return FALSE;
+}
+
 /* Reconstruct the space-separated class string from the parsed selector list.
  * Writes into buf (up to len bytes including the null terminator).
  * Returns buf, or NULL if the object has no StyleController or no classes. */
@@ -728,7 +756,7 @@ OBJ_GetRawStyleClasses(struct Object *object, LPSTR buf, uint32_t len)
   size_t pos = 0;
   FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) {
     size_t n = strlen(cls->value);
-    if (!n) continue;
+    if (!n || cls->state) continue;
     if (pos > 0 && pos < len - 1) buf[pos++] = ' ';
     if (pos + n >= len) break;
     memcpy(buf + pos, cls->value, n);

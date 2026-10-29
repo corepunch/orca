@@ -1449,6 +1449,11 @@
         </message>
       </messages>
     </class>
+    <class name="ItemsStack" parent="StackView,ItemsControl">
+      <summary>Stack layout that presents ItemsSource records through ItemTemplate without selection behavior</summary>
+      <details>Combines StackView layout and scrolling with ItemsControl's retained collection presentation, so XML can declare a bound list directly: ItemsSource="{Binding DataContext/Rooms/Items}" ItemTemplate="App/Templates/Row". Rows keep their native identity while their record stays in the collection. Unlike ListBox it neither selects an item on click nor auto-selects the first item; actions inside the template remain ordinary buttons and event handlers.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    </class>
     <class name="GridBox" parent="Grid,ItemsControl">
       <summary>Grid layout container that data-binds items from a collection into wrapping rows</summary>
       <details>Combines Grid's 2D layout with ItemsControl's data-binding. Specify Columns (and optionally Rows/Spacing), provide ItemsSource and ItemTemplate, and items fill the grid with automatic row wrapping when only Columns is specified.</details>
