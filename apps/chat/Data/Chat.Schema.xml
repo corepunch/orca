@@ -106,7 +106,7 @@
     <Column Name="SectionGap" Type="float" Computed="sectionGap"/>
     <Column Name="PhotoInset" Type="float" Computed="photoInset"/>
     <Column Name="PhotoVerticalInset" Type="float" Computed="photoVerticalInset"/>
-    <Column Name="Tone" Type="string" Computed="bubbleTone" DependsOn="Mine" Description="sent or received."/>
+    <Column Name="Tone" Type="string" Computed="bubbleTone" Description="sent or received, with photo-top and photo-bottom for the photo corners the bubble rounds."/>
     <Column Name="CanAct" Type="bool" Computed="canAct" DependsOn="CanEdit CanDelete"/>
     <Column Name="ActionsWidth" Type="float" Computed="actionsSize" Description="A corner button over photos; the whole bubble otherwise."/>
     <Column Name="ActionsMargin" Type="float" Computed="actionsMargin"/>

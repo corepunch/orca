@@ -2,10 +2,10 @@
      application bar pins the conversation; the route docks it to the bottom. -->
 <Node2D Name="DetailsContent">
   <StackView Name="DetailsBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
-    <Grid Name="RoomAvatar" Width="72" Height="72" StateClasses="{Binding DataContext/Room/Tone}" IgnoreHitTest="true">
+    <Grid Name="RoomAvatar" Width="72" Height="72" class="avatar" StateClasses="{Binding DataContext/Room/Tone}" IgnoreHitTest="true">
       <TextBlock Text="{Binding DataContext/Room/Initials}" FontSize="22" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Visible="{Binding DataContext/Room/HasAvatar}" Src="{Binding DataContext/Room/AvatarPath}"
+      <ImageView Visible="{Binding DataContext/Room/HasAvatar}" class="avatar" Src="{Binding DataContext/Room/AvatarPath}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <TextBlock Name="RoomKind" Text="{Binding DataContext/Room/KindText}" Width="100" Height="24" FontSize="11" FontWeight="Bold"

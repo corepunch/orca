@@ -1,8 +1,9 @@
 # Chat visual direction: Windows Phone
 
 Decision recorded 2026-10-28. Windows Phone / Metro is the current visual
-direction for Chat. Use its typography, Pivot navigation, square geometry,
-accent colour, and compact command bars when reviewing or extending the app.
+direction for Chat. Use its typography, Pivot navigation, crisp geometry with
+small corners, accent colour, and compact command bars when reviewing or
+extending the app.
 This is a Chat product choice; other ORCA apps may follow different styles.
 
 For authoring and message-list behavior, start with the
@@ -64,7 +65,7 @@ claiming historical fidelity.
   accent label, without filled tiles or descriptions. Contacts follow,
   filed under lowercase accent letter headers, showing a name and
   `@username`; the whole row opens the chat. Sub-flows go back through the
-  header's back button. Square avatars and Metro type are kept; Telegram's
+  header's back button. Metro avatars and type are kept; Telegram's
   rounded cards, separators and A–Z index are not adopted.
 - Appearance follows the OS while Chat runs. Every palette colour, in Lua-built
   and XML views alike, comes from a CSS role under the Screen's
@@ -76,7 +77,14 @@ claiming historical fidelity.
   Telegram screenshots (`#01a8e6`), lifted a quarter toward white for small
   text on black. Filled buttons keep Messenger blue. Links and
   commands use `accentText`, and filled actions use `accent`, on every screen.
-- Use prominent Pivot titles, square avatars, pale text inputs, and the
+- Corners get small Fluent-style rounding (user decision, 2026-10-30, after
+  Microsoft Teams' sign-in): 4 points on text fields, outlined and filled
+  buttons, badges, avatars and their photos; 6 points on speech bubbles and
+  message photos. A field and button joined into one bar round only their
+  outer corners. A photo rounds only the corners it shares with its bubble,
+  so it meets a sender name or caption with a straight edge. Links, list
+  rows, bars and the full-screen photo viewer stay unrounded.
+- Use prominent Pivot titles, avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.
 - Button rings use `:focus-visible`: keyboard use reveals them, while touch
@@ -94,7 +102,7 @@ claiming historical fidelity.
 - Group consecutive messages from the same sender, with one tail per run
   where applicable. Show sender names in group conversations. Text and
   captioned-photo bubbles keep a separate trailing timestamp row.
-- A photo without text is an edge-to-edge rectangle with **no coloured
+- A photo without text is an edge-to-edge rounded rectangle with **no coloured
   footer and no tail**. Place its timestamp over the bottom-right of the image
   on a dark translucent backing so it remains readable. Captioned photos
   retain their caption and timestamp below the image.
@@ -111,7 +119,8 @@ claiming historical fidelity.
 These are Chat decisions agreed during the 2026-10-28 review, rather than
 requirements established by the linked Microsoft article. Clipping an image
 to a bubble shape with a real mask is a legitimate rendering technique if
-needed later; the current photo-only design deliberately uses a rectangle.
+needed later; the current photo-only design uses a rounded rectangle
+drawn by the image itself.
 
 Earlier modern chat references remain linked in the [README](README.md) as
 background research. Windows Phone is the primary reference for current

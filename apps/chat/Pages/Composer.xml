@@ -22,7 +22,7 @@
     <Button Name="AttachPhoto" Click="AttachPhoto" Width="48" Height="48" BorderWidth="0" BackgroundColor="#00000000" class="chat-action">
       <VectorView Source="Chat/assets/icons/plus.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-ink" IgnoreHitTest="true"/>
     </Button>
-    <Input Name="Message" PlaceholderText="type a message" Height="44" FontSize="15" Padding="12 0" BorderWidth="2" BorderRadius="0"
+    <Input Name="Message" PlaceholderText="type a message" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
            Submit="Composer.Submit" Text="{Binding DataContext/Composer/Text, Mode=TwoWay}" class="chat-input chat-field"/>
     <Button Name="SendMessage" Click="Composer.Submit" Width="48" Height="48" BorderWidth="0" BackgroundColor="#00000000" class="chat-action">
       <VectorView Source="Chat/assets/icons/arrow-up.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-accent-text" IgnoreHitTest="true"/>

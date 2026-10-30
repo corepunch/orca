@@ -4,7 +4,7 @@
     <Grid Name="ContactAvatar" Height="52" class="avatar" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
       <TextBlock Text="{Binding DataContext/Initials}" FontSize="18" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" class="avatar" Src="{Binding DataContext/AvatarPath}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView Spacing="1" JustifyContent="Center" IgnoreHitTest="true">
