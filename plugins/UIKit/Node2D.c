@@ -856,6 +856,36 @@ Node2D_AdjustContentInset(struct Object *object, struct Node2D *node)
   return inset;
 }
 
+// After UIKit scrolling the first responder into view: when the keyboard or a
+// bar raises this view's visible bottom, or focus moves to a field inside it,
+// a field they cover scrolls into view with a margin. A field already in view
+// stays put, and scrolling away from it afterwards is left alone.
+#define REVEAL_MARGIN 16
+static void
+Node2D_RevealFocus(struct Object *object, struct Node2D *view, float previousBottom)
+{
+  static struct Object *revealed;
+  struct Object *focus = core_GetFocus(), *node = focus;
+  float bottom = Node2D_GetFrame(view, kBox3FieldHeight) - NODE2D_INSET(view)._LEFT;
+  if (!focus || (focus == revealed && bottom >= previousBottom - 0.5f)) return;
+  // The field's top in this view's content; a nearer scrolling view owns it.
+  float y = 0;
+  for (; node && node != object; node = OBJ_GetParent(node)) {
+    struct Node2D *n = GetNode2D(node);
+    if (!n || (node != focus && n->Overflow.y == kOverflowScroll)) return;
+    y += Node2D_GetFrame(n, kBox3FieldY);
+  }
+  if (!node) return;
+  revealed = focus;
+  float height = Node2D_GetFrame(GetNode2D(focus), kBox3FieldHeight);
+  float offset = view->ContentOffset.y, top = y + offset, target = offset;
+  float visibleTop = NODE2D_INSET(view)._RIGHT;
+  if (top + height > bottom) target -= top + height - (bottom - REVEAL_MARGIN);
+  else if (top < visibleTop) target += visibleTop + REVEAL_MARGIN - top;
+  target = Scroll_Clamp(target, Node2D_ScrollLimit(view));
+  if (target != offset) Node2D_ScrollOffset(object, view, target);
+}
+
 HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
@@ -963,6 +993,7 @@ HANDLER(Node2D, Node2D, Arrange)
     float y = atEnd ? limit : Scroll_Clamp(n->ContentOffset.y + moved, limit);
     if (y != n->ContentOffset.y) Node2D_ScrollOffset(hObject, n, y);
   }
+  if (n->Overflow.y == kOverflowScroll && !n->_scrollTracking) Node2D_RevealFocus(hObject, n, visibleBottom);
 
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }

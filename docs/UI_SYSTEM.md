@@ -104,6 +104,12 @@ is inset, as `adjustedContentInset` insets it on iOS.
   or the composer grows. Scrolled elsewhere, the node keeps the content at its
   visible bottom edge in place when that edge moves, so the keyboard does not
   cover what was being read. Touch scrolling in progress is left alone.
+- A scrolling node keeps the focused field in view, after UIKit scrolling the
+  first responder into view. When the keyboard or a bottom bar raises its
+  visible bottom, or focus moves to a field inside it, a field they cover
+  scrolls just inside the visible area with a 16-point margin. A field
+  already in view stays where it is, a nearer scrolling node owns its own
+  fields, and scrolling away from the field afterwards is left alone.
 - A node that insets its content consumes the safe area: its children see none.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which
