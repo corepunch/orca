@@ -97,6 +97,19 @@ function C.input(name, placeholder, props)
     return ui.Input(props)
 end
 
+-- A command row after Telegram's New Message: an accent outline icon in the
+-- avatar column and an accent label, so commands read apart from people.
+function C.command(name, icon, label, action)
+    local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
+        Background = colors.surface, class = "chat-row" })
+    local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
+    grid:addChild(C.icon(icon, 26, "chat-accent-text"))
+    grid:addChild(C.text(label, { FontSize = 20, class = "chat-accent-text", TextVerticalAlignment = "Center",
+        TextOverflow = "Ellipsis" }))
+    button:addChild(grid)
+    return button
+end
+
 -- Initials on a tile colour until `app` has the person's profile photo.
 -- `userId` is given only where the tile stands for one person.
 function C.avatar(name, size, key, app, userId)

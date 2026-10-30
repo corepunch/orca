@@ -32,7 +32,7 @@ function Identity.auth(self, mode)
         button.TextHorizontalAlignment = "Left"
         return button
     end
-    self.status = C.text("", { Name = "AuthStatus", WordWrap = true, FontSize = 13, StateClasses = "chat-muted" })
+    self.status = C.text("", { Name = "AuthStatus", Visible = false, WordWrap = true, FontSize = 13, StateClasses = "chat-muted" })
     local function finish(session, err)
         if not session then self:notice(err and err.message or "Please try again.", true); return end
         if not self.client:getSession() then self:notice("Check your email to confirm your account."); return end
@@ -64,8 +64,29 @@ function Identity.auth(self, mode)
         self.loginIdentifier, self.loginReturnRoute = identifier, returnRoute
         self:show("/auth/code")
     end
+    -- Every form keeps one primary action and one way out, after Microsoft's
+    -- "Other sign-in options"; the options page lists the alternatives.
+    local function others() return link("Other sign-in options", "OtherOptions", "/auth/options") end
     local title, description, form
-    if mode == "email" or mode == "signup" then
+    if mode == "options" then
+        title, description = "sign-in options", "Choose another way to continue."
+        form = C.stack({ Name = "OptionsPage", Spacing = 0 }, {
+            C.command("UsePhone", "smartphone", "Phone number", function() go("/auth") end),
+            C.command("UseEmailCode", "mail", "Email me a sign-in code", function() go("/auth/email-code") end),
+            C.command("UsePassword", "key-round", "Email and password", function() go("/auth/email") end),
+            C.command("CreateAccount", "user-round-plus", "Create an account", function() go("/auth/signup") end),
+        })
+    elseif mode == "email-code" then
+        title, description = "sign in", "We'll email you a code. New here? The same code creates your account."
+        local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
+        form = C.stack({ Name = "EmailCodePage", Spacing = 16 }, {
+            field("Email address", email),
+            action("Email me a code", "SendEmailCode", "Sending code…", function()
+                requestCode(email.Text, "/auth/email-code")
+            end), self.status, others(),
+        })
+        email.Submit = function() form:findChild("SendEmailCode"):send("Node.LeftButtonUp") end
+    elseif mode == "email" or mode == "signup" then
         local signup = mode == "signup"
         title = signup and "create account" or "sign in"
         description = signup and "A name, an email, and you're in." or "Welcome back. Pick up the conversation."
@@ -87,17 +108,8 @@ function Identity.auth(self, mode)
         form:addChild(self.status)
         email.Submit = function() password:setFocus() end
         password.Submit = function() form:findChild(signup and "SignUp" or "SignIn"):send("Node.LeftButtonUp") end
-        if signup then
-            fields.DisplayName.Submit = function() email:setFocus() end
-            form:addChild(link("Already have an account? Sign in", "BackToSignIn", "/auth/email"))
-        else
-            -- The password form keeps one visually primary action.
-            form:addChild(action("Email me a sign-in code", "SendEmailCode", "Sending code…", function()
-                requestCode(email.Text, "/auth/email")
-            end, true))
-            form:addChild(link("Create an account", "CreateAccount", "/auth/signup"))
-        end
-        form:addChild(link("Use phone number", "UsePhone", "/auth"))
+        if signup then fields.DisplayName.Submit = function() email:setFocus() end end
+        form:addChild(others())
     elseif mode == "code" then
         title, description = "check your messages", "Enter the code sent to " .. (self.loginIdentifier or "your phone") .. "."
         local code = input("VerificationCode", "6-digit code", nil, { Type = "Number" })
@@ -128,9 +140,7 @@ function Identity.auth(self, mode)
                     return
                 end
                 requestCode(phone.Text, "/auth")
-            end), self.status,
-            link("Use email & password", "UsePassword", "/auth/email"),
-            link("Create an account", "CreateAccount", "/auth/signup"),
+            end), self.status, others(),
         })
         phone.Submit = function() form:findChild("RequestCode"):send("Node.LeftButtonUp") end
     end
