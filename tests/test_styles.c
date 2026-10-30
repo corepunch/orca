@@ -32,6 +32,8 @@ struct vm_register
 
 extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register *);
 extern bool_t PROP_SetBinding(struct Property *, char const *, unsigned int, bool_t);
+/* Private global sheet seam: exercise global/default vs application cascade. */
+extern struct Object *static_stylesheet;
 
 /* ------------------------------------------------------------------ */
 /* Test class: a minimal class whose parent is StyleController         */
@@ -478,6 +480,98 @@ static void test_add_style_rule_dot_selector_matches(void) {
     }
 }
 
+/* Native state flags restyle the control and descendants, then restore their base. */
+static void test_control_state_selectors(void) {
+    WITH(struct Object, root, make_styled_object(), destroy_object) {
+        struct Object *mark = make_styled_object();
+        OBJ_AddChild(root, mark);
+        _SendMessage(root, StyleController, AddClasses, "control");
+        _SendMessage(mark, StyleController, AddClasses, "mark");
+        struct Property *rootWidth = OBJ_FindShortProperty(root, fnv1a32("Width"));
+        struct Property *markWidth = OBJ_FindShortProperty(mark, fnv1a32("Width"));
+        PROP_SetValue(rootWidth, &(float){11.f});
+        PROP_SetValue(markWidth, &(float){13.f});
+        _test_add_float_rule(root, ".control:checked", 0xbfbb7a5bu, 21.f);
+        _test_add_float_rule(root, ".control:checked > .mark", 0xbfbb7a5bu, 31.f);
+        _test_add_float_rule(root, ".control:checked:disabled > .mark", 0xbfbb7a5bu, 41.f);
+        _test_add_float_rule(root, ".control:indeterminate > .mark", 0xbfbb7a5bu, 51.f);
+        _test_add_float_rule(root, ".control:checked:active > .mark", 0xbfbb7a5bu, 61.f);
+        _test_add_float_rule(root, ".control:checked:hover > .mark", 0xbfbb7a5bu, 71.f);
+        _test_add_float_rule(root, ".control:unknown > .mark", 0xbfbb7a5bu, 999.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) | OF_CHECKED);
+        EXPECT(*(float *)PROP_GetValue(rootWidth) == 21.f);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 31.f);
+        EXPECT(OBJ_GetFlags(root) & OF_HOVERABLE);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) | OF_SELECTED);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 61.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) & ~OF_SELECTED);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 31.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) | OF_DISABLED);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 41.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) & ~(OF_CHECKED | OF_DISABLED));
+        EXPECT(*(float *)PROP_GetValue(rootWidth) == 11.f);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 13.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) | OF_INDETERMINATE);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 51.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) & ~OF_INDETERMINATE);
+        EXPECT(*(float *)PROP_GetValue(markWidth) == 13.f);
+        OBJ_ReleaseRef(mark);
+    }
+}
+
+static void test_application_base_overrides_global_state(void) {
+    struct Object *previousSheet = static_stylesheet;
+    WITH(struct Object, defaults, make_styled_object(), destroy_object) {
+        _test_add_float_rule(defaults, ".control:checked", 0xbfbb7a5bu, 22.f);
+        _test_add_float_rule(defaults, ".control", 0xbfbb7a5bu, 11.f);
+        static_stylesheet = CMP_GetObject(GetStyleController(defaults)->StyleSheet);
+        WITH(struct Object, app, make_styled_object(), destroy_object) {
+            _SendMessage(app, StyleController, AddClasses, "control");
+            struct Property *width = OBJ_FindShortProperty(app, fnv1a32("Width"));
+            OBJ_SetFlags(app, OBJ_GetFlags(app) | OF_CHECKED);
+            EXPECT(*(float *)PROP_GetValue(width) == 22.f);
+            /* Own state wins even when a base rule follows it in the same sheet. */
+            _test_add_float_rule(app, ".control:checked:disabled", 0xbfbb7a5bu, 44.f);
+            _test_add_float_rule(app, ".control", 0xbfbb7a5bu, 33.f);
+            _SendMessage(app, StyleController, ThemeChanged, .recursive = TRUE);
+            EXPECT(*(float *)PROP_GetValue(width) == 33.f);
+            OBJ_SetFlags(app, OBJ_GetFlags(app) | OF_DISABLED);
+            EXPECT(*(float *)PROP_GetValue(width) == 44.f);
+            OBJ_SetFlags(app, OBJ_GetFlags(app) & ~OF_DISABLED);
+            EXPECT(*(float *)PROP_GetValue(width) == 33.f);
+            OBJ_SetFlags(app, OBJ_GetFlags(app) & ~OF_CHECKED);
+            EXPECT(*(float *)PROP_GetValue(width) == 33.f);
+            OBJ_SetFlags(app, OBJ_GetFlags(app) | OF_CHECKED);
+            EXPECT(*(float *)PROP_GetValue(width) == 33.f);
+        }
+        static_stylesheet = previousSheet;
+    }
+}
+
+static void test_disabled_inheritance_and_unknown_pseudo(void) {
+    WITH(struct Object, root, make_styled_object(), destroy_object) {
+        struct Object *child = make_styled_object();
+        OBJ_AddChild(root, child);
+        _SendMessage(child, StyleController, AddClasses, "child");
+        _test_add_float_rule(root, ".child:enabled", 0xbfbb7a5bu, 20.f);
+        _test_add_float_rule(root, ".child:disabled", 0xbfbb7a5bu, 40.f);
+        _test_add_float_rule(root, ".child", 0xbfbb7a5bu, 999.f);
+        struct Object *sheet = CMP_GetObject(GetStyleController(root)->StyleSheet);
+        struct Object *last = OBJ_GetFirstChild(sheet);
+        while (OBJ_GetNext(last)) last = OBJ_GetNext(last);
+        struct Property *pseudo = OBJ_FindLongProperty(last, ID_StyleRule_PseudoClass);
+        PROP_SetStringValue(pseudo, "unsupported");
+        struct Property *width = OBJ_FindShortProperty(child, fnv1a32("Width"));
+        _SendMessage(root, StyleController, ThemeChanged, .recursive = TRUE);
+        EXPECT(*(float *)PROP_GetValue(width) == 20.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) | OF_DISABLED);
+        EXPECT(*(float *)PROP_GetValue(width) == 40.f);
+        OBJ_SetFlags(root, OBJ_GetFlags(root) & ~OF_DISABLED);
+        EXPECT(*(float *)PROP_GetValue(width) == 20.f);
+        OBJ_ReleaseRef(child);
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Test runner                                                         */
 /* ------------------------------------------------------------------ */
@@ -495,6 +589,9 @@ int main(void) {
     mem_init();
 
     static const struct { const char *name; void (*fn)(void); } tests[] = {
+        DECL_TEST(test_control_state_selectors),
+        DECL_TEST(test_disabled_inheritance_and_unknown_pseudo),
+        DECL_TEST(test_application_base_overrides_global_state),
         DECL_TEST(test_stylecontroller_attached),
         DECL_TEST(test_parse_class_hover_flag),
         DECL_TEST(test_parse_multiple_classes),

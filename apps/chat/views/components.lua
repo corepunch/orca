@@ -5,10 +5,6 @@ local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
 -- controls subtract it to keep every control on the same 48-point grid.
 local BORDER = 2
--- Lucide draws its check across two thirds of the icon: at the box's own 32
--- points it spans about 70% of the box, near the Windows Phone check's size.
--- `check-bold` widens its stroke to match the phone's heavy mark.
-local CHECK_MARK = 32
 
 -- Palette colours come from CSS roles (Styles/app.css) under the Screen's
 -- chat-light or chat-dark, so an appearance change restyles built views.
@@ -114,27 +110,15 @@ function C.command(name, icon, label, action)
     return button
 end
 
--- Windows Phone check box: a 32-point square in the text box fill with a dark
--- check filling most of it, its label to the right; the whole row toggles.
--- `changed(checked)` receives the new state; the check is named `name .. "Check"`.
+-- The native control owns input and bindable state; CSS skins its generated parts.
 function C.checkbox(name, label, checked, changed)
-    checked = checked == true
-    local mark = C.icon("check-bold", CHECK_MARK, "chat-field-ink")
-    mark.Name, mark.Visible = name .. "Check", checked
-    local row = C.button("", function()
-        checked = not checked
-        mark.Visible = checked
-        if changed then changed(checked) end
-    end, { Name = name, BorderWidth = "0", FontWeight = "Normal", Background = colors.surface, class = "chat-row" })
-    -- A Grid centres the mark; a StackView would pin it to the top-left.
-    local box = ui.Grid { Width = 32, Height = 32, MarginTop = auto, MarginBottom = auto,
-        IgnoreHitTest = true, class = "chat-field chat-check" }
-    box:addChild(mark)
-    local grid = ui.Grid { Columns = "32px 1fr", Spacing = 14, IgnoreHitTest = true }
-    grid:addChild(box)
-    grid:addChild(C.text(label, { FontSize = 17, TextVerticalAlignment = "Center", TextOverflow = "Ellipsis" }))
-    row:addChild(grid)
-    return row
+    return ui.CheckBox {
+        Name = name, Text = label, IsChecked = checked == true,
+        class = "chat-checkbox chat-ink",
+        CheckedChanged = function(_, args)
+            if changed then changed(args.IsChecked) end
+        end,
+    }
 end
 
 -- Initials on a tile colour until `app` has the person's profile photo.

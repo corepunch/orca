@@ -297,17 +297,22 @@ UI_GetTime(void)
 
 ORCA_API void
 CORE_UpdateHover(void) {
+  struct Object *previousHover = core.hover;
   if (core.hover != core.hover2) {
     if (core.hover) {
       OBJ_SendMessage(core.hover, "KillHover", 0, core.hover2);
-      axPostMessageW(core.hover, ID_StyleController_ThemeChanged, 0, 0);
     }
     if (core.hover2) {
       OBJ_SendMessage(core.hover2, "SetHover", 0, core.hover);
-      axPostMessageW(core.hover2, ID_StyleController_ThemeChanged, 0, 0);
     }
   }
   core.hover = core.hover2;
+  if (previousHover != core.hover) {
+    if (previousHover)
+      _SendMessage(previousHover, StyleController, ThemeChanged, .recursive = TRUE);
+    if (core.hover)
+      _SendMessage(core.hover, StyleController, ThemeChanged, .recursive = TRUE);
+  }
   core.hover2 = NULL;
 }
 

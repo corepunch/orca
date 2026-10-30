@@ -352,6 +352,9 @@ typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lPar
 #define OF_NOACTIVATE (1 << 12)
 #define OF_ANIMATE_QUEUED (1 << 13)
 #define OF_STARTED (1 << 14)
+#define OF_CHECKED (1 << 15)
+#define OF_INDETERMINATE (1 << 16)
+#define OF_DISABLED (1 << 17)
 
 struct PropertyShorthandTarget
 {

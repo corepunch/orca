@@ -566,6 +566,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node2D.DrawForeground"/>
         <handle message="TextBlockConcept.MakeText"/>
         <handle message="Node.KeyDown"/>
@@ -661,7 +662,79 @@
         </message>
       </messages>
     </class>
-    <class name="RadioButton" parent="TextBlock" allow-text="true">
+    <class name="SelectionControl" parent="TextBlock" allow-text="true">
+      <summary>Shared labeled, CSS-part-based selection control</summary>
+      <details>Base of CheckBox, RadioButton and ToggleSwitch. Generated children have control-indicator and control-label classes; child hit testing is ignored so the entire labeled control activates together. Text and text styling remain inherited from TextBlock. CSS owns part colors, borders and state artwork.</details>
+      <handles>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonDown"/>
+        <handle message="Node.LeftButtonDragged"/>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
+        <handle message="Node2D.UpdateGeometry"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="IsEnabled" type="bool" default="true">Accept pointer and keyboard activation; disabled state is inherited by CSS parts</property>
+        <property name="IndicatorSize" type="float" default="28">Default square indicator size in points; individual CSS part width and height can override it</property>
+        <property name="IndicatorSpacing" type="float" default="12">Spacing in points between the indicator and its label</property>
+      </properties>
+      <fields>
+        <field name="_indicatorSizeSet" type="bool">Whether IndicatorSize was explicitly set, overriding CSS sizing</field>
+        <field name="_indicator" type="Object" pointer="true">Borrowed generated indicator child</field>
+        <field name="_label" type="Object" pointer="true">Borrowed generated text label child</field>
+      </fields>
+    </class>
+    <class name="CheckBox" parent="SelectionControl" allow-text="true">
+      <summary>CSS-styled checkbox with bindable checked and indeterminate states</summary>
+      <details>The checkbox root carries checkbox and selection-control classes. Its indicator contains a VectorView with control-check and control-mark classes and a Node2D with control-indeterminate. Set the check SVG through the VectorView Source property or CSS. Space, Enter and pointer release toggle the state; activating indeterminate selects it.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonUp"/>
+        <handle message="Node.KeyDown"/>
+      </handles>
+      <properties>
+        <property name="IsChecked" type="bool">Whether the checkbox is checked</property>
+        <property name="IsIndeterminate" type="bool">Display mixed state; user activation clears it and checks the control</property>
+      </properties>
+      <fields>
+        <field name="_changing" type="bool">Coalesce user mixed-state activation into one change event</field>
+      </fields>
+      <messages>
+        <message name="CheckedChanged">
+          <summary>Fired after checked or indeterminate changes through user input or the property system</summary>
+          <fields>
+            <field name="IsChecked" type="bool">Current checked value</field>
+            <field name="IsIndeterminate" type="bool">Current mixed-state value</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
+    <class name="ToggleSwitch" parent="SelectionControl" allow-text="true">
+      <summary>CSS-styled on/off switch activated by pointer or keyboard</summary>
+      <details>The root carries toggle-switch and selection-control classes. The control-indicator is also control-track and contains a control-thumb child. CSS controls the thumb placement using checked-state selectors. Space, Enter and pointer release toggle IsOn.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonUp"/>
+        <handle message="Node.KeyDown"/>
+      </handles>
+      <properties>
+        <property name="IsOn" type="bool">Whether the switch is on; reflected as CSS :checked</property>
+      </properties>
+      <messages>
+        <message name="Toggled">
+          <summary>Fired after IsOn changes through user input or the property system</summary>
+          <fields>
+            <field name="IsOn" type="bool">Current on/off value</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
+    <class name="RadioButton" parent="SelectionControl" allow-text="true">
       <summary>Single radio button option for use inside a RadioGroup</summary>
       <details>Extends TextBlock to display a labeled option. When clicked, sets IsChecked on itself, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and fires RadioGroup.SelectionChanged. Mirrors WPF RadioButton semantics.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -671,13 +744,12 @@
         <handle message="Object.Attached"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
-        <handle message="Node2D.DrawBackground"/>
       </handles>
       <properties>
         <property name="IsChecked" type="bool">Whether this option is currently selected</property>
         <property name="Value" type="string">String value reported to the parent RadioGroup when this button is selected</property>
-        <property name="AccentColor" type="color" default="0.3,0.55,0.85,1">Color of the indicator dot when the radio button is checked</property>
-        <property name="IndicatorSize" type="float" default="16">Diameter in pixels of the circular indicator</property>
+        <property name="AccentColor" type="color" default="0.3,0.55,0.85,1">Legacy theme accent value retained for compatibility; style control-mark with CSS to change its color</property>
+        <property name="IndicatorSize" type="float" default="16">Legacy indicator diameter in points; explicitly setting it overrides CSS indicator width and height</property>
       </properties>
     </class>
     <class name="RadioGroup" parent="StackView">

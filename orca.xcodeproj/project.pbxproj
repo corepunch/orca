@@ -84,6 +84,7 @@
 		781CA77C2E1557A900FFCFD9 /* object_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737692B8F60C600FD598E /* object_lua.c */; };
 		781CA77D2E1557EC00FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		781CA77F2E1557F300FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
+		783CA7802E20000000AABBCC /* SelectionControl.c in Sources */ = {isa = PBXBuildFile; fileRef = 783CA7812E20000000AABBCC /* SelectionControl.c */; };
 		781CA7802E20000000AABBCC /* RadioButton.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7812E20000000AABBCC /* RadioButton.c */; };
 		781CA7822E20000000AABBCC /* RadioGroup.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7832E20000000AABBCC /* RadioGroup.c */; };
 		781CA7962E155D1400FFCFD9 /* ed_commands.c in Sources */ = {isa = PBXBuildFile; fileRef = 786F2B132E12EE7F00B519AB /* ed_commands.c */; };
@@ -461,6 +462,7 @@
 		781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/UIKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7662E15575600FFCFD9 /* liborca.core.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.core.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA77A2E1557B900FFCFD9 /* Locale.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Locale.c; sourceTree = "<group>"; };
+		783CA7812E20000000AABBCC /* SelectionControl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SelectionControl.c; sourceTree = "<group>"; };
 		781CA7812E20000000AABBCC /* RadioButton.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = RadioButton.c; sourceTree = "<group>"; };
 		781CA7832E20000000AABBCC /* RadioGroup.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = RadioGroup.c; sourceTree = "<group>"; };
 		781CA7922E155D0500FFCFD9 /* liborca/EditorKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/EditorKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1230,6 +1232,7 @@
 				7834B8D62F479D940071F07F /* PageHost.c */,
 				78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */,
 				781CA7812E20000000AABBCC /* RadioButton.c */,
+				783CA7812E20000000AABBCC /* SelectionControl.c */,
 				781CA7832E20000000AABBCC /* RadioGroup.c */,
 				78688D1B2D6F28AE008DE67B /* Screen.c */,
 				78C737582B8F60C600FD598E /* StackView.c */,
@@ -1899,6 +1902,7 @@
 				781CA7522E15571400FFCFD9 /* Cinematic.c in Sources */,
 				781CA7542E15571400FFCFD9 /* Form.c in Sources */,
 				781CA7802E20000000AABBCC /* RadioButton.c in Sources */,
+				783CA7802E20000000AABBCC /* SelectionControl.c in Sources */,
 				781CA7822E20000000AABBCC /* RadioGroup.c in Sources */,
 				781CA7552E15571400FFCFD9 /* Grid.c in Sources */,
 				781CA7A12E20000000AABBCC /* UniformGrid.c in Sources */,

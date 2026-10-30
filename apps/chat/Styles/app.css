@@ -67,7 +67,17 @@
 .chat-outline { border-radius: 4; }
 .chat-primary { border-radius: 6; }
 .chat-badge { border-radius: 6; }
-.chat-check { border-radius: 6; }
+/* Windows Phone settings: a square indicator inside a full-row hit target. */
+.chat-checkbox { height: 48; font-size: 17; -orca-indicator-spacing: 14; }
+.chat-checkbox .control-indicator { width: 28; height: 28; border-width: 0; border-radius: 0; }
+.chat-checkbox .control-check { width: 28; height: 28; -orca-source: url("Chat/assets/icons/check-bold.svg"); }
+.chat-light .chat-checkbox .control-indicator { background-color: #d9d9d9; color: #000000; }
+.chat-dark .chat-checkbox .control-indicator { background-color: #bfbfbf; color: #000000; }
+.chat-light .chat-checkbox:active .control-indicator { background-color: #0078e7; color: #ffffff; }
+.chat-dark .chat-checkbox:active .control-indicator { background-color: #0084ff; color: #ffffff; }
+.chat-checkbox:disabled { opacity: 0.45; }
+.chat-light .chat-checkbox:focus-visible { ring: 0 2 #0078e7; }
+.chat-dark .chat-checkbox:focus-visible { ring: 0 2 #41beec; }
 .avatar { border-radius: 6; }
 .joined-left { border-top-left-radius: 4; border-bottom-left-radius: 4; border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .joined-right { border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 6; border-bottom-right-radius: 6; }

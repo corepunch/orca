@@ -541,6 +541,7 @@ $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-selection-controls
 HEADLESS_LUA_TESTS += test-text-leading
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-animation-clock
@@ -614,6 +615,7 @@ test-headless: test-notifications-native
 endif
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-selection-controls,tests/test_selection_controls.lua,unite))
 .PHONY: test-screen-paint-lifecycle
 $(eval $(call LUA_TEST_RULE,test-screen-paint-lifecycle,tests/test_screen_paint_lifecycle.lua,unite))
 

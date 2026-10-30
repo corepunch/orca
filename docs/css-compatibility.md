@@ -17,6 +17,72 @@ For layout alignment, prefer CSS-native sizing and auto margins:
 
 For text alignment, use the CSS-native `text-align` property for horizontal text placement. ORCA also supports `text-vertical-align` as a small extension for vertical text placement inside text bounds; `TextBlock` defaults to `top`, while `Input` defaults to `center`.
 
+## Selectors and interactive states
+
+Selectors support types, classes, IDs, descendants, direct children, and
+compound pseudo-states. Supported pseudo-states are `:hover`, `:active`,
+`:focus`, `:focus-visible`, `:dark`, `:checked`, `:indeterminate`, `:disabled`,
+and `:enabled`. An unknown pseudo-state fails to match; it does not turn its
+declarations into unconditional styling.
+
+`:checked` follows `CheckBox.IsChecked`, `RadioButton.IsChecked`, or
+`ToggleSwitch.IsOn`. `:indeterminate` follows `CheckBox.IsIndeterminate`;
+`:disabled` and `:enabled` follow the selection control's `IsEnabled`.
+Changing a state restyles its descendants, so a rule such as
+`CheckBox:checked .control-mark` updates the generated mark. State declarations
+are removed when the state stops matching, restoring the normal cascade.
+Combine states when needed, for example `CheckBox:checked:disabled`.
+
+Stylesheets apply from global defaults to scoped application sheets. Within a
+sheet, matching state rules override matching base rules in source order. A
+later application sheet can override a shared default even when that default
+uses `:dark` or `:checked`. This is sheet/state priority, not full browser CSS
+specificity.
+
+### Selection-control parts
+
+`CheckBox`, `RadioButton`, and `ToggleSwitch` retain their native input,
+selection, and binding behavior while exposing ordinary child nodes for CSS.
+The shared stylesheet is installed by normal application startup. Applications
+can override its declarations without constructing their own visual tree.
+
+| Control | Constructor classes | Generated part classes |
+| --- | --- | --- |
+| `CheckBox` | `selection-control checkbox` | `control-indicator`, `control-check control-mark` (SVG), `control-indeterminate`, `control-label` |
+| `RadioButton` | `selection-control radio-button` | `control-indicator`, `control-mark` (filled circle), `control-label` |
+| `ToggleSwitch` | `selection-control toggle-switch` | `control-indicator control-track`, `control-thumb`, `control-label` |
+
+All controls expose `Text`, `IsEnabled`, `IndicatorSize`, and
+`IndicatorSpacing`. Checkboxes expose `IsChecked` and `IsIndeterminate`;
+radio buttons expose `IsChecked` and `Value` inside a `RadioGroup` with
+`SelectedValue`; switches expose `IsOn`. The control owns its generated parts
+and label placement; use CSS for their fill, border, radius, mark visibility,
+and colors. Keep application bindings on the owning control. Use type selectors
+for shared skins: XML loading or assigning an application `class` can replace
+the root classes installed during construction, while the control's type remains
+stable. Type matching is exact: list `CheckBox`, `RadioButton`, and `ToggleSwitch`
+instead of selecting their `SelectionControl` base type. Generated part classes
+remain available for descendant selectors.
+
+```css
+CheckBox .control-indicator {
+    border: 2 solid #FFFFFF;
+    border-radius: 0;
+    background-color: transparent;
+}
+CheckBox:checked .control-indicator { background-color: #0084FF; }
+CheckBox:disabled { opacity: 0.45; }
+CheckBox:focus-visible, RadioButton:focus-visible, ToggleSwitch:focus-visible { ring: 0 2 #0084FF; }
+```
+
+The checkbox checkmark is a shared Lucide SVG rendered by `VectorView` with
+the part's `color`. CSS `-orca-source` maps to `VectorView.Source` when a skin
+needs a different SVG resource. Radio circles and switch geometry use styled
+nodes. See the deterministic dark/light [selection gallery](../apps/Controls/README.md)
+for native visual verification.
+
+## Declaration mappings
+
 | CSS property | ORCA property | Value type |
 |--------------|---------------|------------|
 | `background-color` | `Node2D.BackgroundColor` | color |
@@ -111,6 +177,8 @@ For text alignment, use the CSS-native `text-align` property for horizontal text
 | `text-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
 | `text-vertical-align` | `TextBlockConcept.TextVerticalAlignment` | enum: TextVerticalAlignment |
 | `placeholder-color` | `TextBlockConcept.PlaceholderColor` | color |
+| `-orca-source` | `VectorView.Source` | SVG resource path |
+| `-orca-indicator-spacing` | `SelectionControl.IndicatorSpacing` | float |
 
 ## Special Cases
 

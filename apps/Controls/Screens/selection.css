@@ -1,0 +1,27 @@
+.panel { padding: 24 28; }
+.dark-panel { background-color: #000000; color: #FFFFFF; }
+.light-panel { background-color: #FFFFFF; color: #111111; }
+.dark-panel TextBlock { color: #FFFFFF; }
+.light-panel TextBlock { color: #111111; }
+.eyebrow { font-size: 12; letter-spacing: 1; }
+.title { font-size: 48; margin-top: 5; }
+.subtitle { font-size: 14; opacity: 0.6; margin-top: 2; }
+.section { font-size: 25; margin-top: 25; margin-bottom: 8; }
+CheckBox, RadioButton, ToggleSwitch { height: 44; font-size: 19; }
+.footnote { font-size: 12; opacity: 0.6; margin-top: 25; }
+
+/* Scope each panel explicitly so its appearance is independent of the host OS. */
+.dark-panel CheckBox, .dark-panel RadioButton, .dark-panel ToggleSwitch { color: #FFFFFF; }
+.light-panel CheckBox, .light-panel RadioButton, .light-panel ToggleSwitch { color: #111111; }
+.dark-panel CheckBox .control-indicator, .dark-panel RadioButton .control-indicator, .dark-panel ToggleSwitch .control-indicator { border-color: #FFFFFF; color: #FFFFFF; }
+.light-panel CheckBox .control-indicator, .light-panel RadioButton .control-indicator, .light-panel ToggleSwitch .control-indicator { border-color: #111111; color: #111111; }
+.dark-panel CheckBox .control-indeterminate { background-color: #FFFFFF; }
+.light-panel CheckBox .control-indeterminate { background-color: #111111; }
+.dark-panel RadioButton .control-mark { background-color: #FFFFFF; }
+.light-panel RadioButton .control-mark { background-color: #111111; }
+.dark-panel ToggleSwitch .control-thumb { background-color: #FFFFFF; }
+.light-panel ToggleSwitch .control-thumb { background-color: #111111; }
+.dark-panel CheckBox:hover .control-indicator, .dark-panel RadioButton:hover .control-indicator, .dark-panel ToggleSwitch:hover .control-indicator { border-color: #0084FF; }
+.light-panel CheckBox:hover .control-indicator, .light-panel RadioButton:hover .control-indicator, .light-panel ToggleSwitch:hover .control-indicator { border-color: #0084FF; }
+.dark-panel CheckBox:active .control-indicator, .dark-panel RadioButton:active .control-indicator, .dark-panel ToggleSwitch:active .control-indicator { color: #FFFFFF; }
+.light-panel CheckBox:active .control-indicator, .light-panel RadioButton:active .control-indicator, .light-panel ToggleSwitch:active .control-indicator { color: #FFFFFF; }

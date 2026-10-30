@@ -94,7 +94,10 @@ uint32_t OBJ_GetFlags(struct Object const *pobj) {
 }
 
 void OBJ_SetFlags(struct Object *pobj, uint32_t dwFlags) {
+  uint32_t changed = pobj->flags ^ dwFlags;
   pobj->flags = dwFlags;
+  if (changed & (OF_SELECTED | OF_CHECKED | OF_INDETERMINATE | OF_DISABLED))
+    _SendMessage(pobj, StyleController, ThemeChanged, .recursive = TRUE);
 }
 
 uint32_t OBJ_GetIdentifier(struct Object const *pobj) {

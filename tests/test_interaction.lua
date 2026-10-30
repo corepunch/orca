@@ -175,13 +175,18 @@ local function test_radio_group_interaction()
 		Width = 300,
 		Height = 50,
 		Direction = "Horizontal",
+		StyleSheet = ui.loadObjectFromCssString [[
+			.radio-option { opacity: 0.8; }
+			.radio-option:checked { opacity: 1; }
+			.radio-option:active { opacity: 0.5; }
+		]],
 		SelectionChanged = function (self, e)
 			selected_value = self.SelectedValue
 			if e then old_value_seen = e.OldValue end
 		end,
 	}
-	local btn_c = group + ui.RadioButton { Value = "celsius",    Width = 100, Height = 30 }
-	local btn_f = group + ui.RadioButton { Value = "fahrenheit", Width = 100, Height = 30 }
+	local btn_c = group + ui.RadioButton { class = "radio-option", Value = "celsius",    Width = 100, Height = 30 }
+	local btn_f = group + ui.RadioButton { class = "radio-option", Value = "fahrenheit", Width = 100, Height = 30 }
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
@@ -189,14 +194,17 @@ local function test_radio_group_interaction()
 	local fx = btn_f.ActualX + 5
 	local fy = btn_f.ActualY + 5
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = fx, y = fy }
+	test.expect(btn_f.selected, "RadioButton exposes active state while pressed")
+	test.expect_near(btn_f.Opacity, 0.5, 0.001, "Pressed radio uses :active styling independently of checked")
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = fx, y = fy }
 	pump_messages(screen)
 
 	test.expect_eq(group.SelectedValue, "fahrenheit", "RadioGroup.SelectedValue should be 'fahrenheit' after click")
 	test.expect(btn_f.IsChecked,     "RadioButton fahrenheit should be IsChecked after click")
-	test.expect(btn_f.selected,      "RadioButton fahrenheit should expose selected state for active styles")
+	test.expect(not btn_f.selected, "RadioButton clears pressed state after release")
+	test.expect_near(btn_f.Opacity, 1, 0.001, "Checked radio uses :checked styling after release")
 	test.expect(not btn_c.IsChecked, "RadioButton celsius should NOT be IsChecked after sibling click")
-	test.expect(not btn_c.selected,  "RadioButton celsius selected state should be cleared after sibling click")
+	test.expect_near(btn_c.Opacity, 0.8, 0.001, "Unchecked sibling uses base styling")
 	test.expect_eq(selected_value, "fahrenheit", "SelectionChanged handler should receive the new SelectedValue")
 	test.expect(old_value_seen == nil, "OldValue should be nil when nothing was previously selected")
 
@@ -209,9 +217,10 @@ local function test_radio_group_interaction()
 
 	test.expect_eq(group.SelectedValue, "celsius",    "RadioGroup.SelectedValue should switch to 'celsius'")
 	test.expect(btn_c.IsChecked,     "RadioButton celsius should be IsChecked after click")
-	test.expect(btn_c.selected,      "RadioButton celsius should expose selected state for active styles")
+	test.expect(not btn_c.selected, "Checked radio is not kept in the pressed state")
+	test.expect_near(btn_c.Opacity, 1, 0.001, "Newly checked radio matches :checked")
 	test.expect(not btn_f.IsChecked, "RadioButton fahrenheit should NOT be IsChecked after sibling click")
-	test.expect(not btn_f.selected,  "RadioButton fahrenheit selected state should be cleared after sibling click")
+	test.expect_near(btn_f.Opacity, 0.8, 0.001, "Deselected sibling clears :checked styling")
 	test.expect_eq(selected_value, "celsius",     "SelectionChanged should report new SelectedValue")
 	test.expect_eq(old_value_seen, "fahrenheit",  "SelectionChanged should report OldValue = 'fahrenheit'")
 

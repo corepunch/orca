@@ -151,13 +151,22 @@ HANDLER(Input, TextBlockConcept, MakeText)
   return TRUE;
 }
 
+static bool_t
+Input_CanTabTo(struct Object *object)
+{
+  if (!(OBJ_GetFlags(object) & OF_TABSTOP)) return FALSE;
+  for (struct Object *ancestor = object; ancestor; ancestor = OBJ_GetParent(ancestor))
+    if (OBJ_GetFlags(ancestor) & OF_DISABLED) return FALSE;
+  return TRUE;
+}
+
 static struct Object *
 _FindNextTabStop(struct Object *hObject)
 {
   struct Object *hOther;
   FOR_EACH_OBJECT(hChild, hObject)
   {
-    if (OBJ_GetFlags(hChild) & OF_TABSTOP)
+    if (Input_CanTabTo(hChild))
       return hChild;
     if ((hOther = _FindNextTabStop(hChild)))
       return hOther;
@@ -170,7 +179,7 @@ _NextTabStop(struct Object *hObject)
 {
   for (struct Object *p = hObject, *r; p; p = OBJ_GetParent(p)) {
     for (struct Object *n = p; n; n = OBJ_GetNext(n)) {
-      if (n != p && (OBJ_GetFlags(n) & OF_TABSTOP))
+      if (n != p && Input_CanTabTo(n))
         return n;
       if ((r = _FindNextTabStop(n)))
         return r;
@@ -301,6 +310,20 @@ HANDLER(Input, Node, LeftButtonUp)
     PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Input_Checked), &checked);
   }
   return TRUE;
+}
+
+HANDLER(Input, Object, PropertyChanged)
+{
+  if (!pPropertyChanged->Property) return FALSE;
+  uint32_t id = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  if (id == ID_Input_Checked || id == ID_Input_Type) {
+    uint32_t flags = OBJ_GetFlags(hObject) & ~OF_CHECKED;
+    if ((pInput->Type == kInputTypeCheckbox || pInput->Type == kInputTypeRadio) && pInput->Checked)
+      flags |= OF_CHECKED;
+    OBJ_SetFlags(hObject, flags);
+    OBJ_SetDirty(hObject);
+  }
+  return FALSE;
 }
 
 HANDLER(Input, Object, Create)

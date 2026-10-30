@@ -20,25 +20,6 @@
 // Opacity (the /N suffix) is a per-usage concern and lives in
 // style_class_selector.opacity — not in the rule definition.
 
-static uint32_t
-_ParsePseudoClass(lpcString_t pseudo)
-{
-  if (!pseudo || !pseudo[0]) return 0;
-  uint32_t flags = 0;
-  // pseudo is like "hover" or "hover:focus" (no leading colon)
-  for (lpcString_t tok = pseudo; tok; ) {
-    lpcString_t end = strchr(tok, ':');
-    size_t len = end ? (size_t)(end - tok) : strlen(tok);
-    if      (len == 5 && !strncmp(tok, "hover",  5)) flags |= STYLE_HOVER;
-    else if (len == 5 && !strncmp(tok, "focus",  5)) flags |= STYLE_FOCUS;
-    else if (len == 13 && !strncmp(tok, "focus-visible", 13)) flags |= STYLE_FOCUS_VISIBLE;
-    else if (len == 6 && !strncmp(tok, "active", 6)) flags |= STYLE_SELECT;
-    else if (len == 4 && !strncmp(tok, "dark",   4)) flags |= STYLE_DARK;
-    tok = end ? end + 1 : NULL;
-  }
-  return flags;
-}
-
 // Update cached fields whenever ClassName or PseudoClass changes.
 // StyleRule_Release
 HANDLER(StyleRule, Object, Release) {
@@ -57,7 +38,7 @@ HANDLER(StyleRule, Object, PropertyChanged) {
     OBJ_FreeStyleSelector(pStyleRule->selector);
     pStyleRule->selector = OBJ_CompileStyleSelector(name);
   } else if (changed == ID_StyleRule_PseudoClass) {
-    pStyleRule->flags = _ParsePseudoClass(pStyleRule->PseudoClass);
+    pStyleRule->flags = OBJ_ParseStylePseudo(pStyleRule->PseudoClass);
   }
 
   return FALSE;

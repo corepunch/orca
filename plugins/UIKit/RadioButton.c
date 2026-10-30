@@ -1,5 +1,6 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
+#include "SelectionControl.h"
 #include <source/filesystem/theme_palette.h>
 
 #include <UIKit/UIKit.h>
@@ -18,12 +19,7 @@ RadioButton_SetChecked(struct Object *object,
 
   button->IsChecked = checked;
 
-  uint32_t flags = OBJ_GetFlags(object);
-  flags = checked ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
-  OBJ_SetFlags(object, flags);
-
-  OBJ_SetDirty(object);
-  _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
+  SelectionControl_SetState(object, checked, FALSE);
 }
 
 /* Sync the parent RadioGroup after this button has been checked: updates
@@ -39,7 +35,7 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
     return;
 
   struct RadioGroup *rg = GetRadioGroup(group);
-  if (!rg)
+  if (!rg || (rg->SelectedValue && button->Value && !strcmp(rg->SelectedValue, button->Value)))
     return;
 
   /* Capture old value before the property setter frees it. */
@@ -65,11 +61,10 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
 static bool_t
 RadioButton_Select(struct Object *object, struct RadioButton *button)
 {
-  if (button->IsChecked)
-    return TRUE;
-
-  RadioButton_SetChecked(object, button, TRUE);
-  RadioButton_SyncGroup(object, button);
+  if (!SelectionControl_IsEnabled(object) || button->IsChecked) return TRUE;
+  bool_t checked = TRUE;
+  struct Property *property = OBJ_FindLongProperty(object, ID_RadioButton_IsChecked);
+  if (property) PROP_SetValue(property, &checked);
   return TRUE;
 }
 
@@ -86,7 +81,7 @@ RadioButton_FindSibling(struct Object *object, bool_t forward)
   bool_t seenCurrent = FALSE;
 
   FOR_EACH_OBJECT(child, group) {
-    if (!GetRadioButton(child)) continue;
+    if (!GetRadioButton(child) || !SelectionControl_IsEnabled(child)) continue;
     if (!first) first = child;
 
     if (forward && seenCurrent)
@@ -120,15 +115,7 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 HANDLER(RadioButton, Object, Create)
 {
   pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
-  GetNode(hObject)->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
-  GetNode2D(hObject)->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
-  struct Property *foregroundProp = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
-  if (foregroundProp) {
-    struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
-    PROP_SetValue(foregroundProp, &foreground);
-  }
-
-  OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
+  SelectionControl_Build(hObject, "radio-button", FALSE);
   struct Property *prop = OBJ_FindLongProperty(hObject, ID_RadioButton_IsChecked);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
 
@@ -163,11 +150,13 @@ HANDLER(RadioButton, Object, PropertyChanged)
 
 HANDLER(RadioButton, Node, LeftButtonUp)
 {
+  OBJ_SetFlags(hObject, OBJ_GetFlags(hObject) & ~OF_SELECTED);
   return RadioButton_Select(hObject, pRadioButton);
 }
 
 HANDLER(RadioButton, Node, KeyDown)
 {
+  if (!SelectionControl_IsEnabled(hObject)) return TRUE;
   switch (pKeyDown->keyCode) {
     case AX_KEY_SPACE:
     case AX_KEY_ENTER:
@@ -197,66 +186,5 @@ HANDLER(RadioButton, Node, KeyDown)
     default:
       return FALSE;
   }
-}
-
-HANDLER(RadioButton, Node2D, DrawBackground)
-{
-  struct Node2D *pNode2D = GetNode2D(hObject);
-  if (!pNode2D) return FALSE;
-  struct Node *pNode = GetNode(hObject);
-  if (!pNode) return FALSE;
-
-  float indicatorSize = pRadioButton->IndicatorSize;
-  float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  float bx = pNode2D->_rect.x;
-  float by = pNode2D->_rect.y + (h - indicatorSize) * 0.5f;
-
-  /* Draw circular indicator using a fully-rounded box. */
-  struct ViewEntity entity;
-  memset(&entity, 0, sizeof(entity));
-  entity.matrix  = pNode2D->Matrix;
-  entity.bbox    = BOX3_FromRect(((struct rect){bx, by, indicatorSize, indicatorSize}));
-  entity.radius  = (struct vec4){indicatorSize * 0.5f, indicatorSize * 0.5f,
-                                  indicatorSize * 0.5f, indicatorSize * 0.5f};
-
-  if (pRadioButton->IsChecked) {
-    /* Filled accent-color circle */
-    entity.material = (struct ViewMaterial){
-      .color     = pRadioButton->AccentColor,
-      .opacity   = pNode2D->_opacity,
-      .blendMode = BLEND_MODE_ALPHA,
-    };
-    R_DrawEntity(pDrawBackground->viewdef, &entity);
-
-    /* Inner white dot */
-    float dotSize = indicatorSize * 0.4f;
-    float dotOffset = (indicatorSize - dotSize) * 0.5f;
-    entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
-    entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    struct BrushShorthand foreground = { 0 };
-    Node2D_ReadProperty(hObject, Foreground.Color, &foreground.Color);
-    Node2D_ReadProperty(hObject, Foreground.Image, &foreground.Image);
-    Node2D_ReadProperty(hObject, Foreground.Material, &foreground.Material);
-    entity.material.color = foreground.Color;
-    R_DrawEntity(pDrawBackground->viewdef, &entity);
-  } else {
-    /* Empty circle: light fill with a subtle border drawn as a slightly
-       larger background circle behind a smaller inner white circle. */
-    entity.material = (struct ViewMaterial){
-      .color     = pNode->Border.Color,
-      .opacity   = pNode2D->_opacity,
-      .blendMode = BLEND_MODE_ALPHA,
-    };
-    R_DrawEntity(pDrawBackground->viewdef, &entity);
-
-    float innerSize = indicatorSize - 3.0f;
-    float innerOffset = 1.5f;
-    entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
-    entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
-    entity.material.color = pNode2D->Background.Color;
-    R_DrawEntity(pDrawBackground->viewdef, &entity);
-  }
-
-  return FALSE;
 }
 

@@ -1,0 +1,26 @@
+/* Built-in parts are ordinary nodes. Application sheets can replace their skin. */
+CheckBox, RadioButton, ToggleSwitch { min-height: 44; font-size: 17; color: #111111; background-color: #00000000; }
+CheckBox:dark, RadioButton:dark, ToggleSwitch:dark { color: #ffffff; }
+CheckBox .control-label, RadioButton .control-label, ToggleSwitch .control-label { text-vertical-align: center; text-wrap: nowrap; text-overflow: ellipsis; }
+CheckBox .control-indicator, RadioButton .control-indicator, ToggleSwitch .control-indicator { width: 24; height: 24; border: 2 solid #111111; border-radius: 0; background-color: #00000000; color: #111111; }
+CheckBox:dark .control-indicator, RadioButton:dark .control-indicator, ToggleSwitch:dark .control-indicator { border-color: #ffffff; color: #ffffff; }
+CheckBox .control-mark, RadioButton .control-mark, ToggleSwitch .control-mark { opacity: 0; margin: auto; }
+CheckBox .control-check { width: 24; height: 24; }
+CheckBox .control-indeterminate { width: 14; height: 4; margin: auto; background-color: #111111; opacity: 0; }
+CheckBox:dark .control-indeterminate { background-color: #ffffff; }
+CheckBox:checked .control-mark { opacity: 1; }
+CheckBox:indeterminate .control-mark { opacity: 0; }
+CheckBox:indeterminate .control-indeterminate { opacity: 1; }
+RadioButton .control-indicator { border-radius: 12; }
+RadioButton .control-mark { width: 12; height: 12; border-radius: 6; background-color: #111111; }
+RadioButton:dark .control-mark { background-color: #ffffff; }
+RadioButton:checked .control-mark { opacity: 1; }
+ToggleSwitch .control-track { width: 54; height: 20; }
+ToggleSwitch .control-thumb { width: 12; height: 28; margin-top: auto; margin-bottom: auto; margin-left: 0; margin-right: auto; background-color: #111111; }
+ToggleSwitch:dark .control-thumb { background-color: #ffffff; }
+ToggleSwitch:checked .control-track { background-color: #0078d4; }
+ToggleSwitch:checked .control-thumb { margin-left: auto; margin-right: 0; }
+CheckBox:hover .control-indicator, RadioButton:hover .control-indicator, ToggleSwitch:hover .control-indicator { border-color: #0078d4; }
+CheckBox:active .control-indicator, RadioButton:active .control-indicator, ToggleSwitch:active .control-indicator { background-color: #0078d4; color: #ffffff; }
+CheckBox:focus-visible, RadioButton:focus-visible, ToggleSwitch:focus-visible { ring: 0 2 #0078d4; }
+CheckBox:disabled, RadioButton:disabled, ToggleSwitch:disabled { opacity: 0.4; }

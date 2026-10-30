@@ -41,6 +41,11 @@
 #define STYLE_DARK 4
 #define STYLE_SELECT 8
 #define STYLE_FOCUS_VISIBLE 16
+#define STYLE_CHECKED 32
+#define STYLE_INDETERMINATE 64
+#define STYLE_DISABLED 128
+#define STYLE_ENABLED 256
+#define STYLE_INVALID (1u << 31)
 
 struct lua_State;
 struct alias;
@@ -50,10 +55,12 @@ struct style_class_selector
 {
   struct style_class_selector* next;
   shortStr_t value;    // base class name (without pseudo-states or opacity suffix)
-  byte_t flags;        // STYLE_HOVER / STYLE_FOCUS / STYLE_DARK / STYLE_SELECT bits
+  uint32_t flags;      // STYLE_* pseudo-state requirements
   byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
   bool_t state;        // added from StyleController.StateClasses, replaced with it
 };
+
+uint32_t OBJ_ParseStylePseudo(lpcString_t);
 
 #define MAX_STYLE_SELECTOR_PARTS 16
 
