@@ -15,7 +15,7 @@ local palettes = {
         background = "#000000", surface = "#00000000", raised = "#2e2e2e", chrome = "#1f1f1f",
         textbox = "#bfbfbf", textboxInk = "#000000", placeholder = "#666666",
         ink = "#ffffff", muted = "#a6a6a6", dim = "#999999", faint = "#5c5c5c",
-        line = "#3a3a3a", accent = "#0084ff", accentText = "#3d9eff", onAccent = "#ffffff",
+        line = "#3a3a3a", accent = "#0084ff", accentText = "#41beec", onAccent = "#ffffff",
         soft = "#0a2a4d", sent = "#0084ff", sentText = "#ffffff", sentMeta = "#cfe6ff",
         error = "#ff5c5c", avatar = tiles,
     },
