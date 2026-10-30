@@ -21,6 +21,8 @@ CheckBox, RadioButton, ToggleSwitch { height: 44; font-size: 19; }
 .light-panel RadioButton .control-mark { background-color: #111111; }
 .dark-panel ToggleSwitch .control-thumb { background-color: #FFFFFF; }
 .light-panel ToggleSwitch .control-thumb { background-color: #111111; }
+.dark-panel ToggleSwitch:checked .control-track, .light-panel ToggleSwitch:checked .control-track { border-color: #0078d4; }
+.dark-panel ToggleSwitch:checked .control-thumb, .light-panel ToggleSwitch:checked .control-thumb { background-color: #FFFFFF; }
 .dark-panel CheckBox:hover .control-indicator, .dark-panel RadioButton:hover .control-indicator, .dark-panel ToggleSwitch:hover .control-indicator { border-color: #0084FF; }
 .light-panel CheckBox:hover .control-indicator, .light-panel RadioButton:hover .control-indicator, .light-panel ToggleSwitch:hover .control-indicator { border-color: #0084FF; }
 .dark-panel CheckBox:active .control-indicator, .dark-panel RadioButton:active .control-indicator, .dark-panel ToggleSwitch:active .control-indicator { color: #FFFFFF; }

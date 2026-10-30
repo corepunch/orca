@@ -88,12 +88,34 @@ local function toggle()
     Toggled = function(_, e) values[#values + 1] = e.IsOn end,
   }
   layout(screen)
-  test.expect(toggle:findChild("Indicator"):findChild("Thumb"), "switch exposes track and thumb")
+  local track = assert(toggle:findChild("Indicator"))
+  local thumb = assert(track:findChild("Thumb"))
+  local function expect_thumb_inside_track()
+    -- ActualX/Y are relative to the thumb's parent track.
+    test.expect(thumb.ActualX >= 0 and thumb.ActualY >= 0, "switch thumb starts inside its rail")
+    test.expect(thumb.ActualX + thumb.ActualWidth <= track.ActualWidth,
+      "switch thumb stays inside the rail horizontally")
+    test.expect(thumb.ActualY + thumb.ActualHeight <= track.ActualHeight,
+      "switch thumb stays inside the rail vertically")
+    test.expect_near(thumb.ActualY + thumb.ActualHeight / 2, track.ActualHeight / 2, 0.001,
+      "switch thumb is vertically centered within its rail")
+    local endCenter = toggle.IsOn and track.ActualWidth - track.ActualHeight / 2 or track.ActualHeight / 2
+    test.expect_near(thumb.ActualX + thumb.ActualWidth / 2, endCenter, 0.001,
+      "switch thumb is centered within the rounded end of its rail")
+  end
+  expect_thumb_inside_track()
+  local offX = thumb.ActualX
   tap(screen, toggle)
+  layout(screen)
+  expect_thumb_inside_track()
+  test.expect(thumb.ActualX > offX, "switch on-state moves thumb to the other end of its rail")
   test.expect(toggle.IsOn and values[#values], "pointer activation turns switch on")
   key(toggle, 32)
   pump(screen)
   test.expect(not toggle.IsOn and values[#values] == false, "Space turns switch off")
+  layout(screen)
+  expect_thumb_inside_track()
+  test.expect_eq(thumb.ActualX, offX, "switch off-state restores thumb position")
   toggle.IsOn = true
   pump(screen)
   test.expect(values[#values], "programmatic switch state emits Toggled")
@@ -101,6 +123,8 @@ local function toggle()
   key(toggle, 13)
   toggle:send("Node.LeftButtonUp")
   test.expect(toggle.IsOn, "disabled switch ignores input")
+  layout(screen)
+  expect_thumb_inside_track()
   screen:clear()
 end
 

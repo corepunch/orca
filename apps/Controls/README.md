@@ -2,7 +2,9 @@
 
 A deterministic native XML/CSS gallery at 780 × 844 points, with two 390-point
 panels. It presents the same checkbox, radio-button, and switch states on black
-and white surfaces. Labels and indicator geometry belong to the shared controls;
+and white surfaces. Switches use the Windows 10 pill track and circular thumb;
+checkboxes and radios retain Windows Phone geometry.
+Labels and indicator geometry belong to the shared controls;
 the app owns its typography, spacing, and palette.
 
 Run `build/bin/orca apps/Controls` after `make unite`. The screen is

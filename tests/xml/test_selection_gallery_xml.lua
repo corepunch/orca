@@ -32,11 +32,38 @@ for _, prefix in ipairs { "Dark", "Light" } do
     end
     previous = control
   end
+  local radioIndicator = assert(group:findChild(prefix .. "RadioAll"):findChild("Indicator"))
+  local radioDot = assert(radioIndicator:findChild("Mark"))
+  local offTrack = assert(screen:findChild(prefix .. "SwitchOff", true):findChild("Indicator"))
+  local offThumb = assert(offTrack:findChild("Thumb"))
+  test.expect_eq(offTrack.ActualHeight, radioIndicator.ActualHeight,
+    "off switch rail matches the radio indicator height")
+  test.expect_eq(offTrack.BorderWidthLeft, radioIndicator.BorderWidthLeft,
+    "off switch outline matches the radio indicator weight")
+  test.expect_near(offTrack.BorderWidthLeft, 2, 0.001,
+    "off switch preserves the two-point outline")
+  test.expect(offTrack.ActualWidth > radioIndicator.ActualWidth,
+    "switch rail is a wider version of the radio indicator")
+  test.expect_eq(offThumb.ActualWidth, 16, "switch thumb uses the larger sixteen-point circle")
+  test.expect(offThumb.ActualWidth > radioDot.ActualWidth, "switch thumb is larger than the radio dot")
+  test.expect_eq(offThumb.ActualHeight, offThumb.ActualWidth, "switch thumb remains circular")
   for _, suffix in ipairs { "SwitchOff", "SwitchOn", "SwitchDisabled" } do
     local control = assert(screen:findChild(prefix .. suffix, true))
     test.expect_eq(control.ActualHeight, 44, "XML gallery switch keeps authored 44-point row")
-    test.expect(control:findChild("Indicator"):findChild("Thumb").ActualHeight <= control.ActualHeight,
-      "switch thumb fits its touch row")
+    local track = assert(control:findChild("Indicator"))
+    local thumb = assert(track:findChild("Thumb"))
+    -- Thumb coordinates are relative to its immediate parent track.
+    test.expect(thumb.ActualX >= 0 and thumb.ActualY >= 0,
+      "XML switch thumb starts inside the rail")
+    test.expect(thumb.ActualX + thumb.ActualWidth <= track.ActualWidth,
+      "XML switch thumb fits the rail horizontally")
+    test.expect(thumb.ActualY + thumb.ActualHeight <= track.ActualHeight,
+      "XML switch thumb fits the rail vertically")
+    test.expect_near(thumb.ActualY + thumb.ActualHeight / 2, track.ActualHeight / 2, 0.001,
+      "XML switch thumb is vertically centered within the rail")
+    local endCenter = control.IsOn and track.ActualWidth - track.ActualHeight / 2 or track.ActualHeight / 2
+    test.expect_near(thumb.ActualX + thumb.ActualWidth / 2, endCenter, 0.001,
+      "XML switch thumb is centered within the rounded end of its rail")
   end
 end
 print("PASS: native XML selection gallery layout")
