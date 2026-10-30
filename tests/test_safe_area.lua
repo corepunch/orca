@@ -194,6 +194,50 @@ local function test_bottom_anchor_stays_at_the_end()
     print("PASS: test_bottom_anchor_stays_at_the_end")
 end
 
+-- After UIKit's scroll-the-first-responder-into-view: a focused field the
+-- keyboard would cover scrolls just above it, and one still visible stays put.
+local function test_keyboard_reveals_focused_field()
+    local screen = edgeToEdge()
+    local host = ui.Node2D {}
+    local form = ui.StackView { Overflow = "hidden scroll" }
+    for i = 1, 30 do
+        form:addChild(i % 7 == 2 and ui.Input { Name = "Field" .. i, Height = 44 } or ui.Node2D { Height = 60 })
+    end
+    local bar = ui.Node2D { SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
+    bar:addChild(ui.Node2D { Height = 58 })
+    host:addChild(form); host:addChild(bar)
+    screen:addChild(host)
+    layout(screen)
+    local function visibleBottom(field) return field.ActualY + field.ActualHeight + form.ContentOffset.Y end
+
+    local top, low, lower = form:findChild("Field2"), form:findChild("Field9"), form:findChild("Field16")
+    top:setFocus()
+    layout(screen)
+    screen.KeyboardInsetBottom = 300
+    layout(screen)
+    test.expect_near(form.ContentOffset.Y, 0, 0.01, "a field above the keyboard stays where it is")
+
+    screen.KeyboardInsetBottom = 0
+    layout(screen)
+    low:setFocus()
+    layout(screen)
+    test.expect_near(form.ContentOffset.Y, 0, 0.01, "focusing a visible field does not scroll")
+    screen.KeyboardInsetBottom = 300
+    layout(screen)
+    test.expect_near(visibleBottom(low), H - 58 - 300 - 16, 0.01, "the keyboard lifts a covered field just above it")
+    local lifted = form.ContentOffset.Y
+
+    form.ContentOffset = { X = 0, Y = lifted - 100 }
+    layout(screen)
+    test.expect_near(form.ContentOffset.Y, lifted - 100, 0.01, "scrolling away from the field is left alone")
+
+    lower:setFocus()
+    layout(screen)
+    test.expect_near(visibleBottom(lower), H - 58 - 300 - 16, 0.01, "moving focus to a covered field reveals it")
+    screen:clear()
+    print("PASS: test_keyboard_reveals_focused_field")
+end
+
 local function pivotPage(extend)
     local pivot = ui.Pivot { Title = "Messenger", IsLocked = true, ExtendBodyBehindHeader = extend }
     local item = ui.PivotItem { Header = "room" }
@@ -271,6 +315,7 @@ test_content_inset_adjustment_modes()
 test_bars_stack_below_ancestor_bars()
 test_adjusting_bars_extend_through_system_insets()
 test_bottom_anchor_stays_at_the_end()
+test_keyboard_reveals_focused_field()
 test_pivot_body_extends_behind_header()
 test_pivot_header_consumes_top_inset()
 test_backdrop_filter_css()

@@ -455,6 +455,25 @@ assert(not app.newSelection.alex, "Selecting a member again removes it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
 assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
+-- The keyboard lifts a focused field it would cover above itself and the app bar.
+drain(app)
+local identifier = assert(profile:findChild("LinkIdentifier", true))
+local function bottomOnScreen(node)
+    local y = node.ActualY + node.ActualHeight
+    for parent in function(_, p) p = p:getParent(); return p ~= profile and p or nil end, nil, node do
+        y = y + parent.ActualY + parent.ContentOffset.Y
+    end
+    return y
+end
+profile:UpdateLayout(390, 844)
+assert(bottomOnScreen(identifier) > 844 - 336 - 58, "The fixture's field must start under the keyboard")
+identifier:setFocus()
+profile:UpdateLayout(390, 844)
+profile.KeyboardInsetBottom = 336
+profile:UpdateLayout(390, 844)
+assert(math.abs(bottomOnScreen(identifier) - (844 - 336 - 58 - 16)) <= 2,
+    "A focused profile field must scroll above the keyboard: " .. bottomOnScreen(identifier))
+profile.KeyboardInsetBottom = 0
 
 -- Root pages keep one shell and one ApplicationBar through real Click events.
 local tabApp = mockApp()
