@@ -23,10 +23,24 @@ local function row(name, leading, title, detail, action, props)
     return button
 end
 
-local function tile(icon)
-    local square = ui.Grid { Width = 52, Height = 52, Background = colors.accent, IgnoreHitTest = true }
-    square:addChild(C.icon(icon, 24, colors.onAccent))
-    return square
+-- A command row after Telegram's New Message: an accent outline icon in the
+-- avatar column and an accent label, so commands read apart from people.
+local function command(name, icon, label, action)
+    local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
+        Background = colors.surface })
+    local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
+    grid:addChild(C.icon(icon, 26, colors.accentText))
+    grid:addChild(C.text(label, { FontSize = 20, Foreground = colors.accentText, TextVerticalAlignment = "Center",
+        TextOverflow = "Ellipsis" }))
+    button:addChild(grid)
+    return button
+end
+
+-- The letter a contact is filed under; names without a letter go under "#".
+local function initial(person)
+    local first = publicName(person):match(utf8.charpattern) or "#"
+    if #first > 1 then return first end
+    return first:match("%a") and first:upper() or "#"
 end
 
 function Conversations.newRoom(self)
@@ -148,13 +162,13 @@ function Conversations.newRoom(self)
         else changeMode("direct") end
     end
     for _, item in ipairs {
-        { "KindGroup", "users-round", "New group", "Chat with several people", "group" },
-        { "KindChannel", "megaphone", "New channel", "Broadcast to subscribers", "channel" },
-        { "SearchChannels", "compass", "Browse channels", "Find and join public channels", "channels" },
-        { "ShowInvite", "ticket", "Join with invitation", "Enter an invitation code", "invite" },
+        { "KindGroup", "users-round", "New group", "group" },
+        { "KindChannel", "megaphone", "New channel", "channel" },
+        { "SearchChannels", "compass", "Browse channels", "channels" },
+        { "ShowInvite", "ticket", "Join with invitation", "invite" },
     } do
-        local target = item[5]
-        actions:addChild(row(item[1], tile(item[2]), item[3], item[4], function() changeMode(target) end))
+        local target = item[4]
+        actions:addChild(command(item[1], item[2], item[3], function() changeMode(target) end))
     end
     nextButton = C.button("Next", function()
         if mode ~= "group" or busy then return end
@@ -235,7 +249,6 @@ function Conversations.newRoom(self)
     query.Submit = function()
         if mode == "channels" then findChannels:send("Node.LeftButtonUp") else findPeople:send("Node.LeftButtonUp") end
     end
-    people:addChild(C.eyebrow("CONTACTS"))
     local list = C.stack({ Spacing = 8, Padding = "0 10 0 16", Overflow = "hidden scroll" }, {
         selected, nextButton, actions, status, results, people, setup, invitation,
     })
@@ -267,7 +280,14 @@ function Conversations.newRoom(self)
                     FontSize = 14, WordWrap = true, Foreground = colors.dim }))
             else
                 table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)
-                for _, person in ipairs(contacts) do addPerson(people, person, "Contact") end
+                local letter
+                for _, person in ipairs(contacts) do
+                    if initial(person) ~= letter then
+                        letter = initial(person)
+                        people:addChild(C.eyebrow(letter))
+                    end
+                    addPerson(people, person, "Contact")
+                end
             end
         end)
     end
