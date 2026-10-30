@@ -304,6 +304,8 @@ k_css_prop_map[] = {
   { "pointer-events",  "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
   { "size-to-content",   "Node2D.SizeToContent",      ID_Node2D_SizeToContent },
   { "snap-to-pixel",   "Node2D.SnapToPixel",      ID_Node2D_SnapToPixel },
+  { "-orca-source",    "VectorView.Source",      ID_VectorView_Source },
+  { "-orca-indicator-spacing", "SelectionControl.IndicatorSpacing", ID_SelectionControl_IndicatorSpacing },
 
   /* StackView */
   { "align-items",     "StackView.AlignItems",       ID_StackView_AlignItems },

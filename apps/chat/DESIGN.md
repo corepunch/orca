@@ -84,20 +84,21 @@ claiming historical fidelity.
   password, create an account. The code step keeps resend and change-number.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after
   Microsoft Teams' sign-in; raised by half from 4 points the same day): every
-  visible corner is 6 points, on text
+  visible corner except selection-control indicators is 6 points, on text
   fields, outlined and filled buttons, badges, avatars and their photos,
   speech bubbles and message photos. Borders draw outside the box and widen
   the outer radius, so 2-point-bordered fields and outlined buttons declare 4. A field and button joined into one bar round only their
   outer corners. A photo rounds only the corners it shares with its bubble,
   so it meets a sender name or caption with a straight edge. Links, list
   rows, bars and the full-screen photo viewer stay unrounded.
-- On/off settings are Windows Phone check boxes (user decision, 2026-10-30),
-  not buttons whose label reads "On"/"Off". `C.checkbox` draws a 32-point
-  square in the text box fill with a dark, heavy Lucide `check` (stroke 3.5 instead of 2) centred in it,
-  spanning about 70% of the box, and the label sits to its right at 17 points. The whole 48-point row toggles it. This follows the
-  Windows Phone 7 default CheckBox from memory: a pale box like the text box
-  and a dark check. The template's exact colours and sizes have not been
-  checked against Microsoft's theme resources.
+- On/off settings use the native `CheckBox` with Windows Phone geometry
+  (user decision, 2026-10-30): a 28-point square indicator without rounded
+  corners, a centred Lucide check, and a 17-point label to its right. The whole
+  48-point row toggles it. `C.checkbox` configures this shared control; the
+  control owns checked state, input, and binding behavior. Chat CSS skins its
+  generated `control-indicator`, `control-check`, and `control-label` parts
+  under the current light/dark palette. The square checkbox is an explicit
+  exception to the rounding used by text fields and buttons.
 - Use prominent Pivot titles, avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.

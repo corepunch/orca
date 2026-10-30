@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="SelectionGallery" Width="780" Height="844" ResizeMode="NoResize" ClearColor="#000000" StyleSheet="Controls/Screens/selection.css">
+	<Grid Columns="1fr 1fr">
+		<StackView class="panel dark-panel" Spacing="0">
+			<TextBlock class="eyebrow">ORCA / CSS CONTROLS</TextBlock>
+			<TextBlock class="title">selection</TextBlock>
+			<TextBlock class="subtitle">dark theme</TextBlock>
+			<TextBlock class="section">checkboxes</TextBlock>
+			<CheckBox Name="DarkUnchecked" Text="Mail"/>
+			<CheckBox Name="DarkChecked" Text="Calendar" IsChecked="true"/>
+			<CheckBox Name="DarkMixed" Text="Some folders" IsIndeterminate="true"/>
+			<CheckBox Name="DarkDisabled" Text="Managed setting" IsChecked="true" IsEnabled="false"/>
+			<TextBlock class="section">radio buttons</TextBlock>
+			<RadioGroup Name="DarkRadios" SelectedValue="all">
+				<RadioButton Name="DarkRadioAll" Text="All messages" Value="all"/>
+				<RadioButton Name="DarkRadioUnread" Text="Unread only" Value="unread"/>
+				<RadioButton Name="DarkRadioDisabled" Text="Priority only" Value="priority" IsEnabled="false"/>
+			</RadioGroup>
+			<TextBlock class="section">toggle switches</TextBlock>
+			<ToggleSwitch Name="DarkSwitchOff" Text="Wi-Fi"/>
+			<ToggleSwitch Name="DarkSwitchOn" Text="Notifications" IsOn="true"/>
+			<ToggleSwitch Name="DarkSwitchDisabled" Text="Location" IsOn="true" IsEnabled="false"/>
+			<TextBlock class="footnote">Tap a row to change its state.</TextBlock>
+		</StackView>
+		<StackView class="panel light-panel" Spacing="0">
+			<TextBlock class="eyebrow">ORCA / CSS CONTROLS</TextBlock>
+			<TextBlock class="title">selection</TextBlock>
+			<TextBlock class="subtitle">light theme</TextBlock>
+			<TextBlock class="section">checkboxes</TextBlock>
+			<CheckBox Name="LightUnchecked" Text="Mail"/>
+			<CheckBox Name="LightChecked" Text="Calendar" IsChecked="true"/>
+			<CheckBox Name="LightMixed" Text="Some folders" IsIndeterminate="true"/>
+			<CheckBox Name="LightDisabled" Text="Managed setting" IsChecked="true" IsEnabled="false"/>
+			<TextBlock class="section">radio buttons</TextBlock>
+			<RadioGroup Name="LightRadios" SelectedValue="all">
+				<RadioButton Name="LightRadioAll" Text="All messages" Value="all"/>
+				<RadioButton Name="LightRadioUnread" Text="Unread only" Value="unread"/>
+				<RadioButton Name="LightRadioDisabled" Text="Priority only" Value="priority" IsEnabled="false"/>
+			</RadioGroup>
+			<TextBlock class="section">toggle switches</TextBlock>
+			<ToggleSwitch Name="LightSwitchOff" Text="Wi-Fi"/>
+			<ToggleSwitch Name="LightSwitchOn" Text="Notifications" IsOn="true"/>
+			<ToggleSwitch Name="LightSwitchDisabled" Text="Location" IsOn="true" IsEnabled="false"/>
+			<TextBlock class="footnote">Tab and Space work with a keyboard.</TextBlock>
+		</StackView>
+	</Grid>
+</Screen>

@@ -155,17 +155,23 @@ _PseudoFlagFromToken(lpcString_t token, size_t len)
   else if (len == 13 && !strncmp(token, "focus-visible", 13)) return STYLE_FOCUS_VISIBLE;
   else if (len == 6 && !strncmp(token, "active", 6)) return STYLE_SELECT;
   else if (len == 4 && !strncmp(token, "dark",   4)) return STYLE_DARK;
+  else if (len == 7 && !strncmp(token, "checked", 7)) return STYLE_CHECKED;
+  else if (len == 13 && !strncmp(token, "indeterminate", 13)) return STYLE_INDETERMINATE;
+  else if (len == 8 && !strncmp(token, "disabled", 8)) return STYLE_DISABLED;
+  else if (len == 7 && !strncmp(token, "enabled", 7)) return STYLE_ENABLED;
   return 0;
 }
 
-static uint32_t
-_ParsePseudoStateFlags(lpcString_t str)
+uint32_t
+OBJ_ParseStylePseudo(lpcString_t str)
 {
   uint32_t flags = 0;
   for (lpcString_t tok = str; tok && *tok; ) {
     lpcString_t end = strchr(tok, ':');
     size_t len = end ? (size_t)(end - tok) : strlen(tok);
-    flags |= _PseudoFlagFromToken(tok, len);
+    uint32_t flag = _PseudoFlagFromToken(tok, len);
+    if (!flag || (end && !end[1])) return STYLE_INVALID;
+    flags |= flag;
     tok = end ? end + 1 : NULL;
   }
   return flags;
@@ -200,7 +206,7 @@ _SplitSelectorPseudo(lpcString_t selector,
     baseOut[len] = '\0';
   }
   if (pseudoFlags) {
-    *pseudoFlags = _ParsePseudoStateFlags(colon + 1);
+    *pseudoFlags = OBJ_ParseStylePseudo(colon + 1);
   }
 }
 
@@ -221,7 +227,6 @@ struct style_class_selector*
 _ParseClass(lpcString_t str)
 {
   struct style_class_selector* cls = ZeroAlloc(sizeof(struct style_class_selector));
-  cls->flags = _ParsePseudoStateFlags(str);
 
   // Support both suffix pseudo syntax (bg-blue:hover) and Tailwind-like
   // prefix syntax (hover:bg-blue). We pick the non-pseudo segment as class.
@@ -231,11 +236,13 @@ _ParseClass(lpcString_t str)
   for (lpcString_t tok = str; tok && *tok; ) {
     lpcString_t end = strchr(tok, ':');
     size_t len = end ? (size_t)(end - tok) : strlen(tok);
-    if (_PseudoFlagFromToken(tok, len) == 0) {
+    uint32_t flag = _PseudoFlagFromToken(tok, len);
+    if (flag) cls->flags |= flag;
+    else if (foundBase) cls->flags |= STYLE_INVALID;
+    else {
       baseStart = tok;
       baseLen = len;
       foundBase = TRUE;
-      break;
     }
     tok = end ? end + 1 : NULL;
   }
@@ -323,13 +330,21 @@ OBJ_GetStyleFlags(struct Object *pobj)
   if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
   if (core_GetFocus() == pobj) dwValue |= STYLE_FOCUS;
   if (core_GetFocus() == pobj && core.keyboardNavigation) dwValue |= STYLE_FOCUS_VISIBLE;
-  if (OBJ_GetFlags(pobj) & OF_SELECTED) dwValue |= STYLE_SELECT;
+  uint32_t flags = OBJ_GetFlags(pobj);
+  if (flags & OF_SELECTED) dwValue |= STYLE_SELECT;
+  if (flags & OF_CHECKED) dwValue |= STYLE_CHECKED;
+  if (flags & OF_INDETERMINATE) dwValue |= STYLE_INDETERMINATE;
+  bool_t disabled = FALSE;
+  for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
+    if (OBJ_GetFlags(p) & OF_DISABLED) { disabled = TRUE; break; }
+  }
+  dwValue |= disabled ? STYLE_DISABLED : STYLE_ENABLED;
   if (axIsDarkTheme()) dwValue |= STYLE_DARK;
   return dwValue;
 }
 
 static bool_t
-_MatchSimpleSelector(struct Object *target,
+_MatchSimpleSelectorImpl(struct Object *target,
                      lpcString_t selector,
                      uint32_t objFlags,
                      struct style_class_selector** matchedClass)
@@ -422,6 +437,22 @@ _MatchSimpleSelector(struct Object *target,
   return TRUE;
 }
 
+static bool_t
+_MatchSimpleSelector(struct Object *target, lpcString_t selector,
+                     uint32_t objFlags, struct style_class_selector **matchedClass,
+                     bool_t discoverHover)
+{
+  bool_t matched = _MatchSimpleSelectorImpl(target, selector,
+                                            discoverHover ? ~STYLE_INVALID : objFlags,
+                                            matchedClass);
+  if (matched && discoverHover) {
+    lpcString_t colon = strchr(selector, ':');
+    if (colon && (OBJ_ParseStylePseudo(colon + 1) & STYLE_HOVER))
+      OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
+  }
+  return matched;
+}
+
 static int
 _ParseSelectorParts(lpcString_t selector,
                     struct style_selector_part* parts,
@@ -496,14 +527,16 @@ static bool_t
 _SelectorMatchesTarget(struct Object *target,
                        struct style_selector const *selector,
                        uint32_t objFlags,
-                       struct style_class_selector** matchedClass)
+                       struct style_class_selector** matchedClass,
+                       bool_t discoverHover)
 {
   if (!selector || selector->count == 0) return FALSE;
 
   if (!_MatchSimpleSelector(target,
                             selector->parts[selector->count - 1].selector,
                             objFlags,
-                            matchedClass)) {
+                            matchedClass,
+                            discoverHover)) {
     return FALSE;
   }
 
@@ -513,7 +546,7 @@ _SelectorMatchesTarget(struct Object *target,
       cursor = OBJ_GetParent(cursor);
       if (!cursor) return FALSE;
       uint32_t flags = OBJ_GetStyleFlags(cursor);
-      if (!_MatchSimpleSelector(cursor, selector->parts[i - 1].selector, flags, NULL)) {
+      if (!_MatchSimpleSelector(cursor, selector->parts[i - 1].selector, flags, NULL, discoverHover)) {
         return FALSE;
       }
       continue;
@@ -522,7 +555,7 @@ _SelectorMatchesTarget(struct Object *target,
     struct Object *ancestor = OBJ_GetParent(cursor);
     while (ancestor) {
       uint32_t flags = OBJ_GetStyleFlags(ancestor);
-      if (_MatchSimpleSelector(ancestor, selector->parts[i - 1].selector, flags, NULL)) {
+      if (_MatchSimpleSelector(ancestor, selector->parts[i - 1].selector, flags, NULL, discoverHover)) {
         break;
       }
       ancestor = OBJ_GetParent(ancestor);
@@ -550,7 +583,9 @@ _StyleRuleBaseMatches(struct Object *target,
     freeSelector = TRUE;
   }
 
-  bool_t matched = _SelectorMatchesTarget(target, selector, objFlags, matchedClass);
+  if (strstr(sr->ClassName, ":hover"))
+    _SelectorMatchesTarget(target, selector, objFlags, NULL, TRUE);
+  bool_t matched = _SelectorMatchesTarget(target, selector, objFlags, matchedClass, FALSE);
   if (freeSelector) OBJ_FreeStyleSelector(selector);
   return matched;
 }
@@ -581,9 +616,6 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
 
     if (ruleFlags) {
       PROP_SetFlag(hprop, PF_SPECIALIZED);
-    } else if (PROP_GetFlags(hprop) & PF_SPECIALIZED) {
-      // A state-specific rule (e.g., :hover) was already applied — skip the default
-      continue;
     }
 
     // Check if the rule property has a binding (e.g., from CSS unit like "1.5rem")
@@ -618,15 +650,30 @@ _EnumSheetRules(struct Object *sheetObj, struct Object *target,
                 uint32_t objFlags)
 {
   if (!sheetObj) return;
-  FOR_EACH_OBJECT(child, sheetObj) {
-    struct StyleRule* sr = GetStyleRule(child);
-    struct style_class_selector* cls = NULL;
-    if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls)) continue;
-    if (sr->flags & STYLE_HOVER) {
-      OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
+  bool_t stateClasses = FALSE;
+  struct StyleController *sc = GetStyleController(target);
+  if (sc) {
+    FOR_EACH_LIST(struct style_class_selector, cls, sc->classes)
+      if (cls->flags) { stateClasses = TRUE; break; }
+  }
+  // State rules override base rules within a sheet. Later sheets can override
+  // either, including an application's base skin over global dark/checked rules.
+  for (int statePass = 0; statePass < 2; statePass++) {
+    FOR_EACH_OBJECT(child, sheetObj) {
+      struct StyleRule* sr = GetStyleRule(child);
+      if (!sr) continue;
+      bool_t selectorState = sr->flags || (sr->ClassName && strchr(sr->ClassName, ':'));
+      if ((!statePass && selectorState) || (statePass && !selectorState && !stateClasses)) continue;
+      struct style_class_selector* cls = NULL;
+      if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls)) continue;
+      if (sr->flags & STYLE_HOVER)
+        OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
+      if ((objFlags & sr->flags) != sr->flags) continue;
+      uint32_t state = sr->flags | (cls ? cls->flags : 0);
+      if (selectorState) state |= STYLE_SELECT;
+      if (!!state != statePass) continue;
+      _ApplyStyleRule(target, child, state, cls);
     }
-    if ((objFlags & sr->flags) != sr->flags) continue;
-    _ApplyStyleRule(target, child, sr->flags, cls);
   }
 }
 
@@ -700,7 +747,7 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
 HANDLER(StyleController, StyleController, AddClass)
 {
   _AddClass(hObject, _ParseClass(pAddClass->ClassName));
-  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = FALSE);
+  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = TRUE);
   return TRUE;
 }
 
@@ -712,7 +759,7 @@ HANDLER(StyleController, StyleController, AddClasses)
       _AddClass(hObject, _ParseClass(s));
     }
   }
-  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = FALSE);
+  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = TRUE);
   return TRUE;
 }
 

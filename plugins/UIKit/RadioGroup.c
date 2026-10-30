@@ -2,9 +2,8 @@
 
 #include <UIKit/UIKit.h>
 
-/* Apply checked/unchecked state directly on a RadioButton child without
-   going through the property system (avoids a redundant PropertyChanged
-   round-trip while syncing the group). */
+/* Use the property system so bindings and CSS parts observe group changes.
+   RadioButton skips group resynchronization when SelectedValue already matches. */
 static void
 RadioGroup_SetButtonChecked(struct Object *object,
                              struct RadioButton *button,
@@ -13,14 +12,8 @@ RadioGroup_SetButtonChecked(struct Object *object,
   if (!button)
     return;
 
-  button->IsChecked = checked;
-
-  uint32_t flags = OBJ_GetFlags(object);
-  flags = checked ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
-  OBJ_SetFlags(object, flags);
-
-  OBJ_SetDirty(object);
-  _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
+  struct Property *property = OBJ_FindLongProperty(object, ID_RadioButton_IsChecked);
+  if (property) PROP_SetValue(property, &checked);
 }
 
 /* Walk RadioButton children and check the one whose Value matches

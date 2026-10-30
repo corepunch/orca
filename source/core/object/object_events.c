@@ -6,7 +6,7 @@ void CORE_SetKeyboardNavigation(bool_t enabled)
   if (core.keyboardNavigation == enabled) return;
   core.keyboardNavigation = enabled;
   if (core.focus)
-    _SendMessage(core.focus, StyleController, ThemeChanged, .recursive = FALSE);
+    _SendMessage(core.focus, StyleController, ThemeChanged, .recursive = TRUE);
 }
 
 void OBJ_SetFocus(struct Object *pobj)
@@ -17,11 +17,11 @@ void OBJ_SetFocus(struct Object *pobj)
   core.focus = pobj;
   if (previous) {
     axPostMessageW(previous, ID_Node_KillFocus, 0, pobj);
-    _SendMessage(previous, StyleController, ThemeChanged, .recursive = FALSE);
+    _SendMessage(previous, StyleController, ThemeChanged, .recursive = TRUE);
   }
   if (pobj) {
     axPostMessageW(pobj, ID_Node_SetFocus, 0, previous);
-    _SendMessage(pobj, StyleController, ThemeChanged, .recursive = FALSE);
+    _SendMessage(pobj, StyleController, ThemeChanged, .recursive = TRUE);
   }
 }
 
