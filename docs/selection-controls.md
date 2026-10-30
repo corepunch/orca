@@ -267,6 +267,7 @@ CheckBox, RadioButton, ToggleSwitch {
 }
 CheckBox .control-indicator {
     border: 2 solid #111111;
+    border-radius: 4;
     background-color: transparent;
 }
 CheckBox:checked .control-indicator { background-color: #0078d4; }
@@ -286,7 +287,7 @@ XML/class assignments can replace them. Type selectors remain stable. ORCA
 matches types exactly, so `SelectionControl` does not match its subclasses;
 list the three concrete types when styling all controls.
 
-The shared skin uses square Windows Phone checkboxes and circular radios,
+The shared skin uses checkboxes with 6-point outer corners and circular radios,
 plus a Windows-style pill switch. Its switch has the same 2-point outline as
 a radio, a 16-point thumb, and symmetric insets at both ends. Change the skin
 through CSS, including dark and disabled states, without changing native
@@ -314,6 +315,7 @@ row placement, rather than manually shifting the indicator and label.
 
 The default root minimum height is 44 points. The shared indicator has a
 24-point padding box and a 2-point border outside it, occupying 28 points.
+The checkbox declares a 4-point radius; its border makes the outer radius 6.
 The switch has a 52 × 24 padding box and the same border, occupying 56 × 28.
 Its thumb uses auto margins and equal end insets. These measurements follow
 ORCA's [box model](app/styling.md#layout-and-sizing), where borders add to

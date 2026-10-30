@@ -5,6 +5,7 @@ CheckBox .control-label, RadioButton .control-label, ToggleSwitch .control-label
 CheckBox .control-indicator, RadioButton .control-indicator, ToggleSwitch .control-indicator { width: 24; height: 24; border: 2 solid #111111; border-radius: 0; background-color: #00000000; color: #111111; }
 CheckBox:dark .control-indicator, RadioButton:dark .control-indicator, ToggleSwitch:dark .control-indicator { border-color: #ffffff; color: #ffffff; }
 CheckBox .control-mark, RadioButton .control-mark, ToggleSwitch .control-mark { opacity: 0; margin: auto; }
+CheckBox .control-indicator { border-radius: 4; }
 CheckBox .control-check { width: 24; height: 24; }
 CheckBox .control-indeterminate { width: 14; height: 4; margin: auto; background-color: #111111; opacity: 0; }
 CheckBox:dark .control-indeterminate { background-color: #ffffff; }

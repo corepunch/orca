@@ -67,9 +67,9 @@
 .chat-outline { border-radius: 4; }
 .chat-primary { border-radius: 6; }
 .chat-badge { border-radius: 6; }
-/* Windows Phone settings: a square indicator inside a full-row hit target. */
+/* Filled checkbox corners match the other 6-point controls. */
 .chat-checkbox { height: 48; font-size: 17; -orca-indicator-spacing: 14; }
-.chat-checkbox .control-indicator { width: 28; height: 28; border-width: 0; border-radius: 0; }
+.chat-checkbox .control-indicator { width: 28; height: 28; border-width: 0; border-radius: 6; }
 .chat-checkbox .control-check { width: 28; height: 28; -orca-source: url("Chat/assets/icons/check-bold.svg"); }
 .chat-light .chat-checkbox .control-indicator { background-color: #d9d9d9; color: #000000; }
 .chat-dark .chat-checkbox .control-indicator { background-color: #bfbfbf; color: #000000; }
