@@ -6,10 +6,18 @@ local auto = 0/0
 -- controls subtract it to keep every control on the same 48-point grid.
 local BORDER = 2
 
+-- Palette colours come from CSS roles (Styles/app.css) under the Screen's
+-- chat-light or chat-dark, so an appearance change restyles built views.
+-- `role` names one, such as "chat-muted"; a fixed colour stays a property.
+local function addClass(props, role)
+    props.class = props.class and props.class .. " " .. role or role
+end
+C.addClass = addClass
+
 function C.text(value, props)
     props = props or {}
     props.FontSize = props.FontSize or 15
-    props.Foreground = props.Foreground or colors.ink
+    if not props.Foreground and not props.class then props.class = "chat-ink" end
     props.IgnoreHitTest = true
     -- Ellipsis applies to a single line; text otherwise wraps by default.
     if props.TextOverflow == "Ellipsis" and not props.WordWrap then props.TextWrapping = "NoWrap" end
@@ -24,10 +32,13 @@ function C.stack(props, children)
     return node
 end
 
-function C.icon(name, size, color)
+-- `tint` is a role class, or a fixed colour such as "#ffffff".
+function C.icon(name, size, tint)
+    tint = tint or "chat-muted"
+    local fixed = tint:sub(1, 1) == "#"
     return ui.VectorView {
         Source = "Chat/assets/icons/" .. name .. ".svg",
-        Width = size or 20, Height = size or 20, Foreground = color or colors.muted,
+        Width = size or 20, Height = size or 20, Foreground = fixed and tint or nil, class = not fixed and tint or nil,
         MarginLeft = auto, MarginRight = auto, MarginTop = auto, MarginBottom = auto,
         IgnoreHitTest = true,
     }
@@ -40,33 +51,38 @@ function C.appIcon(size)
     }
 end
 
--- Windows Phone buttons: no background means a hyperlink, the accent fills a
--- primary command, and anything else is the outlined 2-pixel button.
+-- Windows Phone buttons: no background means a hyperlink, the "chat-primary"
+-- role fills a primary command, and anything else is the outlined 2-pixel
+-- button. A role class in `props.class` replaces the default colours.
 function C.button(label, action, props)
     props = props or {}
-    local link, primary = props.Background == nil, props.Background == colors.accent
+    local role = props.class
+    local primary = role == "chat-primary"
+    local link = props.Background == nil and not primary
     props.Height = props.Height or 48
     props.FontSize = props.FontSize or 15
     props.FontWeight = props.FontWeight or (link and "Normal" or "Bold")
-    props.Foreground = props.Foreground or (link and colors.accentText or primary and colors.onAccent or colors.ink)
     props.Background = props.Background or "#00000000"
     if not link and not primary and props.BorderWidth == nil then
-        props.BorderWidth, props.BorderColor = tostring(BORDER), colors.ink
+        props.BorderWidth = tostring(BORDER)
         props.Height = props.Height - 2 * BORDER
+        role = role or "chat-outline"
     end
     props.TextHorizontalAlignment = props.TextHorizontalAlignment or "Center"
     props.TextVerticalAlignment = "Center"
-    props.Click, props.class = action, "chat-action"
+    -- A fixed Foreground (as on photos) keeps its colour instead of a role.
+    role = role or not props.Foreground and (link and "chat-link" or "chat-ink")
+    props.Click, props.class = action, role and "chat-action " .. role or "chat-action"
     return ui.Button(props, label)
 end
 
-function C.iconButton(name, action, props)
+-- `tint` is the icon's role class or fixed colour (C.icon).
+function C.iconButton(name, action, props, tint)
     props = props or {}
-    local color = props.Foreground or colors.muted
     props.Width, props.Height = props.Width or 44, props.Height or 44
     props.BorderWidth = props.BorderWidth or "0"
     local button = C.button("", action, props)
-    button:addChild(C.icon(name, 20, color))
+    button:addChild(C.icon(name, 20, tint))
     return button
 end
 
@@ -76,10 +92,8 @@ function C.input(name, placeholder, props)
     props.Name, props.PlaceholderText = name, placeholder
     props.Height, props.FontSize = (props.Height or 48) - 2 * BORDER, props.FontSize or 15
     props.Padding = props.Padding or "12 0"
-    props.Background = props.Background or colors.textbox
-    props.Foreground, props.PlaceholderColor = colors.textboxInk, colors.placeholder
-    props.BorderWidth, props.BorderColor = tostring(BORDER), props.Background
-    props.class = "chat-input"
+    props.BorderWidth = tostring(BORDER)
+    props.class = "chat-input chat-field"
     return ui.Input(props)
 end
 
@@ -113,7 +127,7 @@ end
 function C.badge(value, props)
     props = props or {}
     props.Width, props.Height = props.Width or 24, props.Height or 24
-    props.Background, props.Foreground = props.Background or colors.accent, props.Foreground or colors.onAccent
+    addClass(props, "chat-badge")
     props.FontSize, props.FontWeight = 11, "Bold"
     props.TextHorizontalAlignment, props.TextVerticalAlignment = "Center", "Center"
     return C.text(tostring(value), props)
@@ -121,7 +135,7 @@ end
 
 -- Group header, as in a Windows Phone long list: lowercase in the accent.
 function C.eyebrow(value)
-    return C.text(value:lower(), { FontSize = 18, Foreground = colors.accentText, MarginTop = 8 })
+    return C.text(value:lower(), { FontSize = 18, class = "chat-accent-text", MarginTop = 8 })
 end
 
 -- A Windows Phone page: the application title and a large lowercase page
@@ -135,8 +149,8 @@ function C.page(header, content, props)
     props = props or {}
     local extend = props.ExtendBodyBehindHeader
     if extend == nil then extend = content.OverflowY == "Scroll" end
-    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true, Foreground = colors.ink,
-        ExtendBodyBehindHeader = extend, class = props.class,
+    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true,
+        ExtendBodyBehindHeader = extend, class = props.class and props.class .. " chat-ink" or "chat-ink",
         BackIcon = props.back and "Chat/assets/icons/arrow-left.svg" or "", BackRequested = props.back,
         HeaderClick = props.details }
     local item = ui.PivotItem { Header = header }
@@ -149,7 +163,7 @@ end
 -- { name, text, action } menu items. It docks to the bottom of Footer.layout as
 -- a frosted bar that extends under the home indicator; pages scroll under it.
 function C.appBar(buttons, menu)
-    local bar = ui.ApplicationBar { Name = "AppBar", class = "frosted bar-top", Foreground = colors.ink,
+    local bar = ui.ApplicationBar { Name = "AppBar", class = "frosted bar-top chat-ink",
         SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
     for _, edge in ipairs { "Left", "Right" } do
         bar:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)

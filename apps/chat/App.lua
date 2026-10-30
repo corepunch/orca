@@ -160,7 +160,7 @@ local App = Application:extend {
         if not status or query.mode ~= nil and not query.quiet then return end
         local err = query.error
         status:setTextContent(err and err.message or "")
-        status.Foreground = err and colors.error or colors.dim
+        status.StateClasses = err and "chat-error" or ""
         status.Visible = err ~= nil
     end,
 
@@ -196,7 +196,7 @@ local App = Application:extend {
         end
         local function load()
             while host:getFirstChild() do host:getFirstChild():removeFromParent() end
-            host:addChild(ui.ActivityIndicator { Name = "ContentLoading", Foreground = colors.muted })
+            host:addChild(ui.ActivityIndicator { Name = "ContentLoading", class = "chat-muted" })
             self:load(function()
                 if not current() then return end
                 local value, err = request()
@@ -209,7 +209,7 @@ local App = Application:extend {
                     if tab and self.currentRoute ~= route then self.status = status end
                 else
                     host:addChild(C.stack({ Spacing = 16, JustifyContent = "Center" }, {
-                        C.text(err and err.message or "Could not load this page.", { WordWrap = true, Foreground = colors.error }),
+                        C.text(err and err.message or "Could not load this page.", { WordWrap = true, class = "chat-error" }),
                         C.button("Retry", load, { Name = "RetryContent" }),
                     }))
                 end
@@ -267,8 +267,9 @@ local App = Application:extend {
         end
         local screen = ui.Screen {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
+            -- The palette class is a StateClass so updateAppearance can replace it.
             ClearColor = colors.background,
-            StyleSheet = "Chat/Styles/app.css", class = "chat-" .. colors.appearance,
+            StyleSheet = "Chat/Styles/app.css", StateClasses = "chat-" .. colors.appearance,
         }
         if content then screen:addChild(content) end
         return screen
@@ -306,7 +307,7 @@ local App = Application:extend {
     notice = function(self, text, error)
         if self.status then
             self.status:setTextContent(text or "")
-            self.status.Foreground = error and colors.error or colors.dim
+            self.status.StateClasses = error and "chat-error" or "chat-dim"
             self.status.Visible = text ~= nil and text ~= ""
         elseif error then
             self:reportError(text, "Request")
@@ -330,13 +331,13 @@ local App = Application:extend {
         local navigation = self.navigationEpoch
         if not self.client then
             return self:frame(C.page("connect", C.stack({ Spacing = 16 }, {
-                C.text(self.configurationError.message, { WordWrap = true, Foreground = colors.error }),
+                C.text(self.configurationError.message, { WordWrap = true, class = "chat-error" }),
                 C.text("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID.", { WordWrap = true }),
             })))
         end
         if self.logoutPending then
             return self:frame(C.page("sign out", C.stack({ Spacing = 16 }, {
-                C.text(self.logoutError or "Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, Foreground = colors.muted }),
+                C.text(self.logoutError or "Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, class = "chat-muted" }),
                 C.button("Retry sign out", function() self:signOut() end, { Name = "RetrySignOut" }),
             })))
         end
@@ -353,6 +354,7 @@ local App = Application:extend {
             }))
             local screen = self:frame(loading)
             screen.RespectSafeArea, screen.ClearColor = false, C.brandBackground
+            self.brandScreen = screen
             local epoch = self.sessionEpoch
             self:load(function()
                 if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return end
@@ -364,8 +366,9 @@ local App = Application:extend {
                 else
                     while screen:getFirstChild() do screen:getFirstChild():removeFromParent() end
                     screen.RespectSafeArea, screen.ClearColor = true, colors.background
+                    self.brandScreen = nil
                     screen:addChild(C.page("reconnect", C.stack({ Spacing = 16 }, {
-                        C.text("Couldn't restore your session. Please try again.", { WordWrap = true, Foreground = colors.muted }),
+                        C.text("Couldn't restore your session. Please try again.", { WordWrap = true, class = "chat-muted" }),
                         C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
                     })))
                 end
@@ -430,7 +433,7 @@ local App = Application:extend {
             for _, item in ipairs(items) do
                 sheet:addChild(C.button(item[2], function() overlay.Visible = false; item[3]() end, { Name = item[1],
                     Height = 52, FontSize = 20, TextHorizontalAlignment = "Left", Padding = "16 0",
-                    Foreground = item[4] or colors.ink, Background = colors.chrome, BorderWidth = "0" }))
+                    class = "chat-chrome " .. (item[4] or "chat-ink"), Background = colors.surface, BorderWidth = "0" }))
             end
             sheet.Height, overlay.Visible = #items * 52 + 16, #items > 0
         end
@@ -440,10 +443,10 @@ local App = Application:extend {
             -- Deleting removes the message for everyone, so confirm it first.
             items[#items + 1] = { "DeleteMessage", "delete", function()
                 show {
-                    { "ConfirmDeleteMessage", "delete for everyone", function() self:deleteMessage(message) end, colors.error },
+                    { "ConfirmDeleteMessage", "delete for everyone", function() self:deleteMessage(message) end, "chat-error" },
                     { "CancelDeleteMessage", "cancel", function() end },
                 }
-            end, colors.error }
+            end, "chat-error" }
         end
         show(items)
     end,
@@ -550,7 +553,7 @@ local App = Application:extend {
             item:attachPropertyProgram("PivotItem.Header", "{DataContext/" .. field .. "}", "OneWay", true)
         end
         local screen = self:frame()
-        if bar then Footer.layout(screen, pivot, bar, { Background = colors.background, Foreground = colors.ink })
+        if bar then Footer.layout(screen, pivot, bar, { class = "chat-background chat-ink" })
         else screen:addChild(pivot) end
         scope:activate()
         return screen
@@ -612,13 +615,13 @@ local App = Application:extend {
         Footer.layout(screen, C.page(room.name, content, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
             back = function() keepDraft(); self:goBack() end,
             details = function() keepDraft(); self:show("/details", "Forward") end }), footer,
-            { Background = colors.background, Foreground = colors.ink })
+            { class = "chat-background chat-ink" })
         -- A bottom sheet for one message's actions, dismissed by tapping outside.
         self.messageActions = ui.Node2D { Name = "MessageActionsMenu", Visible = false }
         self.messageActions:addChild(C.button("", function() self.messageActions.Visible = false end,
             { Name = "DismissMessageActions", Height = auto, BorderWidth = "0", Background = "#00000000" }))
         self.messageActionSheet = C.stack({ Name = "MessageActionSheet", Height = 120, MarginTop = auto,
-            Padding = "0 8", Background = colors.chrome })
+            Padding = "0 8", class = "chat-chrome" })
         self.messageActions:addChild(self.messageActionSheet)
         screen:addChild(self.messageActions)
         scope:activate()
@@ -667,10 +670,23 @@ local App = Application:extend {
     ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,
     ["/auth/code"] = function(self) return Identity.auth(self, "code") end,
 
+    -- Follow an OS appearance change. Views take palette colours from CSS roles
+    -- under the Screen's StateClasses, so replacing them restyles every built
+    -- view, retained tabs included, without rebuilding pages or losing drafts.
+    updateAppearance = function(self)
+        if not colors.refresh() then return false end
+        for _, screen in ipairs { self.screen, self.shell and self.shell.screen } do
+            screen.StateClasses = "chat-" .. colors.appearance
+            if screen ~= self.brandScreen then screen.ClearColor = colors.background end
+        end
+        return true
+    end,
+
     run = function(self)
         self:installErrorHandler()
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
+            if self:updateAppearance() then self.screen:post("Window.Paint", renderer.getSize()) end
             if message:is("Window.Closed") then
                 self:closePages()
                 if self.push then self.push:suspend() end

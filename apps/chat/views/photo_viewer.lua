@@ -28,7 +28,7 @@ function Viewer.open(app, attachment)
     end
     local bar = ui.Grid { Columns = "48px 1fr" }
     local close = C.iconButton("arrow-left", function() if current() then Viewer.close(app) end end,
-        { Name = "ClosePhotoViewer", Width = 48, Height = 48, Foreground = "#ffffff" })
+        { Name = "ClosePhotoViewer", Width = 48, Height = 48, Foreground = "#ffffff" }, "#ffffff")
     bar:addChild(close)
     bar:addChild(C.text("photo", { FontSize = 22, Foreground = "#ffffff", TextVerticalAlignment = "Center" }))
     root:addChild(bar)

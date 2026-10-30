@@ -1,5 +1,8 @@
-/* Palette roles for XML views. The Screen carries chat-light or chat-dark
-   (theme.lua, CHAT_APPEARANCE), so rules follow the app palette. */
+/* Palette roles for XML and Lua views. The Screen's StateClasses carry
+   chat-light or chat-dark (theme.lua, CHAT_APPEARANCE), so every rule follows
+   the app palette and an appearance change restyles views already built.
+   Rows reset their fill first so a later chat-soft can highlight them. */
+.chat-row { background-color: #00000000; }
 .chat-light .chat-background { background-color: #ffffff; }
 .chat-light .conversation { background-color: #ffffff; }
 .chat-light .chat-ink { color: #000000; }
@@ -16,6 +19,7 @@
 .chat-light .chat-chrome { background-color: #dddddd; }
 .chat-light .chat-error { color: #e51400; }
 .chat-light .chat-outline { background-color: #00000000; color: #000000; border-color: #000000; }
+.chat-light .chat-primary { background-color: #0078e7; color: #ffffff; }
 .chat-light .sent .bubble { background-color: #0078e7; }
 .chat-light .sent .bubble-tail { color: #0078e7; }
 .chat-light .sent .bubble-ink { color: #ffffff; }
@@ -28,8 +32,8 @@
 .chat-dark .conversation { background-color: #000000; }
 .chat-dark .chat-ink { color: #ffffff; }
 .chat-dark .chat-muted { color: #a6a6a6; }
-.chat-dark .chat-dim { color: #8a8a8a; }
-.chat-dark .room-preview { color: #8a8a8a; }
+.chat-dark .chat-dim { color: #999999; }
+.chat-dark .room-preview { color: #999999; }
 .chat-dark .unread .room-preview { color: #3d9eff; }
 .chat-dark .chat-link { color: #3d9eff; background-color: #00000000; }
 .chat-dark .chat-badge { background-color: #0084ff; color: #ffffff; }
@@ -40,6 +44,7 @@
 .chat-dark .chat-chrome { background-color: #1f1f1f; }
 .chat-dark .chat-error { color: #ff5c5c; }
 .chat-dark .chat-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
+.chat-dark .chat-primary { background-color: #0084ff; color: #ffffff; }
 .chat-dark .sent .bubble { background-color: #0084ff; }
 .chat-dark .sent .bubble-tail { color: #0084ff; }
 .chat-dark .sent .bubble-ink { color: #ffffff; }
@@ -47,7 +52,7 @@
 .chat-dark .received .bubble { background-color: #2e2e2e; }
 .chat-dark .received .bubble-tail { color: #2e2e2e; }
 .chat-dark .received .bubble-ink { color: #ffffff; }
-.chat-dark .received .bubble-meta { color: #8a8a8a; }
+.chat-dark .received .bubble-meta { color: #999999; }
 /* Message photo controls sit on the image, so they are dark in both palettes. */
 .message-actions { background-color: #00000000; color: #ffffff; }
 .message-actions.photo-actions { background-color: #00000099; }
@@ -59,20 +64,21 @@
 .tone3 { background-color: #a200ff; }
 .tone4 { background-color: #f09609; }
 .chat-action:hover { opacity: 0.78; }
-.chat-action:focus-visible { ring: 0 2 #0078e7; }
-.chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
-.conversation:hover { background-color: #f2f2f2; }
-.chat-action:focus-visible:dark { ring: 0 2 #3d9eff; }
-.chat-input:focus:dark { border-color: #0084ff; background-color: #ffffff; }
-.conversation:hover:dark { background-color: #1a1a1a; }
-/* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */
-.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
-.frosted:dark { background-color: #16161695; }
-.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
-.pivot-bar:dark { background-color: #16161695; border-color: #38383a; }
-.bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
-.bar-top:dark { border-color: #38383a; }
-.bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }
-.bar-bottom:dark { border-color: #38383a; }
+.chat-light .chat-action:focus-visible { ring: 0 2 #0078e7; }
+.chat-light .chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
+.chat-light .conversation:hover { background-color: #f2f2f2; }
+.chat-dark .chat-action:focus-visible { ring: 0 2 #3d9eff; }
+.chat-dark .chat-input:focus { border-color: #0084ff; background-color: #ffffff; }
+.chat-dark .conversation:hover { background-color: #1a1a1a; }
+/* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted.
+   Bars follow the app palette rather than the OS, like everything else. */
+.chat-light .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
+.chat-dark .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; }
+.chat-light .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
+.chat-dark .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; border-bottom-width: 0.5; border-color: #38383a; }
+.chat-light .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
+.chat-dark .bar-top { border-top-width: 0.5; border-color: #38383a; }
+.chat-light .bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }
+.chat-dark .bar-bottom { border-bottom-width: 0.5; border-color: #38383a; }
 /* A docked toolbar continues the header, so the hairline moves below it. */
 .toolbar-page .pivot-bar { border-bottom-width: 0; }

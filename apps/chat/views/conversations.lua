@@ -12,11 +12,11 @@ end
 local function row(name, leading, title, detail, action, props)
     props = props or {}
     props.Name, props.Height, props.BorderWidth, props.FontWeight = name, 64, "0", "Normal"
-    props.Background = props.Background or colors.surface
+    props.Background, props.class = colors.surface, "chat-row"
     local button = C.button("", action, props)
     local lines = C.stack({ JustifyContent = "Center", Spacing = 1, IgnoreHitTest = true },
         { C.text(title, { FontSize = 20, TextOverflow = "Ellipsis" }) })
-    if detail then lines:addChild(C.text(detail, { FontSize = 14, Foreground = colors.dim, TextOverflow = "Ellipsis" })) end
+    if detail then lines:addChild(C.text(detail, { FontSize = 14, class = "chat-dim", TextOverflow = "Ellipsis" })) end
     local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, Padding = "0 6", IgnoreHitTest = true }
     grid:addChild(leading); grid:addChild(lines)
     button:addChild(grid)
@@ -27,10 +27,10 @@ end
 -- avatar column and an accent label, so commands read apart from people.
 local function command(name, icon, label, action)
     local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
-        Background = colors.surface })
+        Background = colors.surface, class = "chat-row" })
     local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
-    grid:addChild(C.icon(icon, 26, colors.accentText))
-    grid:addChild(C.text(label, { FontSize = 20, Foreground = colors.accentText, TextVerticalAlignment = "Center",
+    grid:addChild(C.icon(icon, 26, "chat-accent-text"))
+    grid:addChild(C.text(label, { FontSize = 20, class = "chat-accent-text", TextVerticalAlignment = "Center",
         TextOverflow = "Ellipsis" }))
     button:addChild(grid)
     return button
@@ -56,12 +56,12 @@ function Conversations.newRoom(self)
     local searchBar = C.toolbar("Top", { searchRow }, { Name = "PeopleSearch", Padding = "20 0 20 12" })
     local name = C.input("RoomName", "Group name")
     local inviteCode = C.input("InviteCode", "Invitation code")
-    local status = C.text("", { Name = "NewChatStatus", WordWrap = true, FontSize = 14, Foreground = colors.muted })
+    local status = C.text("", { Name = "NewChatStatus", WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
     self.status, self.newStatus = status, status
     local function notice(message, isError)
         status:setTextContent(message or "")
         status.Visible = message ~= nil and message ~= ""
-        status.Foreground = isError and colors.error or colors.muted
+        status.StateClasses = isError and "chat-error" or "chat-muted"
     end
     local function active()
         return self.sessionEpoch == epoch and (not self.shell or
@@ -70,7 +70,7 @@ function Conversations.newRoom(self)
     local actions = C.stack({ Name = "NewChatActions", Spacing = 0 })
     local results = C.stack({ Name = "DiscoveryResults", Spacing = 0 })
     local people = C.stack({ Name = "Contacts", Spacing = 0 })
-    local selected = C.text("", { Name = "SelectedPeople", FontSize = 15, Foreground = colors.muted, WordWrap = true })
+    local selected = C.text("", { Name = "SelectedPeople", FontSize = 15, class = "chat-muted", WordWrap = true })
     local setup = C.stack({ Name = "ConversationSetup", Spacing = 14, MarginTop = 8 })
     local invitation = C.stack({ Name = "InvitationSetup", Spacing = 14, MarginTop = 8 })
     local personButtons = {}
@@ -86,7 +86,7 @@ function Conversations.newRoom(self)
     end
     local function discoveryLoading()
         local pending = ui.Node2D { Height = 80 }
-        pending:addChild(ui.ActivityIndicator { Name = "DiscoveryLoading", Foreground = colors.muted })
+        pending:addChild(ui.ActivityIndicator { Name = "DiscoveryLoading", class = "chat-muted" })
         results:addChild(pending)
         return pending
     end
@@ -96,7 +96,7 @@ function Conversations.newRoom(self)
         table.sort(names)
         selected:setTextContent(#names > 0 and table.concat(names, ", ") or "Select members or continue with an empty group.")
         for id, buttons in pairs(personButtons) do
-            for _, button in ipairs(buttons) do button.Background = self.newSelection[id] and colors.soft or colors.surface end
+            for _, button in ipairs(buttons) do button.StateClasses = self.newSelection[id] and "chat-soft" or "" end
         end
     end
     local function open(room)
@@ -119,7 +119,7 @@ function Conversations.newRoom(self)
                 self.newSelection[person.id] = not self.newSelection[person.id] and person or nil
                 updateSelection()
             end
-        end, { Background = self.newSelection[person.id] and colors.soft or colors.surface })
+        end, { StateClasses = self.newSelection[person.id] and "chat-soft" or "" })
         personButtons[person.id] = personButtons[person.id] or {}
         table.insert(personButtons[person.id], button)
         parent:addChild(button)
@@ -175,7 +175,7 @@ function Conversations.newRoom(self)
         clearResults(); notice("")
         setup.Visible, people.Visible, searchBar.Visible, results.Visible = true, false, false, false
         selected.Visible, findPeople.Visible, nextButton.Visible = false, false, false
-    end, { Name = "GroupNext", Background = colors.accent, Foreground = colors.onAccent })
+    end, { Name = "GroupNext", class = "chat-primary" })
     visibilityButton = C.button("Private channel · invitation required", function()
         if busy then return end
         visibility = visibility == "private" and "public" or "private"
@@ -194,7 +194,7 @@ function Conversations.newRoom(self)
         if not active() then return end
         if not room then notice(err.message, true); return end
         changeMode("direct"); open(room)
-    end, { Name = "CreateConversation", Background = colors.accent, Foreground = colors.onAccent })
+    end, { Name = "CreateConversation", class = "chat-primary" })
     setup:addChild(name); setup:addChild(visibilityButton); setup:addChild(createButton)
     invitation:addChild(inviteCode)
     invitation:addChild(C.button("Join", function()
@@ -205,9 +205,9 @@ function Conversations.newRoom(self)
         if not active() then return end
         if not room then notice(err.message, true); return end
         changeMode("direct"); open(room)
-    end, { Name = "JoinInvite", Background = colors.accent, Foreground = colors.onAccent }))
+    end, { Name = "JoinInvite", class = "chat-primary" }))
     local function searchCommand(name)
-        return { Name = name, Width = 48, Height = 48, Background = colors.textbox, Foreground = colors.textboxInk }
+        return { Name = name, Width = 48, Height = 48, Background = colors.surface, class = "chat-field" }
     end
     findPeople = C.iconButton("search", function()
         if busy or not active() or mode ~= "direct" and mode ~= "group" then return end
@@ -220,9 +220,9 @@ function Conversations.newRoom(self)
         if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
         if #found == 0 then results:addChild(C.text("No results. Ask them to set a public username in Profile, or enable Find me by email or phone for a verified login detail. You don't need to add a contact first.", {
-            Name = "NoPeopleResults", FontSize = 14, Foreground = colors.muted, WordWrap = true, Padding = "0 8" })) end
+            Name = "NoPeopleResults", FontSize = 14, class = "chat-muted", WordWrap = true, Padding = "0 8" })) end
         for _, person in ipairs(found) do addPerson(results, person, "FoundPerson") end
-    end, searchCommand("FindPeople"))
+    end, searchCommand("FindPeople"), "chat-field-ink")
     findChannels = C.iconButton("search", function()
         if busy or mode ~= "channels" or not active() then return end
         clearResults(); notice("")
@@ -232,7 +232,7 @@ function Conversations.newRoom(self)
         pending:removeFromParent()
         if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
-        if #found == 0 then results:addChild(C.text("No channels found.", { FontSize = 14, Foreground = colors.muted, Padding = "0 8" })) end
+        if #found == 0 then results:addChild(C.text("No channels found.", { FontSize = 14, class = "chat-muted", Padding = "0 8" })) end
         for _, channel in ipairs(found) do
             results:addChild(row("JoinChannel" .. channel.id, C.avatar(channel.name, 52, channel.id), channel.name, "Public channel", function()
                 if busy or not active() or generation ~= request or query.Text ~= searched then return end
@@ -244,7 +244,7 @@ function Conversations.newRoom(self)
                 open(room)
             end))
         end
-    end, searchCommand("FindChannels"))
+    end, searchCommand("FindChannels"), "chat-field-ink")
     searchRow:addChild(query); searchRow:addChild(findPeople); searchRow:addChild(findChannels)
     query.Submit = function()
         if mode == "channels" then findChannels:send("Node.LeftButtonUp") else findPeople:send("Node.LeftButtonUp") end
@@ -260,7 +260,7 @@ function Conversations.newRoom(self)
     local screen = self:frame(page, "New")
     local shell = self.shell
     local pending = ui.Node2D { Height = 80 }
-    pending:addChild(ui.ActivityIndicator { Name = "ContactsLoading", Foreground = colors.muted })
+    pending:addChild(ui.ActivityIndicator { Name = "ContactsLoading", class = "chat-muted" })
     people:addChild(pending)
     local function loadContacts()
         pending.Visible = true
@@ -277,7 +277,7 @@ function Conversations.newRoom(self)
                 people:addChild(retry)
             elseif #contacts == 0 then
                 people:addChild(C.text("No contacts yet. Search for someone by their exact username to start a chat.", {
-                    FontSize = 14, WordWrap = true, Foreground = colors.dim }))
+                    FontSize = 14, WordWrap = true, class = "chat-dim" }))
             else
                 table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)
                 local letter

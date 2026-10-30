@@ -1028,8 +1028,29 @@ assert(math.abs(historyRows.ActualY + afterEntry.ActualY + historyList.ContentOf
     "Prepending a real history page must preserve the visible message within one pixel")
 assert(historyMessages.items:count() == 60 and historyApp.composer.Text == "Keep this unsent draft")
 
--- Typing q must reach the focused control rather than close the application.
+-- An OS appearance change restyles views built before it, Lua and XML alike,
+-- without rebuilding retained tabs.
 local system = require "orca.system"
+local colors, getenv = require "Chat/theme", os.getenv
+local themeApp = mockApp()
+themeApp:show("/new")
+drain(themeApp)
+local newGroup, inboxSearch = themeApp.screen:findChild("KindGroup", true), themeApp.screen:findChild("Search", true)
+local label = newGroup:getFirstChild():getFirstChild():getNext()
+for _, selected in ipairs { colors.appearance == "dark" and "light" or "dark", colors.appearance == "dark" and "dark" or "light" } do
+    os.getenv = function(key) if key == "CHAT_APPEARANCE" then return selected end; return getenv(key) end
+    assert(themeApp:updateAppearance() and colors.appearance == selected)
+    assert(themeApp.screen:findChild("KindGroup", true) == newGroup, "Changing appearance must keep built pages")
+    local dark = selected == "dark"
+    assert(math.abs(label.ForegroundColor.R - (dark and 0x3d or 0x00) / 255) < 0.01, selected .. " restyles Lua-built text")
+    assert(math.abs(inboxSearch.BackgroundColor.R - (dark and 0xbf or 0xd9) / 255) < 0.01, selected .. " restyles retained XML tabs")
+    assert(math.abs(themeApp.screen:findChild("AppBar", true).BackgroundColor.R - (dark and 0x16 or 0xf7) / 255) < 0.01,
+        selected .. " bars follow the app palette")
+end
+os.getenv = getenv
+assert(not themeApp:updateAppearance(), "An unchanged appearance must not restyle")
+
+-- Typing q must reach the focused control rather than close the application.
 local savedGet, savedDispatch, savedTranslate = system.getMessage, system.dispatchMessage, system.translateMessage
 local count, routed = 0, false
 local events = {

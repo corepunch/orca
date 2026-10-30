@@ -2,7 +2,6 @@ local ui = require "orca.UIKit"
 local core = require "orca.core"
 local Footer = require "orca.UIKit.Footer"
 local C = require "Chat/views/components"
-local colors = C.colors
 
 local Shell = {}
 Shell.__index = Shell
@@ -31,7 +30,7 @@ function Shell.new(screen, navigate, menu)
     end
     self.bar = C.appBar(buttons, menu)
     for _, page in ipairs(pages) do self.items[page.key] = self.bar:findChild("AppBar" .. page.key) end
-    Footer.layout(screen, self.content, self.bar, { Background = colors.background, Foreground = colors.ink })
+    Footer.layout(screen, self.content, self.bar, { class = "chat-background chat-ink" })
     return self
 end
 
