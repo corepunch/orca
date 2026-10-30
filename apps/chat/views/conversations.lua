@@ -50,7 +50,7 @@ function Conversations.newRoom(self)
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
     self.newSelection = {}
-    local query = C.input("FindPerson", "Search username, email or phone")
+    local query = C.input("FindPerson", "Search username, email or phone", { class = "joined-left" })
     -- One pale field: the search command shares the input's fill, as in the inbox.
     local searchRow = ui.Grid { Columns = "1fr auto auto", Height = 48 }
     local searchBar = C.toolbar("Top", { searchRow }, { Name = "PeopleSearch", Padding = "20 0 20 12" })
@@ -207,7 +207,7 @@ function Conversations.newRoom(self)
         changeMode("direct"); open(room)
     end, { Name = "JoinInvite", class = "chat-primary" }))
     local function searchCommand(name)
-        return { Name = name, Width = 48, Height = 48, Background = colors.surface, class = "chat-field" }
+        return { Name = name, Width = 48, Height = 48, Background = colors.surface, class = "chat-field joined-right" }
     end
     findPeople = C.iconButton("search", function()
         if busy or not active() or mode ~= "direct" and mode ~= "group" then return end

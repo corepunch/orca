@@ -27,8 +27,8 @@
         <Node2D Name="SearchBar" SafeAreaEdge="Top" class="frosted bar-bottom" MarginLeft="-20" MarginRight="-20" Padding="20 0 20 12">
           <Grid Columns="1fr 44px" Height="48">
             <Input Name="Search" PlaceholderText="search" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
-                   class="chat-input chat-field" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
-            <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field">
+                   class="chat-input chat-field joined-left" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
+            <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field joined-right">
               <VectorView Source="Chat/assets/icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
                           MarginTop="auto" MarginBottom="auto" class="chat-field-ink" IgnoreHitTest="true"/>
             </Button>

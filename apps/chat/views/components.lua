@@ -93,7 +93,7 @@ function C.input(name, placeholder, props)
     props.Height, props.FontSize = (props.Height or 48) - 2 * BORDER, props.FontSize or 15
     props.Padding = props.Padding or "12 0"
     props.BorderWidth = tostring(BORDER)
-    props.class = "chat-input chat-field"
+    props.class = "chat-input chat-field" .. (props.class and " " .. props.class or "")
     return ui.Input(props)
 end
 
@@ -107,7 +107,7 @@ function C.avatar(name, size, key, app, userId)
     local last = name:match("%s+([%w])[%w]*$")
     if last then initials = initials .. last end
     size = size or 52
-    local tile = ui.Grid { Width = size, Height = size, Background = tone.background, IgnoreHitTest = true }
+    local tile = ui.Grid { Width = size, Height = size, Background = tone.background, class = "avatar", IgnoreHitTest = true }
     tile:addChild(C.text(initials:upper(), {
         FontSize = size < 40 and 12 or 18, Foreground = tone.foreground,
         TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
@@ -121,7 +121,7 @@ end
 function C.photo(tile, path)
     while tile:getFirstChild() do tile:getFirstChild():removeFromParent() end
     tile:addChild(ui.ImageView { Name = "AvatarPhoto", Src = path, Foreground = "#ffffff",
-        Stretch = "UniformToFill", IgnoreHitTest = true })
+        Stretch = "UniformToFill", class = "avatar", IgnoreHitTest = true })
 end
 
 function C.badge(value, props)

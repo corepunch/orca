@@ -95,7 +95,13 @@ function Provider.new(context)
         sectionGap = function(values) return values.HasPhotos and 0 or 2 end,
         photoInset = function(values) return values.HasPhotos and 10 or 0 end,
         photoVerticalInset = function(values) return values.HasPhotos and 6 or 0 end,
-        bubbleTone = function(values) return values.Mine and "sent" or "received" end,
+        -- A photo rounds the corners it shares with its bubble: not under a
+        -- sender name or above a caption.
+        bubbleTone = function(values)
+            return (values.Mine and "sent" or "received")
+                .. (values.HasPhotos and not values.ShowSender and " photo-top" or "")
+                .. (values.HasPhotos and not values.HasBody and " photo-bottom" or "")
+        end,
         canAct = function(values) return values.CanEdit or values.CanDelete end,
         actionsSize = function(values) return values.HasPhotos and 44 or AUTO end,
         actionsMargin = function(values) return values.HasPhotos and AUTO or 0 end,

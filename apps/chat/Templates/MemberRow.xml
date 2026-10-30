@@ -2,10 +2,10 @@
      role changes; owners and admins can remove members. -->
 <StackView Spacing="6" Padding="0 6" JustifyContent="Start">
   <Grid Columns="52px 1fr" Spacing="12">
-    <Grid Name="Avatar" Width="52" Height="52" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+    <Grid Name="Avatar" Width="52" Height="52" class="avatar" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
       <TextBlock Text="{Binding DataContext/Initials}" FontSize="18" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" class="avatar" Src="{Binding DataContext/AvatarPath}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView Spacing="2" JustifyContent="Center">
