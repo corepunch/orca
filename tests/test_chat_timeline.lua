@@ -181,9 +181,9 @@ for _, kind in ipairs { "direct", "group" } do
         assert(not shown(f.inside("album", "Caption")) and tails(entry) == 0, "Photo-only rows have neither footer nor tail")
         assert(shown(f.inside("album", "SenderSection")) == (kind == "group" and sender == "other"))
         -- Photos round the corners they share with the bubble, not under a sender name.
-        local topRadius = (kind == "group" and sender == "other") and 0 or 6
-        assert(bubble.BorderRadius.TopLeftRadius == 6 and first.BorderRadius.TopLeftRadius == topRadius
-            and first.BorderRadius.BottomRightRadius == 6, "Photo corners follow the bubble")
+        local topRadius = (kind == "group" and sender == "other") and 0 or 4
+        assert(bubble.BorderRadius.TopLeftRadius == 4 and first.BorderRadius.TopLeftRadius == topRadius
+            and first.BorderRadius.BottomRightRadius == 4, "Photo corners follow the bubble")
         local loading = content:findChild("PhotoLoading")
         assert(shown(loading) and loading.IgnoreHitTest and loading.Width == 32 and loading.Height == 32
             and loading.Source == "Chat/assets/icons/refresh-cw.svg", "Pending photos show a loading icon")

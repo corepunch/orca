@@ -57,8 +57,8 @@
 .message-actions { background-color: #00000000; color: #ffffff; }
 .message-actions.photo-actions { background-color: #00000099; }
 .photo-time { background-color: #00000099; color: #ffffff; }
-/* Small Fluent-style rounding: every visible control and avatar corner is 4
-   points, speech bubbles and their photos 6. ORCA draws a border outside the
+/* Small Fluent-style rounding: every visible corner is 4 points, on
+   controls, avatars, speech bubbles and their photos. ORCA draws a border outside the
    box and its outer edge adds the border width to the radius, so the
    2-point-bordered fields and outlined buttons take 2 to show the same 4 as
    filled buttons. A pair joined into one field rounds only its outer
@@ -70,10 +70,10 @@
 .avatar { border-radius: 4; }
 .joined-left { border-top-left-radius: 2; border-bottom-left-radius: 2; border-top-right-radius: 0; border-bottom-right-radius: 0; }
 .joined-right { border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 4; border-bottom-right-radius: 4; }
-.bubble { border-radius: 6; }
+.bubble { border-radius: 4; }
 .message-photo { border-radius: 0; }
-.photo-top .message-photo { border-top-left-radius: 6; border-top-right-radius: 6; }
-.photo-bottom .message-photo { border-bottom-left-radius: 6; border-bottom-right-radius: 6; }
+.photo-top .message-photo { border-top-left-radius: 4; border-top-right-radius: 4; }
+.photo-bottom .message-photo { border-bottom-left-radius: 4; border-bottom-right-radius: 4; }
 .photo-time { border-radius: 4; }
 .photo-actions { border-radius: 4; }
 /* Avatar tiles share one set of colours in both palettes. */

@@ -83,9 +83,9 @@ claiming historical fidelity.
   opens an options page of command rows: phone number, email code, email and
   password, create an account. The code step keeps resend and change-number.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after
-  Microsoft Teams' sign-in): every visible corner of text fields, outlined
-  and filled buttons, badges, avatars and their photos is 4 points; speech
-  bubbles and message photos are 6. Borders draw outside the box and widen
+  Microsoft Teams' sign-in): every visible corner is 4 points, on text
+  fields, outlined and filled buttons, badges, avatars and their photos,
+  speech bubbles and message photos. Borders draw outside the box and widen
   the outer radius, so 2-point-bordered fields and outlined buttons declare 2. A field and button joined into one bar round only their
   outer corners. A photo rounds only the corners it shares with its bubble,
   so it meets a sender name or caption with a straight edge. Links, list
