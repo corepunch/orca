@@ -57,26 +57,26 @@
 .message-actions { background-color: #00000000; color: #ffffff; }
 .message-actions.photo-actions { background-color: #00000099; }
 .photo-time { background-color: #00000099; color: #ffffff; }
-/* Small Fluent-style rounding: every visible corner is 4 points, on
+/* Small Fluent-style rounding: every visible corner is 6 points, on
    controls, avatars, speech bubbles and their photos. ORCA draws a border outside the
    box and its outer edge adds the border width to the radius, so the
-   2-point-bordered fields and outlined buttons take 2 to show the same 4 as
+   2-point-bordered fields and outlined buttons take 4 to show the same 6 as
    filled buttons. A pair joined into one field rounds only its outer
    corners; a photo rounds the corners it shares with its bubble. */
-.chat-input { border-radius: 2; }
-.chat-outline { border-radius: 2; }
-.chat-check { border-radius: 2; }
-.chat-primary { border-radius: 4; }
-.chat-badge { border-radius: 4; }
-.avatar { border-radius: 4; }
-.joined-left { border-top-left-radius: 2; border-bottom-left-radius: 2; border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.joined-right { border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 4; border-bottom-right-radius: 4; }
-.bubble { border-radius: 4; }
+.chat-input { border-radius: 4; }
+.chat-outline { border-radius: 4; }
+.chat-primary { border-radius: 6; }
+.chat-badge { border-radius: 6; }
+.chat-check { border-radius: 6; }
+.avatar { border-radius: 6; }
+.joined-left { border-top-left-radius: 4; border-bottom-left-radius: 4; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.joined-right { border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 6; border-bottom-right-radius: 6; }
+.bubble { border-radius: 6; }
 .message-photo { border-radius: 0; }
-.photo-top .message-photo { border-top-left-radius: 4; border-top-right-radius: 4; }
-.photo-bottom .message-photo { border-bottom-left-radius: 4; border-bottom-right-radius: 4; }
-.photo-time { border-radius: 4; }
-.photo-actions { border-radius: 4; }
+.photo-top .message-photo { border-top-left-radius: 6; border-top-right-radius: 6; }
+.photo-bottom .message-photo { border-bottom-left-radius: 6; border-bottom-right-radius: 6; }
+.photo-time { border-radius: 6; }
+.photo-actions { border-radius: 6; }
 /* Avatar tiles share one set of colours in both palettes. */
 .avatar-initials { color: #ffffff; }
 .tone1 { background-color: #0084ff; }
