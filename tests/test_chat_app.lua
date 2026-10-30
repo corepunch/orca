@@ -66,7 +66,9 @@ local function mockApp(media, client)
     app:show("/")
     local login = app.screen
     assert(not app.client:getSession() and login:findChild("RequestCode", true), "Mock mode must start at real login")
-    login:findChild("UsePassword", true):send("Node.LeftButtonUp")
+    login:findChild("OtherOptions", true):send("Node.LeftButtonUp")
+    drain(app)
+    app.screen:findChild("UsePassword", true):send("Node.LeftButtonUp")
     drain(app)
     login = app.screen
     login:findChild("Email", true).Text = "demo@example.invalid"
@@ -598,7 +600,9 @@ profile:findChild("SignOut", true):send("Node.LeftButtonUp")
 drain(app)
 local auth = app.screen
 assert(not app.client:getSession() and app.shell == nil, "Signing out must discard protected views")
-auth:findChild("UsePassword", true):send("Node.LeftButtonUp")
+auth:findChild("OtherOptions", true):send("Node.LeftButtonUp")
+drain(app)
+app.screen:findChild("UsePassword", true):send("Node.LeftButtonUp")
 drain(app)
 auth = app.screen
 assert(auth:findChild("Email", true) and auth:findChild("Password", true))
@@ -631,6 +635,13 @@ local logo = phonePage:findChild("AuthLogo", true)
 assert(math.abs(wordmark.ActualY + wordmark.ActualHeight / 2 - logo.ActualY - logo.ActualHeight / 2) < 0.5,
     "Wordmark and logo must share the same vertical center")
 phonePage:findChild("Identifier", true).Text = "+4915110000001"
+-- Each form offers one way out, as after Microsoft's "Other sign-in options".
+for _, name in ipairs { "UsePassword", "CreateAccount", "UsePhone" } do
+    assert(not phonePage:findChild(name, true), "Alternatives live on the options page, not the phone form")
+end
+click(authApp, "OtherOptions")
+local options = authApp.screen
+assert(options:findChild("OptionsPage", true) and options:findChild("UseEmailCode", true), "Options list every way in")
 click(authApp, "UsePassword")
 assert(authApp.screen ~= phonePage and authApp.screen:findChild("EmailPage", true),
     "Use email must navigate to a separate page")
@@ -638,18 +649,20 @@ assert(not authApp.screen:findChild("Identifier", true) and not authApp.screen:f
     "Email sign-in must not append phone or registration fields")
 authApp.screen:findChild("Email", true).Text = "demo@example.invalid"
 authApp.screen:findChild("Password", true).Text = "do not retain this"
-click(authApp, "CreateAccount")
+assert(not authApp.screen:findChild("SendEmailCode", true) and not authApp.screen:findChild("CreateAccount", true),
+    "The password form keeps one primary action and one link")
+click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 assert(authApp.screen:findChild("SignUpPage", true) and not authApp.screen:findChild("SignIn", true),
     "Create account needs its own page and primary action")
 assert(authApp.screen:findChild("Email", true).Text == "demo@example.invalid")
 assert(authApp.screen:findChild("Email", true).Type == "Email", "Signup must also request the email keyboard")
 assert(authApp.screen:findChild("Password", true).Text == "", "Passwords must not carry between pages")
 authApp.screen:findChild("DisplayName", true).Text = "New friend"
-click(authApp, "UsePhone")
+click(authApp, "OtherOptions"); click(authApp, "UsePhone")
 assert(authApp.screen:findChild("Identifier", true).Text == "+4915110000001", "Returning to phone must preserve the number")
-click(authApp, "CreateAccount")
+click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 assert(authApp.screen:findChild("DisplayName", true).Text == "New friend", "Returning to signup must preserve the name")
-click(authApp, "BackToSignIn")
+click(authApp, "OtherOptions"); click(authApp, "UsePassword")
 local emailPage = authApp.screen
 local signIn = emailPage:findChild("SignIn", true)
 for _, size in ipairs({ {320, 568}, {390, 844}, {390, 460}, {834, 1100}, {390, 460} }) do
@@ -672,7 +685,7 @@ emailPage:findChild("Password", true).Text = "incorrect"
 click(authApp, "SignIn")
 assert(authApp.screen == emailPage and signIn.Visible and signIn:getTextContent() == "Sign in")
 assert(emailPage:findChild("Email", true).Text == "demo@example.invalid")
-click(authApp, "CreateAccount")
+click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 authApp.screen:findChild("Email", true).Text = "signup_ui@example.invalid"
 authApp.screen:findChild("Password", true).Text = "password123"
 click(authApp, "SignUp")
@@ -737,7 +750,7 @@ local channelId = otpApp.room.id
 local channelInvite = assert(otpApp.client:createInvite(channelId)).code
 otpApp:show("/profile")
 click(otpApp, "SignOut")
-click(otpApp, "UsePassword")
+click(otpApp, "OtherOptions"); click(otpApp, "UsePassword")
 otpApp.screen:findChild("Email", true).Text = "alex@example.invalid"
 otpApp.screen:findChild("Password", true).Text = "password123"
 click(otpApp, "SignIn")
@@ -775,7 +788,7 @@ click(otpApp, "CreateConversation")
 assert(otpApp.room.visibility == "public", "The public channel option must reach the API")
 local publicChannelId = otpApp.room.id
 otpApp:show("/profile"); click(otpApp, "SignOut")
-click(otpApp, "UsePassword")
+click(otpApp, "OtherOptions"); click(otpApp, "UseEmailCode")
 otpApp.screen:findChild("Email", true).Text = "new_reader@example.invalid"
 click(otpApp, "SendEmailCode")
 otpApp.screen:findChild("VerificationCode", true).Text = "123456"

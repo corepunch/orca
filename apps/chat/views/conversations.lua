@@ -23,19 +23,6 @@ local function row(name, leading, title, detail, action, props)
     return button
 end
 
--- A command row after Telegram's New Message: an accent outline icon in the
--- avatar column and an accent label, so commands read apart from people.
-local function command(name, icon, label, action)
-    local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
-        Background = colors.surface, class = "chat-row" })
-    local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
-    grid:addChild(C.icon(icon, 26, "chat-accent-text"))
-    grid:addChild(C.text(label, { FontSize = 20, class = "chat-accent-text", TextVerticalAlignment = "Center",
-        TextOverflow = "Ellipsis" }))
-    button:addChild(grid)
-    return button
-end
-
 -- The letter a contact is filed under; names without a letter go under "#".
 local function initial(person)
     local first = publicName(person):match(utf8.charpattern) or "#"
@@ -168,7 +155,7 @@ function Conversations.newRoom(self)
         { "ShowInvite", "ticket", "Join with invitation", "invite" },
     } do
         local target = item[4]
-        actions:addChild(command(item[1], item[2], item[3], function() changeMode(target) end))
+        actions:addChild(C.command(item[1], item[2], item[3], function() changeMode(target) end))
     end
     nextButton = C.button("Next", function()
         if mode ~= "group" or busy then return end
