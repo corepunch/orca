@@ -9,8 +9,19 @@ filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
 local App = require "Chat/App"
 local Chat = require "api.chat"
+-- Keep native painting out of the deterministic request scheduler.
+local function flushQueue()
+    while true do
+        local message = orca.system.peekMessage()
+        if not message then return end
+        if not message:is("Window.Paint") then orca.system.dispatchMessage(nil, message) end
+    end
+end
 local savedAsync, pending = orca.async, {}
-orca.async = function(fn) pending[#pending + 1] = coroutine.create(fn) end
+orca.async = function(fn, ...)
+    local args = table.pack(...)
+    pending[#pending + 1] = coroutine.create(function() return fn(table.unpack(args, 1, args.n)) end)
+end
 local function resume(co)
     local ok, value = coroutine.resume(co)
     assert(ok, value)
@@ -27,11 +38,13 @@ local function programs(screen)
     core.runAllPrograms(screen)
 end
 local function settle()
+    flushQueue()
     while #pending > 0 do
         local co = nextRequest()
         assert(coroutine.status(co) == "dead", "Unexpected pending request")
+        flushQueue()
     end
-    core.flushQueue()
+    flushQueue()
 end
 local client = Chat.mock()
 assert(client:signIn("demo@example.invalid", "password123"))
@@ -63,7 +76,7 @@ assert(math.abs(indicator.ActualX + indicator.ActualWidth / 2 - area.ActualWidth
 local inbox = nextRequest()
 assert(coroutine.status(inbox) == "suspended")
 shell:findChild("Search", true).Text = "Alex"
-core.flushQueue()
+flushQueue()
 assert(app.scope:member("Matching"):get("Search") == "Alex", "Search remains editable while inbox loads")
 app:show("/new")
 assert(app.screen == shell and app.shell.active == "New" and shell:findChild("CreateConversation", true),
@@ -79,7 +92,7 @@ programs(shell)
 assert(app.shell.active == "New" and not shell:findChild("InboxLoadingAll", true).Visible and app.contactsById.alex,
     "A late inbox response must update its retained list without changing the active tab")
 shell:findChild("Search", true).Text = ""
-core.flushQueue()
+flushQueue()
 app.models.Rooms.select, app.models.Contacts.select = roomsSelect, contactsSelect
 
 local getProfile = client.getProfile
@@ -90,6 +103,7 @@ local profile = nextRequest()
 app:show("/new")
 local status = app.status
 resume(profile)
+settle()
 assert(app.shell.active == "New" and app.status == status and shell:findChild("SaveProfile", true),
     "Profile completion must retain the user's current tab and status")
 client.getProfile = getProfile
@@ -99,7 +113,7 @@ local messagesPage = app.models.Messages.page
 app.models.Messages.page = function(self, ...) coroutine.yield("messages"); return messagesPage(self, ...) end
 app:openRoom(room)
 -- The page in view turns out; its completion handler then shows the thread.
-core.flushQueue()
+flushQueue()
 nextRequest()
 local thread = app.screen
 assert(thread:findChild("MessagesLoading", true).Visible and thread:findChild("ThreadPage", true).BackIcon ~= ""
@@ -138,7 +152,7 @@ settle()
 assert(other.screen:findChild("RetryContent", true) and not other.screen:findChild("ContentLoading", true))
 client.getProfile = get
 other.screen:findChild("RetryContent", true):send("Node.LeftButtonUp")
-core.flushQueue()
+flushQueue()
 while true do
     local message = orca.system.peekMessage()
     if not message then break end
@@ -190,7 +204,7 @@ assert(not failed.screen:findChild("Roomalex", true) and failed.screen:findChild
     and not failed.screen:findChild("InboxLoadingAll", true).Visible, "A failed first load shows retry, not empty")
 failed.models.Rooms.select = selectRooms
 failed.screen:findChild("RetryInboxAll", true):send("Node.LeftButtonUp")
-core.flushQueue()
+flushQueue()
 settle()
 programs(failed.screen)
 assert(failed.screen:findChild("Roomalex", true) and not failed.screen:findChild("InboxErrorAll", true).Visible,

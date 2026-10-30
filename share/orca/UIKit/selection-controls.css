@@ -15,11 +15,11 @@ RadioButton .control-indicator { border-radius: 12; }
 RadioButton .control-mark { width: 12; height: 12; border-radius: 6; background-color: #111111; }
 RadioButton:dark .control-mark { background-color: #ffffff; }
 RadioButton:checked .control-mark { opacity: 1; }
-ToggleSwitch .control-track { width: 54; height: 20; }
-ToggleSwitch .control-thumb { width: 12; height: 28; margin-top: auto; margin-bottom: auto; margin-left: 0; margin-right: auto; background-color: #111111; }
+ToggleSwitch .control-track { width: 52; height: 24; padding: 2; border-width: 2; border-radius: 12; }
+ToggleSwitch .control-thumb { width: 16; height: 16; border-radius: 8; margin-top: auto; margin-bottom: auto; margin-left: 2; margin-right: auto; background-color: #111111; }
 ToggleSwitch:dark .control-thumb { background-color: #ffffff; }
-ToggleSwitch:checked .control-track { background-color: #0078d4; }
-ToggleSwitch:checked .control-thumb { margin-left: auto; margin-right: 0; }
+ToggleSwitch:checked .control-track { background-color: #0078d4; border-color: #0078d4; }
+ToggleSwitch:checked .control-thumb { margin-left: auto; margin-right: 2; background-color: #ffffff; }
 CheckBox:hover .control-indicator, RadioButton:hover .control-indicator, ToggleSwitch:hover .control-indicator { border-color: #0078d4; }
 CheckBox:active .control-indicator, RadioButton:active .control-indicator, ToggleSwitch:active .control-indicator { background-color: #0078d4; color: #ffffff; }
 CheckBox:focus-visible, RadioButton:focus-visible, ToggleSwitch:focus-visible { ring: 0 2 #0078d4; }
