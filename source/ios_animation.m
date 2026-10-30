@@ -46,6 +46,23 @@ static uint32_t Animation_NativeTime(void *context)
   return (uint32_t)(uint64_t)(animation_last * 1000);
 }
 
+// Backgrounding removes a layer's animations unless they opt out, which would
+// freeze ORCA time: transitions never finish and inertia stops.
+static void Animation_InstallClock(OrcaAnimationClockLayer *layer)
+{
+  if ([layer animationForKey:@"timeline"]) return;
+  CABasicAnimation *clock = [CABasicAnimation animationWithKeyPath:@"timeline"];
+  clock.fromValue = @0;
+  clock.toValue = @(ANIMATION_CLOCK_PERIOD);
+  clock.duration = ANIMATION_CLOCK_PERIOD;
+  clock.beginTime = animation_begin;
+  clock.repeatCount = HUGE_VALF;
+  clock.removedOnCompletion = NO;
+  clock.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
+  if (@available(iOS 15.0, *)) clock.preferredFrameRateRange = CAFrameRateRangeMake(80, 120, 120);
+  [layer addAnimation:clock forKey:@"timeline"];
+}
+
 void ORCA_IOS_SyncAnimationClock(void)
 {
   if (!ios_view || animation_layer.superlayer == ios_view.layer) return;
@@ -59,15 +76,7 @@ void ORCA_IOS_SyncAnimationClock(void)
   [CATransaction setDisableActions:YES];
   animation_layer.timeline = ANIMATION_CLOCK_PERIOD;
   [ios_view.layer addSublayer:animation_layer];
-  CABasicAnimation *clock = [CABasicAnimation animationWithKeyPath:@"timeline"];
-  clock.fromValue = @0;
-  clock.toValue = @(ANIMATION_CLOCK_PERIOD);
-  clock.duration = ANIMATION_CLOCK_PERIOD;
-  clock.beginTime = animation_begin;
-  clock.repeatCount = HUGE_VALF;
-  clock.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear];
-  if (@available(iOS 15.0, *)) clock.preferredFrameRateRange = CAFrameRateRangeMake(80, 120, 120);
-  [animation_layer addAnimation:clock forKey:@"timeline"];
+  Animation_InstallClock(animation_layer);
   [CATransaction commit];
   ANIM_SetClock(Animation_NativeTime, animation_layer);
 }
@@ -85,7 +94,9 @@ void ORCA_IOS_ClearAnimationClock(void)
 void ORCA_IOS_PauseAnimationClock(bool_t paused)
 {
   ANIM_SetPaused(paused);
-  if (!animation_layer || (animation_layer.speed == 0) == !!paused) return;
+  if (!animation_layer) return;
+  if (!paused) Animation_InstallClock(animation_layer);
+  if ((animation_layer.speed == 0) == !!paused) return;
   if (paused) {
     CFTimeInterval time = [animation_layer convertTime:CACurrentMediaTime() fromLayer:nil];
     animation_layer.speed = 0;
