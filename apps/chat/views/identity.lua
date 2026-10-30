@@ -189,13 +189,10 @@ local function profileBody(self, profile)
         status.StateClasses = isError and "chat-error" or "chat-muted"
     end
     local phoneDiscovery, emailDiscovery = profile.discoverable_phone == true, profile.discoverable_email == true
-    local phoneToggle, emailToggle
-    phoneToggle = C.button("Find me by phone: " .. (phoneDiscovery and "On" or "Off"), function()
-        phoneDiscovery = not phoneDiscovery; phoneToggle:setTextContent("Find me by phone: " .. (phoneDiscovery and "On" or "Off"))
-    end, { Name = "DiscoverablePhone", Background = colors.surface })
-    emailToggle = C.button("Find me by email: " .. (emailDiscovery and "On" or "Off"), function()
-        emailDiscovery = not emailDiscovery; emailToggle:setTextContent("Find me by email: " .. (emailDiscovery and "On" or "Off"))
-    end, { Name = "DiscoverableEmail", Background = colors.surface })
+    local phoneToggle = C.checkbox("DiscoverablePhone", "Find me by phone", phoneDiscovery,
+        function(checked) phoneDiscovery = checked end)
+    local emailToggle = C.checkbox("DiscoverableEmail", "Find me by email", emailDiscovery,
+        function(checked) emailDiscovery = checked end)
     local verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
         code,
         C.button("Verify & link", function()
