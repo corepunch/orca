@@ -351,6 +351,7 @@ typedef struct {
 
   /* outputs */
   struct AXsize  size;         /* final pixel size (scaled) */
+  uint32_t       lastLineWidth;/* end of the last line (scaled) */
   struct rect    cursor;       /* cursor rect in unscaled pixel space */
   bool_t         cursorSet;    /* TRUE once cursor rect has been written */
 
@@ -555,6 +556,7 @@ T_LayoutText(LayoutCtx *ctx)
 
     measuredSize.width  = MAX(measuredSize.width, (uint32_t)ls.lineX);
     measuredSize.height = (uint32_t)ls.lineY + (uint32_t)ls.lineHeight;
+    ctx->lastLineWidth  = (uint32_t)ls.lineX;
     leading = leading == INT_MAX ? 0 : MAX(0, leading);
     measuredSize.height -= MIN(measuredSize.height, (uint32_t)leading);
     ctx->cursor.y -= (int)(leading / scale);
@@ -563,6 +565,7 @@ T_LayoutText(LayoutCtx *ctx)
     if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0)
       measuredSize.width = MIN(measuredSize.width, (int)(text->availableWidth * scale));
 
+    ctx->lastLineWidth = MIN(ctx->lastLineWidth, measuredSize.width);
     ctx->size = measuredSize;
     s_text_measure_count++;
   }
@@ -767,7 +770,7 @@ T_LayoutText(LayoutCtx *ctx)
  * ═══════════════════════════════════════════════════════════════ */
 
 static struct AXsize
-T_GetSize(struct TextBlockText const *text, struct rect *rcursor)
+T_GetSize(struct TextBlockText const *text, struct rect *rcursor, uint32_t *lastLineWidth)
 {
   LayoutCtx ctx = { .text = text, .bRender = FALSE };
   if (FAILED(T_LayoutText(&ctx)))
@@ -775,6 +778,7 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor)
 
   if (rcursor && ctx.cursorSet)
     *rcursor = ctx.cursor;
+  *lastLineWidth = ctx.lastLineWidth;
 
   return ctx.size;
 }
@@ -923,9 +927,11 @@ TextBlockText_GetInfo(struct TextBlockText *pViewText,
     return NOERROR;
   }
 
-  struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
+  uint32_t lastLineWidth = 0;
+  struct AXsize textSize = T_GetSize(pViewText, &info->cursor, &lastLineWidth);
   info->txWidth  = T_LogicalPixels(textSize.width, pViewText->scale);
   info->txHeight = T_LogicalPixels(textSize.height, pViewText->scale);
+  info->txLastLineWidth = T_LogicalPixels(lastLineWidth, pViewText->scale);
   /* cursor rect is already in unscaled logical pixels from T_LayoutText */
   TextBlockText_GetInsets(pViewText, &info->txInsets);
 

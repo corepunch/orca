@@ -28,6 +28,26 @@ For checkboxes, radio groups and on/off switches, see
 [Selection controls](selection-controls.md): control choice, XML/Lua usage,
 bindings, events, keyboard behavior, CSS parts and compatibility.
 
+## Text with a trailing footer
+
+`TextFooterPanel` puts a footer, such as a message time, at the end of its
+text's last line when it fits within the available width, and on a row of
+its own at the bottom-right when it does not. Its first layoutable child is
+the text, its last the footer; `Spacing` is the least gap between them. The
+text keeps its own string: no padding characters are appended.
+
+```xml
+<TextFooterPanel Spacing="8">
+  <TextBlock Text="{Binding DataContext/Body}" TextWrapping="Wrap"/>
+  <TextBlock Text="{Binding DataContext/Timestamp}" FontSize="11"/>
+</TextFooterPanel>
+```
+
+A flex row cannot do this: only text layout knows where the last line ends.
+The panel reads that from the measured `TextBlock`, as Unigram's
+`MessageBubblePanel` and Telegram Android's `ChatMessageCell` do; Telegram
+Desktop and Telegram Web reserve the same space inside the text instead.
+
 ## Password inputs
 
 Use `Input { Type = "Password" }` for passwords. UIKit masks the prepared

@@ -365,6 +365,7 @@ for _, width in ipairs { 320, 390, 834 } do
             bubble:findChild("MessageTime", true).FontSize = fontSize - 3
         end
         screen:UpdateLayout(width, 844)
+        local oneLine
         for _, message in ipairs(layoutMessages) do
             local bubble = inEntry(app, message.id, "MessageBubble")
             local holder, body, time = bubble:getParent(), bubble:findChild("MessageBody", true),
@@ -377,8 +378,17 @@ for _, width in ipairs { 320, 390, 834 } do
             assert(actions.Visible, "Own messages offer actions")
             assert(math.abs(actions.ActualWidth - bubble.ActualWidth) < 1 and math.abs(actions.ActualHeight - bubble.ActualHeight) < 1,
                 "The action target must cover exactly its bubble")
-            assert(time.ActualY >= body.ActualY + body.ActualHeight,
-                "Timestamp must not overlap the message at any tested width or font size")
+            -- The time shares the last line when it fits there, else takes its own row.
+            local caption = time:getParent()
+            oneLine = oneLine or body.ActualHeight
+            if time.ActualY < body.ActualY + body.ActualHeight - 1 then
+                assert(math.abs(time.ActualY + time.ActualHeight - body.ActualY - body.ActualHeight) < 1,
+                    "A timestamp beside the text must sit on its last line")
+                assert(body.DesiredHeight > oneLine * 1.5 or time.ActualX >= body.DesiredWidth + caption.Spacing - 1,
+                    "Timestamp must not overlap a one-line message at any tested width or font size")
+            else
+                assert(message.body ~= "Hi", "A short message keeps its timestamp on the same line")
+            end
             assert(time:getParent().ActualY + time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
                 "Bubble height must include the timestamp")
         end

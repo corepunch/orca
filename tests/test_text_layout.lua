@@ -238,6 +238,44 @@ local function test_auto_margin_bubble_wraps_long_text()
 	column:removeFromParent()
 end
 
+-- A message time shares the last line when it fits and takes its own row
+-- otherwise; the bubble shrinks to whichever is wider.
+local function test_text_footer_panel_shares_last_line()
+	local auto = 0 / 0
+	local column = screen + ui.StackView { Direction = "Vertical", Width = 200, Height = 600 }
+	local function bubble(text)
+		local panel = column + ui.TextFooterPanel { Spacing = 8, MarginRight = auto }
+		local body = panel + ui.TextBlock { Text = text, FontSize = 16 }
+		local time = panel + ui.TextBlock { Text = "07:17", FontSize = 11 }
+		return panel, body, time
+	end
+	local short, shortBody, shortTime = bubble "cool"
+	local wrapped, wrappedBody, wrappedTime = bubble "This message wraps onto several lines and then ends in a word"
+	local full, fullBody, fullTime = bubble "mmmmmmmmmmmmmm"
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_near(short.ActualHeight, shortBody.ActualHeight, 0.01, "A short message keeps one line for text and time")
+	test.expect_near(short.ActualWidth, shortBody.DesiredWidth + 8 + shortTime.ActualWidth, 1,
+		"The time follows the text after the spacing")
+	test.expect_near(shortTime.ActualX + shortTime.ActualWidth, short.ActualWidth, 0.01, "The time ends at the right edge")
+	test.expect_near(shortTime.ActualY + shortTime.ActualHeight, short.ActualHeight, 0.01, "The time sits at the bottom")
+
+	test.expect(wrappedBody.ActualHeight > shortBody.ActualHeight * 2, "The long message wraps")
+	test.expect_near(wrapped.ActualHeight, wrappedBody.ActualHeight, 0.01, "A short last line keeps the time beside it")
+	test.expect(wrapped.ActualWidth <= column.ActualWidth, "The wrapped bubble stays within the column")
+
+	test.expect(fullBody.DesiredWidth + 8 + fullTime.ActualWidth > column.ActualWidth, "The full line leaves no room")
+	test.expect_near(full.ActualHeight, fullBody.ActualHeight + fullTime.ActualHeight, 0.01, "A full last line moves the time to its own row")
+	test.expect(fullTime.ActualY >= fullBody.ActualY + fullBody.ActualHeight - 0.01, "The time row is below the text")
+	test.expect_near(fullTime.ActualX + fullTime.ActualWidth, full.ActualWidth, 0.01, "The time row ends at the right edge")
+
+	shortBody.Visible = false
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_near(short.ActualWidth, shortTime.ActualWidth, 0.01, "Without text the panel is its footer")
+
+	column:removeFromParent()
+end
+
 local function test_text_wrap_breaks_oversized_words()
 	for _, value in ipairs { ("AVATAR"):rep(12), ("éЖλ"):rep(24), "Prefix " .. ("longword"):rep(20) } do
 		local column = screen + ui.StackView { Direction = "Vertical", Width = 100, AlignItems = "Start" }
@@ -390,6 +428,7 @@ test_font_size_preserves_em_size()
 test_text_nowrap_keeps_metric_value_on_one_line()
 test_textblock_auto_margin_bubble_measures_full_phrase()
 test_auto_margin_bubble_wraps_long_text()
+test_text_footer_panel_shares_last_line()
 test_text_wrap_breaks_oversized_words()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()

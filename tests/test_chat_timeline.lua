@@ -97,9 +97,9 @@ local function fixture(options)
         f.reads[#f.reads + 1] = { limit = page.limit, before = page.before }
         if f.readHook then f.readHook() end
         if f.error then return nil, f.error end
-        local rows = page.before and f.older or f.rows
-        return { messages = rows, has_more = (page.before and f.olderMore or f.hasMore) or false,
-            next_cursor = f.nextCursor }
+        local rows, more = f.rows, f.hasMore
+        if page.before then rows, more = f.older, f.olderMore end
+        return { messages = rows, has_more = more or false, next_cursor = f.nextCursor }
     end
     client.getPhoto = function(_, attachment, thumbnail)
         f.stages[#f.stages + 1] = thumbnail and "preview" or "full"
@@ -333,7 +333,11 @@ do
     local list, rows = f.list, f.list:findChild("MessageItems", true)
     assert(shown(app.screen:findChild("EarlierMessages", true)), "More history offers itself above the messages")
     list.ContentOffset = { X = 0, Y = -120 }
-    local visible = f.entry(1)
+    -- The reading anchor is the first row still showing below the header.
+    local visible = rows:getFirstChild()
+    while rows.ActualY + visible.ActualY + visible.ActualHeight + list.ContentOffset.Y <= list.AdjustedContentInsetTop do
+        visible = visible:getNext()
+    end
     local beforeY = rows.ActualY + visible.ActualY + list.ContentOffset.Y
     local reads = #f.reads
     f.paint()
