@@ -116,7 +116,10 @@ claiming historical fidelity.
   no focus system.
 - Group consecutive messages from the same sender, with one tail per run
   where applicable. Show sender names in group conversations. Text and
-  captioned-photo bubbles keep a separate trailing timestamp row.
+  captioned-photo bubbles put the time at the end of the last line, as
+  WhatsApp and Telegram do (user decision, 2026-10-30): it takes a row of
+  its own only when that line has no room. `TextFooterPanel` lays this out;
+  see the [before and after](docs/references/inline-timestamps.png).
 - A photo without text is an edge-to-edge rounded rectangle with **no coloured
   footer and no tail**. Place its timestamp over the bottom-right of the image
   on a dark translucent backing so it remains readable. Captioned photos

@@ -1,6 +1,7 @@
 <!-- One message, bound to a ChatMessage. Sender runs, permissions and the
      photo timestamp are record fields the conversation scope keeps current;
-     the bubble's colours follow its sent or received state class. -->
+     the bubble's colours follow its sent or received state class. The time
+     shares the last line of text when it fits and takes its own row when not. -->
 <StackView Name="MessageEntry" Spacing="0" JustifyContent="Start">
   <StackView Name="MessageRow" Spacing="0" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}"
              AlignItems="{Binding DataContext/Alignment}" MarginTop="{Binding DataContext/Gap}"
@@ -20,14 +21,14 @@
         </StackView>
         <ItemsStack Name="Photos" Visible="{Binding DataContext/HasPhotos}" Spacing="0" JustifyContent="Start"
                     ItemNamePrefix="PhotoFrame" ItemsSource="{Binding DataContext/Attachments}" ItemTemplate="Chat/Templates/Photo"/>
-        <StackView Name="Caption" Visible="{Binding DataContext/ShowCaption}" Spacing="2" JustifyContent="Start"
-                   PaddingLeft="{Binding DataContext/PhotoInset}" PaddingRight="{Binding DataContext/PhotoInset}"
-                   PaddingTop="{Binding DataContext/PhotoVerticalInset}" PaddingBottom="{Binding DataContext/PhotoVerticalInset}">
+        <TextFooterPanel Name="Caption" Visible="{Binding DataContext/ShowCaption}" Spacing="8"
+                         PaddingLeft="{Binding DataContext/PhotoInset}" PaddingRight="{Binding DataContext/PhotoInset}"
+                         PaddingTop="{Binding DataContext/PhotoVerticalInset}" PaddingBottom="{Binding DataContext/PhotoVerticalInset}">
           <TextBlock Name="MessageBody" Visible="{Binding DataContext/HasBody}" Text="{Binding DataContext/Body}"
                      FontSize="16" TextWrapping="Wrap" class="bubble-ink" IgnoreHitTest="true"/>
-          <TextBlock Name="MessageTime" Text="{Binding DataContext/Timestamp}" FontSize="11" TextHorizontalAlignment="Right"
+          <TextBlock Name="MessageTime" Text="{Binding DataContext/Timestamp}" FontSize="11"
                      class="bubble-meta" IgnoreHitTest="true"/>
-        </StackView>
+        </TextFooterPanel>
       </StackView>
       <Button Name="MessageActions" Visible="{Binding DataContext/CanAct}" Click="MessageActions"
               Width="{Binding DataContext/ActionsWidth}" Height="{Binding DataContext/ActionsWidth}"

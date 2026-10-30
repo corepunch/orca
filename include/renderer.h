@@ -235,6 +235,7 @@ struct text_info
   uint32_t txHeight;
   struct edges txInsets;
   struct rect cursor;
+  uint32_t txLastLineWidth; /* where the last line's text ends */
 };
 
 struct morph_target

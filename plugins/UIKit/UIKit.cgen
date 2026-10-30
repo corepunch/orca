@@ -993,6 +993,18 @@
         <field name="_syncingColumns" type="bool">Suppresses auto-disable when the component updates Columns internally.</field>
       </fields>
     </class>
+    <class name="TextFooterPanel" parent="Node2D">
+      <summary>Places a footer at the end of its text's last line, or on a row below when that line is full</summary>
+      <details>The first layoutable child is the text and the last is the footer, as a message bubble's time. When the footer fits beside the last line of a TextBlock within the available width, the panel keeps the text's height and aligns the footer to its bottom-right corner; otherwise the footer takes its own row at the bottom-right. A text child that is not a TextBlock counts as one line as wide as itself. Telegram Desktop calls the reserved space a skip block.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
+      </handles>
+      <properties>
+        <property name="Spacing" type="float">Minimum horizontal gap between the end of the last line and the footer</property>
+      </properties>
+    </class>
     <class name="ImageView" parent="Node2D">
       <summary>Displays image content with advanced rendering and scaling options</summary>
       <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths or HTTP/HTTPS URLs.</details>
