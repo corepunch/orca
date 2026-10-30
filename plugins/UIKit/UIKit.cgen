@@ -736,7 +736,7 @@
     </class>
     <class name="RadioButton" parent="SelectionControl" allow-text="true">
       <summary>Single radio button option for use inside a RadioGroup</summary>
-      <details>Extends TextBlock to display a labeled option. When clicked, sets IsChecked on itself, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and fires RadioGroup.SelectionChanged. Mirrors WPF RadioButton semantics.</details>
+      <details>Use as a direct child of RadioGroup with a unique, nonempty Value. Pointer, Space or Enter selects the option without toggling it off. Arrow keys select the next enabled sibling and wrap in both directions. Setting IsChecked updates the group through the property system; clearing the selected button clears SelectedValue. Changing the selected button's Value also updates the group. An explicit group SelectedValue wins when a button attaches; otherwise an initially checked button supplies the selection.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
@@ -754,7 +754,7 @@
     </class>
     <class name="RadioGroup" parent="StackView">
       <summary>Exclusive-selection group container for RadioButton children</summary>
-      <details>Extends StackView so children are laid out linearly. Mutual exclusion is enforced by child RadioButtons: when one is selected, it sets its own IsChecked state, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and then fires RadioGroup.SelectionChanged. The group exposes SelectionChanged so consumers can react after the selection has already changed. Mirrors WPF RadioButton/ListBox SelectionChanged semantics.</details>
+      <details>Extends StackView to lay out direct RadioButton children. Give each option a unique, nonempty Value; wrappers do not participate in the group. Assigning SelectedValue synchronizes child IsChecked properties silently, including disabled options; nil or an unmatched value leaves all children unchecked. Changes originating at a radio button update SelectedValue, synchronize siblings, then queue SelectionChanged with independent old/new value snapshots. Clear SelectedValue before removing or moving the selected child. Use property bindings to observe both programmatic group assignments and radio-led changes.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Start"/>
@@ -763,11 +763,11 @@
         <handle message="RadioGroup.SelectionChanged"/>
       </handles>
       <properties>
-        <property name="SelectedValue" type="string">Value string of the currently selected RadioButton child</property>
+        <property name="SelectedValue" type="string">Requested option Value; nil or an unmatched value clears checked children. Assignments synchronize children without emitting SelectionChanged.</property>
       </properties>
       <messages>
         <message name="SelectionChanged">
-          <summary>Fired when the selected RadioButton changes. SelectedValue on the group is already updated when this fires.</summary>
+          <summary>Queued after radio-led selection, clearing, or selected Value changes, including programmatic radio changes. Direct SelectedValue assignments are silent. Payload values snapshot this change; the group's current value may have changed again before delivery.</summary>
           <fields>
             <field name="SelectedValue" type="string">The value of the newly selected RadioButton</field>
             <field name="OldValue" type="string">The value that was selected before this change</field>

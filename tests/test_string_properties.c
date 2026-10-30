@@ -227,6 +227,24 @@ static void alias_at_terminator_becomes_empty(void)
     OBJ_ReleaseRef(o);
 }
 
+static void native_null_string_can_clear_and_reuse(void)
+{
+    struct Object *o = object();
+    struct Property *p = property(o, "Left");
+    const char *empty = NULL;
+    for (int i = 0; i < 100; i++) {
+        PROP_SetStringValue(p, "selected value");
+        PROP_SetStringValue(p, NULL);
+        assert(text(p) == NULL);
+        PROP_SetStringValue(p, "replacement");
+        PROP_SetValue(p, &empty);
+        assert(text(p) == NULL);
+    }
+    PROP_SetStringValue(p, "");
+    expect_text(p, "");
+    OBJ_ReleaseRef(o);
+}
+
 static void long_and_unicode_values_are_owned(void)
 {
     const size_t lengths[] = { 0, 1, 15, 16, 255, 256, 257, 4095, 4096, 65535, 262144 };
@@ -818,6 +836,7 @@ int main(int argc, char **argv)
         TEST(engine_string_allocations_are_tracked), TEST(destruction_delivers_component_cleanup_message), TEST(mutable_stack_is_copied), TEST(heap_source_can_be_freed), TEST(properties_own_independent_copies),
         TEST(equal_value_and_exact_alias_are_safe), TEST(interior_alias_string_setter),
         TEST(interior_alias_generic_setter), TEST(alias_at_terminator_becomes_empty),
+        TEST(native_null_string_can_clear_and_reuse),
         TEST(long_and_unicode_values_are_owned), TEST(replacement_clear_and_reuse_stress),
         TEST(lua_replacements_release_conversion_storage), TEST(lua_snapshots_outlive_native_property),
         TEST(lua_nil_empty_and_reuse_release_owned_strings),

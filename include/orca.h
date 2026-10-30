@@ -208,6 +208,7 @@ PROP_Update(struct Property *);
 ORCA_API void
 PROP_SetValue(struct Property *, void const* source);
 
+/* Copies the string; NULL clears the value while notifying bindings. */
 ORCA_API void
 PROP_SetStringValue(struct Property *, char const* source);
 
