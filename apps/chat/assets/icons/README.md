@@ -1,9 +1,14 @@
 # Lucide icons
 
-These are unmodified raw SVGs from the official
+These are raw SVGs from the official
 [Lucide repository](https://github.com/lucide-icons/lucide/tree/main/icons),
 downloaded on 2026-10-23 (`users-round`, `megaphone`, `compass`, `ticket`,
-`smartphone`, `mail`, `key-round` and `user-round-plus` on 2026-10-30; `check` on 2026-10-30). The upstream license is included in `LICENSE`.
+`smartphone`, `mail`, `key-round`, `user-round-plus` and `check` on 2026-10-30).
+The upstream license is included in `LICENSE`.
+
+All are unmodified except `check-bold.svg`: Lucide's `check` with
+`stroke-width` raised from 2 to 3.5, a customisation Lucide supports, for the
+heavier Windows Phone check box mark.
 
 Each local filename matches its upstream filename, except `circle-help.svg`,
 which uses the current upstream

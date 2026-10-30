@@ -93,7 +93,7 @@ claiming historical fidelity.
   rows, bars and the full-screen photo viewer stay unrounded.
 - On/off settings are Windows Phone check boxes (user decision, 2026-10-30),
   not buttons whose label reads "On"/"Off". `C.checkbox` draws a 32-point
-  square in the text box fill with a dark Lucide `check` centred in it,
+  square in the text box fill with a dark, heavy Lucide `check` (stroke 3.5 instead of 2) centred in it,
   spanning about 70% of the box, and the label sits to its right at 17 points. The whole 48-point row toggles it. This follows the
   Windows Phone 7 default CheckBox from memory: a pale box like the text box
   and a dark check. The template's exact colours and sizes have not been

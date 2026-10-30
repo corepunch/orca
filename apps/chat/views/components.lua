@@ -7,6 +7,7 @@ local auto = 0/0
 local BORDER = 2
 -- Lucide draws its check across two thirds of the icon: at the box's own 32
 -- points it spans about 70% of the box, near the Windows Phone check's size.
+-- `check-bold` widens its stroke to match the phone's heavy mark.
 local CHECK_MARK = 32
 
 -- Palette colours come from CSS roles (Styles/app.css) under the Screen's
@@ -118,7 +119,7 @@ end
 -- `changed(checked)` receives the new state; the check is named `name .. "Check"`.
 function C.checkbox(name, label, checked, changed)
     checked = checked == true
-    local mark = C.icon("check", CHECK_MARK, "chat-field-ink")
+    local mark = C.icon("check-bold", CHECK_MARK, "chat-field-ink")
     mark.Name, mark.Visible = name .. "Check", checked
     local row = C.button("", function()
         checked = not checked
