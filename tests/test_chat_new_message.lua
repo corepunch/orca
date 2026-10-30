@@ -76,6 +76,8 @@ assert(node('ContactsLoading').parent.Visible and not screen:findChild('Contacta
 click('KindGroup')
 assert(coroutine.resume(pending))
 assert(not node('ContactsLoading').parent.Visible and node('Contacts').Visible)
+local filed = node('Contacts').children
+assert(filed[#filed - 1].Text == 'a' and filed[#filed].Name == 'Contactalex', 'Contacts are filed under letter headers')
 back()
 assert(not node('SelectedPeople').Visible and not node('CreateConversation').parent.Visible)
 assert(not node('InvitationSetup').Visible and not node('ConversationVisibility').Visible)
