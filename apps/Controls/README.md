@@ -3,7 +3,7 @@
 A deterministic native XML/CSS gallery at 780 × 844 points, with two 390-point
 panels. It presents the same checkbox, radio-button, and switch states on black
 and white surfaces. Switches use the Windows 10 pill track and circular thumb;
-checkboxes and radios retain Windows Phone geometry.
+checkboxes have 6-point outer corners, and radios remain circular.
 Labels and indicator geometry belong to the shared controls;
 the app owns its typography, spacing, and palette.
 

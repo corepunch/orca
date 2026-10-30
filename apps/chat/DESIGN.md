@@ -84,21 +84,21 @@ claiming historical fidelity.
   password, create an account. The code step keeps resend and change-number.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after
   Microsoft Teams' sign-in; raised by half from 4 points the same day): every
-  visible corner except selection-control indicators is 6 points, on text
-  fields, outlined and filled buttons, badges, avatars and their photos,
+  visible rectangular corner is 6 points, on text fields, outlined and filled
+  buttons, checkbox indicators, badges, avatars and their photos,
   speech bubbles and message photos. Borders draw outside the box and widen
   the outer radius, so 2-point-bordered fields and outlined buttons declare 4. A field and button joined into one bar round only their
   outer corners. A photo rounds only the corners it shares with its bubble,
   so it meets a sender name or caption with a straight edge. Links, list
   rows, bars and the full-screen photo viewer stay unrounded.
-- On/off settings use the native `CheckBox` with Windows Phone geometry
-  (user decision, 2026-10-30): a 28-point square indicator without rounded
-  corners, a centred Lucide check, and a 17-point label to its right. The whole
-  48-point row toggles it. `C.checkbox` configures this shared control; the
+- On/off settings use the native `CheckBox` (user decision, 2026-10-30): a
+  28-point indicator with 6-point corners, a centred Lucide check, and a
+  17-point label to its right. The whole 48-point row toggles it.
+  `C.checkbox` configures this shared control; the
   control owns checked state, input, and binding behavior. Chat CSS skins its
   generated `control-indicator`, `control-check`, and `control-label` parts
-  under the current light/dark palette. The square checkbox is an explicit
-  exception to the rounding used by text fields and buttons.
+  under the current light/dark palette. Checkbox corners match the rounding
+  used by text fields and buttons.
 - Use prominent Pivot titles, avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.

@@ -71,7 +71,7 @@ remain available for descendant selectors.
 ```css
 CheckBox .control-indicator {
     border: 2 solid #FFFFFF;
-    border-radius: 0;
+    border-radius: 4;
     background-color: transparent;
 }
 CheckBox:checked .control-indicator { background-color: #0084FF; }
