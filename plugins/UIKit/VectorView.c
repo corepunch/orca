@@ -22,8 +22,10 @@ _VectorView_ReleaseTexture(struct VectorView *pVectorView)
   pVectorView->_height = 0;
 }
 
+// `fit` is the drawn size per SVG unit. Rasterising at the drawn size keeps
+// the mask one texel per screen pixel; stretching a smaller one blurs it.
 static void
-_VectorView_LoadSvg(struct VectorView *pVectorView)
+_VectorView_LoadSvg(struct VectorView *pVectorView, float fit)
 {
   if (!pVectorView->Source || !*pVectorView->Source) return;
 
@@ -47,8 +49,13 @@ _VectorView_LoadSvg(struct VectorView *pVectorView)
   }
 
   uint32_t scale = axGetScaling();
-  int width  = (int)image->width  * scale;
-  int height = (int)image->height * scale;
+  int width  = (int)ceilf(image->width  * fit * scale);
+  int height = (int)ceilf(image->height * fit * scale);
+  if (width <= 0 || height <= 0) {
+    nsvgDelete(image);
+    FS_FreeFile(pFile);
+    return;
+  }
 
   uint32_t *rgba = malloc(width * height * 4);
   if (!rgba) {
@@ -67,8 +74,8 @@ _VectorView_LoadSvg(struct VectorView *pVectorView)
     return;
   }
 
-  nsvgRasterize(rast, image, 0, 0,
-                (float)width / image->width,
+  float svgWidth = image->width, svgHeight = image->height;
+  nsvgRasterize(rast, image, 0, 0, fit * scale,
                 (byte_t *)rgba, width, height, width * 4);
   nsvgDeleteRasterizer(rast);
   nsvgDelete(image);
@@ -112,8 +119,8 @@ _VectorView_LoadSvg(struct VectorView *pVectorView)
   pVectorView->_texture->Scale  = scale;
   pVectorView->_texture->Width  = width  / scale;
   pVectorView->_texture->Height = height / scale;
-  pVectorView->_width  = (float)(width  / scale);
-  pVectorView->_height = (float)(height / scale);
+  pVectorView->_width  = svgWidth;
+  pVectorView->_height = svgHeight;
 
   FS_FreeFile(pFile);
 }
@@ -128,7 +135,7 @@ HANDLER(VectorView, Object, PropertyChanged)
   if (!pPropertyChanged->Property) return FALSE;
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_VectorView_Source) {
     _VectorView_ReleaseTexture(pVectorView);
-    _VectorView_LoadSvg(pVectorView);
+    _VectorView_LoadSvg(pVectorView, 1);
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -143,8 +150,9 @@ HANDLER(VectorView, Object, Destroy)
 HANDLER(VectorView, Node2D, MeasureOverride)
 {
   if (pVectorView->_texture && pVectorView->_texture->Scale != axGetScaling()) {
+    float fit = pVectorView->_width > 0 ? pVectorView->_texture->Width / pVectorView->_width : 1;
     _VectorView_ReleaseTexture(pVectorView);
-    _VectorView_LoadSvg(pVectorView);
+    _VectorView_LoadSvg(pVectorView, fit);
   }
   if (pVectorView->_texture) {
     struct vec2 size = { pVectorView->_width, pVectorView->_height };
@@ -168,9 +176,19 @@ HANDLER(VectorView, Node2D, MeasureOverride)
 
 HANDLER(VectorView, Node2D, ArrangeOverride)
 {
-  return _SendMessage(hObject, Node2D, MeasureOverride,
-                      .Width = pArrangeOverride->Width,
-                      .Height = pArrangeOverride->Height);
+  LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
+                              .Width = pArrangeOverride->Width,
+                              .Height = pArrangeOverride->Height);
+  struct Texture *texture = pVectorView->_texture;
+  if (!texture || pVectorView->_width <= 0 || pVectorView->_height <= 0) return size;
+  // Fill modes may stretch one axis further; match the larger so it never magnifies.
+  float fit = MAX(LOWORD(size) / pVectorView->_width, HIWORD(size) / pVectorView->_height);
+  uint32_t scale = axGetScaling();
+  if (fit > 0 && (int)ceilf(pVectorView->_width * fit * scale) / (int)scale != texture->Width) {
+    _VectorView_ReleaseTexture(pVectorView);
+    _VectorView_LoadSvg(pVectorView, fit);
+  }
+  return size;
 }
 
 HANDLER(VectorView, Node2D, ForegroundContent)
