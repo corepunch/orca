@@ -22,7 +22,9 @@ page or move engine rendering to the Core Animation compositor.
 
 Changing drivers preserves animation time. Backgrounding iOS pauses the shared
 clock, so returning to the app resumes every animation without counting time
-spent suspended. macOS uses the default event-loop driver through the same
+spent suspended. The timeline animation opts out of removal on completion,
+because iOS strips other layer animations in the background and that would
+freeze ORCA time. Resuming reinstalls it if it is missing anyway. macOS uses the default event-loop driver through the same
 clock interface.
 
 The animation system is composed of three building blocks:
