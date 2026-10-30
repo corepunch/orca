@@ -32,14 +32,15 @@ function Identity.auth(self, mode)
         button.TextHorizontalAlignment = "Left"
         return button
     end
-    self.status = C.text("", { Name = "AuthStatus", WordWrap = true, FontSize = 13, Foreground = colors.muted })
+    self.status = C.text("", { Name = "AuthStatus", WordWrap = true, FontSize = 13, StateClasses = "chat-muted" })
     local function finish(session, err)
         if not session then self:notice(err and err.message or "Please try again.", true); return end
         if not self.client:getSession() then self:notice("Check your email to confirm your account."); return end
         self:resetSessionViews()
         self:show()
     end
-    local function action(label, name, pending, operation)
+    -- `secondary` draws the action as a left-aligned link beside a primary one.
+    local function action(label, name, pending, operation, secondary)
         local button
         button = C.button(label, function()
             if busy then return end
@@ -50,11 +51,12 @@ function Identity.auth(self, mode)
             operation()
             busy = false
             button:setTextContent(label)
-        end, { Name = name, Background = colors.accent, Foreground = colors.onAccent, Height = 52, FontSize = 16 })
+        end, secondary and { Name = name, Height = 52, FontSize = 16, TextHorizontalAlignment = "Left" }
+            or { Name = name, class = "chat-primary", Height = 52, FontSize = 16 })
         return button
     end
     local function field(label, node)
-        return C.stack({ Spacing = 8 }, { C.text(label, { FontSize = 14, Foreground = colors.muted }), node })
+        return C.stack({ Spacing = 8 }, { C.text(label, { FontSize = 14, class = "chat-muted" }), node })
     end
     local function requestCode(identifier, returnRoute)
         local result, err = self.client:requestCode(identifier)
@@ -89,13 +91,10 @@ function Identity.auth(self, mode)
             fields.DisplayName.Submit = function() email:setFocus() end
             form:addChild(link("Already have an account? Sign in", "BackToSignIn", "/auth/email"))
         else
+            -- The password form keeps one visually primary action.
             form:addChild(action("Email me a sign-in code", "SendEmailCode", "Sending code…", function()
                 requestCode(email.Text, "/auth/email")
-            end))
-            -- The password form keeps one visually primary action.
-            local sendCode = form:findChild("SendEmailCode")
-            sendCode.Background, sendCode.Foreground = "#00000000", colors.accentText
-            sendCode.TextHorizontalAlignment = "Left"
+            end, true))
             form:addChild(link("Create an account", "CreateAccount", "/auth/signup"))
         end
         form:addChild(link("Use phone number", "UsePhone", "/auth"))
@@ -111,12 +110,9 @@ function Identity.auth(self, mode)
             action("Resend code", "ResendCode", "Sending code…", function()
                 local result, err = self.client:requestCode(self.loginIdentifier)
                 self:notice(result and "A new code is on its way." or err.message, not result)
-            end),
+            end, true),
             link("Change phone number or email", "ChangeIdentifier", self.loginReturnRoute or "/auth"),
         })
-        local resend = form:findChild("ResendCode")
-        resend.Background, resend.Foreground = "#00000000", colors.accentText
-        resend.TextHorizontalAlignment = "Left"
         code.Submit = function() form:findChild("VerifyCode"):send("Node.LeftButtonUp") end
     else
         title, description = "your phone", "Your people are one message away. Sign in or get started with your number."
@@ -124,7 +120,7 @@ function Identity.auth(self, mode)
         form = C.stack({ Name = "PhonePage", Spacing = 16 }, {
             field("Phone number", phone),
             C.text("Include + and your country code. We'll send you a verification code.", {
-                FontSize = 13, Foreground = colors.muted, WordWrap = true }),
+                FontSize = 13, class = "chat-muted", WordWrap = true }),
             action("Continue", "RequestCode", "Sending code…", function()
                 if not phone.Text:match("^%s*%+") then
                     self:notice("Enter your phone number with + and country code.", true)
@@ -145,16 +141,16 @@ function Identity.auth(self, mode)
     brand:addChild(C.text("ORCA / CHAT", { Name = "AuthWordmark", FontSize = 14, FontWeight = "Bold", LetterSpacing = 1.2,
         Height = 36, TextVerticalAlignment = "Center" }))
     local body = C.stack({ Name = "AuthPage", Padding = "24 28", Spacing = 20,
-        Overflow = "hidden scroll", Background = colors.background }, {
+        Overflow = "hidden scroll", class = "chat-background" }, {
         brand,
         C.stack({ Spacing = 12 }, {
             C.text(title, { Name = "AuthTitle", FontSize = 38, WordWrap = true }),
-            C.text(description, { FontSize = 15, Foreground = colors.muted, WordWrap = true }),
+            C.text(description, { FontSize = 15, class = "chat-muted", WordWrap = true }),
         }), form,
     })
     if not self.remote then
         body:addChild(C.text("Offline demo · +4915110000001 · code 123456\nEmail: demo@example.invalid · password123", {
-            Name = "OfflineAuthHint", FontSize = 11, Foreground = colors.dim, WordWrap = true }))
+            Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
     end
     return self:frame(body)
 end
@@ -166,7 +162,7 @@ local function profileBody(self, profile)
     local username = C.input("Username", "Choose a public username", { Text = profile.username or "" })
     local identifier = C.input("LinkIdentifier", "Phone number or email to verify")
     local code = C.input("LinkCode", "Verification code", { Type = "Number" })
-    local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 14, Foreground = colors.muted })
+    local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 14, class = "chat-muted" })
     local function describe(p)
         local phone, email = p.phone or user.phone, p.email or user.email
         verified:setTextContent("Verified phone: " .. ((phone and phone ~= "") and phone or "Not added")
@@ -174,13 +170,13 @@ local function profileBody(self, profile)
     end
     describe(profile)
     self.status = C.text("Your login details stay private. Choose how people find you.", {
-        Name = "ProfileStatus", WordWrap = true, FontSize = 14, Foreground = colors.muted,
+        Name = "ProfileStatus", WordWrap = true, FontSize = 14, StateClasses = "chat-muted",
     })
     self.profileStatus = self.status
     local epoch, status = self.sessionEpoch, self.status
     local function notice(message, isError)
         status:setTextContent(message or "")
-        status.Foreground = isError and colors.error or colors.muted
+        status.StateClasses = isError and "chat-error" or "chat-muted"
     end
     local phoneDiscovery, emailDiscovery = profile.discoverable_phone == true, profile.discoverable_email == true
     local phoneToggle, emailToggle
@@ -207,13 +203,13 @@ local function profileBody(self, profile)
         C.avatar(profile.display_name or "You", 72, user.id, self, user.id), self.status,
         C.eyebrow("PUBLIC PROFILE"), name, username,
         C.text("People can find your exact username. Your phone and email are never shown in search results.", {
-            FontSize = 13, WordWrap = true, Foreground = colors.dim }), phoneToggle, emailToggle,
+            FontSize = 13, WordWrap = true, class = "chat-dim" }), phoneToggle, emailToggle,
         C.button("Save profile", function()
             local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
                 discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery }
             if self.sessionEpoch ~= epoch then return end
             notice(result and "Profile saved." or saveError.message, not result)
-        end, { Name = "SaveProfile", Background = colors.accent, Foreground = colors.onAccent }),
+        end, { Name = "SaveProfile", class = "chat-primary" }),
         C.eyebrow("VERIFIED LOGIN DETAILS"), verified, identifier,
         C.button("Send verification code", function()
             local result, linkError = self.client:requestIdentityLink(identifier.Text)
@@ -222,7 +218,7 @@ local function profileBody(self, profile)
             self.pendingIdentity, verification.Visible = identifier.Text, true
             notice(self.remote and "Enter the code sent to your new login detail." or "Offline verification code: 123456")
         end, { Name = "RequestLink", Background = colors.surface }), verification,
-        C.button("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error }),
+        C.button("Sign out", function() self:signOut() end, { Name = "SignOut", class = "chat-error" }),
     })
     return body
 end

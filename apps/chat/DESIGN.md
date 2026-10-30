@@ -66,6 +66,13 @@ claiming historical fidelity.
   `@username`; the whole row opens the chat. Sub-flows go back through the
   header's back button. Square avatars and Metro type are kept; Telegram's
   rounded cards, separators and A–Z index are not adopted.
+- Appearance follows the OS while Chat runs. Every palette colour, in Lua-built
+  and XML views alike, comes from a CSS role under the Screen's
+  `chat-light`/`chat-dark` StateClass, and frosted bars follow that palette
+  rather than the OS directly. An appearance change replaces the class and
+  restyles built pages in place, keeping retained tabs and drafts. Dark
+  secondary text uses Windows Phone's subtle grey `#999999`. Links and
+  commands use `accentText`, and filled actions use `accent`, on every screen.
 - Use prominent Pivot titles, square avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.

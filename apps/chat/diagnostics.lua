@@ -63,8 +63,8 @@ function Diagnostics:controller(err, stage)
     -- A separate Screen stays readable even when the underlying shell is broken.
     -- Fixed chrome rows keep the recovery UI independent of auto footer sizing.
     local layout = ui.Grid { Rows = "44px 52px 1fr 48px", Padding = "16", Spacing = 12,
-        Background = C.colors.background, Foreground = C.colors.ink }
-    layout:addChild(C.text("Chat error", { FontSize = 28, Foreground = C.colors.error }))
+        class = "chat-background chat-ink" }
+    layout:addChild(C.text("Chat error", { FontSize = 28, class = "chat-error" }))
     layout:addChild(C.text("Something went wrong. Please share the details below.", { WordWrap = true }))
     local list = ui.ListBox { Name = "ErrorDetails", Spacing = 8 }
     list:addChild(C.text(details, { Name = "ErrorMessage", WordWrap = true, FontSize = 13 }))
@@ -73,7 +73,7 @@ function Diagnostics:controller(err, stage)
         -- Rebuild the shell without signing out or discarding message drafts.
         app.shell, app.homeStatus, app.newStatus = nil, nil, nil
         app:show("/")
-    end, { Name = "RecoverChat", Background = C.colors.accent }))
+    end, { Name = "RecoverChat", class = "chat-primary" }))
     local screen = app:frame(layout)
     screen.Name = "ChatError"
     self.screen = screen
