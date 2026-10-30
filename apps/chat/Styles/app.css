@@ -34,12 +34,12 @@
 .chat-dark .chat-muted { color: #a6a6a6; }
 .chat-dark .chat-dim { color: #999999; }
 .chat-dark .room-preview { color: #999999; }
-.chat-dark .unread .room-preview { color: #3d9eff; }
-.chat-dark .chat-link { color: #3d9eff; background-color: #00000000; }
+.chat-dark .unread .room-preview { color: #41beec; }
+.chat-dark .chat-link { color: #41beec; background-color: #00000000; }
 .chat-dark .chat-badge { background-color: #0084ff; color: #ffffff; }
 .chat-dark .chat-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
 .chat-dark .chat-field-ink { color: #000000; }
-.chat-dark .chat-accent-text { color: #3d9eff; }
+.chat-dark .chat-accent-text { color: #41beec; }
 .chat-dark .chat-soft { background-color: #0a2a4d; }
 .chat-dark .chat-chrome { background-color: #1f1f1f; }
 .chat-dark .chat-error { color: #ff5c5c; }
@@ -67,7 +67,7 @@
 .chat-light .chat-action:focus-visible { ring: 0 2 #0078e7; }
 .chat-light .chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
 .chat-light .conversation:hover { background-color: #f2f2f2; }
-.chat-dark .chat-action:focus-visible { ring: 0 2 #3d9eff; }
+.chat-dark .chat-action:focus-visible { ring: 0 2 #41beec; }
 .chat-dark .chat-input:focus { border-color: #0084ff; background-color: #ffffff; }
 .chat-dark .conversation:hover { background-color: #1a1a1a; }
 /* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted.

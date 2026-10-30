@@ -1061,7 +1061,7 @@ for _, selected in ipairs { colors.appearance == "dark" and "light" or "dark", c
     assert(themeApp:updateAppearance() and colors.appearance == selected)
     assert(themeApp.screen:findChild("KindGroup", true) == newGroup, "Changing appearance must keep built pages")
     local dark = selected == "dark"
-    assert(math.abs(label.ForegroundColor.R - (dark and 0x3d or 0x00) / 255) < 0.01, selected .. " restyles Lua-built text")
+    assert(math.abs(label.ForegroundColor.R - (dark and 0x41 or 0x00) / 255) < 0.01, selected .. " restyles Lua-built text")
     assert(math.abs(inboxSearch.BackgroundColor.R - (dark and 0xbf or 0xd9) / 255) < 0.01, selected .. " restyles retained XML tabs")
     assert(math.abs(themeApp.screen:findChild("AppBar", true).BackgroundColor.R - (dark and 0x16 or 0xf7) / 255) < 0.01,
         selected .. " bars follow the app palette")

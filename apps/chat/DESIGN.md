@@ -71,7 +71,10 @@ claiming historical fidelity.
   `chat-light`/`chat-dark` StateClass, and frosted bars follow that palette
   rather than the OS directly. An appearance change replaces the class and
   restyles built pages in place, keeping retained tabs and drafts. Dark
-  secondary text uses Windows Phone's subtle grey `#999999`. Links and
+  secondary text uses Windows Phone's subtle grey `#999999`. Dark link and accent
+  text is `#41beec`: the Windows Phone blue accent sampled from the archived
+  Telegram screenshots (`#01a8e6`), lifted a quarter toward white for small
+  text on black. Filled buttons keep Messenger blue. Links and
   commands use `accentText`, and filled actions use `accent`, on every screen.
 - Use prominent Pivot titles, square avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
