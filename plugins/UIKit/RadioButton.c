@@ -22,11 +22,7 @@ RadioButton_SetChecked(struct Object *object,
   SelectionControl_SetState(object, checked, FALSE);
 }
 
-/* Sync the parent RadioGroup after this button has been checked: updates
-   SelectedValue via the property system (so ownership is correct and
-   PropertyChanged fires to sync siblings), then fires SelectionChanged.
-   Assumes the caller has already set button->IsChecked = TRUE via
-   RadioButton_SetChecked. */
+/* The group property setter synchronizes siblings before the queued event. */
 static void
 RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
 {
@@ -35,8 +31,11 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
     return;
 
   struct RadioGroup *rg = GetRadioGroup(group);
-  if (!rg || (rg->SelectedValue && button->Value && !strcmp(rg->SelectedValue, button->Value)))
-    return;
+  if (!rg) return;
+
+  bool_t matches = rg->SelectedValue && button->Value &&
+                   !strcmp(rg->SelectedValue, button->Value);
+  if (button->IsChecked ? matches : !matches) return;
 
   /* Capture old value before the property setter frees it. */
   char *oldValue = rg->SelectedValue ? strdup(rg->SelectedValue) : NULL;
@@ -47,15 +46,15 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
      sibling buttons). */
   struct Property *prop = OBJ_FindLongProperty(group, ID_RadioGroup_SelectedValue);
   if (prop)
-    PROP_SetStringValue(prop, button->Value);
+    PROP_SetStringValue(prop, button->IsChecked ? button->Value : NULL);
 
   struct RadioGroup_SelectionChangedEventArgs args = {
     .SelectedValue = rg->SelectedValue,
     .OldValue      = oldValue,
   };
   axPostMessageDataW(group, ID_RadioGroup_SelectionChanged, 0, &args, sizeof(args));
-  /* oldValue is intentionally not freed here: the queued event-args payload
-     retains the pointer until the event pump delivers the message. */
+  /* Reflected string fields are copied by axPostMessageDataW. */
+  free(oldValue);
 }
 
 static bool_t
@@ -87,7 +86,7 @@ RadioButton_FindSibling(struct Object *object, bool_t forward)
     if (forward && seenCurrent)
       return child;
     if (child == object) {
-      if (!forward)
+      if (!forward && previous)
         return previous;
       seenCurrent = TRUE;
     }
@@ -105,11 +104,18 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
   struct Object *group = OBJ_GetParent(hObject);
   if (!group) return;
   struct RadioGroup *rg = GetRadioGroup(group);
-  if (!rg || !rg->SelectedValue || !pRadioButton->Value) return;
+  if (!rg) return;
+  if (!rg->SelectedValue) {
+    if (pRadioButton->IsChecked) RadioButton_SyncGroup(hObject, pRadioButton);
+    return;
+  }
 
-  bool_t should_be_checked = strcmp(pRadioButton->Value, rg->SelectedValue) == 0;
-  if (pRadioButton->IsChecked != should_be_checked)
-    RadioButton_SetChecked(hObject, pRadioButton, should_be_checked);
+  bool_t should_be_checked = pRadioButton->Value &&
+                             !strcmp(pRadioButton->Value, rg->SelectedValue);
+  if (pRadioButton->IsChecked != should_be_checked) {
+    struct Property *property = OBJ_FindLongProperty(hObject, ID_RadioButton_IsChecked);
+    if (property) PROP_SetValue(property, &should_be_checked);
+  }
 }
 
 HANDLER(RadioButton, Object, Create)
@@ -135,14 +141,16 @@ HANDLER(RadioButton, Object, PropertyChanged)
     return FALSE;
 
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_Value) {
-    RadioButton_SyncToGroupSelection(hObject, pRadioButton);
+    if (pRadioButton->IsChecked)
+      RadioButton_SyncGroup(hObject, pRadioButton);
+    else
+      RadioButton_SyncToGroupSelection(hObject, pRadioButton);
     return FALSE;
   }
 
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_IsChecked) {
     RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);
-    if (pRadioButton->IsChecked)
-      RadioButton_SyncGroup(hObject, pRadioButton);
+    RadioButton_SyncGroup(hObject, pRadioButton);
   }
 
   return FALSE;

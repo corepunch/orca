@@ -60,6 +60,7 @@ nav:
     - Architecture & Best Practices: app/index.md
     - Models & Offline Testing: app/data.md
     - Styling & Visual Verification: app/styling.md
+    - Selection Controls: selection-controls.md
     - MoonScript:
       - Overview: app/moonscript/index.md
       - Scene Loading & Composition: app/moonscript/scenes-and-rebuild.md

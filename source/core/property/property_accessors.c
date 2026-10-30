@@ -157,7 +157,8 @@ PROP_SetStoredValue(struct Property *property,
   }
   if (PROP_GetType(property) == kDataTypeString) {
     // The source may be a substring of the value being replaced.
-    char *copy = strdup(*(char const *const *)source);
+    char const *text = *(char const *const *)source;
+    char *copy = text ? strdup(text) : NULL;
     if (*(LPSTR*)storage) {
       free(*(LPSTR*)storage);
     }

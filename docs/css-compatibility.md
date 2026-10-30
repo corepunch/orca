@@ -41,6 +41,10 @@ specificity.
 
 ### Selection-control parts
 
+See [Selection controls](selection-controls.md) for the differences between
+checkboxes, radio groups and switches, complete usage examples, event and
+binding semantics, keyboard behavior, and sizing guidance.
+
 `CheckBox`, `RadioButton`, and `ToggleSwitch` retain their native input,
 selection, and binding behavior while exposing ordinary child nodes for CSS.
 The shared stylesheet is installed by normal application startup. Applications

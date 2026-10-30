@@ -22,6 +22,12 @@ Use this file when changing UIKit controls, layout, XML UI, popups, or styling b
 For tests with explicit dimensions, always set `ResizeMode="NoResize"` in XML or `ResizeMode = "NoResize"` in Lua.
 Otherwise the window size can override the intended test dimensions.
 
+## Selection controls
+
+For checkboxes, radio groups and on/off switches, see
+[Selection controls](selection-controls.md): control choice, XML/Lua usage,
+bindings, events, keyboard behavior, CSS parts and compatibility.
+
 ## Password inputs
 
 Use `Input { Type = "Password" }` for passwords. UIKit masks the prepared
