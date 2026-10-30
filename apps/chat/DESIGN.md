@@ -56,6 +56,15 @@ claiming historical fidelity.
   below its 48-point controls. System/keyboard insets are added separately.
   Matching these heights is a Chat consistency choice, not a historical
   Windows Phone requirement for custom message composers.
+- New message follows the inbox and the People hub: its search field is a
+  frosted bar docked under the page title, with the search command inside the
+  same pale field. New group, new channel, browse channels and invitations are
+  list rows with a square accent tile, a title and a one-line description,
+  above the contacts. Contacts show a name and `@username`, and the whole row
+  opens the chat. Sub-flows go back through the header's back button. This
+  matches the action-rows-above-contacts layout of Telegram's and WhatsApp's
+  new-chat screens, in Metro's square tiles; it is not a reproduction of a
+  particular release.
 - Use prominent Pivot titles, square avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.

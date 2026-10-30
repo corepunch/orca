@@ -2,7 +2,8 @@
 
 These are unmodified raw SVGs from the official
 [Lucide repository](https://github.com/lucide-icons/lucide/tree/main/icons),
-downloaded on 2026-10-23. The upstream license is included in `LICENSE`.
+downloaded on 2026-10-23 (`users-round`, `megaphone`, `compass` and `ticket`
+on 2026-10-30). The upstream license is included in `LICENSE`.
 
 Each local filename matches its upstream filename, except `circle-help.svg`,
 which uses the current upstream

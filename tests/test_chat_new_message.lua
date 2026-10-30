@@ -64,13 +64,19 @@ local screen = Conversations.newRoom(app)
 local function node(name) return assert(screen:findChild(name), name) end
 local function click(name) node(name):send() end
 local function text(name, value) node(name).Text = value end
+-- Sub-flows return through the header's back button, which the root page hides.
+local function back()
+    assert(screen.BackIcon ~= '', 'Sub-flows must show the header back button')
+    screen.BackRequested()
+end
+assert(screen.BackIcon == '', 'The new message root has no back button')
 assert(node('NewChatActions').Visible and node('Contacts').Visible)
 assert(node('ContactsLoading').parent.Visible and not screen:findChild('Contactalex'),
     'New message controls must mount before contacts load')
 click('KindGroup')
 assert(coroutine.resume(pending))
 assert(not node('ContactsLoading').parent.Visible and node('Contacts').Visible)
-click('NewChatBack')
+back()
 assert(not node('SelectedPeople').Visible and not node('CreateConversation').parent.Visible)
 assert(not node('InvitationSetup').Visible and not node('ConversationVisibility').Visible)
 click('Contactalex')
@@ -98,7 +104,7 @@ assert(node('FoundPersonalex').Background == node('Contactalex').Background, 'Se
 click('GroupNext')
 assert(node('ConversationSetup').Visible and not node('PeopleSearch').Visible)
 assert(not node('ConversationVisibility').Visible, 'Groups must always remain private')
-text('RoomName', 'Draft group'); click('NewChatBack')
+text('RoomName', 'Draft group'); back()
 assert(node('Contacts').Visible and app.newSelection.alex and node('RoomName').Text == 'Draft group')
 click('GroupNext'); text('RoomName', '')
 local count = #creates
@@ -116,7 +122,7 @@ assert(creates[#creates].kind == 'channel' and creates[#creates].visibility == '
 assert(#creates[#creates].member_ids == 0, 'Channel creation must not subscribe arbitrary contacts')
 click('SearchChannels'); text('FindPerson', 'News'); node('FindPerson').Submit()
 click('JoinChannelnews'); assert(app.opened.id == 'news')
-click('NewChatBack'); click('ShowInvite'); text('InviteCode', 'bad'); click('JoinInvite')
+back(); click('ShowInvite'); text('InviteCode', 'bad'); click('JoinInvite')
 assert(node('NewChatStatus').Text == 'Invalid invitation')
 text('InviteCode', 'valid'); click('JoinInvite'); assert(app.opened.id == 'invited')
 -- Changing flows or signing out while a lookup yields must discard its response.
@@ -126,7 +132,7 @@ assert(not screen:findChild('FoundPersonalex') and not screen:findChild('Discove
 onFind = function() click('KindChannel') end
 text('FindPerson', '@alex'); click('FindPeople')
 assert(not screen:findChild('FoundPersonalex'))
-click('NewChatBack')
+back()
 onFind = function() app.sessionEpoch = 2 end
 text('FindPerson', '@alex'); click('FindPeople')
 assert(not screen:findChild('FoundPersonalex'))
