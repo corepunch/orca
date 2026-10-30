@@ -110,6 +110,27 @@ function C.command(name, icon, label, action)
     return button
 end
 
+-- Windows Phone check box: a 32-point square in the text box fill with a dark
+-- check, its label to the right; the whole row toggles. `changed(checked)`
+-- receives the new state; the check is named `name .. "Check"`.
+function C.checkbox(name, label, checked, changed)
+    checked = checked == true
+    local mark = C.icon("check", 24, "chat-field-ink")
+    mark.Name, mark.Visible = name .. "Check", checked
+    local row = C.button("", function()
+        checked = not checked
+        mark.Visible = checked
+        if changed then changed(checked) end
+    end, { Name = name, BorderWidth = "0", FontWeight = "Normal", Background = colors.surface, class = "chat-row" })
+    local box = C.stack({ Width = 32 - 2 * BORDER, Height = 32 - 2 * BORDER, BorderWidth = tostring(BORDER),
+        MarginTop = auto, MarginBottom = auto, IgnoreHitTest = true, class = "chat-field chat-check" }, { mark })
+    local grid = ui.Grid { Columns = "32px 1fr", Spacing = 14, IgnoreHitTest = true }
+    grid:addChild(box)
+    grid:addChild(C.text(label, { FontSize = 17, TextVerticalAlignment = "Center", TextOverflow = "Ellipsis" }))
+    row:addChild(grid)
+    return row
+end
+
 -- Initials on a tile colour until `app` has the person's profile photo.
 -- `userId` is given only where the tile stands for one person.
 function C.avatar(name, size, key, app, userId)

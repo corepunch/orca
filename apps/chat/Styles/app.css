@@ -65,6 +65,7 @@
    corners; a photo rounds the corners it shares with its bubble. */
 .chat-input { border-radius: 2; }
 .chat-outline { border-radius: 2; }
+.chat-check { border-radius: 2; }
 .chat-primary { border-radius: 4; }
 .chat-badge { border-radius: 4; }
 .avatar { border-radius: 4; }

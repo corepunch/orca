@@ -90,6 +90,13 @@ claiming historical fidelity.
   outer corners. A photo rounds only the corners it shares with its bubble,
   so it meets a sender name or caption with a straight edge. Links, list
   rows, bars and the full-screen photo viewer stay unrounded.
+- On/off settings are Windows Phone check boxes (user decision, 2026-10-30),
+  not buttons whose label reads "On"/"Off". `C.checkbox` draws a 32-point
+  square in the text box fill with a dark Lucide `check`, and the label sits
+  to its right at 17 points. The whole 48-point row toggles it. This follows the
+  Windows Phone 7 default CheckBox from memory: a pale box like the text box
+  and a dark check. The template's exact colours and sizes have not been
+  checked against Microsoft's theme resources.
 - Use prominent Pivot titles, avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.
