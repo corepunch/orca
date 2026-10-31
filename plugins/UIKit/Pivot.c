@@ -10,7 +10,6 @@
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
 #define PIVOT_BACK_ICON      16.0f   // back glyph, centred in its ring
 #define PIVOT_BACK_RING      30.0f   // round back button before the title
-#define PIVOT_BACK_BORDER    2.0f
 #define PIVOT_BACK_GAP       10.0f
 #define PIVOT_BACK_MIN       44.0f   // smallest back tap target
 #define PIVOT_EDGE           24.0f   // width of the strip a back swipe starts in
@@ -71,13 +70,11 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
   if (back && !pPivot->_back) {
     pPivot->_back = OBJ_Create(ID_Node2D);
     OBJ_AddChild(hObject, pPivot->_back);
-    pPivot->_backRing = OBJ_Create(ID_Node2D);
+    // Antialiased vector artwork tinted like the glyph; CSS supplies its SVG.
+    pPivot->_backRing = OBJ_Create(ID_VectorView);
     GetNode2D(pPivot->_backRing)->IgnoreHitTest = TRUE;
-    struct Node *ring = GetNode(pPivot->_backRing);
-    float radius = PIVOT_BACK_RING / 2;
-    ring->Border.Radius = (struct CornerRadius){ radius, radius, radius, radius };
-    ring->Border.Width.Axis[0].Left = ring->Border.Width.Axis[0].Right = PIVOT_BACK_BORDER;
-    ring->Border.Width.Axis[1].Left = ring->Border.Width.Axis[1].Right = PIVOT_BACK_BORDER;
+    Metro_SetFloat(pPivot->_backRing, ID_Node_Width, PIVOT_BACK_RING);
+    Metro_SetFloat(pPivot->_backRing, ID_Node_Height, PIVOT_BACK_RING);
     _SendMessage(pPivot->_backRing, StyleController, AddClass, .ClassName = "pivot-back");
     OBJ_AddChild(pPivot->_back, pPivot->_backRing);
     pPivot->_backIcon = OBJ_Create(ID_VectorView);
@@ -90,10 +87,6 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     struct VectorView *icon = GetVectorView(pPivot->_backIcon);
     if (back && (!icon->Source || strcmp(icon->Source, pPivot->BackIcon)))
       PROP_SetStringValue(OBJ_FindLongProperty(pPivot->_backIcon, ID_VectorView_Source), pPivot->BackIcon);
-    // The ring is drawn in the page's ink, like an application bar button.
-    struct color ink = GetNode2D(hObject)->Foreground.Color;
-    struct Property *border = OBJ_FindLongProperty(pPivot->_backRing, ID_Node_BorderColor);
-    if (border && memcmp(PROP_GetValue(border), &ink, sizeof(ink))) PROP_SetValue(border, &ink);
     Metro_Show(pPivot->_back, back, 1);
   }
 

@@ -4,7 +4,6 @@
 #define APPBAR_HEIGHT        58.0f
 #define APPBAR_MINI_HEIGHT   24.0f
 #define APPBAR_RING          38.0f
-#define APPBAR_RING_BORDER   2.0f
 #define APPBAR_ICON          18.0f
 #define APPBAR_SLOT          78.0f
 #define APPBAR_PAD           10.0f   // above the buttons when expanded
@@ -174,12 +173,12 @@ HANDLER(ApplicationBar, Node, LeftButtonUp)
 static void
 AppBarButton_Sync(struct Object *hObject, struct ApplicationBarIconButton *pButton)
 {
+  // The outline is antialiased vector artwork tinted like the glyph, as the
+  // Windows Phone template strokes an ellipse; CSS supplies its SVG.
   if (!pButton->_ring) {
-    pButton->_ring = AppBar_Part(hObject, ID_Node2D);
-    AppBar_Round(pButton->_ring, APPBAR_RING / 2);
-    struct Node *ring = GetNode(pButton->_ring);
-    ring->Border.Width.Axis[0].Left = ring->Border.Width.Axis[0].Right = APPBAR_RING_BORDER;
-    ring->Border.Width.Axis[1].Left = ring->Border.Width.Axis[1].Right = APPBAR_RING_BORDER;
+    pButton->_ring = AppBar_Part(hObject, ID_VectorView);
+    Metro_SetFloat(pButton->_ring, ID_Node_Width, APPBAR_RING);
+    Metro_SetFloat(pButton->_ring, ID_Node_Height, APPBAR_RING);
     _SendMessage(pButton->_ring, StyleController, AddClass, .ClassName = "appbar-button-ring");
   }
   if (!pButton->_icon) {
@@ -197,7 +196,6 @@ AppBarButton_Sync(struct Object *hObject, struct ApplicationBarIconButton *pButt
     PROP_SetStringValue(OBJ_FindLongProperty(pButton->_icon, ID_VectorView_Source), pButton->IconUri);
   }
   Metro_SetText(pButton->_label, pButton->Text, tolower);
-  AppBar_SetColor(pButton->_ring, ID_Node_BorderColor, AppBar_Foreground(OBJ_GetParent(hObject)));
 }
 
 HANDLER(ApplicationBarIconButton, Object, Destroy)
@@ -218,6 +216,7 @@ HANDLER(ApplicationBarIconButton, Node2D, MeasureOverride)
 {
   AppBarButton_Sync(hObject, pApplicationBarIconButton);
   Metro_Measure(pApplicationBarIconButton->_label, APPBAR_SLOT, APPBAR_LABEL_HEIGHT);
+  Metro_Measure(pApplicationBarIconButton->_ring, APPBAR_RING, APPBAR_RING);
   Metro_Measure(pApplicationBarIconButton->_icon, APPBAR_ICON, APPBAR_ICON);
   return MAKEDWORD(APPBAR_SLOT, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
 }
