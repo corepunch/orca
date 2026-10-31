@@ -22,6 +22,7 @@ jobs:
         with:
           submodules: recursive
 
+      # The engine builds Lua from libs/lua; liblua5.4-dev only serves MoonScript's rocks.
       - name: Install dependencies
         run: |
           sudo apt update
@@ -29,7 +30,6 @@ jobs:
             luarocks \
             liblua5.4-dev \
             libxml2-dev \
-            liblz4-dev \
             zlib1g-dev \
             libcurl4-openssl-dev \
             libwayland-dev \
@@ -64,6 +64,7 @@ jobs:
           path: |
             build/bin/orca
             build/lib/liborca.*
+            build/lib/liblua5.4.*
             build/lib/libplatform.*
             build/lib/liborca/
             build/share/
@@ -76,23 +77,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install dependencies
-        run: |
-          brew install \
-            lua@5.4 \
-            luarocks \
-            libxml2 \
-            lz4 \
-            zlib \
-            curl \
-            pkg-config
+      # The engine needs nothing from Homebrew; these only serve MoonScript's rocks.
+      - name: Install MoonScript toolchain
+        run: brew install lua@5.4 luarocks
 
-      - name: Configure Lua 5.4 toolchain
+      - name: Configure MoonScript toolchain
         run: |
           LUA_DIR="$(brew --prefix lua@5.4)"
           ROCKS_TREE="$HOME/.luarocks"
-          echo "$LUA_DIR/bin" >> "$GITHUB_PATH"
-          echo "PKG_CONFIG_PATH=$LUA_DIR/lib/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
           echo "LUA_DIR=$LUA_DIR" >> "$GITHUB_ENV"
           echo "ROCKS_TREE=$ROCKS_TREE" >> "$GITHUB_ENV"
           echo "LUA_PATH=$ROCKS_TREE/share/lua/5.4/?.lua;$ROCKS_TREE/share/lua/5.4/?/init.lua;$LUA_DIR/share/lua/5.4/?.lua;$LUA_DIR/share/lua/5.4/?/init.lua;;" >> "$GITHUB_ENV"
@@ -125,6 +117,7 @@ jobs:
           path: |
             build/bin/orca
             build/lib/liborca.*
+            build/lib/liblua5.4.*
             build/lib/libplatform.*
             build/lib/liborca/
             build/share/

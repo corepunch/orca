@@ -27,9 +27,7 @@ To install the required dependencies on **Linux**, run the following commands:
 
 ```sh
 sudo apt update && sudo apt install -y \
-    liblua5.4-dev \
     libxml2-dev \
-    liblz4-dev \
     zlib1g-dev \
     libcurl4-openssl-dev \
     libwayland-dev \
@@ -41,9 +39,7 @@ For **Fedora**, use:
 
 ```sh
 sudo dnf install -y \
-    lua-devel \
     libxml2-devel \
-    lz4-devel \
     zlib-devel \
     libcurl-devel
 ```
@@ -51,20 +47,20 @@ sudo dnf install -y \
 For **Arch Linux**, use:
 
 ```sh
-sudo pacman -S lua libxml2 lz4 zlib curl
+sudo pacman -S libxml2 zlib curl
 ```
 
 ### macOS
 
-To install dependencies on **macOS**, use **Homebrew**:
+On **macOS**, the Xcode Command Line Tools are enough:
 
 ```sh
-brew install lua libxml2 lz4 zlib curl pkg-config
+xcode-select --install
 ```
 
 ## Building the Project
 
-Before building, you must initialize and update the git submodules to fetch the platform package:
+Before building, you must initialize and update the git submodules to fetch the platform package, Lua 5.4 and LZ4:
 
 ```sh
 git submodule update --init --recursive

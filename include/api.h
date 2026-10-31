@@ -1,27 +1,9 @@
 #ifndef __api_h__
 #define __api_h__
 
-#ifdef __QNX__
-#include "../source/lua-master/lauxlib.h"
-#include "../source/lua-master/lua.h"
-#include "../source/lua-master/lualib.h"
-#elif __has_include(<lua5.4/lua.h>)
-#include <lua5.4/lauxlib.h>
-#include <lua5.4/lua.h>
-#include <lua5.4/lualib.h>
-#elif __has_include(<lua5.3/lua.h>)
-#include <lua5.3/lauxlib.h>
-#include <lua5.3/lua.h>
-#include <lua5.3/lualib.h>
-#elif __has_include(<lua/lua.h>)
-#include <lua/lauxlib.h>
-#include <lua/lua.h>
-#include <lua/lualib.h>
-#else
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#endif
 
 #include <include/orca.h>
 

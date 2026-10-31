@@ -1,3 +1,9 @@
 [submodule "libs/platform"]
 	path = libs/platform
 	url = https://github.com/corepunch/platform.git
+[submodule "libs/lua"]
+	path = libs/lua
+	url = https://github.com/lua/lua.git
+[submodule "libs/lz4"]
+	path = libs/lz4
+	url = https://github.com/lz4/lz4.git

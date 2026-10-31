@@ -17,7 +17,7 @@ ORCA is structured like a team of specialists, each owning a distinct layer.  Th
 | **SceneKit / SpriteKit** | `plugins/SceneKit/`, `plugins/SpriteKit/` | 3D scene graph, cameras, lights, 2D sprite animation |
 | **Lua scripting bridge** | `source/core/object/object_lua_*.c`, `share/orca/` | Lua C API, property bindings, `send`/`fetch`, `behaviour.lua` |
 | **Code generation** | `tools/codegen/`, `*.cgen` module files | C, libxml2, generator plugins, `make modules` |
-| **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode `project.pbxproj` |
+| **Build system** | `Makefile`, `tools/xcode/` | GNU Make, Linux/macOS cross-platform C, generated per-app Xcode projects |
 | **Test harness** | `tests/`, `source/orca.c` | Lua test patterns, `assert`, `xvfb-run`, `make test-headless` |
 | **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, `.cgen` API documentation |
 
@@ -79,11 +79,7 @@ A `HANDLER(MyComponent, NS, Event)` function in C corresponds to a `<handle mess
 
 `OBJ_RegisterClass` must be called exactly once per class, at module startup.  If the call is missing, `obj:addComponent("MyComponent")` will succeed silently (it returns without attaching anything useful) — another class of invisible failure.
 
-### Step 5: Xcode project
-
-The GNU Makefile and the Xcode project are independent build systems.  A `.c` file added to a `source/*/components/` directory is picked up by `Makefile` automatically but **is invisible to Xcode** until manually added to `project.pbxproj`.  This means the GNU build may succeed while the macOS/Xcode build silently excludes the file and gets a link error.
-
-### Step 6: Tests are not optional
+### Step 5: Tests are not optional
 
 A test file is the only way to catch the "component attaches but does nothing" failure mode that results from any missed step above.  A minimal test should:
 
@@ -104,9 +100,8 @@ Look at `tests/test_state_manager.lua` and `tests/test_styles_lua.lua` as templa
 3. Run `make modules` — inspect `generated/core/core_export.c` to confirm the struct and Proc switch look correct
 4. Create `source/core/components/MyComponent.c` with `HANDLER(...)` implementations
 5. Confirm `on_core_registered` in `core_export.c` calls `OBJ_RegisterClass(&_MyComponent)` (or add the call manually if the callback is hand-written)
-6. Add `source/core/components/MyComponent.c` to `orca.xcodeproj/project.pbxproj` in all four required sections
-7. Create `tests/test_mycomponent.lua`
-8. Run `make unite && xvfb-run make test`
+6. Create `tests/test_mycomponent.lua`
+7. Run `make unite && xvfb-run make test`
 
 ### "I want to add a component to a plugin (e.g. UIKit)"
 
@@ -153,7 +148,6 @@ Use this as a pull request self-review checklist:
 [ ] Generated *_export.c has non-empty MyComponentProc switch
 [ ] HANDLER(...) implementations in source/*/components/MyComponent.c
 [ ] OBJ_RegisterClass(&_MyComponent) called at module init
-[ ] MyComponent.c added to orca.xcodeproj/project.pbxproj (4 places)
 [ ] tests/test_mycomponent.lua covers attach + properties + at least one message
 [ ] make unite passes (C-only build)
 [ ] xvfb-run make test passes (full test suite)

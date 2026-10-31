@@ -14,8 +14,7 @@ Every successful component addition in this repo (StyleController, StateManagerC
 2. Run `make modules` to regenerate the struct, property IDs, and the Proc switch
 3. Implement the `HANDLER(...)` functions in a new `.c` file
 4. Call `OBJ_RegisterClass(&_ClassName)` in the `on-luaopen` callback
-5. Add the `.c` file to `orca.xcodeproj/project.pbxproj` (four places)
-6. Write a test file `tests/test_classname.lua`
+5. Write a test file `tests/test_classname.lua`
 
 **Skipping or reordering any step causes silent, hard-to-diagnose failures.** The concrete case studies below show exactly what breaks when each step is missed.
 

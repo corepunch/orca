@@ -6,13 +6,7 @@
 #include <include/api.h>
 #include <source/filesystem/pakfile.c>
 
-#ifndef ORCA_NO_LZ4
-#ifdef __QNX__
-#include <lz4/lz4.h>
-#else
 #include <lz4.h>
-#endif
-#endif
 
 #ifndef ORCA_NO_ZIP
 #include <zlib.h>
