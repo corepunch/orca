@@ -54,18 +54,16 @@ assert(app.screen:findChild("AvatarChoiceorca", true) and app.screen:findChild("
 local choices = app.screen:findChild("AvatarChoices", true)
 local count = 0
 for _ in choices.children do count = count + 1 end
-assert(count == 16, "Every character has one labelled native button")
+assert(count == 16, "Every character has one native image button")
 for _, width in ipairs { 390, 320 } do
     app.screen.Width = width
     flush()
     assert(app.avatarPicker.root.ActualWidth == width, "The picker fills the requested viewport")
     for row in choices.children do
         local portrait = row:findChild("AvatarPortrait", true)
-        local label = row:findChild("AvatarLabel", true)
         assert(portrait.ActualWidth > 40 and math.abs(portrait.ActualWidth - portrait.ActualHeight) < 1,
             "Character portraits stay square at " .. width .. " points")
-        assert(portrait.ActualY + portrait.ActualHeight <= label.ActualY + 1,
-            "Character labels sit below their portraits")
+        assert(not row:findChild("AvatarLabel", true), "The picker shows portraits without name captions")
     end
 end
 app.screen.Width = 390
