@@ -54,8 +54,10 @@ claiming historical fidelity.
   ellipsis for secondary actions. Its glyphs follow Windows Phone's symbols:
   one simple shape per ring, without frames or fine detail (user decision,
   2026-10-31). Chats is Lucide `message-circle`, contacts `users` (People),
-  new chat `plus` (Add) and profile `user` (Contact); a framed contact card
-  was too detailed at 18 points. The bar draws the ring, never the icon. A conversation uses attach, message input
+  new chat `plus` (Add) and settings `settings`, a gear like Windows Phone's
+  settings symbol; a framed contact card was too detailed at 18 points. The
+  bar draws the ring, never the icon. Search stays the field above the
+  inbox rather than an app bar command. A conversation uses attach, message input
   and send in its composer, without another command row below it.
   Both use a 58-point content height; the composer leaves 5 points above and
   below its 48-point controls. System/keyboard insets are added separately.
@@ -71,7 +73,8 @@ claiming historical fidelity.
   `@username`; the whole row opens the chat. Sub-flows go back through the
   header's back button. Metro avatars and type are kept; Telegram's
   rounded cards, separators and A–Z index are not adopted.
-- Profile follows Telegram's Settings and Edit Profile (user-supplied iOS
+- The settings tab (route `/profile`, titled "settings" as in Telegram)
+  follows Telegram's Settings and Edit Profile (user-supplied iOS
   screenshots, 2026-10-31) in Metro form, in Telegram's order: a 96-point
   photo with your name and "phone · @username", "choose a character" and
   "upload photo" command rows, the name and username fields each with a

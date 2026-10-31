@@ -12,7 +12,7 @@ local pages = {
     { key = "Chats", route = "/", label = "chats", icon = "message-circle" },
     { key = "Contacts", route = "/contacts", label = "contacts", icon = "users" },
     { key = "New", route = "/new", label = "new chat", icon = "plus" },
-    { key = "Profile", route = "/profile", label = "profile", icon = "user" },
+    { key = "Profile", route = "/profile", label = "settings", icon = "settings" },
 }
 
 function Shell.new(screen, navigate, menu)
