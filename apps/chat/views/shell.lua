@@ -10,9 +10,9 @@ Shell.__index = Shell
 -- disabled, which also marks where you are.
 local pages = {
     { key = "Chats", route = "/", label = "chats", icon = "message-circle" },
-    { key = "Contacts", route = "/contacts", label = "contacts", icon = "contact-round" },
+    { key = "Contacts", route = "/contacts", label = "contacts", icon = "users" },
     { key = "New", route = "/new", label = "new chat", icon = "plus" },
-    { key = "Profile", route = "/profile", label = "profile", icon = "user-round" },
+    { key = "Profile", route = "/profile", label = "profile", icon = "user" },
 }
 
 function Shell.new(screen, navigate, menu)

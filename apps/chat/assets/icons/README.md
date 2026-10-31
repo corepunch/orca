@@ -4,7 +4,7 @@ These are raw SVGs from the official
 [Lucide repository](https://github.com/lucide-icons/lucide/tree/main/icons),
 downloaded on 2026-10-23 (`users-round`, `megaphone`, `compass`, `ticket`,
 `smartphone`, `mail`, `key-round`, `user-round-plus` and `check` on 2026-10-30,
-`camera` on 2026-10-31).
+`camera`, `users` and `user` on 2026-10-31).
 The upstream license is included in `LICENSE`.
 
 All are unmodified except `check-bold.svg`: Lucide's `check` with

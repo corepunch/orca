@@ -51,7 +51,11 @@ claiming historical fidelity.
   “Synced · updates automatically”, and do not reserve an empty status row.
   Show loading, failures and retry actions only when relevant.
 - The inbox uses a compact `ApplicationBar` with round commands and an
-  ellipsis for secondary actions. A conversation uses attach, message input
+  ellipsis for secondary actions. Its glyphs follow Windows Phone's symbols:
+  one simple shape per ring, without frames or fine detail (user decision,
+  2026-10-31). Chats is Lucide `message-circle`, contacts `users` (People),
+  new chat `plus` (Add) and profile `user` (Contact); a framed contact card
+  was too detailed at 18 points. The bar draws the ring, never the icon. A conversation uses attach, message input
   and send in its composer, without another command row below it.
   Both use a 58-point content height; the composer leaves 5 points above and
   below its 48-point controls. System/keyboard insets are added separately.
