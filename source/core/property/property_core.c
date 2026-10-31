@@ -1,5 +1,13 @@
 #include "property_internal.h"
 
+static uint64_t s_bindingData = 1;
+
+void
+PROP_BindingDataChanged(void)
+{
+  ++s_bindingData;
+}
+
 void
 Token_Release(struct token* token)
 {
@@ -128,16 +136,30 @@ PROP_WriteBindingSource(struct Property *property)
 bool_t
 PROP_Update(struct Property *property)
 {
-  if (property == NULL)
+  if (property == NULL || property->bindingEvaluating)
     return FALSE;
+  if (property->binding && property->binding->Mode == kBindingModeOneTime) {
+    if (property->bindingEvaluated && property->bindingPaths == PROP_BindingGeneration() &&
+        property->bindingData == s_bindingData) return TRUE;
+    /* Invalidations can occur twice in one frame, including during list creation. */
+    property->updateFrame = core.frame - 1;
+    property->binding->updateFrame = core.frame - 1;
+  }
   if (property->updateFrame == core.frame) {
     return FALSE;
   }
   property->updateFrame = core.frame;
   if (property->binding) {
-    if (!_RunBinding(property, property->binding)) {
+    property->bindingEvaluating = TRUE;
+    bool_t success = _RunBinding(property, property->binding);
+    property->bindingEvaluating = FALSE;
+    if (!success) {
       _ReleaseBindingNode(property->binding);
       property->binding = NULL;
+    } else {
+      property->bindingEvaluated = TRUE;
+      property->bindingPaths = PROP_BindingGeneration();
+      property->bindingData = s_bindingData;
     }
   }
   return TRUE;
@@ -171,6 +193,7 @@ PROP_IsNull(struct Property const *property)
 void
 PROP_Clear(struct Property *property)
 {
+  if (property->pdesc->DataType == kDataTypeObject) PROP_InvalidateBindingPaths();
   free(property->handlerName);
   property->handlerName = NULL;
   property->handlerOverride = FALSE;
@@ -211,6 +234,7 @@ PROP_Clear(struct Property *property)
 _PropertyAlloc(lua_State* L, struct Object *object, struct PropertyType const *pt)
 {
   (void)L;
+  PROP_InvalidateBindingPaths();
   struct Property *property = ZeroAlloc(sizeof(struct Property));
   property->object  = object;
   property->pdesc   = pt;
@@ -228,6 +252,7 @@ PROP_Create(lua_State* L, struct Object *object, struct PropertyType const *pt)
 void
 OBJ_ReleaseProperties(struct Object *hobj)
 {
+  PROP_InvalidateBindingPaths();
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
@@ -281,6 +306,7 @@ PROP_ClearSpecialized(struct Property *pprop) {
         p->flags |= base->flags;
         _ReleaseBindingNode(p->binding);
         p->binding = base->binding;
+        p->bindingEvaluated = FALSE;
         p->updateFrame = 0;
         p->specializedBase = NULL;
         free(base->value);

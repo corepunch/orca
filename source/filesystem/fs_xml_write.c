@@ -36,7 +36,7 @@ serialize_bindings(struct Object const *object, xmlNodePtr node)
     xmlNodePtr bnd = xmlNewChild(node, NULL, XMLSTR("BindingExpression"),
                                   expr ? XMLSTR(expr) : NULL);
     xmlSetProp(bnd, XMLSTR("Target"), XMLSTR(target));
-    static char const *modes[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression" };
+    static char const *modes[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression", "OneTime" };
     if (p->binding && p->binding->Mode >= 0 && p->binding->Mode < ARRAY_SIZE(modes))
       xmlSetProp(bnd, XMLSTR("Mode"), XMLSTR(modes[p->binding->Mode]));
     if (!PROP_HasProgram((struct Property *)p)) xmlSetProp(bnd, XMLSTR("Enabled"), XMLSTR("false"));

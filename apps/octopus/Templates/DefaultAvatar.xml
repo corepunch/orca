@@ -1,5 +1,5 @@
 <Grid AspectRatio="1">
   <Button Name="SelectAvatar" Click="ChangePhoto" AspectRatio="1" BackgroundColor="#00000000" class="octopus-row">
-    <ImageView Name="AvatarPortrait" Src="{Binding DataContext/Path}" AspectRatio="1" Stretch="UniformToFill" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
+    <ImageView Name="AvatarPortrait" Src="{Binding DataContext/Path, Mode=OneTime}" AspectRatio="1" Stretch="UniformToFill" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
   </Button>
 </Grid>

@@ -1,24 +1,24 @@
 <!-- One connect row, bound to an OctopusActivity: who did what to which post.
      Kind adds a style class (like, repost, comment, follow) for the icon. -->
-<Button Click="OpenPost" BackgroundColor="#00000000" class="octopus-row" StateClasses="{Binding DataContext/Kind}">
+<Button Click="OpenPost" BackgroundColor="#00000000" class="octopus-row" StateClasses="{Binding DataContext/Kind, Mode=OneTime}">
   <Grid Columns="44px 1fr" Spacing="8" IgnoreHitTest="true">
-    <Grid Width="44" Height="44" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Initials}" FontSize="19" class="avatar-initials"
+    <Grid Width="44" Height="44" StateClasses="{Binding DataContext/Tone, Mode=OneTime}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials, Mode=OneTime}" FontSize="19" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar, Mode=OneTime}" Src="{Binding DataContext/AvatarPath, Mode=OneTime}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
       <Grid Columns="18px 1fr auto" Spacing="8" IgnoreHitTest="true">
-        <VectorView Source="{Binding DataContext/Icon}" Width="16" Height="16" MarginTop="auto" MarginBottom="auto"
+        <VectorView Source="{Binding DataContext/Icon, Mode=OneTime}" Width="16" Height="16" MarginTop="auto" MarginBottom="auto"
                     class="activity-icon" IgnoreHitTest="true"/>
-        <TextBlock Text="{Binding DataContext/Line}" FontSize="15" FontWeight="Bold" TextOverflow="Ellipsis"
+        <TextBlock Text="{Binding DataContext/Line, Mode=OneTime}" FontSize="15" FontWeight="Bold" TextOverflow="Ellipsis"
                    TextWrapping="NoWrap" class="octopus-ink" IgnoreHitTest="true"/>
-        <TextBlock Text="{Binding DataContext/Age}" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+        <TextBlock Text="{Binding DataContext/Age, Mode=OneTime}" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
       </Grid>
-      <TextBlock Visible="{Binding DataContext/HasBody}" Text="{Binding DataContext/Excerpt}" FontSize="15" WordWrap="true"
+      <TextBlock Visible="{Binding DataContext/HasBody, Mode=OneTime}" Text="{Binding DataContext/Excerpt, Mode=OneTime}" FontSize="15" WordWrap="true"
                  class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Visible="{Binding DataContext/HasSummary}" Text="{Binding DataContext/Summary}" FontSize="13"
+      <TextBlock Visible="{Binding DataContext/HasSummary, Mode=OneTime}" Text="{Binding DataContext/Summary, Mode=OneTime}" FontSize="13"
                  TextOverflow="Ellipsis" TextWrapping="NoWrap" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
   </Grid>

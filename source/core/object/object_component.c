@@ -63,6 +63,7 @@ OBJ_AnimateComponents(struct Object *object, wParam_t wParam, lParam_t lParam)
 struct component*
 OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
 {
+  PROP_InvalidateBindingPaths();
   struct ClassDesc const *cls = OBJ_FindClassW(class_id);
   if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
@@ -598,6 +599,7 @@ OBJ_GetComponent(struct Object *pobj, uint32_t id)
 void
 OBJ_ReleaseComponents(struct Object *pobj)
 {
+  PROP_InvalidateBindingPaths();
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
     AnimationDispatch_Forget(cmp);
@@ -609,6 +611,7 @@ void
 CMP_Detach(void* userdata)
 {
   if (!userdata) return;
+  PROP_InvalidateBindingPaths();
   // pUserData is a flexible array member at the end of struct component.
   // Subtract its offset to recover the containing struct component pointer.
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));

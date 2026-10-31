@@ -10,6 +10,7 @@ OBJ_AddChild(struct Object *self, struct Object *child)
     OBJ_MoveBefore(child, NULL);
     return child;
   }
+  PROP_InvalidateBindingPaths();
   struct Object *oldParent = child->parent;
   // Acquire the new hierarchy reference before releasing the old parent's.
   OBJ_AddRef(child);
@@ -172,6 +173,7 @@ OBJ_MoveBefore(struct Object *self, struct Object *sibling)
   if (!self || !self->parent || sibling == self || self->next == sibling) return;
   struct Object *parent = self->parent;
   if (sibling && sibling->parent != parent) return;
+  PROP_InvalidateBindingPaths();
   REMOVE_FROM_LIST(struct Object, self, parent->children);
   struct Object **slot = &parent->children;
   while (*slot && *slot != sibling) slot = &(*slot)->next;

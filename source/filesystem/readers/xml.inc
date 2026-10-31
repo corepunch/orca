@@ -225,7 +225,7 @@ xml_scene_binding(const char *target, const char *text)
     eq = xml_scene_trim(eq);
     if (!strcmp(xml_scene_trim(opt), "Source")) source = eq;
     else if (!strcmp(opt, "Mode") && (!strcmp(eq, "OneWay") || !strcmp(eq, "TwoWay") ||
-             !strcmp(eq, "OneWayToSource") || !strcmp(eq, "Expression"))) mode = eq;
+             !strcmp(eq, "OneWayToSource") || !strcmp(eq, "Expression") || !strcmp(eq, "OneTime"))) mode = eq;
     else valid = FALSE;
   }
   xmlNodePtr binding = valid ? xmlNewNode(NULL, XMLSTR("BindingExpression")) : NULL;

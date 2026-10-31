@@ -130,6 +130,8 @@ PROP_SetStoredValue(struct Property *property,
 {
   void *storage = property->value;
   if (property->pdesc->IsArray) {
+    PROP_InvalidateBindingPaths();
+    if (OBJ_GetComponent(property->object, ID_DataObject)) PROP_BindingDataChanged();
     void *old_ptr = *(void**)storage;
     int old_count = ((int*)storage)[sizeof(void*)/sizeof(int)];
     if (old_ptr) {
@@ -251,6 +253,8 @@ PROP_IsSameValue(struct Property const *property, void const* source)
 void
 PROP_NotifyChanged(struct Property *property)
 {
+  if (property->pdesc->DataType == kDataTypeObject) PROP_InvalidateBindingPaths();
+  if (OBJ_GetComponent(property->object, ID_DataObject)) PROP_BindingDataChanged();
   if (property->pdesc->IsArray) {
     return;
   }

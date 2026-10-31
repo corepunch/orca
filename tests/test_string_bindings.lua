@@ -220,4 +220,26 @@ scenario("reparented bindings and complete graph reclamation", function()
     equal(core.objectCount(), baseline, "Repeated bound graph creation/destruction must not leak native objects")
 end)
 
+scenario("resolved parent paths invalidate before source destruction", function()
+    local root = ui.StackView {}
+    local source = ui.TextBlock { Text = "first" }
+    local target = ui.TextBlock {}
+    root:addChild(source); source:addChild(target)
+    bind(target, "{../Text}")
+    evaluate(root)
+    evaluate(root) -- populate and reuse the resolved-path cache
+    equal(target.Text, "first", "Cached parent source")
+    target:removeFromParent()
+    source:removeFromParent()
+    source = nil
+    collect()
+    local replacement = ui.TextBlock { Text = "second" }
+    root:addChild(replacement); replacement:addChild(target)
+    evaluate(root)
+    equal(target.Text, "second", "Destroyed source must not survive in a path cache")
+    replacement.Text = "updated"
+    evaluate(root)
+    equal(target.Text, "updated", "Cached property still exports the current scalar value")
+end)
+
 print(("PASS: %d string binding scenarios, %d assertions"):format(cases, checks))

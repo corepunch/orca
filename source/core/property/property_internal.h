@@ -39,6 +39,10 @@ struct Property
   uint32_t                   updateFrame;
   char*                      handlerName; // Declarative controller function; registry references stay runtime-only.
   bool_t                     handlerOverride;
+  bool_t                     bindingEvaluated;
+  bool_t                     bindingEvaluating;
+  uint64_t                   bindingPaths;
+  uint64_t                   bindingData;
 };
 
 static inline bool_t
@@ -52,6 +56,7 @@ void const *PROP_GetRawValueSlot(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 void PROP_NotifyChanged(struct Property *property);
+void PROP_BindingDataChanged(void);
 struct Property *PROP_ResolveBindingSource(struct Object *object, struct token *token);
 bool_t PROP_WriteBindingSource(struct Property *property);
 bool_t PROP_CanWriteBindingSource(struct Property const *target, struct Property const *source);

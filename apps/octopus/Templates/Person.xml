@@ -1,16 +1,16 @@
 <!-- A person in search results, bound to an OctopusProfile. -->
 <Button Height="56" Click="OpenPerson" BackgroundColor="#00000000" class="octopus-row">
   <Grid Columns="44px 1fr" Spacing="8" IgnoreHitTest="true">
-    <Grid Width="44" Height="44" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Initials}" FontSize="19" class="avatar-initials"
+    <Grid Width="44" Height="44" StateClasses="{Binding DataContext/Tone, Mode=OneTime}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials, Mode=OneTime}" FontSize="19" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar, Mode=OneTime}" Src="{Binding DataContext/AvatarPath, Mode=OneTime}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView Spacing="2" JustifyContent="Center" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Title}" FontSize="20" TextOverflow="Ellipsis" TextWrapping="NoWrap"
+      <TextBlock Text="{Binding DataContext/Title, Mode=OneTime}" FontSize="20" TextOverflow="Ellipsis" TextWrapping="NoWrap"
                  class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Visible="{Binding DataContext/HasBio}" Text="{Binding DataContext/BioExcerpt}" FontSize="13"
+      <TextBlock Visible="{Binding DataContext/HasBio, Mode=OneTime}" Text="{Binding DataContext/BioExcerpt, Mode=OneTime}" FontSize="13"
                  TextOverflow="Ellipsis" TextWrapping="NoWrap" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
   </Grid>
