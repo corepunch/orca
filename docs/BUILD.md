@@ -14,22 +14,19 @@ Use this file as the fast path for local setup and command selection.
 git submodule update --init --recursive
 ```
 
-On macOS, install the desktop build dependencies with Homebrew:
+On macOS, the Xcode Command Line Tools are enough: zlib, libxml2 and curl come
+from the SDK, and nothing is needed from Homebrew. On Linux, install the
+development packages listed in the [README](../README.md).
 
-```bash
-brew install pkgconf lua lz4 libxml2
-```
+Lua and LZ4 are not system dependencies:
 
-The build uses `pkg-config` to find headers and libraries. It prefers the
-`lua5.4` package when available, then falls back to `lua`. Missing packages
-are reported by name; having the `lua` executable alone does not establish
-that all build dependencies are available.
+- Lua 5.4 is built from the `libs/lua` submodule into
+  `build/lib/liblua5.4.so` and `build/bin/lua`, which `make lua` builds on its
+  own. The engine, plugins and Lua-only tests all use that copy.
+- LZ4 is compiled into `liborca` from the `libs/lz4` submodule.
 
-To build without LZ4-compressed package support (and without installing `lz4`):
-
-```bash
-make no-lz4
-```
+MoonScript is optional and is not bundled. To run `.moon` programs, install it
+with LuaRocks for Lua 5.4 and point `LUA_PATH` and `LUA_CPATH` at that tree.
 
 ## Authoritative commands
 

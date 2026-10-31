@@ -54,9 +54,6 @@ endif
 
 # Allow CFLAGS to be passed from luarocks, but ensure we have base flags
 CFLAGS ?= -O2 -g
-ifneq ($(filter no-lz4,$(MAKECMDGOALS)),)
-CFLAGS += -DORCA_NO_LZ4
-endif
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
@@ -74,29 +71,41 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
-LUA_PKG := $(shell pkg-config --exists lua5.4 && echo lua5.4 || echo lua)
-PKG_DEPS := zlib $(LUA_PKG) libxml-2.0
-ifeq ($(filter -DORCA_NO_LZ4,$(CFLAGS)),)
-PKG_DEPS += liblz4
-endif
-# Keep available flags when another dependency is missing, and show its diagnostic.
-PKG_CFLAGS := $(foreach dep,$(PKG_DEPS),$(shell pkg-config --cflags $(dep)))
-PKG_LIBS := $(foreach dep,$(PKG_DEPS),$(shell pkg-config --libs $(dep)))
-CFLAGS += $(PKG_CFLAGS)
-LDFLAGS += $(PKG_LIBS)
+# Lua 5.4 comes from the libs/lua submodule, built as one shared library so that
+# liborca, its plugins and the executables share a single copy of the runtime.
+LUA_SRCDIR = libs/lua
+LUA_LIB = $(LIBDIR)/liblua5.4.so
+LUA_BIN = $(BINDIR)/lua
+LUA_SOURCES = $(filter-out $(addprefix $(LUA_SRCDIR)/,lua.c onelua.c ltests.c),$(wildcard $(LUA_SRCDIR)/*.c))
+LUA_OBJECTS = $(patsubst $(LUA_SRCDIR)/%.c,$(OBJECTDIR)/lua/%.o,$(LUA_SOURCES))
+VENDOR_CFLAGS = -O2 -g -fpic $(SANITIZER_FLAGS) $(ARCH_FLAGS)
+LUA_CFLAGS = $(VENDOR_CFLAGS) -DLUA_COMPAT_5_3
+# LZ4 comes from the libs/lz4 submodule and compiles into liborca.
+LZ4_SRCDIR = libs/lz4/lib
+UNITEOBJECTS += lz4.o
+CFLAGS += -I$(LUA_SRCDIR) -I$(LZ4_SRCDIR)
+# zlib and libxml2 come with the system: the macOS SDK or the distribution's packages.
+LDFLAGS += -llua5.4 -lxml2 -lz -lm
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
+	CFLAGS += -I$(shell xcrun --sdk macosx --show-sdk-path)/usr/include/libxml2
 	LIBS += -framework OpenGL -framework IOSurface
 	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
 	UNITEOBJECTS += media_apple.o
 	UNITEOBJECTS += notifications_apple.o
 	LIBS += -framework AppKit -framework UserNotifications
-	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
+	EXE_RPATH = -Wl,-rpath,@executable_path/../../$(LIBDIR)
+	LUA_CFLAGS += -DLUA_USE_MACOSX
+	LUA_SONAME = -Wl,-install_name,@rpath/liblua5.4.so
 else
 	LIBS += -lGL
-	LDFLAGS += -Wl,-rpath,'$$ORIGIN/../../$(LIBDIR)'
+	CFLAGS += -I/usr/include/libxml2
+	EXE_RPATH = -Wl,-rpath,'$$ORIGIN/../../$(LIBDIR)'
+	LUA_CFLAGS += -DLUA_USE_LINUX
+	LUA_SONAME = -Wl,-soname,liblua5.4.so
 endif
+LDFLAGS += $(EXE_RPATH)
 
 # LuaRocks installation directories (can be overridden)
 INST_PREFIX ?= /usr/local
@@ -111,14 +120,11 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-texture-downscale test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite lua orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-texture-downscale test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
 build: default
-
-.PHONY: no-lz4
-no-lz4: default
 
 # Phony: a module target such as /media must not match an existing root directory.
 .PHONY: $(SOURCEMODULES2)
@@ -131,6 +137,27 @@ platform: | directories
 
 $(SOURCEMODULES2): | directories
 
+lua: $(LUA_LIB) $(LUA_BIN)
+
+$(LUA_SRCDIR)/lua.h $(LZ4_SRCDIR)/lz4.c:
+	$(error Submodules are missing. Run: git submodule update --init --recursive)
+
+buildunite: $(OBJECTDIR)/lz4.o
+$(OBJECTDIR)/lz4.o: $(LZ4_SRCDIR)/lz4.c | directories
+	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
+
+$(OBJECTDIR)/lua/%.o: $(LUA_SRCDIR)/%.c $(LUA_SRCDIR)/lua.h | directories
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CC) $(LUA_CFLAGS) -c $< -o $@
+
+$(LUA_LIB): $(LUA_OBJECTS) | directories
+	$(Q)echo "Linking $(notdir $@)"
+	$(Q)$(CC) $(LUA_OBJECTS) -shared $(LUA_SONAME) $(SANITIZER_FLAGS) $(ARCH_FLAGS) -lm -ldl -o $@
+
+$(LUA_BIN): $(LUA_SRCDIR)/lua.c $(LUA_LIB) | directories
+	$(Q)echo "Linking lua"
+	$(Q)$(CC) $(LUA_CFLAGS) $< -o $@ -L$(LIBDIR) -llua5.4 -lm -ldl $(EXE_RPATH)
+
 buildunite: modules $(SOURCEMODULES2)
 
 ifeq ($(UNAME_S),Darwin)
@@ -142,7 +169,7 @@ $(OBJECTDIR)/notifications_apple.o: source/notifications/notifications_apple.m s
 	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
 endif
 
-buildlib: platform buildunite
+buildlib: platform lua buildunite
 ifeq ($(shell uname -s),Darwin)
 	$(Q)echo "Linking $(notdir $(TARGETLIB))"
 	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
@@ -167,11 +194,11 @@ else
 		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca $(PLUGIN_EXTRA_LIBS_$*) -o $@ $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..'
 endif
 
-app: modules platform
+app: modules platform lua
 	$(Q)echo "Linking $(APPNAME)"
 	$(Q)$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
-unite: directories buildunite buildlib buildplugins app copyshare
+unite: directories lua buildunite buildlib buildplugins app copyshare
 
 # FBX -> .mesh converter used by tools/blender-export.py. Optional: needs the Autodesk FBX SDK.
 FBX_SDK ?= /Applications/Autodesk/FBX SDK/2020.2
@@ -225,6 +252,8 @@ clean:
 	-rm -f $(TARGET)
 	-rm -rf $(SHAREDIR)/*
 	-rm -rf $(PLUGINLIBDIR)
+	-rm -rf $(OBJECTDIR)/lua
+	-rm -f $(LUA_LIB) $(LUA_BIN)
 	$(MAKE) codegen-clean
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) clean
 
@@ -252,7 +281,7 @@ weather: copyshare
 chat: copyshare
 	$(TARGET) apps/chat
 
-test-chat: copyshare
+test-chat: copyshare $(LUA_BIN)
 	$(LUA) tests/test_chat_push.lua
 	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_polling.lua
@@ -273,7 +302,7 @@ test-chat: copyshare
 
 # Fast offline presentation checks. Reuse the current binary for app-only edits;
 # rebuild separately with `make unite` after native changes or on a fresh checkout.
-test-chat-ui: copyshare
+test-chat-ui: copyshare $(LUA_BIN)
 	$(TARGET) -test=tests/test_chat_avatars.lua
 	$(TARGET) -test=tests/test_default_avatars.lua
 	$(LUA) tests/test_chat_photo_policy.lua
@@ -282,8 +311,8 @@ test-chat-ui: copyshare
 	$(TARGET) -test=tests/test_footer.lua
 
 # Adapter unit tests need only Lua: no engine startup, resource copy or rebuild.
-LUA ?= lua
-test-chat-appwrite:
+LUA ?= $(LUA_BIN)
+test-chat-appwrite: $(LUA_BIN)
 	$(LUA) tests/test_chat_appwrite.lua
 	$(LUA) tests/test_chat_push.lua
 
@@ -311,10 +340,10 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
-test-octopus-theme:
+test-octopus-theme: $(LUA_BIN)
 	$(LUA) tests/test_octopus_theme.lua
 
-test-octopus-startup-api:
+test-octopus-startup-api: $(LUA_BIN)
 	$(LUA) tests/test_octopus_startup_api.lua
 
 test-octopus-backend:
@@ -371,7 +400,7 @@ ios-devices:
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
-test-octopus-cache:
+test-octopus-cache: $(LUA_BIN)
 	$(LUA) tests/test_octopus_cache.lua
 
 # Build the engine first with make unite after native changes. The C driver
@@ -436,6 +465,8 @@ install: all
 	install -m 0755 $(TARGETLIB) $(INST_LIBDIR)/orca.so
 	# Install the platform library
 	install -m 0755 $(LIBDIR)/libplatform.so $(INST_LIBDIR)/
+	# Install the Lua runtime
+	install -m 0755 $(LUA_LIB) $(INST_LIBDIR)/
 	# Install Lua modules
 	install -m 0644 source/core/behaviour.lua $(INST_LUADIR)/orca/behaviour.lua
 	install -m 0644 main.lua $(INST_LUADIR)/orca/main.lua

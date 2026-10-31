@@ -98,7 +98,7 @@ XML2_VERSION    = 2.9.14
 # Add WASM dep headers / libraries to the WebGL compiler and linker flags.
 # libxml2 installs headers to $(prefix)/include/libxml2/libxml/, so both the
 # top-level include dir and the libxml2 sub-directory must be on the path.
-WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2
+WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2
 WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
 
 # Enable static plugin Lua-module registration (consumed by orcalib.c).
@@ -191,7 +191,7 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                       -sUSE_ZLIB=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sFETCH=1 \
-                      -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/libxml2 \
+                      -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2 \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
 

@@ -1,10 +1,4 @@
-#ifndef ORCA_NO_LZ4
-#ifdef __QNX__
-#include <lz4/lz4.h>
-#else
 #include <lz4.h>
-#endif
-#endif
 
 #ifndef ORCA_NO_ZIP
 #include <zlib.h>
@@ -110,7 +104,6 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
 }
 #endif
 
-#ifndef ORCA_NO_LZ4
 static HRESULT
 FS_DecompressLZ4(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
 {
@@ -150,7 +143,6 @@ FS_DecompressLZ4(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
 
   return NOERROR;
 }
-#endif
 
 PPACK
 _LoadPackFile(lpcString_t szPackfile)
@@ -233,13 +225,8 @@ static struct file *_ReadFromPak(FILE *fp, PPACKFILE pf) {
   struct file *file = 0;
   switch (pf->flags & 0xff) {
     case PACK_LZ4:
-#ifndef ORCA_NO_LZ4
       FS_DecompressLZ4(fp, pf, &file);
       return file;
-#else
-      Con_Error("LZ4 is not supported");
-      return NULL;
-#endif
     case PACK_ZIP:
 #ifndef ORCA_NO_ZIP
       FS_DecompressZlib(fp, pf, &file);

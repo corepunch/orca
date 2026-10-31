@@ -59,7 +59,7 @@ download pinned, SHA256-verified Lua 5.4.8, LZ4 1.10.0 and
 curl 8.10.1 sources, then build static libraries for the selected SDK and CPU.
 Downloads are cached under `build/ios/`. curl uses Apple's Secure Transport
 for HTTPS. Host Homebrew libraries are never linked into iOS executables.
-Host code generation uses the macOS SDK's libxml2 if pkg-config has no entry.
+Host code generation uses the macOS SDK's libxml2.
 
 ## Build and launch
 
