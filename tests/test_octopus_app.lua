@@ -411,7 +411,10 @@ for _, id in ipairs { "seahorse", "lobster", "starfish", "squid" } do
 end
 local selectedId = "squid"
 local choice = find(app, "Avatar" .. selectedId)
-assert(choice:findChild("SelectAvatar", true), "Character tiles are labelled, actionable templates")
+local selectAvatar = assert(choice:findChild("SelectAvatar", true), "Character portraits remain actionable")
+assert(not choice:findChild("AvatarLabel", true), "The picker shows portraits without character names")
+assert(selectAvatar.ActualWidth >= 44 and selectAvatar.ActualHeight >= 44
+    and selectAvatar.ActualWidth == selectAvatar.ActualHeight, "Portraits retain square touch targets")
 local loadAvatar, avatarBeforeFailure = Avatars.load, app.client:getProfile("u-ada").avatarId
 Avatars.load = function() return nil, { message = "Character unavailable." } end
 clickIn(app, "Avatar" .. selectedId, "SelectAvatar")
