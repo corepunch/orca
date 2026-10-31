@@ -104,8 +104,8 @@ function Avatar.controls(app, tile, status)
         upload(photo, status, current)
     end
     return C.stack({ Spacing = 0 }, {
-        C.button("Choose a character", choose, { Name = "ChooseAvatar", TextHorizontalAlignment = "Left" }),
-        C.button("Upload photo", pick, { Name = "UploadAvatar", TextHorizontalAlignment = "Left" }),
+        C.command("ChooseAvatar", "user-round", "choose a character", choose),
+        C.command("UploadAvatar", "camera", "upload photo", pick),
     })
 end
 

@@ -166,6 +166,9 @@ function Identity.auth(self, mode)
     return self:frame(body)
 end
 
+-- Your profile follows Telegram's settings and Edit Profile in Metro form:
+-- who you are, the photo commands, the public fields with footnotes, your
+-- notification and login details, then sign out.
 local function profileBody(self, profile)
     local user = self.client:getSession().user
     profile = profile or { display_name = (user.user_metadata or {}).display_name or "You" }
@@ -173,22 +176,38 @@ local function profileBody(self, profile)
     local username = C.input("Username", "Choose a public username", { Text = profile.username or "" })
     local identifier = C.input("LinkIdentifier", "Phone number or email to verify")
     local code = C.input("LinkCode", "Verification code", { Type = "Number" })
-    local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 14, class = "chat-muted" })
-    local function describe(p)
-        local phone, email = p.phone or user.phone, p.email or user.email
-        verified:setTextContent("Verified phone: " .. ((phone and phone ~= "") and phone or "Not added")
-            .. "\nVerified email: " .. ((email and email ~= "") and email or "Not added"))
-    end
-    describe(profile)
-    self.status = C.text("Your login details stay private. Choose how people find you.", {
-        Name = "ProfileStatus", WordWrap = true, FontSize = 14, StateClasses = "chat-muted",
-    })
+    self.status = C.text("", { Name = "ProfileStatus", Visible = false, WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
     self.profileStatus = self.status
     local epoch, status = self.sessionEpoch, self.status
     local function notice(message, isError)
         status:setTextContent(message or "")
         status.StateClasses = isError and "chat-error" or "chat-muted"
+        status.Visible = (message or "") ~= ""
     end
+    local photo = C.avatar(profile.display_name or "You", 96, user.id, self, user.id)
+    local title = C.text("", { Name = "ProfileTitle", FontSize = 28, TextOverflow = "Ellipsis" })
+    local handle = C.text("", { Name = "ProfileHandle", FontSize = 15, class = "chat-muted", TextOverflow = "Ellipsis" })
+    local link = C.stack({ Name = "LinkForm", Visible = false, Spacing = 10 })
+    local phoneRow = C.setting("PhoneSetting", "smartphone", "Number", function()
+        link.Visible, identifier.PlaceholderText = true, "New phone number"
+    end)
+    local emailRow = C.setting("EmailSetting", "mail", "Email", function()
+        link.Visible, identifier.PlaceholderText = true, "New email address"
+    end)
+    -- Telegram's header line: the phone and @username people know you by.
+    local function describe(p)
+        local phone, email = p.phone or user.phone, p.email or user.email
+        phone, email = (phone or "") ~= "" and phone or nil, (email or "") ~= "" and email or nil
+        title:setTextContent(p.display_name or "You")
+        local parts = {}
+        for _, part in ipairs { phone or email, (p.username or "") ~= "" and "@" .. p.username or nil } do
+            parts[#parts + 1] = part
+        end
+        handle:setTextContent(table.concat(parts, " · "))
+        phoneRow:findChild("PhoneSettingValue", true):setTextContent(phone or "Add")
+        emailRow:findChild("EmailSettingValue", true):setTextContent(email or "Add")
+    end
+    describe(profile)
     local phoneDiscovery, emailDiscovery = profile.discoverable_phone == true, profile.discoverable_email == true
     local phoneToggle = C.checkbox("DiscoverablePhone", "Find me by phone", phoneDiscovery,
         function(checked) phoneDiscovery = checked end)
@@ -197,7 +216,8 @@ local function profileBody(self, profile)
     local previews = profile.notification_previews ~= false
     local previewToggle = C.checkbox("NotificationPreviews", "Message previews", previews,
         function(checked) previews = checked end)
-    local verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
+    local verification
+    verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
         code,
         C.button("Verify & link", function()
             local result, linkError = self.client:verifyIdentityLink(self.pendingIdentity, code.Text)
@@ -207,25 +227,12 @@ local function profileBody(self, profile)
             if self.sessionEpoch ~= epoch then return end
             if updated then describe(updated) end
             identifier.Text, code.Text = "", ""
+            link.Visible, verification.Visible = false, false
             notice("Verified and linked to this account.")
         end, { Name = "VerifyLink", Background = colors.surface }),
     })
-    local portrait = C.avatar(profile.display_name or "You", 72, user.id, self, user.id)
-    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
-        portrait, ProfileAvatar.controls(self, portrait, self.status), self.status,
-        C.eyebrow("PUBLIC PROFILE"), name, username,
-        C.text("People can find your exact username. Your phone and email are never shown in search results.", {
-            FontSize = 13, WordWrap = true, class = "chat-dim" }), phoneToggle, emailToggle,
-        C.eyebrow("NOTIFICATIONS"), previewToggle,
-        C.text("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible.", {
-            Name = "NotificationPreviewsHint", FontSize = 13, WordWrap = true, class = "chat-dim" }),
-        C.button("Save settings", function()
-            local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
-                discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery, notification_previews = previews }
-            if self.sessionEpoch ~= epoch then return end
-            notice(result and "Settings saved." or saveError.message, not result)
-        end, { Name = "SaveProfile", class = "chat-primary" }),
-        C.eyebrow("VERIFIED LOGIN DETAILS"), verified, identifier,
+    for _, child in ipairs {
+        identifier,
         C.button("Send verification code", function()
             local result, linkError = self.client:requestIdentityLink(identifier.Text)
             if self.sessionEpoch ~= epoch then return end
@@ -233,7 +240,35 @@ local function profileBody(self, profile)
             self.pendingIdentity, verification.Visible = identifier.Text, true
             notice(self.remote and "Enter the code sent to your new login detail." or "Offline verification code: 123456")
         end, { Name = "RequestLink", Background = colors.surface }), verification,
-        C.button("Sign out", function() self:signOut() end, { Name = "SignOut", class = "chat-error" }),
+    } do link:addChild(child) end
+    local function group(children) return C.stack({ Spacing = 6 }, children) end
+    local header = ui.Grid { Name = "ProfileHeader", Columns = "96px 1fr", Spacing = 16, AlignItems = "Center" }
+    header:addChild(photo)
+    header:addChild(C.stack({ Spacing = 2 }, { title, handle }))
+    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
+        header,
+        ProfileAvatar.controls(self, photo, status),
+        status,
+        C.eyebrow("public profile"),
+        group { name, C.footnote("Enter your name and add an optional profile photo.") },
+        group { username, C.footnote("People can find your exact username.") },
+        group { phoneToggle, emailToggle,
+            C.footnote("Your phone and email are never shown in search results.") },
+        C.eyebrow("notifications"),
+        group { previewToggle,
+            C.footnote("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible.",
+                { Name = "NotificationPreviewsHint" }) },
+        C.button("Save settings", function()
+            local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
+                discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery, notification_previews = previews }
+            if self.sessionEpoch ~= epoch then return end
+            if result then describe(result) end
+            notice(result and "Settings saved." or saveError.message, not result)
+        end, { Name = "SaveProfile", class = "chat-primary" }),
+        C.eyebrow("login details"),
+        group { phoneRow, emailRow, C.footnote("Only you see these. Tap one to link a new number or email.") },
+        link,
+        C.command("SignOut", "log-out", "sign out", function() self:signOut() end, "chat-error"),
     })
     return body
 end

@@ -469,7 +469,13 @@ profile:UpdateLayout(390, 844)
 assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
 -- The keyboard lifts a focused field it would cover above itself and the app bar.
 drain(app)
+-- Tapping the Number row opens the field for a new number, as in Telegram.
+assert(not profile:findChild("LinkForm", true).Visible, "Linking stays closed until a login detail is tapped")
+profile:findChild("PhoneSetting", true):send("Node.LeftButtonUp")
+drain(app)
 local identifier = assert(profile:findChild("LinkIdentifier", true))
+assert(profile:findChild("LinkForm", true).Visible and identifier.PlaceholderText == "New phone number",
+    "The Number row opens the link field for a phone number")
 local function bottomOnScreen(node)
     local y = node.ActualY + node.ActualHeight
     for parent in function(_, p) p = p:getParent(); return p ~= profile and p or nil end, nil, node do
@@ -732,6 +738,9 @@ assert(otpApp.screen:findChild("LinkCode", true).Type == "Number", "Linked ident
 otpApp.screen:findChild("LinkCode", true).Text = "123456"
 click(otpApp, "VerifyLink")
 assert(otpApp.client:getProfile().phone == "+447700900987", "Verified phone must attach to the existing account")
+assert(not otpApp.screen:findChild("LinkForm", true).Visible
+    and otpApp.screen:findChild("PhoneSettingValue", true):getTextContent() == "+447700900987",
+    "Linking closes its form and the Number row shows the verified number")
 otpApp:show("/new")
 otpApp.screen:findChild("FindPerson", true).Text = "@alex"
 click(otpApp, "FindPeople")
@@ -1079,6 +1088,21 @@ drain(photoApp) -- visible member photos load after paint
 drain(photoApp)
 assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
     "Conversation members show their photos")
+
+-- Choosing your own photo replaces your initials on the profile and in member lists.
+photoApp.media.pick = function() return { jpeg = jpeg } end
+photoApp.screen = photoApp:dispatch("/profile").view
+drain(photoApp)
+local profileTile = photoApp.screen:findChild("ProfileHeader", true)
+assert(not avatarPhoto(profileTile), "Without a photo the profile shows initials")
+click(photoApp, "UploadAvatar")
+drain(photoApp); drain(photoApp)
+local mine = photoApp.client:getAvatars { "me" }.me
+assert(mine and photoApp.client:getAvatar(mine) == jpeg, "The chosen photo becomes the account's profile photo")
+assert(avatarPhoto(profileTile), "The profile shows the new photo at once: " .. photoApp.status:getTextContent())
+photoApp.screen = photoApp:dispatch("/details").view
+drain(photoApp); drain(photoApp)
+assert(avatarPhoto(photoApp.screen:findChild("Memberme", true)), "Member lists show the new photo")
 
 -- Exercise pagination through real native layout and the after-paint scroll hook.
 local historyClient = Chat.demo { clock = function() return 1700000000 end }

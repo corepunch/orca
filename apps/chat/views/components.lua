@@ -99,15 +99,38 @@ end
 
 -- A command row after Telegram's New Message: an accent outline icon in the
 -- avatar column and an accent label, so commands read apart from people.
-function C.command(name, icon, label, action)
+-- `role` recolours both, as chat-error does for sign out.
+function C.command(name, icon, label, action, role)
+    role = role or "chat-accent-text"
     local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
         Background = colors.surface, class = "chat-row" })
     local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
-    grid:addChild(C.icon(icon, 26, "chat-accent-text"))
-    grid:addChild(C.text(label, { FontSize = 20, class = "chat-accent-text", TextVerticalAlignment = "Center",
+    grid:addChild(C.icon(icon, 26, role))
+    grid:addChild(C.text(label, { FontSize = 20, class = role, TextVerticalAlignment = "Center",
         TextOverflow = "Ellipsis" }))
     button:addChild(grid)
     return button
+end
+
+-- A setting row after Telegram's Number and Username: a muted icon, the
+-- setting's name, and its current value at the right edge.
+function C.setting(name, icon, label, action)
+    local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
+        Background = colors.surface, class = "chat-row" })
+    local grid = ui.Grid { Columns = "52px auto 1fr", Spacing = 14, IgnoreHitTest = true }
+    grid:addChild(C.icon(icon, 26, "chat-muted"))
+    grid:addChild(C.text(label, { FontSize = 20, TextVerticalAlignment = "Center" }))
+    grid:addChild(C.text("", { Name = name .. "Value", FontSize = 17, class = "chat-muted", TextVerticalAlignment = "Center",
+        TextHorizontalAlignment = "Right", TextOverflow = "Ellipsis" }))
+    button:addChild(grid)
+    return button
+end
+
+-- A footnote under a group of fields, as Telegram explains its settings.
+function C.footnote(value, props)
+    props = props or {}
+    props.FontSize, props.WordWrap, props.class = props.FontSize or 13, true, props.class or "chat-dim"
+    return C.text(value, props)
 end
 
 -- The native control owns input and bindable state; CSS skins its generated parts.

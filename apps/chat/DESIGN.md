@@ -67,6 +67,16 @@ claiming historical fidelity.
   `@username`; the whole row opens the chat. Sub-flows go back through the
   header's back button. Metro avatars and type are kept; Telegram's
   rounded cards, separators and A–Z index are not adopted.
+- Profile follows Telegram's Settings and Edit Profile (user-supplied iOS
+  screenshots, 2026-10-31) in Metro form, in Telegram's order: a 96-point
+  photo with your name and "phone · @username", "choose a character" and
+  "upload photo" command rows, the name and username fields each with a
+  footnote under it, discovery check boxes, notification previews, then your
+  login details as Number and Email rows with their values at the right.
+  Tapping a row opens the field to link a new one, as Telegram's Number row
+  leads to Change Number. Sign out is the last command, in the error colour.
+  Telegram's centred header, rounded cards, chevrons and separators are not
+  adopted; the header stays left-aligned under the Metro page title.
 - Appearance follows the OS while Chat runs. Every palette colour, in Lua-built
   and XML views alike, comes from a CSS role under the Screen's
   `chat-light`/`chat-dark` StateClass, and frosted bars follow that palette
