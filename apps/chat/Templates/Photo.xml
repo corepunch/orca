@@ -2,17 +2,23 @@
      member fills PhotoPath with the thumbnail, then the full photo; when the
      full photo fails, the thumbnail stays and retry appears. A photo without
      text carries the message time on the image. -->
-<Grid Name="PhotoFrame" Width="260" Height="{Binding DataContext/FrameHeight}" class="chat-soft message-photo">
+<Grid Name="PhotoFrame" Width="{Binding DataContext/FrameWidth}" Height="{Binding DataContext/FrameHeight}"
+      MarginLeft="{Binding DataContext/FrameLeft}" MarginTop="{Binding DataContext/FrameTop}"
+      BorderTopLeftRadius="{Binding DataContext/CornerTopLeft}" BorderTopRightRadius="{Binding DataContext/CornerTopRight}"
+      BorderBottomLeftRadius="{Binding DataContext/CornerBottomLeft}" BorderBottomRightRadius="{Binding DataContext/CornerBottomRight}"
+      class="chat-soft">
   <Grid Name="PhotoContent">
     <VectorView Name="PhotoLoading" Visible="{Binding DataContext/Pending}" Source="Chat/assets/icons/refresh-cw.svg"
                 Width="32" Height="32" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="chat-muted" IgnoreHitTest="true"/>
     <ImageView Name="Photo" Visible="{Binding DataContext/HasPhoto}" Src="{Binding DataContext/PhotoPath}"
-               ForegroundColor="#ffffff" Stretch="UniformToFill" class="message-photo" IgnoreHitTest="true"/>
+               ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"
+               BorderTopLeftRadius="{Binding DataContext/CornerTopLeft}" BorderTopRightRadius="{Binding DataContext/CornerTopRight}"
+               BorderBottomLeftRadius="{Binding DataContext/CornerBottomLeft}" BorderBottomRightRadius="{Binding DataContext/CornerBottomRight}"/>
   </Grid>
   <Button Name="OpenPhoto" Click="OpenPhoto" IgnoreHitTest="{Binding DataContext/Failed}" BackgroundColor="#00000000" BorderWidth="0"/>
   <Button Name="RetryPhoto" Visible="{Binding DataContext/Failed}" Click="Photos.Retry" Height="44" FontSize="12"
           MarginTop="auto" MarginBottom="auto" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
-          BorderWidth="0" class="chat-action chat-link">photo unavailable · retry</Button>
+          BorderWidth="0" class="chat-action chat-link" Text="{Binding DataContext/RetryLabel}"/>
   <TextBlock Name="PhotoTime" Visible="{Binding DataContext/ShowTime}" Text="{Binding DataContext/Timestamp}"
              FontSize="11" Padding="4 2" MarginLeft="auto" MarginTop="auto" MarginRight="6" MarginBottom="6"
              class="photo-time" IgnoreHitTest="true"/>

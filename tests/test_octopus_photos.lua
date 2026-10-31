@@ -162,6 +162,35 @@ visibility:update()
 assert(#workers == 0, "Hidden pages do not download")
 list.Visible = true
 
+-- A visible album offers each child image to the same bounded media queue.
+-- Completion must update every tile, including the first image shared with
+-- the legacy parent record, without duplicate transfers.
+local album = { id = "p1", postType = "photo", title = "", content = "Nine views", authorId = "u", authorName = "U",
+    createdAt = posts[1].createdAt, tags = {}, images = {}, imageId = "album1" }
+for index = 1, 9 do album.images[index] = { id = "album" .. index } end
+store:put("OctopusPost", OctopusProvider.preparePost(album))
+list.ContentOffset = { X = 0, Y = 0 }
+settle()
+screen:UpdateLayout(200, 450)
+visibility:update()
+finish()
+settle()
+local tiles = {}
+local function collect(node)
+    if node.Name == "GalleryTile" then tiles[#tiles + 1] = node end
+    local child = node:getFirstChild()
+    while child do collect(child); child = child:getNext() end
+end
+collect(row(1))
+assert(#tiles == 9 and not shown(inRow(1, "Photo")), "Albums use the gallery without a duplicate primary image")
+for index, tile in ipairs(tiles) do
+    local image = assert(tile:findChild("Image", true))
+    assert(image.Src == media:path("photo:album" .. index) and calls["album" .. index] == 1,
+        "Every gallery image loads once through the shared media queue")
+    image:send("Node.LoadView")
+    assert(image.Source, "Gallery bytes reach the native renderer")
+end
+
 -- Crop limits keep layout stable for any metadata.
 local aspect = OctopusProvider.aspect
 assert(math.abs(aspect(1600, 900) - 16 / 9) < 0.001)

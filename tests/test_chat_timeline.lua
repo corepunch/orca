@@ -183,7 +183,8 @@ for _, kind in ipairs { "direct", "group" } do
         -- Photos round the corners they share with the bubble, not under a sender name.
         local topRadius = (kind == "group" and sender == "other") and 0 or 6
         assert(bubble.BorderRadius.TopLeftRadius == 6 and first.BorderRadius.TopLeftRadius == topRadius
-            and first.BorderRadius.BottomRightRadius == 6, "Photo corners follow the bubble")
+            and first.BorderRadius.BottomLeftRadius == 6 and first.BorderRadius.BottomRightRadius == 0
+            and last.BorderRadius.BottomRightRadius == 6, "Only the album exterior rounds its corners")
         local loading = content:findChild("PhotoLoading")
         assert(shown(loading) and loading.IgnoreHitTest and loading.Width == 32 and loading.Height == 32
             and loading.Source == "Chat/assets/icons/refresh-cw.svg", "Pending photos show a loading icon")
@@ -210,6 +211,42 @@ for _, kind in ipairs { "direct", "group" } do
         f.rows[1].attachments = {}
         f.refresh(true)
         assert(f.entry("album") == entry and not shown(f.inside("album", "Photos")), "A text edit removes the album")
+    end
+end
+
+-- Every supported album size fills a compact footprint with ordered,
+-- non-overlapping tappable cells, and opening a cell selects that photo.
+do
+    local app, f = fixture()
+    local opened
+    app.openPhoto = function(_, attachment) opened = attachment.id end
+    for size = 1, 9 do
+        local row = f.message("grid", nil, f.me)
+        row.attachments = {}
+        for index = 1, size do row.attachments[index] = { id = "tile" .. index, width = 4, height = 3 } end
+        f.rows = { row }; f.refresh()
+        app.screen:UpdateLayout(390, 844)
+        local album, frames = f.inside("grid", "Photos"), {}
+        near(album.ActualWidth, 260, "The album fills the photo bubble")
+        for index = 1, size do
+            local frame = f.inside("grid", "PhotoFrametile" .. index)
+            assert(frame.ActualWidth > 0 and frame.ActualHeight > 0)
+            assert(frame.ActualX >= 0 and frame.ActualY >= 0
+                and frame.ActualX + frame.ActualWidth <= album.ActualWidth + 1
+                and frame.ActualY + frame.ActualHeight <= album.ActualHeight + 1, "Tiles stay inside the album")
+            for _, other in ipairs(frames) do
+                assert(frame.ActualX >= other.ActualX + other.ActualWidth - 1
+                    or other.ActualX >= frame.ActualX + frame.ActualWidth - 1
+                    or frame.ActualY >= other.ActualY + other.ActualHeight - 1
+                    or other.ActualY >= frame.ActualY + frame.ActualHeight - 1, "Album tiles never overlap")
+            end
+            frames[#frames + 1] = frame
+            frame:findChild("OpenPhoto"):send("Node.LeftButtonUp"); settle()
+            assert(opened == "tile" .. index, "Each tile opens its own full image")
+        end
+        local last = frames[#frames]
+        near(last.ActualX + last.ActualWidth, album.ActualWidth, "The last row fills the album width")
+        near(last.ActualY + last.ActualHeight, album.ActualHeight, "The last row fills the album height")
     end
 end
 

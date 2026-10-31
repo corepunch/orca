@@ -10,6 +10,10 @@
     <Column Name="AuthorId" Type="string" Source="authorId"/>
     <Column Name="AuthorName" Type="string" Source="authorName" Default="Someone"/>
     <Column Name="CreatedAt" Type="string" Source="createdAt"/>
+    <Column Name="ImageCount" Type="int" Source="imageCount"/>
+    <Column Name="SinglePhoto" Type="bool" Computed="singlePhoto" DependsOn="PostType ImageId ImageCount"/>
+    <Column Name="HasGallery" Type="bool" Computed="hasGallery" DependsOn="ImageCount"/>
+    <Relation Name="GalleryRows" Entity="OctopusPhotoRow" Many="true" Source="galleryRows"/>
     <Column Name="ImageId" Type="string" Source="imageId" Nullable="true"/>
     <Column Name="ImageWidth" Type="int" Source="imageWidth" Nullable="true"/>
     <Column Name="ImageHeight" Type="int" Source="imageHeight" Nullable="true"/>
@@ -74,6 +78,33 @@
     <Column Name="Tone" Type="string" Computed="tone" DependsOn="AuthorId"/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
     <Relation Name="Tags" Entity="OctopusTag" Many="true" Source="tags"/>
+  </Entity>
+  <Entity Name="OctopusPhotoRow" Key="Id">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Columns" Type="string" Source="columns"/>
+    <Column Name="Ratio" Type="float" Source="ratio"/>
+    <Relation Name="Images" Entity="OctopusImage" Many="true" Source="images"/>
+  </Entity>
+  <Entity Name="OctopusImage" Key="Id">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="ImageId" Type="string" Source="imageId"/>
+    <Column Name="PhotoPath" Type="string" Local="true"/>
+    <Column Name="PhotoState" Type="string" Local="true"/>
+    <Column Name="PhotoRatio" Type="float" Local="true"/>
+    <Column Name="PhotoShown" Type="bool" Computed="photoShown" DependsOn="PhotoPath"/>
+    <Column Name="PhotoFrame" Type="string" Computed="photoFrame" DependsOn="PhotoPath"/>
+    <Column Name="PhotoLoading" Type="bool" Computed="photoLoading" DependsOn="PhotoState"/>
+    <Column Name="PhotoFailed" Type="bool" Computed="photoFailed" DependsOn="PhotoState"/>
+    <Column Name="PhotoPending" Type="bool" Computed="photoPending" DependsOn="PhotoPath PhotoState"/>
+  </Entity>
+  <Entity Name="OctopusSelections" Key="Id">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Relation Name="Images" Entity="OctopusDraftImage" Many="true" Source="images"/>
+  </Entity>
+  <Entity Name="OctopusDraftImage" Key="Id">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Index" Type="int" Source="index"/>
+    <Column Name="PhotoPath" Type="string" Source="path"/>
   </Entity>
   <Entity Name="OctopusTag" Key="Label">
     <Column Name="Label" Type="string" Source="value"/>
@@ -202,6 +233,9 @@
     <Column Name="Tags" Type="string"/>
     <Column Name="HasPhoto" Type="bool"/>
     <Column Name="PhotoPath" Type="string"/>
+    <Column Name="PhotoCount" Type="int"/>
+    <Column Name="PhotoRows" Type="string"/>
+    <Column Name="PhotoPreviewRatio" Type="float"/>
   </Entity>
   <Entity Name="OctopusProfileDraft" Description="The reader's profile form on the me tab.">
     <Column Name="DisplayName" Type="string"/>

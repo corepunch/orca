@@ -86,22 +86,30 @@
     <!-- A photo: the photo kind's subject or a quote's background. -->
     <StackView Name="PhotoField" Visible="{Binding DataContext/Composer/TakesPhoto}" Spacing="8" JustifyContent="Start">
       <TextBlock Text="{Binding DataContext/Composer/PhotoLabel}" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
-      <Grid Name="PhotoPreview" Height="200" class="octopus-raised" IgnoreHitTest="true">
+      <StackView Name="PhotoPreview">
         <BindingExpression Target="Visible">AND({DataContext/Composer/IsPhoto}, {DataContext/Draft/HasPhoto})</BindingExpression>
-        <ImageView Src="{Binding DataContext/Draft/PhotoPath}" Stretch="Uniform" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
-      </Grid>
-      <Grid Name="QuotePhotoPreview" Height="200" class="octopus-raised" IgnoreHitTest="true">
+        <GridBox Columns="1fr 1fr 1fr" Spacing="4" ItemsSource="{Binding DataContext/Selections/Images}"
+                 ItemTemplate="Octopus/Templates/DraftPhoto">
+          <Binding Target="Rows" Expression="DataContext/Draft/PhotoRows"/>
+          <Binding Target="AspectRatio" Expression="DataContext/Draft/PhotoPreviewRatio"/>
+        </GridBox>
+      </StackView>
+      <StackView Name="QuotePhotoPreview">
         <BindingExpression Target="Visible">AND({DataContext/Composer/IsQuote}, {DataContext/Draft/HasPhoto})</BindingExpression>
-        <ImageView Src="{Binding DataContext/Draft/PhotoPath}" Stretch="Uniform" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
-      </Grid>
+        <GridBox Columns="1fr 1fr 1fr" Spacing="4" ItemsSource="{Binding DataContext/Selections/Images}"
+                 ItemTemplate="Octopus/Templates/DraftPhoto">
+          <Binding Target="Rows" Expression="DataContext/Draft/PhotoRows"/>
+          <Binding Target="AspectRatio" Expression="DataContext/Draft/PhotoPreviewRatio"/>
+        </GridBox>
+      </StackView>
       <Button Name="ChoosePhoto" Click="ChoosePhoto" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
               class="octopus-action octopus-outline">
-        <BindingExpression Target="Text">IF({DataContext/Draft/HasPhoto}, "Choose another photo", "Choose a photo")</BindingExpression>
+        <BindingExpression Target="Text">IF({DataContext/Draft/HasPhoto}, "Add another photo", "Choose a photo")</BindingExpression>
       </Button>
       <Button Name="RemovePhoto" Visible="{Binding DataContext/Draft/HasPhoto}" Click="RemovePhoto" Height="48" FontSize="15"
               TextHorizontalAlignment="Left" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
-              class="octopus-action octopus-link">Remove photo</Button>
+              class="octopus-action octopus-link">Remove all photos</Button>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsPhoto}" Spacing="6" JustifyContent="Start">
       <TextBlock Text="caption (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>

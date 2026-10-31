@@ -64,7 +64,10 @@ return function(state, env)
         for _, attachment in pairs(state.attachments) do
             if attachment.message_id == message.id and attachment.status == "attached" then row.attachments[#row.attachments + 1] = copy(attachment) end
         end
-        table.sort(row.attachments, function(a, b) return a.id < b.id end)
+        table.sort(row.attachments, function(a, b)
+            if a.position and b.position then return a.position < b.position end
+            return a.id < b.id
+        end)
         local room = find(state.rooms, message.room_id)
         if room and room.kind == "channel" then row.sender_name = room.name end
         return row
@@ -124,8 +127,8 @@ return function(state, env)
     function P.postMessage(user, roomId, text, ids, status)
         if not P.canPost(roomId, user.id) then return fail(403, "42501", "You cannot publish in this conversation.") end
         ids, text = ids or {}, text or ""
-        if type(text) ~= "string" or #text > 4000 or type(ids) ~= "table" or #ids > 4 or (not text:match("%S") and #ids == 0) then
-            return fail(400, "validation", "Write a message or attach up to four photos.")
+        if type(text) ~= "string" or #text > 4000 or type(ids) ~= "table" or #ids > 9 or (not text:match("%S") and #ids == 0) then
+            return fail(400, "validation", "Write a message or attach up to nine photos.")
         end
         local seen = {}
         for _, id in ipairs(ids) do
@@ -137,7 +140,7 @@ return function(state, env)
         end
         local all = {}; for _, list in pairs(state.messages) do for _, message in ipairs(list) do all[#all + 1] = message end end
         local message = { id = unique("message", all), room_id = roomId, sender_id = user.id, body = text, created_at = timestamp() }
-        for _, id in ipairs(ids) do local a = state.attachments[id]; a.status, a.message_id = "attached", message.id end
+        for position, id in ipairs(ids) do local a = state.attachments[id]; a.status, a.message_id, a.position = "attached", message.id, position end
         state.messages[roomId][#state.messages[roomId] + 1] = message
         find(state.rooms, roomId).subtitle = text ~= "" and text or "Photo"
         return response(status or 200, { P.messageRow(message) })

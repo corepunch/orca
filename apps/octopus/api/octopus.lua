@@ -9,6 +9,7 @@ Client.__index = Client
 local POST_TYPES = { text = true, photo = true, quote = true, link = true }
 local PAGE = 100
 local MAX_IMAGE_EDGE = 65535
+local MAX_IMAGES = 9
 
 local function imageDimensions(width, height)
     for _, value in ipairs { width, height } do
@@ -78,12 +79,27 @@ local function post(doc)
     for _, tag in ipairs(type(doc.tags) == "table" and doc.tags or {}) do tags[#tags + 1] = tag end
     local avatarId
     if doc.sourceCreatedAt then avatarId = validId(doc.avatarId) and doc.avatarId or false end
-    local width, height = imageDimensions(doc.imageWidth, doc.imageHeight)
+    local images, imageIds, imageWidths, imageHeights, seen = {}, {}, {}, {}, {}
+    local album = type(doc.imageIds) == "table" and #doc.imageIds > 0
+    local ids = album and doc.imageIds or { doc.imageId }
+    for index, id in ipairs(ids) do
+        if validId(id) and not seen[id] and #images < MAX_IMAGES then
+            seen[id] = true
+            local width, height
+            if album then
+                width, height = imageDimensions(type(doc.imageWidths) == "table" and doc.imageWidths[index],
+                    type(doc.imageHeights) == "table" and doc.imageHeights[index])
+            else width, height = imageDimensions(doc.imageWidth, doc.imageHeight) end
+            images[#images + 1] = { id = id, width = width, height = height }
+            imageIds[#imageIds + 1], imageWidths[#imageWidths + 1], imageHeights[#imageHeights + 1] = id, width or 0, height or 0
+        end
+    end
+    local first = images[1] or {}
     return {
         id = doc["$id"], createdAt = doc.sourceCreatedAt or doc["$createdAt"], title = doc.title or "", content = doc.content or "",
         authorId = doc.authorId, authorName = doc.authorName or "Someone", tags = tags,
-        postType = POST_TYPES[doc.postType] and doc.postType or "text", imageId = validId(doc.imageId) and doc.imageId or nil,
-        imageWidth = width, imageHeight = height,
+        postType = POST_TYPES[doc.postType] and doc.postType or "text", imageId = first.id, imageIds = imageIds, images = images, imageCount = #images,
+        imageWidth = first.width, imageHeight = first.height, imageWidths = imageWidths, imageHeights = imageHeights,
         avatarId = avatarId,
         linkUrl = doc.linkUrl, quoteSource = doc.quoteSource, userText = doc.userText,
         summary = doc.sourceCreatedAt ~= nil,
@@ -398,6 +414,13 @@ function Client:readFeedCache(name)
         if #p.tags > 10 or (item.at ~= nil and type(item.at) ~= "string") then return nil end
         for _, tag in ipairs(p.tags) do if type(tag) ~= "string" or #tag > 64 then return nil end end
         if p.imageId ~= nil and not validId(p.imageId) then return nil end
+        if p.images ~= nil then
+            if type(p.images) ~= "table" or #p.images > MAX_IMAGES then return nil end
+            for _, image in ipairs(p.images) do
+                if type(image) ~= "table" or not validId(image.id) then return nil end
+                if (image.width ~= nil or image.height ~= nil) and not imageDimensions(image.width, image.height) then return nil end
+            end
+        end
         if (p.imageWidth ~= nil or p.imageHeight ~= nil) and not imageDimensions(p.imageWidth, p.imageHeight) then return nil end
         if p.avatarId ~= nil and p.avatarId ~= false and not validId(p.avatarId) then return nil end
         for _, field in ipairs { "linkUrl", "quoteSource", "userText" } do
@@ -698,6 +721,10 @@ function Client:createPost(values)
     if not session then return nil, err end
     values = values or {}
     local kind = values.postType or "text"
+    local photos = values.photos or (values.photo and { values.photo }) or {}
+    if type(photos) ~= "table" or #photos > MAX_IMAGES then
+        return failure("validation", "Choose up to 9 photos per post.")
+    end
     if not POST_TYPES[kind] then return failure("validation", "Choose text, photo, quote or link.") end
     local data = { title = "", content = "", tags = Octopus.parseTags(values.tags), authorId = session.user.id,
         authorName = session.user.name, postType = kind }
@@ -706,7 +733,7 @@ function Client:createPost(values)
         if data.title == "" then return failure("validation", "Title is required.") end
         if data.content == "" then return failure("validation", "Write something before publishing.") end
     elseif kind == "photo" then
-        if not values.photo then return failure("validation", "Choose a photo to share.") end
+        if #photos == 0 then return failure("validation", "Choose a photo to share.") end
         data.content = trim(values.content)
     elseif kind == "quote" then
         data.content, data.quoteSource = trim(values.content), trim(values.quoteSource)
@@ -724,18 +751,33 @@ function Client:createPost(values)
     if #data.title > 256 then return failure("validation", "Keep the title under 256 characters.") end
     if #data.content > 65535 then return failure("validation", "This post is too long.") end
     if #data.tags == 0 then data.tags = nil end
-    if (kind == "photo" or kind == "quote") and values.photo then
-        local file
-        file, err = self:uploadImage(values.photo)
-        if not file then return nil, err end
-        data.imageId = file
-        -- Derive layout metadata from the uploaded bytes, not caller-supplied fields.
-        local bytes = type(values.photo) == "table" and values.photo.jpeg or values.photo
-        data.imageWidth, data.imageHeight = Octopus.imageDimensions(bytes)
+    local uploaded = {}
+    local function discardUploaded()
+        for _, id in ipairs(uploaded) do
+            self:_request("DELETE", "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(id))
+        end
+    end
+    if (kind == "photo" or kind == "quote") and #photos > 0 then
+        data.imageIds, data.imageWidths, data.imageHeights = {}, {}, {}
+        for index, photo in ipairs(photos) do
+            local file
+            file, err = self:uploadImage(photo)
+            if not file then discardUploaded(); return nil, err end
+            uploaded[#uploaded + 1] = file
+            local bytes = type(photo) == "table" and photo.jpeg or photo
+            local width, height = Octopus.imageDimensions(bytes)
+            data.imageIds[index], data.imageWidths[index], data.imageHeights[index] = file, width or 0, height or 0
+            if index == 1 then data.imageId, data.imageWidth, data.imageHeight = file, width, height end
+        end
     end
     local doc
     doc, err = self:_create("posts", data)
-    if not doc then return nil, err end
+    -- A lost response may follow a committed write. Leave those files intact;
+    -- only a definitive rejection establishes that no post references them.
+    if not doc then
+        if err and err.status and err.status >= 400 and err.status < 500 and err.status ~= 408 then discardUploaded() end
+        return nil, err
+    end
     return post(doc)
 end
 
@@ -746,7 +788,13 @@ function Client:deletePost(item)
     local ok, err = self:_delete("posts", item.id)
     if not ok then return nil, err end
     -- The post is gone; a leftover image is harmless, so cleanup is best effort.
-    if item.imageId then self:_request("DELETE", "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(item.imageId)) end
+    local seen = {}
+    for _, id in ipairs(item.imageIds or { item.imageId }) do
+        if validId(id) and not seen[id] then
+            seen[id] = true
+            self:_request("DELETE", "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(id))
+        end
+    end
     return true
 end
 

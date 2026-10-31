@@ -252,7 +252,7 @@ end
 
 function Client:sendMessage(roomId, body, attachmentIds)
   if not validId(roomId) then return failure("validation", "Choose a conversation.") end
-  if attachmentIds and (type(attachmentIds) ~= "table" or #attachmentIds > 4) then return failure("validation", "Attach at most four photos.") end
+  if attachmentIds and (type(attachmentIds) ~= "table" or #attachmentIds > 9) then return failure("validation", "Attach at most nine photos.") end
   for _, id in ipairs(attachmentIds or {}) do
     if not validId(id) then return failure("validation", "A photo ID is invalid.") end
   end

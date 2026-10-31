@@ -41,7 +41,8 @@ blocks with [Chat](../chat/README.md):
 - Cards show a square avatar tile (the author's profile photo, or their
   initials on a tile colour), the author and a relative time, the post by
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
-  a photo shaped like the picture, between 4:5 and 1.91:1), its tags, and comment/repost/like counts. Liked hearts turn red and
+  a photo shaped like the picture, between 4:5 and 1.91:1, or up to nine
+  images arranged automatically in balanced rows), its tags, and comment/repost/like counts. Liked hearts turn red and
   reposts green. Profiles list posts and reposts together, as on Twitter.
   Portraits start at the post body below the author line. Leading text aligns
   by its visible glyphs, and link badges share the portrait's 44-point square.
@@ -55,7 +56,10 @@ blocks with [Chat](../chat/README.md):
   [official Tumblr Windows Phone app's post chooser](https://www.windowscentral.com/official-tumblr-app-comes-windows-phone-8).
   Each type keeps its own draft, including tags and selected photos, when you
   switch types or leave the page. Publishing clears the submitted draft;
-  newer edits and drafts for other types stay available.
+  newer edits and drafts for other types stay available. Photo and quote drafts
+  accept up to nine images: add them in order, remove an individual thumbnail
+  with its × button, or remove the entire selection. Feed cards and post pages
+  show every selected image, each with its own preview and retry state.
 
 `theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.
@@ -144,7 +148,9 @@ Chat. Avatar tiles built in one pass share a single `profiles` lookup, and
 file IDs are cached for the session.
 
 Photo selection needs the native picker (macOS and iOS). Photo and quote
-forms show a preview and let you replace or remove the image. Quote images
+forms let you add up to nine ordered photos and remove individual thumbnails.
+Feeds and post details arrange albums in balanced rows, through a 3×3 grid;
+single photos keep their aspect-ratio layout. Quote images
 appear with the quote on the phone and as its background on the website.
 Cancelling the picker preserves the selection; upload failures keep the draft
 for retry. Markdown reads as plain text on the phone; the website renders it.

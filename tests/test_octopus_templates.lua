@@ -131,6 +131,44 @@ comments = {}
 page:member("Comments"):refresh()
 settle()
 assert(first:getParent() == nil and field(detail, "NoComments").Visible, "Removing all comments shows the empty state")
+-- Every album size gets balanced rows, without a duplicate primary image.
+-- Real layout must remain responsive and every image must own media state.
+for count = 2, 9 do
+    local album = post("album", "photo", "Album caption")
+    album.images = {}
+    for index = 1, count do album.images[index] = { id = "image" .. index, width = 400, height = 300 } end
+    album.imageId = album.images[1].id
+    timeline = { { post = album } }
+    feeds:member("Home"):refresh()
+    settle()
+    local card, tiles = row("album"), {}
+    assert(not field(card, "Photo").Visible and field(card, "Gallery").Visible)
+    local function walk(node)
+        if node.Name == "GalleryTile" then tiles[#tiles + 1] = node end
+        local child = node:getFirstChild()
+        while child do walk(child); child = child:getNext() end
+    end
+    walk(card)
+    assert(#tiles == count, "An album displays every image exactly once")
+    for _, width in ipairs { 390, 260 } do
+        screen:UpdateLayout(width, 844)
+        settle()
+        local gallery = field(card, "Gallery")
+        assert(gallery.ActualWidth > 0 and gallery.ActualHeight > 0)
+        for _, tile in ipairs(tiles) do
+            assert(tile.ActualWidth > 0 and tile.ActualHeight > 0, "Every tile has usable bounds")
+        end
+        local expected = count == 2 and gallery.ActualWidth / 2 or gallery.ActualWidth
+        assert(math.abs(gallery.ActualHeight - expected) < 8, "Balanced albums reserve compact geometry: " .. count .. " " .. width .. " " .. gallery.ActualWidth .. "x" .. gallery.ActualHeight)
+    end
+    local record = store:get("OctopusPost", "album")
+    page:expose("Post", record)
+    page:present(field(detail, "PostDetail"), "Post")
+    settle()
+    assert(field(detail, "Gallery").Visible and not field(detail, "Photo").Visible,
+        "The detail page uses the same album presentation")
+end
+
 page:dispose()
 feeds:dispose()
 print("PASS: Octopus XML templates, typed bindings, retained post/comment refresh, variants and actions")

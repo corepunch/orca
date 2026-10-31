@@ -217,6 +217,19 @@ check(raw(owner, "POST", "/functions/v1/finalize-chat-photo", { attachment_id = 
 local expiring = assert(owner:uploadPhoto(group.id, photo)); now = now + 3600
 reject(function() return owner:sendMessage(group.id, "", { expiring.id }) end, "attachment_unavailable")
 reject(function() return owner:sendMessage(group.id, "", 5) end, "validation")
+-- Nine ordered images publish atomically and survive reading and text edits.
+do
+    local ids = {}
+    for index = 1, 9 do table.insert(ids, 1, assert(owner:uploadPhoto(group.id, photo)).id) end
+    local ten = { table.unpack(ids) }; ten[10] = ids[1]
+    reject(function() return owner:sendMessage(group.id, "Too many", ten) end, "validation")
+    local album = assert(owner:sendMessage(group.id, "Nine photos", ids))
+    check(#album.attachments == 9, "Nine photos publish in one message")
+    for index, id in ipairs(ids) do check(album.attachments[index].id == id, "Album preserves selected photo order") end
+    local edited = assert(owner:editMessage(album.id, "Updated album"))
+    for index, id in ipairs(ids) do check(edited.attachments[index].id == id, "Text edits preserve all ordered photos") end
+end
+
 local models = require("models").new(owner)
 local modeled = assert(models.Rooms:create { name = "Modeled channel", member_ids = {}, kind = "channel", visibility = "public" })
 check(modeled.kind == "channel" and modeled.visibility == "public", "Room model forwards conversation options")

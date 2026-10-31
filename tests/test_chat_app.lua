@@ -850,10 +850,10 @@ click(photoApp, "AttachPhoto")
 assert(photoApp.screen:findChild("PhotoDraft", true).Visible, "A selected photo must show pending attachment feedback")
 photoApp.composer.Text = string.rep("x", 4001)
 click(photoApp, "SendMessage")
-assert(photoApp.photoDrafts[photoApp.room.id] and photoApp.photoDrafts[photoApp.room.id].attachment,
+assert(photoApp.photoDrafts[photoApp.room.id] and photoApp.photoDrafts[photoApp.room.id][1].attachment,
     "A failed message after upload must retain the attachment for retry: " .. photoApp.status:getTextContent())
 assert(#photoApp.composer.Text == 4001, "A failed photo caption must remain editable")
-local attachmentId = photoApp.photoDrafts[photoApp.room.id].attachment.id
+local attachmentId = photoApp.photoDrafts[photoApp.room.id][1].attachment.id
 photoApp.composer.Text = "Our first photo"
 click(photoApp, "SendMessage")
 assert(not photoApp.photoDrafts[photoApp.room.id] and photoApp.composer.Text == "", "Clear photo drafts only after successful send")
@@ -920,6 +920,46 @@ for _, width in ipairs { 320, 390, 834 } do
         "Photo actions stay accessible in a compact menu while the image opens the viewer")
 end
 photoApp.screen.Width = 390
+-- The composer adds nine photos, removes a chosen item, and reuses completed
+-- uploads after a partial batch failure. Navigating away retains the album.
+do
+    for index = 1, 9 do click(photoApp, "AttachPhoto") end
+    local photos = photoApp.photoDrafts[photoApp.room.id]
+    assert(#photos == 9 and photoApp.screen:findChild("PhotoLabel", true).Text:match("9/9"))
+    click(photoApp, "AttachPhoto")
+    assert(#photos == 9, "A tenth picker action cannot add an image")
+    local removed = photos[4]
+    click(photoApp, "RemovePhoto"); click(photoApp, "RemoveDraftPhoto4")
+    assert(#photos == 8 and photos[4] ~= removed, "Removing a chosen image preserves the other images and order")
+    click(photoApp, "AttachPhoto")
+    photoApp:show("/"); photoApp:openRoom(photoRoom); drain(photoApp)
+    assert(photoApp.photoDrafts[photoRoom.id] == photos and #photos == 9,
+        "Leaving and reopening a conversation preserves all selected photos")
+    local upload, attempts = photoApp.client.uploadPhoto, 0
+    photoApp.client.uploadPhoto = function(client, room, photo)
+        attempts = attempts + 1
+        if attempts == 3 then return nil, { code = "offline", message = "Upload interrupted" } end
+        return upload(client, room, photo)
+    end
+    photoApp.composer.Text = "Nine together"
+    click(photoApp, "SendMessage")
+    assert(#photos == 9 and photos[1].attachment and photos[2].attachment and not photos[3].attachment,
+        "A partial upload failure keeps the full draft and all completed reservations")
+    local cached, discarded = photos[1].attachment.id, photos[2].attachment.id
+    click(photoApp, "RemovePhoto"); click(photoApp, "RemoveDraftPhoto2")
+    assert(not photoApp.client:getPhoto(discarded), "Removing an uploaded draft discards its private reservation")
+    click(photoApp, "AttachPhoto")
+    click(photoApp, "SendMessage")
+    assert(not photoApp.photoDrafts[photoRoom.id] and photoApp.composer.Text == "", "A successful album clears its draft")
+    assert(attempts == 11, "Retry uploads only the remaining eight photos and reuses the completed first image")
+    local messages = assert(photoApp.client:listMessages(photoRoom.id))
+    local album = messages[#messages]
+    assert(album.body == "Nine together" and #album.attachments == 9 and album.attachments[1].id == cached)
+    for index, photo in ipairs(photos) do
+        assert(album.attachments[index].id == photo.attachment.id, "The sent album retains selection order")
+    end
+    photoApp.client.uploadPhoto = upload
+end
 photoApp:show("/profile"); click(photoApp, "SignOut")
 local leftover = io.open(previewPath, "rb")
 if leftover then leftover:close() end

@@ -1,0 +1,13 @@
+<Grid Name="GalleryTile"
+              class="photo-frame" StateClasses="{Binding DataContext/PhotoFrame}">
+          <VectorView Source="Octopus/assets/icons/image.svg" Visible="{Binding DataContext/PhotoPending}" Width="28" Height="28"
+                      MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="octopus-dim" IgnoreHitTest="true"/>
+          <ImageView Name="Image" Visible="{Binding DataContext/PhotoShown}" Src="{Binding DataContext/PhotoPath}"
+                     ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
+          <ActivityIndicator Name="PhotoLoading" Visible="{Binding DataContext/PhotoLoading}" class="octopus-dim"/>
+          <Button Name="RetryPhoto" Visible="{Binding DataContext/PhotoFailed}" Click="Photos.Retry"
+                  BackgroundColor="#00000000" class="octopus-row">
+            <VectorView Name="PhotoUnavailable" Source="Octopus/assets/icons/image-off.svg" Width="28" Height="28"
+                        MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="octopus-dim" IgnoreHitTest="true"/>
+          </Button>
+        </Grid>

@@ -1,0 +1,5 @@
+<Grid class="photo-frame">
+  <ImageView Src="{Binding DataContext/PhotoPath}" Stretch="UniformToFill" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
+  <Button Name="RemoveSelectedPhoto" Click="RemovePhoto" Width="44" Height="44" MarginLeft="auto" MarginBottom="auto"
+          Text="×" FontSize="26" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" BackgroundColor="#99000000" ForegroundColor="#ffffff"/>
+</Grid>

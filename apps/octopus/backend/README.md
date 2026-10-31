@@ -71,6 +71,28 @@ incrementing on each asynchronous event without deduplication would also drift
 after duplicate delivery. The current compatible rollout keeps authoritative
 relation documents and idempotent recounts while direct website writes remain.
 
+### Image albums
+
+Photo and quote posts support up to nine ordered images. `posts` and `post-feed`
+have optional `imageIds` (36-character string array), `imageWidths` and
+`imageHeights` (integer arrays, 0–65535). Dimensions use matching array positions;
+zero means the paired dimensions are unknown. The legacy `imageId`,
+`imageWidth` and `imageHeight` fields retain the first image for older clients.
+The materializer also accepts old clients' single-image posts.
+
+Run `npm run migrate` followed by `npm run backfill:albums` with the same
+operator environment as other migrations. The backfill pages through source
+posts and summaries, converts existing single images into one-image arrays,
+and preserves existing albums. It holds the feed writer lock and briefly disables
+the source posts collection to prevent direct website/mobile writes from racing
+the upgrade, then restores its previous availability even after a failure.
+It patches only the new image columns, leaving
+content, counters and permissions intact. It reads no image files, is safe to
+rerun, and stops after 10,000 rows by default. `deploy:all` includes this upgrade
+before rebuilding summaries. Deploy the new feed Function before enabling
+multi-image client writes; Chat's Function must also be deployed for its new
+nine-attachment limit. Chat's existing JSON attachment arrays need no rewrite.
+
 ## Read policy
 
 This is a **public-content cache**. Enable it only for posts intended to remain

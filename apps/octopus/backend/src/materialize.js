@@ -1,4 +1,5 @@
 import { query } from './repository.js';
+import { albumFields } from './albums.js';
 
 const PUBLIC_READ = 'read("any")';
 const equal = (field, value) => query('equal', field, [value]);
@@ -14,13 +15,16 @@ export function publiclyReadable(document, collection) {
 }
 
 export function feedDocument(post, avatarId, counts, now) {
+  const album = albumFields(post);
   const hasDimensions = imageEdge(post.imageWidth) && imageEdge(post.imageHeight);
   return { sourceCreatedAt: post.$createdAt, title: text(post.title), content: excerpt(post.content),
     postType: ['text', 'photo', 'quote', 'link'].includes(post.postType) ? post.postType : 'text',
     authorId: text(post.authorId), authorName: text(post.authorName) || 'Someone',
     tags: Array.isArray(post.tags) ? post.tags.slice(0, 10).map(tag => text(tag).slice(0, 64)) : [],
-    imageId: text(post.imageId), imageWidth: hasDimensions ? post.imageWidth : null,
-    imageHeight: hasDimensions ? post.imageHeight : null,
+    ...album,
+    imageId: album.imageIds[0] || text(post.imageId),
+    imageWidth: album.imageIds.length ? album.imageWidths[0] || null : hasDimensions ? post.imageWidth : null,
+    imageHeight: album.imageIds.length ? album.imageHeights[0] || null : hasDimensions ? post.imageHeight : null,
     linkUrl: text(post.linkUrl), quoteSource: excerpt(post.quoteSource),
     userText: excerpt(post.userText), avatarId: text(avatarId), ...counts, statsUpdatedAt: now };
 }

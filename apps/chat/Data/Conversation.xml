@@ -9,7 +9,7 @@
     <Param Name="RoomId" Type="string"/>
   </Query>
   <Command Name="Send" Operation="send" Succeeded="sent"
-           Description="Sends the composer (uploading a photo first), or saves an edit."/>
+           Description="Sends the composer (uploading its photos first), or saves an edit."/>
   <Command Name="DeleteMessage" Operation="deleteMessage" Parameter="Item" Description="Deletes for everyone."/>
   <Edit Name="Composer" Entity="ChatComposerDraft" Submit="Send" Validate="message">
     <Copy Field="Text" From="Body"/>

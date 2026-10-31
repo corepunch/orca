@@ -120,6 +120,14 @@ claiming historical fidelity.
   WhatsApp and Telegram do (user decision, 2026-10-30): it takes a row of
   its own only when that line has no room. `TextFooterPanel` lays this out;
   see the [before and after](docs/references/inline-timestamps.png).
+- A message contains up to nine photos in selection order. Additional picker
+  selections append to the draft; its photo banner shows the count, and its
+  remove action opens a thumbnail chooser when more than one photo is attached.
+  Photos upload individually and completed uploads survive a failed send.
+  Albums fill balanced rows with narrow gaps in a compact square, with rounded
+  corners only around their exterior. A single image retains its aspect-ratio
+  treatment. Each tile opens its own full photo; a photo-only album has one
+  timestamp over its last tile.
 - A photo without text is an edge-to-edge rounded rectangle with **no coloured
   footer and no tail**. Place its timestamp over the bottom-right of the image
   on a dark translucent backing so it remains readable. Captioned photos

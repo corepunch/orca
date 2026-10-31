@@ -14,6 +14,15 @@ assert(client.mode == "mock" and not client:getSession(), "The mock starts signe
 local posts = assert(client:listPosts { limit = 5 })
 assert(#posts == 5 and posts[1].id == "p-reef" and posts[2].id == "p-eames", "Newest posts come first")
 assert(posts[1].postType == "photo" and posts[1].imageId == "f-reef")
+-- Array metadata is authoritative even when stale scalar fields survive a
+-- migration. Unknown dimensions stay unknown until decoding completes.
+local mapped = Octopus.client { projectId = "p", transport = function()
+    return { status = 200, body = { ["$id"] = "album", postType = "photo", imageId = "old", imageWidth = 400,
+        imageHeight = 300, imageIds = { "first", "second" }, imageWidths = { 0, 200 }, imageHeights = { 0, 100 } } }
+end }
+local ordered = assert(mapped:getPost("album"))
+assert(ordered.imageId == "first" and not ordered.imageWidth and ordered.images[2].width == 200,
+    "Albums preserve order and never inherit unrelated scalar dimensions")
 local more = assert(client:listPosts { limit = 5, cursor = posts[5].id })
 assert(#more == 3 and more[1].id == "p-pivot", "Cursor pagination continues after the last post")
 local stats = assert(client:stats { "p-reef", "p-small", "p-tide" })
@@ -117,6 +126,47 @@ assert(illustrated.quoteSource == "A friend" and illustrated.userText == "A good
     and client:getImage(illustrated.imageId) == image, "Quote background photos and thoughts round-trip")
 local captionless = assert(client:createPost { postType = "photo", photo = { jpeg = image } })
 assert(captionless.content == "" and captionless.imageId, "Photo captions are optional")
+
+
+-- Albums preserve order and per-image geometry, while old single-image posts
+-- remain readable. Reject the limit before any file is staged.
+assert(#posts[1].images == 1 and posts[1].images[1].id == "f-reef")
+local selections = {}
+for i = 1, 9 do selections[i] = { jpeg = image } end
+local album = assert(client:createPost { postType = "photo", photos = selections, content = "Nine views" })
+assert(#album.images == 9 and #album.imageIds == 9 and album.imageId == album.images[1].id)
+for i, attachment in ipairs(album.images) do
+    assert(attachment.id == album.imageIds[i] and attachment.width == 156 and attachment.height == 104)
+    assert(client:getImage(attachment.id) == image)
+end
+selections[10] = { jpeg = image }
+local rejected, limitError = client:createPost { postType = "photo", photos = selections }
+assert(not rejected and limitError.code == "validation")
+assert(client:deletePost(album))
+for _, attachment in ipairs(album.images) do assert(not client:getImage(attachment.id), "Album deletion removes every image") end
+
+-- A failed second image or post write rolls back every successfully uploaded
+-- file, while the caller still owns the selected bytes for retry.
+local originalUpload, originalCreate, staged = client.uploadImage, client._create
+client.uploadImage = function(self, selected)
+    if staged then return nil, { code = "network", message = "Upload failed" } end
+    staged = assert(originalUpload(self, selected)); return staged
+end
+assert(not client:createPost { postType = "photo", photos = { { jpeg = image }, { jpeg = image } } })
+assert(staged and not client:getImage(staged), "An upload failure cleans previous images")
+client.uploadImage = originalUpload
+client._create = function() return nil, { code = "validation", status = 400, message = "Post rejected" } end
+local uploaded = {}
+client.uploadImage = function(self, selected)
+    local id = assert(originalUpload(self, selected)); uploaded[#uploaded + 1] = id; return id
+end
+assert(not client:createPost { postType = "photo", photos = { { jpeg = image }, { jpeg = image } } })
+for _, id in ipairs(uploaded) do assert(not client:getImage(id), "A failed publish cleans staged images") end
+client._create = function() return nil, { code = "network", message = "Lost response" } end
+uploaded = {}
+assert(not client:createPost { postType = "photo", photos = { { jpeg = image }, { jpeg = image } } })
+for _, id in ipairs(uploaded) do assert(client:getImage(id), "Ambiguous responses must preserve potentially referenced files") end
+client.uploadImage, client._create = originalUpload, originalCreate
 
 local like = assert(client:toggleLike("p-reef", "post"))
 stats = assert(client:stats { "p-reef" })

@@ -459,6 +459,41 @@ test('photos are encrypted, private before publication, membership protected aft
   assert.equal((await fixture.call('alice', photoPath, {}, 'GET')).status, 403);
 });
 
+test('nine-photo messages preserve selection order through history and editing and delete every photo', async () => {
+  const fixture = setup(), group = await room(fixture), photos = [];
+  for (let index = 0; index < 9; index++) photos.push((await upload(fixture, group.id)).photo);
+  const ordered = [...photos].reverse(), attachmentIds = ordered.map(photo => photo.id);
+  const sent = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, attachment_ids: attachmentIds });
+  assert.equal(sent.status, 200);
+  const message = sent.body[0];
+  assert.deepEqual(message.attachments.map(photo => photo.id), attachmentIds);
+  assert.equal(message.attachment_ids, undefined);
+  for (const photo of message.attachments) {
+    assert.equal(photo.status, 'attached'); assert.equal(photo.message_id, message.id); assert.equal(photo.secret, undefined);
+  }
+  const history = await fixture.service.listMessages(fixture.users.get('alice'), group.id);
+  assert.deepEqual(history[0].attachments.map(photo => photo.id), attachmentIds);
+  const edited = await fixture.call('owner', '/rest/v1/rpc/edit_chat_message', { target_message: message.id, message_body: 'Nine photos' });
+  assert.equal(edited.status, 200); assert.deepEqual(edited.body[0].attachments.map(photo => photo.id), attachmentIds);
+  const deleted = await fixture.call('owner', '/rest/v1/rpc/delete_chat_message', { target_message: message.id });
+  assert.equal(deleted.status, 200); assert.equal(await fixture.repo.get('messages', message.id), null);
+  assert.equal(fixture.repo.files.size, 0); assert.equal(fixture.repo.table('attachments').size, 0);
+});
+
+test('photo messages reject ten attachments and duplicates before changing reservations', async () => {
+  const fixture = setup(), group = await room(fixture), photos = [];
+  for (let index = 0; index < 10; index++) photos.push((await upload(fixture, group.id)).photo);
+  const invalidLists = [photos.map(photo => photo.id), [...photos.slice(0, 8).map(photo => photo.id), photos[0].id]];
+  for (const attachmentIds of invalidLists) {
+    const response = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, attachment_ids: attachmentIds });
+    assert.equal(response.status, 400);
+    assert.equal(fixture.repo.table('messages').size, 0);
+    for (const photo of photos) assert.equal((await fixture.repo.get('attachments', photo.id)).message_id, undefined);
+  }
+  const valid = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, attachment_ids: photos.slice(0, 9).map(photo => photo.id) });
+  assert.equal(valid.status, 200); assert.equal(valid.body[0].attachments.length, 9);
+});
+
 test('failed publication leaves photos private and retryable; expired reservations cannot publish', async () => {
   const fixture = setup(), group = await room(fixture), { photo } = await upload(fixture, group.id);
   const create = fixture.repo.create.bind(fixture.repo);
