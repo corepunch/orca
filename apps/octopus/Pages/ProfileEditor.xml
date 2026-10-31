@@ -1,6 +1,16 @@
 <!-- The reader's profile form, under their profile on the me tab. -->
 <StackView Name="ProfileEditor" Spacing="10" JustifyContent="Start">
   <TextBlock Text="edit profile" FontSize="20" class="octopus-accent-text" IgnoreHitTest="true"/>
+  <Button Name="ChooseAvatar" Click="ToggleAvatarPicker" Text="Choose a character"
+          IgnoreHitTest="{Binding DataContext/ChangePhoto/IsExecuting}" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
+          TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <StackView Name="DefaultAvatarPicker" Visible="false" Spacing="10" JustifyContent="Start"
+             IgnoreHitTest="{Binding DataContext/ChangePhoto/IsExecuting}">
+    <TextBlock Text="Pick a sea creature. Your choice appears in Chat and on the website too." FontSize="13"
+               WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
+    <GridBox Name="DefaultAvatarChoices" Columns="1fr 1fr 1fr" Spacing="8" ItemNamePrefix="Avatar"
+             ItemsSource="{Binding DataContext/DefaultAvatars/Items}" ItemTemplate="Octopus/Templates/DefaultAvatar"/>
+  </StackView>
   <Button Name="ChangePhoto" Click="ChangePhoto" IgnoreHitTest="{Binding DataContext/ChangePhoto/IsExecuting}" Height="44"
           BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
           class="octopus-action octopus-outline">

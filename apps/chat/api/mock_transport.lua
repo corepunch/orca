@@ -173,6 +173,18 @@ function Mock.new(options)
         local method = type(request.method) == "string" and request.method:upper() or "GET"
         local body = request.body or {}
         local headers = type(request.headers) == "table" and request.headers or {}
+        if path == "/auth/v1/avatar" then
+            if method ~= "POST" then return failure(405, "method_not_allowed", "Use POST to save a profile photo.") end
+            local user, err = authenticate(headers)
+            if not user then return err end
+            if type(body) ~= "table" or body.userId ~= user.id or type(body.bytes) ~= "string" then
+                return failure(400, "validation", "Choose a profile photo for your account.")
+            end
+            state.avatarUploads = (state.avatarUploads or 0) + 1
+            local id = "mock-avatar-" .. state.avatarUploads
+            state.photoFiles[id], state.profilePhotos[user.id] = body.bytes, id
+            return response(200, { user_id = user.id, avatar_id = id })
+        end
         local photoId = path:match("^/storage/v1/object/public/profile%-photos/([^/]+)$")
         if path == "/rest/v1/profile_photos" or photoId then
             if method ~= "GET" then return failure(405, "method_not_allowed", "Profile photos are read-only.") end

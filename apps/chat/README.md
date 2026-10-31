@@ -217,9 +217,11 @@ management, invitations, and JPEG uploads/downloads. Linking identifiers needs
 configured Appwrite Messaging providers; phone sign-in needs an Auth SMS provider.
 These services are not simulated when their configuration is missing.
 
-Profile photos are Octopus's public `profiles.avatarId` files, read directly
-from Appwrite with the project ID alone; set yours on the Octopus website or
-app. See [profile photos](API.md#profile-photos).
+Profile photos use Octopus's public `profiles.avatarId` field and `post-images`
+bucket, with the same Appwrite account in both apps. In Profile, choose one of
+sixteen sea creatures or upload a photo; the result appears in Chat, Octopus
+and the website. Initials remain the fallback until you choose a picture.
+See [profile photos](API.md#profile-photos).
 
 Octopus's plan allows one database and one bucket. Chat uses its own prefixed
 collections and encrypts photo/thumbnail bytes with AES-256-GCM before writing to

@@ -269,10 +269,13 @@ test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_app.lua
 	$(TARGET) -test=tests/test_chat_loading.lua
 	$(TARGET) -test=tests/test_chat_session_ui.lua
+	$(TARGET) -test=tests/test_chat_avatars.lua
 
 # Fast offline presentation checks. Reuse the current binary for app-only edits;
 # rebuild separately with `make unite` after native changes or on a fresh checkout.
 test-chat-ui: copyshare
+	$(TARGET) -test=tests/test_chat_avatars.lua
+	$(TARGET) -test=tests/test_default_avatars.lua
 	$(LUA) tests/test_chat_photo_policy.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua
 	$(TARGET) -test=tests/test_chat_photo_viewer.lua
@@ -572,7 +575,7 @@ $(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_F
 HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 # Applications are authored in XML; Lisp is an experimental scene format and
 # only apps/Example has Lisp twins. App tests that load pages run in XML builds.
-XML_APP_LUA_TESTS = test-chat-polling test-ledger-example test-mvvm-form test-octopus-composer
+XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
 ifeq ($(SCENE_FORMAT),xml)
 HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
 endif
@@ -580,9 +583,12 @@ endif
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
 HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader
+HEADLESS_LUA_TESTS += test-default-avatars
 
 $(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-default-avatars,tests/test_default_avatars.lua,copyshare))
+$(eval $(call LUA_TEST_RULE,test-chat-avatars,tests/test_chat_avatars.lua,copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))

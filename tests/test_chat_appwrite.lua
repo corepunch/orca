@@ -352,6 +352,99 @@ check(#photoEnvelopes == 0, "Profile photos never execute the Chat function")
 value, err = photoClient.transport { method = "POST", url = endpoint .. "/rest/v1/profile_photos?user_id=in.(alex)", headers = {} }
 check(value.status == 405, "Profile photo routes are read-only")
 
+-- Avatar changes save to the existing public Octopus profile with native auth.
+local sharedProfile = { ["$id"] = "user.with_underscore", userId = "user.with_underscore", username = "You", bio = "Existing bio" }
+local savedProfile = { ["$id"] = "user.with_underscore", userId = "user.with_underscore", avatarId = "avatar.new" }
+client, requests, envelopes = backend(signedIn {
+  { status = 200, body = sharedProfile },
+  { status = 201, body = { ["$id"] = "avatar.new" } },
+  { status = 200, body = savedProfile },
+})
+assert(client:signIn("you@example.test", "secret"))
+local profile = assert(client:setAvatar { jpeg = jpegBytes })
+check(profile.user_id == "user.with_underscore" and profile.avatar_id == "avatar.new"
+  and client.avatarIds[profile.user_id] == "avatar.new", "Successful avatar saves return and cache the shared photo ID")
+local profilePath = endpoint .. "/databases/octopus-db/collections/profiles/documents/user.with_underscore"
+check(requests[4].method == "GET" and requests[4].url == profilePath
+  and requests[6].method == "PATCH" and requests[6].url == profilePath,
+  "Avatar Save reads and patches the shared profile keyed by the Appwrite account")
+local patch = json.decode(requests[6].body)
+check(patch.data.avatarId == "avatar.new" and patch.data.username == nil and patch.permissions == nil,
+  "Avatar changes preserve shared names, bios and existing permissions")
+check(requests[5].method == "POST" and requests[5].url == endpoint .. "/storage/buckets/post-images/files"
+  and requests[5].headers["Content-Type"]:match("^multipart/form%-data; boundary=")
+  and requests[5].body:find(jpegBytes, 1, true), "Native avatar uploads preserve bytes in Octopus's shared bucket")
+for i = 4, 6 do
+  check(requests[i].headers.Cookie == "a_session_69f1c06800389dc6a1a0=cookie-one"
+    and not requests[i].headers.Authorization and not requests[i].headers["X-Appwrite-JWT"],
+    "Native avatar writes use only the owning Account credential")
+end
+check(#envelopes == 0, "Avatar Save does not depend on the Chat Function")
+
+local pngBytes = "\137PNG\r\n\26\navatar"
+client, requests = backend(signedIn {
+  { status = 404, body = { type = "document_not_found" } },
+  { status = 201, body = sharedProfile },
+  { status = 201, body = { ["$id"] = "avatar.new" } },
+  { status = 200, body = savedProfile },
+})
+assert(client:signIn("you@example.test", "secret"))
+assert(client:setAvatar(pngBytes))
+local created = json.decode(requests[5].body)
+check(created.documentId == "user.with_underscore" and created.data.userId == created.documentId
+  and created.data.username == "You" and created.data.bio == "", "First Save creates the same public profile Octopus expects")
+check(requests[6].body:find("Content-Type: image/png", 1, true), "Default icon PNGs upload without JPEG conversion")
+
+client, requests = backend(signedIn {
+  { status = 200, body = sharedProfile },
+  { status = 201, body = { ["$id"] = "avatar.orphan" } },
+  { status = 403, body = { type = "user_unauthorized", message = "Profile write denied" } },
+  { status = 204 },
+})
+assert(client:signIn("you@example.test", "secret"))
+client.avatarIds["user.with_underscore"] = "avatar.previous"
+value, err = client:setAvatar { bytes = pngBytes }
+check(not value and err.code == "user_unauthorized" and err.status == 403
+  and client.avatarIds["user.with_underscore"] == "avatar.previous", "Failed Save preserves the previous avatar and Appwrite error")
+check(requests[7].method == "DELETE" and requests[7].url == endpoint .. "/storage/buckets/post-images/files/avatar.orphan",
+  "Failed profile patch discards its new unreferenced upload")
+local before = #requests
+value, err = client:setAvatar("not an image")
+check(not value and err.code == "invalid_image" and #requests == before, "Invalid photo bytes fail before Appwrite access")
+value, err = client:setAvatar(jpegBytes .. string.rep("x", 10485760))
+check(not value and err.code == "invalid_image" and #requests == before, "Oversized avatars fail before upload")
+client, requests = backend {}
+value, err = client:setAvatar(pngBytes)
+check(not value and err.code == "unauthenticated" and #requests == 0, "Signed-out avatar changes never reach the network")
+
+for _, rejected in ipairs {
+  { status = 503, body = { type = "storage_unavailable", message = "Try later" } },
+  { status = 201, body = { ["$id"] = "../bad" } },
+} do
+  client, requests = backend(signedIn { { status = 200, body = sharedProfile }, rejected })
+  assert(client:signIn("you@example.test", "secret"))
+  client.avatarIds["user.with_underscore"] = "avatar.previous"
+  value, err = client:setAvatar(pngBytes)
+  check(not value and err and #requests == 5 and client.avatarIds["user.with_underscore"] == "avatar.previous",
+    "Failed or malformed uploads never patch the profile or change the cached photo")
+end
+client, requests = backend(signedIn {
+  { status = 200, body = sharedProfile },
+  { status = 201, body = { ["$id"] = "avatar.orphan" } },
+  { throws = true },
+})
+assert(client:signIn("you@example.test", "secret"))
+value, err = client:setAvatar(pngBytes)
+check(not value and err.code == "network" and #requests == 6,
+  "Interrupted profile writes preserve the uploaded file in case the patch committed before its response was lost")
+
+local demo = assert(Chat.mock())
+assert(demo:signIn("demo@example.invalid", "password123"))
+local demoProfile = assert(demo:setAvatar(pngBytes))
+check(assert(demo:getAvatar(demoProfile.avatar_id)) == pngBytes
+  and assert(demo:getAvatars { demoProfile.user_id })[demoProfile.user_id] == demoProfile.avatar_id,
+  "The offline backend preserves avatar Save and read behavior")
+
 value, err = Chat.appwrite { endpoint = "http://evil.test/v1", projectId = options.projectId, functionId = options.functionId }
 check(not value and err.code == "configuration", "Remote Appwrite endpoints require HTTPS")
 value, err = Chat.appwrite { endpoint = endpoint, projectId = "bad/project", functionId = options.functionId }

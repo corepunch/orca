@@ -1,0 +1,16 @@
+Use case: stylized-concept
+Asset type: production avatar atlas for two related apps, Chat and Octopus.
+Create ONE atlas containing exactly twelve square sea-creature avatar portraits. Canvas landscape 4:3, a precise edge-to-edge grid of FOUR columns and THREE rows. Equal square cells, no gaps, gutters, borders, labels, captions, watermarks or outer margin. Each cell is an independent opaque solid-color square background, with a centered friendly animal portrait fully contained in its cell. The grid boundaries must occur at exact quarters of width and thirds of height. No artwork crossing cell boundaries.
+Subjects in exact reading order:
+Row 1: orca on purple; octopus on teal; blue whale on warm peach; dolphin on sky blue.
+Row 2: seal on coral; sea otter on mint; penguin on yellow; sea turtle on lavender.
+Row 3: manta ray on pink; jellyfish on deep indigo; crab on aqua; pufferfish on soft orange.
+Style: consistent contemporary flat illustrated character portraits with gently rounded shapes and restrained two-tone shading, friendly expressive tiny dark eyes, strong distinctive silhouettes, readable at 40 pixels. Orca black and white with a recognizable whale head; octopus eight arms; blue whale broad head; dolphin long snout; seal round face with flippers; sea otter brown face and paws; penguin black and white with orange beak; green turtle with visible shell; manta broad wings; jellyfish bell and a few flowing tentacles; red crab claws; round yellow pufferfish tiny spikes.
+Composition: animal occupies about 75 percent of each cell with comfortable centered padding, heads or upper bodies where appropriate. Flat crisp artwork, not 3D, not glossy, not photorealistic. Background colors distinguish cells and animal shapes remain distinct in grayscale. This is a content portrait sheet, with one portrait per animal. Do not draw a UI or interaction states.
+
+Generated with the built-in ImageGen tool on 2026-10-31.
+Master: sea-creatures-v1.png (1448 x 1086, 4 columns x 3 rows).
+Runtime assets: share/avatars/<id>.jpg, 362 x 362 crops in reading order.
+Extraction preserves the authored artwork: crop each 362-pixel cell and encode
+RGB JPEG at quality 92 with optimization, without filters or recoloring.
+The portraits are content; interactive feedback belongs to the picker controls.

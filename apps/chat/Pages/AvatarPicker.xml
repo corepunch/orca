@@ -1,0 +1,14 @@
+<Pivot Name="AvatarPicker" Title="Messenger" IsLocked="true" ExtendBodyBehindHeader="true"
+       BackIcon="Chat/assets/icons/arrow-left.svg" BackRequested="CloseAvatarPicker" class="chat-background chat-ink">
+  <PivotItem Header="characters">
+    <StackView Name="AvatarChoicesBody" Padding="24 8" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
+      <TextBlock Text="Your picture is shared with Octopus." FontSize="14" WordWrap="true" class="chat-muted"/>
+      <TextBlock Name="AvatarChoiceStatus" Visible="false" FontSize="14" WordWrap="true" class="chat-muted"/>
+      <GridBox Name="AvatarChoices" Columns="1fr 1fr 1fr" Spacing="12" ItemNamePrefix="AvatarChoice"
+               ItemsSource="{Binding DataContext/Choices/Items}" ItemTemplate="Chat/Templates/AvatarChoice"/>
+      <Button Name="CancelAvatarPicker" Click="CloseAvatarPicker" Height="48" BorderWidth="0"
+              FontSize="15" TextHorizontalAlignment="Left" TextVerticalAlignment="Center"
+              class="chat-action chat-link">Cancel</Button>
+    </StackView>
+  </PivotItem>
+</Pivot>

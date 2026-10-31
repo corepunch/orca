@@ -1,0 +1,8 @@
+<Button Controller="orca.data.controller" Click="ChooseAvatar" BorderWidth="0" class="chat-action chat-link">
+  <StackView Spacing="6" Padding="6" IgnoreHitTest="true" JustifyContent="Start">
+    <ImageView Name="AvatarPortrait" Src="{Binding DataContext/Path}" AspectRatio="1" Foreground="#ffffff"
+               Stretch="UniformToFill" class="avatar" IgnoreHitTest="true"/>
+    <TextBlock Name="AvatarLabel" Text="{Binding DataContext/Label}" FontSize="14" TextHorizontalAlignment="Center" WordWrap="true"
+               class="chat-ink" IgnoreHitTest="true"/>
+  </StackView>
+</Button>

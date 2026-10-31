@@ -236,10 +236,12 @@ backend guide for reservation cleanup and concurrency/recovery limitations.
 | --- | --- |
 | `getAvatars(userIds)` | `{[userId]=photoId or false}`; no session needed, cached per client |
 | `getAvatar(photoId)` | JPEG or PNG bytes |
+| `setAvatar(photo)` | `{user_id,avatar_id}`; signed-in account only; accepts JPEG/PNG bytes or `{jpeg=bytes}` |
 
 Photos are public Octopus data: `profiles.avatarId` names a `post-images` file,
-set from the Octopus website or app and keyed by the shared Appwrite user ID.
-The contract routes are read-only and unauthenticated:
+set from either app or the Octopus website and keyed by the shared Appwrite
+user ID. Profile offers the shared sixteen-character catalog (`orca.avatars`)
+and native photo upload. The read routes are unauthenticated:
 
 | Route | Appwrite |
 | --- | --- |
@@ -252,6 +254,14 @@ request; people without an Octopus profile or photo map to `false`. Chat shows
 photos only where a tile stands for one person (direct chats with `peer_id`,
 members, contacts and your profile); groups and channels keep their initials.
 Previews are JPEG only, so PNG photos also keep the initials.
+
+`POST /auth/v1/avatar` is an adapter-local write route. The Appwrite adapter
+uses the active Account session to ensure the user's public profile exists,
+upload to `post-images`, and update only `profiles.avatarId`. It preserves
+name/bio and permissions, updates the avatar cache after success, and rejects
+completion after an account change. No Function deployment or schema migration
+is required. Catalog portraits are bundled JPEGs uploaded through this same
+path, so the website displays them as ordinary profile photos.
 
 ## Models and backend setup
 

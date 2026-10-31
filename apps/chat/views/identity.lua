@@ -1,5 +1,6 @@
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
+local ProfileAvatar = require "Chat/views/profile_avatar"
 local colors = C.colors
 local Identity = {}
 
@@ -209,8 +210,9 @@ local function profileBody(self, profile)
             notice("Verified and linked to this account.")
         end, { Name = "VerifyLink", Background = colors.surface }),
     })
+    local portrait = C.avatar(profile.display_name or "You", 72, user.id, self, user.id)
     local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
-        C.avatar(profile.display_name or "You", 72, user.id, self, user.id), self.status,
+        portrait, ProfileAvatar.controls(self, portrait, self.status), self.status,
         C.eyebrow("PUBLIC PROFILE"), name, username,
         C.text("People can find your exact username. Your phone and email are never shown in search results.", {
             FontSize = 13, WordWrap = true, class = "chat-dim" }), phoneToggle, emailToggle,

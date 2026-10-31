@@ -1,0 +1,7 @@
+<Schema>
+  <Entity Name="ChatAvatarChoice" Key="Id" ObjectName="Id">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Label" Type="string" Source="label"/>
+    <Column Name="Path" Type="string" Source="path"/>
+  </Entity>
+</Schema>

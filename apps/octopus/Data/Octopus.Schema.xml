@@ -2,6 +2,11 @@
      Source; Local columns are client state (photos, pending reactions);
      Computed columns are small functions in providers/octopus.lua. -->
 <Schema>
+  <Entity Name="OctopusDefaultAvatar" Key="ChoiceId" ObjectName="ChoiceId">
+    <Column Name="ChoiceId" Type="string" Source="id"/>
+    <Column Name="Label" Type="string" Source="label"/>
+    <Column Name="Path" Type="string" Source="path"/>
+  </Entity>
   <Entity Name="OctopusPost" Key="Id" Description="A post. Feed entries, detail pages and search share one record per post.">
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="PostType" Type="string" Source="postType" Default="text"/>
