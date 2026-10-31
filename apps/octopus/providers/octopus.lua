@@ -10,6 +10,7 @@
 -- signOut().
 local Format = require "Octopus/format"
 local Schema = require "orca.data.schema"
+local Avatars = require "orca.avatars"
 local Provider = {}
 
 local LABELS = { text = "post", photo = "photo", quote = "quote", link = "link" }
@@ -376,9 +377,21 @@ function Provider.new(context)
         context.notice("Profile saved. New posts use your account name.")
         return true
     end
-    operations.changePhoto = function(_, _, command)
-        local person = command.scope:exposedRecord("Profile")
-        local picked, err = context.media:pick()
+    operations.defaultAvatars = function()
+        local rows = {}
+        for index, avatar in ipairs(Avatars.entries) do
+            rows[index] = { id = avatar.id, label = avatar.label, path = avatar.path }
+        end
+        return rows
+    end
+    operations.changePhoto = function(params, _, command)
+        local scope, token = command.scope, command.scope:token()
+        local person = scope:exposedRecord("Profile")
+        local choice = params.item and params.item.values.ChoiceId
+        local picked, err
+        if choice then picked, err = Avatars.load(choice)
+        else picked, err = context.media:pick() end
+        if not scope:valid(token) then return nil, { code = "stale" } end
         if not picked then
             if not (type(err) == "table" and err.code == "cancelled") then
                 context.notice(type(err) == "table" and err.message or tostring(err), true)
@@ -387,6 +400,7 @@ function Provider.new(context)
         end
         local profile
         profile, err = client:setAvatar(picked)
+        if not scope:valid(token) then return nil, { code = "stale" } end
         if not profile then context.notice(err.message, true); return nil, err end
         context.avatarChanged(person.key)
         context.notice("Photo updated. It shows on the website and in Chat too.")
@@ -677,6 +691,14 @@ function Provider.new(context)
         SignInToFollow = function() context.signIn("/user") end,
         SignInToComment = function() context.signIn("/post") end,
         SignOut = function() context.signOut() end,
+        ToggleAvatarPicker = function(scope, params)
+            local button = params.sender
+            local picker = button:getParent():findChild("DefaultAvatarPicker")
+            picker.Visible = not picker.Visible
+            button.Text = picker.Visible and "Hide characters" or "Choose a character"
+            local choices = scope:member("DefaultAvatars")
+            if picker.Visible and not choices.loaded then choices:refresh() end
+        end,
         SignInToWrite = function() context.signIn("/write") end,
         SignUpToWrite = function() context.signUp("/write") end,
         -- Kind tiles are named Kind<kind>; each kind has its own draft.

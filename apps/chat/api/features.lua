@@ -169,6 +169,26 @@ return function(Client, helpers)
         return self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. key, nil, true, false, { responseType = "binary" })
     end
     -- Public profile photos, shared with Octopus and keyed by Auth user ID.
+    function Client:setAvatar(photo)
+        if not self.session then return failure("unauthenticated", "Sign in to choose a profile photo.") end
+        local bytes = type(photo) == "table" and (photo.jpeg or photo.bytes) or photo
+        if type(bytes) ~= "string" or not (bytes:sub(1, 3) == "\255\216\255" or bytes:sub(1, 8) == "\137PNG\r\n\26\n") then
+            return failure("invalid_image", "Choose a JPEG or PNG photo.")
+        end
+        if #bytes > 10485760 then return failure("invalid_image", "Photos must be smaller than 10 MB.") end
+        local user = self.session.user
+        local data, err = self:_request("POST", "/auth/v1/avatar", { bytes = bytes, userId = user.id,
+            displayName = user.user_metadata and user.user_metadata.display_name or "" }, true)
+        if not data then return nil, err end
+        if type(data) ~= "table" or data.user_id ~= user.id or not validId(data.avatar_id) then
+            return failure("invalid_response", "The chat service did not return the profile photo.")
+        end
+        if not self.session or self.session.user.id ~= user.id then
+            return failure("session_changed", "The active account changed while saving the profile photo.")
+        end
+        self.avatarIds[user.id] = data.avatar_id
+        return data
+    end
     -- Returns userId -> photo ID, or false for people without one. Answers are
     -- cached per client; lookups need no session.
     function Client:getAvatars(userIds)

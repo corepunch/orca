@@ -8,6 +8,8 @@
     <Copy Field="Bio" From="Bio"/>
   </Edit>
   <Command Name="SaveProfile" Operation="saveProfile" Description="Saves name and bio; new posts use the name."/>
-  <Command Name="ChangePhoto" Operation="changePhoto" Description="Picks a photo and uploads it as the profile photo."/>
+  <Query Name="DefaultAvatars" Entity="OctopusDefaultAvatar" Operation="defaultAvatars"/>
+  <Command Name="ChangePhoto" Operation="changePhoto" Description="Uploads a chosen character or photo as the shared profile photo."/>
+  <Handler Name="ToggleAvatarPicker"/>
   <Handler Name="SignOut"/>
 </DataScope>

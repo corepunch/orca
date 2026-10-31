@@ -8,6 +8,7 @@ local renderer = require "orca.renderer"
 local C = require "Chat/views/components"
 local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
+local ProfileAvatar = require "Chat/views/profile_avatar"
 local Conversations = require "Chat/views/conversations"
 local PhotoViewer = require "Chat/views/photo_viewer"
 local Diagnostics = require "Chat/diagnostics"
@@ -70,6 +71,7 @@ local App = Application:extend {
     end,
 
     resetSessionViews = function(self)
+        ProfileAvatar.close(self)
         PhotoViewer.close(self)
         -- Records belong to one account: the next session gets a new store.
         self:closePages()
@@ -287,6 +289,7 @@ local App = Application:extend {
     -- conversation or its info, "Backward" coming back out. The page in view goes out
     -- first and the next page comes in once it has gone.
     show = function(self, route, direction)
+        ProfileAvatar.close(self)
         PhotoViewer.close(self)
         local request = {}
         self.pendingShow = request

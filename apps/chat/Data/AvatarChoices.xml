@@ -1,0 +1,5 @@
+<DataScope Name="AvatarChoices" Schema="Chat/Data/AvatarChoices.Schema.xml">
+  <Query Name="Choices" Entity="ChatAvatarChoice" Operation="choices"/>
+  <Handler Name="ChooseAvatar"/>
+  <Handler Name="CloseAvatarPicker"/>
+</DataScope>

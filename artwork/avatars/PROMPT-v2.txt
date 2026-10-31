@@ -1,0 +1,20 @@
+PRECISION LAYOUT CORRECTION. OUTPUT MUST BE A SQUARE IMAGE, aspect ratio 1:1, width equal to height. Use a 1536 x 1536 pixel canvas, NOT the input's landscape 1448x1086 canvas.
+Rebuild the attached sixteen-character marine avatar atlas as a FOUR by FOUR grid of exactly SQUARE portrait cells. This requires changing the CANVAS aspect ratio to square. Every cell width equals its height; gridlines at25%,50%,75% of both canvas dimensions. No gutters or margins.
+Preserve these same sixteen illustrated characters, their identity, colored backgrounds and reading order. Correct their proportions so animals are naturally proportioned, with round eyes circular, round heads round, and backgrounds filling each square. Do not stretch or squash the existing raster. Recompose each character into a square cell with comfortable padding.
+Row1: black-white orca on purple; orange octopus on teal; blue whale on peach; dolphin on blue.
+Row2: spotted seal on coral; brown sea otter on mint; penguin on yellow; sea turtle on lavender.
+Row3: manta ray on pink; jellyfish on indigo; red crab on aqua; yellow pufferfish on orange.
+Row4: coral-pink seahorse on pale blue; red-orange lobster on yellow; peach-orange five-arm starfish on mint; lavender squid on warm pink.
+Keep the same friendly polished hand-illustrated style, shading, face expressions and complete silhouettes. All sixteen icons together in one square atlas. No text, labels, UI, borders or watermark. IMPORTANT: square1:1 entire output canvas, square1:1 cells.
+
+Generated with built-in ImageGen on 2026-10-31.
+Reference: sixteen-character expansion of sea-creatures-v1.png.
+Source: sea-creatures-v2-source.png (1254 x 1254).
+Production atlas: sea-creatures-v2-atlas.png (1448 x 1448, exact 4 x 4 grid).
+Preserve the original twelve authored portraits from v1 without changes.
+Extract the four new characters as 313 x 313 squares at y=878, x=0,314,627,941.
+Export each square uniformly to 362 x 362 with Lanczos resampling, RGB JPEG
+quality92 optimized. This preserves the character proportions at1:1; no
+stretching, recoloring, filtering for interaction states or new drawing.
+Pack original twelve362-square cells plus four new362-square cells into
+the exact production atlas. Runtime files: share/avatars/<id>.jpg.

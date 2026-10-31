@@ -400,6 +400,47 @@ local adaPhoto = app.media:path("avatar:" .. assert(app.client:getProfile("u-ada
 assert(adaPhoto and find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == adaPhoto,
     "The uploaded photo shows on your profile")
 
+-- Characters use the same avatar upload command, preserving profile edits.
+local Avatars = require "orca.avatars"
+assert(#Avatars.entries == 16, "Both apps offer the full shared character set")
+find(app, "EditBio").Text = "An unsaved profile edit"
+click(app, "ChooseAvatar")
+assert(isShown(find(app, "DefaultAvatarPicker")))
+for _, id in ipairs { "seahorse", "lobster", "starfish", "squid" } do
+    assert(find(app, "Avatar" .. id):findChild("SelectAvatar", true), "Each added character is available")
+end
+local selectedId = "squid"
+local choice = find(app, "Avatar" .. selectedId)
+assert(choice:findChild("SelectAvatar", true), "Character tiles are labelled, actionable templates")
+local loadAvatar, avatarBeforeFailure = Avatars.load, app.client:getProfile("u-ada").avatarId
+Avatars.load = function() return nil, { message = "Character unavailable." } end
+clickIn(app, "Avatar" .. selectedId, "SelectAvatar")
+assert(text(find(app, "MeStatus")) == "Character unavailable."
+    and app.client:getProfile("u-ada").avatarId == avatarBeforeFailure,
+    "An unavailable character keeps the current shared photo and offers retry")
+Avatars.load = function(id)
+    assert(id == selectedId, "The character ID comes from the selected row")
+    return { jpeg = photoBytes }
+end
+local setAvatar = app.client.setAvatar
+app.client.setAvatar = function() return nil, { message = "Upload unavailable." } end
+clickIn(app, "Avatar" .. selectedId, "SelectAvatar")
+assert(text(find(app, "MeStatus")) == "Upload unavailable."
+    and app.client:getProfile("u-ada").avatarId == avatarBeforeFailure
+    and find(app, "EditBio").Text == "An unsaved profile edit",
+    "A failed upload keeps both the current photo and the profile draft for retry")
+app.client.setAvatar = setAvatar
+clickIn(app, "Avatar" .. selectedId, "SelectAvatar")
+local avatarAfterChoice = app.client:getProfile("u-ada").avatarId
+adaPhoto = app.media:path("avatar:" .. avatarAfterChoice)
+assert(avatarAfterChoice ~= avatarBeforeFailure and adaPhoto
+    and find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == adaPhoto,
+    "Choosing a character uploads a normal shared profiles.avatarId photo")
+assert(find(app, "EditBio").Text == "An unsaved profile edit", "Choosing a character keeps pending form edits")
+click(app, "ChooseAvatar")
+assert(not isShown(find(app, "DefaultAvatarPicker")), "The character picker can be dismissed")
+Avatars.load = loadAvatar
+
 -- Deleting needs a second tap.
 click(app, "AppBarHome")
 clickIn(app, "Post" .. published, "Open")

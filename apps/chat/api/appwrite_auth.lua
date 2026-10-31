@@ -41,6 +41,9 @@ function M.new(options)
   local currentUser, pushBusy, liveRecord
   local encode, store = options.encode, options.sessionStore
   local endpoint = options.endpoint:gsub("/$", "")
+  local saveAvatar = require("api.appwrite_avatars").new {
+    endpoint = endpoint, projectId = options.projectId, transport = options.transport, encode = options.encode,
+  }
   local function call(method, path, body, credential)
     local headers = { ["X-Appwrite-Project"] = options.projectId, ["Content-Type"] = "application/json" }
     for name, value in pairs(credential or {}) do headers[name] = value end
@@ -162,7 +165,10 @@ function M.new(options)
   end
   return function(request, path)
     local body = request.body or {}
-    if request.method == "POST" and path == "/auth/v1/push" then
+    if request.method == "POST" and path == "/auth/v1/avatar" then
+      local credential = current
+      return saveAvatar(body, credential, currentUser, function() return current == credential end)
+    elseif request.method == "POST" and path == "/auth/v1/push" then
       if not current or not currentUser or body.userId ~= currentUser then
         return { status = 401, body = { code = "unauthenticated", message = "Sign in to enable notifications." } }
       end

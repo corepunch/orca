@@ -147,6 +147,12 @@ The four compose forms match the
 Chat. Avatar tiles built in one pass share a single `profiles` lookup, and
 file IDs are cached for the session.
 
+**Choose a character** opens the shared sixteen-creature avatar set beside the
+photo option. Selecting a character uploads its bundled portrait through that
+same photo flow, so Chat, Octopus and the website all display the choice from
+`profiles.avatarId`. Opening the picker or choosing a portrait preserves name
+and bio edits; a failed upload keeps the previous photo available for retry.
+
 Photo selection needs the native picker (macOS and iOS). Photo and quote
 forms let you add up to nine ordered photos and remove individual thumbnails.
 Feeds and post details arrange albums in balanced rows, through a 3×3 grid;
