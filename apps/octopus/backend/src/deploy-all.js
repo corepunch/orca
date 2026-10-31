@@ -4,6 +4,7 @@ import { AppwriteRest } from '../../../chat/backend/appwrite/src/rest.js';
 import { migrateShared } from '../../../chat/backend/appwrite/src/migrate.js';
 import { configuration, createRepository } from './repository.js';
 import { migrate } from './migrate.js';
+import { backfillAlbums } from './backfill-albums.js';
 import { execute } from './materialize.js';
 import { configureFunction, deployFunction, waitForIdle, enableFunctions, paused } from './deploy.js';
 
@@ -33,6 +34,8 @@ export async function deployAll({ env = process.env, dropLegacy = false, progres
   const shared = await migrateShared(rest, { databaseId, migrateLegacy: true, dropLegacy: false, quiesced: true });
   progress('Provisioning feed summaries and indexes.');
   await migrate(repo);
+  progress('Upgrading legacy single-image posts to albums.');
+  const albums = await backfillAlbums(repo);
   progress('Backfilling public feed summaries.');
   let reset = true, processed = 0;
   for (;;) {
@@ -62,7 +65,7 @@ export async function deployAll({ env = process.env, dropLegacy = false, progres
     await migrateShared(rest, { databaseId, migrateLegacy: true, dropLegacy: true, quiesced: true });
   }
   await enableFunctions(rest, deployed);
-  return { deployed: true, projectId, databaseId, shared, processed, functions: deployed.map(({ id, deploymentId }) => ({ id, deploymentId })) };
+  return { deployed: true, projectId, databaseId, shared, albums, processed, functions: deployed.map(({ id, deploymentId }) => ({ id, deploymentId })) };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

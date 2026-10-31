@@ -24,6 +24,14 @@ local ChatProvider = require "Chat/providers/chat"
 local colors = C.colors
 local auto = 0/0
 
+local function updatePhotoDraft(composer, photos)
+    local count, bytes = #(photos or {}), 0
+    for _, photo in ipairs(photos or {}) do bytes = bytes + #photo.jpeg end
+    composer.draft.HasPhoto = count > 0
+    composer.draft.PhotoLabel = count > 0 and (count .. "/9 " .. (count == 1 and "photo" or "photos")
+        .. " ready · " .. math.ceil(bytes / 1000) .. " KB") or ""
+end
+
 local App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
 
@@ -484,10 +492,11 @@ local App = Application:extend {
         local composer = scope:member("Composer")
         if composer.submitting then self:notice("Finish sending before adding another photo."); return end
         if composer.target then self:notice("Finish editing before adding a photo."); return end
+        local room = self.room
+        if #(self.photoDrafts[room.id] or {}) >= 9 then self:notice("Attach at most nine photos.", true); return end
         local media = self:getMedia()
         if not media then self:notice("Photo selection is unavailable on this platform.", true); return end
         self:notice("Preparing photo…")
-        local room = self.room
         local photo, err = media:pick()
         if self.room ~= room or scope.disposed then return end
         if not photo then
@@ -495,24 +504,51 @@ local App = Application:extend {
                 err ~= nil and not (type(err) == "table" and err.code == "cancelled"))
             return
         end
-        local previous = self.photoDrafts[room.id]
-        if previous and previous.attachment then self.client:discardPhoto(previous.attachment.id) end
-        self.photoDrafts[room.id] = photo
-        composer.draft.PhotoLabel = "Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB"
-        composer.draft.HasPhoto = true
-        self:notice("Photo ready. Add a caption or send it as it is.")
+        local photos = self.photoDrafts[room.id] or {}
+        if #photos >= 9 then self:notice("Attach at most nine photos.", true); return end
+        if composer.submitting or composer.target then self:notice("Finish sending or editing before adding a photo."); return end
+        photos[#photos + 1] = photo
+        self.photoDrafts[room.id] = photos
+        updatePhotoDraft(composer, photos)
+        self:notice("Photos ready. Add more, write a caption or send.")
     end,
 
-    removePhoto = function(self, scope)
+    removePhoto = function(self, scope, position)
         local composer, room = scope:member("Composer"), self.room
-        if composer.submitting then self:notice("The photo is being sent. Please wait."); return end
-        local photo = self.photoDrafts[room.id]
-        if photo and photo.attachment then
+        if composer.submitting then self:notice("The photos are being sent. Please wait."); return end
+        local photos = self.photoDrafts[room.id]
+        if not photos then return end
+        if #photos > 1 and not position then
+            local overlay, sheet = self.messageActions, self.messageActionSheet
+            while sheet:getFirstChild() do sheet:getFirstChild():removeFromParent() end
+            local grid = ui.Grid { Columns = "1fr 1fr 1fr", Spacing = 4, Height = math.ceil(#photos / 3) * 88 }
+            for index, photo in ipairs(photos) do
+                local tile = ui.Grid { Height = 84 }
+                local preview = photo.preview
+                if not preview then preview = self.media:storePreview(photo.thumbnail, "draft-" .. tostring(photo)); photo.preview = preview end
+                if preview then tile:addChild(ui.ImageView { Src = preview, Stretch = "UniformToFill", class = "avatar", IgnoreHitTest = true }) end
+                tile:addChild(C.button("remove " .. index, function()
+                    overlay.Visible = false
+                    if not scope.disposed and self.room == room then self:removePhoto(scope, index) end
+                end, { Name = "RemoveDraftPhoto" .. index, Height = 44, MarginTop = auto,
+                    class = "photo-time", BorderWidth = 0, FontSize = 14 }))
+                grid:addChild(tile)
+            end
+            sheet:addChild(grid)
+            sheet:addChild(C.button("cancel", function() overlay.Visible = false end,
+                { Name = "CancelRemovePhoto", Height = 44, BorderWidth = 0, class = "chat-link" }))
+            sheet.Height, overlay.Visible = grid.Height + 60, true
+            return
+        end
+        local photo = photos[position or 1]
+        if not photo then return end
+        if photo.attachment then
             local ok, err = self.client:discardPhoto(photo.attachment.id)
             if not ok then self:notice(err.message, true); return end
         end
-        self.photoDrafts[room.id] = nil
-        composer.draft.HasPhoto, composer.draft.PhotoLabel = false, ""
+        table.remove(photos, position or 1)
+        self.photoDrafts[room.id] = #photos > 0 and photos or nil
+        updatePhotoDraft(composer, photos)
         self:notice("Photo removed. Your message is still here.")
     end,
 
@@ -595,11 +631,7 @@ local App = Application:extend {
         self.status:setTextContent("")
         local composer = scope:member("Composer")
         composer.draft.Text = self.drafts[room.id] or ""
-        local photo = self.photoDrafts[room.id]
-        if photo and not readOnly then
-            composer.draft.HasPhoto = true
-            composer.draft.PhotoLabel = "Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB"
-        end
+        if not readOnly then updatePhotoDraft(composer, self.photoDrafts[room.id]) end
         -- Leaving the conversation abandons an edit but keeps the unsent draft.
         local function keepDraft()
             if composer.target then composer:cancel() end

@@ -454,6 +454,15 @@ local imageBytes = assert(writer.client:getImage("f-reef"))
 writer.media.pick = function() return { jpeg = imageBytes } end
 click(writer, "ChoosePhoto")
 assert(isShown(find(writer, "PhotoPreview")) and find(writer, "RemovePhoto"))
+for i = 2, 9 do click(writer, "ChoosePhoto") end
+assert(#writer.reader.provider.draftPhotos("photo") == 9, "The photo draft keeps all nine selections")
+click(writer, "ChoosePhoto")
+assert(#writer.reader.provider.draftPhotos("photo") == 9 and text(find(writer, "WriteStatus")) == "You can add up to 9 photos.")
+local selectedPhoto = assert(find(writer, "PhotoPreview"):findChild("RemoveSelectedPhoto", true))
+selectedPhoto:send("Node.LeftButtonUp")
+drain(writer)
+assert(#writer.reader.provider.draftPhotos("photo") == 8, "Removing one tile retains the other selections")
+
 local function draftKind() return writer.composeScope:member("Draft").key end
 click(writer, "Kindquote")
 form { QuoteText = true, QuoteSource = true, QuoteThoughts = true, ChoosePhoto = true }
@@ -485,7 +494,8 @@ assert(writer.post.postType == "link" and writer.post.linkUrl == "https://exampl
 back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindphoto")
-assert(draftKind() == "photo" and isShown(find(writer, "PhotoPreview")))
+assert(draftKind() == "photo" and isShown(find(writer, "PhotoPreview"))
+    and #writer.reader.provider.draftPhotos("photo") == 8, "All selections survive switching drafts and leaving the composer")
 local upload = writer.client.uploadImage
 writer.client.uploadImage = function() return nil, { code = "network", message = "Upload failed." } end
 click(writer, "Publish")
@@ -497,7 +507,8 @@ click(writer, "Publish")
 writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
 writer:afterPaint()
 drain(writer)
-assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "PostDetail"):findChild("Image", true))
+assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and #writer.post.images == 8
+    and find(writer, "PostDetail"):findChild("Gallery", true).Visible, "The composer publishes every retained photo")
 back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindquote")
@@ -809,7 +820,11 @@ for _, selected in ipairs { "dark", "light" } do
             name .. " must match the app palette, not the OS appearance")
     end
     local function header(node)
-        if (node.StyleClass or ""):find("pivot-bar", 1, true) then return node end
+        -- StyleClass is a write-only alias; serialized root attributes also
+        -- expose classes added by native controls.
+        local tag = filesystem.serializeObjectToString(node):match("<[%w_:][^>]*>") or ""
+        local classes = tag:match('%sclass="([^"]*)"') or ""
+        if (" " .. classes .. " "):find(" pivot-bar ", 1, true) then return node end
         local child = node:getFirstChild()
         while child do
             local found = header(child)

@@ -303,6 +303,7 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_pagination.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_templates.lua
+	$(TARGET) -test=tests/test_octopus_composer.lua
 	$(TARGET) -test=tests/test_octopus_alignment.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 
@@ -571,7 +572,7 @@ $(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_F
 HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 # Applications are authored in XML; Lisp is an experimental scene format and
 # only apps/Example has Lisp twins. App tests that load pages run in XML builds.
-XML_APP_LUA_TESTS = test-chat-polling test-ledger-example test-mvvm-form
+XML_APP_LUA_TESTS = test-chat-polling test-ledger-example test-mvvm-form test-octopus-composer
 ifeq ($(SCENE_FORMAT),xml)
 HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
 endif
@@ -592,6 +593,7 @@ $(eval $(call LUA_TEST_RULE,test-data-collection,tests/test_data_collection.lua,
 $(eval $(call LUA_TEST_RULE,test-data-runtime,tests/test_data_runtime.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-data-lint,tests/test_data_lint.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-ledger-example,tests/test_ledger_example.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))

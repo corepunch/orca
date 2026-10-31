@@ -47,7 +47,10 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
   chats, and text or captioned-photo bubbles have a trailing timestamp row.
-  Photos fill their bubble edge to edge. A photo without text has no footer or
+  Up to nine photos fill their bubble in balanced rows, through a 3×3 grid.
+  Add photos in selection order and remove individual draft thumbnails before
+  sending; completed uploads survive a failed send for retry.
+  A photo without text has no footer or
   tail; its timestamp overlays the bottom-right of the image on a dark backing.
   Pending photos show a loading icon. Queued thumbnails take priority over
   queued full downloads and reuse the attachment metadata already in the message.

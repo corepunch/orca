@@ -10,6 +10,7 @@
   <Handler Name="RemovePhoto"/>
   <Handler Name="SignInToWrite"/>
   <Handler Name="SignUpToWrite"/>
+  <Expose Name="Selections" Entity="OctopusSelections"/>
   <Expose Name="Composer" Entity="OctopusComposer"/>
   <Expose Name="Reader" Entity="OctopusReader"/>
 </DataScope>

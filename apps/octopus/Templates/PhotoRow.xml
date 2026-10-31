@@ -1,0 +1,2 @@
+<GridBox AspectRatio="{Binding DataContext/Ratio}" Columns="{Binding DataContext/Columns}" Spacing="2" ItemsSource="{Binding DataContext/Images}"
+         ItemTemplate="Octopus/Templates/PhotoTile"/>

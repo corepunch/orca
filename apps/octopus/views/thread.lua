@@ -6,6 +6,7 @@ local filesystem = require "orca.filesystem"
 local C = require "Octopus/views/components"
 local colors = C.colors
 local Thread = {}
+local OctopusProvider = require "Octopus/providers/octopus"
 
 -- Reloads the post, its counts and comments in place.
 function Thread.load(self, view)
@@ -31,7 +32,7 @@ function Thread.page(self)
     local post = self.post
     if not post then return self:home() end
     local scope = self:pageScope("Octopus/Data/Post.xml")
-    local record = scope.store:put("OctopusPost", post, { partial = true })
+    local record = scope.store:put("OctopusPost", OctopusProvider.preparePost(post), { partial = true })
     scope:expose("Post", record)
     local page = assert(filesystem.loadObject("Octopus/Pages/Post"), "Missing Octopus/Pages/Post")
     -- Present the post before the first evaluation of the page's bindings.

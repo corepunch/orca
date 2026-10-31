@@ -144,7 +144,7 @@ private-photo access. Invitations require staff rights, expire after 24 hours,
 allow ten joins, and can be revoked. Rejoining with a valid invite does not use
 another allowance. Public channel discovery does not grant posting rights.
 
-Messages allow up to 4000 UTF-8 bytes and four photos; photo-only messages use
+Messages allow up to 4000 UTF-8 bytes and nine ordered photos; photo-only messages use
 `body=""`. Publishing uses the atomic `post_chat_message` RPC, which derives
 the sender from Auth and attaches only ready, unexpired photos owned by that
 sender in that room. Direct REST inserts are disabled.

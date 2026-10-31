@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRepository } from '../src/repository.js';
 import { execute, feedDocument, publiclyReadable, refreshPost, reconcileBatch } from '../src/materialize.js';
-import { compatibleAttribute, coversIndex, migrate, feedAttributes, imageAttributes, indexes } from '../src/migrate.js';
+import { compatibleAttribute, coversIndex, migrate, feedAttributes, imageAttributes, albumAttributes, indexes } from '../src/migrate.js';
+import { albumFields } from '../src/albums.js';
+import { backfillAlbums } from '../src/backfill-albums.js';
 
 const now = '2026-10-28T10:00:00.000Z';
 const post = (id = 'p1', overrides = {}) => ({ $id: id, $createdAt: now, $updatedAt: now,
@@ -39,6 +41,73 @@ function fixture(documents = [post()]) {
 }
 
 const event = (collection, action = 'create') => `databases.octopus-db.collections.${collection}.documents.any.${action}`;
+
+test('albums preserve nine ordered images, legacy first image and paired unknown dimensions', () => {
+  assert.deepEqual(albumFields({ imageId: 'old', imageWidth: 600, imageHeight: 400 }),
+    { imageIds: ['old'], imageWidths: [600], imageHeights: [400] });
+  const imageIds = Array.from({ length: 9 }, (_, i) => 'photo-' + i);
+  const source = { imageIds, imageWidths: [800, 500], imageHeights: [600] };
+  const album = albumFields(source);
+  assert.deepEqual(album.imageIds, imageIds);
+  assert.deepEqual(album.imageWidths, [800, 0, 0, 0, 0, 0, 0, 0, 0]);
+  assert.deepEqual(album.imageHeights, [600, 0, 0, 0, 0, 0, 0, 0, 0]);
+  const summary = feedDocument(post('p1', source), '', {}, now);
+  assert.deepEqual(summary.imageIds, imageIds);
+  assert.equal(summary.imageId, 'photo-0');
+  assert.equal(summary.imageWidth, 800);
+  assert.deepEqual(albumFields({ imageIds: ['a', 'a', '', 'b'], imageWidths: [1, 2, 3, 4], imageHeights: [1, 2, 3, 4] }),
+    { imageIds: ['a', 'b'], imageWidths: [1, 4], imageHeights: [1, 4] });
+});
+
+test('album backfill pages, rereads replacements, preserves albums and patches only new columns idempotently', async () => {
+  const repo = fixture([post('a', { imageId: 'old', imageWidth: 600, imageHeight: 400 }),
+    post('b', { imageIds: ['one', 'two'], imageWidths: [1, 2], imageHeights: [1, 2] }), post('c')]);
+  repo.collections.feed.set('a', post('a', { imageId: 'old', imageWidth: 600, imageHeight: 400 }));
+  const patches = [];
+  let disabled = false;
+  repo.collectionPath = collection => '/collections/' + collection;
+  repo.request = async (method, path, body) => {
+    if (method === 'PUT') { assert.equal(path, '/collections/posts'); disabled = !body.enabled; return; }
+    assert.equal(method, 'PATCH');
+    assert.equal(disabled, true, 'direct source writes must be frozen during migration');
+    assert.deepEqual(Object.keys(body), ['data']);
+    assert.deepEqual(Object.keys(body.data).sort(), ['imageHeights', 'imageIds', 'imageWidths']);
+    patches.push(path);
+    const [, collection, id] = path.match(/\/collections\/(.+)\/documents\/(.+)$/);
+    Object.assign(repo.collections[collection].get(id), body.data);
+  };
+  const originalGet = repo.get;
+  repo.get = async (collection, id, ...args) => {
+    const current = await originalGet(collection, id, ...args);
+    if (collection === 'posts' && id === 'a') current.imageId = 'replaced';
+    return current;
+  };
+  assert.deepEqual(await backfillAlbums(repo, { pageSize: 2 }), { scanned: 4, updatedPosts: 1, updatedSummaries: 1 });
+  assert.deepEqual(repo.collections.posts.get('a').imageIds, ['replaced']);
+  assert.deepEqual(repo.collections.posts.get('b').imageIds, ['one', 'two']);
+  assert.deepEqual(repo.collections.posts.get('a').$permissions, ['read("any")']);
+  assert.equal(repo.collections.posts.get('a').content, 'Long post');
+  assert.deepEqual(await backfillAlbums(repo, { pageSize: 2 }), { scanned: 4, updatedPosts: 0, updatedSummaries: 0 });
+  assert.equal(patches.length, 2);
+  assert.equal(disabled, false);
+  repo.request = async (method, path, body) => {
+    if (method === 'PUT') { disabled = !body.enabled; return; }
+    throw new Error('unavailable');
+  };
+  repo.collections.posts.set('new', post('new', { imageId: 'new-photo' }));
+  await assert.rejects(backfillAlbums(repo), /unavailable/);
+  assert.equal(disabled, false, 'failure must restore source availability');
+  assert.equal(await repo.acquire(), true, 'failure must release feed lock');
+  await assert.rejects(backfillAlbums(repo), /busy/);
+  await repo.release();
+  repo.request = async (method, path, body) => {
+    assert.equal(method, 'PUT');
+    disabled = !body.enabled;
+    if (disabled) throw new Error('disable response lost');
+  };
+  await assert.rejects(backfillAlbums(repo), /disable response lost/);
+  assert.equal(disabled, false, 'ambiguous disable response must still restore availability');
+});
 
 test('deployment subscribes to current and legacy source mutations, including upserts, without feed recursion', async () => {
   const manifest = JSON.parse(await readFile(new URL('../appwrite.config.json', import.meta.url), 'utf8'));
@@ -339,10 +408,10 @@ test('migration avoids unsupported array indexes, is idempotent and verify perfo
     },
   };
   await migrate(repo);
-  assert.equal(data.size, feedAttributes.length + imageAttributes.length + 1 + indexes(config).length);
+  assert.equal(data.size, feedAttributes.length + imageAttributes.length + albumAttributes.length + 1 + indexes(config).length);
   assert.equal(collections.has('posts'), false, 'Source permissions must not be replaced by feed-only security rules');
   for (const collection of ['posts', 'feed']) {
-    for (const attribute of imageAttributes) assert.deepEqual(data.get(`${root}/${collection}/attributes/${attribute.key}`),
+    for (const attribute of [...imageAttributes, ...albumAttributes]) assert.deepEqual(data.get(`${root}/${collection}/attributes/${attribute.key}`),
       { ...attribute, status: 'available' });
   }
   const firstWrites = writes;

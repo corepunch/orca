@@ -3,6 +3,10 @@ import { configuration, createRepository, query } from './repository.js';
 
 export const imageAttributes = ['imageWidth', 'imageHeight']
   .map(key => ({ key, type: 'integer', min: 1, max: 65535, required: false }));
+export const albumAttributes = [
+  { key: 'imageIds', type: 'string', size: 36, required: false, array: true },
+  ...['imageWidths', 'imageHeights'].map(key => ({ key, type: 'integer', min: 0, max: 65535, required: false, array: true })),
+];
 
 export const feedAttributes = [
   { key: 'sourceCreatedAt', type: 'datetime', required: true },
@@ -11,6 +15,7 @@ export const feedAttributes = [
     .map(([key, size]) => ({ key, size, type: 'string', required: false, default: '' })),
   { key: 'tags', type: 'string', size: 64, required: false, array: true },
   ...imageAttributes,
+  ...albumAttributes,
   ...['likeCount', 'commentCount', 'repostCount'].map(key => ({ key, type: 'integer', min: 0, required: false, default: 0 })),
   { key: 'statsUpdatedAt', type: 'datetime', required: true },
 ];
@@ -86,7 +91,7 @@ export async function migrate(repo, { verify = false, wait = ms => new Promise(r
   }
   // Source posts retain their existing collection permissions. Optional columns
   // allow old records and old clients to keep publishing without dimensions.
-  await ensureAttributes('posts', imageAttributes);
+  await ensureAttributes('posts', [...imageAttributes, ...albumAttributes]);
   await collection(config.feedId, feedAttributes);
   await collection(config.controlId, [{ key: 'value', type: 'string', size: 1024, required: true }]);
   for (const expected of indexes(config)) {

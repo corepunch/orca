@@ -19,7 +19,7 @@
           <TextBlock Name="MessageSender" Text="{Binding DataContext/Sender}" FontSize="13" FontWeight="Bold" TextWrapping="Wrap"
                      class="chat-accent-text" IgnoreHitTest="true"/>
         </StackView>
-        <ItemsStack Name="Photos" Visible="{Binding DataContext/HasPhotos}" Spacing="0" JustifyContent="Start"
+        <GridBox Name="Photos" Visible="{Binding DataContext/HasPhotos}" Height="{Binding DataContext/AlbumHeight}"
                     ItemNamePrefix="PhotoFrame" ItemsSource="{Binding DataContext/Attachments}" ItemTemplate="Chat/Templates/Photo"/>
         <TextFooterPanel Name="Caption" Visible="{Binding DataContext/ShowCaption}" Spacing="8"
                          PaddingLeft="{Binding DataContext/PhotoInset}" PaddingRight="{Binding DataContext/PhotoInset}"

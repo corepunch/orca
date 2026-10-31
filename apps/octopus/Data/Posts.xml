@@ -12,6 +12,7 @@
   <Media Name="Photos" Fetch="photoFetch" Store="photoStore" Cached="photoCached" Preview="photoPreview"
          Discard="photoDiscard" Validate="photoValidate">
     <Target Entity="OctopusPost" Id="ImageId" Path="PhotoPath" State="PhotoState" Ratio="PhotoRatio"/>
+    <Target Entity="OctopusImage" Id="ImageId" Path="PhotoPath" State="PhotoState" Ratio="PhotoRatio"/>
   </Media>
   <Media Name="Avatars" Lookup="avatarLookup" Fetch="avatarFetch" Store="avatarStore" Cached="avatarCached">
     <Target Entity="OctopusPost" Id="AuthorId" Path="AvatarPath"/>

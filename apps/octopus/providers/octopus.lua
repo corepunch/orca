@@ -44,6 +44,27 @@ local function aspect(width, height, learned)
 end
 Provider.aspect = aspect
 
+-- Balanced rows reserve a square album at any viewport width. Each row fills
+-- the available width; its aspect ratio keeps every row the same height.
+function Provider.preparePost(post)
+    local images = post.images or {}
+    post.imageCount, post.galleryRows = #images, {}
+    if #images < 2 then return post end
+    local bands = { [2] = { 2 }, [3] = { 1, 2 }, [4] = { 2, 2 }, [5] = { 2, 3 },
+        [6] = { 3, 3 }, [7] = { 2, 2, 3 }, [8] = { 2, 3, 3 }, [9] = { 3, 3, 3 } }
+    local rows, index = bands[math.min(9, #images)], 1
+    for row, count in ipairs(rows) do
+        local band = { id = post.id .. ":" .. row, columns = string.rep("1fr ", count), ratio = #images == 2 and 2 or #rows, images = {} }
+        for column = 1, count do
+            local image = images[index]
+            band.images[column] = { id = post.id .. ":" .. image.id, imageId = image.id }
+            index = index + 1
+        end
+        post.galleryRows[row] = band
+    end
+    return post
+end
+
 -- Runs a search: both queries take the trimmed text; the same text again
 -- refreshes. An empty query returns the page to its suggestions.
 function Provider.search(scope, text)
@@ -59,11 +80,14 @@ end
 function Provider.selectKind(scope, kind)
     scope:member("Draft"):switch(kind)
     scope.store:put("OctopusComposer", { id = "composer", kind = kind })
+    if scope.provider.refreshSelections then scope.provider.refreshSelections(scope) end
 end
 
 function Provider.new(context)
     local client = context.client
     local computed = {
+        singlePhoto = function(v) return (v.PostType == "photo" or (v.PostType == "quote" and v.ImageId ~= nil)) and v.ImageCount < 2 end,
+        hasGallery = function(v) return v.ImageCount > 1 end,
         hasPhoto = function(v) return v.PostType == "photo" or (v.PostType == "quote" and v.ImageId ~= nil) end,
         isQuote = function(v) return v.PostType == "quote" end,
         isLink = function(v) return v.PostType == "link" end,
@@ -138,7 +162,7 @@ function Provider.new(context)
         composeQuote = function(v) return v.Kind == "quote" end,
         composeLink = function(v) return v.Kind == "link" end,
         composeTakesPhoto = function(v) return v.Kind == "photo" or v.Kind == "quote" end,
-        composePhotoLabel = function(v) return v.Kind == "quote" and "background photo (optional)" or "photo" end,
+        composePhotoLabel = function(v) return v.Kind == "quote" and "photos (optional, up to 9)" or "photos (up to 9)" end,
         composeTextTile = function(v) return v.Kind == "text" and "kind-on" or "kind-off" end,
         composePhotoTile = function(v) return v.Kind == "photo" and "kind-on" or "kind-off" end,
         composeQuoteTile = function(v) return v.Kind == "quote" and "kind-on" or "kind-off" end,
@@ -188,7 +212,7 @@ function Provider.new(context)
                 local post = item.post
                 if post and not seen[post.id] then
                     seen[post.id] = true
-                    store:put("OctopusPost", post, { locals = { StatsReady = false } })
+                    store:put("OctopusPost", Provider.preparePost(post), { locals = { StatsReady = false } })
                     rows[#rows + 1] = store:put("OctopusEntry", { key = query.name .. ":" .. post.id, postId = post.id,
                         repostedBy = item.repostedBy })
                 end
@@ -377,7 +401,7 @@ function Provider.new(context)
             if context.notice then context.notice(err.message, true) end
             return nil, err
         end
-        local record = query.scope.store:put("OctopusPost", post)
+        local record = query.scope.store:put("OctopusPost", Provider.preparePost(post))
         if context.postLoaded then context.postLoaded(post) end
         return { record }
     end
@@ -479,6 +503,19 @@ function Provider.new(context)
 
     -- Picked photos stay with their kind's draft until it is published.
     local photos = {}
+    local function refreshSelections(scope)
+        local edit = scope:member("Draft")
+        local selected, images = photos[edit.key] or {}, {}
+        for index, photo in ipairs(selected) do
+            images[index] = { id = "draft:" .. tostring(photo), index = index,
+                path = context.media:store(photo.jpeg, "draft-" .. tostring(photo)) or "" }
+        end
+        edit.draft.HasPhoto, edit.draft.PhotoCount = #selected > 0, #selected
+        local rows = math.ceil(#selected / 3)
+        edit.draft.PhotoRows, edit.draft.PhotoPreviewRatio = string.rep("1fr ", rows), rows > 0 and 3 / rows or 0
+        edit.draft.PhotoPath = images[1] and images[1].path or ""
+        scope:expose("Selections", scope.store:put("OctopusSelections", { id = edit.key, images = images }))
+    end
     local FIELDS = {
         text = { title = "Title", content = "Content" },
         quote = { content = "Content", quoteSource = "QuoteSource", userText = "UserText", photo = true },
@@ -489,9 +526,12 @@ function Provider.new(context)
         local kind, draft = params.key or "text", params.draft
         local values = { postType = kind, tags = draft.Tags }
         for field, column in pairs(FIELDS[kind]) do
-            if column == true then values.photo = photos[kind] else values[field] = draft[column] end
+            if column == true then
+                values.photos = {}
+                for i, photo in ipairs(photos[kind] or {}) do values.photos[i] = photo end
+            else values[field] = draft[column] end
         end
-        context.notice(values.photo and "Uploading photo…" or "")
+        context.notice(values.photos and #values.photos > 0 and "Uploading photos…" or "")
         local post, err = client:createPost(values)
         if not post then
             local message = err.message .. (err.code == "validation" and "" or " Your draft is safe.")
@@ -564,9 +604,12 @@ function Provider.new(context)
         profileSaved = function(_, _, _, info, edit)
             if info.target and not edit.disposed then edit:begin(info.target) end
         end,
-        published = function(ok, post, _, info)
+        published = function(ok, post, _, info, edit)
             if not ok then return end
-            if info.cleared then photos[info.key] = nil end
+            if info.cleared then
+                photos[info.key] = nil
+            end
+            if info.visible then refreshSelections(edit.scope) end
             if context.published then context.published(post, info) end
         end,
         -- Comment like counts follow the comments, as feeds do for posts.
@@ -647,6 +690,7 @@ function Provider.new(context)
             local edit = scope:member("Draft")
             if edit.submitting then return end
             local kind = edit.key
+            if #(photos[kind] or {}) >= 9 then context.notice("You can add up to 9 photos.", true); return end
             context.notice("Opening photos…")
             local photo, err = context.media:pick()
             if not photo then
@@ -655,16 +699,21 @@ function Provider.new(context)
                 return
             end
             if scope.disposed or edit.key ~= kind then return end
-            photos[kind] = photo
-            edit.draft.PhotoPath = context.media:store(photo.jpeg, "draft-" .. tostring(photo)) or ""
-            edit.draft.HasPhoto = true
+            local selected = photos[kind] or {}
+            if #selected >= 9 then context.notice("You can add up to 9 photos.", true); return end
+            selected[#selected + 1] = photo
+            photos[kind] = selected
+            refreshSelections(scope)
             context.notice("")
         end,
-        RemovePhoto = function(scope)
+        RemovePhoto = function(scope, params)
             local edit = scope:member("Draft")
             if edit.submitting then return end
-            photos[edit.key] = nil
-            edit.draft.HasPhoto, edit.draft.PhotoPath = false, ""
+            local selected = photos[edit.key] or {}
+            local index = params.item and params.item.values.Index
+            if index then table.remove(selected, index) else selected = {} end
+            photos[edit.key] = #selected > 0 and selected or nil
+            refreshSelections(scope)
         end,
         CancelReply = function(scope)
             local draft = scope:member("Draft").draft
@@ -687,7 +736,9 @@ function Provider.new(context)
     }
     return { computed = computed, operations = operations, hooks = hooks, caches = caches, media = media,
         handlers = handlers, validators = validators, postOf = postOf, repaint = context.repaint,
-        draftPhoto = function(kind) return photos[kind] end }
+        refreshSelections = refreshSelections,
+        draftPhoto = function(kind) return photos[kind] and photos[kind][1] end,
+        draftPhotos = function(kind) return photos[kind] or {} end }
 end
 
 return Provider

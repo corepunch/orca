@@ -299,7 +299,7 @@ channel subscribers see themselves and staff, without a peer subscriber list.
 All existing direct, group and channel operations are implemented: canonical
 direct pairs, owner/admin/member/subscriber roles, member removal, private
 invitations, public channel discovery/join, recent message history, editing and
-deleting messages, non-owner leaving, owner renaming, and up to four JPEG
+deleting messages, non-owner leaving, owner renaming, and up to nine JPEG
 attachments per message. A group or channel may start empty. Room
 creation validates up to fifty other native users, writes memberships with
 bounded concurrency, then commits visibility with the room document. Queries

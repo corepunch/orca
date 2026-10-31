@@ -309,8 +309,8 @@ export class ChatService {
   }
   async postMessage(user, body) {
     const roomId = id(body.target_room), text = body.message_body ?? '', attachmentIds = body.attachment_ids ?? [];
-    if (typeof text !== 'string' || Buffer.byteLength(text) > 4000 || !Array.isArray(attachmentIds) || attachmentIds.length > 4
-      || new Set(attachmentIds).size !== attachmentIds.length || attachmentIds.some(value => !validId(value)) || !text.trim() && !attachmentIds.length) reject(400, 'validation', 'Write a message or attach up to four photos (maximum 4000 text bytes).');
+    if (typeof text !== 'string' || Buffer.byteLength(text) > 4000 || !Array.isArray(attachmentIds) || attachmentIds.length > 9
+      || new Set(attachmentIds).size !== attachmentIds.length || attachmentIds.some(value => !validId(value)) || !text.trim() && !attachmentIds.length) reject(400, 'validation', 'Write a message or attach up to nine photos (maximum 4000 text bytes).');
     return this.repo.lock('room:' + roomId, async () => {
       const { room } = await this.access(roomId, user.$id, true);
       const attachments = [];

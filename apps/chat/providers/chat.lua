@@ -10,6 +10,7 @@
 -- isError), focusComposer(), openPhoto(raw), openMessageActions(record),
 -- attachPhoto(scope), removePhoto(scope).
 local Provider = {}
+local PhotoLayout = require "orca.UIKit.PhotoLayout"
 
 local function initials(name)
     name = name or ""
@@ -107,7 +108,6 @@ function Provider.new(context)
         actionsMargin = function(values) return values.HasPhotos and AUTO or 0 end,
         actionsText = function(values) return values.HasPhotos and "…" or "" end,
         actionsStyle = function(values) return values.HasPhotos and "photo-actions" or "" end,
-        photoHeight = photoHeight,
         hasPhoto = function(values) return (values.PhotoPath or "") ~= "" end,
         photoPending = function(values) return (values.PhotoPath or "") == "" and values.PhotoState ~= "error" end,
         photoFailed = function(values) return values.PhotoState == "error" end,
@@ -283,9 +283,9 @@ function Provider.new(context)
             if room.can_post == false then
                 return nil, { code = "forbidden", message = "Only channel admins can publish." }
             end
-            local photo, attachments = context.photoDraft(room.id), nil
-            if photo then
-                context.notice("Uploading photo…")
+            local photos, attachments = context.photoDraft(room.id), {}
+            for index, photo in ipairs(photos or {}) do
+                context.notice("Uploading photo " .. index .. " of " .. #photos .. "…")
                 if not photo.attachment then
                     local attachment, err = client:uploadPhoto(room.id, photo)
                     if not attachment then
@@ -295,11 +295,11 @@ function Provider.new(context)
                     end
                     photo.attachment = attachment
                 end
-                attachments = { photo.attachment.id }
+                attachments[#attachments + 1] = photo.attachment.id
             end
             local message, err = models.Messages:create { room_id = room.id, body = text, attachment_ids = attachments }
             if not message then context.notice(err.message, true); return nil, err end
-            context.photoSent(room.id, photo)
+            context.photoSent(room.id, photos)
             return message
         end,
         deleteMessage = function(params, _, command)
@@ -340,9 +340,21 @@ function Provider.new(context)
                     Last = not following or following.values.SenderId ~= values.SenderId,
                     CanEdit = own and room.can_post ~= false, CanDelete = own or (room.kind ~= "direct" and staff) })
                 local photos = record.children.Attachments or {}
+                local showSender = room.kind == "group" and not mine
+                    and (not previous or previous.values.SenderId ~= values.SenderId)
+                local album = PhotoLayout.arrange(#photos, PHOTO_WIDTH, 2,
+                    photos[1] and photoHeight(photos[1].values))
+                store:update(record, { AlbumHeight = album.height })
                 for position, photo in ipairs(photos) do
+                    local tile = album.tiles[position]
                     store:update(photo, { ShowTime = not values.HasBody and position == #photos,
-                        Timestamp = values.Timestamp })
+                        Timestamp = values.Timestamp, RetryLabel = #photos > 1 and "retry" or "photo unavailable · retry",
+                        FrameWidth = tile.width, FrameHeight = tile.height,
+                        FrameLeft = tile.x, FrameTop = tile.y,
+                        CornerTopLeft = tile.topLeft and not showSender and 6 or 0,
+                        CornerTopRight = tile.topRight and not showSender and 6 or 0,
+                        CornerBottomLeft = tile.bottomLeft and not values.HasBody and 6 or 0,
+                        CornerBottomRight = tile.bottomRight and not values.HasBody and 6 or 0 })
                 end
             end
         end)

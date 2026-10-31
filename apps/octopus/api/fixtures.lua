@@ -21,7 +21,9 @@ return {
               tags = { "reef", "fieldnotes" } },
             { id = "p-eames", age = 2 * HOUR, postType = "quote", title = "", authorId = "u-maya", authorName = "Maya Chen",
               content = "The details are not the details. They make the design.", quoteSource = "Charles Eames",
-              userText = "Pinned above my desk since my first job.", tags = { "design" } },
+              userText = "Pinned above my desk since my first job. A few faces from our design circle.", tags = { "design" },
+              imageId = "f-avatar-maya", imageIds = { "f-avatar-maya", "f-avatar-jules", "f-avatar-ada" },
+              imageWidths = { 0, 0, 0 }, imageHeights = { 0, 0, 0 } },
             { id = "p-small", age = 5 * HOUR, postType = "text", title = "Small software is a feature",
               authorId = "u-jules", authorName = "Jules Park", tags = { "software", "craft" },
               content = "The apps I love do one thing and leave room to breathe. They open fast, they forget nothing "
