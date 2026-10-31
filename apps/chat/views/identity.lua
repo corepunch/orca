@@ -276,7 +276,7 @@ end
 function Identity.profile(self)
     if not self.client or not self.client:getSession() then return self:home() end
     if self.shell and self.shell:has("Profile") then self.status = self.profileStatus; return self.shell:show("Profile") end
-    return self:loadingPage("profile", "Profile", function() return self.client:getProfile() end,
+    return self:loadingPage("settings", "Profile", function() return self.client:getProfile() end,
         function(profile) return profileBody(self, profile) end)
 end
 
