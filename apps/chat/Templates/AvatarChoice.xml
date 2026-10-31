@@ -1,6 +1,6 @@
 <Button Controller="orca.data.controller" Click="ChooseAvatar" BorderWidth="0" class="chat-action chat-link">
   <StackView Padding="6" IgnoreHitTest="true" JustifyContent="Start">
-    <ImageView Name="AvatarPortrait" Src="{Binding DataContext/Path}" AspectRatio="1" Foreground="#ffffff"
+    <ImageView Name="AvatarPortrait" Src="{Binding DataContext/Path, Mode=OneTime}" AspectRatio="1" Foreground="#ffffff"
                Stretch="UniformToFill" class="avatar" IgnoreHitTest="true"/>
   </StackView>
 </Button>

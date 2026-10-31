@@ -137,7 +137,7 @@ PROP_SetBinding(struct Property *property,
       return FALSE;
     }
   }
-  Con_Printf("DEBUG PROP_SetBinding: expression=%s compiled=%p\n", expression, compiled);
+  property->bindingEvaluated = FALSE;
   PROP_AttachProgram(property, compiled);
   /* Store original expression text for serialization round-trips */
   if (property->binding) {

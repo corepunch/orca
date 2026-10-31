@@ -43,6 +43,7 @@
       <value name="TwoWay">Updates target property when source changes and updates source when target changes</value>
       <value name="OneWayToSource">Updates source property when target changes, but not the other way around</value>
       <value name="Expression">Allows binding to a custom expression</value>
+      <value name="OneTime">Evaluates once, then refreshes when data records or binding paths change. Keep layout and animation expressions in OneWay mode.</value>
     </enum>
     <enum name="DispatchMode">
       <summary>Controls whether generated message actions send immediately or post through the queue.</summary>

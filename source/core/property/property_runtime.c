@@ -4,6 +4,10 @@ extern struct Object *FS_LoadObject(lpcString_t path);
 extern lpcString_t FS_GetThemeValue(lpcString_t key);
 
 static struct Property *s_binding_target;
+static uint64_t s_binding_generation = 1;
+
+uint64_t PROP_BindingGeneration(void) { return s_binding_generation; }
+void PROP_InvalidateBindingPaths(void) { ++s_binding_generation; }
 
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
@@ -734,10 +738,9 @@ _FindDataContextObject(struct Object *object, void **component)
   return NULL;
 }
 
-/* Resolve again for writes: DataContext and relative paths can change when a
- * retained form is rebound or reparented. Never retain a source Property. */
+/* Shared cold path for reads and writes after graph invalidation. */
 static struct Property *
-ResolveArgumentProperty(struct Object *object, struct token *token, struct Object **dataRoot)
+ResolveArgumentPropertyUncached(struct Object *object, struct token *token, struct Object **dataRoot)
 {
   char const *path = token->text;
   if (dataRoot) *dataRoot = NULL;
@@ -784,6 +787,38 @@ ResolveArgumentProperty(struct Object *object, struct token *token, struct Objec
   return property;
 }
 
+static struct Property *
+ResolveArgumentProperty(struct Object *object, struct token *token, struct Object **dataRoot)
+{
+  const char *path = token->text;
+  /* Bare names can switch between the local and template scopes when scalar
+     values become effective. Keep that fallback dynamic. */
+  const char *leaf = path;
+  if (!strncmp(path, "DataContext/", 12)) leaf = path + 12;
+  else if (*path == '.') {
+    while (!strncmp(leaf, "../", 3) || !strncmp(leaf, "./", 2))
+      leaf += leaf[1] == '.' ? 3 : 2;
+  } else leaf = NULL;
+  /* Object-valued intermediate bindings must still be evaluated each read.
+     Cache only a leaf after an inherited context or parent chain. Aliases
+     stay dynamic because ResourceDictionary entries may be edited in place. */
+  bool_t cacheable = leaf && !strchr(leaf, '/');
+  if (!cacheable) return ResolveArgumentPropertyUncached(object, token, dataRoot);
+  if (token->pathGeneration == s_binding_generation && token->pathOwner == object) {
+    if (dataRoot) *dataRoot = token->pathDataRoot;
+    return token->pathProperty;
+  }
+  struct Object *root = NULL;
+  struct Property *property = ResolveArgumentPropertyUncached(object, token, &root);
+  token->pathOwner = object;
+  token->pathDataRoot = root;
+  token->pathProperty = property;
+  /* Resolution may lazily create properties, so capture the generation last. */
+  token->pathGeneration = s_binding_generation;
+  if (dataRoot) *dataRoot = root;
+  return property;
+}
+
 struct Property *
 PROP_ResolveBindingSource(struct Object *object, struct token *token)
 {
@@ -796,8 +831,7 @@ tok_op(argument)
 {
   struct Property *p = NULL;
   int isDataContextPath = 0;
-  // Relative paths and DataContext can be rebound or reparented between reads.
-  // A cached raw Property pointer cannot survive those lifetime changes.
+  // Borrowed resolved paths are guarded by graph and property lifetime invalidation.
   if (*token->text == '#' || *token->text == '.' || !strncmp(token->text, "DataContext/", 12)) {
     struct Object *dataRoot = NULL;
     isDataContextPath = !strncmp(token->text, "DataContext/", 12);

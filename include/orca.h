@@ -87,6 +87,11 @@ struct token
   struct token* next;
   struct token* args[TOKEN_MAX_ARGS];
   struct Object *rootnode;
+  /* Resolved paths are borrowed only while the binding graph generation matches. */
+  struct Object *pathOwner;
+  struct Object *pathDataRoot;
+  struct Property *pathProperty;
+  uint64_t pathGeneration;
   struct {
     int component;
     struct Property *property;
@@ -104,6 +109,10 @@ struct token
   char text[4];
 };
 
+
+/* Internal binding graph invalidation; never dereference a cached path first. */
+ORCA_API void PROP_InvalidateBindingPaths(void);
+ORCA_API uint64_t PROP_BindingGeneration(void);
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);

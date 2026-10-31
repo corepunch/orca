@@ -90,6 +90,7 @@ void
 OBJ_DetachFromParent(struct Object *self)
 {
   if (self->parent) {
+    PROP_InvalidateBindingPaths();
     struct Object *parent = self->parent;
     REMOVE_FROM_LIST(struct Object, self, parent->children);
     self->parent = NULL;
@@ -147,6 +148,7 @@ OBJ_RemoveFromParent(struct Object *self)
 static void
 OBJ_Release(struct Object *pobj)
 {
+  PROP_InvalidateBindingPaths();
   OBJ_ClearCollectionObservers(pobj);
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;

@@ -3,40 +3,40 @@
      the bubble's colours follow its sent or received state class. The time
      shares the last line of text when it fits and takes its own row when not. -->
 <StackView Name="MessageEntry" Spacing="0" JustifyContent="Start">
-  <StackView Name="MessageRow" Spacing="0" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}"
-             AlignItems="{Binding DataContext/Alignment}" MarginTop="{Binding DataContext/Gap}"
-             PaddingLeft="{Binding DataContext/LeftInset}" PaddingRight="{Binding DataContext/RightInset}">
-    <VectorView Name="IncomingTail" Source="Chat/assets/bubble-tail-up.svg" Visible="{Binding DataContext/IncomingTail}"
+  <StackView Name="MessageRow" Spacing="0" JustifyContent="Start" StateClasses="{Binding DataContext/Tone, Mode=OneTime}"
+             AlignItems="{Binding DataContext/Alignment, Mode=OneTime}" MarginTop="{Binding DataContext/Gap, Mode=OneTime}"
+             PaddingLeft="{Binding DataContext/LeftInset, Mode=OneTime}" PaddingRight="{Binding DataContext/RightInset, Mode=OneTime}">
+    <VectorView Name="IncomingTail" Source="Chat/assets/bubble-tail-up.svg" Visible="{Binding DataContext/IncomingTail, Mode=OneTime}"
                 Width="14" Height="12" MarginLeft="16" MarginRight="auto" class="bubble-tail" IgnoreHitTest="true"/>
     <Grid Name="MessageHolder">
-      <StackView Name="MessageBubble" Width="{Binding DataContext/BubbleWidth}" PaddingLeft="{Binding DataContext/Inset}"
-                 PaddingRight="{Binding DataContext/Inset}" PaddingTop="{Binding DataContext/VerticalInset}"
-                 PaddingBottom="{Binding DataContext/VerticalInset}" Spacing="{Binding DataContext/SectionGap}"
+      <StackView Name="MessageBubble" Width="{Binding DataContext/BubbleWidth, Mode=OneTime}" PaddingLeft="{Binding DataContext/Inset, Mode=OneTime}"
+                 PaddingRight="{Binding DataContext/Inset, Mode=OneTime}" PaddingTop="{Binding DataContext/VerticalInset, Mode=OneTime}"
+                 PaddingBottom="{Binding DataContext/VerticalInset, Mode=OneTime}" Spacing="{Binding DataContext/SectionGap, Mode=OneTime}"
                  JustifyContent="Start" class="bubble">
-        <StackView Name="SenderSection" Visible="{Binding DataContext/ShowSender}" PaddingLeft="{Binding DataContext/PhotoInset}"
-                   PaddingRight="{Binding DataContext/PhotoInset}" PaddingTop="{Binding DataContext/PhotoVerticalInset}"
-                   PaddingBottom="{Binding DataContext/PhotoVerticalInset}" JustifyContent="Start">
-          <TextBlock Name="MessageSender" Text="{Binding DataContext/Sender}" FontSize="13" FontWeight="Bold" TextWrapping="Wrap"
+        <StackView Name="SenderSection" Visible="{Binding DataContext/ShowSender, Mode=OneTime}" PaddingLeft="{Binding DataContext/PhotoInset, Mode=OneTime}"
+                   PaddingRight="{Binding DataContext/PhotoInset, Mode=OneTime}" PaddingTop="{Binding DataContext/PhotoVerticalInset, Mode=OneTime}"
+                   PaddingBottom="{Binding DataContext/PhotoVerticalInset, Mode=OneTime}" JustifyContent="Start">
+          <TextBlock Name="MessageSender" Text="{Binding DataContext/Sender, Mode=OneTime}" FontSize="13" FontWeight="Bold" TextWrapping="Wrap"
                      class="chat-accent-text" IgnoreHitTest="true"/>
         </StackView>
-        <GridBox Name="Photos" Visible="{Binding DataContext/HasPhotos}" Height="{Binding DataContext/AlbumHeight}"
-                    ItemNamePrefix="PhotoFrame" ItemsSource="{Binding DataContext/Attachments}" ItemTemplate="Chat/Templates/Photo"/>
-        <TextFooterPanel Name="Caption" Visible="{Binding DataContext/ShowCaption}" Spacing="8"
-                         PaddingLeft="{Binding DataContext/PhotoInset}" PaddingRight="{Binding DataContext/PhotoInset}"
-                         PaddingTop="{Binding DataContext/PhotoVerticalInset}" PaddingBottom="{Binding DataContext/PhotoVerticalInset}">
-          <TextBlock Name="MessageBody" Visible="{Binding DataContext/HasBody}" Text="{Binding DataContext/Body}"
+        <GridBox Name="Photos" Visible="{Binding DataContext/HasPhotos, Mode=OneTime}" Height="{Binding DataContext/AlbumHeight, Mode=OneTime}"
+                    ItemNamePrefix="PhotoFrame" ItemsSource="{Binding DataContext/Attachments, Mode=OneTime}" ItemTemplate="Chat/Templates/Photo"/>
+        <TextFooterPanel Name="Caption" Visible="{Binding DataContext/ShowCaption, Mode=OneTime}" Spacing="8"
+                         PaddingLeft="{Binding DataContext/PhotoInset, Mode=OneTime}" PaddingRight="{Binding DataContext/PhotoInset, Mode=OneTime}"
+                         PaddingTop="{Binding DataContext/PhotoVerticalInset, Mode=OneTime}" PaddingBottom="{Binding DataContext/PhotoVerticalInset, Mode=OneTime}">
+          <TextBlock Name="MessageBody" Visible="{Binding DataContext/HasBody, Mode=OneTime}" Text="{Binding DataContext/Body, Mode=OneTime}"
                      FontSize="16" TextWrapping="Wrap" class="bubble-ink" IgnoreHitTest="true"/>
-          <TextBlock Name="MessageTime" Text="{Binding DataContext/Timestamp}" FontSize="11"
+          <TextBlock Name="MessageTime" Text="{Binding DataContext/Timestamp, Mode=OneTime}" FontSize="11"
                      class="bubble-meta" IgnoreHitTest="true"/>
         </TextFooterPanel>
       </StackView>
-      <Button Name="MessageActions" Visible="{Binding DataContext/CanAct}" Click="MessageActions"
-              Width="{Binding DataContext/ActionsWidth}" Height="{Binding DataContext/ActionsWidth}"
-              MarginLeft="{Binding DataContext/ActionsMargin}" MarginBottom="{Binding DataContext/ActionsMargin}"
-              Text="{Binding DataContext/ActionsText}" FontSize="22" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
-              BorderWidth="0" StateClasses="{Binding DataContext/ActionsStyle}" class="message-actions"/>
+      <Button Name="MessageActions" Visible="{Binding DataContext/CanAct, Mode=OneTime}" Click="MessageActions"
+              Width="{Binding DataContext/ActionsWidth, Mode=OneTime}" Height="{Binding DataContext/ActionsWidth, Mode=OneTime}"
+              MarginLeft="{Binding DataContext/ActionsMargin, Mode=OneTime}" MarginBottom="{Binding DataContext/ActionsMargin, Mode=OneTime}"
+              Text="{Binding DataContext/ActionsText, Mode=OneTime}" FontSize="22" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+              BorderWidth="0" StateClasses="{Binding DataContext/ActionsStyle, Mode=OneTime}" class="message-actions"/>
     </Grid>
-    <VectorView Name="OutgoingTail" Source="Chat/assets/bubble-tail-down.svg" Visible="{Binding DataContext/OutgoingTail}"
+    <VectorView Name="OutgoingTail" Source="Chat/assets/bubble-tail-down.svg" Visible="{Binding DataContext/OutgoingTail, Mode=OneTime}"
                 Width="14" Height="12" MarginLeft="auto" MarginRight="16" class="bubble-tail" IgnoreHitTest="true"/>
   </StackView>
 </StackView>

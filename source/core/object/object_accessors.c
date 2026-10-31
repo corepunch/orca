@@ -25,6 +25,7 @@ OBJ_CheckName(struct Object const *object, lpcString_t szName)
 void
 OBJ_SetName(struct Object *object, lpcString_t szName)
 {
+  PROP_InvalidateBindingPaths();
   SafeFree(object->Name);
   object->Name = strdup(szName);
   object->identifier = fnv1a32(object->Name);
@@ -86,6 +87,7 @@ uint32_t OBJ_GetStyle(struct Object const *pobj) {
 }
 
 void OBJ_SetStyle(struct Object *pobj, uint32_t dwFlags) {
+  if ((pobj->flags ^ dwFlags) & OF_TEMPLATE) PROP_InvalidateBindingPaths();
   pobj->flags = dwFlags;
 }
 
@@ -95,6 +97,7 @@ uint32_t OBJ_GetFlags(struct Object const *pobj) {
 
 void OBJ_SetFlags(struct Object *pobj, uint32_t dwFlags) {
   uint32_t changed = pobj->flags ^ dwFlags;
+  if (changed & OF_TEMPLATE) PROP_InvalidateBindingPaths();
   pobj->flags = dwFlags;
   if (changed & (OF_SELECTED | OF_CHECKED | OF_INDETERMINATE | OF_DISABLED))
     _SendMessage(pobj, StyleController, ThemeChanged, .recursive = TRUE);
@@ -113,6 +116,7 @@ uint32_t OBJ_GetAlias(struct Object const *pobj) {
 }
 
 void OBJ_SetAlias(struct Object *pobj, uint32_t alias) {
+  PROP_InvalidateBindingPaths();
   pobj->alias = alias;
 }
 

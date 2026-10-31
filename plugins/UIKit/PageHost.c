@@ -68,6 +68,7 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
     return FALSE;
   }
   if (pNavigateToPage->DataContext) {
+    PROP_InvalidateBindingPaths();
     (GetNode(CMP_GetObject(pTarget))->DataContext = pNavigateToPage->DataContext);
   }
   if (pPageHost->_activePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {

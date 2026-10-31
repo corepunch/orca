@@ -611,6 +611,11 @@ ifeq ($(SCENE_FORMAT),xml)
 HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
 endif
 .PHONY: test-scene-format
+# Manual, offline timing benchmark; never part of test-headless/CI.
+.PHONY: bench-bindings
+bench-bindings: unite
+	$(Q)$(TARGET) -test=tests/bench_bindings.lua
+
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
 HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader

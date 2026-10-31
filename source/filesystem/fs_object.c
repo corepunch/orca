@@ -150,7 +150,7 @@ FS_BindingTrim(char *text)
 static bool_t
 FS_BindingMode(char const *text, enum BindingMode *mode)
 {
-  const char *names[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression" };
+  const char *names[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression", "OneTime" };
   for (int i = 0; i < ARRAY_SIZE(names); i++)
     if (!strcmp(text, names[i])) { *mode = i; return TRUE; }
   Con_Error("Unknown binding mode '%s'", text);
@@ -418,7 +418,7 @@ binding_target(struct Object *o, char const *target, char const *program, enum B
   if (!sh) sh = OBJ_FindExplicitShorthand(o, target);
   if (sh) {
     static const char *extract[] = { "VECTOR3X", "VECTOR3Y", "VECTOR3Z", "COLORA" };
-    if (mode != kBindingModeOneWay && mode != kBindingModeExpression) {
+    if (mode != kBindingModeOneWay && mode != kBindingModeExpression && mode != kBindingModeOneTime) {
       Con_Error("Binding shorthand '%s' supports only one-way bindings", target);
       return;
     }
@@ -434,7 +434,7 @@ binding_target(struct Object *o, char const *target, char const *program, enum B
       char *expression = malloc(size);
       if (!expression) return;
       snprintf(expression, size, "%s(%s)", extract[component], program);
-      PROP_SetBinding(property, expression, kBindingModeExpression, enabled);
+      PROP_SetBinding(property, expression, mode == kBindingModeOneTime ? mode : kBindingModeExpression, enabled);
       free(expression);
     }
     return;

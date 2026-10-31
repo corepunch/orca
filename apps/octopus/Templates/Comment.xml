@@ -1,28 +1,28 @@
 <!-- One comment or reply, bound to an OctopusComment. Replies indent under
      their comment; like counts arrive after the text. -->
-<Grid Columns="36px 1fr" Spacing="12" MarginLeft="{Binding DataContext/Indent}">
+<Grid Columns="36px 1fr" Spacing="12" MarginLeft="{Binding DataContext/Indent, Mode=OneTime}">
   <Button Name="Avatar" Width="36" Height="36" Click="OpenAuthor" BackgroundColor="#00000000" class="octopus-row">
-    <Grid Width="36" Height="36" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Initials}" FontSize="13" class="avatar-initials"
+    <Grid Width="36" Height="36" StateClasses="{Binding DataContext/Tone, Mode=OneTime}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials, Mode=OneTime}" FontSize="13" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar, Mode=OneTime}" Src="{Binding DataContext/AvatarPath, Mode=OneTime}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
   </Button>
   <StackView Spacing="4">
     <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/AuthorName}" FontSize="14" FontWeight="Bold" TextOverflow="Ellipsis"
+      <TextBlock Text="{Binding DataContext/AuthorName, Mode=OneTime}" FontSize="14" FontWeight="Bold" TextOverflow="Ellipsis"
                  TextWrapping="NoWrap" class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Text="{Binding DataContext/Age}" FontSize="12" class="octopus-dim" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/Age, Mode=OneTime}" FontSize="12" class="octopus-dim" IgnoreHitTest="true"/>
     </Grid>
-    <TextBlock Name="CommentBody" Text="{Binding DataContext/Body}" FontSize="15" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
-    <StackView Direction="Horizontal" AlignItems="Center" Spacing="20" Height="30" StateClasses="{Binding DataContext/State}">
-      <Button Name="Like" Height="30" Width="64" Click="LikeComment" IgnoreHitTest="{Binding DataContext/Locked}"
+    <TextBlock Name="CommentBody" Text="{Binding DataContext/Body, Mode=OneTime}" FontSize="15" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+    <StackView Direction="Horizontal" AlignItems="Center" Spacing="20" Height="30" StateClasses="{Binding DataContext/State, Mode=OneTime}">
+      <Button Name="Like" Height="30" Width="64" Click="LikeComment" IgnoreHitTest="{Binding DataContext/Locked, Mode=OneTime}"
               BackgroundColor="#00000000" class="octopus-row reaction-button">
         <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/heart.svg" Width="16" Height="16" MarginTop="auto" MarginBottom="auto"
                       class="reaction like-reaction" IgnoreHitTest="true"/>
-          <TextBlock Text="{Binding DataContext/LikesLabel}" FontSize="13" class="reaction like-reaction" IgnoreHitTest="true"/>
+          <TextBlock Text="{Binding DataContext/LikesLabel, Mode=OneTime}" FontSize="13" class="reaction like-reaction" IgnoreHitTest="true"/>
         </StackView>
       </Button>
       <Button Name="Reply" Click="Reply" Height="30" Width="48" FontSize="13" TextHorizontalAlignment="Left"

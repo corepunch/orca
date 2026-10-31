@@ -1,25 +1,25 @@
 <!-- One inbox row, bound to a ChatRoom record. Colours come from the
      stylesheet; State adds "unread" so the preview and time take the accent. -->
-<Button Name="Room" Height="76" class="conversation" Click="OpenRoom" StateClasses="{Binding DataContext/State}">
+<Button Name="Room" Height="76" class="conversation" Click="OpenRoom" StateClasses="{Binding DataContext/State, Mode=OneTime}">
   <Grid Columns="56px 1fr 44px" Spacing="14" Padding="0 10" IgnoreHitTest="true">
-    <Grid Name="Avatar" Width="56" Height="56" class="avatar" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
-      <TextBlock Text="{Binding DataContext/Initials}" FontSize="18" class="avatar-initials"
+    <Grid Name="Avatar" Width="56" Height="56" class="avatar" StateClasses="{Binding DataContext/Tone, Mode=OneTime}" IgnoreHitTest="true">
+      <TextBlock Text="{Binding DataContext/Initials, Mode=OneTime}" FontSize="18" class="avatar-initials"
                  TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar}" class="avatar" Src="{Binding DataContext/AvatarPath}"
+      <ImageView Name="AvatarPhoto" Visible="{Binding DataContext/HasAvatar, Mode=OneTime}" class="avatar" Src="{Binding DataContext/AvatarPath, Mode=OneTime}"
                  ForegroundColor="#ffffff" Stretch="UniformToFill" IgnoreHitTest="true"/>
     </Grid>
     <StackView JustifyContent="Center" Spacing="2" IgnoreHitTest="true">
-      <TextBlock Name="RoomTitle" Text="{Binding DataContext/Title}" FontSize="22" TextOverflow="Ellipsis"
+      <TextBlock Name="RoomTitle" Text="{Binding DataContext/Title, Mode=OneTime}" FontSize="22" TextOverflow="Ellipsis"
                  TextWrapping="NoWrap" class="chat-ink" IgnoreHitTest="true"/>
-      <TextBlock Name="RoomPreview" Text="{Binding DataContext/Preview}" FontSize="14" TextOverflow="Ellipsis"
+      <TextBlock Name="RoomPreview" Text="{Binding DataContext/Preview, Mode=OneTime}" FontSize="14" TextOverflow="Ellipsis"
                  TextWrapping="NoWrap" class="room-preview" IgnoreHitTest="true"/>
     </StackView>
     <StackView AlignItems="End" Spacing="8" Padding="0 6" JustifyContent="Start" IgnoreHitTest="true">
-      <TextBlock Name="RoomTime" Text="{Binding DataContext/Time}" FontSize="12" class="room-preview" IgnoreHitTest="true"/>
-      <TextBlock Name="UnreadBadge" Visible="{Binding DataContext/HasUnread}" Text="{Binding DataContext/UnreadText}"
+      <TextBlock Name="RoomTime" Text="{Binding DataContext/Time, Mode=OneTime}" FontSize="12" class="room-preview" IgnoreHitTest="true"/>
+      <TextBlock Name="UnreadBadge" Visible="{Binding DataContext/HasUnread, Mode=OneTime}" Text="{Binding DataContext/UnreadText, Mode=OneTime}"
                  Width="20" Height="20" FontSize="11" FontWeight="Bold" TextHorizontalAlignment="Center"
                  TextVerticalAlignment="Center" class="chat-badge" IgnoreHitTest="true"/>
-      <VectorView Name="PinIcon" Visible="{Binding DataContext/ShowPin}" Source="Chat/assets/icons/pin.svg"
+      <VectorView Name="PinIcon" Visible="{Binding DataContext/ShowPin, Mode=OneTime}" Source="Chat/assets/icons/pin.svg"
                   Width="14" Height="14" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto"
                   class="chat-dim" IgnoreHitTest="true"/>
     </StackView>
