@@ -74,6 +74,7 @@ return function(state, env)
     end
     local function ownProfile(user)
         local row = P.profile(user.id)
+        row.notification_previews = row.notification_previews ~= false
         if user.email_confirmed_at then row.email = user.email end
         if user.phone_confirmed_at then row.phone = user.phone end
         return row
@@ -235,7 +236,8 @@ return function(state, env)
             if type(values) ~= "table" then return fail(400, "validation", "Provide profile fields.") end
             local changed = copy(profile)
             for key, value in pairs(values) do
-                if key ~= "display_name" and key ~= "username" and key ~= "discoverable_phone" and key ~= "discoverable_email" then
+                if key ~= "display_name" and key ~= "username" and key ~= "discoverable_phone" and key ~= "discoverable_email"
+                    and key ~= "notification_previews" then
                     return fail(400, "validation", "That profile field cannot be edited.")
                 end
                 if key == "display_name" then
@@ -247,6 +249,9 @@ return function(state, env)
                     if value ~= "" and (not value:match("^[a-z][a-z0-9_]+$") or #value < 3 or #value > 32) then return fail(400, "validation", "Username must be 3–32 lowercase letters, numbers or underscores.") end
                     for id, person in pairs(state.profiles) do if id ~= user.id and value ~= "" and person.username == value then return fail(409, "23505", "Username is unavailable.") end end
                     changed[key] = value ~= "" and value or nil
+                elseif key == "notification_previews" then
+                    if type(value) ~= "boolean" then return fail(400, "validation", "Message previews must be on or off.") end
+                    changed[key] = value
                 else
                     local field = key == "discoverable_phone" and "phone" or "email"
                     if type(value) ~= "boolean" or (value and not user[field .. "_confirmed_at"]) then return fail(400, "validation", "Verify this identifier before enabling discovery.") end

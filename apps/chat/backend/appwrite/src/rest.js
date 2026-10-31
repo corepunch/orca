@@ -54,9 +54,15 @@ export const COLLECTIONS = Object.freeze({ profiles: 'profiles', directory: 'acc
   rooms: 'conversations', members: 'conversation-members', messages: 'messages',
   attachments: 'attachments', invites: 'invitations', state: 'service-state' });
 export const privateIdentity = row => ({ email: row.email || null, phone: row.phone || null,
-  discoverable_email: !!row.discoverable_email, discoverable_phone: !!row.discoverable_phone });
+  discoverable_email: !!row.discoverable_email, discoverable_phone: !!row.discoverable_phone,
+  notification_previews: row.notification_previews !== false });
 
-export const directoryIdentity = row => ({ ...privateIdentity(row), handle: row.username ?? row.handle ?? null });
+export const directoryIdentity = row => {
+  const identity = { ...privateIdentity(row), handle: row.username ?? row.handle ?? null };
+  // Keep legacy migration copies byte-compatible; defaults are applied on read.
+  if (!Object.hasOwn(row, 'notification_previews')) delete identity.notification_previews;
+  return identity;
+};
 
 export class Repository {
   constructor(rest, databaseId, bucketId) { this.rest = rest; this.databaseId = databaseId; this.bucketId = bucketId; }
@@ -64,16 +70,16 @@ export class Repository {
     if (!COLLECTIONS[collection]) throw new Error('Unknown collection');
     return `/databases/${enc(this.databaseId)}/collections/${COLLECTIONS[collection]}/documents${id ? '/' + enc(id) : ''}`;
   }
-  async document(collection, id) {
-    try { return await this.rest.request('GET', this.path(collection, id)); }
+  async document(collection, id, options = {}) {
+    try { return await this.rest.request('GET', this.path(collection, id), options); }
     catch (error) { if (error.status === 404) return null; throw error; }
   }
-  async get(collection, id) {
+  async get(collection, id, options = {}) {
     if (collection !== 'profiles') {
-      const doc = await this.document(collection, id);
+      const doc = await this.document(collection, id, options);
       return doc ? unpack(doc) : null;
     }
-    const [profile, directory] = await Promise.all([this.document('profiles', id), this.document('directory', id)]);
+    const [profile, directory] = await Promise.all([this.document('profiles', id, options), this.document('directory', id, options)]);
     if (!profile && !directory) return null;
     return { ...privateIdentity(directory ? unpack(directory) : {}), id,
       display_name: profile?.username || '', username: directory?.handle || null,

@@ -48,6 +48,11 @@ assert(guest:requestCode("new@example.invalid")); local newId = assert(guest:ver
 reject(function() return guest:verifyCode("new@example.invalid", "123456") end, "otp_expired")
 check(#assert(guest:listContacts()) == 0 and #assert(guest:listRooms()) == 0, "New accounts have no private directory or rooms")
 check(assert(guest:getProfile()).email == "new@example.invalid", "Only verified self identifiers are returned")
+check(assert(guest:getProfile()).notification_previews == true, "Message previews default on for existing profiles")
+check(assert(guest:updateProfile { notification_previews = false }).notification_previews == false, "Preview opt-out is saved")
+check(assert(guest:getProfile()).notification_previews == false, "Preview opt-out survives a profile reload")
+reject(function() return guest:updateProfile { notification_previews = "false" } end, "validation")
+check(assert(guest:getProfile()).notification_previews == false, "Invalid preview changes preserve the saved preference")
 assert(guest:requestIdentityLink("+49 (151) 1000-0002"))
 reject(function() return owner:verifyIdentityLink("+4915110000002", "123456") end, "otp_expired")
 check(assert(guest:verifyIdentityLink("+4915110000002", "123456")).phone == "+4915110000002", "Link verifies canonical phone")
@@ -88,7 +93,8 @@ reject(function() return guest:updateProfile { email = "forged@example.invalid" 
 check(#assert(owner:findPeople("new@example.invalid")) == 0, "Email discovery defaults private")
 assert(guest:updateProfile { discoverable_email = true, discoverable_phone = true })
 local result = assert(owner:findPeople("new@example.invalid"))[1]
-check(result.id == newId and result.email == nil and result.phone == nil, "Discovery returns public profile fields only")
+check(result.id == newId and result.email == nil and result.phone == nil and result.notification_previews == nil,
+    "Discovery returns public profile fields only")
 check(assert(owner:findPeople("@new_reader"))[1].id == newId, "Exact username discovery")
 check(#assert(owner:findPeople("reader")) == 0, "No partial username directory")
 check(assert(owner:findPeople("+49 151 1000 0002"))[1].id == newId, "Phone lookup uses canonical E164")

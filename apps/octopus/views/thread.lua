@@ -71,7 +71,7 @@ function Thread.page(self)
                 if command.confirming and not scope.disposed then bar:findChild("DeletePost").Text = "tap again to delete" end
             end)
         end } or nil,
-    })
+    }, { class = "post-actions", SafeAreaEdge = "None", ContentInsetAdjustment = "Never" })
     -- Reactions on the bar follow the post record, as cards do.
     scope:present(bar, "Post")
     bar:findChild("LikePost"):attachPropertyProgram("ApplicationBarIconButton.Text", "{DataContext/LikeText}", "OneWay", true)
@@ -79,9 +79,16 @@ function Thread.page(self)
     for _, name in ipairs { "LikePost", "RepostPost" } do
         bar:findChild(name):attachPropertyProgram("ApplicationBarIconButton.IsEnabled", "{DataContext/CanReact}", "OneWay", true)
     end
+    -- One backdrop spans the comment row and commands, without an internal seam.
+    local commentBar = page:findChild("CommentBar", true)
+    commentBar:removeFromParent()
+    scope:attach(commentBar)
+    local footer = Footer { Name = "PostFooter", Rows = "auto auto", class = "frosted bar-top" }
+    footer:addChild(commentBar)
+    footer:addChild(bar)
     local screen = self:frame()
     Footer.layout(screen, C.page(record.values.KindLabel, page, { Name = "PostView", ExtendBodyBehindHeader = true,
-        back = back }), bar, { Background = colors.background, Foreground = colors.ink })
+        back = back }), footer, { Background = colors.background, Foreground = colors.ink })
     scope:member("Detail"):set("PostId", post.id)
     scope:member("Comments"):set("PostId", post.id)
     return screen

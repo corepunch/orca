@@ -72,8 +72,8 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `verifyCode(identifier,code)` | Session after six-digit OTP verification |
 | `requestIdentityLink(identifier)` | Starts a verified email/phone change for the current account |
 | `verifyIdentityLink(identifier,code)` | Verified self profile once the requested identifier is confirmed |
-| `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email}`; only verified identifiers |
-| `updateProfile(values)` | Self profile after changing public name, username or discovery flags |
+| `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; only verified identifiers; message previews default on |
+| `updateProfile(values)` | Self profile after changing public name, username, discovery flags or the private boolean `notification_previews` preference |
 | `findPeople(query)` | Public `{id,display_name,username}` matches for an exact username or opted-in identifier |
 | `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
 | `getSession()` | Defensive session copy or nil; no request |

@@ -716,11 +716,15 @@ assert(otpApp.client:getSession() and otpApp.screen:findChild("Roomalex", true),
 otpApp:show("/profile")
 otpApp.screen:findChild("Username", true).Text = "test_person"
 assert(not otpApp.screen:findChild("DiscoverableEmail", true).IsChecked, "Email discovery must start unchecked")
+assert(otpApp.screen:findChild("NotificationPreviews", true).IsChecked, "Message previews must start enabled")
+click(otpApp, "NotificationPreviews")
+assert(not otpApp.screen:findChild("NotificationPreviews", true).IsChecked, "The preview row toggles its check box")
 click(otpApp, "DiscoverableEmail")
 assert(otpApp.screen:findChild("DiscoverableEmail", true).IsChecked, "Tapping the row must tick its check box")
 click(otpApp, "SaveProfile")
 assert(otpApp.client:getProfile().username == "test_person", "Save profile must use the API")
 assert(otpApp.client:getProfile().discoverable_email == true, "A ticked check box must save email discovery")
+assert(otpApp.client:getProfile().notification_previews == false, "Saving settings persists the preview opt-out")
 otpApp.screen:findChild("LinkIdentifier", true).Text = "+447700900987"
 click(otpApp, "RequestLink")
 assert(otpApp.screen:findChild("LinkVerification", true).Visible, "Linking must require verification")

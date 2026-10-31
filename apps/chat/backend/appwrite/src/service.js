@@ -11,6 +11,12 @@ const id = value => { if (!validId(value)) reject(400, 'validation', 'Choose a v
 const memberId = (roomId, userId) => key('member:' + roomId + ':' + userId);
 const publicProfile = profile => ({ id: profile.id, display_name: profile.display_name, username: profile.username,
   avatar_id: profile.avatar_id || null });
+// Count code points, so truncation never splits a UTF-16 surrogate pair. The
+// bounds leave ample room for Appwrite/APNs metadata in the 4 KB alert payload.
+const pushText = (value, limit) => {
+  const points = [...String(value || '').replace(/[\p{Cc}\p{Zl}\p{Zp}\u202a-\u202e\u2066-\u2069]/gu, ' ').replace(/\s+/gu, ' ').trim()];
+  return points.length > limit ? points.slice(0, limit - 1).join('') + '…' : points.join('');
+};
 async function mapConcurrent(items, action, width = 8) {
   const results = new Array(items.length); let next = 0, failure;
   await Promise.all(Array.from({ length: Math.min(width, items.length) }, async () => {
@@ -33,16 +39,18 @@ export class ChatService {
     const email = user.emailVerification ? user.email.toLowerCase() : null, phone = user.phoneVerification ? user.phone : null;
     const values = previous => ({ display_name: previous?.display_name || user.name || '', username: previous?.username || null,
       avatar_id: previous?.avatar_id || null,
+      notification_previews: previous?.notification_previews !== false,
       email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
       discoverable_phone: !!(phone && previous?.phone === phone && previous.discoverable_phone) });
-    const unchanged = (previous, row) => previous && Object.entries(row).every(([field, value]) => previous[field] === value);
+    const unchanged = (previous, row) => previous && Object.entries(row).every(([field, value]) =>
+      (field === 'notification_previews' ? previous[field] !== false : previous[field]) === value);
     const previous = await this.repo.get('profiles', user.$id);
-    if (unchanged(previous, values(previous))) return previous;
+    if (unchanged(previous, values(previous))) return { ...previous, notification_previews: previous.notification_previews !== false };
     return this.repo.lock('profile:' + user.$id, async () => {
       const current = await this.repo.get('profiles', user.$id), row = values(current);
       if (!current) return this.repo.create('profiles', row, user.$id);
       if (!unchanged(current, row)) return this.repo.update('profiles', user.$id, row);
-      return current;
+      return { ...current, notification_previews: current.notification_previews !== false };
     });
   }
   async profileById(userId) {
@@ -52,10 +60,13 @@ export class ChatService {
   }
   async updateProfile(user, values) {
     if (!values || typeof values !== 'object' || Array.isArray(values)) reject(400, 'validation', 'Provide profile changes.');
-    const allowed = ['display_name', 'username', 'discoverable_email', 'discoverable_phone'];
+    const allowed = ['display_name', 'username', 'discoverable_email', 'discoverable_phone', 'notification_previews'];
     if (Object.keys(values).some(field => !allowed.includes(field))) reject(400, 'validation', 'Profiles cannot change login identifiers.');
+    if ('notification_previews' in values && typeof values.notification_previews !== 'boolean')
+      reject(400, 'validation', 'Message previews must be on or off.');
     return this.repo.lock('profile:' + user.$id, async () => {
       const row = await this.repo.get('profiles', user.$id);
+      if ('notification_previews' in values) row.notification_previews = values.notification_previews;
       if ('display_name' in values) {
         if (typeof values.display_name !== 'string' || !values.display_name.trim() || [...values.display_name].length > 128) reject(400, 'validation', 'Use a display name of 1–128 characters.');
         row.display_name = values.display_name.trim();
@@ -342,12 +353,29 @@ export class ChatService {
       const signal = AbortSignal.timeout(this.pushTimeoutMs);
       const members = await this.repo.list('members', [eq('room_id', message.room_id)], undefined, { signal });
       const recipients = [...new Set(members.map(member => member.user_id))].filter(userId => userId !== message.sender_id);
+      const lookup = async (collection, resourceId) => {
+        try { return await this.repo.get(collection, resourceId, { signal }); }
+        catch (error) { report(error); return null; }
+      };
+      const room = await lookup('rooms', message.room_id);
+      const sender = room && room.kind !== 'channel' ? await lookup('profiles', message.sender_id) : null;
+      let preview;
+      if (room && (room.kind === 'channel' || sender)) {
+        const senderName = pushText(sender?.display_name, 120) || pushText(sender?.username, 120) || 'Member';
+        const photoCount = message.attachment_ids?.length || 0;
+        const snippet = pushText(message.body, 240) || (photoCount > 1 ? `Sent ${photoCount} photos` : photoCount ? 'Sent a photo' : 'New message');
+        preview = { title: room.kind === 'direct' ? senderName : pushText(room.name, 120) || 'ORCA Chat',
+          body: pushText(room.kind === 'group' ? `${senderName}: ${snippet}` : snippet, 240) };
+      }
       await mapConcurrent(recipients, async userId => {
         if (signal.aborted) return;
         try {
+          const recipient = preview ? await lookup('profiles', userId) : null;
+          if (signal.aborted) return;
+          const alert = recipient && recipient.notification_previews !== false ? preview : { title: 'ORCA Chat', body: 'New message' };
           await this.auth.rest.request('POST', '/messaging/messages/push', { signal, body: {
             messageId: key('push:' + message.id + ':' + userId), users: [userId],
-            title: 'ORCA Chat', body: 'New message', sound: 'default', draft: false,
+            ...alert, sound: 'default', draft: false,
             data: { conversationId: message.room_id, messageId: message.id, userId },
           } });
         } catch (error) {
