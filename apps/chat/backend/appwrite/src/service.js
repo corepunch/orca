@@ -118,13 +118,20 @@ export class ChatService {
     const peer = (await this.repo.list('members', [eq('room_id', view.id)], 2)).find(member => member.user_id !== userId);
     return peer ? { ...view, peer_id: peer.user_id } : view;
   }
+  // The inbox previews each conversation's latest message and orders by it.
+  async withLatest(view) {
+    const [latest] = await this.repo.list('messages', [eq('room_id', view.id), order('created_at', true), order('$id', true)], 1);
+    if (!latest) return view;
+    return { ...view, subtitle: latest.body?.trim() ? latest.body : 'Photo', updated_at: latest.created_at };
+  }
   async listRooms(user) {
     const memberships = await this.repo.list('members', [eq('user_id', user.$id)]), rooms = [];
     await mapConcurrent(memberships, async member => {
       const room = await this.repo.get('rooms', member.room_id);
-      if (room) rooms.push(await this.withPeer(this.roomView(room, member), user.$id));
+      if (room) rooms.push(await this.withLatest(await this.withPeer(this.roomView(room, member), user.$id)));
     });
-    return rooms.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const activity = room => room.updated_at || room.created_at;
+    return rooms.sort((a, b) => activity(b).localeCompare(activity(a)));
   }
   async createRoom(user, body) {
     const { room_name: name, member_ids: members, room_kind: kind = 'group', room_visibility: visibility = 'private' } = body;

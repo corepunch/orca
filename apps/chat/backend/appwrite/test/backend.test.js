@@ -274,6 +274,22 @@ test('direct chats reuse canonical pairs; membership and owners cannot be change
   assert.equal((await fixture.call('eve', '/rest/v1/chat_messages?room_id=eq.' + first.id, {}, 'GET')).status, 403);
 });
 
+test('room list previews the latest message and orders rooms by it', async () => {
+  const fixture = setup(), quiet = await room(fixture, 'direct'), busy = await room(fixture, 'group', ['alice']);
+  const rooms = async () => (await fixture.call('alice', '/rest/v1/chat_rooms', {}, 'GET')).body;
+  let listed = await rooms();
+  assert.equal(listed.find(row => row.id === quiet.id).subtitle, undefined, 'A room without messages has no preview');
+  const post = (target, text) => (fixture.clock.now += 1000,
+    fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: target.id, message_body: text }));
+  await post(quiet, 'First'); await post(busy, 'Hello'); await post(busy, 'Latest');
+  listed = await rooms();
+  const row = listed.find(value => value.id === busy.id);
+  assert.equal(row.subtitle, 'Latest'); assert.ok(row.updated_at >= row.created_at);
+  assert.equal(listed.find(value => value.id === quiet.id).subtitle, 'First');
+  await post(quiet, 'Newer');
+  assert.deepEqual((await rooms()).map(value => value.id).slice(0, 2), [quiet.id, busy.id], 'The latest activity comes first');
+});
+
 test('contacts fetch each peer once across shared rooms without reloading the caller profile', async () => {
   const fixture = setup();
   await room(fixture, 'direct'); await room(fixture, 'group', ['alice', 'bob']);
