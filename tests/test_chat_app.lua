@@ -467,6 +467,10 @@ assert(not app.newSelection.alex, "Selecting a member again removes it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
 assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
+-- As on Windows Phone, the bar draws each button's circle: antialiased vector artwork, not a bordered box.
+local ring = profile:findChild("AppBarChats", true):getFirstChild()
+assert(ring.className == "VectorView" and tostring(ring.Source):match("/orca/UIKit/appbar%-ring%.svg$"),
+    "App bar buttons draw their circle from the shared vector ring: " .. tostring(ring.Source))
 -- The keyboard lifts a focused field it would cover above itself and the app bar.
 drain(app)
 -- Tapping the Number row opens the field for a new number, as in Telegram.
