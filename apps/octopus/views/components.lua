@@ -153,16 +153,28 @@ end
 -- An ApplicationBar from { name, icon, text, action } buttons and
 -- { name, text, action } menu items. It docks to the bottom of Footer.layout as
 -- a frosted bar that extends under the home indicator; pages scroll under it.
-function C.appBar(buttons, menu)
-    local bar = ui.ApplicationBar { Name = "AppBar", class = "frosted bar-top", Foreground = colors.ink,
-        SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
-    for _, edge in ipairs { "Left", "Right" } do
-        bar:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+-- Optional properties replace the standalone chrome when embedded in a shared footer.
+function C.appBar(buttons, menu, props)
+    local embedded = props ~= nil
+    props = props or { class = "frosted bar-top", SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
+    props.Name, props.Foreground = "AppBar", colors.ink
+    local bar = ui.ApplicationBar(props)
+    if bar.SafeAreaEdge == "Bottom" then
+        for _, edge in ipairs { "Left", "Right" } do
+            bar:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+        end
     end
     for _, b in ipairs(buttons) do
         bar:addChild(ui.ApplicationBarIconButton { Name = b[1], IconUri = ICONS .. b[2] .. ".svg", Text = b[3], Click = b[4] })
     end
     for _, m in ipairs(menu or {}) do bar:addChild(ui.ApplicationBarMenuItem { Name = m[1], Text = m[2], Click = m[3] }) end
+    if embedded then
+        -- plugins/UIKit/ApplicationBar.c overlays its panel above a 58-point slot.
+        -- Reserve that panel's WP metrics so the shared backdrop contains it.
+        local menuHeight = #(menu or {}) > 0 and #menu * 46 + 10 or 0
+        bar:attachPropertyProgram("Node.Height",
+            "IF({ApplicationBar.IsExpanded}, 78 + IF({ApplicationBar.IsMenuEnabled}, " .. menuHeight .. ", 0), 58)", "OneWay", true)
+    end
     return bar
 end
 

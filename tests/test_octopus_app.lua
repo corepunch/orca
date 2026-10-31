@@ -94,6 +94,8 @@ end
 local function assertDetailFooter(app)
     local screen = app.screen
     local bar = find(app, "AppBar")
+    local footer = screen:findChild("PostFooter", true) or bar
+    local commentBar = screen:findChild("CommentBar", true)
     local function position(node)
         local x, y = 0, 0
         while node and node ~= screen do
@@ -111,16 +113,50 @@ local function assertDetailFooter(app)
             core.advanceFrame()
             core.runAllPrograms(screen)
             screen:UpdateLayout(size[1], size[2])
-            local barX, barY = position(bar)
+            local barX, barY = position(footer)
             local bottomInset = math.max(size[4], keyboard)
             assert(not screen.RespectSafeArea and screen.Height == size[2],
                 "Detail pages retain the physical viewport during keyboard changes")
-            assert(math.abs(barX) < 1 and math.abs(bar.ActualWidth - size[1]) < 1
-                and math.abs(barY + bar.ActualHeight - size[2]) < 1 and bar.BackdropFilterBlurRadius > 0,
+            assert(math.abs(barX) < 1 and math.abs(footer.ActualWidth - size[1]) < 1
+                and math.abs(barY + footer.ActualHeight - size[2]) < 1 and footer.BackdropFilterBlurRadius > 0,
                 "Detail bar frosted backgrounds must reach every physical bottom edge: " .. app.currentRoute)
-            assert(math.abs(bar.ActualHeight - 58 - bottomInset) < 1
-                and bar.PaddingLeft == size[5] and bar.PaddingRight == size[6],
+            assert(math.abs(footer.ActualHeight - 58 - (commentBar and commentBar.ActualHeight or 0) - bottomInset) < 1
+                and footer.PaddingLeft == size[5] and footer.PaddingRight == size[6],
                 "Detail bar controls must avoid the home gesture, keyboard, and landscape cutouts")
+            if commentBar then
+                local _, commentY = position(commentBar)
+                local _, actionsY = position(bar)
+                assert(commentBar:getParent() == footer and bar:getParent() == footer
+                    and math.abs(commentY + commentBar.ActualHeight - actionsY) < 1,
+                    "Comment prompt and actions share one footer with adjoining rows")
+                assert(bar.BackdropFilterBlurRadius == 0 and commentBar.BackdropFilterBlurRadius == 0
+                    and bar.BackgroundColor.A == 0 and commentBar.BackgroundColor.A == 0,
+                    "Only the shared footer draws the frost and tint")
+                bar.IsExpanded = true
+                core.flushQueue()
+                core.advanceFrame()
+                core.runAllPrograms(screen)
+                screen:UpdateLayout(size[1], size[2])
+                assert(bar.ActualHeight > 58
+                    and math.abs(footer.ActualHeight - commentBar.ActualHeight - bar.ActualHeight - bottomInset) < 1,
+                    "The shared footer grows to contain the expanded action menu")
+                local _, expandedY = position(bar)
+                local _, promptY = position(commentBar)
+                assert(math.abs(promptY + commentBar.ActualHeight - expandedY) < 1,
+                    "Expanding the menu keeps the comment row above its commands")
+                for _, name in ipairs { "LikePost", "ViewAuthor", "RefreshPost" } do
+                    local command = find(app, name)
+                    local _, commandY = position(command)
+                    assert(commandY >= expandedY and commandY + command.ActualHeight <= expandedY + bar.ActualHeight + 1,
+                        "Expanded commands remain inside the shared backdrop: " .. name)
+                end
+                bar.IsExpanded = false
+                core.flushQueue()
+                core.advanceFrame()
+                core.runAllPrograms(screen)
+                screen:UpdateLayout(size[1], size[2])
+                assert(math.abs(bar.ActualHeight - 58) < 1, "Collapsing the menu restores the action row")
+            end
         end
     end
     screen.Width, screen.Height = 390, 844
@@ -815,10 +851,10 @@ for _, selected in ipairs { "dark", "light" } do
     cachedApp.screen:UpdateLayout(390, 844)
     cachedApp.screen:send("StyleController.ThemeChanged", { recursive = true })
     local expected = selected == "dark" and 0x16 / 255 or 0xf7 / 255
-    for _, name in ipairs { "AppBar", "CommentBar" } do
-        assert(math.abs(find(cachedApp, name).BackgroundColor.R - expected) < 0.01,
-            name .. " must match the app palette, not the OS appearance")
-    end
+    assert(math.abs(find(cachedApp, "PostFooter").BackgroundColor.R - expected) < 0.01,
+        "The shared footer must match the app palette, not the OS appearance")
+    assert(find(cachedApp, "AppBar").BackgroundColor.A == 0 and find(cachedApp, "CommentBar").BackgroundColor.A == 0,
+        "Both footer rows remain transparent after a palette refresh")
     local function header(node)
         -- StyleClass is a write-only alias; serialized root attributes also
         -- expose classes added by native controls.

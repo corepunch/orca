@@ -193,6 +193,9 @@ local function profileBody(self, profile)
         function(checked) phoneDiscovery = checked end)
     local emailToggle = C.checkbox("DiscoverableEmail", "Find me by email", emailDiscovery,
         function(checked) emailDiscovery = checked end)
+    local previews = profile.notification_previews ~= false
+    local previewToggle = C.checkbox("NotificationPreviews", "Message previews", previews,
+        function(checked) previews = checked end)
     local verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
         code,
         C.button("Verify & link", function()
@@ -211,11 +214,14 @@ local function profileBody(self, profile)
         C.eyebrow("PUBLIC PROFILE"), name, username,
         C.text("People can find your exact username. Your phone and email are never shown in search results.", {
             FontSize = 13, WordWrap = true, class = "chat-dim" }), phoneToggle, emailToggle,
-        C.button("Save profile", function()
+        C.eyebrow("NOTIFICATIONS"), previewToggle,
+        C.text("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible.", {
+            Name = "NotificationPreviewsHint", FontSize = 13, WordWrap = true, class = "chat-dim" }),
+        C.button("Save settings", function()
             local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
-                discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery }
+                discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery, notification_previews = previews }
             if self.sessionEpoch ~= epoch then return end
-            notice(result and "Profile saved." or saveError.message, not result)
+            notice(result and "Settings saved." or saveError.message, not result)
         end, { Name = "SaveProfile", class = "chat-primary" }),
         C.eyebrow("VERIFIED LOGIN DETAILS"), verified, identifier,
         C.button("Send verification code", function()

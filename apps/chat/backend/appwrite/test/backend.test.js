@@ -81,6 +81,116 @@ async function room(fixture, kind = 'group', others = ['alice'], visibility = 'p
 
 const pushCalls = fixture => fixture.calls.filter(call => call.path === '/messaging/messages/push');
 
+test('notification previews default on, validate booleans, persist privately and survive profile synchronization', async () => {
+  const fixture = setup();
+  assert.equal((await fixture.call('alice', '/rest/v1/rpc/get_chat_profile')).body.notification_previews, true);
+  delete fixture.repo.table('profiles').get('alice').notification_previews;
+  assert.equal((await fixture.call('alice', '/rest/v1/rpc/get_chat_profile')).body.notification_previews, true);
+  assert.equal((await fixture.repo.get('profiles', 'alice')).notification_previews, undefined, 'legacy default needs no write');
+  for (const value of [null, 0, 1, 'false', {}, []]) {
+    const response = await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: value } });
+    assert.equal(response.status, 400);
+  }
+  const response = await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: false, discoverable_email: true, username: 'alice' } });
+  assert.equal(response.status, 200); assert.equal(response.body.notification_previews, false);
+  fixture.users.get('alice').emailVerification = false;
+  assert.equal((await fixture.call('alice', '/rest/v1/rpc/get_chat_profile')).body.notification_previews, false);
+  const discovery = await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: 'alice' });
+  assert.equal(discovery.body[0].notification_previews, undefined);
+  await room(fixture);
+  const contacts = await fixture.call('owner', '/rest/v1/chat_profiles', {}, 'GET');
+  assert.equal(contacts.body[0].notification_previews, undefined);
+  assert.equal((await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: true } })).body.notification_previews, true);
+});
+
+test('push previews use saved sender and room labels, sanitized text and legacy recipient defaults', async () => {
+  for (const kind of ['direct', 'group', 'channel']) {
+    const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, kind);
+    await fixture.call('alice', '/rest/v1/rpc/get_chat_profile');
+    delete fixture.repo.table('profiles').get('alice').notification_previews;
+    await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { display_name: 'Sender Name' } });
+    const response = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', {
+      target_room: conversation.id, message_body: ' Hello\n\tworld\u0000!\u202e ', sender_name: 'Spoof', room_name: 'Spoof',
+    });
+    assert.equal(response.status, 200);
+    const payload = pushCalls(fixture)[0].options.body;
+    assert.equal(payload.title, kind === 'direct' ? 'Sender Name' : 'Conversation');
+    assert.equal(payload.body, kind === 'group' ? 'Sender Name: Hello world !' : 'Hello world !');
+    assert.equal(payload.image, undefined);
+    if (kind === 'channel') assert.ok(!JSON.stringify(payload).includes('Sender Name'), 'channel push never reveals the real author');
+  }
+});
+
+test('push previews respect each recipient preference without leaking text or identity through data', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, 'group', ['alice', 'bob']);
+  await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: false } });
+  await fixture.call('bob', '/rest/v1/rpc/get_chat_profile');
+  await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: false } });
+  await fixture.call('owner', '/rest/v1/rpc/post_chat_message', {
+    target_room: conversation.id, message_body: 'Secret content', notification_previews: true,
+  });
+  const alice = pushCalls(fixture).find(call => call.options.body.users[0] === 'alice').options.body;
+  const bob = pushCalls(fixture).find(call => call.options.body.users[0] === 'bob').options.body;
+  assert.equal(alice.title, 'ORCA Chat'); assert.equal(alice.body, 'New message');
+  assert.deepEqual(Object.keys(alice.data).sort(), ['conversationId', 'messageId', 'userId']);
+  assert.ok(!JSON.stringify(alice).includes('Secret content')); assert.ok(!JSON.stringify(alice).includes('owner'));
+  assert.equal(bob.title, 'Conversation'); assert.equal(bob.body, 'owner: Secret content');
+});
+
+test('push previews describe single photos and albums while captions take priority', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, 'direct');
+  await fixture.call('alice', '/rest/v1/rpc/get_chat_profile');
+  for (const count of [1, 3]) {
+    const ids = [];
+    for (let index = 0; index < count; index++) ids.push((await upload(fixture, conversation.id)).photo.id);
+    assert.equal((await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, attachment_ids: ids })).status, 200);
+    assert.equal(pushCalls(fixture).at(-1).options.body.body, count === 1 ? 'Sent a photo' : 'Sent 3 photos');
+  }
+  const { photo } = await upload(fixture, conversation.id);
+  await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, attachment_ids: [photo.id], message_body: 'Caption' });
+  assert.equal(pushCalls(fixture).at(-1).options.body.body, 'Caption');
+});
+
+test('push preview bounds retain valid Unicode and sender fallbacks', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, 'direct');
+  await fixture.call('alice', '/rest/v1/rpc/get_chat_profile');
+  await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { display_name: '😀'.repeat(128) } });
+  await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: '😀'.repeat(1000) });
+  const payload = pushCalls(fixture).at(-1).options.body;
+  assert.equal(payload.title, '😀'.repeat(119) + '…'); assert.equal(payload.body, '😀'.repeat(239) + '…');
+  assert.ok(Buffer.byteLength(JSON.stringify(payload)) < 3000);
+  await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: '\\"'.repeat(2000) });
+  assert.ok(Buffer.byteLength(JSON.stringify(pushCalls(fixture).at(-1).options.body)) < 3000, 'JSON escaping stays within the payload budget');
+  const sender = fixture.repo.table('profiles').get('owner');
+  sender.display_name = '\u0000'; sender.username = 'account_name';
+  await fixture.service.notifyMessage({ id: 'test-fallback', room_id: conversation.id, sender_id: 'owner', body: 'Text' });
+  assert.equal(pushCalls(fixture).at(-1).options.body.title, 'account_name');
+  sender.username = null;
+  await fixture.service.notifyMessage({ id: 'test-member', room_id: conversation.id, sender_id: 'owner', body: 'Text' });
+  assert.equal(pushCalls(fixture).at(-1).options.body.title, 'Member');
+});
+
+test('push preview metadata failures fall back to generic alerts and use the shared deadline', async () => {
+  const fixture = setup({ pushEnabled: true }), conversation = await room(fixture, 'direct');
+  await fixture.call('alice', '/rest/v1/rpc/get_chat_profile');
+  const get = fixture.repo.get.bind(fixture.repo); let fail;
+  const signals = new Set();
+  fixture.repo.get = async (name, id, options) => {
+    if (options?.signal) {
+      signals.add(options.signal);
+      if (name + ':' + id === fail) throw new Failure(503, 'offline', 'Private content');
+    }
+    return get(name, id);
+  };
+  for (fail of ['rooms:' + conversation.id, 'profiles:owner', 'profiles:alice']) {
+    const response = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: conversation.id, message_body: 'Still committed' });
+    assert.equal(response.status, 200);
+    assert.equal(pushCalls(fixture).at(-1).options.body.title, 'ORCA Chat');
+    assert.equal(pushCalls(fixture).at(-1).options.body.body, 'New message');
+  }
+  assert.equal(signals.size, 3, 'each send has one shared deadline for metadata and delivery');
+});
+
 test('push is disabled by default and rejects client-selected recipients', async () => {
   const fixture = setup(), conversation = await room(fixture);
   const result = await fixture.call('owner', '/rest/v1/rpc/post_chat_message', {

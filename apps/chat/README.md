@@ -270,6 +270,12 @@ groups/channels; other members can leave from conversation info. History
 loads the latest 30 messages and pages backward as you scroll. Apple push
 notifications are available after configuring an Appwrite APNs provider and
 signing the app with push entitlements; see [push setup](backend/appwrite/README.md#new-message-push-apns).
+Profile settings include **Message previews** (on by default). Turn it off and
+save settings to receive only “ORCA Chat / New message”; the preference is private
+and applies to this account's push notifications on every device. With previews
+enabled, alerts include the sender and a short message preview, or a photo label.
+On iPhone, **Settings → Notifications → ORCA Chat → Show Previews → When Unlocked**
+keeps notification content hidden until the phone unlocks, including with Face ID.
 Video and live subscriptions remain future work.
 During a Function rollout, a missing history RPC falls back to a bounded recent
 page through the existing endpoint. Older cursor pages become available when

@@ -142,15 +142,29 @@ After a text or photo message commits, the Function queues one
 [Messaging push](https://appwrite.io/docs/products/messaging/send-push-notifications)
 per current conversation member except the author. It resolves recipients from
 the private membership collection under the room lock, with cursor pagination;
-request JSON cannot choose recipients. The alert is always `ORCA Chat` /
-`New message`, with the default sound and no message text, sender name, room
-name or photo. Data contains only `conversationId`, `messageId` and the recipient
+request JSON cannot choose recipients. Message previews default on. Direct
+alerts use the saved sender display name (then account name or `Member`) and a
+short message preview. Group alerts use the room name and `Sender: preview`;
+channel alerts use the channel name and preview without the real author's name.
+Photo-only messages say `Sent a photo` or `Sent N photos`; a caption takes
+priority. Titles and bodies remove control characters and newlines and are
+limited to 120 and 240 Unicode code points, including any truncation ellipsis.
+There is no sender photo. The default sound remains enabled.
+
+The recipient's private `notification_previews` profile boolean controls alert
+content. `false` sends only `ORCA Chat` / `New message`; missing legacy values
+default to `true`. This preference lives in the administrator-only account
+directory payload and is excluded from public profiles, contacts and discovery.
+Failed room, sender or recipient metadata lookups fall back to a generic alert.
+Preview text is sent through Appwrite and APNs; iOS Show Previews controls when
+the phone reveals it, including after Face ID with When Unlocked selected.
+Data contains only `conversationId`, `messageId` and the recipient
 `userId`. The client checks the signed-in account before opening the conversation;
 the ordinary history route still enforces current membership. Edits and deletions
 do not notify, and a failed message commit never queues a push.
 
-Queueing is best-effort: recipient lookup and eight concurrent queue requests
-share a three-second deadline. A Messaging/provider failure or timeout never
+Queueing is best-effort: membership, room/profile lookups and eight concurrent
+recipient tasks share a three-second deadline. A Messaging/provider failure or timeout never
 turns a persisted message into a failed send. Appwrite then owns asynchronous
 delivery to every push target of the selected user. A deterministic Messaging
 message ID per committed message/recipient makes dispatch replay idempotent;

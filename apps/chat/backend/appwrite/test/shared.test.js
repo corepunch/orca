@@ -71,15 +71,29 @@ test('shared profile join isolates private identifiers and preserves website fie
   rest.put('account-directory','legacy-guid',{handle:'alice',payload:JSON.stringify({handle:'alice',email:'alice@example.invalid',phone:null,discoverable_email:true,discoverable_phone:false}),email:'alice@example.invalid',phone:null});
   const row=await repo.get('profiles','legacy-guid');
   assert.equal(row.display_name,'Website Label'); assert.equal(row.username,'alice'); assert.equal(row.avatar_id,'avatar'); assert.equal(row.email,'alice@example.invalid');
-  await repo.update('profiles','legacy-guid',{...row,display_name:'New label',discoverable_email:false});
+  assert.equal(row.notification_previews,true,'legacy private records default to previews on');
+  await repo.update('profiles','legacy-guid',{...row,display_name:'New label',discoverable_email:false,notification_previews:false});
   const saved=rest.docs.get('profiles').get('legacy-guid');
   assert.equal(saved.username,'New label'); assert.equal(saved.bio,'Preserve me'); assert.equal(saved.avatarId,'avatar'); assert.deepEqual(saved.interests,['art']);
   assert.deepEqual(saved.$permissions,['read("any")','update("user:legacy-guid")']); assert.equal(saved.email,undefined); assert.equal(saved.payload,undefined);
   assert.equal(JSON.parse(rest.docs.get('account-directory').get('legacy-guid').payload).discoverable_email,false);
+  assert.equal(JSON.parse(rest.docs.get('account-directory').get('legacy-guid').payload).notification_previews,false);
+  assert.equal(saved.notification_previews,undefined); assert.equal(rest.docs.get('account-directory').get('legacy-guid').notification_previews,undefined);
+  assert.equal((await repo.get('profiles','legacy-guid')).notification_previews,false);
   assert.equal((await repo.list('profiles',[eq('username','alice')]))[0].id,'legacy-guid');
   assert.equal((await repo.list('profiles',[eq('email','alice@example.invalid')]))[0].id,'legacy-guid');
   assert.ok(rest.calls.every(call=>!call.path.includes('/chat_')));
   assert.throws(()=>repo.path('arbitrary'),/Unknown collection/);
+});
+
+test('push metadata repository reads forward one cancellation signal to public and private documents',async()=>{
+  const signal=AbortSignal.timeout(3000),calls=[];
+  const repo=new Repository({request:async(method,path,options)=>{
+    calls.push(path);assert.equal(options.signal,signal);throw new Failure(404,'absent','Absent');
+  }},'database','bucket');
+  assert.equal(await repo.get('rooms','room-id',{signal}),null);
+  assert.equal(await repo.get('profiles','alice',{signal}),null);
+  assert.equal(calls.length,3);assert.ok(calls.some(path=>path.includes('/account-directory/')));
 });
 
 test('profile synchronization does not rewrite unchanged shared rows and exposes explicit account-name failure',async()=>{
@@ -116,6 +130,7 @@ test('legacy copy preserves document IDs and payloads, splits private profiles, 
   assert.equal(rest.docs.get('messages').get('message-id').created_at,'2026-10-20T12:00:00.000Z');
   const publicRow=rest.docs.get('profiles').get('legacy-guid'); assert.equal(publicRow.username,'Website label'); assert.equal(publicRow.handle,undefined); assert.equal(rest.docs.get('account-directory').get('legacy-guid').handle,'old_alias'); assert.equal(publicRow.bio,'Existing bio'); assert.equal(publicRow.email,undefined);
   assert.equal(JSON.parse(rest.docs.get('account-directory').get('legacy-guid').payload).email,'private@example.invalid');
+  assert.equal(JSON.parse(rest.docs.get('account-directory').get('legacy-guid').payload).notification_previews,undefined,'legacy copies remain compatible with already-migrated payloads');
   rest.calls=[]; await migrateShared(rest,{migrateLegacy:true,quiesced:true,verify:true}); assert.equal(writeCount(rest),0);
   await migrateShared(rest,{migrateLegacy:true,quiesced:true}); assert.equal(writeCount(rest),0); assert.ok(rest.collections.has('chat_messages'));
   await migrateShared(rest,{migrateLegacy:true,quiesced:true,dropLegacy:true}); assert.ok(!rest.collections.has('chat_messages')); assert.ok(rest.collections.has('messages'));

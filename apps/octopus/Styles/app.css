@@ -84,6 +84,7 @@
 /* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */
 .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
 .octopus-dark .frosted { background-color: #16161695; }
+.post-actions { background-color: #00000000; }
 .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
 .octopus-dark .pivot-bar { background-color: #16161695; border-color: #38383a; }
 .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }

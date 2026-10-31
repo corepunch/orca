@@ -112,7 +112,7 @@
       </StackView>
     </StackView>
   </StackView>
-  <Node2D Name="CommentBar" SafeAreaEdge="Bottom" MarginLeft="-20" MarginRight="-20" Padding="20 8" class="frosted bar-top">
+  <Node2D Name="CommentBar" Padding="20 8">
     <StackView Spacing="6" JustifyContent="Start">
       <TextBlock Name="PostStatus" Visible="false" FontSize="11" TextHorizontalAlignment="Center" class="octopus-dim"/>
       <Grid Name="ReplyBar" Visible="{Binding DataContext/Draft/Replying}" Columns="1fr 36px" Height="32">
