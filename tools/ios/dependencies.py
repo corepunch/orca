@@ -12,13 +12,17 @@ import tempfile
 
 
 SOURCES = {
-    'lua-5.4.8': ('https://www.lua.org/ftp/lua-5.4.8.tar.gz',
-                  '4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae'),
-    'lz4-1.10.0': ('https://codeload.github.com/lz4/lz4/tar.gz/refs/tags/v1.10.0',
-                   '537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b'),
     'curl-8.10.1': ('https://curl.se/download/curl-8.10.1.tar.xz',
                     '73a4b0e99596a09fa5924a4fb7e4b995a85fda0d18a2c02ab9cf134bebce04ee'),
 }
+# Same SHA256-verified archives, tried when the primary host is unreachable.
+MIRRORS = {
+    'curl-8.10.1': ('https://github.com/curl/curl/releases/download/curl-8_10_1/curl-8.10.1.tar.xz',),
+}
+# Lua and LZ4 come from the repository's submodules, like the desktop build, so
+# a clean Xcode Cloud archive does not depend on lua.org or codeload being up.
+SUBMODULES = {'lua': 'libs/lua', 'lz4': 'libs/lz4/lib'}
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def run(*args, cwd=None, env=None):
@@ -30,16 +34,34 @@ def source_tree(name, cache):
     suffix = '.tar.xz' if url.endswith('.xz') else '.tar.gz'
     archive = cache / 'downloads' / (name + suffix)
     archive.parent.mkdir(parents=True, exist_ok=True)
+    if archive.exists() and hashlib.sha256(archive.read_bytes()).hexdigest() != checksum:
+        archive.unlink()
+    partial = archive.with_suffix(archive.suffix + '.partial')
+    for candidate in (url, *MIRRORS.get(name, ())):
+        if archive.exists():
+            break
+        result = subprocess.run(['curl', '--fail', '--location', '--silent', '--show-error',
+                                 '--connect-timeout', '30', '--retry', '3', '--retry-delay', '2',
+                                 '--output', str(partial), candidate])
+        if result.returncode == 0 and hashlib.sha256(partial.read_bytes()).hexdigest() == checksum:
+            partial.replace(archive)
+        else:
+            print('Could not fetch a verified ' + name + ' from ' + candidate, flush=True)
+            partial.unlink(missing_ok=True)
     if not archive.exists():
-        partial = archive.with_suffix(archive.suffix + '.partial')
-        run('curl', '--fail', '--location', '--retry', '3', '--output', partial, url)
-        partial.replace(archive)
-    if hashlib.sha256(archive.read_bytes()).hexdigest() != checksum:
-        raise SystemExit('Checksum mismatch: ' + str(archive) + '. Remove the archive and retry.')
+        raise SystemExit('Could not download a verified ' + name + ' archive.')
     source = cache / 'sources' / name
     if not source.exists():
         source.mkdir(parents=True)
         run('tar', '-xf', archive, '-C', source, '--strip-components=1')
+    return source
+
+
+def submodule(name):
+    source = ROOT / SUBMODULES[name]
+    marker = source / ('lua.h' if name == 'lua' else 'lz4.h')
+    if not marker.is_file():
+        raise SystemExit('Missing ' + str(source) + '. Run: git submodule update --init libs/lua libs/lz4')
     return source
 
 
@@ -59,8 +81,11 @@ def main():
     flags = ['-arch', args.arch, '-isysroot', sdk, minimum + args.minimum, '-O2', '-g']
     lua_config = Path(__file__).resolve().with_name('lua_config.h')
     stamp = prefix / 'settings.json'
+    lua, lz4 = submodule('lua'), submodule('lz4')
+    revision = hashlib.sha256(b''.join(path.read_bytes() for folder in (lua, lz4)
+                                       for path in sorted(folder.glob('*.[ch]')))).hexdigest()
     settings = json.dumps({'sdk': sdk, 'arch': args.arch, 'minimum': args.minimum,
-                           'sources': SOURCES, 'recipe': hashlib.sha256(
+                           'sources': SOURCES, 'submodules': revision, 'recipe': hashlib.sha256(
                                Path(__file__).read_bytes() + lua_config.read_bytes()).hexdigest()}, sort_keys=True)
     if stamp.exists() and stamp.read_text() == settings and all(
             (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'liblz4.a', 'libcurl.a')):
@@ -86,21 +111,19 @@ def main():
                                   '-mmacosx-version-min=12.0'])
     jobs = str(min(os.cpu_count() or 2, 8))
     sources = {name: source_tree(name, cache) for name in SOURCES}
-    lua = sources['lua-5.4.8'] / 'src'
     objects = []
     output = root / 'dependency-build' / 'lua'
     output.mkdir(parents=True, exist_ok=True)
     for path in sorted(lua.glob('*.c')):
-        if path.name in ('lua.c', 'luac.c'):
+        if path.name in ('lua.c', 'luac.c', 'onelua.c', 'ltests.c'):
             continue
         obj = output / (path.stem + '.o')
         config = ['-include', lua_config] if path.name == 'loslib.c' else []
         run(compiler, *flags, '-DLUA_USE_IOS', *config, '-c', path, '-o', obj)
         objects.append(obj)
     run('xcrun', '--sdk', args.sdk, 'ar', 'rcs', prefix / 'lib/liblua.a', *objects)
-    for name in ('lua.h', 'luaconf.h', 'lauxlib.h', 'lualib.h', 'lua.hpp'):
+    for name in ('lua.h', 'luaconf.h', 'lauxlib.h', 'lualib.h'):
         shutil.copy2(lua / name, prefix / 'include' / name)
-    lz4 = sources['lz4-1.10.0'] / 'lib'
     objects = []
     output = root / 'dependency-build' / 'lz4'
     output.mkdir(parents=True, exist_ok=True)

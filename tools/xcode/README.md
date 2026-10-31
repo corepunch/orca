@@ -100,9 +100,10 @@ the raw engine, plugin and platform directories are not added to the navigator.
 
 Host code generation uses the macOS SDK, independently of the iOS target SDK.
 Lua, LZ4 and curl are built as static libraries for every architecture
-in `ARCHS`; curl uses Apple's Secure Transport for HTTPS. Source archives are
-pinned and checked with SHA256 by `tools/ios/dependencies.py`. The first build
-downloads their sources, so it needs network access. Later builds reuse their
+in `ARCHS`; curl uses Apple's Secure Transport for HTTPS. Lua and LZ4 compile
+from the `libs/lua` and `libs/lz4` submodules. The curl archive is pinned and
+checked with SHA256 by `tools/ios/dependencies.py`; the first build downloads it
+from curl.se, falling back to curl's GitHub release, so it needs network access. Later builds reuse their
 DerivedData cache. Existing verified archives in `build/ios/downloads` can seed
 that cache but are optional.
 
@@ -134,10 +135,9 @@ Select the committed app project and its `<app>-ios` shared scheme when creating
 the workflow. Configure the development team and distribution signing in Xcode
 and Xcode Cloud for archives. Cloud uses the same native preparation, compile,
 link and resource phases as a local build; no custom `ci_scripts` hooks are
-needed. Ensure Cloud can access the repository's Git submodules and the pinned
-dependency download hosts (lua.org, download.savannah.gnu.org, codeload.github.com
-and curl.se): every Cloud archive starts from a clean DerivedData and downloads
-them again. The project does not contain private signing keys or provisioning
+needed. Ensure Cloud can access the repository's Git submodules (including
+`libs/lua` and `libs/lz4`) and curl.se or github.com: every Cloud archive starts
+from a clean DerivedData and downloads the curl archive again. The project does not contain private signing keys or provisioning
 profiles.
 
 Xcode Cloud workflows belong to one app, so each app that ships needs its own:

@@ -35,7 +35,7 @@ the selected project, as described in
 [Apple's custom script guide](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts).
 
 Ensure Xcode Cloud can fetch the submodule revisions referenced by ORCA and
-download the pinned dependency archives. Public submodules are supported
+download the pinned curl archive. Public submodules are supported
 directly; private repositories need Cloud access, as described in
 [Apple's dependency guide](https://developer.apple.com/documentation/xcode/making-dependencies-available-to-xcode-cloud).
 Push a changed `libs/platform` commit before publishing a parent revision that
@@ -54,10 +54,11 @@ available independently.
   installed Apple development signing identity with a matching provisioning
   profile. The profile must cover the bundle identifier and device UDID.
 
-Initialize submodules as described in [BUILD.md](BUILD.md). First builds
-download pinned, SHA256-verified Lua 5.4.8, LZ4 1.10.0 and
-curl 8.10.1 sources, then build static libraries for the selected SDK and CPU.
-Downloads are cached under `build/ios/`. curl uses Apple's Secure Transport
+Initialize submodules as described in [BUILD.md](BUILD.md). Lua 5.4.8 and
+LZ4 1.10.0 are compiled from the `libs/lua` and `libs/lz4` submodules. First
+builds download pinned, SHA256-verified curl 8.10.1 sources (from curl.se, or
+its GitHub release mirror), then build static libraries for the selected SDK
+and CPU. Downloads are cached under `build/ios/`. curl uses Apple's Secure Transport
 for HTTPS. Host Homebrew libraries are never linked into iOS executables.
 Host code generation uses the macOS SDK's libxml2.
 
