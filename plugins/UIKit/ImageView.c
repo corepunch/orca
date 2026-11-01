@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -46,29 +47,30 @@ HANDLER(ImageView, Node2D, MeasureOverride)
       float avail_h = isinf(pMeasureOverride->Height) ? size.y : pMeasureOverride->Height;
       struct rect avail = {0, 0, avail_w, avail_h};
       struct rect final = RECT_Fit(&avail, &size);
-      return MAKEDWORD(final.width, final.height);
+      return Layout_Return(pMeasureOverride, final.width, final.height);
     } else {
       /* Fill/crop modes must honor the space offered by the parent. If that
        * space is unconstrained, collapse on that axis instead of expanding to
        * the intrinsic image size and forcing the layout taller. */
       float avail_w = isinf(pMeasureOverride->Width)  ? 0 : pMeasureOverride->Width;
       float avail_h = isinf(pMeasureOverride->Height) ? 0 : pMeasureOverride->Height;
-      return MAKEDWORD(avail_w, avail_h);
+      return Layout_Return(pMeasureOverride, avail_w, avail_h);
     }
   } else {
     /* Source not yet loaded: report zero so the node collapses gracefully
      * rather than saturating to 65535 when available space is infinite. */
     float w = isinf(pMeasureOverride->Width)  ? 0 : pMeasureOverride->Width;
     float h = isinf(pMeasureOverride->Height) ? 0 : pMeasureOverride->Height;
-    return MAKEDWORD(w, h);
+    return Layout_Return(pMeasureOverride, w, h);
   }
 }
 
 // ImageView_ArrangeOverride
 HANDLER(ImageView, Node2D, ArrangeOverride) {
-  return _SendMessage(hObject, Node2D, MeasureOverride,
+  struct Size size = Layout_MeasureOverride(hObject,
                       .Width = pArrangeOverride->Width,
                       .Height = pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, size.width, size.height);
 }
 
 HANDLER(ImageView, Node2D, DrawForeground)

@@ -29,13 +29,18 @@ end
 
 local function collect(self, node, x, y, clip, scope, found, seen)
     if node.Visible == false then return end
-    local w, h = size(node)
+    local t = node.RenderTransformTranslation
+    local h = node.ActualHeight or node.Height or 0
+    local top = y + (node.ActualY or 0) + (t and t.Y or 0)
+    -- Long feeds mostly contain rows above or below the viewport. Reject
+    -- those before crossing the native bridge for horizontal geometry.
+    if top + h < clip[2] or top > clip[4] then return end
+    local w = node.ActualWidth or node.Width or 0
     -- Nothing is visible before the first layout.
     if w <= 0 and h <= 0 then return end
-    local t = node.RenderTransformTranslation
-    local left, top = x + (node.ActualX or 0) + (t and t.X or 0), y + (node.ActualY or 0) + (t and t.Y or 0)
+    local left = x + (node.ActualX or 0) + (t and t.X or 0)
     local right, bottom = left + w, top + h
-    if right < clip[1] or bottom < clip[2] or left > clip[3] or top > clip[4] then return end
+    if right < clip[1] or left > clip[3] then return end
     local context = node.DataContext
     if context then
         local record = scope.store:recordFor(context)

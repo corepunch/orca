@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -61,7 +62,7 @@ HANDLER(TextBlock, Node2D, MeasureOverride)
   _SendMessage(hObject, TextBlockConcept, MakeText,
                    .availableSpace = pMeasureOverride->Width);
   TextBlockText_GetInfo(textblock->_text, &output->_textinfo);
-  return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
+  return Layout_Return(pMeasureOverride, output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
 
 HANDLER(TextBlock, Node2D, ForegroundContent)

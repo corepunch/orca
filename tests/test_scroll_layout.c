@@ -13,12 +13,31 @@ extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_UIKit(lua_State *L);
 
 static int measure_count;
+enum LayoutProbeMode { kCountMeasure, kLegacySize, kLegacyZero, kFloatZero, kFloatLarge, kFloatWidthOnly };
 
 static LRESULT
 MeasureProbe_Proc(struct Object *object, void *component, uint32_t message,
                   wParam_t wp, lParam_t lp)
 {
   if (message == ID_Node2D_MeasureOverride) measure_count++;
+  if (message == ID_Node2D_MeasureOverride || message == ID_Node2D_ArrangeOverride) {
+    int mode = *(int *)component;
+    if (mode == kLegacySize) return MAKEDWORD(137, 73);
+    if (mode == kFloatZero || mode == kFloatLarge || mode == kFloatWidthOnly) {
+      float width = mode == kFloatLarge ? 112000 : 0;
+      float height = mode == kFloatLarge ? 73000 : 0;
+      if (message == ID_Node2D_MeasureOverride) {
+        Node2D_MeasureMsgPtr args = (void *)lp;
+        args->ResultWidth = width;
+        if (mode != kFloatWidthOnly) args->ResultHeight = height;
+      } else {
+        Node2D_ArrangeMsgPtr args = (void *)lp;
+        args->ResultWidth = width;
+        if (mode != kFloatWidthOnly) args->ResultHeight = height;
+      }
+      return mode == kFloatWidthOnly ? MAKEDWORD(137, 73) : TRUE;
+    }
+  }
   return FALSE;
 }
 
@@ -27,6 +46,43 @@ static struct ClassDesc probe_class = {
   .ClassID = 0xabcdf171, .ClassSize = sizeof(int),
   .ObjProc = MeasureProbe_Proc, .ParentClasses = { ID_Node2D, 0 },
 };
+
+static void
+test_layout_result_compatibility(void)
+{
+  struct Object *empty = OBJ_Create(ID_Node2D);
+  assert(_SendMessage(empty, Node2D, MeasureOverride, .Width = INFINITY, .Height = INFINITY) == 0);
+  Node2D_MeasureOverrideMsg_t zero = { .Width = INFINITY, .Height = INFINITY,
+    .ResultWidth = NAN, .ResultHeight = NAN };
+  assert(OBJ_SendMessageW(empty, ID_Node2D_MeasureOverride, 0, &zero));
+  assert(zero.ResultWidth == 0 && zero.ResultHeight == 0);
+  OBJ_ReleaseRef(empty);
+  enum LayoutProbeMode modes[] = { kLegacySize, kLegacyZero, kFloatZero, kFloatLarge, kFloatWidthOnly };
+  float widths[] = { 137, 137, 0, 112000, 0 }, heights[] = { 73, 73, 0, 73000, 73 };
+  for (int i = 0; i < 5; i++) {
+    struct Object *view = OBJ_Create(probe_class.ClassID), *child = OBJ_Create(ID_Node2D);
+    *(int *)OBJ_GetComponent(view, probe_class.ClassID) = modes[i];
+    GetNode(child)->Size.Axis[0].Requested = 137;
+    GetNode(child)->Size.Axis[1].Requested = 73;
+    OBJ_AddChild(view, child);
+    Node2D_MeasureMsg_t measure = { .Width = INFINITY, .Height = INFINITY,
+      .ResultWidth = NAN, .ResultHeight = NAN };
+    OBJ_SendMessageW(view, ID_Node2D_Measure, 0, &measure);
+    assert(measure.ResultWidth == widths[i] && measure.ResultHeight == heights[i]);
+    assert(GetNode(view)->Size.Axis[0].Desired == widths[i] && GetNode(view)->Size.Axis[1].Desired == heights[i]);
+
+    Node2D_ArrangeMsg_t arrange = { .Width = 200, .Height = 100,
+      .ResultWidth = NAN, .ResultHeight = NAN };
+    OBJ_SendMessageW(view, ID_Node2D_Arrange, 0, &arrange);
+    // A legacy zero override still falls through to the base layout. Explicit
+    // float zero is handled, so the base must not replace it with the child.
+    float width = modes[i] == kLegacyZero ? 200 : widths[i];
+    float height = modes[i] == kLegacyZero ? 100 : heights[i];
+    assert(GetNode(view)->Size.Axis[0].Actual == width && GetNode(view)->Size.Axis[1].Actual == height);
+    OBJ_ReleaseRef(child);
+    OBJ_ReleaseRef(view);
+  }
+}
 
 static void
 layout(struct Object *screen)
@@ -193,6 +249,7 @@ int main(void)
   luaL_requiref(L, "orca.UIKit", luaopen_orca_UIKit, 1);
   lua_pop(L, 1);
   OBJ_RegisterClass(&probe_class);
+  test_layout_result_compatibility();
 
   struct Object *screen = OBJ_Create(ID_Screen);
   struct Object *list = OBJ_Create(ID_StackView);
@@ -245,6 +302,6 @@ int main(void)
   OBJ_ReleaseRef(list);
   OBJ_ReleaseRef(screen);
   lua_close(L);
-  puts("PASS: scroll layout reuse, touch inertia, rubber-band return, interruption, opt-outs and resized content");
+  puts("PASS: layout result compatibility, scroll reuse, touch inertia, rubber-band return, interruption, opt-outs and resized content");
   return 0;
 }

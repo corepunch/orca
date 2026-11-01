@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/orca.h>
 #include <source/core/core_local.h>
 
@@ -38,35 +39,35 @@ TabView_GetActiveContent(struct Object *hObject, struct TabView *pTabView)
 
 HANDLER(TabView, Node2D, MeasureOverride)
 {
-  uint16_t width = 0;
-  uint16_t headerHeight = 0;
-  uint16_t contentWidth = 0;
-  uint16_t contentHeight = 0;
+  float width = 0;
+  float headerHeight = 0;
+  float contentWidth = 0;
+  float contentHeight = 0;
   struct Object *hContent = TabView_GetActiveContent(hObject, pTabView);
 
   FOR_EACH_OBJECT(hChild, hObject) {
     if (GetTabBar(hChild)) {
-      LRESULT size = _SendMessage(hChild, Node2D, Measure,
+      struct Size size = Layout_Measure(hChild,
         .Width = pMeasureOverride->Width,
         .Height = pMeasureOverride->Height);
 
-      width = MAX(width, LOWORD(size));
-      headerHeight = MAX(headerHeight, HIWORD(size));
+      width = MAX(width, size.width);
+      headerHeight = MAX(headerHeight, size.height);
       continue;
     }
 
     if (hContent && hChild == hContent) {
-      LRESULT size = _SendMessage(hChild, Node2D, Measure,
+      struct Size size = Layout_Measure(hChild,
         .Width = pMeasureOverride->Width,
         .Height = pMeasureOverride->Height);
 
-      contentWidth = LOWORD(size);
-      contentHeight = HIWORD(size);
+      contentWidth = size.width;
+      contentHeight = size.height;
       width = MAX(width, contentWidth);
     }
   }
 
-  return MAKEDWORD(width, headerHeight + contentHeight);
+  return Layout_Return(pMeasureOverride, width, headerHeight + contentHeight);
 }
 
 HANDLER(TabView, Node2D, ArrangeOverride)
@@ -77,26 +78,26 @@ HANDLER(TabView, Node2D, ArrangeOverride)
   FOR_EACH_OBJECT(hChild, hObject) {
     if (!GetTabBar(hChild)) continue;
 
-    LRESULT size = _SendMessage(hChild, Node2D, Arrange,
+    struct Size size = Layout_Arrange(hChild,
       .X = pArrangeOverride->X,
       .Y = pArrangeOverride->Y,
       .Width = pArrangeOverride->Width,
       .Height = pArrangeOverride->Height);
-    headerHeight = MAX(headerHeight, HIWORD(size));
+    headerHeight = MAX(headerHeight, size.height);
   }
 
   float contentY = pArrangeOverride->Y + headerHeight;
   float contentHeight = MAX(pArrangeOverride->Height - headerHeight, 0);
 
   if (hContent) {
-    _SendMessage(hContent, Node2D, Arrange,
+    Layout_Arrange(hContent,
       .X = pArrangeOverride->X,
       .Y = contentY,
       .Width = pArrangeOverride->Width,
       .Height = contentHeight);
   }
 
-  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
 static void

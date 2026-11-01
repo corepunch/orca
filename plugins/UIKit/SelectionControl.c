@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include "SelectionControl.h"
 #include <math.h>
 
@@ -111,39 +112,39 @@ HANDLER(SelectionControl, Node, LeftButtonDragged)
 HANDLER(SelectionControl, Node2D, MeasureOverride)
 {
   SelectionControl_SyncLabel(hObject, pSelectionControl);
-  if (!pSelectionControl->_indicator || !pSelectionControl->_label) return MAKEDWORD(0, 0);
+  if (!pSelectionControl->_indicator || !pSelectionControl->_label) return Layout_Return(pMeasureOverride, 0, 0);
   if (pSelectionControl->_indicatorSizeSet) {
     struct Node *node = GetNode(pSelectionControl->_indicator);
     node->Size.Axis[0].Requested = MAX(0, pSelectionControl->IndicatorSize) * (GetToggleSwitch(hObject) ? 58.f / 28 : 1);
     node->Size.Axis[1].Requested = MAX(0, pSelectionControl->IndicatorSize);
   }
-  LRESULT indicator = _SendMessage(pSelectionControl->_indicator, Node2D, Measure,
+  struct Size indicator = Layout_Measure(pSelectionControl->_indicator,
     .Width = pMeasureOverride->Width, .Height = pMeasureOverride->Height);
   float spacing = GetTextRun(pSelectionControl->_label)->Text && *GetTextRun(pSelectionControl->_label)->Text
     ? pSelectionControl->IndicatorSpacing : 0;
-  LRESULT label = _SendMessage(pSelectionControl->_label, Node2D, Measure,
-    .Width = MAX(0, pMeasureOverride->Width - LOWORD(indicator) - spacing), .Height = pMeasureOverride->Height);
+  struct Size label = Layout_Measure(pSelectionControl->_label,
+    .Width = MAX(0, pMeasureOverride->Width - indicator.width - spacing), .Height = pMeasureOverride->Height);
   struct Node2D *node = GetNode2D(hObject);
   float minHeight = MAX(0, GetNode(hObject)->Size.Axis[1].Min - TOTAL_PADDING(node, 1));
-  return MAKEDWORD(LOWORD(indicator) + spacing + LOWORD(label),
-    MAX(minHeight, MAX(HIWORD(indicator), HIWORD(label))));
+  return Layout_Return(pMeasureOverride, indicator.width + spacing + label.width,
+    MAX(minHeight, MAX(indicator.height, label.height)));
 }
 
 HANDLER(SelectionControl, Node2D, ArrangeOverride)
 {
   struct Object *indicator = pSelectionControl->_indicator, *label = pSelectionControl->_label;
-  if (!indicator || !label) return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+  if (!indicator || !label) return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
   struct Node2D *part = GetNode2D(indicator);
   float width = NODE2D_FRAME(part, Size, 0).Desired + TOTAL_MARGIN(part, 0);
   float height = NODE2D_FRAME(part, Size, 1).Desired + TOTAL_MARGIN(part, 1);
-  _SendMessage(indicator, Node2D, Arrange,
+  Layout_Arrange(indicator,
     .X = pArrangeOverride->X, .Y = pArrangeOverride->Y + MAX(0, (pArrangeOverride->Height - height) / 2),
     .Width = width, .Height = height);
   float spacing = GetTextRun(label)->Text && *GetTextRun(label)->Text ? pSelectionControl->IndicatorSpacing : 0;
-  _SendMessage(label, Node2D, Arrange,
+  Layout_Arrange(label,
     .X = pArrangeOverride->X + width + spacing, .Y = pArrangeOverride->Y,
     .Width = MAX(0, pArrangeOverride->Width - width - spacing), .Height = pArrangeOverride->Height);
-  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
 HANDLER(SelectionControl, Node2D, UpdateGeometry)

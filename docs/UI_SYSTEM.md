@@ -22,6 +22,18 @@ Use this file when changing UIKit controls, layout, XML UI, popups, or styling b
 For tests with explicit dimensions, always set `ResizeMode="NoResize"` in XML or `ResizeMode = "NoResize"` in Lua.
 Otherwise the window size can override the intended test dimensions.
 
+Native layout messages carry synchronous `ResultWidth` and `ResultHeight`
+outputs so long lists can exceed 65,535 points on both 32-bit and 64-bit
+targets. UIKit's `Layout.h` dispatch helpers initialize the outputs to NaN
+and fall back independently to the legacy packed return when an output is
+unset. Custom native controls should publish both outputs with `Layout_Return`
+and use the layout helpers when measuring children. Existing whole-point
+rounding is preserved. The legacy packed return is limited to 65,535 per axis;
+migrated controls saturate it safely, and legacy custom handlers retain that
+range limit. The outputs are for immediate native dispatch, not queued
+messages or Lua event snapshots. Rebuild native plugins against the regenerated
+headers when adopting the extended message structures.
+
 ## Selection controls
 
 For checkboxes, radio groups and on/off switches, see

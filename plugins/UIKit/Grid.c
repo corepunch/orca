@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <ctype.h> // isspace()
 #include <include/api.h>
 #include <include/orca.h>
@@ -188,11 +189,11 @@ _ResolveTracks(PGRIDLAYOUT layout, PGRIDVIEW pGrid, struct Object *hObject,
     cellindex++;
     if (!c || !(c->type == column_type_auto || (c->type == column_type_fr && !bounded))) continue;
     float other = o && (axis == kDirectionVertical || o->type == column_type_pixel) ? o->width : INFINITY;
-    LRESULT size = axis == kDirectionHorizontal
-      ? _SendMessage(hChild, Node2D, Measure, .Width = INFINITY, .Height = other)
-      : _SendMessage(hChild, Node2D, Measure, .Width = other, .Height = INFINITY);
-    uint16_t extent = axis == kDirectionHorizontal ? LOWORD(size) : HIWORD(size);
-    if (extent < 0xffff) c->width = fmaxf(c->width, extent);
+    struct Size size = axis == kDirectionHorizontal
+      ? Layout_Measure(hChild, .Width = INFINITY, .Height = other)
+      : Layout_Measure(hChild, .Width = other, .Height = INFINITY);
+    float extent = axis == kDirectionHorizontal ? size.width : size.height;
+    if (isfinite(extent)) c->width = fmaxf(c->width, extent);
   }
 
   FOR_LOOP(i, cols->count) {
@@ -231,12 +232,12 @@ HANDLER(Grid, Node2D, MeasureOverride)
   {
     struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
-    LRESULT s = _SendMessage(hChild, Node2D, Measure,
+    struct Size s = Layout_Measure(hChild,
       .Width  = (w ? w->width : pMeasureOverride->Width),
       .Height = (h ? h->width : pMeasureOverride->Height),
     );
-    if (!w && LOWORD(s) < 0xffff) desired.width = fmax(LOWORD(s), desired.width);
-    if (!h && HIWORD(s) < 0xffff) desired.height = fmax(HIWORD(s), desired.height);
+    if (!w && isfinite(s.width)) desired.width = fmax(s.width, desired.width);
+    if (!h && isfinite(s.height)) desired.height = fmax(s.height, desired.height);
     cellindex++;
   }
   /* A grid with tracks is as large as its tracks, as in WPF. */
@@ -247,7 +248,7 @@ HANDLER(Grid, Node2D, MeasureOverride)
   // packed extent: the undefined conversion can corrupt the other axis on ARM.
   float width = desired.width ? desired.width : pMeasureOverride->Width;
   float height = desired.height ? desired.height : pMeasureOverride->Height;
-  return MAKEDWORD(isfinite(width) ? width : 0, isfinite(height) ? height : 0);
+  return Layout_Return(pMeasureOverride, isfinite(width) ? width : 0, isfinite(height) ? height : 0);
 }
 
 HANDLER(Grid, Node2D, ArrangeOverride)
@@ -285,7 +286,7 @@ HANDLER(Grid, Node2D, ArrangeOverride)
       case kAlignItemsStretch:
         break;
     }
-    _SendMessage(hChild, Node2D, Arrange,
+    Layout_Arrange(hChild,
       .X = pArrangeOverride->X + (w ? w->position : 0),
       .Y = y,
       .Width = (w ? w->width : pArrangeOverride->Width),
@@ -295,5 +296,5 @@ HANDLER(Grid, Node2D, ArrangeOverride)
     if (w) actual_width  = fmax(actual_width,  w->position + w->width);
     cellindex++;
   }
-  return MAKEDWORD(actual_width, actual_height);
+  return Layout_Return(pArrangeOverride, actual_width, actual_height);
 }

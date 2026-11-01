@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/plugapi.h>
@@ -40,7 +41,7 @@ HANDLER(NinePatchImage, Node2D, MeasureOverride)
   //        }
   //        return TRUE;
   //    } else {
-  return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
+  return Layout_Return(pMeasureOverride, pMeasureOverride->Width, pMeasureOverride->Height);
   //    }
 }
 

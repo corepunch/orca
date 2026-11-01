@@ -607,8 +607,27 @@ HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 # Applications are authored in XML; Lisp is an experimental scene format and
 # only apps/Example has Lisp twins. App tests that load pages run in XML builds.
 XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
+XML_APP_LUA_TESTS += test-chat-stress test-octopus-stress
+CHAT_STRESS_ROWS ?= 1000
+OCTOPUS_STRESS_ROWS ?= 1000
+# Keep routine regression fixtures small; the explicit stress target uses 1,000
+# real XML rows per app, and accepts larger counts on the command line.
+test-headless: CHAT_STRESS_ROWS = 100
+test-headless: OCTOPUS_STRESS_ROWS = 100
+.PHONY: test-view-stress
 ifeq ($(SCENE_FORMAT),xml)
 HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
+.PHONY: test-chat-stress test-octopus-stress
+test-chat-stress: copyshare
+	ORCA_CHAT_STRESS_ROWS=$(CHAT_STRESS_ROWS) $(TARGET) -test=tests/test_chat_stress.lua
+test-octopus-stress: copyshare
+	OCTOPUS_STRESS_ROWS=$(OCTOPUS_STRESS_ROWS) $(TARGET) -test=tests/test_octopus_stress.lua
+test-view-stress: test-chat-stress test-octopus-stress test-data-visibility test-viewport-observer-stress
+	$(TARGET) -test=tests/xml/test_long_list_layout_xml.lua
+else
+test-view-stress:
+	@echo "Long app view stress tests require the XML build."
+	@exit 1
 endif
 .PHONY: test-scene-format
 # Manual, offline timing benchmark; never part of test-headless/CI.
@@ -620,6 +639,12 @@ test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
 HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader
 HEADLESS_LUA_TESTS += test-default-avatars
+HEADLESS_LUA_TESTS += test-data-visibility test-viewport-observer-stress
+.PHONY: test-data-visibility test-viewport-observer-stress
+test-data-visibility: $(LUA_BIN)
+	$(LUA) tests/test_data_visibility.lua
+test-viewport-observer-stress: $(LUA_BIN)
+	$(LUA) tests/test_viewport_observer_stress.lua
 
 $(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))

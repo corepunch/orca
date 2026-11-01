@@ -10,6 +10,7 @@
 #include <source/core/core_local.h>
 #include <source/core/animation.h>
 #include <UIKit/UIKit.h>
+#include "Layout.h"
 
 #define METRO_INSET          12.0f   // page margin: the outer 12 of Windows Phone's 12 + 12
 #define METRO_ANIM_MS        300
@@ -74,10 +75,10 @@ Metro_CreateText(struct Object *parent, uint32_t class_id, lpcString_t css, floa
   return o;
 }
 
-static inline LRESULT
+static inline struct Size
 Metro_Measure(struct Object *o, float width, float height)
 {
-  return _SendMessage(o, Node2D, Measure, .Width = width, .Height = height);
+  return Layout_Measure(o, .Width = width, .Height = height);
 }
 
 static inline void

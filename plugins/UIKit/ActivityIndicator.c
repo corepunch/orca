@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <source/core/animation.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -28,7 +29,7 @@ HANDLER(ActivityIndicator, Object, Create)
 HANDLER(ActivityIndicator, Node2D, MeasureOverride)
 {
   float side = fmaxf(0, fminf(64, fminf(pMeasureOverride->Width, pMeasureOverride->Height)));
-  return MAKEDWORD(side, side);
+  return Layout_Return(pMeasureOverride, side, side);
 }
 
 HANDLER(ActivityIndicator, Object, PropertyChanged)

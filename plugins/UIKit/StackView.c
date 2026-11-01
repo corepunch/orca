@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -17,7 +18,7 @@ _GetContentSize(struct Object *hObject,
   return fmax(value - pStackView->Spacing, 0);
 }
 
-static uint32_t
+static void
 _Arrange(struct Object *hObject,
          struct StackView *pStackView,
          struct bounds primaryBounds,
@@ -26,7 +27,6 @@ _Arrange(struct Object *hObject,
   float content_size = _GetContentSize(hObject, pStackView, pStackView->Direction);
   float span = primaryBounds.max - primaryBounds.min;
   float counter, distributed = 0;
-  float maxsize = 0;
 
   // Count children and leftover space (needed for space-* modes)
   uint32_t n = 0;
@@ -47,17 +47,17 @@ _Arrange(struct Object *hObject,
       counter = primaryBounds.min;
       break;
     case kJustifyContentSpaceEvenly:
-      if (!n) return 0;
+      if (!n) return;
       distributed = leftover / (n + 1);
       counter = primaryBounds.min + distributed;
       break;
     case kJustifyContentSpaceAround:
-      if (!n) return 0;
+      if (!n) return;
       distributed = leftover / n;
       counter = primaryBounds.min + distributed * 0.5f;
       break;
     case kJustifyContentSpaceBetween:
-      if (!n) return 0;
+      if (!n) return;
       distributed = n > 1 ? leftover / (n - 1) : 0;
       counter = primaryBounds.min;
       break;
@@ -91,43 +91,30 @@ _Arrange(struct Object *hObject,
           break;
       }
     }
-    LRESULT s;
+    struct Size s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = _SendMessage(child, Node2D, Arrange,
+        s = Layout_Arrange(child,
           counter,
           crossMin,
           NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
           crossSize,
         );
-        counter += LOWORD(s) + pStackView->Spacing + distributed;
-        maxsize = fmax(maxsize, HIWORD(s));
+        counter += s.width + pStackView->Spacing + distributed;
         break;
       case kDirectionVertical:
-        s = _SendMessage(child, Node2D, Arrange,
+        s = Layout_Arrange(child,
           crossMin,
           counter,
           crossSize,
           NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1),
         );
-        counter += HIWORD(s) + pStackView->Spacing + distributed;
-        maxsize = fmax(maxsize, LOWORD(s));
+        counter += s.height + pStackView->Spacing + distributed;
         break;
       case kDirectionDepth:
         // not implemented
         break;
     }
-  }
-
-  switch (pStackView->Direction) {
-    case kDirectionHorizontal:
-      return MAKEDWORD(counter, maxsize);
-    case kDirectionVertical:
-      return MAKEDWORD(maxsize, counter);
-    case kDirectionDepth:
-    default:
-      // not implemented
-      return 0;
   }
 }
 
@@ -139,24 +126,24 @@ HANDLER(StackView, Node2D, MeasureOverride)
     pStackView->Direction == kDirectionVertical ? -pStackView->Spacing : 0,
   };
   FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object) {
-    LRESULT s;
+    struct Size s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
-        s = _SendMessage(hChild, Node2D, Measure, INFINITY, pMeasureOverride->Height);
-        size.width += LOWORD(s) + pStackView->Spacing;
-        size.height = MAX(size.height, HIWORD(s));
+        s = Layout_Measure(hChild, INFINITY, pMeasureOverride->Height);
+        size.width += s.width + pStackView->Spacing;
+        size.height = MAX(size.height, s.height);
         break;
       case kDirectionVertical:
-        s = _SendMessage(hChild, Node2D, Measure, pMeasureOverride->Width, INFINITY);
-        size.width = MAX(size.width, LOWORD(s));
-        size.height += HIWORD(s) + pStackView->Spacing;
+        s = Layout_Measure(hChild, pMeasureOverride->Width, INFINITY);
+        size.width = MAX(size.width, s.width);
+        size.height += s.height + pStackView->Spacing;
         break;
       case kDirectionDepth:
         // Not supported
         break;
     }
   }
-  return MAKEDWORD(fmax(0,size.width), fmax(0,size.height));
+  return Layout_Return(pMeasureOverride, fmax(0,size.width), fmax(0,size.height));
 }
 
 HANDLER(StackView, Node2D, ArrangeOverride)
@@ -201,5 +188,5 @@ HANDLER(StackView, Node2D, ArrangeOverride)
     }
   }
 
-  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
 }

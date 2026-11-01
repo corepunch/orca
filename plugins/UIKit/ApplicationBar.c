@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include "metro.h"
 
 // ApplicationBar layout, after the Windows Phone 8 application bar.
@@ -100,7 +101,7 @@ HANDLER(ApplicationBar, Node2D, MeasureOverride)
   }
   float height = pApplicationBar->Mode == kApplicationBarModeMinimized ? APPBAR_MINI_HEIGHT : APPBAR_HEIGHT;
   // An auto track can leave width unbounded; keep the packed height intact.
-  return MAKEDWORD(isfinite(pMeasureOverride->Width) ? pMeasureOverride->Width : 0, height);
+  return Layout_Return(pMeasureOverride, isfinite(pMeasureOverride->Width) ? pMeasureOverride->Width : 0, height);
 }
 
 HANDLER(ApplicationBar, Node2D, ArrangeOverride)
@@ -159,7 +160,7 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
       menuY += APPBAR_MENU_ITEM;
     }
   }
-  return MAKEDWORD(w, h);
+  return Layout_Return(pArrangeOverride, w, h);
 }
 
 // Tapping the bar itself, the ellipsis or outside the expanded bar toggles it.
@@ -218,7 +219,7 @@ HANDLER(ApplicationBarIconButton, Node2D, MeasureOverride)
   Metro_Measure(pApplicationBarIconButton->_label, APPBAR_SLOT, APPBAR_LABEL_HEIGHT);
   Metro_Measure(pApplicationBarIconButton->_ring, APPBAR_RING, APPBAR_RING);
   Metro_Measure(pApplicationBarIconButton->_icon, APPBAR_ICON, APPBAR_ICON);
-  return MAKEDWORD(APPBAR_SLOT, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
+  return Layout_Return(pMeasureOverride, APPBAR_SLOT, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
 }
 
 HANDLER(ApplicationBarIconButton, Node2D, ArrangeOverride)
@@ -233,7 +234,7 @@ HANDLER(ApplicationBarIconButton, Node2D, ArrangeOverride)
   struct ApplicationBar *bar = GetApplicationBar(OBJ_GetParent(hObject));
   Metro_Show(pButton->_label, bar && bar->IsExpanded, 1);
   Metro_Arrange(pButton->_label, x, y + APPBAR_RING + APPBAR_LABEL_GAP, w, APPBAR_LABEL_HEIGHT);
-  return MAKEDWORD(w, pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, w, pArrangeOverride->Height);
 }
 
 HANDLER(ApplicationBarIconButton, Node, LeftButtonUp)
@@ -265,19 +266,19 @@ HANDLER(ApplicationBarMenuItem, Node2D, MeasureOverride)
     GetNode2D(pApplicationBarMenuItem->_label)->IgnoreHitTest = TRUE;
   }
   Metro_SetText(pApplicationBarMenuItem->_label, pApplicationBarMenuItem->Text, tolower);
-  LRESULT size = Metro_Measure(pApplicationBarMenuItem->_label, pMeasureOverride->Width, APPBAR_MENU_ITEM);
-  return MAKEDWORD(LOWORD(size) + 2 * METRO_INSET, APPBAR_MENU_ITEM);
+  struct Size size = Metro_Measure(pApplicationBarMenuItem->_label, pMeasureOverride->Width, APPBAR_MENU_ITEM);
+  return Layout_Return(pMeasureOverride, size.width + 2 * METRO_INSET, APPBAR_MENU_ITEM);
 }
 
 HANDLER(ApplicationBarMenuItem, Node2D, ArrangeOverride)
 {
   struct Object *label = pApplicationBarMenuItem->_label;
-  if (!label) return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
-  LRESULT size = Metro_Measure(label, pArrangeOverride->Width, APPBAR_MENU_ITEM);
+  if (!label) return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
+  struct Size size = Metro_Measure(label, pArrangeOverride->Width, APPBAR_MENU_ITEM);
   Metro_Arrange(label, pArrangeOverride->X + METRO_INSET,
-    pArrangeOverride->Y + (pArrangeOverride->Height - HIWORD(size)) / 2,
-    MAX(pArrangeOverride->Width - 2 * METRO_INSET, 0), HIWORD(size));
-  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+    pArrangeOverride->Y + (pArrangeOverride->Height - size.height) / 2,
+    MAX(pArrangeOverride->Width - 2 * METRO_INSET, 0), size.height);
+  return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
 HANDLER(ApplicationBarMenuItem, Node, LeftButtonUp)

@@ -190,7 +190,10 @@ _SplitSelectorPseudo(lpcString_t selector,
   lpcString_t colon = strchr(selector, ':');
   if (!colon) {
     if (baseOut && baseOutSize) {
-      snprintf(baseOut, baseOutSize, "%s", selector);
+      size_t len = strlen(selector);
+      if (len >= baseOutSize) len = baseOutSize - 1;
+      memcpy(baseOut, selector, len);
+      baseOut[len] = '\0';
     }
     return;
   }

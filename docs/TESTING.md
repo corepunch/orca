@@ -68,6 +68,29 @@ run only when the user explicitly requests them. Never start them as an
 automatic follow-up to an edit, build, deployment, or offline test. See the
 [live test guide](../apps/chat/backend/appwrite/live/README.md).
 
+## Long chat and feed views
+
+Use the XML build and deterministic offline data to exercise real Chat message
+rows and Octopus post cards, including retained row identity, paging, refresh,
+scroll position and visibility at the end of the feed:
+
+```bash
+make unite                    # after native changes or when the binary is missing
+make test-view-stress          # 1,000 messages and 1,000 post cards
+make test-chat-stress CHAT_STRESS_ROWS=2000
+make test-octopus-stress OCTOPUS_STRESS_ROWS=2000
+```
+
+Octopus row counts must be multiples of 20. These tests use local providers and
+never contact a service or download images. They print CPU timings; correctness
+and work bounds are asserted instead of machine-dependent time limits. The
+existing binary is reused by the stress targets. `make test-headless` includes
+smaller 100-row app fixtures and the fast shared visibility/large-layout checks.
+
+These lists retain every loaded native row. The tests measure that cost and
+protect incremental updates; they do not establish bounded memory usage for an
+unbounded history or device frame rates.
+
 ## String property ownership
 
 Run the focused allocation and binding suites with:

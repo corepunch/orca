@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include "metro.h"
 
 // Panorama layout, after the Windows Phone 8 Panorama template.
@@ -156,20 +157,20 @@ HANDLER(Panorama, Node2D, MeasureOverride)
   struct Object *items[PANORAMA_MAX_ITEMS];
   int count = Panorama_Sync(hObject, pPanorama, items);
   float itemWidth = pMeasureOverride->Width * PANORAMA_ITEM_WIDTH;
-  float top = HIWORD(Metro_Measure(pPanorama->_title, 4096, 4096)) + PANORAMA_TITLE_TOP, height = 0;
+  float top = (Metro_Measure(pPanorama->_title, 4096, 4096)).height + PANORAMA_TITLE_TOP, height = 0;
   for (int i = 0; i < count; i++) {
-    float header = HIWORD(Metro_Measure(GetPanoramaItem(items[i])->_header, 4096, 4096));
+    float header = (Metro_Measure(GetPanoramaItem(items[i])->_header, 4096, 4096)).height;
     struct PanoramaItem *item = GetPanoramaItem(items[i]);
-    LRESULT size = Metro_Measure(items[i], item->Orientation == kDirectionHorizontal ? INFINITY : MAX(itemWidth - METRO_INSET, 0),
+    struct Size size = Metro_Measure(items[i], item->Orientation == kDirectionHorizontal ? INFINITY : MAX(itemWidth - METRO_INSET, 0),
       MAX(pMeasureOverride->Height - top - header, 0));
-    item->_width = item->Orientation == kDirectionHorizontal ? MAX(itemWidth, LOWORD(size) + METRO_INSET) : itemWidth;
+    item->_width = item->Orientation == kDirectionHorizontal ? MAX(itemWidth, size.width + METRO_INSET) : itemWidth;
     // Once its natural width is known, wrapping and aspect ratios use that width.
     if (item->Orientation == kDirectionHorizontal)
       size = Metro_Measure(items[i], MAX(item->_width - METRO_INSET, 0),
         MAX(pMeasureOverride->Height - top - header, 0));
-    height = MAX(height, header + PANORAMA_HEADER_TOP + PANORAMA_CONTENT_TOP + HIWORD(size));
+    height = MAX(height, header + PANORAMA_HEADER_TOP + PANORAMA_CONTENT_TOP + size.height);
   }
-  return MAKEDWORD(pMeasureOverride->Width, top + height);
+  return Layout_Return(pMeasureOverride, pMeasureOverride->Width, top + height);
 }
 
 HANDLER(Panorama, Node2D, ArrangeOverride)
@@ -185,14 +186,14 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
     Panorama_End(items[pPanorama->SelectedIndex], w));
 
   // The title scrolls through its overflow more slowly than the sections.
-  LRESULT title = Metro_Measure(pPanorama->_title, 4096, 4096);
-  float travel = MAX(LOWORD(title) - w * PANORAMA_PARALLAX, 0);
+  struct Size title = Metro_Measure(pPanorama->_title, 4096, 4096);
+  float travel = MAX(title.width - w * PANORAMA_PARALLAX, 0);
   float range = count ? MAX(total - MIN(Panorama_Width(items[count - 1], w), w), 0) : 0;
   float position = range > 0 ? (selected + pPanorama->_sectionOffset - offset) / range : 0;
   Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * position, y + PANORAMA_TITLE_TOP,
-    LOWORD(title), HIWORD(title));
+    title.width, title.height);
 
-  float top = y + PANORAMA_TITLE_TOP + HIWORD(title);
+  float top = y + PANORAMA_TITLE_TOP + title.height;
   for (int i = 0; i < count; i++) {
     struct Object *header = GetPanoramaItem(items[i])->_header;
     float distance = Panorama_Position(items, count, i, w) - selected;
@@ -208,12 +209,12 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
     Metro_Show(header, near, 1);
     Metro_Show(items[i], near, 1);
     if (!near) continue;
-    LRESULT size = Metro_Measure(header, 4096, 4096);
-    Metro_Arrange(header, x + left, top + PANORAMA_HEADER_TOP, LOWORD(size), HIWORD(size));
-    float contentY = top + PANORAMA_HEADER_TOP + HIWORD(size) + PANORAMA_CONTENT_TOP;
+    struct Size size = Metro_Measure(header, 4096, 4096);
+    Metro_Arrange(header, x + left, top + PANORAMA_HEADER_TOP, size.width, size.height);
+    float contentY = top + PANORAMA_HEADER_TOP + size.height + PANORAMA_CONTENT_TOP;
     Metro_Arrange(items[i], x + left, contentY, contentWidth, MAX(y + h - contentY, 0));
   }
-  return MAKEDWORD(w, h);
+  return Layout_Return(pArrangeOverride, w, h);
 }
 
 HANDLER(Panorama, Node, LeftButtonDown)

@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <source/core/animation.h>
 #include <include/api.h>
 #include <include/orca.h>
@@ -893,7 +894,7 @@ HANDLER(Node2D, Node2D, Measure)
   float avail[2] = { _MeasureAxis(n, space[0], 0), _MeasureAxis(n, space[1], 1) };
   bool_t const aspect = _HasAspectRatio(n, avail[0]);
   if (aspect) avail[1] = avail[0] / n->AspectRatio;
-  LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
+  struct Size size = Layout_MeasureOverride(hObject,
     .Width  = avail[0] - TOTAL_PADDING(n, 0),
     .Height = avail[1] - TOTAL_PADDING(n, 1),
   );
@@ -901,31 +902,31 @@ HANDLER(Node2D, Node2D, Measure)
   // measured again within it, so wrapping text reports its wrapped height.
   bool_t clamp = FALSE;
   FOR_LOOP(i, 2) {
-    float content = (i ? HIWORD(size) : LOWORD(size)) + TOTAL_PADDING(n, i);
+    float content = (i ? size.height : size.width) + TOTAL_PADDING(n, i);
     if (isinf(avail[i]) && !isinf(space[i]) && content > space[i]) {
       avail[i] = space[i];
       clamp = TRUE;
     }
   }
   if (clamp) {
-    size = _SendMessage(hObject, Node2D, MeasureOverride,
+    size = Layout_MeasureOverride(hObject,
       .Width  = avail[0] - TOTAL_PADDING(n, 0),
       .Height = avail[1] - TOTAL_PADDING(n, 1),
     );
   }
   if (isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
-    NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size) + TOTAL_PADDING(n, 0);
+    NODE2D_FRAME(n, Size, 0).Desired = size.width + TOTAL_PADDING(n, 0);
   } else {
     NODE2D_FRAME(n, Size, 0).Desired = NODE2D_FRAME(n, Size, 0).Requested;
   }
   if (aspect) {
     NODE2D_FRAME(n, Size, 1).Desired = avail[1];
   } else if (isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
-    NODE2D_FRAME(n, Size, 1).Desired = HIWORD(size) + TOTAL_PADDING(n, 1);
+    NODE2D_FRAME(n, Size, 1).Desired = size.height + TOTAL_PADDING(n, 1);
   } else {
     NODE2D_FRAME(n, Size, 1).Desired = NODE2D_FRAME(n, Size, 1).Requested;
   }
-  return MAKEDWORD(NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
+  return Layout_Return(pMeasure, NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
                    NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1));
 }
 
@@ -971,7 +972,7 @@ HANDLER(Node2D, Node2D, Arrange)
   Node2D_InheritSafeArea(hObject, n);
   struct vec2 inset = Node2D_AdjustContentInset(hObject, n);
 
-  LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
+  struct Size size = Layout_ArrangeOverride(hObject,
     .X      = PADDING_TOP(n, 0),
     .Y      = PADDING_TOP(n, 1) + inset.x,
     .Width  = rect.width  - TOTAL_PADDING(n, 0),
@@ -979,8 +980,8 @@ HANDLER(Node2D, Node2D, Arrange)
   );
 
   // Final frame is the outer rect (including padding, excluding margin)
-  Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
-  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1) + inset.x + inset.y);
+  Node2D_SetFrame(n, kBox3FieldWidth,  size.width + TOTAL_PADDING(n, 0));
+  Node2D_SetFrame(n, kBox3FieldHeight, size.height + TOTAL_PADDING(n, 1) + inset.x + inset.y);
   if (inset.y > 0) {
     float scroll = n->_node->Size.Axis[1].Scroll + inset.y;
     struct Property *property = OBJ_FindLongProperty(hObject, ID_Node_ScrollHeight);
@@ -995,23 +996,23 @@ HANDLER(Node2D, Node2D, Arrange)
   }
   if (n->Overflow.y == kOverflowScroll && !n->_scrollTracking) Node2D_RevealFocus(hObject, n, visibleBottom);
 
-  return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
+  return Layout_Return(pArrange, rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
 
 HANDLER(Node2D, Node2D, MeasureOverride)
 {
-  uint16_t width = 0, height = 0;
+  float width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
     // Docked bars take their content's height, like an auto row.
     struct Node2D *child = GetNode2D(hChild);
     bool_t docked = child && child->SafeAreaEdge != kSafeAreaEdgeNone;
-    uint32_t size = (uint32_t)_SendMessage(hChild, Node2D, Measure,
+    struct Size size = Layout_Measure(hChild,
                                            .Width = pMeasureOverride->Width,
                                            .Height = docked ? INFINITY : pMeasureOverride->Height);
-    width  = MAX(width,  LOWORD(size));
-    height = MAX(height, HIWORD(size));
+    width  = MAX(width,  size.width);
+    height = MAX(height, size.height);
   }
-  return MAKEDWORD(isinf(pMeasureOverride->Width)  ? width  : 0,
+  return Layout_Return(pMeasureOverride, isinf(pMeasureOverride->Width)  ? width  : 0,
                    isinf(pMeasureOverride->Height) ? height : 0);
 }
 
@@ -1039,7 +1040,7 @@ Node2D_ArrangeBars(struct Object *hObject, struct Node2D *pNode2D,
     float size = NODE2D_FRAME(child, Size, 1).Desired + TOTAL_MARGIN(child, 1);
     if (child->ContentInsetAdjustment == kContentInsetAdjustmentAlways && !docked[!atTop])
       size += atTop ? system.x : system.y;
-    _SendMessage(hChild, Node2D, Arrange,
+    Layout_Arrange(hChild,
                  .X = pArrangeOverride->X,
                  .Y = atTop ? top : bottom - size,
                  .Width = pArrangeOverride->Width,
@@ -1063,7 +1064,7 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
   FOR_EACH_OBJECT(hChild, hObject) {
     struct Node2D *child = GetNode2D(hChild);
     if (child && child->SafeAreaEdge != kSafeAreaEdgeNone && !OBJ_IsHidden(hChild)) continue;
-    _SendMessage(hChild, Node2D, Arrange,
+    Layout_Arrange(hChild,
                  .X = pArrangeOverride->X,
                  .Y = pArrangeOverride->Y,
                  .Width = pArrangeOverride->Width,
@@ -1080,7 +1081,7 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
   pNode2D->_node->Size.Axis[0].Scroll = scroll[0];
   pNode2D->_node->Size.Axis[1].Scroll = scroll[1];
 
-  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+  return Layout_Return(pArrangeOverride, pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
 HANDLER(Node2D, Node2D, SetScrollTop)

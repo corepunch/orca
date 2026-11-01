@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include "metro.h"
 
 // Pivot layout, after the Windows Phone 8 Pivot template.
@@ -42,7 +43,7 @@ Pivot_HeaderFor(struct Object *hObject, struct Object *item)
 static float
 Pivot_Width(struct Object *o)
 {
-  return LOWORD(Metro_Measure(o, 4096, 4096));
+  return (Metro_Measure(o, 4096, 4096)).width;
 }
 
 // Creates the title and one header per PivotItem, drops stale headers and
@@ -260,20 +261,20 @@ HANDLER(Pivot, Node2D, MeasureOverride)
 {
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Sync(hObject, pPivot, items);
-  LRESULT title = Metro_Measure(pPivot->_title, pMeasureOverride->Width, pMeasureOverride->Height);
-  float top = PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0, width = 0, height = 0;
+  struct Size title = Metro_Measure(pPivot->_title, pMeasureOverride->Width, pMeasureOverride->Height);
+  float top = PIVOT_TITLE_TOP + title.height + PIVOT_HEADER_TOP, strip = 0, width = 0, height = 0;
   for (int i = 0; i < count; i++) {
-    LRESULT size = Metro_Measure(Pivot_HeaderFor(hObject, items[i]), 4096, 4096);
-    strip = MAX(strip, HIWORD(size));
+    struct Size size = Metro_Measure(Pivot_HeaderFor(hObject, items[i]), 4096, 4096);
+    strip = MAX(strip, size.height);
   }
   top += strip + PIVOT_CONTENT_TOP;
   if (count) {
-    LRESULT size = Metro_Measure(items[pPivot->SelectedIndex],
+    struct Size size = Metro_Measure(items[pPivot->SelectedIndex],
       MAX(pMeasureOverride->Width - 2 * METRO_INSET, 0), MAX(pMeasureOverride->Height - top, 0));
-    width = LOWORD(size) + 2 * METRO_INSET;
-    height = HIWORD(size);
+    width = size.width + 2 * METRO_INSET;
+    height = size.height;
   }
-  return MAKEDWORD(width, top + height);
+  return Layout_Return(pMeasureOverride, width, top + height);
 }
 
 HANDLER(Pivot, Node2D, ArrangeOverride)
@@ -287,7 +288,7 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   struct Node2D *node = GetNode2D(hObject);
   float top = MAX(y, node->_safeArea.x);
   struct Object *headers[PIVOT_MAX_ITEMS], *copies[PIVOT_MAX_ITEMS];
-  LRESULT sizes[PIVOT_MAX_ITEMS];
+  struct Size sizes[PIVOT_MAX_ITEMS];
   int copyCount = 0;
   // Keep metrics local to this pass so text, style and viewport changes still
   // remeasure, while repeated labels reuse their source header's metrics.
@@ -300,18 +301,18 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     if (header && header->_repeat && copyCount < PIVOT_MAX_ITEMS) copies[copyCount++] = child;
   }
 
-  LRESULT title = Metro_Measure(pPivot->_title, w, h);
+  struct Size title = Metro_Measure(pPivot->_title, w, h);
   bool_t back = pPivot->_back && GetNode(pPivot->_back)->Visible;
   float titleX = x + METRO_INSET + (back ? PIVOT_BACK_RING + PIVOT_BACK_GAP : 0);
-  Metro_Arrange(pPivot->_title, titleX, top + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
-  float stripY = top + PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0;
+  Metro_Arrange(pPivot->_title, titleX, top + PIVOT_TITLE_TOP, title.width, title.height);
+  float stripY = top + PIVOT_TITLE_TOP + title.height + PIVOT_HEADER_TOP, strip = 0;
   if (back) {
     // The whole title line, up through the status bar, is the back button.
     // The ring is centred on the title line and may reach into the gaps
     // above and below it, so the page's metrics stay the same.
-    float right = MAX(titleX + LOWORD(title) + METRO_INSET, x + PIVOT_BACK_MIN);
+    float right = MAX(titleX + title.width + METRO_INSET, x + PIVOT_BACK_MIN);
     float bottom = MAX(stripY, top + PIVOT_BACK_MIN);
-    float ringX = METRO_INSET, ringY = top - y + PIVOT_TITLE_TOP + (HIWORD(title) - PIVOT_BACK_RING) / 2;
+    float ringX = METRO_INSET, ringY = top - y + PIVOT_TITLE_TOP + (title.height - PIVOT_BACK_RING) / 2;
     Metro_Arrange(pPivot->_back, x, y, right - x, bottom - y);
     Metro_Measure(pPivot->_backRing, PIVOT_BACK_RING, PIVOT_BACK_RING);
     Metro_Arrange(pPivot->_backRing, ringX, ringY, PIVOT_BACK_RING, PIVOT_BACK_RING);
@@ -324,10 +325,10 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   float hx = x + METRO_INSET + pPivot->_headerFrom * settle + pPivot->_dragX * 0.3f;
   for (int k = 0; k < count; k++) {
     int index = (pPivot->SelectedIndex + k) % count;
-    LRESULT size = sizes[index];
-    Metro_Arrange(headers[index], hx, stripY, LOWORD(size), HIWORD(size));
-    hx += LOWORD(size) + PIVOT_HEADER_SPACING;
-    strip = MAX(strip, HIWORD(size));
+    struct Size size = sizes[index];
+    Metro_Arrange(headers[index], hx, stripY, size.width, size.height);
+    hx += size.width + PIVOT_HEADER_SPACING;
+    strip = MAX(strip, size.height);
   }
 
   // Short strips keep cycling, dimmed, until they reach the right edge. Copies
@@ -336,8 +337,8 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   for (int k = 0; !pPivot->IsLocked && count && hx < x + w && repeats < PIVOT_MAX_ITEMS; k++) {
     int index = (pPivot->SelectedIndex + k) % count;
     struct Object *item = items[index];
-    LRESULT size = sizes[index];
-    if (LOWORD(size) == 0) break;
+    struct Size size = sizes[index];
+    if (size.width == 0) break;
     struct Object *copy = repeats < copyCount ? copies[repeats] :
       Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
     if (!copy) break;
@@ -351,8 +352,8 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     Metro_SetText(copy, GetPivotItem(item)->Header, tolower);
     Metro_Show(copy, TRUE, METRO_DIM);
     Metro_Measure(copy, 4096, 4096);
-    Metro_Arrange(copy, hx, stripY, LOWORD(size), HIWORD(size));
-    hx += LOWORD(size) + PIVOT_HEADER_SPACING;
+    Metro_Arrange(copy, hx, stripY, size.width, size.height);
+    hx += size.width + PIVOT_HEADER_SPACING;
   }
   // Keep spare copies as the moving strip crosses the edge; locking drops them.
   for (int i = repeats; i < copyCount; i++) {
@@ -373,7 +374,7 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
       x + METRO_INSET + pPivot->_contentFrom * settle + pPivot->_dragX, bodyY,
       MAX(w - 2 * METRO_INSET, 0), MAX(y + h - bodyY, 0));
   }
-  return MAKEDWORD(w, h);
+  return Layout_Return(pArrangeOverride, w, h);
 }
 
 static bool_t

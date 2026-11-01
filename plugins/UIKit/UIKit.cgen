@@ -501,6 +501,8 @@
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
+            <field name="ResultWidth" type="float">Synchronous output width, including margins for Measure and excluding padding for MeasureOverride. UIKit layout helpers initialize this to NaN and fall back to the legacy packed return when unset. Queued messages and event snapshots do not return this output.</field>
+            <field name="ResultHeight" type="float">Synchronous output height, with the same contract as ResultWidth. Set both output fields in custom native layout handlers to support extents beyond 65535 points.</field>
           </fields>
         </message>
         <message name="Arrange">
@@ -510,6 +512,8 @@
             <field name="Y" type="float"/>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
+            <field name="ResultWidth" type="float">Synchronous output arranged width, including margins for Arrange and excluding padding for ArrangeOverride. UIKit layout helpers initialize this to NaN and fall back to the legacy packed return when unset. Queued messages and event snapshots do not return this output.</field>
+            <field name="ResultHeight" type="float">Synchronous output arranged height, with the same contract as ResultWidth. Set both output fields in custom native layout handlers to support extents beyond 65535 points.</field>
           </fields>
         </message>
         <message name="MeasureOverride" same-as="Measure">

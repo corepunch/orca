@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/orca.h>
 
 #include <source/filesystem/theme_palette.h>
@@ -290,7 +291,7 @@ HANDLER(Input, Node, TextInput)
 HANDLER(Input, Node2D, MeasureOverride)
 {
   if (pInput->Type == kInputTypeCheckbox) {
-    return MAKEDWORD(16, 16);
+    return Layout_Return(pMeasureOverride, 16, 16);
   } else {
     return 0; // Pass through to TextBlock
   }

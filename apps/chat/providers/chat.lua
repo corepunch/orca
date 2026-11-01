@@ -319,6 +319,11 @@ function Provider.new(context)
     }
     -- Sender runs, permissions and photo timestamps over the whole thread:
     -- they depend on neighbours, so a page of history changes them too.
+    local function updateDecoration(store, record, fields)
+        for name, value in pairs(fields) do
+            if record.values[name] ~= value then return store:update(record, fields) end
+        end
+    end
     local function layoutThread(query, records)
         local session = client:getSession()
         local room = context.room()
@@ -335,19 +340,21 @@ function Provider.new(context)
                 local sender = room.kind == "channel" and room.name
                     or person and person.Title or "Member " .. tostring(values.SenderId or ""):sub(1, 8)
                 local own = values.SenderId == me
-                store:update(record, { Mine = mine, Leading = index == 1, Group = room.kind == "group", Sender = sender,
+                local photos = record.children.Attachments or {}
+                local album = #photos > 0 and PhotoLayout.arrange(#photos, PHOTO_WIDTH, 2,
+                    photoHeight(photos[1].values)) or nil
+                -- Polls retain all loaded history. Recomputing every message's
+                -- projections here made a tiny newest-page refresh grow with it.
+                updateDecoration(store, record, { Mine = mine, Leading = index == 1, Group = room.kind == "group", Sender = sender,
                     First = not previous or previous.values.SenderId ~= values.SenderId,
                     Last = not following or following.values.SenderId ~= values.SenderId,
-                    CanEdit = own and room.can_post ~= false, CanDelete = own or (room.kind ~= "direct" and staff) })
-                local photos = record.children.Attachments or {}
+                    CanEdit = own and room.can_post ~= false, CanDelete = own or (room.kind ~= "direct" and staff),
+                    AlbumHeight = album and album.height or 0 })
                 local showSender = room.kind == "group" and not mine
                     and (not previous or previous.values.SenderId ~= values.SenderId)
-                local album = PhotoLayout.arrange(#photos, PHOTO_WIDTH, 2,
-                    photos[1] and photoHeight(photos[1].values))
-                store:update(record, { AlbumHeight = album.height })
                 for position, photo in ipairs(photos) do
                     local tile = album.tiles[position]
-                    store:update(photo, { ShowTime = not values.HasBody and position == #photos,
+                    updateDecoration(store, photo, { ShowTime = not values.HasBody and position == #photos,
                         Timestamp = values.Timestamp, RetryLabel = #photos > 1 and "retry" or "photo unavailable · retry",
                         FrameWidth = tile.width, FrameHeight = tile.height,
                         FrameLeft = tile.x, FrameTop = tile.y,

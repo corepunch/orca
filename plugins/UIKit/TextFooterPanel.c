@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -28,11 +29,11 @@ _FooterLayout(struct Object *hObject, struct TextFooterPanel *pPanel, float widt
   struct footer_layout l = { 0 };
   FOR_EACH_LAYOUTABLE(c, hObject) { if (l.footer && !l.text) l.text = l.footer; l.footer = c; }
   if (!l.footer) return l;
-  LRESULT s = _SendMessage(l.footer, Node2D, Measure, width, height);
-  l.footerSize = (struct Size){ LOWORD(s), HIWORD(s) };
+  struct Size s = Layout_Measure(l.footer, width, height);
+  l.footerSize = (struct Size){ s.width, s.height };
   if (!l.text) return l.size = l.footerSize, l;
-  s = _SendMessage(l.text, Node2D, Measure, width, height);
-  l.textSize = (struct Size){ LOWORD(s), HIWORD(s) };
+  s = Layout_Measure(l.text, width, height);
+  l.textSize = (struct Size){ s.width, s.height };
   float const sharedWidth = _LastLineEnd(l.text, l.textSize.width) + pPanel->Spacing + l.footerSize.width;
   l.shared = sharedWidth <= width;
   l.size = l.shared
@@ -44,7 +45,7 @@ _FooterLayout(struct Object *hObject, struct TextFooterPanel *pPanel, float widt
 HANDLER(TextFooterPanel, Node2D, MeasureOverride)
 {
   struct footer_layout l = _FooterLayout(hObject, pTextFooterPanel, pMeasureOverride->Width, pMeasureOverride->Height);
-  return MAKEDWORD(l.size.width, l.size.height);
+  return Layout_Return(pMeasureOverride, l.size.width, l.size.height);
 }
 
 HANDLER(TextFooterPanel, Node2D, ArrangeOverride)
@@ -54,12 +55,12 @@ HANDLER(TextFooterPanel, Node2D, ArrangeOverride)
   struct footer_layout l = _FooterLayout(hObject, pTextFooterPanel, r.Width, r.Height);
   if (l.text) {
     float const textHeight = l.shared ? r.Height : MAX(0, r.Height - l.footerSize.height);
-    _SendMessage(l.text, Node2D, Arrange, r.X, r.Y, r.Width, MIN(l.textSize.height, textHeight));
+    Layout_Arrange(l.text, r.X, r.Y, r.Width, MIN(l.textSize.height, textHeight));
   }
   if (l.footer) {
-    _SendMessage(l.footer, Node2D, Arrange,
+    Layout_Arrange(l.footer,
                  r.X + r.Width - l.footerSize.width, r.Y + r.Height - l.footerSize.height,
                  l.footerSize.width, l.footerSize.height);
   }
-  return MAKEDWORD(r.Width, r.Height);
+  return Layout_Return(pArrangeOverride, r.Width, r.Height);
 }

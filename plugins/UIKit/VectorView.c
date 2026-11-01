@@ -1,3 +1,4 @@
+#include "Layout.h"
 #include <UIKit/UIKit.h>
 
 #include <include/api.h>
@@ -161,34 +162,35 @@ HANDLER(VectorView, Node2D, MeasureOverride)
       float avail_h = isinf(pMeasureOverride->Height) ? size.y : pMeasureOverride->Height;
       struct rect avail = {0, 0, avail_w, avail_h};
       struct rect final = RECT_Fit(&avail, &size);
-      return MAKEDWORD(final.width, final.height);
+      return Layout_Return(pMeasureOverride, final.width, final.height);
     } else {
       float avail_w = isinf(pMeasureOverride->Width)  ? 0 : pMeasureOverride->Width;
       float avail_h = isinf(pMeasureOverride->Height) ? 0 : pMeasureOverride->Height;
-      return MAKEDWORD(avail_w, avail_h);
+      return Layout_Return(pMeasureOverride, avail_w, avail_h);
     }
   } else {
     float w = isinf(pMeasureOverride->Width)  ? 0 : pMeasureOverride->Width;
     float h = isinf(pMeasureOverride->Height) ? 0 : pMeasureOverride->Height;
-    return MAKEDWORD(w, h);
+    return Layout_Return(pMeasureOverride, w, h);
   }
 }
 
 HANDLER(VectorView, Node2D, ArrangeOverride)
 {
-  LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
+  struct Size size = Layout_MeasureOverride(hObject,
                               .Width = pArrangeOverride->Width,
                               .Height = pArrangeOverride->Height);
   struct Texture *texture = pVectorView->_texture;
-  if (!texture || pVectorView->_width <= 0 || pVectorView->_height <= 0) return size;
+  if (!texture || pVectorView->_width <= 0 || pVectorView->_height <= 0)
+    return Layout_Return(pArrangeOverride, size.width, size.height);
   // Fill modes may stretch one axis further; match the larger so it never magnifies.
-  float fit = MAX(LOWORD(size) / pVectorView->_width, HIWORD(size) / pVectorView->_height);
+  float fit = MAX(size.width / pVectorView->_width, size.height / pVectorView->_height);
   uint32_t scale = axGetScaling();
   if (fit > 0 && (int)ceilf(pVectorView->_width * fit * scale) / (int)scale != texture->Width) {
     _VectorView_ReleaseTexture(pVectorView);
     _VectorView_LoadSvg(pVectorView, fit);
   }
-  return size;
+  return Layout_Return(pArrangeOverride, size.width, size.height);
 }
 
 HANDLER(VectorView, Node2D, ForegroundContent)
