@@ -71,6 +71,7 @@ local App = Application:extend {
         if self.remote and self.client and self.client.mode == "appwrite" then
             self.push = require("Chat/push").new(self, config, options.push)
         end
+        if self.client then self.signin = require("Chat/signin").new(self, options.signin) end
     end,
 
     resetSessionViews = function(self)
@@ -245,6 +246,7 @@ local App = Application:extend {
         self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
         if self.push then self.push:activate() end
+        if self.signin then self.signin:activate() end
         return result
     end,
 
@@ -712,6 +714,8 @@ local App = Application:extend {
     ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,
     ["/auth/code"] = function(self) return Identity.auth(self, "code") end,
     ["/auth/options"] = function(self) return Identity.auth(self, "options") end,
+    ["/auth/magic"] = function(self) return Identity.auth(self, "magic") end,
+    ["/auth/magic-sent"] = function(self) return Identity.auth(self, "magic-sent") end,
 
     -- Follow an OS appearance change. Views take palette colours from CSS roles
     -- under the Screen's StateClasses, so replacing them restyles every built
@@ -733,6 +737,7 @@ local App = Application:extend {
             if message:is("Window.Closed") then
                 self:closePages()
                 if self.push then self.push:suspend() end
+                if self.signin then self.signin:suspend() end
                 async.set_error_handler(nil)
                 return
             end

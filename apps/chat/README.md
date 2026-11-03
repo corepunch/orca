@@ -258,7 +258,8 @@ server route handlers and domain services each have a separate owner.
 
 `make chat` connects to the Octopus Appwrite project from [config.lua](config.lua).
 
-Sign in with an email verification code or password. On New chat, choose a
+Sign in with an email code, an emailed sign-in link, Sign in with Apple (iOS
+and macOS) or email and password. On New chat, choose a
 known contact or find an exact username or discoverable email.
 Choose Direct, Group, or Channel; group/channel creators become owners and can
 manage members and invitations. Public channels support search and subscription.

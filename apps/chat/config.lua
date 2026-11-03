@@ -6,4 +6,7 @@ return {
     -- Octopus production APNs provider for App Store / TestFlight builds.
     pushProviderId = os.getenv("APPWRITE_PUSH_PROVIDER_ID") or "6ae23f3b0014b18bf3dd",
     functionId = os.getenv("APPWRITE_CHAT_FUNCTION_ID") or "orca-chat-api",
+    -- Optional https page that forwards emailed sign-in links to the app's
+    -- appwrite-callback scheme; email clients may not open custom-scheme links.
+    magicLinkUrl = os.getenv("CHAT_MAGIC_LINK_URL"),
 }

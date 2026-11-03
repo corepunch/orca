@@ -106,6 +106,36 @@ for _, identity in ipairs { { value = "YOU@example.test", normalized = "you@exam
 end
 client, requests = backend {}
 check(not client:requestCode("+49 (151) 1234-5678") and #requests == 0, "Sign-in sends no SMS codes")
+
+-- Magic links and provider pages return to the per-project callback scheme.
+client, requests = backend { { status = 201, body = { userId = "user.with_underscore", secret = "" } } }
+check(client:requestMagicLink("YOU@example.test") ~= nil and not client:getSession(), "Requesting a magic link must not create a session")
+local magicBody = json.decode(requests[1].body)
+check(requests[1].url == endpoint .. "/account/tokens/magic-url" and magicBody.email == "you@example.test"
+  and magicBody.url == "appwrite-callback-69f1c06800389dc6a1a0://magic" and magicBody.userId == "unique()",
+  "Magic links use Appwrite's token route and return to the app's scheme")
+client, requests = backend {}
+local page = assert(client:authorizeProvider("google"))
+check(#requests == 0 and page.scheme == "appwrite-callback-69f1c06800389dc6a1a0"
+  and page.url == endpoint .. "/account/tokens/oauth2/google?project=69f1c06800389dc6a1a0"
+    .. "&success=appwrite-callback-69f1c06800389dc6a1a0%3A%2F%2Foauth&failure=appwrite-callback-69f1c06800389dc6a1a0%3A%2F%2Foauth",
+  "Provider pages are Appwrite's OAuth2 token route, built without a request")
+client, requests = backend(signedIn())
+check(client:completeSignInLink("appwrite-callback-69f1c06800389dc6a1a0://magic?userId=user.with_underscore&secret=s%2Bcret") ~= nil
+  and client:getSession().user.id == "user.with_underscore", "A returned link establishes the Account session")
+check(requests[1].url == endpoint .. "/account/sessions/token" and json.decode(requests[1].body).secret == "s+cret",
+  "Link completion sends the decoded userId and secret")
+local magicOptions = { endpoint = endpoint, projectId = "69f1c06800389dc6a1a0", functionId = "orca-chat-api",
+  magicLinkUrl = "http://example.test/link", transport = function() error("unused") end }
+check(select(2, Chat.appwrite(magicOptions)).code == "configuration", "A forwarding page must use https")
+local forwarded
+magicOptions.magicLinkUrl, magicOptions.transport = "https://link.example.test/chat", function(request)
+  forwarded = json.decode(request.body).url
+  return { status = 201, body = { userId = "user.with_underscore", secret = "" } }
+end
+assert(assert(Chat.appwrite(magicOptions)):requestMagicLink("you@example.test"))
+check(forwarded == "https://link.example.test/chat", "A configured https page receives the emailed link")
+client, requests = backend {}
 local value, err = client:verifyCode("you@example.test", "123456")
 check(not value and err.code == "verification_missing" and #requests == 0, "OTP verification requires this client's pending challenge")
 

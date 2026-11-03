@@ -284,6 +284,32 @@ cleared even if native session revocation encounters a network failure. Backend
 deployment and database availability do not participate in those Account
 operations.
 
+### Magic links and Sign in with Apple
+
+Both use Appwrite's token flow and need no Function changes. The app opens
+`/account/tokens/oauth2/apple` (Google follows the same route) in a private
+browser session, `ASWebAuthenticationSession` on iOS and macOS; an emailed link
+comes from `/account/tokens/magic-url`. Each returns `userId` and `secret` to
+`appwrite-callback-<PROJECT_ID>://`, which the app exchanges at
+`/account/sessions/token`. One-time console setup:
+
+1. **Platforms:** add an Apple platform for each bundle identifier that runs the
+   app (for example `org.orca.chat`). Appwrite accepts the
+   `appwrite-callback-<PROJECT_ID>` scheme only for registered platforms. The
+   scheme is listed in `apps/chat/package.lua` (`URLSchemes`) and the packagers
+   add it to the bundle's `CFBundleURLTypes`.
+2. **Magic URL:** enable *Auth → Settings → Magic URL*. Email clients may not
+   open custom-scheme links, so publish [`backend/link/index.html`](../link/index.html)
+   on https (for example as an Appwrite Site), add its host as a Web platform and
+   set `CHAT_MAGIC_LINK_URL` to its address. The page forwards `userId` and
+   `secret` to the app and removes them from browser history. Without the
+   variable the email links straight to the app scheme.
+3. **Apple:** in Apple Developer, create a Services ID with *Sign in with Apple*
+   and the return URL Appwrite shows, plus a Sign in with Apple key. Enter the
+   Services ID, key ID, team ID and `.p8` key under *Auth → Settings → Apple*.
+
+The browser session shares no cookies with Safari, so each sign-in starts clean.
+
 Password-only accounts may initially have an unverified email; self profiles
 expose email/phone only when Appwrite marks them verified. Public profiles
 contain only ID, display name, handle and avatar ID. The function verifies the calling

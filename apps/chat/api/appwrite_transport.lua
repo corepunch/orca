@@ -114,7 +114,7 @@ function M.new(options)
   local endpoint = options.endpoint:gsub("/$", "")
   local authenticate = require("api.appwrite_auth").new {
     endpoint = endpoint, projectId = options.projectId, transport = transport, encode = encode, sessionStore = options.sessionStore,
-    pushStore = options.pushStore, pushProviderId = options.pushProviderId,
+    pushStore = options.pushStore, pushProviderId = options.pushProviderId, magicLinkUrl = options.magicLinkUrl,
   }
   return function(request)
     -- The adapter may only forward this client's relative API paths.

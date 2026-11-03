@@ -222,6 +222,21 @@ The backend lives in the `libs/platform` Git submodule. When committing this
 feature, include its `ios/` sources in that repository and update ORCA's submodule
 revision along with the main repository changes.
 
+### Sign-in links
+
+`orca.signin` opens an https sign-in page in `ASWebAuthenticationSession` and
+queues the redirect to its callback scheme; `poll()` also returns links the
+system opens the app with (`scene:openURLContexts:` on iOS, the `kAEGetURL`
+Apple Event on macOS), including one that launched the app. List the schemes in
+the project's `package.lua`:
+
+```lua
+URLSchemes = { "appwrite-callback-<project id>" }
+```
+
+`tools/ios/bundle.py`, `tools/macos/bundle.py` and the Xcode generator add them
+to `CFBundleURLTypes`. Regenerate the Xcode project after changing the list.
+
 ## Verify
 
 ```sh

@@ -114,7 +114,9 @@ claiming historical fidelity.
   account (user decision, 2026-11-03, replacing Telegram's phone-first entry).
   Each auth form has one primary action and one "Other sign-in options" link,
   after Microsoft Teams' sign-in. That link opens an options page of command
-  rows: email code, email and password, create an account. The code step keeps
+  rows: email code, emailed link, email and password, create an account.
+  Where the platform supports a browser sign-in session, the code form adds
+  outlined "Continue with Apple" under its primary action. The code step keeps
   resend and change-email. The phone number is an optional settings field with
   the phone keypad and a leading `+` and country code.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after

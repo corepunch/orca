@@ -70,6 +70,9 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | --- | --- |
 | `requestCode(email)` | `{identifier,delivery,expires_in,retry_after}`; emails a login/signup OTP |
 | `verifyCode(email,code)` | Session after six-digit OTP verification |
+| `requestMagicLink(email)` | `{identifier,delivery}`; emails a sign-in link that returns to the app |
+| `authorizeProvider(provider)` | `{url,scheme}` for `apple` or `google`: the https page to open in a browser session and its callback scheme |
+| `completeSignInLink(url)` | Session from a returned link's `userId` and `secret`; `invalid_link` or `provider_failed` otherwise |
 | `requestIdentityLink(email)` | Starts a verified email change for the current account |
 | `verifyIdentityLink(identifier,code)` | Verified self profile once the requested identifier is confirmed |
 | `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; `email` is verified, `phone` is the private typed number; message previews default on |
