@@ -22,11 +22,12 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
 
 - The inbox is a `Pivot` titled MESSENGER whose items are the all, unread
   and pinned lists. Swipe the list or tap a header to switch.
-- Every other page is a locked one-item `Pivot`, so its title and page name
-  share the inbox metrics.
+- Task and detail pages use a locked one-item `Pivot`, sharing the inbox
+  title metrics. Contacts uses a People/Pictures-style `Panorama`; branded
+  authentication forms and the immersive photo viewer have their own shells.
 - Commands live in an `ApplicationBar`. On the root pages its round buttons
-  switch between chats, new chat and profile, and its menu holds refresh and
-  sign out. A conversation has no command row, after Windows Phone
+  switch between chats, contacts, new chat and settings, and its menu holds
+  refresh and sign out. A conversation has no command row, after Windows Phone
   Messenger: its title line, a round back button before MESSENGER, goes back,
   as does a swipe in from the left edge, and tapping its name opens the
   conversation info, which goes back the same way and whose bar holds pin.
@@ -41,12 +42,13 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   accent border when focused. Secondary buttons are 2-pixel outlines,
   primary commands are filled with the accent, and links are plain accent
   text.
-- Avatars are square solid-colour tiles with initials, replaced by the
+- Avatars are square tiles with six-point corners and initials, replaced by the
   person's Octopus profile photo in direct chats, member and contact lists and
-  your profile. Message bubbles are square, with
+  your profile. Message bubbles have six-point corners, with
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
-  chats, and text or captioned-photo bubbles have a trailing timestamp row.
+  chats, and text or captioned-photo bubbles place the time at the end of
+  the last text line when it fits, otherwise on a trailing row.
   Up to nine photos fill their bubble in balanced rows, through a 3×3 grid.
   Add photos in selection order and remove individual draft thumbnails before
   sending; completed uploads survive a failed send for retry.

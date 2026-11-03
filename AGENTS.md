@@ -24,6 +24,11 @@ For designing or reviewing screens and components, use the [`orca-ui-design`](.o
 For `apps/chat`, preserve its current Windows Phone / Metro direction. Read
 [Chat design decisions and references](apps/chat/DESIGN.md) for the visual
 baseline, historical sources, and footer/photo-message rules.
+For Windows Phone screen reviews and authoring, use the
+[Windows Phone UI cheatsheet](docs/windows-phone-ui-cheatsheet.md) for
+versioned reference metrics, control choice, padding ownership, and
+Pivot/Panorama guidance. Keep historical requirements, ORCA adaptations,
+and explicit app decisions distinct.
 
 ## Agents and skills
 

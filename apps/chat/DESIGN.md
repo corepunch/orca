@@ -6,6 +6,12 @@ small corners, accent colour, and compact command bars when reviewing or
 extending the app.
 This is a Chat product choice; other ORCA apps may follow different styles.
 
+Use the [Windows Phone UI cheatsheet](../../docs/windows-phone-ui-cheatsheet.md)
+for versioned spacing, alignment, control-choice and Panorama/Pivot guidance.
+The [2 November 2026 screen review](docs/ui-review-2026-11-02.md) records
+coverage, measured findings and follow-up work; it is not a claim that those
+findings have already been fixed.
+
 For authoring and message-list behavior, start with the
 [Windows Phone chat source research](docs/windows-phone-chat-architecture.md).
 It records Telegram's XAML collection bindings, MVVM references, etlua's role,
@@ -84,6 +90,12 @@ claiming historical fidelity.
   leads to Change Number. Sign out is the last command, in the error colour.
   Telegram's centred header, rounded cards, chevrons and separators are not
   adopted; the header stays left-aligned under the Metro page title.
+- The character picker uses four equal square columns, with six-point gaps
+  horizontally and vertically (user decision, 2026-11-02). Its portraits
+  align to the page's 12-point leading edge; the Pivot owns that inset.
+  Each immediate-save action is a borderless Button containing an ImageView.
+  The header Back is sufficient: there is no additional Cancel below the
+  grid. A successful save updates the retained Settings portrait.
 - Appearance follows the OS while Chat runs. Every palette colour, in Lua-built
   and XML views alike, comes from a CSS role under the Screen's
   `chat-light`/`chat-dark` StateClass, and frosted bars follow that palette
