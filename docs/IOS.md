@@ -160,7 +160,23 @@ drawable blocks until the system returns one. On an iPhone 14 Pro Max the
 Octopus feed scrolled at a steady 60 Hz with about 6–7 ms of engine work
 and a 9–10 ms `begin_frame` wait per frame, with or without the frosted-bar
 blur. Removing work therefore does not raise the rate above 60 Hz; it only
-lengthens that wait. Check this line before optimizing layout or rendering
+lengthens that wait.
+
+ORCA stays at 60 Hz with OpenGL ES; going higher needs a Metal presentation
+path. Instruments' Animation Hitches template, attached to the running app,
+measured the frames actually displayed while scrolling the Octopus feed:
+
+| Request | Displayed | CPU to display |
+|---|---|---|
+| 80–120 Hz range (current) | 58.8 fps | 28.8 ms |
+| fixed 120 Hz | 59.5 fps | 28.7 ms |
+| fixed 80 Hz | 77.6 fps | 21.0 ms |
+
+Presenting with `presentRenderbuffer:afterMinimumDuration:` raised the
+profiler's paint rate to 120 while the display skipped frames, which looked
+worse than 60. Count displayed frames with Instruments, not paints. The
+trailing copies seen during a fast fling are sample-and-hold motion, present in
+other apps too; a device screenshot shows a single clean frame. Check this line before optimizing layout or rendering
 for frame rate, and judge app smoothness by the worst `display_gap_ms` as
 well as the average rate. This works with optimized builds and is disabled by
 default. The renderer no longer calls `glGetError` after every GL call; it
