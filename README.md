@@ -350,4 +350,4 @@ For better XML editing experience in VSCode with autocomplete and validation:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. Bundled third-party work (Twemoji, Noto fonts, stb_image, stb_truetype, LZ4 and Lua) is listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. Bundled third-party work (Twemoji, Noto fonts, stb_image, stb_truetype, LZ4, Lua, curl, libxml2 and Mbed TLS) is listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
