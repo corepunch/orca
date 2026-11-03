@@ -745,6 +745,7 @@ local App = Application:extend {
                 if message:is("Window.Deactivated") then scope:setForeground(false)
                 elseif message:is("Window.Activated") then scope:setForeground(true) end
             end
+            if self.signin and message:is("Window.Activated") then async.run(function() self.signin:poll() end) end
             if self.push then
                 if message:is("Window.Deactivated") then self.push:setForeground(false)
                 elseif message:is("Window.Activated") then self.push:setForeground(true) end

@@ -127,10 +127,16 @@ enum TracePhase {
   kTracePhaseLayout,     // measure and arrange
   kTracePhaseRender,     // draw calls
   kTracePhasePresent,    // swap or present
+  kTracePhaseBeginFrame, // bind and clear; blocks until a drawable is free
+  kTracePhaseScrollSync, // native scroll views follow the painted tree (iOS)
   kTracePhaseCount
 };
 ORCA_API void TRACE_Begin(enum TracePhase phase);
 ORCA_API void TRACE_End(enum TracePhase phase);
+// Sums each phase's wall time for frame profiling; off until enabled.
+// Taking the totals in milliseconds resets them.
+ORCA_API void TRACE_EnableTiming(bool_t enable);
+ORCA_API void TRACE_TakeTiming(double out_ms[kTracePhaseCount]);
 
 // Counts of the messages the application loop received, by message and
 // receiver class, for frame profiling; off until enabled.
@@ -138,9 +144,10 @@ struct MessageStat {
   uint32_t message;
   char const *className;   // NULL for messages without a target
   uint32_t count;
+  float totalMs, maxMs;    // time spent dispatching them
 };
 ORCA_API void SV_EnableMessageStats(bool_t enable);
-// Copies up to max entries, most frequent first, and clears the counts.
+// Copies up to max entries, longest total dispatch time first, and clears them.
 ORCA_API int SV_TakeMessageStats(struct MessageStat *out, int max);
 
 #endif

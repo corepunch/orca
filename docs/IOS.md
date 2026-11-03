@@ -143,7 +143,26 @@ display callback rates, paint rates, draw calls and GL calls per paint, frame
 durations and missed display intervals once per second, followed by the
 messages the application loop handled in that second by message and receiver
 class (`[ios messages] Object.Animate(Pivot)=6 ...`), which shows what keeps
-a screen repainting. This works with optimized builds and is disabled by
+a screen repainting. An `[ios phases]` line splits each paint into programs,
+begin_frame, layout, render, scroll_sync and present milliseconds; `other` is
+the rest of the callback, the Lua message handlers and `afterPaint`.
+Each message entry reads `count/total ms/max ms`, heaviest first.
+`ResumeCoroutine` counts a coroutine resumed per callback, such as a request
+waiting for its response; a large max is Lua work after a response that
+blocked one frame. `WindowPaint(-)` is the system paint a finished coroutine
+posts. The queue drops it while any paint is queued, and an application paint
+takes over its place, so one callback draws the single drawable once.
+Paints should equal callbacks while scrolling; more paints than callbacks
+means double-drawn frames.
+
+Read `begin_frame` as waiting, not work: binding and clearing the OpenGL ES
+drawable blocks until the system returns one. On an iPhone 14 Pro Max the
+Octopus feed scrolled at a steady 60 Hz with about 6–7 ms of engine work
+and a 9–10 ms `begin_frame` wait per frame, with or without the frosted-bar
+blur. Removing work therefore does not raise the rate above 60 Hz; it only
+lengthens that wait. Check this line before optimizing layout or rendering
+for frame rate, and judge app smoothness by the worst `display_gap_ms` as
+well as the average rate. This works with optimized builds and is disabled by
 default. The renderer no longer calls `glGetError` after every GL call; it
 reports a frame's error once per second instead, and `ORCA_GL_DEBUG=1`
 restores the per-call check to locate the failing call. For Instruments, profile a Release build on a device (Product >

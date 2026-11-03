@@ -170,6 +170,20 @@ int main(void)
   assert(message.target == NULL && message.wParam == MAKEDWORD(390, 844));
   assert(!axPeekMessage(&message));
 
+  // A finished coroutine's system paint and the application's own paint
+  // draw the one drawable once, whichever is queued first.
+  axPostMessageW(&first, ID_Window_Paint, 10, &new_size);
+  axPostMessageW(NULL, kEventWindowPaint, MAKEDWORD(390, 844), NULL);
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message) && message.message == ID_Window_Paint && message.wParam == 10);
+  assert(!axPeekMessage(&message));
+  axPostMessageW(NULL, kEventWindowPaint, MAKEDWORD(390, 844), NULL);
+  axPostMessageW(&first, ID_Window_Paint, 11, &new_size);
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message) && message.message == ID_Window_Paint && message.target == &first);
+  assert(message.wParam == 11);
+  assert(!axPeekMessage(&message));
+
   axPostMessageW(&first, kEventWindowPaint, 7, NULL);
   axPostMessageW(&first, kEventWindowPaint, 8, NULL);
   axPostMessageW(&second, kEventWindowPaint, 9, NULL);

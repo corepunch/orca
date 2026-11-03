@@ -2,6 +2,8 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
+#include <time.h>
+
 struct queued_payload {
   struct StructDesc const *desc;
   max_align_t alignment;
@@ -58,7 +60,16 @@ axPostMessageDataW(void *target, uint32_t event, uint32_t wparam,
 
 #define MESSAGE_STATS 48
 static struct MessageStat message_stats[MESSAGE_STATS];
+static struct MessageStat *message_stat;   // the message taken last, until dispatched
 static bool_t message_stats_enabled;
+
+static double
+stats_now_ms(void)
+{
+  struct timespec ts;
+  timespec_get(&ts, TIME_UTC);
+  return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
+}
 
 ORCA_API void
 SV_EnableMessageStats(bool_t enable)
@@ -70,21 +81,25 @@ SV_EnableMessageStats(bool_t enable)
 static void
 record_message(struct AXmessage const *msg)
 {
-  char const *className = msg->target ? OBJ_GetClassName(msg->target) : NULL;
+  // Coroutine messages target a lua_State, not an Object.
+  bool_t object = msg->target && msg->message != kEventResumeCoroutine && msg->message != kEventStopCoroutine;
+  char const *className = object ? OBJ_GetClassName(msg->target) : NULL;
   struct MessageStat *stat = message_stats;
   for (; stat < message_stats + MESSAGE_STATS && stat->count; stat++) {
     if (stat->message == msg->message && stat->className == className) break;
   }
+  message_stat = NULL;
   if (stat == message_stats + MESSAGE_STATS) return;   // table full: drop the rest
   stat->message = msg->message;
   stat->className = className;
   stat->count++;
+  message_stat = stat;
 }
 
 static int
 compare_message_stats(void const *a, void const *b)
 {
-  uint32_t x = ((struct MessageStat const *)a)->count, y = ((struct MessageStat const *)b)->count;
+  float x = ((struct MessageStat const *)a)->totalMs, y = ((struct MessageStat const *)b)->totalMs;
   return x < y ? 1 : x > y ? -1 : 0;
 }
 
@@ -95,6 +110,7 @@ SV_TakeMessageStats(struct MessageStat *out, int max)
   int n = 0;
   for (; n < max && n < MESSAGE_STATS && message_stats[n].count; n++) out[n] = message_stats[n];
   memset(message_stats, 0, sizeof(message_stats));
+  message_stat = NULL;
   return n;
 }
 
@@ -277,7 +293,15 @@ dispatch_message(lua_State* L, struct AXmessage* msg) {
 
 ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   void *target = msg->target;
+  struct MessageStat *stat = message_stats_enabled ? message_stat : NULL;
+  double started = stat ? stats_now_ms() : 0;
+  message_stat = NULL;
   bool_t handled = dispatch_message(L, msg);
+  if (stat) {
+    float ms = (float)(stats_now_ms() - started);
+    stat->totalMs += ms;
+    if (ms > stat->maxMs) stat->maxMs = ms;
+  }
   OBJ_EndMessage(target);
   axDisposeMessage(msg);
   return handled;
