@@ -20,7 +20,7 @@ def device_list_command(requested, output):
 
 
 def select_device(devices, device_type, requested=None):
-    candidates = []
+    candidates, wired = [], []
     for device in devices:
         hardware = device.get('hardwareProperties', {})
         properties = device.get('deviceProperties', {})
@@ -37,6 +37,11 @@ def select_device(devices, device_type, requested=None):
                 candidates.append(identity)
         else:
             candidates.append(identity)
+            device.get('connectionProperties', {}).get('transportType') == 'wired' and wired.append(identity)
+    # Wi-Fi-paired devices on the same network also report as available; a
+    # single USB-connected device is the one the developer plugged in.
+    if len(candidates) > 1 and len(wired) == 1:
+        return wired[0]
     if len(candidates) != 1:
         if device_type == 'auto':
             raise ValueError(f'Expected exactly one available physical iPhone or iPad; found {len(candidates)}. '

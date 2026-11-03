@@ -56,6 +56,16 @@ class DeviceSelectionTests(unittest.TestCase):
             with self.subTest(count=len(devices)), self.assertRaises(ValueError):
                 deploy.select_device(devices, 'iPhone')
 
+    def test_single_wired_device_wins_over_network_paired_devices(self):
+        def connected(identifier, transport, kind='iPhone'):
+            device = physical_device(identifier, kind)
+            device['connectionProperties'] = {'transportType': transport}
+            return device
+        devices = [connected('tablet', 'localNetwork', 'iPad'), connected('phone', 'wired')]
+        self.assertEqual(deploy.select_device(devices, 'auto'), 'phone')
+        with self.assertRaises(ValueError):
+            deploy.select_device(devices + [connected('other', 'wired')], 'auto')
+
     def test_explicit_device_accepts_coredevice_id_name_and_provisioning_udid(self):
         devices = [physical_device('one', name='My Phone'), physical_device('two')]
         for selector in ('one', 'My Phone', 'hardware-one'):
