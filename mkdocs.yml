@@ -56,6 +56,7 @@ nav:
     - Lua API: LUA_API.md
     - UI System: UI_SYSTEM.md
     - Windows Phone Page Transitions: windows-phone-transitions.md
+    - Windows Phone UI Cheatsheet: windows-phone-ui-cheatsheet.md
   - App Writing:
     - Architecture & Best Practices: app/index.md
     - Models & Offline Testing: app/data.md

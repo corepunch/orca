@@ -2,6 +2,11 @@
 
 Use this file when changing UIKit controls, layout, XML UI, popups, or styling behavior.
 
+For Windows Phone / Metro apps, use the
+[UI cheatsheet](windows-phone-ui-cheatsheet.md) for versioned design guidance,
+metrics, control choice, and review checks. It distinguishes platform
+references from engine behavior and app decisions.
+
 ## Main paths
 
 - `plugins/UIKit/UIKit.cgen`
