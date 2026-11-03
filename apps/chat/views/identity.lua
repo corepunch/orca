@@ -168,9 +168,10 @@ function Identity.auth(self, mode)
     return self:frame(body)
 end
 
--- Your profile follows Telegram's settings and Edit Profile in Metro form:
--- who you are, the photo commands, the public fields with footnotes, your
--- notification and login details, then sign out.
+-- Settings follow Telegram for Windows Phone's settings list (its open
+-- SettingsView.xaml): your photo and name, then one column of rows, each an
+-- icon with the setting's name and its current value under it. Rows open
+-- their editor in place; check boxes save as they change.
 local function profileBody(self, profile)
     local user = self.client:getSession().user
     profile = profile or { display_name = (user.user_metadata or {}).display_name or t("You") }
@@ -178,46 +179,91 @@ local function profileBody(self, profile)
     local username = C.input("Username", t("Choose a public username"), { Text = profile.username or "" })
     local identifier = C.input("LinkIdentifier", t("Phone number or email to verify"))
     local code = C.input("LinkCode", t("Verification code"), { Type = "Number" })
-    self.status = C.text("", { Name = "ProfileStatus", Visible = false, WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
+    local function statusText(id)
+        return C.text("", { Name = id, Visible = false, WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
+    end
+    -- Photo results show under the photo commands, everything else under the rows.
+    self.status = statusText("ProfileStatus")
     self.profileStatus = self.status
-    local epoch, status = self.sessionEpoch, self.status
+    local epoch, settingsStatus = self.sessionEpoch, statusText("SettingsStatus")
     local function notice(message, isError)
-        status:setTextContent(t(message or ""))
-        status.StateClasses = isError and "chat-error" or "chat-muted"
-        status.Visible = (message or "") ~= ""
+        settingsStatus:setTextContent(t(message or ""))
+        settingsStatus.StateClasses = isError and "chat-error" or "chat-muted"
+        settingsStatus.Visible = (message or "") ~= ""
     end
     local photo = C.avatar(profile.display_name or t("You"), 96, user.id, self, user.id)
     local title = C.text("", { Name = "ProfileTitle", FontSize = 28, TextOverflow = "Ellipsis" })
     local handle = C.text("", { Name = "ProfileHandle", FontSize = 15, class = "chat-muted", TextOverflow = "Ellipsis" })
     local link = C.stack({ Name = "LinkForm", Visible = false, Spacing = 10 })
-    local phoneRow = C.setting("PhoneSetting", "smartphone", t("Number"), function()
-        link.Visible, identifier.PlaceholderText = true, t("New phone number")
+    -- One editor is open at a time, directly under the row that opened it.
+    local editors = {}
+    local function open(editor, placeholder)
+        for _, other in ipairs(editors) do other.Visible = other == editor and not editor.Visible end
+        if placeholder then identifier.PlaceholderText = placeholder end
+        notice("")
+    end
+    local nameRow = C.setting("NameSetting", "pencil", t("Name"), function() open(editors[1]) end)
+    local usernameRow = C.setting("UsernameSetting", "at-sign", t("Username"), function() open(editors[2]) end)
+    local phoneRow = C.setting("PhoneSetting", "smartphone", t("Mobile"), function()
+        open(link, t("New phone number"))
     end)
     local emailRow = C.setting("EmailSetting", "mail", t("Email"), function()
-        link.Visible, identifier.PlaceholderText = true, t("New email address")
+        open(link, t("New email address"))
     end)
     -- Telegram's header line: the phone and @username people know you by.
     local function describe(p)
         local phone, email = p.phone or user.phone, p.email or user.email
         phone, email = (phone or "") ~= "" and phone or nil, (email or "") ~= "" and email or nil
+        local at = (p.username or "") ~= "" and "@" .. p.username or nil
         title:setTextContent(p.display_name or t("You"))
         local parts = {}
-        for _, part in ipairs { phone or email, (p.username or "") ~= "" and "@" .. p.username or nil } do
-            parts[#parts + 1] = part
-        end
+        for _, part in ipairs { phone or email, at } do parts[#parts + 1] = part end
         handle:setTextContent(table.concat(parts, " · "))
+        nameRow:findChild("NameSettingValue", true):setTextContent(p.display_name or t("You"))
+        usernameRow:findChild("UsernameSettingValue", true):setTextContent(at or t("Add"))
         phoneRow:findChild("PhoneSettingValue", true):setTextContent(phone or t("Add"))
         emailRow:findChild("EmailSettingValue", true):setTextContent(email or t("Add"))
     end
     describe(profile)
-    local phoneDiscovery, emailDiscovery = profile.discoverable_phone == true, profile.discoverable_email == true
-    local phoneToggle = C.checkbox("DiscoverablePhone", t("Find me by phone"), phoneDiscovery,
-        function(checked) phoneDiscovery = checked end)
-    local emailToggle = C.checkbox("DiscoverableEmail", t("Find me by email"), emailDiscovery,
-        function(checked) emailDiscovery = checked end)
-    local previews = profile.notification_previews ~= false
-    local previewToggle = C.checkbox("NotificationPreviews", t("Message previews"), previews,
-        function(checked) previews = checked end)
+    -- Saves one change; a refused change reports why and is undone.
+    local function save(values, undo)
+        local result, saveError = self.client:updateProfile(values)
+        if self.sessionEpoch ~= epoch then return end
+        if not result then
+            if undo then undo() end
+            notice(saveError.message, true)
+            return
+        end
+        describe(result)
+        return result
+    end
+    local function editor(id, field, values)
+        local bar = ui.Grid { Name = id, Columns = "1fr auto", Spacing = 6, MarginBottom = 8, Visible = false }
+        bar:addChild(field)
+        bar:addChild(C.button(t("save"), function()
+            if save(values()) then bar.Visible = false end
+        end, { Name = id .. "Save", Width = 88, class = "chat-primary" }))
+        return bar
+    end
+    editors[1] = editor("NameEditor", name, function() return { display_name = name.Text } end)
+    editors[2] = editor("UsernameEditor", username, function() return { username = username.Text } end)
+    editors[3] = link
+    local function toggle(id, label, key, checked)
+        local box, restoring
+        box = C.checkbox(id, label, checked, function(value)
+            if not box or restoring then return end
+            save({ [key] = value }, function()
+                restoring = true
+                box.IsChecked = not value
+                restoring = false
+            end)
+        end, true)
+        return box
+    end
+    local phoneToggle = toggle("DiscoverablePhone", t("Find me by phone"), "discoverable_phone", profile.discoverable_phone == true)
+    local emailToggle = toggle("DiscoverableEmail", t("Find me by email"), "discoverable_email", profile.discoverable_email == true)
+    local previewToggle = toggle("NotificationPreviews", t("Message previews"), "notification_previews",
+        profile.notification_previews ~= false)
     local verification
     verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
         code,
@@ -243,36 +289,24 @@ local function profileBody(self, profile)
             notice(self.remote and t("Enter the code sent to your new login detail.") or t("Offline verification code: 123456"))
         end, { Name = "RequestLink", Background = colors.surface }), verification,
     } do link:addChild(child) end
-    local function group(children) return C.stack({ Spacing = 6 }, children) end
     local header = ui.Grid { Name = "ProfileHeader", Columns = "96px 1fr", Spacing = 16, AlignItems = "Center" }
     header:addChild(photo)
     header:addChild(C.stack({ Spacing = 2 }, { title, handle }))
-    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
+    local function rows(children) return C.stack({ Spacing = 0 }, children) end
+    return C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
         header,
-        ProfileAvatar.controls(self, photo, status),
-        status,
-        C.eyebrow(t("public profile")),
-        group { name, C.footnote(t("Enter your name and add an optional profile photo.")) },
-        group { username, C.footnote(t("People can find your exact username.")) },
-        group { phoneToggle, emailToggle,
-            C.footnote(t("Your phone and email are never shown in search results.")) },
-        C.eyebrow(t("notifications")),
-        group { previewToggle,
-            C.footnote(t("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible."),
-                { Name = "NotificationPreviewsHint" }) },
-        C.button(t("Save settings"), function()
-            local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
-                discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery, notification_previews = previews }
-            if self.sessionEpoch ~= epoch then return end
-            if result then describe(result) end
-            notice(result and t("Settings saved.") or saveError.message, not result)
-        end, { Name = "SaveProfile", class = "chat-primary" }),
-        C.eyebrow(t("login details")),
-        group { phoneRow, emailRow, C.footnote(t("Only you see these. Tap one to link a new number or email.")) },
+        ProfileAvatar.controls(self, photo, self.status),
+        self.status,
+        C.eyebrow(t("account")),
+        rows { nameRow, editors[1], usernameRow, editors[2], phoneRow, emailRow },
         link,
+        settingsStatus,
+        C.eyebrow(t("privacy")),
+        rows { phoneToggle, emailToggle },
+        C.eyebrow(t("notifications")),
+        rows { previewToggle },
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
     })
-    return body
 end
 
 function Identity.profile(self)

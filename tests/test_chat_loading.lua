@@ -98,13 +98,13 @@ app.models.Rooms.select, app.models.Contacts.select = roomsSelect, contactsSelec
 local getProfile = client.getProfile
 client.getProfile = function(self) coroutine.yield("profile"); return getProfile(self) end
 app:show("/profile")
-assert(shell:findChild("ContentLoading", true) and not shell:findChild("SaveProfile", true))
+assert(shell:findChild("ContentLoading", true) and not shell:findChild("ProfileHeader", true))
 local profile = nextRequest()
 app:show("/new")
 local status = app.status
 resume(profile)
 settle()
-assert(app.shell.active == "New" and app.status == status and shell:findChild("SaveProfile", true),
+assert(app.shell.active == "New" and app.status == status and shell:findChild("ProfileHeader", true),
     "Profile completion must retain the user's current tab and status")
 client.getProfile = getProfile
 
@@ -159,7 +159,7 @@ while true do
     if not message:is("Window.Paint") then orca.system.dispatchMessage(other.screen, message) end
 end
 settle()
-assert(other.screen:findChild("SaveProfile", true), "Retry must replace the failed pending page with its form")
+assert(other.screen:findChild("ProfileHeader", true), "Retry must replace the failed pending page with its form")
 
 -- Signing out retires a pending retained tab, even if its request succeeds later.
 local late = App { client = client }
@@ -171,7 +171,7 @@ late:signOut()
 local login = late.screen
 resume(request)
 assert(late.screen == login and not late.shell and login:findChild("RequestCode", true)
-    and not oldScreen:findChild("SaveProfile", true), "A late profile result must not rebuild a signed-out session")
+    and not oldScreen:findChild("ProfileHeader", true), "A late profile result must not rebuild a signed-out session")
 client.getProfile = get
 -- Restoring a saved login must return a drawable screen before checking Appwrite.
 local restoring = Chat.mock()
