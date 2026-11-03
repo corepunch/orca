@@ -8,8 +8,21 @@
 #if defined(__APPLE__) && __has_include(<os/signpost.h>)
 #include <os/signpost.h>
 
+#include <time.h>
+
 static os_log_t trace_log;
 static os_signpost_id_t trace_ids[kTracePhaseCount];
+// Wall time per phase for the frame profiler, summed until taken.
+static bool_t trace_timing;
+static uint64_t trace_started[kTracePhaseCount], trace_total[kTracePhaseCount];
+
+ORCA_API void TRACE_EnableTiming(bool_t enable) { trace_timing = enable; }
+
+ORCA_API void
+TRACE_TakeTiming(double out_ms[kTracePhaseCount])
+{
+  for (int i = 0; i < kTracePhaseCount; i++) out_ms[i] = trace_total[i] / 1e6, trace_total[i] = 0;
+}
 
 static os_log_t
 TRACE_Log(void)
@@ -24,11 +37,14 @@ TRACE_Log(void)
   X(kTracePhasePrograms, "Programs") \
   X(kTracePhaseLayout, "Layout") \
   X(kTracePhaseRender, "Render") \
-  X(kTracePhasePresent, "Present")
+  X(kTracePhasePresent, "Present") \
+  X(kTracePhaseBeginFrame, "BeginFrame") \
+  X(kTracePhaseScrollSync, "ScrollSync")
 
 void
 TRACE_Begin(enum TracePhase phase)
 {
+  if (trace_timing) trace_started[phase] = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
   os_log_t log = TRACE_Log();
   if (!os_signpost_enabled(log)) return;
   os_signpost_id_t id = trace_ids[phase] = os_signpost_id_generate(log);
@@ -43,6 +59,10 @@ TRACE_Begin(enum TracePhase phase)
 void
 TRACE_End(enum TracePhase phase)
 {
+  if (trace_timing && trace_started[phase]) {
+    trace_total[phase] += clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - trace_started[phase];
+    trace_started[phase] = 0;
+  }
   os_log_t log = TRACE_Log();
   os_signpost_id_t id = trace_ids[phase];
   if (!os_signpost_enabled(log) || !id) return;
@@ -57,4 +77,6 @@ TRACE_End(enum TracePhase phase)
 #else
 void TRACE_Begin(enum TracePhase phase) { (void)phase; }
 void TRACE_End(enum TracePhase phase) { (void)phase; }
+void TRACE_EnableTiming(bool_t enable) { (void)enable; }
+void TRACE_TakeTiming(double out_ms[kTracePhaseCount]) { for (int i = 0; i < kTracePhaseCount; i++) out_ms[i] = 0; }
 #endif

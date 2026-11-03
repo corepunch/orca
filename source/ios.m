@@ -39,7 +39,7 @@ struct OrcaFrameProfile {
 static char const *message_name(uint32_t message, char *buffer, size_t size)
 {
   static char const *const names[] = {
-    "Object.Animate", "Window.Paint", "Window.Resized", "Timer.Tick", "Object.Timer",
+    "Object.Animate", "Window.Paint", "ResumeCoroutine", "StopCoroutine", "ScrollWheel", "WindowPaint", "Window.Resized", "Timer.Tick", "Object.Timer",
     "Object.PropertyChanged", "Node.ScrollWheel", "Node.LeftButtonDragged",
     "Node.LeftButtonDown", "Node.LeftButtonUp", "Node.MouseMoved", "Node.KeyDown",
   };
@@ -57,8 +57,8 @@ static void profile_messages(void)
   fprintf(stderr, "[ios messages]");
   for (int i = 0; i < n; i++) {
     char buffer[16];
-    fprintf(stderr, " %s(%s)=%u", message_name(stats[i].message, buffer, sizeof(buffer)),
-            stats[i].className ? stats[i].className : "-", stats[i].count);
+    fprintf(stderr, " %s(%s)=%u/%.1fms/max%.1f", message_name(stats[i].message, buffer, sizeof(buffer)),
+            stats[i].className ? stats[i].className : "-", stats[i].count, stats[i].totalMs, stats[i].maxMs);
   }
   fputc('\n', stderr);
 }
@@ -118,6 +118,17 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
     p->durationTotal * 1000 / count, p->intervalTotal * 1000 / count,
     p->targetLeadTotal * 1000 / count, p->targetLeadMin * 1000,
     (long)link.preferredFramesPerSecond);
+  double phases[kTracePhaseCount];
+  TRACE_TakeTiming(phases);
+  // Frame minus the paint phases is Lua: message handlers and afterPaint.
+  double painting = phases[kTracePhasePrograms] + phases[kTracePhaseBeginFrame] + phases[kTracePhaseLayout] +
+    phases[kTracePhaseRender] + phases[kTracePhaseScrollSync] + phases[kTracePhasePresent];
+  fprintf(stderr, "[ios phases] per_paint_ms programs=%.2f layout=%.2f render=%.2f present=%.2f "
+    "begin_frame=%.2f scroll_sync=%.2f per_callback_ms frame=%.2f other=%.2f\n",
+    phases[kTracePhasePrograms] / paintCount, phases[kTracePhaseLayout] / paintCount,
+    phases[kTracePhaseRender] / paintCount, phases[kTracePhasePresent] / paintCount,
+    phases[kTracePhaseBeginFrame] / paintCount, phases[kTracePhaseScrollSync] / paintCount,
+    phases[kTracePhaseFrame] / count, (phases[kTracePhaseFrame] - painting) / count);
   profile_messages();
   *p = (struct OrcaFrameProfile){ .enabled = YES, .start = finished, .paints = paints,
     .last = started, .lastTimestamp = link.timestamp, .targetLeadMin = DBL_MAX };
@@ -176,6 +187,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   char const *profile = getenv("ORCA_PROFILE_FRAMES");
   _frameProfile.enabled = profile && *profile && strcmp(profile, "0");
   SV_EnableMessageStats(_frameProfile.enabled);
+  TRACE_EnableTiming(_frameProfile.enabled);
   NSString *resources = [NSBundle mainBundle].resourcePath;
   NSString *project = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"ORCAProject"] ?: @"project";
   project = [resources stringByAppendingPathComponent:project];

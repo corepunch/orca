@@ -17,7 +17,9 @@ function SignIn.new(app, options)
     end
     local self = setmetatable({ app = app, native = native, supported = native.supported() == true }, SignIn)
     if options.manual then return self end
-    -- One quiet, repeating poll: links can arrive at launch or while the app runs.
+    -- Links return while the app comes to the foreground, where App polls on
+    -- Window.Activated. This slow backstop covers a link queued just after.
+    -- Every tick ends a coroutine, which repaints the window, so keep it rare.
     local core = require "orca.core"
     self.owner = core.Timer { Name = "ChatSignIn" }
     self.owner.Tick = function() self:poll() end
@@ -25,7 +27,7 @@ function SignIn.new(app, options)
 end
 
 function SignIn:activate()
-    if self.owner and not self.timer then self.timer = self.owner:setTimer(250) end
+    if self.owner and not self.timer then self.timer = self.owner:setTimer(2000) end
 end
 
 function SignIn:suspend()

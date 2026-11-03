@@ -282,7 +282,10 @@ HANDLER(Screen, Window, Paint) {
 #ifdef AX_PLATFORM_IOS
   axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
 #endif
-  if (R_BeginFrame(pScreen->ClearColor) != NOERROR) {
+  TRACE_Begin(kTracePhaseBeginFrame);
+  HRESULT begun = R_BeginFrame(pScreen->ClearColor);
+  TRACE_End(kTracePhaseBeginFrame);
+  if (begun != NOERROR) {
     ANIM_EndFrame();
     return TRUE;
   }
@@ -290,7 +293,9 @@ HANDLER(Screen, Window, Paint) {
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
 
 #ifdef AX_PLATFORM_IOS
+  TRACE_Begin(kTracePhaseScrollSync);
   ORCA_IOS_SyncScrollViews(hObject);
+  TRACE_End(kTracePhaseScrollSync);
 #endif
 
   TRACE_Begin(kTracePhasePresent);

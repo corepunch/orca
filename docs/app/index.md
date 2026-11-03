@@ -221,6 +221,17 @@ ID can prevent a slow earlier response from replacing a newer selection. Choose
 a lifecycle owner for timers and subscriptions and release them at that owner's
 end; do not retain detached nodes in a global service.
 
+Every coroutine that finishes repaints the whole window, so each timer tick and
+each completed request costs a full paint. Do not poll native queues or state
+on a short repeating timer. Check them when the event that fills them arrives
+(for example `Window.Activated` after a sign-in browser or emailed link), and
+keep any backstop timer at seconds, not hundreds of milliseconds. While a list
+scrolls, a fast timer turned Chat's 16 ms frames into 33 ms ones several times a
+second. iOS now merges that paint into an already queued one, but the timer's
+own work still lands inside scroll frames. Check `[ios messages]` in the
+[iOS frame profiler](../IOS.md) for `Timer`, `ResumeCoroutine` and
+`StopCoroutine` counts before adding background work.
+
 Keep transport errors structured and preserve user input after a failed send or
 save. Use the [models and offline testing pattern](data.md): keep one client and
 model layer and swap its transport for an isolated in-process mock. Test login,
