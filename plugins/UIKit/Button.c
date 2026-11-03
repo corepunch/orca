@@ -2,9 +2,24 @@
 #include <source/filesystem/theme_palette.h>
 
 #include <UIKit/UIKit.h>
+#include "Layout.h"
 
 struct Object *
 _NextTabStop(struct Object *hObject);
+
+HANDLER(TextBlock, Node2D, MeasureOverride);
+
+HANDLER(Button, Node2D, MeasureOverride)
+{
+  TextBlock_MeasureOverride(hObject, GetTextBlock(hObject), wParam, pMeasureOverride);
+  float width = pMeasureOverride->ResultWidth, height = pMeasureOverride->ResultHeight;
+  FOR_EACH_LAYOUTABLE(child, hObject) {
+    struct Size size = Layout_Measure(child, pMeasureOverride->Width, pMeasureOverride->Height);
+    width = fmaxf(width, size.width);
+    height = fmaxf(height, size.height);
+  }
+  return Layout_Return(pMeasureOverride, width, height);
+}
 
 // Button_DrawForeground
 HANDLER(Button, Node2D, DrawForeground) {
