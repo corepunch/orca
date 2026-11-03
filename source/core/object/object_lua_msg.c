@@ -80,8 +80,13 @@ _CreateMessageAction(lua_State *L,
     return NULL;
   }
 
+  // The action is never in a tree, so building it cannot change what a
+  // binding resolves; otherwise every Lua send or post would make the next
+  // paint re-evaluate every OneTime binding on screen.
+  PROP_SuspendBindingInvalidation(TRUE);
   struct Object *action = OBJ_Create(cls->ClassID);
   if (!action) {
+    PROP_SuspendBindingInvalidation(FALSE);
     return NULL;
   }
 
@@ -107,11 +112,23 @@ _CreateMessageAction(lua_State *L,
   if (lua_pcall(L, arguments > 2 ? arguments - 2 : 0, 0, 0) != LUA_OK) {
     _ClearActionPayload(action, cls);
     OBJ_ReleaseRef(action);
+    PROP_SuspendBindingInvalidation(FALSE);
     lua_error(L);
     return NULL;
   }
-
+  PROP_SuspendBindingInvalidation(FALSE);
   return action;
+}
+
+// Dispatch may change the tree and invalidates normally; only the release of
+// an action nobody else retained is exempt.
+static void
+_ReleaseMessageAction(struct Object *action, lpcString_t message)
+{
+  PROP_SuspendBindingInvalidation(TRUE);
+  _ClearActionPayload(action, OBJ_FindClass(message));
+  OBJ_ReleaseRef(action);
+  PROP_SuspendBindingInvalidation(FALSE);
 }
 
 void OBJ_post(lua_State* L, struct Object *self, lpcString_t message)
@@ -122,8 +139,7 @@ void OBJ_post(lua_State* L, struct Object *self, lpcString_t message)
     return;
   }
   _SendMessage(action, Action, Dispatch, .Sender = self);
-  _ClearActionPayload(action, OBJ_FindClass(message));
-  OBJ_ReleaseRef(action);
+  _ReleaseMessageAction(action, message);
 }
 
 int OBJ_send(lua_State* L, struct Object *self, lpcString_t message)
@@ -132,8 +148,7 @@ int OBJ_send(lua_State* L, struct Object *self, lpcString_t message)
   LRESULT result;
   if (action) {
     result = _SendMessage(action, Action, Dispatch, .Sender = self);
-    _ClearActionPayload(action, OBJ_FindClass(message));
-    OBJ_ReleaseRef(action);
+    _ReleaseMessageAction(action, message);
   } else {
     result = OBJ_SendMessage(self, message, 0, NULL);
   }

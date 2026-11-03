@@ -113,6 +113,9 @@ struct token
 /* Internal binding graph invalidation; never dereference a cached path first. */
 ORCA_API void PROP_InvalidateBindingPaths(void);
 ORCA_API uint64_t PROP_BindingGeneration(void);
+/* Bracket building or releasing an object no binding can reach, such as a
+   transient message action; nested calls are counted. */
+ORCA_API void PROP_SuspendBindingInvalidation(bool_t suspend);
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);

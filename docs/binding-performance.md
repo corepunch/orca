@@ -70,3 +70,12 @@ etlua dependency was introduced. The existing row tree is retained.
 `tests/xml/test_one_time_bindings_xml.lua` covers unchanged-pass skipping,
 record mutation, inherited context replacement, reparenting, destruction and
 rebinding, XML shorthand, mode serialization and live `OneWay` geometry.
+
+The graph epoch ignores objects no binding can reach. Lua `send` and `post`
+build a transient message action outside the tree; its creation and release
+are bracketed with `PROP_SuspendBindingInvalidation`, while the handler
+dispatch between them still invalidates normally. Without this, the app loop's
+`screen:post("Window.Paint", ...)` after each handled scroll step voided every
+`OneTime` snapshot, so a long Chat conversation re-ran each row's bindings on
+every scroll frame (about 28 ms per paint at 800 messages, against an 8.3 ms
+120 Hz budget; about 3 ms after the change).
