@@ -239,6 +239,8 @@ T_LoadDefaultFontBase(lpcString_t base)
 void
 Font_Shutdown(void)
 {
+  extern void Emoji_Shutdown(void);
+  Emoji_Shutdown();
   if (fg.defaultFontObject) {
     OBJ_ReleaseRef(fg.defaultFontObject);
     fg.defaultFontObject = NULL;

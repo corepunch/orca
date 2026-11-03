@@ -91,6 +91,22 @@ decode_failed(char const* kind)
          MAKE_TEX_SIZE(0, 0);
 }
 
+/* Premultiplied RGBA rows, top row first; release with R_FreeImage(). */
+byte_t*
+R_DecodeImageRGBA(void const* data, uint32_t size, int* width, int* height)
+{
+  byte_t* image = decode_image(&(struct AXbuffer){ .data = (void*)data, .cursize = size },
+                               4, width, height);
+  if (image) premultiply_rgba(image, *width * *height);
+  return image;
+}
+
+void
+R_FreeImage(byte_t* image)
+{
+  stbi_image_free(image);
+}
+
 struct AXsize
 R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
 {

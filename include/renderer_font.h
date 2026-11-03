@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stddef.h>
 #include <stdint.h>
 
 struct fontface;
@@ -30,3 +31,19 @@ int32_t FontFace_GetGlyphKerning(struct fontface*, uint32_t, uint32_t, float);
 int FontFace_GetGlyphBounds(struct fontface*, uint32_t, float, struct font_glyph*);
 int FontFace_RenderGlyph(struct fontface*, uint32_t, float, struct font_glyph*);
 void FontFace_FreeGlyph(struct font_glyph*);
+
+/* Color emoji: premultiplied RGBA rows, top row first. xoff/yoff place the
+ * image's top-left corner relative to the pen on the baseline, like glyphs. */
+struct font_emoji
+{
+  unsigned char* rgba;
+  int width;
+  int height;
+  int xoff;
+  int yoff;
+};
+
+size_t Font_EmojiLength(char const*);
+int32_t Font_GetEmojiAdvance(float);
+int Font_RenderEmoji(char const*, size_t, float, struct font_emoji*);
+void Font_FreeEmoji(struct font_emoji*);

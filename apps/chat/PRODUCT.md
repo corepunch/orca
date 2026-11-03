@@ -50,7 +50,7 @@ separately:
 
 | Deferred area | Work needed |
 | --- | --- |
-| Reactions, stickers and GIFs | Emoji selection/rendering, reaction persistence/counts and permissions; optional for now |
+| Reactions, stickers and GIFs | Emoji selection, reaction persistence/counts and permissions; optional for now. Emoji in message text already render (bundled Twemoji) |
 | Replies, forwards, mentions, formatting and link previews | Message metadata, authorization, composer/timeline UI and preview handling |
 | Older history and message search | Stable cursors, indexes, pagination/search APIs and scroll behavior |
 | Unread/read receipts, typing and online status | Persistent per-user state, privacy rules and delivery updates |

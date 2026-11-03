@@ -117,6 +117,17 @@ HANDLER(TextBlock, Node2D, DrawForeground)
 
   R_DrawEntity(pDrawForeground->viewdef, &entity);
 
+  /* Emoji keep their own colors: draw them untinted over the text. */
+  struct Texture const *emoji = text->_text->emojiTexture;
+  if (emoji && pDrawForeground->image) {
+    entity.shader = NULL;
+    entity.material.texture = emoji;
+    entity.material.color = (struct color){ 1, 1, 1, 1 };
+    entity.material.numUniforms = 0;
+    entity.borderWidth = (struct vec4){ 0 };
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
+  }
+
   return TRUE;
 }
 

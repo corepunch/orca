@@ -3,6 +3,7 @@
 
 #include <source/filesystem/theme_palette.h>
 #include <UIKit/UIKit.h>
+#include <include/renderer_font.h>
 #include "TextBlockText.h"
 
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
@@ -110,6 +111,22 @@ Input_CharacterCount(char const *text, size_t bytes)
   return count;
 }
 
+/* Byte offset of the previous (dir < 0) or next character boundary from
+ * cursor, treating a whole emoji sequence as one character. */
+static int
+Input_Step(char const *text, int cursor, int dir)
+{
+  int i = 0;
+  while (text[i]) {
+    int n = (int)Font_EmojiLength(text + i);
+    if (!n) for (n = 1; text[i + n] && ((unsigned char)text[i + n] & 0xc0) == 0x80; n++);
+    if (dir < 0 && i + n >= cursor) return i;
+    if (dir > 0 && i + n > cursor) return i + n;
+    i += n;
+  }
+  return dir < 0 ? 0 : i;
+}
+
 static void
 Input_MaskText(struct TextBlockText *text)
 {
@@ -201,9 +218,8 @@ HANDLER(Input, Node, KeyDown)
   switch (pKeyDown->keyCode) {
     case AX_KEY_BACKSPACE:
       if (pInput->Cursor > 0) {
-        int end = pInput->Cursor--;
-        while (pInput->Cursor > 0 && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
-          pInput->Cursor--;
+        int end = pInput->Cursor;
+        pInput->Cursor = Input_Step(szText, end, -1);
         memmove(szText + pInput->Cursor, szText + end, dwLength - end + 1);
       }
       break;
@@ -231,9 +247,7 @@ HANDLER(Input, Node, KeyDown)
       }
       break;
     case AX_KEY_LEFTARROW:
-      pInput->Cursor = MAX(pInput->Cursor - 1, 0);
-      while (pInput->Cursor > 0 && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
-        pInput->Cursor--;
+      if (pInput->Cursor > 0) pInput->Cursor = Input_Step(szText, pInput->Cursor, -1);
       break;
     case AX_KEY_UPARROW:
       pInput->Cursor = dwLength;
@@ -242,9 +256,7 @@ HANDLER(Input, Node, KeyDown)
       pInput->Cursor = 0;
       break;
     case AX_KEY_RIGHTARROW:
-      pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
-      while ((uint32_t)pInput->Cursor < dwLength && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
-        pInput->Cursor++;
+      pInput->Cursor = Input_Step(szText, pInput->Cursor, 1);
       break;
     default:
       return FALSE;

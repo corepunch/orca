@@ -90,6 +90,37 @@ When layout or draw requests text, the `TextBlockConcept` handler for `MakeText`
 
 After layout, `Texture_Create(kTextureFormatAlpha8, width, height, bitmap)` uploads the buffer via `glTexImage2D(GL_TEXTURE_2D, GL_ALPHA8, ...)` and returns a `struct Texture*`.
 
+### Color emoji
+
+Emoji come from the bundled Twemoji set, so they look the same on every
+platform. `tools/pack-emoji.py` packs the 72×72 PNGs into
+`share/emoji/twemoji.emj`, an index sorted by each sequence's UTF-8 without
+U+FE0F. The workspace registers it under the font name `emoji`, next to the
+`SHAREDIR` fonts. `source/renderer/r_emoji.c` exposes it through
+`renderer_font.h`:
+
+- `Font_EmojiLength()` returns the bytes of the emoji sequence at a position,
+  or 0. It accepts skin tones, ZWJ joins, flag pairs, keycaps, tag sequences
+  and U+FE0F. Pictographs that default to text presentation, such as ❤ and ©,
+  need U+FE0F, which the iOS and Android keyboards send. If the set lacks a
+  sequence, it is shortened one code point at a time, so a ZWJ emoji newer
+  than the set falls apart into the emoji it joins.
+- `Font_RenderEmoji()` decodes the PNG once, keeps the decoded copy, and
+  resamples it to 1.15 em with 4×4 bilinear taps. `Font_GetEmojiAdvance()`
+  adds a side bearing of 0.04 em on each side.
+
+`T_LayoutText` gives an emoji the place of a glyph in measuring, wrapping,
+ellipsis and cursor positions; the cursor still counts code points. It draws
+emoji into a second, premultiplied RGBA bitmap, allocated when the first emoji
+appears. `TextBlockText.emojiTexture` holds that bitmap. `TextBlock` draws it
+untinted after the alpha8 texture, so the foreground brush colors the text but
+not the emoji, while the node's opacity applies to both. `TextBlockText_RasterizeLayers()` returns both
+bitmaps for tests. `Input` moves the cursor and deletes by whole emoji.
+`TextBlock3D` doesn't draw the emoji layer yet.
+
+The artwork is CC-BY 4.0 (`share/emoji/LICENSE-Twemoji.txt`), so apps that
+ship it must credit Twemoji.
+
 ### 2D draw path (`TextBlock`)
 
 ```
