@@ -75,6 +75,9 @@
 .chat-dark .chat-checkbox .control-indicator { background-color: #bfbfbf; color: #000000; }
 .chat-light .chat-checkbox:active .control-indicator { background-color: #0078e7; color: #ffffff; }
 .chat-dark .chat-checkbox:active .control-indicator { background-color: #0084ff; color: #ffffff; }
+/* In a settings list the 28-point indicator is centred in the 52-point icon
+   column (12 + 28 + 26 = 52 + 14), so labels line up with command rows. */
+.chat-setting-check { height: 56; font-size: 20; -orca-indicator-spacing: 26; }
 .chat-checkbox:disabled { opacity: 0.45; }
 .chat-light .chat-checkbox:focus-visible { ring: 0 2 #0078e7; }
 .chat-dark .chat-checkbox:focus-visible { ring: 0 2 #41beec; }

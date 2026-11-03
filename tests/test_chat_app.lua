@@ -724,17 +724,37 @@ otpApp.screen:findChild("VerificationCode", true).Text = "123456"
 click(otpApp, "VerifyCode")
 assert(otpApp.client:getSession() and otpApp.screen:findChild("Roomalex", true), "Verified OTP must reach the mock inbox")
 otpApp:show("/profile")
+assert(not otpApp.screen:findChild("SaveProfile", true), "Settings save as they change, without a Save button")
+assert(not otpApp.screen:findChild("UsernameEditor", true).Visible, "Row editors start closed")
+click(otpApp, "UsernameSetting")
+assert(otpApp.screen:findChild("UsernameEditor", true).Visible, "The Username row opens its editor in place")
 otpApp.screen:findChild("Username", true).Text = "test_person"
+click(otpApp, "UsernameEditorSave")
+assert(otpApp.client:getProfile().username == "test_person", "Saving the username must use the API")
+assert(not otpApp.screen:findChild("UsernameEditor", true).Visible
+    and otpApp.screen:findChild("UsernameSettingValue", true):getTextContent() == "@test_person",
+    "A saved username closes its editor and shows under the row")
 assert(not otpApp.screen:findChild("DiscoverableEmail", true).IsChecked, "Email discovery must start unchecked")
 assert(otpApp.screen:findChild("NotificationPreviews", true).IsChecked, "Message previews must start enabled")
 click(otpApp, "NotificationPreviews")
 assert(not otpApp.screen:findChild("NotificationPreviews", true).IsChecked, "The preview row toggles its check box")
+assert(otpApp.client:getProfile().notification_previews == false, "Unticking previews saves the opt-out at once")
 click(otpApp, "DiscoverableEmail")
 assert(otpApp.screen:findChild("DiscoverableEmail", true).IsChecked, "Tapping the row must tick its check box")
-click(otpApp, "SaveProfile")
-assert(otpApp.client:getProfile().username == "test_person", "Save profile must use the API")
 assert(otpApp.client:getProfile().discoverable_email == true, "A ticked check box must save email discovery")
-assert(otpApp.client:getProfile().notification_previews == false, "Saving settings persists the preview opt-out")
+-- Settings rows share one leading edge: check boxes centre in the icon column.
+do
+    local function screenX(node)
+        local x = 0
+        while node and node:getParent() do x, node = x + node.ActualX, node:getParent() end
+        return x
+    end
+    local box = otpApp.screen:findChild("DiscoverableEmail", true)
+    local indicator = assert(box:findChild("Indicator", true), "Check box indicator")
+    local icon = otpApp.screen:findChild("EmailSetting", true):getFirstChild():getFirstChild()
+    local boxCentre, iconCentre = screenX(indicator) + indicator.ActualWidth / 2, screenX(icon) + icon.ActualWidth / 2
+    assert(math.abs(boxCentre - iconCentre) < 1, ("Check box indicator centre %g must match icon centre %g"):format(boxCentre, iconCentre))
+end
 otpApp.screen:findChild("LinkIdentifier", true).Text = "+447700900987"
 click(otpApp, "RequestLink")
 assert(otpApp.screen:findChild("LinkVerification", true).Visible, "Linking must require verification")

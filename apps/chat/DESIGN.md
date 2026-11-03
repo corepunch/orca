@@ -80,16 +80,20 @@ claiming historical fidelity.
   header's back button. Metro avatars and type are kept; Telegram's
   rounded cards, separators and A–Z index are not adopted.
 - The settings tab (route `/profile`, titled "settings" as in Telegram)
-  follows Telegram's Settings and Edit Profile (user-supplied iOS
-  screenshots, 2026-10-31) in Metro form, in Telegram's order: a 96-point
-  photo with your name and "phone · @username", "choose a character" and
-  "upload photo" command rows, the name and username fields each with a
-  footnote under it, discovery check boxes, notification previews, then your
-  login details as Number and Email rows with their values at the right.
-  Tapping a row opens the field to link a new one, as Telegram's Number row
-  leads to Change Number. Sign out is the last command, in the error colour.
-  Telegram's centred header, rounded cards, chevrons and separators are not
-  adopted; the header stays left-aligned under the Metro page title.
+  follows Telegram for Windows Phone's settings list, from its open
+  [SettingsView.xaml](https://github.com/evgeny-nadymov/telegram-wp/blob/fd98ac6d18637019218679b81cb92d983019014b/TelegramClient/Views/Additional/SettingsView.xaml)
+  (user request, 2026-11-03, replacing the 2026-10-31 iOS-based layout):
+  a 96-point photo with your name and "phone · @username", then one column
+  of rows, each an icon with the setting's name and its current value under
+  it, without footnotes. "choose a character" and "upload photo" are accent
+  commands; under "account", Name, Username, Mobile and Email rows open their
+  editor in place (Mobile and Email link a new, verified identifier). The
+  "privacy" and "notifications" check boxes centre their indicator in the
+  52-point icon column, so every label starts at the same edge, and save as
+  they change: there is no Save button, and a refused change is undone with
+  its reason shown under the account rows. Sign out is the last command, in
+  the error colour. Telegram for Windows Phone's sub-pages and its ellipsis
+  log-out menu are not adopted; the settings stay on one page.
 - The character picker uses four equal square columns, with six-point gaps
   horizontally and vertically (user decision, 2026-11-02). Its portraits
   align to the page's 12-point leading edge; the Pivot owns that inset.
