@@ -383,4 +383,5 @@ return {
     ["Sign-in was cancelled."] = "Sign-in was cancelled.",
     ["The sign-in page could not finish. Please try again."] = "The sign-in page could not finish. Please try again.",
     ["Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset."] = "Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset.",
+    ["Continue with Google"] = "Continue with Google",
 }

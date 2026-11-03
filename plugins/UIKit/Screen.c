@@ -8,6 +8,9 @@
 #ifdef AX_PLATFORM_IOS
 #include <source/ios_scroll.h>
 #endif
+#ifdef __ANDROID__
+#include <libs/platform/android/ax_android.h>
+#endif
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -467,11 +470,16 @@ HANDLER(Screen, Screen, UpdateLayout) {
 
   pScreen->_size = MAKEDWORD(width, height);
 
-#ifdef AX_PLATFORM_IOS
+#if defined(AX_PLATFORM_IOS) || defined(__ANDROID__)
   if (pScreen->ResizeMode == kResizeModeCanResize) {
     float left, top, right, bottom;
+#ifdef __ANDROID__
+    axAndroidGetSafeArea(&left, &top, &right, &bottom);
+    float keyboard = axAndroidGetKeyboardInset();
+#else
     axIOSGetSafeArea(&left, &top, &right, &bottom);
     float keyboard = axIOSGetKeyboardInset();
+#endif
     bool_t changed = pScreen->SafeAreaLeft != left || pScreen->SafeAreaTop != top ||
                      pScreen->SafeAreaRight != right || pScreen->SafeAreaBottom != bottom ||
                      pScreen->KeyboardInsetBottom != keyboard;

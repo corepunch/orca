@@ -308,7 +308,14 @@ comes from `/account/tokens/magic-url`. Each returns `userId` and `secret` to
    and the return URL Appwrite shows, plus a Sign in with Apple key. Enter the
    Services ID, key ID, team ID and `.p8` key under *Auth → Settings → Apple*.
 
+4. **Google:** in Google Cloud, create an OAuth client of type *Web
+   application* with the redirect URI Appwrite shows, then enter its client ID
+   and secret under *Auth → Settings → Google*. Add an Android platform for each
+   package name (for example `org.orca.chat`) as well.
+
 The browser session shares no cookies with Safari, so each sign-in starts clean.
+On Android the page opens in a Custom Tab and returns through the app's
+`appwrite-callback-<PROJECT_ID>` intent filter.
 
 Password-only accounts may initially have an unverified email; self profiles
 expose email/phone only when Appwrite marks them verified. Public profiles

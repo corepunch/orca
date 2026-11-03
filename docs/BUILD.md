@@ -112,6 +112,7 @@ iPhone simulator, or `make ios-run DEVICE_TYPE=iPad` for an iPad simulator.
 `make ios` builds an arm64 device bundle; `make ios-install` signs, installs,
 and launches it using an installed development profile and identity.
 See [iOS build and deployment](IOS.md) for prerequisites, outputs and options.
+See [Android](ANDROID.md) for `make chat-android` and the NDK/Gradle requirements.
 
 ## Common failure meaning
 

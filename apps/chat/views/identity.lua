@@ -85,6 +85,7 @@ function Identity.auth(self, mode)
         end
         return C.stack({ Name = "ProviderSignIn", Spacing = 12 }, {
             provider("ContinueApple", t("Continue with Apple"), "apple"),
+            provider("ContinueGoogle", t("Continue with Google"), "google"),
         })
     end
     local title, description, form
