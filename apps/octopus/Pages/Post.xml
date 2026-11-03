@@ -37,8 +37,8 @@
         </Grid>
         <ItemsStack Name="Gallery" Visible="{Binding DataContext/HasGallery}" Spacing="2" JustifyContent="Start"
                     ItemsSource="{Binding DataContext/GalleryRows}" ItemTemplate="Octopus/Templates/PhotoRow"/>
-        <TextBlock Name="PostBodyCaption" Visible="{Binding DataContext/HasCaption}" Text="{Binding DataContext/Body}"
-                   FontSize="15" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+        <MarkdownView Name="PostBodyCaption" Visible="{Binding DataContext/HasCaption}" Source="{Binding DataContext/Content}"
+                      Spacing="12" class="post-markdown post-caption octopus-ink" IgnoreHitTest="true"/>
         <Grid Visible="{Binding DataContext/IsQuote}" Columns="4px 1fr" Spacing="12" IgnoreHitTest="true">
           <Grid class="octopus-accent-fill" IgnoreHitTest="true"/>
           <StackView Spacing="4" IgnoreHitTest="true">
@@ -64,8 +64,8 @@
         </Grid>
         <TextBlock Name="PostBodyTitle" Visible="{Binding DataContext/IsText}" Text="{Binding DataContext/Title}"
                    TrimLeading="true" WordWrap="true" class="post-title octopus-ink" IgnoreHitTest="true"/>
-        <TextBlock Name="PostBodyContent" Visible="{Binding DataContext/HasContent}" Text="{Binding DataContext/Body}"
-                   WordWrap="true" class="post-content" IgnoreHitTest="true"/>
+        <MarkdownView Name="PostBodyContent" Visible="{Binding DataContext/HasContent}" Source="{Binding DataContext/Content}"
+                      Spacing="12" class="post-markdown post-content" IgnoreHitTest="true"/>
       </StackView>
       <ItemsStack Name="Tags" Visible="{Binding DataContext/HasTags}" Direction="Horizontal" AlignItems="Center"
                   Spacing="8" Height="28" ItemNamePrefix="Tag" ItemsSource="{Binding DataContext/Tags}"

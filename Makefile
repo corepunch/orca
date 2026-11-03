@@ -603,6 +603,7 @@ HEADLESS_LUA_TESTS += test-localization
 HEADLESS_LUA_TESTS += test-selection-controls
 HEADLESS_LUA_TESTS += test-radio-group
 HEADLESS_LUA_TESTS += test-text-leading test-text-emoji
+HEADLESS_LUA_TESTS += test-markdown-view
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-animation-clock
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
@@ -737,6 +738,7 @@ $(eval $(call LUA_TEST_RULE,test-object-hierarchy,tests/test_object_hierarchy.lu
 $(eval $(call LUA_TEST_RULE,test-tabbar,tests/test_tabbar.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-tab-interaction,tests/test_tab_interaction.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-metro,tests/test_metro.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-markdown-view,tests/test_markdown_view.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-text-layout,tests/test_text_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-node2d-scroll,tests/test_node2d_scroll.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-stack-layout,tests/test_stack_layout.lua,app copyshare))

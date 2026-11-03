@@ -312,6 +312,11 @@
         <field name="_textinfo" type="text_info">Internal text information structure.</field>
       </fields>
     </class>
+    <class name="Run" parent="TextRun,StyleController" allow-text="true">
+      <summary>Inline span of text inside a TextBlock with its own font and decoration</summary>
+      <details>A TextBlock lays out its own text followed by every Run child as one paragraph that wraps together. A Run overrides the block's font weight, style, size, family and decoration; it has no box, color or hit testing of its own. Style classes on a Run apply the same font and decoration properties from CSS, for example `font-family` for inline code.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    </class>
     <class name="TextBlockConcept" parent="TextRun">
       <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
       <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
@@ -652,6 +657,21 @@
         <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
         <property name="Spacing" type="float">Space between adjacent children </property>
       </properties>
+    </class>
+    <class name="MarkdownView" parent="StackView">
+      <summary>Vertical stack that renders a Markdown string as styled text blocks</summary>
+      <details>Rebuilds its children whenever Source changes. Supported blocks are paragraphs, ATX and setext headings, block quotes, bullet and ordered lists (nested by indentation), fenced code blocks and thematic breaks. Inline, it renders strong, emphasis, strikethrough, code spans, links, autolinks and bare URLs as Run children, and hard line breaks from two trailing spaces or a backslash. Soft line breaks become spaces, as in CommonMark. Images show their alt text. Generated nodes ignore hit testing and carry style classes for CSS: `md-p`, `md-h1`…`md-h6`, `md-quote`, `md-pre` with `md-code-block` inside, `md-list` with `md-ul` or `md-ol`, `md-li`, `md-marker`, `md-li-body`, `md-hr`; runs carry `md-strong`, `md-em`, `md-strike`, `md-code` and `md-link`. Strong, emphasis and link underline are applied without CSS; the text engine does not draw strikethrough yet. Runs share their block's color, so links and code differ by font and decoration only.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
+      </handles>
+      <properties>
+        <property name="Source" type="string">Markdown text to render</property>
+      </properties>
+      <fields>
+        <field name="_hash" type="uint">Hash of the Source last rendered, to skip identical rebuilds (private)</field>
+      </fields>
     </class>
     <class name="Form" parent="StackView">
       <summary>Specialized stack view for form input collection and submission</summary>

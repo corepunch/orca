@@ -108,6 +108,8 @@ settle()
 assert(field(detail, "PostDetail").DataContext
     and field(detail, "PostBodyTitle").Text == "Edited title", "The detail page presents the post record")
 assert(field(detail, "Statlikes").Text == "1", "The detail page shows the counts its refresh returned")
+local paragraph = field(detail, "PostBodyContent").children()
+assert(paragraph and paragraph.children().Text == "Body text", "The detail page renders the post body as Markdown")
 local first, reply = field(detail, "Commentone"), field(detail, "Commentreply")
 assert(reply.MarginLeft == 48 and first.MarginLeft == 0, "Replies indent under their comment")
 comments[1].body = "Changed comment"
