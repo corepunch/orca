@@ -303,6 +303,55 @@ local function test_grid_implicit_row_wrapping()
 	print("PASS: test_grid_implicit_row_wrapping")
 end
 
+-- Image-only Buttons must measure their content, just like text Buttons.
+-- Otherwise Auto grid rows collapse and only Spacing separates their images.
+local function test_grid_content_buttons()
+	local root = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+	local outer = root + ui.StackView { Padding = "12 8", Spacing = 12 }
+	local grid = outer + ui.Grid { Columns = "1fr 1fr 1fr 1fr", Spacing = 12 }
+	local buttons = {}
+	for i = 1, 16 do
+		local button = grid + ui.Button { BorderWidth = 0 }
+		local content = button + ui.StackView { JustifyContent = "Start" }
+		content:addChild(ui.Node2D { AspectRatio = 1 })
+		buttons[i] = button
+	end
+	local following = outer + ui.Node2D { Height = 48 }
+	for _, width in ipairs { 390, 320 } do
+		root.Width = width
+		root:UpdateLayout(width, 844)
+		local side = math.floor((width - 24 - 3 * 12) / 4)
+		for i, button in ipairs(buttons) do
+			test.expect_eq(button.ActualHeight, side, "Content button reserves its square child's height")
+			test.expect_eq(button.ActualY, math.floor((i - 1) / 4) * (side + 12),
+				"Auto rows reserve content height before spacing")
+		end
+		test.expect_eq(grid.ActualHeight, side * 4 + 36, "Grid measures all content rows")
+		test.expect_eq(following.ActualY, grid.ActualY + grid.ActualHeight + 12,
+			"Following controls start below the grid")
+	end
+	root:removeFromParent()
+	print("PASS: test_grid_content_buttons")
+end
+
+local function test_button_text_and_content_measurement()
+	local root = ui.Screen { Width = 200, Height = 400, ResizeMode = "NoResize" }
+	local stack = root + ui.StackView {}
+	local reference = stack + ui.TextBlock { Text = "Save", FontSize = 20, Padding = 4 }
+	local text = stack + ui.Button { Text = "Save", FontSize = 20, Padding = 4 }
+	local mixed = stack + ui.Button { Text = "Save", FontSize = 20, Padding = 4 }
+	local child = mixed + ui.Node2D { Height = 60, Margin = "0 6" }
+	mixed:addChild(ui.Node2D { Height = 1000, Visible = false })
+	root:UpdateLayout(200, 400)
+	test.expect_eq(text.ActualHeight, reference.ActualHeight, "Text-only buttons retain text sizing")
+	test.expect_eq(mixed.ActualHeight, 80, "Content measurement includes margins and button padding")
+	child.Height = 0
+	root:UpdateLayout(200, 400)
+	test.expect_eq(mixed.ActualHeight, text.ActualHeight, "Text still contributes when children are smaller")
+	root:removeFromParent()
+	print("PASS: test_button_text_and_content_measurement")
+end
+
 local function test_attached_inherited_text_font_family()
 	local root = ui.Screen { Name = "font-inherit-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
 	local stack = root + ui.StackView { Name = "font-parent-stack" }
@@ -721,6 +770,8 @@ test_grid_fixed_column_image_fits()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
+test_grid_content_buttons()
+test_button_text_and_content_measurement()
 test_attached_inherited_text_font_family()
 test_attached_inherited_text_font_leaves()
 test_partial_font_shorthand_preserves_inherited_size()

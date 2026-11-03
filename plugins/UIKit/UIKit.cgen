@@ -604,12 +604,13 @@
     </class>
     <class name="Button" parent="TextBlock" allow-text="true">
       <summary>Interactive button control for user actions</summary>
-      <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types. Prefer value-style text authoring in scripts, for example `Button class: "btn", "Save"`, instead of always writing `Text=`.</details>
+      <details>Extends TextBlock to provide clickable button functionality. Measures both its text and layoutable children, using the largest extent on each axis for overlaid content. Handles mouse and keyboard activation with customizable button types. Prefer value-style text authoring in scripts, for example `Button class: "btn", "Save"`, instead of always writing `Text=`.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
+        <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.DrawForeground"/>
       </handles>
       <properties>
