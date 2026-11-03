@@ -67,7 +67,12 @@ static double
 stats_now_ms(void)
 {
   struct timespec ts;
+#ifdef _WIN32
   timespec_get(&ts, TIME_UTC);
+#else
+  // Android's libc has timespec_get only from API 29.
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+#endif
   return ts.tv_sec * 1000.0 + ts.tv_nsec / 1e6;
 }
 
