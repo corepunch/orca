@@ -733,6 +733,8 @@ do
     click(linkApp, "ContinueApple")
     assert(opened and opened.url == "https://mock.invalid/oauth/apple" and opened.scheme == "appwrite-callback-mock",
         "Continue with Apple opens the provider page in a browser session")
+    click(linkApp, "ContinueGoogle")
+    assert(opened.url == "https://mock.invalid/oauth/google", "Continue with Google opens Google's page")
     events[1] = { type = "error", code = "cancelled" }
     linkApp.signin:poll()
     assert(not linkApp.client:getSession() and not linkApp.screen:findChild("AuthStatus", true).Visible,

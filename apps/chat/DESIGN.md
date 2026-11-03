@@ -116,7 +116,8 @@ claiming historical fidelity.
   after Microsoft Teams' sign-in. That link opens an options page of command
   rows: email code, emailed link, email and password, create an account.
   Where the platform supports a browser sign-in session, the code form adds
-  outlined "Continue with Apple" under its primary action. The code step keeps
+  outlined "Continue with Apple" and "Continue with Google" under its primary
+  action. The code step keeps
   resend and change-email. The phone number is an optional settings field with
   the phone keypad and a leading `+` and country code.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after

@@ -3,7 +3,7 @@
 
 // Hot reload watches every opened file for edits; an installed iOS bundle is
 // read-only, and the stat per file per message only slowed each frame.
-#ifndef ORCA_IOS
+#if !defined(ORCA_IOS) && !defined(__ANDROID__)
 #define MONITOR_FILES
 #endif
 

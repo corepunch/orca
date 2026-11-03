@@ -62,10 +62,9 @@ function SignIn:poll()
     for _ = 1, 8 do
         local event = self.native.poll()
         if not event then return end
-        if event.type == "callback" and self.pending then
+        if (event.type == "callback" or event.type == "url") and type(event.url) == "string" then
+            -- Android cannot tell a provider's return from an emailed link; both finish the same way.
             self.pending = nil
-            self:complete(event.url)
-        elseif event.type == "url" and type(event.url) == "string" then
             self:complete(event.url)
         elseif event.type == "error" then
             self.pending = nil

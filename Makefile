@@ -169,9 +169,10 @@ buildunite: $(OBJECTDIR)/notifications_apple.o
 $(OBJECTDIR)/notifications_apple.o: source/notifications/notifications_apple.m source/notifications/notifications_native.h | directories
 	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
 buildunite: $(OBJECTDIR)/signin_apple.o
-# generated/UIKit/UIKit.h is the engine API; AuthenticationServices must not see it.
+# generated/UIKit/UIKit.h is the engine API; AuthenticationServices checks for
+# Apple's UIKit with __has_include, so this file is built without generated/.
 $(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_native.h | directories
-	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -idirafter generated -x objective-c -c $< -o $@
+	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -x objective-c -c $< -o $@
 endif
 
 buildlib: platform lua buildunite
@@ -386,7 +387,7 @@ test-headless: test-media
 endif
 
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
-.PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools
+.PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools android
 ios:
 	$(MAKE) -f tools/ios/Makefile SDK=iphoneos app
 
@@ -402,6 +403,13 @@ ios-install:
 # Build, sign, install and launch any apps/<name>/package.lua project.
 .PHONY: ios-deploy-force
 ios-deploy-force:
+
+# Android: needs ANDROID_NDK_HOME, the Android SDK and Gradle; see docs/ANDROID.md.
+android:
+	$(MAKE) -f tools/android/Makefile apk
+%-android:
+	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*)'; exit 1; }
+	$(MAKE) -f tools/android/Makefile PROJECT="$(or $(PROJECT),apps/$*)" APPLICATION_ID="$(or $(APPLICATION_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" apk
 
 %-ios: ios-deploy-force
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*); set PROJECT=<directory> containing package.lua.'; exit 1; }

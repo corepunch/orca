@@ -141,6 +141,11 @@ int f_get_message(lua_State* L)
 #ifdef ORCA_IOS
   return lua_yieldk(L, 0, 0, resume_get_message);
 #else
+#ifdef __ANDROID__
+  /* The soft keyboard follows focus, as the iOS frame loop does. */
+  void ORCA_Android_SyncKeyboard(void);
+  ORCA_Android_SyncKeyboard();
+#endif
   /* Wait up to 500ms so file-change detection runs even when the window
      receives no input events (e.g. after a CSS-only save). */
   if (axWaitMessage(500) > 0 && axPeekMessage(&msg)) {

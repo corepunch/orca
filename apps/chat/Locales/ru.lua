@@ -383,4 +383,5 @@ return {
     ["Sign-in was cancelled."] = "Вход отменён.",
     ["The sign-in page could not finish. Please try again."] = "Страница входа не завершила вход. Попробуйте ещё раз.",
     ["Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset."] = "Укажите в CHAT_MAGIC_LINK_URL страницу https или оставьте пустым.",
+    ["Continue with Google"] = "Продолжить с Google",
 }

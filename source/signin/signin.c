@@ -4,7 +4,7 @@
 #include <string.h>
 #include "signin_native.h"
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__ANDROID__)
 #include <pthread.h>
 static pthread_mutex_t signin_lock = PTHREAD_MUTEX_INITIALIZER;
 #define SIGNIN_LOCK() pthread_mutex_lock(&signin_lock)
@@ -59,8 +59,22 @@ static int signin_dequeue(struct SigninEvent *event) {
   return found;
 }
 
+#if defined(__ANDROID__)
+#include <source/android/android_bridge.h>
+/* A page opened by Open() returns as a callback; any other link is a url event. */
+static int signin_android_pending;
+
+void Signin_AndroidURL(char const *url) {
+  SIGNIN_LOCK();
+  int pending = signin_android_pending;
+  signin_android_pending = 0;
+  SIGNIN_UNLOCK();
+  Signin_EnqueueURL(pending ? "callback" : "url", url);
+}
+#endif
+
 int signin_Supported(lua_State *L) {
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__ANDROID__)
   lua_pushboolean(L, 1);
 #else
   lua_pushboolean(L, 0);
@@ -82,6 +96,15 @@ int signin_Open(lua_State *L, char const *url, char const *callbackScheme) {
     return lua_pushnil(L), lua_pushliteral(L, "The callback scheme must be a lowercase URL scheme."), 2;
 #if defined(__APPLE__)
   if (Signin_AppleOpen(url, callbackScheme)) return lua_pushboolean(L, 1), 1;
+  return lua_pushnil(L), lua_pushliteral(L, "The sign-in page could not be opened."), 2;
+#elif defined(__ANDROID__)
+  SIGNIN_LOCK();
+  signin_android_pending = 1;
+  SIGNIN_UNLOCK();
+  if (Android_OpenURL(url)) return lua_pushboolean(L, 1), 1;
+  SIGNIN_LOCK();
+  signin_android_pending = 0;
+  SIGNIN_UNLOCK();
   return lua_pushnil(L), lua_pushliteral(L, "The sign-in page could not be opened."), 2;
 #else
   return lua_pushnil(L), lua_pushliteral(L, "Browser sign-in is not available on this platform."), 2;

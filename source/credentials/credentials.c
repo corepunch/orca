@@ -16,8 +16,18 @@ static int credentials_valid_key(lua_State *L, char const *key) {
   return length > 0 && length <= 1024 && !memchr(key, '\0', length);
 }
 
+#if defined(__ANDROID__)
+#include <stdlib.h>
+#include <source/android/android_bridge.h>
+static int credentials_android(lua_State *L, int result) {
+  if (result > 0) return lua_pushboolean(L, 1), 1;
+  if (!result) return credentials_error(L, "unsupported", "The application activity cannot store credentials.");
+  return credentials_error(L, "storage_error", "The system could not access secure credential storage.");
+}
+#endif
+
 int credentials_Supported(lua_State *L) {
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__ANDROID__)
   lua_pushboolean(L, 1);
 #else
   lua_pushboolean(L, 0);
@@ -72,6 +82,15 @@ int credentials_Get(lua_State *L, char const *key) {
   lua_pushlstring(L, (char const *)CFDataGetBytePtr(data), (size_t)CFDataGetLength(data));
   CFRelease(data);
   return 1;
+#elif defined(__ANDROID__)
+  char *value = NULL;
+  size_t size = 0;
+  int found = 0, result = Android_CredentialGet(key, &value, &size, &found);
+  if (result <= 0) return credentials_android(L, result);
+  if (!found) return lua_pushnil(L), 1;
+  lua_pushlstring(L, value, size);
+  free(value);
+  return 1;
 #else
   return credentials_error(L, "unsupported", "Secure credential storage is available on Apple platforms.");
 #endif
@@ -109,6 +128,8 @@ int credentials_Set(lua_State *L, char const *key, char const *value) {
   if (status != errSecSuccess) return credentials_status(L, status);
   lua_pushboolean(L, 1);
   return 1;
+#elif defined(__ANDROID__)
+  return credentials_android(L, Android_CredentialSet(key, value, length));
 #else
   (void)value;
   return credentials_error(L, "unsupported", "Secure credential storage is available on Apple platforms.");
@@ -126,6 +147,8 @@ int credentials_Delete(lua_State *L, char const *key) {
   if (status != errSecSuccess && status != errSecItemNotFound) return credentials_status(L, status);
   lua_pushboolean(L, 1);
   return 1;
+#elif defined(__ANDROID__)
+  return credentials_android(L, Android_CredentialDelete(key));
 #else
   return credentials_error(L, "unsupported", "Secure credential storage is available on Apple platforms.");
 #endif
