@@ -382,6 +382,10 @@ assert(find(app, "Timelinehome"):findChild("Postp-quote", true), "Home includes 
 -- Your own profile: edit and sign out.
 click(app, "AppBarMe")
 assert(find(app, "ProfileEditor") and find(app, "EditName").Text == "Ada Reef")
+local credits = find(app, "Credits").Text or ""
+assert(credits:find("Twemoji", 1, true) and credits:find("CC-BY 4.0", 1, true)
+    and credits:find("stb_truetype", 1, true)
+    and credits:find("Noto", 1, true) and credits:find("LZ4", 1, true), "The profile editor credits the bundled third-party work")
 find(app, "EditBio").Text = "Testing the phone app"
 click(app, "SaveProfile")
 assert(text(find(app, "ProfileBio")) == "Testing the phone app")

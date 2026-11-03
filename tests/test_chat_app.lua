@@ -616,6 +616,11 @@ core.advanceFrame()
 core.runAllPrograms(shell)
 assertTabs("New")
 app.screen = profile
+local credits = profile:findChild("Credits", true)
+credits = credits and credits:getTextContent() or ""
+assert(credits:find("Twemoji", 1, true) and credits:find("CC-BY 4.0", 1, true)
+    and credits:find("stb_truetype", 1, true)
+    and credits:find("Noto", 1, true) and credits:find("LZ4", 1, true), "Settings must credit the bundled third-party work")
 profile:findChild("SignOut", true):send("Node.LeftButtonUp")
 drain(app)
 local auth = app.screen

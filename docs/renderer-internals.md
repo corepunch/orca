@@ -119,7 +119,9 @@ bitmaps for tests. `Input` moves the cursor and deletes by whole emoji.
 `TextBlock3D` doesn't draw the emoji layer yet.
 
 The artwork is CC-BY 4.0 (`share/emoji/LICENSE-Twemoji.txt`), so apps that
-ship it must credit Twemoji.
+ship it must credit Twemoji. [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)
+lists it with the other bundled work; Chat shows the credit under Settings → about,
+and Octopus in the profile editor on the Me tab.
 
 ### 2D draw path (`TextBlock`)
 
