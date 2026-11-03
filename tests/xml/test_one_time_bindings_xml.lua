@@ -27,6 +27,18 @@ assert(label.Text == "first", "OneTime resolves inherited DataContext")
 label.Text = "sentinel"
 for _ = 1, 3 do pass(root) end
 assert(label.Text == "sentinel", "Unchanged frames do not execute a OneTime program")
+-- Lua send/post build a transient message action outside the tree. The app
+-- loop posts Window.Paint after every handled scroll step; that must not
+-- re-run every OneTime row binding in a long list. The first delivery may
+-- materialize properties on the label itself, which does invalidate paths.
+local function deliver()
+    for _ = 1, 2 do label:send("Node.LoadView"); label:post("Node.LoadView") end
+    pass(root)
+end
+deliver()
+label.Text = "sentinel"
+for _ = 1, 3 do deliver() end
+assert(label.Text == "sentinel", "Lua send and post do not invalidate OneTime snapshots")
 first.Title = "changed"
 pass(root)
 assert(label.Text == "changed", "DataObject property changes refresh the snapshot")

@@ -7,7 +7,10 @@ static struct Property *s_binding_target;
 static uint64_t s_binding_generation = 1;
 
 uint64_t PROP_BindingGeneration(void) { return s_binding_generation; }
-void PROP_InvalidateBindingPaths(void) { ++s_binding_generation; }
+static int s_binding_suspended;
+
+void PROP_InvalidateBindingPaths(void) { if (!s_binding_suspended) ++s_binding_generation; }
+void PROP_SuspendBindingInvalidation(bool_t suspend) { s_binding_suspended += suspend ? 1 : -1; }
 
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
