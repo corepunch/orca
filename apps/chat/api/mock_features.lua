@@ -395,8 +395,46 @@ return function(state, env)
             a.status = "discarded"; return response(200, a)
         end
     end
+    -- Magic and provider links: the mock keeps the link it "sent" so tests can open it.
+    local function signInLink(kind, email)
+        local owner = identityOwner("email", email)
+        state.sequence.link = (state.sequence.link or 0) + 1
+        local secret = ("mock-link-secret-%d"):format(state.sequence.link)
+        local userId = owner and owner.id or unique("user", state.users)
+        state.linkTokens = state.linkTokens or {}
+        state.linkTokens[secret] = { userId = userId, email = email, expires_at = now() + 3600 }
+        state.lastSignInLink = ("appwrite-callback-mock://%s?userId=%s&secret=%s"):format(kind, userId, secret)
+    end
+    local function linkSession(body)
+        local token = type(body.secret) == "string" and state.linkTokens and state.linkTokens[body.secret]
+        if not token or token.userId ~= body.userId or token.expires_at <= now() then
+            return fail(401, "user_invalid_token", "This sign-in link is invalid or expired. Request a new one.")
+        end
+        state.linkTokens[body.secret] = nil
+        local user = identityOwner("email", token.email)
+        if not user then
+            user = { id = token.userId, email = token.email, email_confirmed_at = timestamp(),
+                user_metadata = { display_name = "Member" } }
+            state.users[#state.users + 1] = user
+            state.profiles[user.id] = { id = user.id, display_name = "Member", discoverable_phone = false, discoverable_email = false }
+        end
+        return issue(user)
+    end
     function P.handle(method, path, params, body, headers)
-        if path == "/auth/v1/otp" and method == "POST" then
+        if path == "/auth/v1/magiclink" and method == "POST" then
+            local field, value
+            if type(body) == "table" then field, value = identity(body) end
+            if field ~= "email" then return fail(400, "validation", "Enter a valid email address.") end
+            signInLink("magic", value)
+            return response(200, {})
+        elseif path == "/auth/v1/authorize" and method == "POST" then
+            local provider = type(body) == "table" and body.provider
+            if provider ~= "apple" and provider ~= "google" then return fail(400, "validation", "Choose Apple or Google.") end
+            signInLink("oauth", provider .. "@example.invalid")
+            return response(200, { url = "https://mock.invalid/oauth/" .. provider, scheme = "appwrite-callback-mock" })
+        elseif path == "/auth/v1/link-session" and method == "POST" then
+            return linkSession(type(body) == "table" and body or {})
+        elseif path == "/auth/v1/otp" and method == "POST" then
             local field, value
             if type(body) == "table" then field, value = identity(body) end
             if not field then return fail(400, "validation", "Invalid identifier.") end

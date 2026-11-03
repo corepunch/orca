@@ -41,6 +41,11 @@ function M.new(options)
   local currentUser, pushBusy, liveRecord
   local encode, store = options.encode, options.sessionStore
   local endpoint = options.endpoint:gsub("/$", "")
+  -- Appwrite sends OAuth and emailed sign-in links back to this per-project scheme.
+  local scheme = "appwrite-callback-" .. options.projectId:lower()
+  local function escape(value)
+    return (value:gsub("[^%w%-%._~]", function(c) return ("%%%02X"):format(c:byte()) end))
+  end
   local saveAvatar = require("api.appwrite_avatars").new {
     endpoint = endpoint, projectId = options.projectId, transport = options.transport, encode = options.encode,
   }
@@ -243,6 +248,29 @@ function M.new(options)
       local response = call("POST", "/account/sessions/token", { userId = userId, secret = body.token })
       if not successful(response) then return response end
       pending[key] = nil
+      return session(credentials(response, options.projectId), true)
+    elseif request.method == "POST" and path == "/auth/v1/magiclink" and type(body.email) == "string" then
+      -- The emailed link opens the app (or a configured https page that forwards to it).
+      local url = options.magicLinkUrl or (scheme .. "://magic")
+      local response = call("POST", "/account/tokens/magic-url", { userId = "unique()", email = body.email, url = url })
+      if not successful(response) then return response end
+      return { status = 200, body = {} }
+    elseif request.method == "POST" and path == "/auth/v1/authorize" then
+      -- Builds the provider page for a browser session; no request is made here.
+      if body.provider ~= "apple" and body.provider ~= "google" then
+        return { status = 400, body = { code = "validation", message = "Choose Apple or Google." } }
+      end
+      local back = escape(scheme .. "://oauth")
+      return { status = 200, body = { scheme = scheme, url = endpoint .. "/account/tokens/oauth2/" .. body.provider
+        .. "?project=" .. escape(options.projectId) .. "&success=" .. back .. "&failure=" .. back } }
+    elseif request.method == "POST" and path == "/auth/v1/link-session" then
+      -- Completes a link or provider sign-in from the userId and secret Appwrite returned.
+      if type(body.userId) ~= "string" or not body.userId:match("^[%w][%w%._%-]*$") or #body.userId > 36
+          or type(body.secret) ~= "string" or body.secret == "" or #body.secret > 1024 or body.secret:find("[%z\1-\32\127]") then
+        return { status = 400, body = { code = "invalid_link", message = "This sign-in link is invalid. Request a new one." } }
+      end
+      local response = call("POST", "/account/sessions/token", { userId = body.userId, secret = body.secret })
+      if not successful(response) then return response end
       return session(credentials(response, options.projectId), true)
     elseif request.method == "POST" and path == "/auth/v1/restore" then
       local saved, err

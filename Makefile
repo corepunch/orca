@@ -61,7 +61,7 @@ CFLAGS += $(SANITIZER_FLAGS)
 LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications signin
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -94,7 +94,8 @@ ifeq ($(UNAME_S),Darwin)
 	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
 	UNITEOBJECTS += media_apple.o
 	UNITEOBJECTS += notifications_apple.o
-	LIBS += -framework AppKit -framework UserNotifications
+	UNITEOBJECTS += signin_apple.o
+	LIBS += -framework AppKit -framework UserNotifications -framework AuthenticationServices
 	EXE_RPATH = -Wl,-rpath,@executable_path/../../$(LIBDIR)
 	LUA_CFLAGS += -DLUA_USE_MACOSX
 	LUA_SONAME = -Wl,-install_name,@rpath/liblua5.4.so
@@ -167,6 +168,10 @@ $(OBJECTDIR)/media_apple.o: source/media/media_apple.m source/media/media_native
 buildunite: $(OBJECTDIR)/notifications_apple.o
 $(OBJECTDIR)/notifications_apple.o: source/notifications/notifications_apple.m source/notifications/notifications_native.h | directories
 	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
+buildunite: $(OBJECTDIR)/signin_apple.o
+# generated/UIKit/UIKit.h is the engine API; AuthenticationServices must not see it.
+$(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_native.h | directories
+	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -idirafter generated -x objective-c -c $< -o $@
 endif
 
 buildlib: platform lua buildunite
@@ -595,6 +600,7 @@ $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicato
 
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
+HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
@@ -688,6 +694,8 @@ test-chat-polling: unite
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
 .PHONY: test-notifications
 $(eval $(call LUA_TEST_RULE,test-notifications,tests/test_notifications.lua,unite))
+.PHONY: test-signin
+$(eval $(call LUA_TEST_RULE,test-signin,tests/test_signin.lua,unite))
 ifeq ($(UNAME_S),Darwin)
 .PHONY: test-notifications-native
 $(eval $(call C_TEST_RULE,test-notifications-native,tests/test_notifications.m,$(BINDIR)/test_notifications,unite,,$(TEST_LDFLAGS) -framework Foundation -framework UserNotifications))

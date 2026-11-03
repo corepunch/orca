@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
+<module name="signin" namespace="orca" prefix="signin_">
+  <includes><include file="include/api.h"/></includes>
+  <functions>
+    <function name="Supported" lua="true">
+      <summary>Reports whether this platform can run a browser sign-in session.</summary>
+      <details>True on Apple platforms, where ASWebAuthenticationSession presents the provider's page and returns to the application. False elsewhere. Receiving links opened from outside the application additionally requires the link's URL scheme in the application bundle (package.lua URLSchemes).</details>
+      <returns type="nresults">A boolean indicating platform support.</returns>
+    </function>
+    <function name="Open" lua="true">
+      <summary>Opens a sign-in page in a private browser session and waits for its callback asynchronously.</summary>
+      <details>The url must use https. The session finishes when the page redirects to callbackScheme, a lowercase URL scheme such as appwrite-callback-PROJECT; Poll then returns a callback event with the full redirect url, or an error with code cancelled or failed. Only one session runs at a time; a new call cancels the previous one. The session shares no cookies with the system browser.</details>
+      <arg name="url" type="string">The https sign-in page.</arg>
+      <arg name="callbackScheme" type="string">URL scheme that completes the session.</arg>
+      <returns type="nresults">True when started, or nil and an error string.</returns>
+    </function>
+    <function name="Poll" lua="true">
+      <summary>Dequeues one sign-in event on the Lua thread.</summary>
+      <details>Returns nil when empty. Events have type callback (url) when a session started by Open completes, url (url) when the system opens the application with a link, such as an emailed sign-in link, or error (code, message). Links received before Lua starts stay queued. URLs are untrusted input; parse and validate them in the application. Platform callbacks never access Lua.</details>
+      <returns type="nresults">An event table, or nil.</returns>
+    </function>
+  </functions>
+</module>

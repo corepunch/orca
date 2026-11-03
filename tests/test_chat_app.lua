@@ -713,6 +713,49 @@ authApp.screen:findChild("Password", true).Text = "password123"
 click(authApp, "SignUp")
 assert(authApp.client:getSession() and authApp.screen:findChild("ConversationListAll", true), "Signup must reach the real mock service: " .. authApp.status:getTextContent())
 assert(authApp.authDraft == nil, "Successful authentication must clear form drafts")
+assert(not authApp.screen:findChild("ContinueApple", true), "Provider buttons need native browser sign-in")
+
+-- Apple and magic-link sign-in: a fake native module stands in for the browser
+-- session and the system's link delivery; the mock records the links it "sent".
+do
+    local transport, state = require("api.mock_transport").new()
+    local events, opened = {}, nil
+    local native = {
+        supported = function() return true end,
+        open = function(url, scheme) opened = { url = url, scheme = scheme }; return true end,
+        poll = function() return table.remove(events, 1) end,
+    }
+    local linkApp = App { client = assert(Chat.client { mode = "mock", url = "https://mock.invalid", transport = transport }),
+        signin = { native = native, manual = true } }
+    linkApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
+    linkApp:show()
+    assert(linkApp.screen:findChild("ContinueApple", true), "The sign-in page offers Apple where supported")
+    click(linkApp, "ContinueApple")
+    assert(opened and opened.url == "https://mock.invalid/oauth/apple" and opened.scheme == "appwrite-callback-mock",
+        "Continue with Apple opens the provider page in a browser session")
+    events[1] = { type = "error", code = "cancelled" }
+    linkApp.signin:poll()
+    assert(not linkApp.client:getSession() and not linkApp.screen:findChild("AuthStatus", true).Visible,
+        "Cancelling the provider page stays on sign-in without an error")
+    click(linkApp, "ContinueApple")
+    events[1] = { type = "callback", url = state.lastSignInLink }
+    linkApp.signin:poll(); drain(linkApp)
+    assert(linkApp.client:getSession().user.email == "apple@example.invalid", "The provider callback signs in")
+    linkApp:signOut(); drain(linkApp)
+    click(linkApp, "OtherOptions"); click(linkApp, "UseMagicLink")
+    assert(linkApp.screen:findChild("MagicLinkPage", true), "Options offer an emailed sign-in link")
+    linkApp.screen:findChild("Email", true).Text = "link_reader@example.invalid"
+    click(linkApp, "SendMagicLink")
+    assert(linkApp.screen:findChild("MagicLinkSent", true), "Sending a link explains where to find it")
+    events[1] = { type = "url", url = "appwrite-callback-mock://magic?userId=nobody&secret=wrong" }
+    linkApp.signin:poll(); drain(linkApp)
+    assert(not linkApp.client:getSession() and linkApp.screen:findChild("AuthStatus", true).Visible,
+        "A wrong link reports an error and stays signed out")
+    events[1] = { type = "url", url = state.lastSignInLink }
+    linkApp.signin:poll(); drain(linkApp)
+    assert(linkApp.client:getSession().user.email == "link_reader@example.invalid"
+        and linkApp.screen:findChild("ConversationListAll", true), "Opening the emailed link signs in to the inbox")
+end
 
 otpApp.screen:findChild("Email", true).Text = "demo@example.invalid"
 click(otpApp, "RequestCode")

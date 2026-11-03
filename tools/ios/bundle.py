@@ -23,6 +23,24 @@ def resource_filter(directory, names):
     return ignored
 
 
+# Kept identical to tools/xcode/common.py, which the Xcode generator imports.
+def url_schemes(project):
+    """Lowercase schemes from a literal `URLSchemes = { "a", "b" }` list in package.lua."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^URLSchemes\s*=\s*\{([^}]*)\}', package.read_text() if package.is_file() else '', re.MULTILINE)
+    schemes = re.findall(r'"([^"]*)"', match[1]) if match else []
+    for scheme in schemes:
+        if not re.fullmatch(r'[a-z][a-z0-9+.-]{0,127}', scheme):
+            raise ValueError('URLSchemes entries must be lowercase URL schemes: ' + scheme)
+    return schemes
+
+
+def url_types(project):
+    """CFBundleURLTypes for links the application opens, such as sign-in callbacks."""
+    schemes = url_schemes(project)
+    return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
+
+
 def compile_assets(project, bundle, sdk, minimum):
     """Compile an optional native icon catalog during an actual Make build."""
     catalog = project / 'Assets.xcassets'
@@ -91,6 +109,7 @@ def main():
         },
     }
     info.update(compile_assets(project, bundle, args.sdk, args.minimum))
+    info.update(url_types(project))
     languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')
                        if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))
     if languages:

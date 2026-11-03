@@ -42,7 +42,7 @@ def package(binary, project, bundle, identifier, display_name):
                 CFBundleName=display_name, CFBundleDisplayName=display_name,
                 CFBundleShortVersionString='1.0', CFBundleVersion='1',
                 CFBundleInfoDictionaryVersion='6.0', NSHighResolutionCapable=True,
-                ORCAProject='project', LSMinimumSystemVersion='11.0')
+                ORCAProject='project', LSMinimumSystemVersion='11.0', **ios_bundle.url_types(project))
     (contents / 'Info.plist').write_bytes(plistlib.dumps(info))
     (contents / 'PkgInfo').write_bytes(b'APPL????')
     libraries = sorted((contents / 'Frameworks').glob('*.so')) + sorted((contents / 'Frameworks').glob('*.dylib'))

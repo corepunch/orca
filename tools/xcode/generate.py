@@ -9,7 +9,7 @@ import plistlib
 import re
 import xml.etree.ElementTree as ET
 
-from common import ROOT, configuration, unity_sources, write
+from common import ROOT, configuration, unity_sources, url_types, write
 from pbxproj import load
 
 
@@ -158,7 +158,7 @@ def generate(args, app):
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
-                  'UserNotifications')
+                  'UserNotifications', 'AuthenticationServices')
     linker = ['$(inherited)', '-llua', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
@@ -244,6 +244,7 @@ def generate(args, app):
         archiveVersion=1, classes={}, objectVersion=56, objects=project.objects, rootObject=root)) + '\n')
     display_name = args.display_name or 'ORCA ' + name.replace('-', ' ').title()
     info = info_plist(display_name, launch_screen.stem if launch_screen.is_file() else None)
+    info.update(url_types(app_dir))
     if languages:
         info['CFBundleLocalizations'] = languages
     write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info).decode())

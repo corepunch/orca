@@ -62,6 +62,27 @@ check(assert(guest:getProfile()).phone == "+4915110000002", "The saved number su
 check(guest:getSession().user.id == newId, "Saving a number preserves account identity")
 reject(function() return guest:requestIdentityLink("alex@example.invalid") end, "identity_exists")
 
+-- Magic links: the emailed link signs in once; an unknown address gets a new account.
+reject(function() return client():requestMagicLink("+4915110000002") end, "validation")
+local magic = client()
+assert(magic:requestMagicLink("Magic@example.invalid"))
+local link = state.lastSignInLink
+check(link:match("^appwrite%-callback%-mock://magic%?userId=") ~= nil, "The mock records the emailed link")
+reject(function() return magic:completeSignInLink(link:gsub("secret=[^&]+", "secret=wrong")) end, "user_invalid_token")
+check(assert(magic:completeSignInLink(link)).user.email == "magic@example.invalid", "A magic link signs in its address")
+reject(function() return client():completeSignInLink(link) end, "user_invalid_token")
+local returning = client()
+assert(returning:requestMagicLink("demo@example.invalid"))
+check(assert(returning:completeSignInLink(state.lastSignInLink)).user.id == "me", "A magic link reuses the existing account")
+reject(function() return client():completeSignInLink("appwrite-callback-mock://magic") end, "invalid_link")
+-- Provider sign-in: the app opens an https page and finishes from its callback URL.
+reject(function() return client():authorizeProvider("facebook") end, "validation")
+local provider = client()
+local page = assert(provider:authorizeProvider("apple"))
+check(page.url:match("^https://") and page.scheme == "appwrite-callback-mock", "Provider pages are https with a callback scheme")
+check(assert(provider:completeSignInLink(state.lastSignInLink)).user.email == "apple@example.invalid", "The provider callback signs in")
+reject(function() return client():completeSignInLink("appwrite-callback-mock://oauth?error=%7B%22message%22%3A%22no%22%7D") end, "provider_failed")
+
 -- Secure email change may require confirmations from both old and new inboxes.
 local proofRequests, proofResponses = {}, {
     { status = 200, body = { access_token = "proof-access", refresh_token = "proof-refresh", expires_in = 3600,

@@ -323,6 +323,9 @@ function Chat.appwrite(options)
   if options.transport ~= nil and type(options.transport) ~= "function" then
     return failure("configuration", "Provide an HTTP transport function.")
   end
+  if options.magicLinkUrl ~= nil and (type(options.magicLinkUrl) ~= "string" or not options.magicLinkUrl:match("^https://[%w%.%-]+/")) then
+    return failure("configuration", "Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset.")
+  end
   return Chat.client { mode = "appwrite", url = endpoint, clock = options.clock,
     transport = require("api.appwrite_transport").new(options) }
 end

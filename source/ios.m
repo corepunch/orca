@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIApplication.h>
 #import <UIKit/UIScene.h>
+#import <UIKit/UISceneOptions.h>
 #import <UIKit/UISceneSession.h>
 #import <UIKit/UISceneConfiguration.h>
 #import <UserNotifications/UserNotifications.h>
@@ -20,6 +21,7 @@
 #include "ios_animation.h"
 #include <source/core/animation.h>
 #include "notifications/notifications_native.h"
+#include "signin/signin_native.h"
 
 int luaopen_orca(lua_State *L);
 
@@ -279,6 +281,8 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
       options:(UISceneConnectionOptions *)options
 {
   if (options.notificationResponse) Notifications_AppleOpen(options.notificationResponse);
+  // A link that launched the app, such as an emailed sign-in link, waits for Lua.
+  for (UIOpenURLContext *context in options.URLContexts) Signin_AppleOpenURL(context.URL);
   if (![scene isKindOfClass:[UIWindowScene class]] || ![self start]) return;
   _displayLink = [[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)] retain];
   // Ask for the panel's full rate on ProMotion devices; iPhones also need
@@ -307,6 +311,11 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   axPostMessageW(NULL, ID_Window_Activated, 0, NULL);
   _active = YES;
   _displayLink.paused = NO;
+}
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)contexts
+{
+  (void)scene;
+  for (UIOpenURLContext *context in contexts) Signin_AppleOpenURL(context.URL);
 }
 - (void)sceneDidDisconnect:(UIScene *)scene { [self stop]; }
 - (void)dealloc { [self stop]; [super dealloc]; }

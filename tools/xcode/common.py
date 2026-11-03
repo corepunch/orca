@@ -24,6 +24,23 @@ def configuration(root=ROOT):
     return values
 
 
+def url_schemes(project):
+    """Lowercase schemes from a literal `URLSchemes = { "a", "b" }` list in package.lua."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^URLSchemes\s*=\s*\{([^}]*)\}', package.read_text() if package.is_file() else '', re.MULTILINE)
+    schemes = re.findall(r'"([^"]*)"', match[1]) if match else []
+    for scheme in schemes:
+        if not re.fullmatch(r'[a-z][a-z0-9+.-]{0,127}', scheme):
+            raise ValueError('URLSchemes entries must be lowercase URL schemes: ' + scheme)
+    return schemes
+
+
+def url_types(project):
+    """CFBundleURLTypes for links the application opens, such as sign-in callbacks."""
+    schemes = url_schemes(project)
+    return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
+
+
 def unity_sources(root=ROOT):
     config = configuration(root)
     units = {}

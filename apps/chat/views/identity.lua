@@ -69,13 +69,56 @@ function Identity.auth(self, mode)
     -- Every form keeps one primary action and one way out, after Microsoft's
     -- "Other sign-in options"; the options page lists the alternatives.
     local function others() return link(t("Other sign-in options"), "OtherOptions", "/auth/options") end
+    -- Provider pages open in a private browser session; the app finishes the
+    -- sign-in when the page returns. Shown only where the platform supports it.
+    local function providers()
+        local signin = self.signin
+        if not signin or not signin.supported then return nil end
+        local function provider(name, label, id)
+            return C.button(label, function()
+                if busy then return end
+                remember()
+                self:notice("")
+                local ok, err = signin:start(id)
+                if not ok then self:notice(err and err.message or t("Please try again."), true) end
+            end, { Name = name, Height = 52, FontSize = 16, Background = "#00000000" })
+        end
+        return C.stack({ Name = "ProviderSignIn", Spacing = 12 }, {
+            provider("ContinueApple", t("Continue with Apple"), "apple"),
+        })
+    end
     local title, description, form
     if mode == "options" then
         title, description = t("sign-in options"), t("Choose another way to continue.")
         form = C.stack({ Name = "OptionsPage", Spacing = 0 }, {
             C.command("UseEmailCode", "mail", t("Email me a sign-in code"), function() go("/auth") end),
+            C.command("UseMagicLink", "link", t("Email me a sign-in link"), function() go("/auth/magic") end),
             C.command("UsePassword", "key-round", t("Email and password"), function() go("/auth/email") end),
             C.command("CreateAccount", "user-round-plus", t("Create an account"), function() go("/auth/signup") end),
+        })
+    elseif mode == "magic" then
+        title, description = t("sign in"), t("We'll email you a link. Open it on this device to sign in, or to create your account.")
+        local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
+        form = C.stack({ Name = "MagicLinkPage", Spacing = 16 }, {
+            field(t("Email address"), email),
+            action(t("Email me a link"), "SendMagicLink", t("Sending link…"), function()
+                local result, err = self.client:requestMagicLink(email.Text)
+                if not result then self:notice(err.message, true); return end
+                self.loginIdentifier = result.identifier
+                self:show("/auth/magic-sent")
+            end), self.status, others(),
+        })
+        email.Submit = function() form:findChild("SendMagicLink"):send("Node.LeftButtonUp") end
+    elseif mode == "magic-sent" then
+        title, description = t("check your email"), t("We sent a sign-in link to %{identifier}. Open it on this device to continue.",
+            { identifier = self.loginIdentifier or t("your email") })
+        form = C.stack({ Name = "MagicLinkSent", Spacing = 16 }, {
+            action(t("Resend link"), "ResendMagicLink", t("Sending link…"), function()
+                local result, err = self.client:requestMagicLink(self.loginIdentifier)
+                self:notice(result and t("A new link is on its way.") or err.message, not result)
+            end, true), self.status,
+            link(t("Change email"), "ChangeIdentifier", "/auth/magic"),
+            others(),
         })
     elseif mode == "email" or mode == "signup" then
         local signup = mode == "signup"
@@ -125,8 +168,11 @@ function Identity.auth(self, mode)
             field(t("Email address"), email),
             action(t("Email me a code"), "RequestCode", t("Sending code…"), function()
                 requestCode(email.Text, "/auth")
-            end), self.status, others(),
+            end), self.status,
         })
+        local buttons = providers()
+        if buttons then form:addChild(buttons) end
+        form:addChild(others())
         email.Submit = function() form:findChild("RequestCode"):send("Node.LeftButtonUp") end
     end
     local brand = ui.Grid { Name = "AuthBrand", Columns = "36px 1fr", Height = 36, Spacing = 12, MarginBottom = 12 }

@@ -5,7 +5,7 @@ These are raw SVGs from the official
 downloaded on 2026-10-23 (`users-round`, `megaphone`, `compass`, `ticket`,
 `smartphone`, `mail`, `key-round`, `user-round-plus` and `check` on 2026-10-30,
 `camera`, `users` and `settings` on 2026-10-31, `at-sign` and `pencil`
-on 2026-11-03).
+on 2026-11-03, `link` on 2026-11-03 from the `lucide-static` 1.67.0 package).
 The upstream license is included in `LICENSE`.
 
 All are unmodified except `check-bold.svg`: Lucide's `check` with

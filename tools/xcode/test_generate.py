@@ -163,6 +163,15 @@ class GenerateProjectTests(unittest.TestCase):
                 for settings in self.effective_configurations(project).values():
                     self.assertEqual(self.read_info(bundle, settings)['CFBundleLocalizations'], ['en', 'ru'])
 
+    def test_package_url_schemes_become_bundle_url_types(self):
+        bundle = self.generate('chat')
+        project = self.read_project(bundle)
+        for settings in self.effective_configurations(project).values():
+            types = self.read_info(bundle, settings)['CFBundleURLTypes']
+            self.assertEqual(types[0]['CFBundleURLSchemes'], ['appwrite-callback-69f1c06800389dc6a1a0'])
+        self.assertNotIn('CFBundleURLTypes', self.read_info(self.generate('octopus'),
+            next(iter(self.effective_configurations(self.read_project(self.generate('octopus'))).values()))))
+
     def test_engine_navigator_contains_only_generated_unity_sources(self):
         project = self.read_project(self.generate())
         objects = project['objects']

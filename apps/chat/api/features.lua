@@ -38,6 +38,44 @@ return function(Client, helpers)
         if not data then return nil, err end
         return self:_setSession(data)
     end
+    -- Passwordless links: an emailed magic link, or an Apple/Google page in a browser
+    -- session. Both return to the app with userId and secret in the query string.
+    function Client:requestMagicLink(value)
+        local field, normalized = email(value)
+        if not field then return failure("validation", "Enter a valid email address.") end
+        local data, err = self:_request("POST", "/auth/v1/magiclink", { email = normalized })
+        if not data then return nil, err end
+        return { identifier = normalized, delivery = "email" }
+    end
+    function Client:authorizeProvider(provider)
+        if provider ~= "apple" and provider ~= "google" then return failure("validation", "Choose Apple or Google.") end
+        local data, err = self:_request("POST", "/auth/v1/authorize", { provider = provider })
+        if not data then return nil, err end
+        if type(data.url) ~= "string" or not data.url:match("^https://") or type(data.scheme) ~= "string" then
+            return failure("invalid_response", "The sign-in service returned an invalid page.")
+        end
+        return data
+    end
+    local function query(url)
+        local values = {}
+        for key, value in (url:match("%?([^#]*)") or ""):gmatch("([^&=]+)=([^&]*)") do
+            values[key] = value:gsub("%+", " "):gsub("%%(%x%x)", function(hex) return string.char(tonumber(hex, 16)) end)
+        end
+        return values
+    end
+    function Client:completeSignInLink(url)
+        if type(url) ~= "string" or #url > 4096 then return failure("invalid_link", "This sign-in link is invalid. Request a new one.") end
+        local values = query(url)
+        if not values.secret and values.error then
+            return failure("provider_failed", "The provider did not complete sign-in. Please try again.")
+        end
+        if type(values.userId) ~= "string" or type(values.secret) ~= "string" or values.secret == "" then
+            return failure("invalid_link", "This sign-in link is invalid. Request a new one.")
+        end
+        local data, err = self:_request("POST", "/auth/v1/link-session", { userId = values.userId, secret = values.secret })
+        if not data then return nil, err end
+        return self:_setSession(data)
+    end
     function Client:requestIdentityLink(value)
         local field, normalized = email(value)
         if not field then return failure("validation", "Enter a valid email address.") end
