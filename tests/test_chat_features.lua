@@ -35,6 +35,7 @@ end
 
 reject(function() return guest:requestCode("555123") end, "validation")
 reject(function() return guest:requestCode("+01234567890") end, "validation")
+reject(function() return guest:requestCode("+4915110000002") end, "validation") -- no SMS sign-in
 reject(function() return guest:verifyCode("new@example.invalid", "12345") end, "validation")
 check(assert(guest:requestCode("NEW@example.invalid")).identifier == "new@example.invalid", "Normalize email")
 reject(function() return guest:requestCode("new@example.invalid") end, "over_request_rate_limit")
@@ -53,13 +54,13 @@ check(assert(guest:updateProfile { notification_previews = false }).notification
 check(assert(guest:getProfile()).notification_previews == false, "Preview opt-out survives a profile reload")
 reject(function() return guest:updateProfile { notification_previews = "false" } end, "validation")
 check(assert(guest:getProfile()).notification_previews == false, "Invalid preview changes preserve the saved preference")
-assert(guest:requestIdentityLink("+49 (151) 1000-0002"))
-reject(function() return owner:verifyIdentityLink("+4915110000002", "123456") end, "otp_expired")
-check(assert(guest:verifyIdentityLink("+4915110000002", "123456")).phone == "+4915110000002", "Link verifies canonical phone")
-check(guest:getSession().user.id == newId, "Linking preserves account identity")
+-- A phone number is a typed profile detail: no SMS, saved in E.164, removable.
+reject(function() return guest:requestIdentityLink("+49 (151) 1000-0002") end, "validation")
+reject(function() return guest:updateProfile { phone = "151 1000" } end, "validation")
+check(assert(guest:updateProfile { phone = "0049 (151) 1000-0002" }).phone == "+4915110000002", "Phone saves in canonical E.164")
+check(assert(guest:getProfile()).phone == "+4915110000002", "The saved number survives a profile reload")
+check(guest:getSession().user.id == newId, "Saving a number preserves account identity")
 reject(function() return guest:requestIdentityLink("alex@example.invalid") end, "identity_exists")
-local phoneLogin = client(); register(phoneLogin, "+4915110000002")
-check(phoneLogin:getSession().user.id == newId, "Verified phone signs in to the same account")
 
 -- Secure email change may require confirmations from both old and new inboxes.
 local proofRequests, proofResponses = {}, {
@@ -91,13 +92,15 @@ reject(function() return guest:updateProfile { username = "alex" } end, "23505")
 reject(function() return guest:updateProfile { username = "a!" } end, "validation")
 reject(function() return guest:updateProfile { email = "forged@example.invalid" } end, "validation")
 check(#assert(owner:findPeople("new@example.invalid")) == 0, "Email discovery defaults private")
-assert(guest:updateProfile { discoverable_email = true, discoverable_phone = true })
+reject(function() return guest:updateProfile { discoverable_phone = true } end, "validation")
+assert(guest:updateProfile { discoverable_email = true })
 local result = assert(owner:findPeople("new@example.invalid"))[1]
 check(result.id == newId and result.email == nil and result.phone == nil and result.notification_previews == nil,
     "Discovery returns public profile fields only")
 check(assert(owner:findPeople("@new_reader"))[1].id == newId, "Exact username discovery")
 check(#assert(owner:findPeople("reader")) == 0, "No partial username directory")
-check(assert(owner:findPeople("+49 151 1000 0002"))[1].id == newId, "Phone lookup uses canonical E164")
+check(#assert(owner:findPeople("+49 151 1000 0002")) == 0, "An unverified number never makes its owner discoverable")
+check(assert(guest:updateProfile { phone = "" }).phone == nil, "An empty number removes it")
 assert(guest:updateProfile { discoverable_email = false })
 check(#assert(owner:findPeople("new@example.invalid")) == 0, "Discovery opt-out applies immediately")
 local rateClient = client(); register(rateClient, "rate@example.invalid")

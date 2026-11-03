@@ -9,7 +9,7 @@ local Identity = {}
 -- Each authentication route constructs only its own form. Drafts belong to the
 -- app, so switching methods never leaves hidden, focusable inputs in the tree.
 function Identity.auth(self, mode)
-    mode = mode or "phone"
+    mode = mode or "email-code"
     self.authDraft = self.authDraft or {}
     local draft, busy = self.authDraft, false
     local fields = {}
@@ -21,7 +21,6 @@ function Identity.auth(self, mode)
         return field
     end
     local function remember()
-        if fields.Identifier then draft.phone = fields.Identifier.Text end
         if fields.Email then draft.email = fields.Email.Text end
         if fields.DisplayName then draft.name = fields.DisplayName.Text end
     end
@@ -74,21 +73,10 @@ function Identity.auth(self, mode)
     if mode == "options" then
         title, description = t("sign-in options"), t("Choose another way to continue.")
         form = C.stack({ Name = "OptionsPage", Spacing = 0 }, {
-            C.command("UsePhone", "smartphone", t("Phone number"), function() go("/auth") end),
-            C.command("UseEmailCode", "mail", t("Email me a sign-in code"), function() go("/auth/email-code") end),
+            C.command("UseEmailCode", "mail", t("Email me a sign-in code"), function() go("/auth") end),
             C.command("UsePassword", "key-round", t("Email and password"), function() go("/auth/email") end),
             C.command("CreateAccount", "user-round-plus", t("Create an account"), function() go("/auth/signup") end),
         })
-    elseif mode == "email-code" then
-        title, description = t("sign in"), t("We'll email you a code. New here? The same code creates your account.")
-        local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
-        form = C.stack({ Name = "EmailCodePage", Spacing = 16 }, {
-            field(t("Email address"), email),
-            action(t("Email me a code"), "SendEmailCode", t("Sending code…"), function()
-                requestCode(email.Text, "/auth/email-code")
-            end), self.status, others(),
-        })
-        email.Submit = function() form:findChild("SendEmailCode"):send("Node.LeftButtonUp") end
     elseif mode == "email" or mode == "signup" then
         local signup = mode == "signup"
         title = signup and t("create account") or t("sign in")
@@ -114,7 +102,7 @@ function Identity.auth(self, mode)
         if signup then fields.DisplayName.Submit = function() email:setFocus() end end
         form:addChild(others())
     elseif mode == "code" then
-        title, description = t("check your messages"), t("Enter the code sent to %{identifier}.", { identifier = self.loginIdentifier or t("your phone") })
+        title, description = t("check your email"), t("Enter the code sent to %{identifier}.", { identifier = self.loginIdentifier or t("your email") })
         local code = input("VerificationCode", t("6-digit code"), nil, { Type = "Number" })
         form = C.stack({ Name = "CodeStep", Spacing = 16 }, {
             field(t("Verification code"), code),
@@ -126,26 +114,20 @@ function Identity.auth(self, mode)
                 local result, err = self.client:requestCode(self.loginIdentifier)
                 self:notice(result and t("A new code is on its way.") or err.message, not result)
             end, true),
-            link(t("Change phone number or email"), "ChangeIdentifier", self.loginReturnRoute or "/auth"),
+            link(t("Change email"), "ChangeIdentifier", self.loginReturnRoute or "/auth"),
         })
         code.Submit = function() form:findChild("VerifyCode"):send("Node.LeftButtonUp") end
     else
-        title, description = t("your phone"), t("Your people are one message away. Sign in or get started with your number.")
-        local phone = input("Identifier", "+49 151 1234 5678", draft.phone, { Type = "Phone" })
-        form = C.stack({ Name = "PhonePage", Spacing = 16 }, {
-            field(t("Phone number"), phone),
-            C.text(t("Include + and your country code. We'll send you a verification code."), {
-                FontSize = 13, class = "chat-muted", WordWrap = true }),
-            action(t("Continue"), "RequestCode", t("Sending code…"), function()
-                if not phone.Text:match("^%s*%+") then
-                    self:notice(t("Enter your phone number with + and country code."), true)
-                    phone:setFocus()
-                    return
-                end
-                requestCode(phone.Text, "/auth")
+        -- Email codes are the default way in: no password to remember and no SMS cost.
+        title, description = t("sign in"), t("We'll email you a code. New here? The same code creates your account.")
+        local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
+        form = C.stack({ Name = "EmailCodePage", Spacing = 16 }, {
+            field(t("Email address"), email),
+            action(t("Email me a code"), "RequestCode", t("Sending code…"), function()
+                requestCode(email.Text, "/auth")
             end), self.status, others(),
         })
-        phone.Submit = function() form:findChild("RequestCode"):send("Node.LeftButtonUp") end
+        email.Submit = function() form:findChild("RequestCode"):send("Node.LeftButtonUp") end
     end
     local brand = ui.Grid { Name = "AuthBrand", Columns = "36px 1fr", Height = 36, Spacing = 12, MarginBottom = 12 }
     local logo = C.appIcon(36)
@@ -162,7 +144,7 @@ function Identity.auth(self, mode)
         }), form,
     })
     if not self.remote then
-        body:addChild(C.text(t("Offline demo · +4915110000001 · code 123456\nEmail: demo@example.invalid · password123"), {
+        body:addChild(C.text(t("Offline demo · code 123456\nEmail: demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
     end
     return self:frame(body)
@@ -177,7 +159,9 @@ local function profileBody(self, profile)
     profile = profile or { display_name = (user.user_metadata or {}).display_name or t("You") }
     local name = C.input("ProfileName", t("Your name"), { Text = profile.display_name or t("You") })
     local username = C.input("Username", t("Choose a public username"), { Text = profile.username or "" })
-    local identifier = C.input("LinkIdentifier", t("Phone number or email to verify"))
+    local identifier = C.input("LinkIdentifier", t("New email address"), { Type = "Email" })
+    -- The number is a private contact detail, saved as typed without an SMS check.
+    local phone = C.input("PhoneNumber", "+49 151 1234 5678", { Type = "Phone", Text = profile.phone or "" })
     local code = C.input("LinkCode", t("Verification code"), { Type = "Number" })
     local function statusText(id)
         return C.text("", { Name = id, Visible = false, WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
@@ -197,22 +181,17 @@ local function profileBody(self, profile)
     local link = C.stack({ Name = "LinkForm", Visible = false, Spacing = 10 })
     -- One editor is open at a time, directly under the row that opened it.
     local editors = {}
-    local function open(editor, placeholder)
+    local function open(editor)
         for _, other in ipairs(editors) do other.Visible = other == editor and not editor.Visible end
-        if placeholder then identifier.PlaceholderText = placeholder end
         notice("")
     end
     local nameRow = C.setting("NameSetting", "pencil", t("Name"), function() open(editors[1]) end)
     local usernameRow = C.setting("UsernameSetting", "at-sign", t("Username"), function() open(editors[2]) end)
-    local phoneRow = C.setting("PhoneSetting", "smartphone", t("Mobile"), function()
-        open(link, t("New phone number"))
-    end)
-    local emailRow = C.setting("EmailSetting", "mail", t("Email"), function()
-        open(link, t("New email address"))
-    end)
+    local phoneRow = C.setting("PhoneSetting", "smartphone", t("Mobile"), function() open(editors[3]) end)
+    local emailRow = C.setting("EmailSetting", "mail", t("Email"), function() open(link) end)
     -- Telegram's header line: the phone and @username people know you by.
     local function describe(p)
-        local phone, email = p.phone or user.phone, p.email or user.email
+        local phone, email = p.phone, p.email or user.email
         phone, email = (phone or "") ~= "" and phone or nil, (email or "") ~= "" and email or nil
         local at = (p.username or "") ~= "" and "@" .. p.username or nil
         title:setTextContent(p.display_name or t("You"))
@@ -235,19 +214,25 @@ local function profileBody(self, profile)
             return
         end
         describe(result)
+        if values.phone then phone.Text = result.phone or "" end
         return result
     end
-    local function editor(id, field, values)
-        local bar = ui.Grid { Name = id, Columns = "1fr auto", Spacing = 6, MarginBottom = 8, Visible = false }
+    -- `hint` puts a caption under the field; a saved change closes the editor.
+    local function editor(id, field, values, hint)
+        local bar = ui.Grid { Name = id .. "Bar", Columns = "1fr auto", Spacing = 6 }
+        local box = C.stack({ Name = id, Spacing = 6, MarginBottom = 8, Visible = false }, { bar })
         bar:addChild(field)
         bar:addChild(C.button(t("save"), function()
-            if save(values()) then bar.Visible = false end
+            if save(values()) then box.Visible = false end
         end, { Name = id .. "Save", Width = 88, class = "chat-primary" }))
-        return bar
+        if hint then box:addChild(C.text(hint, { FontSize = 13, class = "chat-muted", WordWrap = true })) end
+        return box
     end
     editors[1] = editor("NameEditor", name, function() return { display_name = name.Text } end)
     editors[2] = editor("UsernameEditor", username, function() return { username = username.Text } end)
-    editors[3] = link
+    editors[3] = editor("PhoneEditor", phone, function() return { phone = phone.Text } end,
+        t("Include + and your country code. Only you can see your number."))
+    editors[4] = link
     local function toggle(id, label, key, checked)
         local box, restoring
         box = C.checkbox(id, label, checked, function(value)
@@ -260,7 +245,9 @@ local function profileBody(self, profile)
         end, true)
         return box
     end
-    local phoneToggle = toggle("DiscoverablePhone", t("Find me by phone"), "discoverable_phone", profile.discoverable_phone == true)
+    -- Phone discovery needs a verified number; only accounts that already have it keep the switch.
+    local phoneToggle = profile.discoverable_phone == true
+        and toggle("DiscoverablePhone", t("Find me by phone"), "discoverable_phone", true) or nil
     local emailToggle = toggle("DiscoverableEmail", t("Find me by email"), "discoverable_email", profile.discoverable_email == true)
     local previewToggle = toggle("NotificationPreviews", t("Message previews"), "notification_previews",
         profile.notification_previews ~= false)
@@ -298,11 +285,11 @@ local function profileBody(self, profile)
         ProfileAvatar.controls(self, photo, self.status),
         self.status,
         C.eyebrow(t("account")),
-        rows { nameRow, editors[1], usernameRow, editors[2], phoneRow, emailRow },
+        rows { nameRow, editors[1], usernameRow, editors[2], phoneRow, editors[3], emailRow },
         link,
         settingsStatus,
         C.eyebrow(t("privacy")),
-        rows { phoneToggle, emailToggle },
+        rows(phoneToggle and { phoneToggle, emailToggle } or { emailToggle }),
         C.eyebrow(t("notifications")),
         rows { previewToggle },
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),

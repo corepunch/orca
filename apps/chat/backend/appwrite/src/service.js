@@ -8,6 +8,13 @@ const staff = member => member && ['owner', 'admin'].includes(member.role);
 const posting = (room, member) => member && (room.kind !== 'channel' || staff(member));
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/.test(value);
 const id = value => { if (!validId(value)) reject(400, 'validation', 'Choose a valid resource.'); return value; };
+// A typed contact number in E.164; null or an empty string removes it.
+const phoneNumber = value => {
+  if (value === null || value === '') return null;
+  const phone = typeof value === 'string' ? value.replace(/[\s().-]/g, '').replace(/^00/, '+') : '';
+  if (!/^\+[1-9]\d{7,14}$/.test(phone)) reject(400, 'validation', 'Enter the number with + and your country code.');
+  return phone;
+};
 const memberId = (roomId, userId) => key('member:' + roomId + ':' + userId);
 const publicProfile = profile => ({ id: profile.id, display_name: profile.display_name, username: profile.username,
   avatar_id: profile.avatar_id || null });
@@ -36,12 +43,17 @@ export class ChatService {
   }
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {
-    const email = user.emailVerification ? user.email.toLowerCase() : null, phone = user.phoneVerification ? user.phone : null;
-    const values = previous => ({ display_name: previous?.display_name || user.name || '', username: previous?.username || null,
-      avatar_id: previous?.avatar_id || null,
-      notification_previews: previous?.notification_previews !== false,
-      email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
-      discoverable_phone: !!(phone && previous?.phone === phone && previous.discoverable_phone) });
+    const email = user.emailVerification ? user.email.toLowerCase() : null, verifiedPhone = user.phoneVerification ? user.phone : null;
+    // The phone is a private contact detail the owner types in settings. An older
+    // verified login phone seeds it, and only that verified number stays discoverable.
+    const values = previous => {
+      const phone = previous ? previous.phone || null : verifiedPhone;
+      return { display_name: previous?.display_name || user.name || '', username: previous?.username || null,
+        avatar_id: previous?.avatar_id || null,
+        notification_previews: previous?.notification_previews !== false,
+        email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
+        discoverable_phone: !!(phone && phone === verifiedPhone && previous?.discoverable_phone) };
+    };
     const unchanged = (previous, row) => previous && Object.entries(row).every(([field, value]) =>
       (field === 'notification_previews' ? previous[field] !== false : previous[field]) === value);
     const previous = await this.repo.get('profiles', user.$id);
@@ -60,7 +72,7 @@ export class ChatService {
   }
   async updateProfile(user, values) {
     if (!values || typeof values !== 'object' || Array.isArray(values)) reject(400, 'validation', 'Provide profile changes.');
-    const allowed = ['display_name', 'username', 'discoverable_email', 'discoverable_phone', 'notification_previews'];
+    const allowed = ['display_name', 'username', 'phone', 'discoverable_email', 'discoverable_phone', 'notification_previews'];
     if (Object.keys(values).some(field => !allowed.includes(field))) reject(400, 'validation', 'Profiles cannot change login identifiers.');
     if ('notification_previews' in values && typeof values.notification_previews !== 'boolean')
       reject(400, 'validation', 'Message previews must be on or off.');
@@ -84,9 +96,14 @@ export class ChatService {
         }
         row.username = values.username || null;
       }
+      if ('phone' in values) {
+        row.phone = phoneNumber(values.phone);
+        if (row.phone !== (user.phoneVerification ? user.phone : null)) row.discoverable_phone = false;
+      }
       for (const field of ['email', 'phone']) if ('discoverable_' + field in values) {
         const value = values['discoverable_' + field];
-        if (typeof value !== 'boolean' || value && !row[field]) reject(400, 'validation', 'Discovery needs a verified identifier.');
+        const verified = field === 'email' ? !!row.email : !!row.phone && user.phoneVerification && user.phone === row.phone;
+        if (typeof value !== 'boolean' || value && !verified) reject(400, 'validation', 'Discovery needs a verified identifier.');
         row['discoverable_' + field] = value;
       }
       const saved = await this.repo.update('profiles', user.$id, row);

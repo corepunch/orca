@@ -110,11 +110,13 @@ claiming historical fidelity.
   Telegram screenshots (`#01a8e6`), lifted a quarter toward white for small
   text on black. Filled buttons keep Messenger blue. Links and
   commands use `accentText`, and filled actions use `accent`, on every screen.
-- Sign-in starts with the phone number, as Telegram does: one number signs
-  in or creates the account. Each auth form has one primary action and one
-  "Other sign-in options" link, after Microsoft Teams' sign-in. That link
-  opens an options page of command rows: phone number, email code, email and
-  password, create an account. The code step keeps resend and change-number.
+- Sign-in starts with an emailed code: one address signs in or creates the
+  account (user decision, 2026-11-03, replacing Telegram's phone-first entry).
+  Each auth form has one primary action and one "Other sign-in options" link,
+  after Microsoft Teams' sign-in. That link opens an options page of command
+  rows: email code, email and password, create an account. The code step keeps
+  resend and change-email. The phone number is an optional settings field with
+  the phone keypad and a leading `+` and country code.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after
   Microsoft Teams' sign-in; raised by half from 4 points the same day): every
   visible rectangular corner is 6 points, on text fields, outlined and filled

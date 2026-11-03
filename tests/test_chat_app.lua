@@ -473,13 +473,13 @@ assert(ring.className == "VectorView" and tostring(ring.Source):match("/orca/UIK
     "App bar buttons draw their circle from the shared vector ring: " .. tostring(ring.Source))
 -- The keyboard lifts a focused field it would cover above itself and the app bar.
 drain(app)
--- Tapping the Number row opens the field for a new number, as in Telegram.
-assert(not profile:findChild("LinkForm", true).Visible, "Linking stays closed until a login detail is tapped")
+-- Tapping the Mobile row opens the number field in place, as in Telegram.
+assert(not profile:findChild("PhoneEditor", true).Visible, "The number editor stays closed until its row is tapped")
 profile:findChild("PhoneSetting", true):send("Node.LeftButtonUp")
 drain(app)
-local identifier = assert(profile:findChild("LinkIdentifier", true))
-assert(profile:findChild("LinkForm", true).Visible and identifier.PlaceholderText == "New phone number",
-    "The Number row opens the link field for a phone number")
+local identifier = assert(profile:findChild("PhoneNumber", true))
+assert(profile:findChild("PhoneEditor", true).Visible and not profile:findChild("LinkForm", true).Visible
+    and identifier.Type == "Phone", "The Mobile row opens a phone keypad field, not email verification")
 local function bottomOnScreen(node)
     local y = node.ActualY + node.ActualHeight
     for parent in function(_, p) p = p:getParent(); return p ~= profile and p or nil end, nil, node do
@@ -643,9 +643,9 @@ local authApp = App { client = Chat.mock() }
 authApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
 authApp:show()
 local phonePage = authApp.screen
-assert(phonePage:findChild("PhonePage", true) and not phonePage:findChild("Email", true),
-    "Phone entry must contain only the phone form")
-assert(phonePage:findChild("Identifier", true).Type == "Phone", "Phone entry must request an international phone keypad")
+assert(phonePage:findChild("EmailCodePage", true) and not phonePage:findChild("Password", true)
+    and not phonePage:findChild("Identifier", true), "Sign-in starts with the email code form only, without a phone number")
+assert(phonePage:findChild("Email", true).Type == "Email", "Email code entry must request the email keyboard")
 assert(namedCount(phonePage, "AuthLogo") == 1, "Authentication needs exactly one logo")
 local wordmark = phonePage:findChild("AuthWordmark", true)
 assert(wordmark:getTextContent() == "ORCA / CHAT" and wordmark.FontSize == 14,
@@ -654,22 +654,23 @@ phonePage:UpdateLayout(390, 844)
 local logo = phonePage:findChild("AuthLogo", true)
 assert(math.abs(wordmark.ActualY + wordmark.ActualHeight / 2 - logo.ActualY - logo.ActualHeight / 2) < 0.5,
     "Wordmark and logo must share the same vertical center")
-phonePage:findChild("Identifier", true).Text = "+4915110000001"
+phonePage:findChild("Email", true).Text = "code@example.invalid"
 -- Each form offers one way out, as after Microsoft's "Other sign-in options".
-for _, name in ipairs { "UsePassword", "CreateAccount", "UsePhone" } do
-    assert(not phonePage:findChild(name, true), "Alternatives live on the options page, not the phone form")
+for _, name in ipairs { "UsePassword", "CreateAccount", "UseEmailCode" } do
+    assert(not phonePage:findChild(name, true), "Alternatives live on the options page, not the code form")
 end
 click(authApp, "OtherOptions")
 local options = authApp.screen
 assert(options:findChild("OptionsPage", true) and options:findChild("UseEmailCode", true), "Options list every way in")
+assert(not options:findChild("UsePhone", true), "Phone numbers are not a way to sign in")
 click(authApp, "UsePassword")
 assert(authApp.screen ~= phonePage and authApp.screen:findChild("EmailPage", true),
     "Use email must navigate to a separate page")
-assert(not authApp.screen:findChild("Identifier", true) and not authApp.screen:findChild("DisplayName", true),
-    "Email sign-in must not append phone or registration fields")
+assert(not authApp.screen:findChild("DisplayName", true), "Email sign-in must not append registration fields")
+assert(authApp.screen:findChild("Email", true).Text == "code@example.invalid", "Switching methods keeps the email draft")
 authApp.screen:findChild("Email", true).Text = "demo@example.invalid"
 authApp.screen:findChild("Password", true).Text = "do not retain this"
-assert(not authApp.screen:findChild("SendEmailCode", true) and not authApp.screen:findChild("CreateAccount", true),
+assert(not authApp.screen:findChild("RequestCode", true) and not authApp.screen:findChild("CreateAccount", true),
     "The password form keeps one primary action and one link")
 click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 assert(authApp.screen:findChild("SignUpPage", true) and not authApp.screen:findChild("SignIn", true),
@@ -678,8 +679,9 @@ assert(authApp.screen:findChild("Email", true).Text == "demo@example.invalid")
 assert(authApp.screen:findChild("Email", true).Type == "Email", "Signup must also request the email keyboard")
 assert(authApp.screen:findChild("Password", true).Text == "", "Passwords must not carry between pages")
 authApp.screen:findChild("DisplayName", true).Text = "New friend"
-click(authApp, "OtherOptions"); click(authApp, "UsePhone")
-assert(authApp.screen:findChild("Identifier", true).Text == "+4915110000001", "Returning to phone must preserve the number")
+click(authApp, "OtherOptions"); click(authApp, "UseEmailCode")
+assert(authApp.screen:findChild("EmailCodePage", true) and authApp.screen:findChild("Email", true).Text == "demo@example.invalid",
+    "Returning to the code form must preserve the email")
 click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 assert(authApp.screen:findChild("DisplayName", true).Text == "New friend", "Returning to signup must preserve the name")
 click(authApp, "OtherOptions"); click(authApp, "UsePassword")
@@ -712,7 +714,7 @@ click(authApp, "SignUp")
 assert(authApp.client:getSession() and authApp.screen:findChild("ConversationListAll", true), "Signup must reach the real mock service: " .. authApp.status:getTextContent())
 assert(authApp.authDraft == nil, "Successful authentication must clear form drafts")
 
-otpApp.screen:findChild("Identifier", true).Text = "+4915110000001"
+otpApp.screen:findChild("Email", true).Text = "demo@example.invalid"
 click(otpApp, "RequestCode")
 assert(otpApp.screen:findChild("CodeStep", true).Visible, "Requesting a code must show the verification step")
 assert(otpApp.screen:findChild("VerificationCode", true).Type == "Number", "Verification codes need a digits keyboard")
@@ -755,16 +757,33 @@ do
     local boxCentre, iconCentre = screenX(indicator) + indicator.ActualWidth / 2, screenX(icon) + icon.ActualWidth / 2
     assert(math.abs(boxCentre - iconCentre) < 1, ("Check box indicator centre %g must match icon centre %g"):format(boxCentre, iconCentre))
 end
-otpApp.screen:findChild("LinkIdentifier", true).Text = "+447700900987"
+-- A phone number saves as typed, without a code, and only for its owner.
+assert(not otpApp.screen:findChild("DiscoverablePhone", true), "Unverified numbers offer no phone discovery")
+click(otpApp, "PhoneSetting")
+otpApp.screen:findChild("PhoneNumber", true).Text = "151 1234"
+click(otpApp, "PhoneEditorSave")
+assert(otpApp.screen:findChild("PhoneEditor", true).Visible and otpApp.screen:findChild("SettingsStatus", true).Visible,
+    "A number without + and country code stays open with an error")
+otpApp.screen:findChild("PhoneNumber", true).Text = "+44 7700 900987"
+click(otpApp, "PhoneEditorSave")
+assert(otpApp.client:getProfile().phone == "+447700900987", "The number saves in E.164 without verification")
+assert(not otpApp.screen:findChild("PhoneEditor", true).Visible
+    and otpApp.screen:findChild("PhoneSettingValue", true):getTextContent() == "+447700900987",
+    "Saving closes the editor and the Mobile row shows the number")
+-- Email changes still prove ownership with a code.
+click(otpApp, "EmailSetting")
+assert(otpApp.screen:findChild("LinkForm", true).Visible and otpApp.screen:findChild("LinkIdentifier", true).Type == "Email",
+    "The Email row opens verified email linking")
+otpApp.screen:findChild("LinkIdentifier", true).Text = "linked@example.invalid"
 click(otpApp, "RequestLink")
 assert(otpApp.screen:findChild("LinkVerification", true).Visible, "Linking must require verification")
 assert(otpApp.screen:findChild("LinkCode", true).Type == "Number", "Linked identities need the same digits keyboard")
 otpApp.screen:findChild("LinkCode", true).Text = "123456"
 click(otpApp, "VerifyLink")
-assert(otpApp.client:getProfile().phone == "+447700900987", "Verified phone must attach to the existing account")
+assert(otpApp.client:getProfile().email == "linked@example.invalid", "Verified email must attach to the existing account")
 assert(not otpApp.screen:findChild("LinkForm", true).Visible
-    and otpApp.screen:findChild("PhoneSettingValue", true):getTextContent() == "+447700900987",
-    "Linking closes its form and the Number row shows the verified number")
+    and otpApp.screen:findChild("EmailSettingValue", true):getTextContent() == "linked@example.invalid",
+    "Linking closes its form and the Email row shows the verified address")
 otpApp:show("/new")
 otpApp.screen:findChild("FindPerson", true).Text = "@alex"
 click(otpApp, "FindPeople")
@@ -838,9 +857,8 @@ click(otpApp, "CreateConversation")
 assert(otpApp.room.visibility == "public", "The public channel option must reach the API")
 local publicChannelId = otpApp.room.id
 otpApp:show("/profile"); click(otpApp, "SignOut")
-click(otpApp, "OtherOptions"); click(otpApp, "UseEmailCode")
 otpApp.screen:findChild("Email", true).Text = "new_reader@example.invalid"
-click(otpApp, "SendEmailCode")
+click(otpApp, "RequestCode")
 otpApp.screen:findChild("VerificationCode", true).Text = "123456"
 click(otpApp, "VerifyCode")
 assert(otpApp.client:getSession().user.email == "new_reader@example.invalid", "OTP must register a fresh reader account")

@@ -1,6 +1,6 @@
 # Messenger: identity, discovery, conversations, and media
 
-Implementation status, 2026-10-28. The app now implements phone/email OTP,
+Implementation status, 2026-10-28. The app now implements email OTP,
 verified linking, usernames and opt-in exact discovery, direct/group/channel
 conversations, roles/invitations/public channel subscriptions, JPEG photo
 messages, editing and deleting messages, owner renaming and non-owner leaving
@@ -69,15 +69,16 @@ their participant-derived names and membership.
 
 ## Identity and login
 
-Support phone and email as verified ways to access one account. Use phone OTP
-as the main mobile entry and offer email OTP as an equal alternative; require
-at least one verified identifier, not both. Keep the current password flow
-during migration rather than breaking existing accounts.
+Sign in with email: an emailed code is the main entry, with email and password
+as the alternative (user decision, 2026-11-03). There is no SMS sign-in: Appwrite
+Cloud sends SMS codes only on paid plans, and the app runs on the Free plan.
+A phone number is an optional, private contact detail entered in settings
+without a code. Accounts that already have a verified login phone keep it.
 
 Use a stable internal Auth user ID for all messages, memberships, and attachments.
 Phone numbers, email addresses, and usernames can change without rewriting
-history. Store phone numbers in international E.164 form and verify ownership.
-An account may have a verified phone, verified email, or both.
+history. Store phone numbers in international E.164 form. A typed number is not proof
+of ownership, so it never makes an account discoverable.
 
 Attaching a second identifier is an authenticated account-settings operation
 that verifies the new identifier. Do not create another account for this flow,
@@ -104,8 +105,9 @@ Fixed test codes belong only to the mock transport and its fixtures.
 Treat discovery and login as separate capabilities:
 
 - Offer a unique, optional username, shareable profile link, and QR code.
-- Allow exact phone or email lookup only when that account has enabled the
-  corresponding discoverability setting. Hide these values in public profiles.
+- Allow exact email lookup, or lookup by a verified login phone, only when that
+  account has enabled the corresponding discoverability setting. Hide these
+  values in public profiles.
 - Ask separately before matching the device address book. Manual lookup works
   without Contacts permission. No silent address-book upload.
 - Return the permitted public profile, not its login credentials or private
@@ -229,7 +231,7 @@ Apple implementation. Keep encoding asynchronous with progress and cancellation.
 
 ## Implementation slices and offline coverage
 
-1. Phone/email OTP, verified linking, username, privacy-aware exact discovery,
+1. Email OTP, verified email linking, username, privacy-aware exact discovery,
    and login/profile UI. Extend the same client and mock protocol together.
 2. Explicit direct/group/channel kinds, roles, invitations, posting rules, and
    creation/join UI. Test unauthorized reads/writes and duplicate direct pairs.

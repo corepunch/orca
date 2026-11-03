@@ -69,7 +69,7 @@ function setup(serviceOptions = {}) {
     if (path.includes('/targets') || path.startsWith('/messaging/messages/')) return {};
     throw new Error('Unexpected fake REST route: ' + method + ' ' + path);
   } };
-  const auth = new Auth(rest, repo, { now: () => clock.now, otpHmacKey: 'test-secret-never-use-in-production-123', emailProviderId: 'email-provider', smsProviderId: 'sms-provider' });
+  const auth = new Auth(rest, repo, { now: () => clock.now, otpHmacKey: 'test-secret-never-use-in-production-123', emailProviderId: 'email-provider' });
   const service = new ChatService(repo, auth, { now: () => clock.now, ...serviceOptions });
   const call = (jwt, path, body = {}, method = 'POST', extra = {}) => execute({ method, path, body, ...extra }, service, { jwt, userId: jwt });
   return { repo, auth, service, clock, calls, users, call };
@@ -356,7 +356,8 @@ test('profile identifier changes re-read under lock and preserve concurrent prof
   assert.equal(response.body.phone, user.phone); assert.equal(response.body.discoverable_phone, false);
   fixture.repo.lock = lock; user.emailVerification = false; user.phoneVerification = false;
   const revoked = await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
-  assert.equal(revoked.body.email, null); assert.equal(revoked.body.phone, null);
+  // The number stays as a private contact detail; only discovery needs verification.
+  assert.equal(revoked.body.email, null); assert.equal(revoked.body.phone, '+49123456789');
   assert.equal(revoked.body.discoverable_email, false); assert.equal(revoked.body.discoverable_phone, false);
 });
 
@@ -642,29 +643,43 @@ test('discard removes both encrypted objects and permits cleanup after removal f
 
 test('identity linking stages proof without mutating Auth, enforces guesses and updates same account only', async () => {
   const fixture = setup(), before = clone(fixture.users.get('owner'));
-  const result = await fixture.call('owner', '/auth/v1/user', { phone: '+49123456789' }, 'PUT');
+  const result = await fixture.call('owner', '/auth/v1/user', { email: 'new@example.invalid' }, 'PUT');
   assert.equal(result.status, 200); assert.deepEqual(fixture.users.get('owner'), before);
-  const delivery = fixture.calls.find(call => call.path === '/messaging/messages/sms'), code = delivery.options.body.content.match(/\b(\d{6})\b/)[1];
+  const delivery = fixture.calls.find(call => call.path === '/messaging/messages/email'), code = delivery.options.body.content.match(/\b(\d{6})\b/)[1];
   const wrong = code === '000000' ? '000001' : '000000';
-  assert.equal((await fixture.call('owner', '/auth/v1/verify', { phone: '+49123456789', type: 'phone_change', token: wrong })).status, 400);
-  const verified = await fixture.call('owner', '/auth/v1/verify', { phone: '+49123456789', type: 'phone_change', token: code });
+  assert.equal((await fixture.call('owner', '/auth/v1/verify', { email: 'new@example.invalid', type: 'email_change', token: wrong })).status, 400);
+  const verified = await fixture.call('owner', '/auth/v1/verify', { email: 'new@example.invalid', type: 'email_change', token: code });
   assert.equal(verified.status, 200); assert.equal(verified.body.user.id, 'owner');
-  assert.equal(fixture.users.get('owner').phoneVerification, true); assert.equal(fixture.users.get('owner').email, before.email);
-  assert.equal((await fixture.call('owner', '/auth/v1/verify', { phone: '+49123456789', type: 'phone_change', token: code })).status, 400);
+  assert.equal(fixture.users.get('owner').email, 'new@example.invalid'); assert.equal(fixture.users.get('owner').emailVerification, true);
+  assert.equal((await fixture.call('owner', '/auth/v1/verify', { email: 'new@example.invalid', type: 'email_change', token: code })).status, 400);
   assert.ok(fixture.calls.some(call => call.method === 'DELETE' && call.path.includes('/targets/')));
 });
 
 test('identity linking fails before Auth mutation without a provider, on expiry, or after five guesses', async () => {
-  const fixture = setup(); fixture.auth.providers.phone = undefined;
-  assert.equal((await fixture.call('owner', '/auth/v1/user', { phone: '+49123456789' }, 'PUT')).status, 503);
+  const fixture = setup(); fixture.auth.providers.email = undefined;
+  assert.equal((await fixture.call('owner', '/auth/v1/user', { email: 'new@example.invalid' }, 'PUT')).status, 503);
   assert.equal(fixture.calls.some(call => call.method === 'PATCH' && call.path.startsWith('/users/')), false);
-  fixture.auth.providers.phone = 'sms-provider';
-  await fixture.call('owner', '/auth/v1/user', { phone: '+49123456789' }, 'PUT');
-  const delivered = fixture.calls.find(call => call.path === '/messaging/messages/sms').options.body.content.match(/\b(\d{6})\b/)[1];
+  fixture.auth.providers.email = 'email-provider';
+  await fixture.call('owner', '/auth/v1/user', { email: 'new@example.invalid' }, 'PUT');
+  const delivered = fixture.calls.find(call => call.path === '/messaging/messages/email').options.body.content.match(/\b(\d{6})\b/)[1];
   const wrong = delivered === '000000' ? '000001' : '000000';
-  for (let attempt = 0; attempt < 5; attempt++) assert.equal((await fixture.call('owner', '/auth/v1/verify', { phone: '+49123456789', type: 'phone_change', token: wrong })).status, 400);
-  assert.equal((await fixture.call('owner', '/auth/v1/verify', { phone: '+49123456789', type: 'phone_change', token: delivered })).status, 400);
-  assert.equal(fixture.users.get('owner').phone, '');
+  for (let attempt = 0; attempt < 5; attempt++) assert.equal((await fixture.call('owner', '/auth/v1/verify', { email: 'new@example.invalid', type: 'email_change', token: wrong })).status, 400);
+  assert.equal((await fixture.call('owner', '/auth/v1/verify', { email: 'new@example.invalid', type: 'email_change', token: delivered })).status, 400);
+  assert.equal(fixture.users.get('owner').email, 'owner@example.invalid');
+});
+
+test('phone numbers are typed profile details: no SMS, E.164, private and not discoverable unverified', async () => {
+  const fixture = setup();
+  assert.equal((await fixture.call('owner', '/auth/v1/user', { phone: '+49123456789' }, 'PUT')).status, 400);
+  assert.equal(fixture.calls.some(call => call.path.startsWith('/messaging/')), false);
+  const saved = await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { phone: '0049 (151) 1234-5678' } });
+  assert.equal(saved.status, 200); assert.equal(saved.body.phone, '+4915112345678');
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/get_chat_profile')).body.phone, '+4915112345678');
+  assert.equal(fixture.users.get('owner').phone, '', 'Saving a contact number never changes the Auth login phone');
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { discoverable_phone: true } })).status, 400);
+  assert.deepEqual((await fixture.call('alice', '/rest/v1/rpc/find_chat_people', { query: '+4915112345678' })).body, []);
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { phone: '151 1234' } })).status, 400);
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { phone: '' } })).body.phone, null);
 });
 
 test('JPEG inspection rejects truncation, malformed segments, and GPS metadata; AES binds each object key', () => {

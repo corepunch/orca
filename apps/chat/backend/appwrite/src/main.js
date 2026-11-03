@@ -32,7 +32,7 @@ export default async ({ req, res, error: reportError = () => {} }) => {
       projectId: process.env.APPWRITE_FUNCTION_PROJECT_ID || '69f1c06800389dc6a1a0', apiKey });
     const repository = new Repository(rest, process.env.CHAT_DATABASE_ID || 'octopus-db', process.env.CHAT_BUCKET_ID || 'post-images');
     const auth = new Auth(rest, repository, { otpHmacKey: process.env.CHAT_OTP_HMAC_KEY,
-      emailProviderId: process.env.CHAT_EMAIL_PROVIDER_ID, smsProviderId: process.env.CHAT_SMS_PROVIDER_ID });
+      emailProviderId: process.env.CHAT_EMAIL_PROVIDER_ID });
     return res.json(await execute(envelope, new ChatService(repository, auth, {
       pushEnabled: process.env.CHAT_PUSH_ENABLED === 'true', pushError: reportError,
     }), identity));

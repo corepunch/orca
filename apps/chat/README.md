@@ -147,8 +147,8 @@ Groups select members before the name step; Back preserves that selection and
 name draft. Channels start with a name and private/public visibility, and people
 join separately. Channel browsing and invitation entry have separate views.
 No contact is required for discovery: exact public usernames are searchable;
-email and phone require a verified identifier and that person's discovery opt-in
-in Profile. Display names are separate from public usernames.
+email requires a verified address and that person's discovery opt-in in
+Profile. A phone number typed in settings is private and never searchable. Display names are separate from public usernames.
 
 Route constructors attach the shell, navigation and composer before scheduling
 Appwrite work with `orca.async`. Session restoration, inboxes, profiles, contacts,
@@ -216,7 +216,7 @@ in memory and uses a short-lived user JWT for authenticated Function calls.
 The Function implements verified identity linking, private direct/group chats,
 public/private channels, member
 management, invitations, and JPEG uploads/downloads. Linking identifiers needs
-configured Appwrite Messaging providers; phone sign-in needs an Auth SMS provider.
+a configured Appwrite Messaging email provider. Chat sends no SMS.
 These services are not simulated when their configuration is missing.
 
 Profile photos use Octopus's public `profiles.avatarId` field and `post-images`
@@ -236,7 +236,7 @@ it has no session-creation permission and exposes no login proxy. Its server-onl
 verification secret is configured; delivery providers still need setup.
 See the [deployment manifest](backend/appwrite/appwrite.config.json) and
 [backend implementation/setup](backend/appwrite/README.md) for the exact requirements.
-Live delivery verification still requires configured email/SMS providers.
+Live delivery verification still requires a configured email provider.
 Two disposable accounts verified live text/photo exchange, discovery,
 invitations, channel roles and membership revocation on 2026-10-25. The check
 confirmed ciphertext in the public bucket and removed all test data afterward.
@@ -258,8 +258,8 @@ server route handlers and domain services each have a separate owner.
 
 `make chat` connects to the Octopus Appwrite project from [config.lua](config.lua).
 
-Sign in with a phone or email verification code. On New chat, choose a known
-contact or find an exact username, discoverable phone, or discoverable email.
+Sign in with an email verification code or password. On New chat, choose a
+known contact or find an exact username or discoverable email.
 Choose Direct, Group, or Channel; group/channel creators become owners and can
 manage members and invitations. Public channels support search and subscription.
 Open a second client with another account to exchange messages. **Refresh**

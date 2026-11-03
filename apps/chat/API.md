@@ -42,7 +42,7 @@ and `APPWRITE_CHAT_FUNCTION_ID` override the public configuration; no API key is
 accepted or bundled. `CHAT_BACKEND=mock` selects offline data explicitly.
 The shared methods below keep the same return shapes and model bindings.
 
-`api.appwrite_auth` handles signup, password sign-in, email/phone OTP,
+`api.appwrite_auth` handles signup, password sign-in, email OTP,
 JWT renewal and logout through native Appwrite Account endpoints. Its private
 session cookie is extracted from response headers, kept private to that client,
 and optionally persisted through `sessionStore` (`load`, `save`, `clear`). It is
@@ -59,8 +59,8 @@ mock data. JSON escaping and empty array arguments survive both envelope layers.
 The [Appwrite backend](backend/appwrite/README.md) owns authorization, role and
 invite checks, verification challenges, rate limits, and encrypted photo storage.
 Its seven private collections and indexes are provisioned in Octopus's existing
-`octopus-db`. The Function is deployed with execution restricted to signed-in users. Phone sign-in and
-identity linking also require delivery providers; missing providers produce an
+`octopus-db`. The Function is deployed with execution restricted to signed-in users. Email
+identity linking also requires a delivery provider; missing providers produce an
 explicit error. Session refresh revalidates the native Account session and issues
 a new user JWT. It does not extend an expired native session or expose its cookie.
 
@@ -68,12 +68,12 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 
 | Method | Result |
 | --- | --- |
-| `requestCode(identifier)` | `{identifier,delivery,expires_in,retry_after}`; sends login/signup OTP |
-| `verifyCode(identifier,code)` | Session after six-digit OTP verification |
-| `requestIdentityLink(identifier)` | Starts a verified email/phone change for the current account |
+| `requestCode(email)` | `{identifier,delivery,expires_in,retry_after}`; emails a login/signup OTP |
+| `verifyCode(email,code)` | Session after six-digit OTP verification |
+| `requestIdentityLink(email)` | Starts a verified email change for the current account |
 | `verifyIdentityLink(identifier,code)` | Verified self profile once the requested identifier is confirmed |
-| `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; only verified identifiers; message previews default on |
-| `updateProfile(values)` | Self profile after changing public name, username, discovery flags or the private boolean `notification_previews` preference |
+| `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; `email` is verified, `phone` is the private typed number; message previews default on |
+| `updateProfile(values)` | Self profile after changing public name, username, the private `phone` (E.164, `""` removes it), discovery flags or the private boolean `notification_previews` preference |
 | `findPeople(query)` | Public `{id,display_name,username}` matches for an exact username or opted-in identifier |
 | `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
 | `getSession()` | Defensive session copy or nil; no request |
@@ -83,9 +83,10 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `signIn(email,password)` | Existing email/password login; returns a session |
 | `signUp(email,password,displayName)` | Existing password signup; session or `{confirmationRequired=true}` |
 
-An identifier is an email or an international phone number beginning with `+`.
-The client lowercases email and removes spaces, parentheses and hyphens from
-phones, requiring 8–15 digits with a nonzero country prefix. Usernames are
+Sign-in and linking take an email, which the client lowercases. A phone number
+begins with `+` (or `00`); the client removes spaces, dots, parentheses and
+hyphens, requiring 8–15 digits with a nonzero country prefix. Only a verified
+login phone, never a typed one, can be discoverable. Usernames are
 unique lowercase strings of 3–32 letters, numbers or underscores, beginning
 with a letter. An empty username clears it. Profiles cannot edit Auth identifiers.
 

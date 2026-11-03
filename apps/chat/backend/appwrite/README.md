@@ -5,11 +5,12 @@ endpoint `https://fra.cloud.appwrite.io/v1`, and database `octopus-db`.
 `schema.json` defines seven private collections with shared names. They have
 **no client permissions** and `documentSecurity=false`. The Function joins the
 existing public Octopus `profiles` with private `account-directory` records;
-verified email/phone and discovery preferences never enter public profiles.
+verified email, the private phone number and discovery preferences never enter
+public profiles.
 The migration below provisions this layout; previous deployments use legacy
 `chat_` collections until explicitly migrated and replaced.
 
-Signup, password sign-in, email/phone OTP, session refresh and sign-out call
+Signup, password sign-in, email OTP, session refresh and sign-out call
 **native Appwrite Account endpoints directly**, following Banking's direct
 integration pattern. They work without a deployed Chat function. The function
 handles authenticated Chat domain operations: profiles, discovery, membership,
@@ -81,7 +82,6 @@ Set the following **server function variables**, without committing secrets:
 | `CHAT_BUCKET_ID` | `post-images` (default) |
 | `CHAT_OTP_HMAC_KEY` | A stable random secret of at least 32 characters, required for identity linking |
 | `CHAT_EMAIL_PROVIDER_ID` | Configured Appwrite Messaging email provider ID, required to link/change email |
-| `CHAT_SMS_PROVIDER_ID` | Configured Appwrite Messaging SMS provider ID, required to link/change phone |
 | `CHAT_PUSH_ENABLED` | `true` enables new-message push; absent/other values keep it disabled |
 
 `APPWRITE_FUNCTION_PROJECT_ID` and `APPWRITE_FUNCTION_API_ENDPOINT` come from the
@@ -91,8 +91,8 @@ The desktop stores only the endpoint, project ID and function ID
 
 Messaging providers require separate operator configuration. Linking returns a clear
 configuration error until the matching provider and HMAC secret are configured.
-Native email/password and email OTP use Appwrite Auth's delivery configuration;
-phone OTP additionally needs a working Appwrite Auth SMS provider. Native Auth
+Native email/password and email OTP use Appwrite Auth's delivery configuration.
+Chat sends no SMS: phone numbers are saved in settings without a code. Native Auth
 delivery and Messaging providers are separate configurations. Six-digit OTPs
 must be enabled for the existing desktop verification form. Delivery was not
 tested against real addresses or phone numbers.
@@ -269,7 +269,7 @@ The report contains collection IDs/counts, without identifiers or payloads.
 
 ## Authentication and verified profiles
 
-The desktop's Account adapter owns signup, password login, email/phone OTP,
+The desktop's Account adapter owns signup, password login, email OTP,
 session refresh and logout. It talks to native `/account`, `/account/sessions/*`,
 `/account/tokens/*` and `/account/jwts` endpoints without a server key. Appwrite
 therefore enforces its native Auth delivery, session and rate-limit policies.
