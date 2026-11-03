@@ -384,4 +384,6 @@ return {
     ["The sign-in page could not finish. Please try again."] = "Страница входа не завершила вход. Попробуйте ещё раз.",
     ["Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset."] = "Укажите в CHAT_MAGIC_LINK_URL страницу https или оставьте пустым.",
     ["Continue with Google"] = "Продолжить с Google",
+    ["about"] = "о приложении",
+    ["Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License."] = "Графика эмодзи — Twemoji, лицензия CC-BY 4.0. Шрифты Noto — Google, лицензия SIL Open Font License. Загрузка изображений и шрифтов — stb_image и stb_truetype Шона Барретта, общественное достояние. Сжатие LZ4 — Ян Колле, лицензия BSD 2-Clause.",
 }

@@ -28,6 +28,11 @@
     <BindingExpression Target="TextResourceID">IF({DataContext/ProfileForm/Status/IsSubmitting}, "Saving…", "Save profile")</BindingExpression>
   </Button>
   <TextBlock Name="MeStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+  <!-- Twemoji's CC-BY license requires visible credit; see THIRD_PARTY_NOTICES.md. -->
+  <TextBlock Text="about" TextResourceID="about" FontSize="14" MarginTop="12" class="octopus-muted" IgnoreHitTest="true"/>
+  <TextBlock Name="Credits" Text="Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License."
+             TextResourceID="Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License."
+             FontSize="13" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
   <Button Name="SignOut" Click="SignOut" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" MarginTop="12"
           TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-danger">Sign out</Button>
 </StackView>

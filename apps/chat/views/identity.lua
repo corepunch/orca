@@ -339,6 +339,10 @@ local function profileBody(self, profile)
         rows(phoneToggle and { phoneToggle, emailToggle } or { emailToggle }),
         C.eyebrow(t("notifications")),
         rows { previewToggle },
+        C.eyebrow(t("about")),
+        -- Twemoji's CC-BY license requires visible credit; see THIRD_PARTY_NOTICES.md.
+        C.text(t("Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License."),
+            { Name = "Credits", FontSize = 14, class = "chat-muted", WordWrap = true }),
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
     })
 end
