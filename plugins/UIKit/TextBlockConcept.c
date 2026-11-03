@@ -1100,7 +1100,8 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   pViewText->run[0] = _MakeTextBlockTextRun(
                                             hObject, *pTextRun,
                                             _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
-  pViewText->placeholder  = (pTextBlockConcept->PlaceholderText == pViewText->run[0].string);
+  pViewText->placeholder  = pTextBlockConcept->PlaceholderText &&
+                            pTextBlockConcept->PlaceholderText == pViewText->run[0].string;
   pViewText->numTextRuns  = 1;
 
   FOR_EACH_OBJECT(run, hObject) {

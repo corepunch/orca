@@ -159,7 +159,8 @@ Feeds and post details arrange albums in balanced rows, through a 3×3 grid;
 single photos keep their aspect-ratio layout. Quote images
 appear with the quote on the phone and as its background on the website.
 Cancelling the picker preserves the selection; upload failures keep the draft
-for retry. Markdown reads as plain text on the phone; the website renders it.
+for retry. Post pages render Markdown with `MarkdownView`; feed cards show a
+plain excerpt.
 Links can be copied to the clipboard because ORCA has no open-in-browser API yet.
 
 ## Code

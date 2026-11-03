@@ -68,6 +68,25 @@
 .post-content { font-size: 15; }
 .post-detail .post-content { font-size: 16; }
 .post-detail .link-body .post-content { font-size: 15; }
+/* Markdown bodies (MarkdownView): blocks inherit the body colour; runs differ
+   by font and decoration only. */
+.post-markdown .md-p, .post-markdown .md-marker { font-size: 16; }
+.post-caption .md-p, .post-caption .md-marker { font-size: 15; }
+.post-markdown .md-h1 { font-size: 30; }
+.post-markdown .md-h2 { font-size: 24; }
+.post-markdown .md-h3 { font-size: 20; }
+.post-markdown .md-h4, .post-markdown .md-h5, .post-markdown .md-h6 { font-size: 17; }
+.post-markdown .md-list { gap: 6; }
+.post-markdown .md-li { gap: 8; }
+.post-markdown .md-li-body, .post-markdown .md-quote { gap: 8; }
+.post-markdown .md-quote { border-left-width: 4; padding-left: 12; border-color: #0e8f86; }
+.post-markdown .md-pre { padding: 10; }
+.post-markdown .md-code-block { font-family: monospace; font-size: 14; }
+.post-markdown .md-code { font-family: monospace; }
+.octopus-light .post-markdown .md-pre { background-color: #ececec; }
+.octopus-dark .post-markdown .md-pre { background-color: #1f1f1f; }
+.octopus-light .post-markdown .md-hr { background-color: #cccccc; }
+.octopus-dark .post-markdown .md-hr { background-color: #3a3a3a; }
 .pending .reaction-button { opacity: 0.5; }
 .avatar-initials { color: #ffffff; }
 .tone1 { background-color: #0e8f86; }
