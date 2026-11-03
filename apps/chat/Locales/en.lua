@@ -385,5 +385,5 @@ return {
     ["Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset."] = "Set CHAT_MAGIC_LINK_URL to an https page, or leave it unset.",
     ["Continue with Google"] = "Continue with Google",
     ["about"] = "about",
-    ["Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License."] = "Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License.",
+    ["Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License."] = "Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License.",
 }
