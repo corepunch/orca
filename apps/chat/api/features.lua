@@ -8,37 +8,50 @@ return function(Client, helpers)
             if value:match("^%+[1-9]%d+$") and #value >= 9 and #value <= 16 then return "phone", value end
         elseif value:match("^[^%s@]+@[^%s@]+%.[^%s@]+$") then return "email", value:lower() end
     end
+    -- Sign-in and verified linking use email only; phone numbers are profile details.
+    local function email(value)
+        local field, normalized = identifier(value)
+        if field == "email" then return field, normalized end
+    end
+    -- A phone number is stored as typed, in E.164: spaces, dashes and brackets
+    -- are dropped and a leading 00 becomes +. An empty value removes it.
+    local function phoneNumber(value)
+        if type(value) ~= "string" then return nil end
+        value = value:gsub("[%s%-%(%)%.]", ""):gsub("^00", "+")
+        if value == "" then return "" end
+        if value:match("^%+[1-9]%d+$") and #value >= 9 and #value <= 16 then return value end
+    end
     function Client:_rpc(name, body)
         return self:_request("POST", "/rest/v1/rpc/" .. name, body, true)
     end
     function Client:requestCode(value)
-        local field, normalized = identifier(value)
-        if not field then return failure("validation", "Use a valid email or international phone number, starting with +.") end
+        local field, normalized = email(value)
+        if not field then return failure("validation", "Enter a valid email address.") end
         local data, err = self:_request("POST", "/auth/v1/otp", { [field] = normalized, create_user = true })
         if not data then return nil, err end
         return { identifier = normalized, delivery = field, expires_in = 300, retry_after = 60 }
     end
     function Client:verifyCode(value, code)
-        local field, normalized = identifier(value)
+        local field, normalized = email(value)
         if not field or type(code) ~= "string" or not code:match("^%d%d%d%d%d%d$") then return failure("validation", "Enter the six-digit verification code.") end
-        local data, err = self:_request("POST", "/auth/v1/verify", { [field] = normalized, token = code, type = field == "phone" and "sms" or "email" })
+        local data, err = self:_request("POST", "/auth/v1/verify", { email = normalized, token = code, type = "email" })
         if not data then return nil, err end
         return self:_setSession(data)
     end
     function Client:requestIdentityLink(value)
-        local field, normalized = identifier(value)
-        if not field then return failure("validation", "Use a valid email or international phone number.") end
+        local field, normalized = email(value)
+        if not field then return failure("validation", "Enter a valid email address.") end
         local data, err = self:_request("PUT", "/auth/v1/user", { [field] = normalized }, true)
         if not data then return nil, err end
         return { identifier = normalized, delivery = field, expires_in = 300, retry_after = 60 }
     end
     function Client:verifyIdentityLink(value, code)
-        local field, normalized = identifier(value)
+        local field, normalized = email(value)
         if not field or type(code) ~= "string" or not code:match("^%d%d%d%d%d%d$") then return failure("validation", "Enter the six-digit verification code.") end
         if not self.session then return failure("unauthenticated", "Sign in to link an identifier.") end
         local id = self.session.user.id
         local data, err = self:_request("POST", "/auth/v1/verify", {
-            [field] = normalized, token = code, type = field == "phone" and "phone_change" or "email_change",
+            email = normalized, token = code, type = "email_change",
         }, true)
         if not data then return nil, err end
         local user = data.user or data
@@ -61,6 +74,13 @@ return function(Client, helpers)
     function Client:getProfile() return self:_rpc("get_chat_profile", {}) end
     function Client:updateProfile(values)
         if type(values) ~= "table" then return failure("validation", "Provide profile changes.") end
+        if values.phone ~= nil then
+            local phone = phoneNumber(values.phone)
+            if not phone then return failure("validation", "Enter the number with + and your country code.") end
+            local copy = {}
+            for key, value in pairs(values) do copy[key] = value end
+            copy.phone, values = phone, copy
+        end
         local data, err = self:_rpc("update_chat_profile", { values = values })
         if data and self.session then self.session.user.user_metadata = { display_name = data.display_name } end
         return data, err

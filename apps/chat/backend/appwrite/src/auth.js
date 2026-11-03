@@ -17,9 +17,9 @@ export function publicUser(user) {
 }
 
 export class Auth {
-  constructor(rest, repository, { now = Date.now, otpHmacKey, emailProviderId, smsProviderId } = {}) {
+  constructor(rest, repository, { now = Date.now, otpHmacKey, emailProviderId } = {}) {
     this.rest = rest; this.repo = repository; this.now = now; this.otpHmacKey = otpHmacKey;
-    this.providers = { email: emailProviderId, phone: smsProviderId };
+    this.providers = { email: emailProviderId };
   }
   async limit(name, maximum, seconds) {
     const bucket = Math.floor(this.now() / (seconds * 1000)), start = randomInt(maximum);
@@ -45,6 +45,8 @@ export class Auth {
   }
   async requestLink(user, body) {
     const who = identifier(body.email || body.phone), id = key('link:' + user.$id);
+    // Chat sends no SMS: a phone number is a profile detail saved without a code.
+    if (who.field === 'phone') reject(400, 'validation', 'Save your phone number in settings; it needs no verification code.');
     if (!this.otpHmacKey || this.otpHmacKey.length < 32 || !this.providers[who.field]) {
       reject(503, 'configuration', 'Verified identity linking needs an Appwrite Messaging provider and server OTP secret.');
     }

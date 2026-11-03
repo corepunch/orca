@@ -76,7 +76,10 @@ return function(state, env)
         local row = P.profile(user.id)
         row.notification_previews = row.notification_previews ~= false
         if user.email_confirmed_at then row.email = user.email end
-        if user.phone_confirmed_at then row.phone = user.phone end
+        -- The typed contact number wins; an older verified login phone seeds it.
+        local phone = user.contact_phone
+        if phone == nil and user.phone_confirmed_at then phone = user.phone end
+        row.phone = phone ~= "" and phone or nil
         return row
     end
     local function identity(body)
@@ -237,7 +240,7 @@ return function(state, env)
             local changed = copy(profile)
             for key, value in pairs(values) do
                 if key ~= "display_name" and key ~= "username" and key ~= "discoverable_phone" and key ~= "discoverable_email"
-                    and key ~= "notification_previews" then
+                    and key ~= "notification_previews" and key ~= "phone" then
                     return fail(400, "validation", "That profile field cannot be edited.")
                 end
                 if key == "display_name" then
@@ -249,12 +252,19 @@ return function(state, env)
                     if value ~= "" and (not value:match("^[a-z][a-z0-9_]+$") or #value < 3 or #value > 32) then return fail(400, "validation", "Username must be 3–32 lowercase letters, numbers or underscores.") end
                     for id, person in pairs(state.profiles) do if id ~= user.id and value ~= "" and person.username == value then return fail(409, "23505", "Username is unavailable.") end end
                     changed[key] = value ~= "" and value or nil
+                elseif key == "phone" then
+                    if type(value) ~= "string" or value ~= "" and (not value:match("^%+[1-9]%d+$") or #value < 9 or #value > 16) then
+                        return fail(400, "validation", "Enter the number with + and your country code.")
+                    end
+                    user.contact_phone = value
+                    if value ~= user.phone then changed.discoverable_phone = false end
                 elseif key == "notification_previews" then
                     if type(value) ~= "boolean" then return fail(400, "validation", "Message previews must be on or off.") end
                     changed[key] = value
                 else
                     local field = key == "discoverable_phone" and "phone" or "email"
-                    if type(value) ~= "boolean" or (value and not user[field .. "_confirmed_at"]) then return fail(400, "validation", "Verify this identifier before enabling discovery.") end
+                    local verified = user[field .. "_confirmed_at"] and (field == "email" or ownProfile(user).phone == user.phone)
+                    if type(value) ~= "boolean" or (value and not verified) then return fail(400, "validation", "Verify this identifier before enabling discovery.") end
                     changed[key] = value
                 end
             end

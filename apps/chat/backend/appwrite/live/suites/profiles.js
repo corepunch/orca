@@ -73,8 +73,13 @@ describe('profiles: names, usernames and private identifiers', () => {
 
   it('profiles cannot edit login identifiers or unknown fields', async () => {
     await rejects(w.carol.updateProfile({ email: 'someone@example.com' }), 400, 'validation');
-    await rejects(w.carol.updateProfile({ phone: '+15555550123' }), 400, 'validation');
+    await rejects(w.carol.updateProfile({ phone: '555 0123' }), 400, 'validation');
     await rejects(w.carol.updateProfile({ id: w.alice.id }), 400, 'validation');
+  });
+
+  it('a typed phone number is private and saves without a code', async () => {
+    assert.equal((await w.carol.updateProfile({ phone: '+1 555 555 0123' })).phone, '+15555550123');
+    assert.equal((await w.carol.updateProfile({ phone: '' })).phone, null);
   });
 
   it('discovery by email or phone needs a verified identifier', async () => {

@@ -92,8 +92,7 @@ check(client:signUp("you@example.test", "password123", special) ~= nil and #enve
 check(requests[1].url == endpoint .. "/account" and json.decode(requests[1].body).name == special
   and json.decode(requests[1].body).userId == "unique()", "Native signup preserves display names and uses server-generated IDs")
 
-for _, identity in ipairs { { value = "YOU@example.test", normalized = "you@example.test", field = "email" },
-  { value = "+49 (151) 1234-5678", normalized = "+4915112345678", field = "phone" } } do
+for _, identity in ipairs { { value = "YOU@example.test", normalized = "you@example.test", field = "email" } } do
   local otpResponses = signedIn()
   table.insert(otpResponses, 1, { status = 201, body = { userId = "user.with_underscore", secret = "" } })
   client, requests, envelopes = backend(otpResponses)
@@ -106,6 +105,7 @@ for _, identity in ipairs { { value = "YOU@example.test", normalized = "you@exam
     and json.decode(requests[2].body).secret == "123456", "OTP uses the user ID returned by its matching challenge")
 end
 client, requests = backend {}
+check(not client:requestCode("+49 (151) 1234-5678") and #requests == 0, "Sign-in sends no SMS codes")
 local value, err = client:verifyCode("you@example.test", "123456")
 check(not value and err.code == "verification_missing" and #requests == 0, "OTP verification requires this client's pending challenge")
 

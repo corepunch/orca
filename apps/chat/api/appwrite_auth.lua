@@ -225,10 +225,10 @@ function M.new(options)
         password = body.password, name = body.data and body.data.display_name or "" })
       if not successful(response) then return response end
       return signIn(body.email, body.password)
-    elseif request.method == "POST" and path == "/auth/v1/otp" then
-      local field = body.phone and "phone" or "email"
-      local response = call("POST", "/account/tokens/" .. field,
-        { userId = "unique()", [field] = body[field] })
+    elseif request.method == "POST" and path == "/auth/v1/otp" and type(body.email) == "string" then
+      -- Email only: Appwrite sends SMS codes only on paid plans.
+      local field = "email"
+      local response = call("POST", "/account/tokens/email", { userId = "unique()", email = body.email })
       if not successful(response) then return response end
       local token = response.body
       if type(token) ~= "table" or type(token.userId) ~= "string" or token.userId == "" then
@@ -236,9 +236,8 @@ function M.new(options)
       end
       pending[field .. ":" .. body[field]] = token.userId
       return { status = 200, body = {} }
-    elseif request.method == "POST" and path == "/auth/v1/verify" and (body.type == "email" or body.type == "sms") then
-      local field = body.type == "sms" and "phone" or "email"
-      local key = field .. ":" .. body[field]
+    elseif request.method == "POST" and path == "/auth/v1/verify" and body.type == "email" and type(body.email) == "string" then
+      local key = "email:" .. body.email
       local userId = pending[key]
       if not userId then return { status = 400, body = { code = "verification_missing", message = "Request a new verification code first." } } end
       local response = call("POST", "/account/sessions/token", { userId = userId, secret = body.token })

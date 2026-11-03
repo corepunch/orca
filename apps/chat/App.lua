@@ -712,7 +712,6 @@ local App = Application:extend {
     ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,
     ["/auth/code"] = function(self) return Identity.auth(self, "code") end,
     ["/auth/options"] = function(self) return Identity.auth(self, "options") end,
-    ["/auth/email-code"] = function(self) return Identity.auth(self, "email-code") end,
 
     -- Follow an OS appearance change. Views take palette colours from CSS roles
     -- under the Screen's StateClasses, so replacing them restyles every built

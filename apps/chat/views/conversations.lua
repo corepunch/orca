@@ -39,7 +39,7 @@ function Conversations.newRoom(self)
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
     self.newSelection = {}
-    local query = C.input("FindPerson", t("Search username, email or phone"), { class = "joined-left" })
+    local query = C.input("FindPerson", t("Search username or email"), { class = "joined-left" })
     -- One pale field: the search command shares the input's fill, as in the inbox.
     local searchRow = ui.Grid { Columns = "1fr auto auto", Height = 48 }
     local searchBar = C.toolbar("Top", { searchRow }, { Name = "PeopleSearch", Padding = "20 0 20 12" })
@@ -137,7 +137,7 @@ function Conversations.newRoom(self)
         setup.Visible, invitation.Visible = mode == "channel", mode == "invite"
         selected.Visible, nextButton.Visible = mode == "group", mode == "group"
         name.PlaceholderText = mode == "channel" and t("Channel name") or t("Group name")
-        query.PlaceholderText = mode == "channels" and t("Search public channels") or t("Search username, email or phone")
+        query.PlaceholderText = mode == "channels" and t("Search public channels") or t("Search username or email")
         visibilityButton.Visible = mode == "channel"
         visibilityButton:setTextContent(t("Private channel · invitation required"))
         createButton:setTextContent(mode == "channel" and t("Create channel") or t("Create group"))
@@ -208,7 +208,7 @@ function Conversations.newRoom(self)
         pending:removeFromParent()
         if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
-        if #found == 0 then results:addChild(C.text(t("No results. Ask them to set a public username in Profile, or enable Find me by email or phone for a verified login detail. You don't need to add a contact first."), {
+        if #found == 0 then results:addChild(C.text(t("No results. Ask them to set a public username in Profile, or enable Find me by email. You don't need to add a contact first."), {
             Name = "NoPeopleResults", FontSize = 14, class = "chat-muted", WordWrap = true, Padding = "0 8" })) end
         for _, person in ipairs(found) do addPerson(results, person, "FoundPerson") end
     end, searchCommand("FindPeople"), "chat-field-ink")
