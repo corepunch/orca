@@ -9,6 +9,7 @@
  *     T_CommitLine()        — flush pending words onto the line
  *     T_BreakLine()         — advance Y, reset X state
  *     T_BlitWord()          — render one word's glyphs into the alpha bitmap
+ *     T_BlitEmoji()         — render one color emoji into the RGBA layer
  *     T_BlitEllipsis()      — render trailing "..."
  *     T_BlitUnderline()     — fill underline spans
  *
@@ -20,6 +21,10 @@
  *
  * Measure-only mode (bRender == FALSE) skips all bitmap writes and the
  * ZeroAlloc, matching the WinAPI DrawText / DT_CALCRECT pattern.
+ *
+ * Emoji take the glyph's place in the alpha bitmap's layout but are drawn
+ * into a separate premultiplied RGBA layer, allocated on the first emoji,
+ * so the foreground brush tints the text and never the emoji.
  */
 
 #include <include/api.h>
@@ -116,6 +121,7 @@ T_LoadChar(struct fontface* face, uint32_t code)
 typedef struct {
   struct fontface* face;
   float fontScale;
+  float em;          /* font size in device pixels, for emoji */
   int ascender;
   int descender;
   int height;
@@ -131,6 +137,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
   struct font_metrics metrics;
   if (!FontFace_GetMetrics(m->face, run->fontSize, scale, &metrics)) return FALSE;
   m->fontScale = metrics.raster_scale;
+  m->em = run->fontSize * scale;
   m->ascender = metrics.ascender;
   m->descender = metrics.descender;
   m->height = metrics.height;
@@ -159,6 +166,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
 static int
 T_MeasureWord(struct fontface* face,
               float font_scale,
+              float em,
               lpcString_t *src,
               uint32_t *last_glyph_index_inout,
               int maxWidth)
@@ -174,14 +182,22 @@ T_MeasureWord(struct fontface* face,
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
 
     lpcString_t before = p;
-    uint32_t ch = u8_readchar(&p);
-    if (ch < 128 && isspace(ch)) { p = before; break; }  /* stop before space */
+    size_t const emoji = Font_EmojiLength(p);
+    uint32_t gi = 0;
+    int64_t nextWidth = width16;
+    if (emoji) {
+      p += emoji;
+      nextWidth += Font_GetEmojiAdvance(em);
+    } else {
+      uint32_t ch = u8_readchar(&p);
+      if (ch < 128 && isspace(ch)) { p = before; break; }  /* stop before space */
 
-    uint32_t const gi = T_LoadChar(face, ch);
-    if (!gi) { prev = 0; continue; }
+      gi = T_LoadChar(face, ch);
+      if (!gi) { prev = 0; continue; }
 
-    int64_t nextWidth = width16 + FontFace_GetGlyphAdvance(face, gi, font_scale);
-    nextWidth += FontFace_GetGlyphKerning(face, prev, gi, font_scale);
+      nextWidth += FontFace_GetGlyphAdvance(face, gi, font_scale);
+      nextWidth += FontFace_GetGlyphKerning(face, prev, gi, font_scale);
+    }
     if (maxWidth > 0 && hasGlyph && FONT_SCALE_16_16(nextWidth) > maxWidth) {
       p = before;
       break;
@@ -218,6 +234,33 @@ T_BlitGlyph(struct font_glyph const *bm,
   }
 }
 
+/* Composite one emoji over the RGBA layer, allocating the layer on first use. */
+static void
+T_BlitEmoji(lpcString_t     text,
+            size_t          length,
+            float           em,
+            byte_t        **rgba,
+            struct AXsize const *sz,
+            int             x,
+            int             y_baseline)
+{
+  struct font_emoji e;
+  if (!Font_RenderEmoji(text, length, em, &e)) return;
+  if (!*rgba) *rgba = ZeroAlloc((size_t)sz->width * sz->height * 4);
+  for (int i = 0; *rgba && i < e.height; i++) {
+    int const row = y_baseline + e.yoff + i;
+    if (row < 0 || row >= sz->height) continue;
+    for (int j = 0; j < e.width; j++) {
+      int const col = x + e.xoff + j;
+      if (col < 0 || col >= sz->width) continue;
+      byte_t const *src = e.rgba + (i * e.width + j) * 4;
+      byte_t *dst = *rgba + (col + (sz->height - row - 1) * sz->width) * 4;
+      FOR_LOOP(k, 4) dst[k] = (byte_t)(src[k] + dst[k] * (255 - src[3]) / 255);
+    }
+  }
+  Font_FreeEmoji(&e);
+}
+
 static void
 T_BlitUnderline(FontPixel      *image_data,
                 struct AXsize const *sz,
@@ -244,9 +287,11 @@ T_BlitUnderline(FontPixel      *image_data,
 static int
 T_BlitWord(struct fontface* face,
            float            font_scale,
+           float            em,
            lpcString_t      word_start,
            lpcString_t      word_end,
            FontPixel       *image_data,
+           byte_t         **emoji_data,
            struct AXsize const *sz,
            int             *x,
            int              y,
@@ -265,6 +310,14 @@ T_BlitWord(struct fontface* face,
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
 
     lpcString_t before = p;
+    size_t const emoji = Font_EmojiLength(p);
+    if (emoji) {
+      T_BlitEmoji(p, emoji, em, emoji_data, sz, FONT_SCALE_16_16(pen16), y + baseline);
+      pen16 += Font_GetEmojiAdvance(em);
+      p += emoji;
+      prev = 0;
+      continue;
+    }
     uint32_t ch = u8_readchar(&p);
     if (ch < 128 && isspace(ch)) { p = before; break; }
 
@@ -355,8 +408,9 @@ typedef struct {
   struct rect    cursor;       /* cursor rect in unscaled pixel space */
   bool_t         cursorSet;    /* TRUE once cursor rect has been written */
 
-  /* bitmap (only when bRender == TRUE) */
+  /* bitmaps (only when bRender == TRUE); emoji_data stays NULL without emoji */
   FontPixel     *image_data;
+  byte_t        *emoji_data;
 } LayoutCtx;
 
 /* Layout state shared across runs */
@@ -478,7 +532,7 @@ T_LayoutText(LayoutCtx *ctx)
         lpcString_t word_start = before;
         uint32_t dummy_gi = 0;
         lpcString_t word_p = word_start;
-        int wordW = T_MeasureWord(m.face, m.fontScale, &word_p, &dummy_gi, continuation ? wrapW : 0);
+        int wordW = T_MeasureWord(m.face, m.fontScale, m.em, &word_p, &dummy_gi, continuation ? wrapW : 0);
         if (!continuation) tokenEnd = word_p;
         /* word_p now points past the word */
 
@@ -500,7 +554,7 @@ T_LayoutText(LayoutCtx *ctx)
         if (breakWords && wordW > wrapW - ls.lineX) {
           word_p = word_start;
           dummy_gi = 0;
-          wordW = T_MeasureWord(m.face, m.fontScale, &word_p, &dummy_gi, MAX(1, wrapW - ls.lineX));
+          wordW = T_MeasureWord(m.face, m.fontScale, m.em, &word_p, &dummy_gi, MAX(1, wrapW - ls.lineX));
         }
         continuation = word_p < tokenEnd;
 
@@ -518,6 +572,15 @@ T_LayoutText(LayoutCtx *ctx)
               ctx->cursor.width  = CARET_WIDTH;
               ctx->cursor.height = (int)(m.height / scale);
               ctx->cursorSet     = TRUE;
+            }
+            size_t const emoji = Font_EmojiLength(wp);
+            if (emoji) {
+              /* the cursor counts code points; an emoji spans several */
+              for (lpcString_t const ee = wp + emoji; wp < ee; current_char++)
+                u8_readchar(&wp);
+              cx16 += Font_GetEmojiAdvance(m.em);
+              prev_gi2 = 0;
+              continue;
             }
             uint32_t const wch = u8_readchar(&wp);
             current_char++;
@@ -593,6 +656,7 @@ T_LayoutText(LayoutCtx *ctx)
   int  ul_depth     = 0;       /* nesting depth for <u> tags */
   uint32_t prev_gi  = 0;
 
+  byte_t   *emoji_data      = NULL;
   bool_t    bDone           = FALSE;
   int       ellipsis_x      = 0;
   int       ellipsis_y      = 0;
@@ -606,7 +670,7 @@ T_LayoutText(LayoutCtx *ctx)
     if (!run->string) continue;
 
     RunMetrics m;
-    if (!T_BeginRun(run, scale, &m)) { free(image_data); return E_UNEXPECTED; }
+    if (!T_BeginRun(run, scale, &m)) { free(image_data); free(emoji_data); return E_UNEXPECTED; }
 
     ls.lineHeight = MAX(ls.lineHeight, m.height);
     ls.baseline   = MAX(ls.baseline, m.ascender);
@@ -649,7 +713,7 @@ T_LayoutText(LayoutCtx *ctx)
       if (breakWords) prev_gi = 0;
       uint32_t measure_gi = prev_gi;
       lpcString_t word_end = word_start;
-      int wordW = T_MeasureWord(m.face, m.fontScale, &word_end, &measure_gi, continuation ? wrapW : 0);
+      int wordW = T_MeasureWord(m.face, m.fontScale, m.em, &word_end, &measure_gi, continuation ? wrapW : 0);
       if (!continuation) tokenEnd = word_end;
 
       /* Determine inter-word space */
@@ -670,7 +734,7 @@ T_LayoutText(LayoutCtx *ctx)
       if (breakWords && wordW > wrapW - ls.lineX - spacePrefix) {
         word_end = word_start;
         measure_gi = 0;
-        T_MeasureWord(m.face, m.fontScale, &word_end, &measure_gi, MAX(1, wrapW - ls.lineX - spacePrefix));
+        T_MeasureWord(m.face, m.fontScale, m.em, &word_end, &measure_gi, MAX(1, wrapW - ls.lineX - spacePrefix));
       }
       continuation = word_end < tokenEnd;
 
@@ -700,7 +764,25 @@ T_LayoutText(LayoutCtx *ctx)
         while (q < word_end) {
           if (!strncmp(q, "<u>",  3)) { q += 3; continue; }
           if (!strncmp(q, "</u>", 4)) { q += 4; continue; }
-          lpcString_t qb = q;
+          size_t const emoji = Font_EmojiLength(q);
+          if (emoji) {
+            int64_t const nextPen = epen16 + Font_GetEmojiAdvance(m.em);
+            if (FONT_SCALE_16_16(nextPen) > cutX) {
+              ellipsis_x    = FONT_SCALE_16_16(epen16);
+              ellipsis_y    = ls.lineY;
+              ellipsis_base = ls.baseline;
+              ellipsis_face = m.face;
+              ellipsis_scale = m.fontScale;
+              bDone = TRUE;
+              break;
+            }
+            T_BlitEmoji(q, emoji, m.em, &emoji_data, &sz,
+                        FONT_SCALE_16_16(epen16), ls.lineY + ls.baseline);
+            epen16 = nextPen;
+            prev_gi = 0;
+            q += emoji;
+            continue;
+          }
           uint32_t const qch = u8_readchar(&q);
           if (qch < 128 && isspace(qch)) break;
           uint32_t const qgi = T_LoadChar(m.face, qch);
@@ -742,8 +824,8 @@ T_LayoutText(LayoutCtx *ctx)
                         ls.lineX, ls.lineX + spacePrefix,
                         ls.lineY + ls.baseline, m.underlinePos, ul_thick);
       ls.lineX += spacePrefix;
-      T_BlitWord(m.face, m.fontScale, word_start, word_end,
-                 image_data, &sz,
+      T_BlitWord(m.face, m.fontScale, m.em, word_start, word_end,
+                 image_data, &emoji_data, &sz,
                  &ls.lineX, ls.lineY,
                  ls.baseline, m.underlinePos,
                  ul_thick, &prev_gi);
@@ -761,6 +843,7 @@ T_LayoutText(LayoutCtx *ctx)
   }
 
   ctx->image_data = image_data;
+  ctx->emoji_data = emoji_data;
   ctx->size       = (struct AXsize){ sz.width, sz.height };
   return S_OK;
 }
@@ -784,54 +867,74 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor, uint32_t *last
 }
 
 ORCA_API HRESULT
-TextBlockText_Rasterize(struct TextBlockText *text,
-                        struct AXsize *size,
-                        unsigned char **bitmap)
+TextBlockText_RasterizeLayers(struct TextBlockText *text,
+                              struct AXsize *size,
+                              unsigned char **bitmap,
+                              unsigned char **emoji)
 {
   LayoutCtx ctx = { .text = text, .bRender = TRUE };
   HRESULT hr = T_LayoutText(&ctx);
   if (FAILED(hr)) return hr;
   *size = ctx.size;
   *bitmap = ctx.image_data;
+  if (emoji) *emoji = ctx.emoji_data; else free(ctx.emoji_data);
+  return S_OK;
+}
+
+ORCA_API HRESULT
+TextBlockText_Rasterize(struct TextBlockText *text,
+                        struct AXsize *size,
+                        unsigned char **bitmap)
+{
+  return TextBlockText_RasterizeLayers(text, size, bitmap, NULL);
+}
+
+/* Upload pixels into *pTexture, reusing it when there is one. */
+static HRESULT
+T_Upload(struct Texture **pTexture,
+         enum TextureFormat format,
+         struct AXsize sz,
+         void *pixels,
+         float scale)
+{
+  CREATEIMGSTRUCT cis = {
+    .Width     = sz.width,
+    .Height    = sz.height,
+    .Format    = format,
+    .MinFilter = kTextureFilterLinear,
+    .MagFilter = kTextureFilterLinear,
+    .ImageData = pixels,
+  };
+  if (*pTexture) {
+    Texture_Reallocate(*pTexture, &cis);
+  } else {
+    HRESULT const hr = Texture_Create(&cis, pTexture);
+    if (FAILED(hr)) return hr;
+  }
+  (*pTexture)->Scale  = scale;
+  (*pTexture)->Width  = T_LogicalPixels(sz.width, scale);
+  (*pTexture)->Height = T_LogicalPixels(sz.height, scale);
   return S_OK;
 }
 
 static HRESULT
-TextBlockText_Print(struct TextBlockText *pViewText,
-                    struct Texture      **pTexture,
-                    bool_t               bReuseTexture)
+TextBlockText_Print(struct TextBlockText *pViewText)
 {
-  struct AXsize sz;
-  unsigned char *bitmap;
-  HRESULT hr = TextBlockText_Rasterize(pViewText, &sz, &bitmap);
+  LayoutCtx ctx = { .text = pViewText, .bRender = TRUE };
+  HRESULT hr = T_LayoutText(&ctx);
   if (FAILED(hr)) return hr;
 
-  CREATEIMGSTRUCT cis = {
-    .Width     = sz.width,
-    .Height    = sz.height,
-    .Format    = kTextureFormatAlpha8,
-    .MinFilter = kTextureFilterLinear,
-    .MagFilter = kTextureFilterLinear,
-    .ImageData = bitmap,
-  };
-
-  if (bReuseTexture && *pTexture) {
-    Texture_Reallocate(*pTexture, &cis);
-    (*pTexture)->Scale  = pViewText->scale;
-    (*pTexture)->Width  = T_LogicalPixels(sz.width, pViewText->scale);
-    (*pTexture)->Height = T_LogicalPixels(sz.height, pViewText->scale);
-    free(bitmap);
-    return S_OK;
+  hr = T_Upload(&pViewText->texture, kTextureFormatAlpha8, ctx.size,
+                ctx.image_data, pViewText->scale);
+  if (SUCCEEDED(hr) && ctx.emoji_data) {
+    hr = T_Upload(&pViewText->emojiTexture, kTextureFormatRgba8, ctx.size,
+                  ctx.emoji_data, pViewText->scale);
+  } else {
+    SafeDelete(pViewText->emojiTexture, Texture_Release);
   }
-
-  hr = Texture_Create(&cis, pTexture);
-  free(bitmap);
-  if (FAILED(hr)) return hr;
-
-  (*pTexture)->Scale  = pViewText->scale;
-  (*pTexture)->Width  = T_LogicalPixels(sz.width, pViewText->scale);
-  (*pTexture)->Height = T_LogicalPixels(sz.height, pViewText->scale);
-  return S_OK;
+  free(ctx.image_data);
+  free(ctx.emoji_data);
+  return hr;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -863,8 +966,9 @@ TextBlockText_GetTexture(struct TextBlockText *text)
   if (text->texture && text->textureHash == hash)
     return text->texture;
 
-  if (FAILED(TextBlockText_Print(text, &text->texture, text->texture != NULL))) {
+  if (FAILED(TextBlockText_Print(text))) {
     SafeDelete(text->texture, Texture_Release);
+    SafeDelete(text->emojiTexture, Texture_Release);
     text->textureHash = 0;
     return NULL;
   }
@@ -877,6 +981,7 @@ TextBlockText_Release(struct TextBlockText *text)
 {
   if (!text) return;
   SafeDelete(text->texture, Texture_Release);
+  SafeDelete(text->emojiTexture, Texture_Release);
   free(text->displayBuffer);
   free(text);
 }

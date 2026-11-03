@@ -470,9 +470,15 @@ register_shared_fonts(lua_State* L)
 
   lua_getglobal(L, "SHAREDIR");
   lpcString_t share = lua_isstring(L, -1) ? lua_tostring(L, -1) : NULL;
-  bool_t found = find_shared_font_paths(share, sans, serif, mono) ||
-                 find_shared_font_paths("build/share", sans, serif, mono) ||
-                 find_shared_font_paths("share", sans, serif, mono);
+  lpcString_t const root =
+    find_shared_font_paths(share, sans, serif, mono) ? share :
+    find_shared_font_paths("build/share", sans, serif, mono) ? "build/share" :
+    find_shared_font_paths("share", sans, serif, mono) ? "share" : NULL;
+  bool_t const found = root != NULL;
+  /* The renderer finds the color emoji pack like the default font. */
+  path_t emoji = {0};
+  if (root) snprintf(emoji, sizeof(emoji), "%s/emoji/twemoji.emj", root);
+  if (root && FS_FileExists(emoji)) CORE_RegisterFontFamily("emoji", emoji);
   lua_pop(L, 1);
 
   if (found) {

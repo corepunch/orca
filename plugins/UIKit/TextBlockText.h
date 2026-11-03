@@ -35,6 +35,7 @@ struct TextBlockText
   struct text_info info;
   bool_t placeholder;
   struct Texture *texture;
+  struct Texture *emojiTexture; // RGBA emoji drawn over the tinted texture, or NULL
   char *displayBuffer;
   size_t displayCapacity;
   struct TextBlockTextRun run[UI_MAX_TEXT_RUNS];
@@ -53,6 +54,8 @@ ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
 ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
 ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
 ORCA_API HRESULT TextBlockText_Rasterize(struct TextBlockText *text, struct AXsize *size, unsigned char **bitmap);
+/* Also returns the premultiplied RGBA emoji layer, or NULL when there is none. */
+ORCA_API HRESULT TextBlockText_RasterizeLayers(struct TextBlockText *text, struct AXsize *size, unsigned char **bitmap, unsigned char **emoji);
 ORCA_API void TextBlockText_Release(struct TextBlockText *text);
 ORCA_API uint32_t TextBlockText_GetMeasureCount(void);
 ORCA_API uint32_t TextBlockText_GetRenderCount(void);
