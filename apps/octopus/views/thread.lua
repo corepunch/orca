@@ -37,6 +37,7 @@ function Thread.page(self)
     local page = assert(filesystem.loadObject("Octopus/Pages/Post"), "Missing Octopus/Pages/Post")
     -- Present the post before the first evaluation of the page's bindings.
     scope:present(page:findChild("PostDetail", true), "Post")
+    self.i18n:apply(page)
     scope:attach(page)
     self.visibility:watch(page, scope)
     local edit = scope:member("Draft")
@@ -57,18 +58,18 @@ function Thread.page(self)
     local mine = record.values.IsMine
     local bar
     bar = C.appBar({
-        { "LikePost", "heart", "like", run("Like") },
-        { "RepostPost", "repeat-2", "repost", run("Repost") },
-        { "CommentOnPost", "message-circle", "comment", function()
-            if self:requireSession("Sign in to comment.") then view.input:setFocus() end
+        { "LikePost", "heart", self.i18n:t("like"), run("Like") },
+        { "RepostPost", "repeat-2", self.i18n:t("repost"), run("Repost") },
+        { "CommentOnPost", "message-circle", self.i18n:t("comment"), function()
+            if self:requireSession(self.i18n:t("Sign in to comment.")) then view.input:setFocus() end
         end },
     }, {
-        { "ViewAuthor", "view " .. (record.values.AuthorName or "author"):lower(), run("OpenAuthor") },
-        { "RefreshPost", "refresh", function() Thread.load(self, view) end },
-        mine and { "DeletePost", "delete post", function()
+        { "ViewAuthor", self.i18n:t("view %{name}", { name = record.values.AuthorName or "author" }), run("OpenAuthor") },
+        { "RefreshPost", self.i18n:t("refresh"), function() Thread.load(self, view) end },
+        mine and { "DeletePost", self.i18n:t("delete post"), function()
             scope:member("DeletePost"):execute({}, function()
                 local command = scope:member("DeletePost")
-                if command.confirming and not scope.disposed then bar:findChild("DeletePost").Text = "tap again to delete" end
+                if command.confirming and not scope.disposed then bar:findChild("DeletePost").Text = self.i18n:t("tap again to delete") end
             end)
         end } or nil,
     }, { class = "post-actions", SafeAreaEdge = "None", ContentInsetAdjustment = "Never" })
@@ -91,6 +92,7 @@ function Thread.page(self)
         back = back }), footer, { Background = colors.background, Foreground = colors.ink })
     scope:member("Detail"):set("PostId", post.id)
     scope:member("Comments"):set("PostId", post.id)
+    self.i18n:apply(screen)
     return screen
 end
 

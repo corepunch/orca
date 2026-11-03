@@ -31,30 +31,37 @@ local function epoch(iso)
     local y, m, d, h, min, s = tostring(iso or ""):match("^(%d+)%-(%d+)%-(%d+)T(%d+):(%d+):(%d+)")
     if not y then return nil end
     local localTime = os.time { year = tonumber(y), month = tonumber(m), day = tonumber(d),
-        hour = tonumber(h), min = tonumber(min), sec = tonumber(s) }
+        hour = tonumber(h), min = tonumber(min), sec = tonumber(s), isdst = false }
     -- os.time reads the fields as local time; correct to UTC.
-    local now = os.time()
-    local offset = os.time(os.date("*t", now)) - os.time(os.date("!*t", now))
+    local offset = os.time(os.date("*t", localTime)) - os.time(os.date("!*t", localTime))
     return localTime + offset
 end
 Format.epoch = epoch
 
 -- "now", "5m", "3h", "2d", then a short date, like a timeline.
-function Format.ago(iso, now)
+function Format.ago(iso, now, i18n)
     local time = epoch(iso)
     if not time then return "" end
     local diff = math.max(0, (now or os.time()) - time)
-    if diff < 60 then return "now" end
-    if diff < 3600 then return math.floor(diff / 60) .. "m" end
-    if diff < 86400 then return math.floor(diff / 3600) .. "h" end
-    if diff < 7 * 86400 then return math.floor(diff / 86400) .. "d" end
+    if diff < 60 then return i18n and i18n:t("now") or "now" end
+    if diff < 3600 then return i18n and i18n:t("%{count}m", { count = math.floor(diff / 60) }) or math.floor(diff / 60) .. "m" end
+    if diff < 86400 then return i18n and i18n:t("%{count}h", { count = math.floor(diff / 3600) }) or math.floor(diff / 3600) .. "h" end
+    if diff < 7 * 86400 then return i18n and i18n:t("%{count}d", { count = math.floor(diff / 86400) }) or math.floor(diff / 86400) .. "d" end
+    if i18n then
+        local date = os.date("!*t", time)
+        return date.day .. " " .. i18n:t("month." .. date.month)
+    end
     return os.date("!%d %b", time):gsub("^0", ""):lower()
 end
 
 -- The full local time of a post, as on a tweet's own page: "14:05 · 24 oct 2026".
-function Format.stamp(iso)
+function Format.stamp(iso, i18n)
     local time = epoch(iso)
     if not time then return "" end
+    if i18n then
+        local date = os.date("*t", time)
+        return string.format("%02d:%02d · %d %s %d", date.hour, date.min, date.day, i18n:t("month." .. date.month), date.year)
+    end
     return (os.date("%H:%M · %d %b %Y", time):gsub("· 0", "· "):lower())
 end
 

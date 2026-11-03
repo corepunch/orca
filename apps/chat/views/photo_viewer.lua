@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local Viewer = {}
@@ -30,7 +32,7 @@ function Viewer.open(app, attachment)
     local close = C.iconButton("arrow-left", function() if current() then Viewer.close(app) end end,
         { Name = "ClosePhotoViewer", Width = 48, Height = 48, Foreground = "#ffffff" }, "#ffffff")
     bar:addChild(close)
-    bar:addChild(C.text("photo", { FontSize = 22, Foreground = "#ffffff", TextVerticalAlignment = "Center" }))
+    bar:addChild(C.text(t("photo"), { FontSize = 22, Foreground = "#ffffff", TextVerticalAlignment = "Center" }))
     root:addChild(bar)
     local host = ui.Grid { Name = "PhotoViewerContent", Rows = "1fr", Columns = "1fr" }
     root:addChild(host)
@@ -67,9 +69,9 @@ function Viewer.open(app, attachment)
         if loading then loading:removeFromParent() end
         host:addChild(C.stack({ Name = "PhotoViewerError", Spacing = 16, JustifyContent = "Center", Padding = "24",
             MarginTop = viewer.path and auto or 0, Background = "#000000c0" }, {
-            C.text(type(err) == "table" and err.message or "Could not load this photo.", {
+            C.text(type(err) == "table" and t(err.message) or t("Could not load this photo."), {
                 WordWrap = true, Foreground = "#ffffff", TextHorizontalAlignment = "Center" }),
-            C.button("retry", load, { Name = "RetryPhotoViewer", Foreground = "#ffffff",
+            C.button(t("retry"), load, { Name = "RetryPhotoViewer", Foreground = "#ffffff",
                 Width = 120, MarginLeft = auto, MarginRight = auto }),
         }))
     end

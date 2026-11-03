@@ -4,14 +4,14 @@
 <StackView Name="WritePage" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
   <StackView Name="WriteSignIn" Visible="{Binding DataContext/Reader/IsGuest}" Spacing="16" JustifyContent="Start">
     <StackView Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
-      <TextBlock Text="sign in to write" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
-      <TextBlock Text="Guests can read everything. Writing, replying and following need an account." FontSize="14"
+      <TextBlock Text="sign in to write" TextResourceID="sign in to write" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="Guests can read everything. Writing, replying and following need an account." TextResourceID="Guests can read everything. Writing, replying and following need an account." FontSize="14"
                  WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
     <Button Name="WriteSignInButton" Click="SignInToWrite" Height="48" FontSize="15" FontWeight="Bold"
-            TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary">Sign in</Button>
+            TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary" TextResourceID="Sign in">Sign in</Button>
     <Button Name="WriteSignUp" Click="SignUpToWrite" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
-            TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline">Create an account</Button>
+            TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline" TextResourceID="Create an account">Create an account</Button>
   </StackView>
   <StackView Name="WriteForm" Visible="{Binding DataContext/Reader/SignedIn}" Spacing="14" JustifyContent="Start">
     <Grid Name="PostKinds" Columns="1fr 1fr" Rows="80px 80px" Spacing="8" Height="168">
@@ -19,67 +19,67 @@
         <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/file-text.svg" Width="28" Height="28" MarginLeft="auto" MarginRight="auto"
                       class="kind-ink" IgnoreHitTest="true"/>
-          <TextBlock Text="text" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
+          <TextBlock Text="text" TextResourceID="text" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
         </StackView>
       </Button>
       <Button Name="Kindphoto" Click="SelectKind" Height="80" StateClasses="{Binding DataContext/Composer/PhotoTile}" class="octopus-action kind-tile">
         <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/image.svg" Width="28" Height="28" MarginLeft="auto" MarginRight="auto"
                       class="kind-ink" IgnoreHitTest="true"/>
-          <TextBlock Text="photo" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
+          <TextBlock Text="photo" TextResourceID="photo" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
         </StackView>
       </Button>
       <Button Name="Kindquote" Click="SelectKind" Height="80" StateClasses="{Binding DataContext/Composer/QuoteTile}" class="octopus-action kind-tile">
         <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/quote.svg" Width="28" Height="28" MarginLeft="auto" MarginRight="auto"
                       class="kind-ink" IgnoreHitTest="true"/>
-          <TextBlock Text="quote" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
+          <TextBlock Text="quote" TextResourceID="quote" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
         </StackView>
       </Button>
       <Button Name="Kindlink" Click="SelectKind" Height="80" StateClasses="{Binding DataContext/Composer/LinkTile}" class="octopus-action kind-tile">
         <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
           <VectorView Source="Octopus/assets/icons/link.svg" Width="28" Height="28" MarginLeft="auto" MarginRight="auto"
                       class="kind-ink" IgnoreHitTest="true"/>
-          <TextBlock Text="link" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
+          <TextBlock Text="link" TextResourceID="link" FontSize="17" TextHorizontalAlignment="Center" class="kind-ink" IgnoreHitTest="true"/>
         </StackView>
       </Button>
     </Grid>
     <!-- Text -->
     <StackView Visible="{Binding DataContext/Composer/IsText}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="title" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="title" TextResourceID="title" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="PostTitle" PlaceholderText="Give it a title" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
              class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Title, Mode=TwoWay}"/>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsText}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="post" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="post" TextResourceID="post" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="PostContent" PlaceholderText="What's on your mind? Markdown works on the website." Multiline="true"
              Height="176" FontSize="15" Padding="12 10" BorderWidth="2" class="octopus-input octopus-field"
              Text="{Binding DataContext/Draft/Content, Mode=TwoWay}"/>
     </StackView>
     <!-- Quote -->
     <StackView Visible="{Binding DataContext/Composer/IsQuote}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="quote" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="quote" TextResourceID="quote" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="QuoteText" PlaceholderText="The words worth sharing" Multiline="true" Height="106" FontSize="15"
              Padding="12 10" BorderWidth="2" class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Content, Mode=TwoWay}"/>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsQuote}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="source (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="source (optional)" TextResourceID="source (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="QuoteSource" PlaceholderText="Who said it? A person, book or site" Height="44" FontSize="15" Padding="12 0"
              BorderWidth="2" class="octopus-input octopus-field" Text="{Binding DataContext/Draft/QuoteSource, Mode=TwoWay}"/>
     </StackView>
     <!-- Link -->
     <StackView Visible="{Binding DataContext/Composer/IsLink}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="title" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="title" TextResourceID="title" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="LinkTitle" PlaceholderText="What is it?" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
              class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Title, Mode=TwoWay}"/>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsLink}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="address" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="address" TextResourceID="address" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="LinkUrl" PlaceholderText="https://" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
              class="octopus-input octopus-field" Text="{Binding DataContext/Draft/LinkUrl, Mode=TwoWay}"/>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsLink}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="description (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="description (optional)" TextResourceID="description (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="LinkDescription" PlaceholderText="Why it's worth a read" Multiline="true" Height="92" FontSize="15"
              Padding="12 10" BorderWidth="2" class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Content, Mode=TwoWay}"/>
     </StackView>
@@ -105,30 +105,30 @@
       <Button Name="ChoosePhoto" Click="ChoosePhoto" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
               class="octopus-action octopus-outline">
-        <BindingExpression Target="Text">IF({DataContext/Draft/HasPhoto}, "Add another photo", "Choose a photo")</BindingExpression>
+        <BindingExpression Target="TextResourceID">IF({DataContext/Draft/HasPhoto}, "Add another photo", "Choose a photo")</BindingExpression>
       </Button>
       <Button Name="RemovePhoto" Visible="{Binding DataContext/Draft/HasPhoto}" Click="RemovePhoto" Height="48" FontSize="15"
               TextHorizontalAlignment="Left" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
-              class="octopus-action octopus-link">Remove all photos</Button>
+              class="octopus-action octopus-link" TextResourceID="Remove all photos">Remove all photos</Button>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsPhoto}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="caption (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="caption (optional)" TextResourceID="caption (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="PhotoCaption" PlaceholderText="Say something about it" Multiline="true" Height="76" FontSize="15"
              Padding="12 10" BorderWidth="2" class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Content, Mode=TwoWay}"/>
     </StackView>
     <StackView Visible="{Binding DataContext/Composer/IsQuote}" Spacing="6" JustifyContent="Start">
-      <TextBlock Text="your thoughts (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="your thoughts (optional)" TextResourceID="your thoughts (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="QuoteThoughts" PlaceholderText="What it means to you" Multiline="true" Height="76" FontSize="15"
              Padding="12 10" BorderWidth="2" class="octopus-input octopus-field" Text="{Binding DataContext/Draft/UserText, Mode=TwoWay}"/>
     </StackView>
     <StackView Spacing="6" JustifyContent="Start">
-      <TextBlock Text="tags (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="tags (optional)" TextResourceID="tags (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
       <Input Name="PostTags" PlaceholderText="design, reef, hello" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
              class="octopus-input octopus-field" Text="{Binding DataContext/Draft/Tags, Mode=TwoWay}"/>
     </StackView>
     <Button Name="Publish" Click="Draft.Submit" Height="48" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center"
             TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}" class="octopus-action octopus-primary">
-      <BindingExpression Target="Text">IF({DataContext/Draft/Status/IsSubmitting}, "Publishing…", "Publish")</BindingExpression>
+      <BindingExpression Target="TextResourceID">IF({DataContext/Draft/Status/IsSubmitting}, "Publishing…", "Publish")</BindingExpression>
       <BindingExpression Target="Opacity">IF({DataContext/Draft/Status/IsSubmitting}, 0.5, 1)</BindingExpression>
     </Button>
     <TextBlock Name="WriteStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>

@@ -56,6 +56,7 @@
     <Column Name="Tone" Type="string" Computed="memberTone" DependsOn="UserId"/>
     <Column Name="AvatarId" Type="string" Computed="memberAvatar" DependsOn="UserId"/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+    <Column Name="RoleText" Type="string" Computed="roleText" DependsOn="Role"/>
     <Column Name="RoleAction" Type="string" Computed="roleAction" DependsOn="Role"/>
   </Entity>
   <Entity Name="ChatRoomName" Description="The rename form of a group or channel.">

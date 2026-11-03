@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local C = require "Chat/views/components"
 local filesystem = require "orca.filesystem"
 local data = require "orca.data"
@@ -21,14 +23,14 @@ function Avatar.controls(app, tile, status)
         return app.sessionEpoch == epoch and active and active.user.id == userId
     end
     local function notice(node, message, failed)
-        node:setTextContent(message or "")
+        node:setTextContent(t(message or ""))
         node.Visible = message ~= nil and message ~= ""
         node.StateClasses = failed and "chat-error" or "chat-muted"
     end
     local function upload(photo, target, current, complete)
         if busy or not sameAccount() or not current() then return end
         busy = true
-        notice(target, "Saving picture…")
+        notice(target, t("Saving picture…"))
         app:load(function()
             if not sameAccount() or not current() then
                 busy = false
@@ -46,10 +48,10 @@ function Avatar.controls(app, tile, status)
                     C.photo(tile, path)
                 else app:avatarPhoto(tile, userId) end
             end
-            if ok and result then notice(status, "Picture updated.") end
+            if ok and result then notice(status, t("Picture updated.")) end
             if not current() and target ~= status then return end
             if not ok or not result then
-                notice(target, type(err) == "table" and err.message or "Could not save your picture. Choose again to retry.", true)
+                notice(target, type(err) == "table" and err.message or t("Could not save your picture. Choose again to retry."), true)
             else
                 if complete and current() then complete() end
             end
@@ -59,6 +61,7 @@ function Avatar.controls(app, tile, status)
         if busy or not sameAccount() then return end
         Avatar.close(app)
         local root = assert(filesystem.loadObject("Chat/Pages/AvatarPicker"), "Missing avatar picker")
+        I18n:apply(root)
         local screen, navigation = app.screen, app.navigationEpoch
         local picker = { root = root }
         local function current()
@@ -76,7 +79,7 @@ function Avatar.controls(app, tile, status)
                         local photo, err = Avatars.load(record.values.Id)
                         local target = root:findChild("AvatarChoiceStatus", true)
                         if not photo then
-                            notice(target, err and err.message or "Could not load this character. Choose again to retry.", true)
+                            notice(target, err and err.message or t("Could not load this character. Choose again to retry."), true)
                             return
                         end
                         upload(photo, target, current, function() Avatar.close(app) end)
@@ -97,15 +100,15 @@ function Avatar.controls(app, tile, status)
         if not sameAccount() or not current() then return end
         if not ok or not photo then
             if not ok or not err or err.code ~= "cancelled" then
-                notice(status, type(err) == "table" and err.message or "Could not open this photo.", true)
+                notice(status, type(err) == "table" and err.message or t("Could not open this photo."), true)
             end
             return
         end
         upload(photo, status, current)
     end
     return C.stack({ Spacing = 0 }, {
-        C.command("ChooseAvatar", "user-round", "choose a character", choose),
-        C.command("UploadAvatar", "camera", "upload photo", pick),
+        C.command("ChooseAvatar", "user-round", t("choose a character"), choose),
+        C.command("UploadAvatar", "camera", t("upload photo"), pick),
     })
 end
 

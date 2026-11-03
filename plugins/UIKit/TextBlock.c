@@ -105,10 +105,6 @@ HANDLER(TextBlock, Node2D, DrawForeground)
   entity.material.opacity *= modopacity;
   entity.radius = (struct vec4){0};
   entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
-  struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
-  if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
-    Loc_GetString(text->TextResourceID, LOC_TEXT);
-  }
 
   entity.borderWidth = pDrawForeground->borderWidth;
   entity.borderOffset = pDrawForeground->borderOffset;

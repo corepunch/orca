@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local ProfileAvatar = require "Chat/views/profile_avatar"
@@ -35,8 +37,8 @@ function Identity.auth(self, mode)
     end
     self.status = C.text("", { Name = "AuthStatus", Visible = false, WordWrap = true, FontSize = 13, StateClasses = "chat-muted" })
     local function finish(session, err)
-        if not session then self:notice(err and err.message or "Please try again.", true); return end
-        if not self.client:getSession() then self:notice("Check your email to confirm your account."); return end
+        if not session then self:notice(err and err.message or t("Please try again."), true); return end
+        if not self.client:getSession() then self:notice(t("Check your email to confirm your account.")); return end
         self:resetSessionViews()
         self:show()
     end
@@ -67,40 +69,40 @@ function Identity.auth(self, mode)
     end
     -- Every form keeps one primary action and one way out, after Microsoft's
     -- "Other sign-in options"; the options page lists the alternatives.
-    local function others() return link("Other sign-in options", "OtherOptions", "/auth/options") end
+    local function others() return link(t("Other sign-in options"), "OtherOptions", "/auth/options") end
     local title, description, form
     if mode == "options" then
-        title, description = "sign-in options", "Choose another way to continue."
+        title, description = t("sign-in options"), t("Choose another way to continue.")
         form = C.stack({ Name = "OptionsPage", Spacing = 0 }, {
-            C.command("UsePhone", "smartphone", "Phone number", function() go("/auth") end),
-            C.command("UseEmailCode", "mail", "Email me a sign-in code", function() go("/auth/email-code") end),
-            C.command("UsePassword", "key-round", "Email and password", function() go("/auth/email") end),
-            C.command("CreateAccount", "user-round-plus", "Create an account", function() go("/auth/signup") end),
+            C.command("UsePhone", "smartphone", t("Phone number"), function() go("/auth") end),
+            C.command("UseEmailCode", "mail", t("Email me a sign-in code"), function() go("/auth/email-code") end),
+            C.command("UsePassword", "key-round", t("Email and password"), function() go("/auth/email") end),
+            C.command("CreateAccount", "user-round-plus", t("Create an account"), function() go("/auth/signup") end),
         })
     elseif mode == "email-code" then
-        title, description = "sign in", "We'll email you a code. New here? The same code creates your account."
+        title, description = t("sign in"), t("We'll email you a code. New here? The same code creates your account.")
         local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
         form = C.stack({ Name = "EmailCodePage", Spacing = 16 }, {
-            field("Email address", email),
-            action("Email me a code", "SendEmailCode", "Sending code…", function()
+            field(t("Email address"), email),
+            action(t("Email me a code"), "SendEmailCode", t("Sending code…"), function()
                 requestCode(email.Text, "/auth/email-code")
             end), self.status, others(),
         })
         email.Submit = function() form:findChild("SendEmailCode"):send("Node.LeftButtonUp") end
     elseif mode == "email" or mode == "signup" then
         local signup = mode == "signup"
-        title = signup and "create account" or "sign in"
-        description = signup and "A name, an email, and you're in." or "Welcome back. Pick up the conversation."
+        title = signup and t("create account") or t("sign in")
+        description = signup and t("A name, an email, and you're in.") or t("Welcome back. Pick up the conversation.")
         local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
-        local password = input("Password", signup and "At least 8 characters" or "Your password", nil, { Type = "Password" })
+        local password = input("Password", signup and t("At least 8 characters") or t("Your password"), nil, { Type = "Password" })
         form = C.stack({ Name = signup and "SignUpPage" or "EmailPage", Spacing = 16 })
         if signup then
-            form:addChild(field("Your name", input("DisplayName", "How people will know you", draft.name)))
+            form:addChild(field(t("Your name"), input("DisplayName", t("How people will know you"), draft.name)))
         end
-        form:addChild(field("Email address", email))
-        form:addChild(field("Password", password))
-        form:addChild(action(signup and "Create account" or "Sign in", signup and "SignUp" or "SignIn",
-            signup and "Creating account…" or "Signing in…", function()
+        form:addChild(field(t("Email address"), email))
+        form:addChild(field(t("Password"), password))
+        form:addChild(action(signup and t("Create account") or t("Sign in"), signup and "SignUp" or "SignIn",
+            signup and t("Creating account…") or t("Signing in…"), function()
                 local session, err
                 if signup then session, err = self.client:signUp(email.Text, password.Text, fields.DisplayName.Text)
                 else session, err = self.client:signIn(email.Text, password.Text) end
@@ -112,31 +114,31 @@ function Identity.auth(self, mode)
         if signup then fields.DisplayName.Submit = function() email:setFocus() end end
         form:addChild(others())
     elseif mode == "code" then
-        title, description = "check your messages", "Enter the code sent to " .. (self.loginIdentifier or "your phone") .. "."
-        local code = input("VerificationCode", "6-digit code", nil, { Type = "Number" })
+        title, description = t("check your messages"), t("Enter the code sent to %{identifier}.", { identifier = self.loginIdentifier or t("your phone") })
+        local code = input("VerificationCode", t("6-digit code"), nil, { Type = "Number" })
         form = C.stack({ Name = "CodeStep", Spacing = 16 }, {
-            field("Verification code", code),
-            action("Verify & sign in", "VerifyCode", "Verifying…", function()
+            field(t("Verification code"), code),
+            action(t("Verify & sign in"), "VerifyCode", t("Verifying…"), function()
                 local session, err = self.client:verifyCode(self.loginIdentifier, code.Text)
                 finish(session, err)
             end), self.status,
-            action("Resend code", "ResendCode", "Sending code…", function()
+            action(t("Resend code"), "ResendCode", t("Sending code…"), function()
                 local result, err = self.client:requestCode(self.loginIdentifier)
-                self:notice(result and "A new code is on its way." or err.message, not result)
+                self:notice(result and t("A new code is on its way.") or err.message, not result)
             end, true),
-            link("Change phone number or email", "ChangeIdentifier", self.loginReturnRoute or "/auth"),
+            link(t("Change phone number or email"), "ChangeIdentifier", self.loginReturnRoute or "/auth"),
         })
         code.Submit = function() form:findChild("VerifyCode"):send("Node.LeftButtonUp") end
     else
-        title, description = "your phone", "Your people are one message away. Sign in or get started with your number."
+        title, description = t("your phone"), t("Your people are one message away. Sign in or get started with your number.")
         local phone = input("Identifier", "+49 151 1234 5678", draft.phone, { Type = "Phone" })
         form = C.stack({ Name = "PhonePage", Spacing = 16 }, {
-            field("Phone number", phone),
-            C.text("Include + and your country code. We'll send you a verification code.", {
+            field(t("Phone number"), phone),
+            C.text(t("Include + and your country code. We'll send you a verification code."), {
                 FontSize = 13, class = "chat-muted", WordWrap = true }),
-            action("Continue", "RequestCode", "Sending code…", function()
+            action(t("Continue"), "RequestCode", t("Sending code…"), function()
                 if not phone.Text:match("^%s*%+") then
-                    self:notice("Enter your phone number with + and country code.", true)
+                    self:notice(t("Enter your phone number with + and country code."), true)
                     phone:setFocus()
                     return
                 end
@@ -160,7 +162,7 @@ function Identity.auth(self, mode)
         }), form,
     })
     if not self.remote then
-        body:addChild(C.text("Offline demo · +4915110000001 · code 123456\nEmail: demo@example.invalid · password123", {
+        body:addChild(C.text(t("Offline demo · +4915110000001 · code 123456\nEmail: demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
     end
     return self:frame(body)
@@ -171,55 +173,55 @@ end
 -- notification and login details, then sign out.
 local function profileBody(self, profile)
     local user = self.client:getSession().user
-    profile = profile or { display_name = (user.user_metadata or {}).display_name or "You" }
-    local name = C.input("ProfileName", "Your name", { Text = profile.display_name or "You" })
-    local username = C.input("Username", "Choose a public username", { Text = profile.username or "" })
-    local identifier = C.input("LinkIdentifier", "Phone number or email to verify")
-    local code = C.input("LinkCode", "Verification code", { Type = "Number" })
+    profile = profile or { display_name = (user.user_metadata or {}).display_name or t("You") }
+    local name = C.input("ProfileName", t("Your name"), { Text = profile.display_name or t("You") })
+    local username = C.input("Username", t("Choose a public username"), { Text = profile.username or "" })
+    local identifier = C.input("LinkIdentifier", t("Phone number or email to verify"))
+    local code = C.input("LinkCode", t("Verification code"), { Type = "Number" })
     self.status = C.text("", { Name = "ProfileStatus", Visible = false, WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
     self.profileStatus = self.status
     local epoch, status = self.sessionEpoch, self.status
     local function notice(message, isError)
-        status:setTextContent(message or "")
+        status:setTextContent(t(message or ""))
         status.StateClasses = isError and "chat-error" or "chat-muted"
         status.Visible = (message or "") ~= ""
     end
-    local photo = C.avatar(profile.display_name or "You", 96, user.id, self, user.id)
+    local photo = C.avatar(profile.display_name or t("You"), 96, user.id, self, user.id)
     local title = C.text("", { Name = "ProfileTitle", FontSize = 28, TextOverflow = "Ellipsis" })
     local handle = C.text("", { Name = "ProfileHandle", FontSize = 15, class = "chat-muted", TextOverflow = "Ellipsis" })
     local link = C.stack({ Name = "LinkForm", Visible = false, Spacing = 10 })
-    local phoneRow = C.setting("PhoneSetting", "smartphone", "Number", function()
-        link.Visible, identifier.PlaceholderText = true, "New phone number"
+    local phoneRow = C.setting("PhoneSetting", "smartphone", t("Number"), function()
+        link.Visible, identifier.PlaceholderText = true, t("New phone number")
     end)
-    local emailRow = C.setting("EmailSetting", "mail", "Email", function()
-        link.Visible, identifier.PlaceholderText = true, "New email address"
+    local emailRow = C.setting("EmailSetting", "mail", t("Email"), function()
+        link.Visible, identifier.PlaceholderText = true, t("New email address")
     end)
     -- Telegram's header line: the phone and @username people know you by.
     local function describe(p)
         local phone, email = p.phone or user.phone, p.email or user.email
         phone, email = (phone or "") ~= "" and phone or nil, (email or "") ~= "" and email or nil
-        title:setTextContent(p.display_name or "You")
+        title:setTextContent(p.display_name or t("You"))
         local parts = {}
         for _, part in ipairs { phone or email, (p.username or "") ~= "" and "@" .. p.username or nil } do
             parts[#parts + 1] = part
         end
         handle:setTextContent(table.concat(parts, " · "))
-        phoneRow:findChild("PhoneSettingValue", true):setTextContent(phone or "Add")
-        emailRow:findChild("EmailSettingValue", true):setTextContent(email or "Add")
+        phoneRow:findChild("PhoneSettingValue", true):setTextContent(phone or t("Add"))
+        emailRow:findChild("EmailSettingValue", true):setTextContent(email or t("Add"))
     end
     describe(profile)
     local phoneDiscovery, emailDiscovery = profile.discoverable_phone == true, profile.discoverable_email == true
-    local phoneToggle = C.checkbox("DiscoverablePhone", "Find me by phone", phoneDiscovery,
+    local phoneToggle = C.checkbox("DiscoverablePhone", t("Find me by phone"), phoneDiscovery,
         function(checked) phoneDiscovery = checked end)
-    local emailToggle = C.checkbox("DiscoverableEmail", "Find me by email", emailDiscovery,
+    local emailToggle = C.checkbox("DiscoverableEmail", t("Find me by email"), emailDiscovery,
         function(checked) emailDiscovery = checked end)
     local previews = profile.notification_previews ~= false
-    local previewToggle = C.checkbox("NotificationPreviews", "Message previews", previews,
+    local previewToggle = C.checkbox("NotificationPreviews", t("Message previews"), previews,
         function(checked) previews = checked end)
     local verification
     verification = C.stack({ Name = "LinkVerification", Visible = false, Spacing = 10 }, {
         code,
-        C.button("Verify & link", function()
+        C.button(t("Verify & link"), function()
             local result, linkError = self.client:verifyIdentityLink(self.pendingIdentity, code.Text)
             if self.sessionEpoch ~= epoch then return end
             if not result then notice(linkError.message, true); return end
@@ -228,17 +230,17 @@ local function profileBody(self, profile)
             if updated then describe(updated) end
             identifier.Text, code.Text = "", ""
             link.Visible, verification.Visible = false, false
-            notice("Verified and linked to this account.")
+            notice(t("Verified and linked to this account."))
         end, { Name = "VerifyLink", Background = colors.surface }),
     })
     for _, child in ipairs {
         identifier,
-        C.button("Send verification code", function()
+        C.button(t("Send verification code"), function()
             local result, linkError = self.client:requestIdentityLink(identifier.Text)
             if self.sessionEpoch ~= epoch then return end
             if not result then notice(linkError.message, true); return end
             self.pendingIdentity, verification.Visible = identifier.Text, true
-            notice(self.remote and "Enter the code sent to your new login detail." or "Offline verification code: 123456")
+            notice(self.remote and t("Enter the code sent to your new login detail.") or t("Offline verification code: 123456"))
         end, { Name = "RequestLink", Background = colors.surface }), verification,
     } do link:addChild(child) end
     local function group(children) return C.stack({ Spacing = 6 }, children) end
@@ -249,26 +251,26 @@ local function profileBody(self, profile)
         header,
         ProfileAvatar.controls(self, photo, status),
         status,
-        C.eyebrow("public profile"),
-        group { name, C.footnote("Enter your name and add an optional profile photo.") },
-        group { username, C.footnote("People can find your exact username.") },
+        C.eyebrow(t("public profile")),
+        group { name, C.footnote(t("Enter your name and add an optional profile photo.")) },
+        group { username, C.footnote(t("People can find your exact username.")) },
         group { phoneToggle, emailToggle,
-            C.footnote("Your phone and email are never shown in search results.") },
-        C.eyebrow("notifications"),
+            C.footnote(t("Your phone and email are never shown in search results.")) },
+        C.eyebrow(t("notifications")),
         group { previewToggle,
-            C.footnote("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible.",
+            C.footnote(t("Include the sender and message in push notifications. On iPhone, Show Previews in notification settings controls when content is visible."),
                 { Name = "NotificationPreviewsHint" }) },
-        C.button("Save settings", function()
+        C.button(t("Save settings"), function()
             local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
                 discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery, notification_previews = previews }
             if self.sessionEpoch ~= epoch then return end
             if result then describe(result) end
-            notice(result and "Settings saved." or saveError.message, not result)
+            notice(result and t("Settings saved.") or saveError.message, not result)
         end, { Name = "SaveProfile", class = "chat-primary" }),
-        C.eyebrow("login details"),
-        group { phoneRow, emailRow, C.footnote("Only you see these. Tap one to link a new number or email.") },
+        C.eyebrow(t("login details")),
+        group { phoneRow, emailRow, C.footnote(t("Only you see these. Tap one to link a new number or email.")) },
         link,
-        C.command("SignOut", "log-out", "sign out", function() self:signOut() end, "chat-error"),
+        C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
     })
     return body
 end
@@ -276,7 +278,7 @@ end
 function Identity.profile(self)
     if not self.client or not self.client:getSession() then return self:home() end
     if self.shell and self.shell:has("Profile") then self.status = self.profileStatus; return self.shell:show("Profile") end
-    return self:loadingPage("settings", "Profile", function() return self.client:getProfile() end,
+    return self:loadingPage(t("settings"), "Profile", function() return self.client:getProfile() end,
         function(profile) return profileBody(self, profile) end)
 end
 

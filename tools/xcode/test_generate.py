@@ -153,6 +153,16 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertEqual(reference.get('BlueprintIdentifier'), target_id)
             self.assertEqual(reference.get('ReferencedContainer'), 'container:chat.xcodeproj')
 
+    def test_app_catalog_languages_are_declared_for_ios(self):
+        for app in ('chat', 'octopus'):
+            with self.subTest(app=app):
+                bundle = self.generate(app)
+                project = self.read_project(bundle)
+                root = project['objects'][project['rootObject']]
+                self.assertIn('ru', root['knownRegions'])
+                for settings in self.effective_configurations(project).values():
+                    self.assertEqual(self.read_info(bundle, settings)['CFBundleLocalizations'], ['en', 'ru'])
+
     def test_engine_navigator_contains_only_generated_unity_sources(self):
         project = self.read_project(self.generate())
         objects = project['objects']

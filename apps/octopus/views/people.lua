@@ -17,6 +17,7 @@ local function profileContent(self, scope, userId, name, own)
         locals = { Own = own == true } })
     scope:expose("Profile", person)
     local page = assert(filesystem.loadObject("Octopus/Pages/Profile"), "Missing Octopus/Pages/Profile")
+    self.i18n:apply(page)
     scope:attach(page)
     self.visibility:watch(page, scope)
     -- Metadata, follow state and posts load independently.
@@ -53,12 +54,13 @@ function People.profile(self)
         self:goBack(route and route ~= "/user" and route or "/")
     end
     local bar = C.appBar({
-        { "RefreshProfile", "refresh-cw", "refresh", function() refreshProfile(scope) end },
+        { "RefreshProfile", "refresh-cw", self.i18n:t("refresh"), function() refreshProfile(scope) end },
     })
     local screen = self:frame()
-    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body,
+    Footer.layout(screen, C.page((self.profileName or self.i18n:t("profile")):lower(), body,
         { Name = "ProfileView", ExtendBodyBehindHeader = true, back = back }), bar,
         { Background = colors.background, Foreground = colors.ink })
+    self.i18n:apply(screen)
     return screen
 end
 
@@ -67,12 +69,12 @@ local function welcome(self)
     logo:addChild(C.logo(64))
     return C.stack({ Name = "Welcome", Spacing = 18, Overflow = "hidden scroll" }, {
         logo,
-        C.text("join the reef", { FontSize = 32, WordWrap = true }),
-        C.text("You're reading as a guest. Sign in to write posts, follow people, like, repost and reply.", {
+        C.text(self.i18n:t("join the reef"), { FontSize = 32, WordWrap = true }),
+        C.text(self.i18n:t("You're reading as a guest. Sign in to write posts, follow people, like, repost and reply."), {
             FontSize = 15, Foreground = colors.muted, WordWrap = true }),
-        C.primary("Sign in", function() self.authReturn = "/me"; self:show("/auth") end, { Name = "MeSignIn" }),
-        C.outline("Create an account", function() self.authReturn = "/me"; self:show("/auth/signup") end, { Name = "MeSignUp" }),
-        C.text("Your account works on the Octopus website too.", { FontSize = 13, Foreground = colors.dim, WordWrap = true }),
+        C.primary(self.i18n:t("Sign in"), function() self.authReturn = "/me"; self:show("/auth") end, { Name = "MeSignIn" }),
+        C.outline(self.i18n:t("Create an account"), function() self.authReturn = "/me"; self:show("/auth/signup") end, { Name = "MeSignUp" }),
+        C.text(self.i18n:t("Your account works on the Octopus website too."), { FontSize = 13, Foreground = colors.dim, WordWrap = true }),
     })
 end
 
@@ -85,7 +87,7 @@ function People.me(self)
         local body = ui.Node2D {}
         body:addChild(welcome(self)); body:addChild(self.statusBar)
         self.profileView = nil
-        return self:tab("Me", C.page("me", body, { ExtendBodyBehindHeader = true }))
+        return self:tab("Me", C.page(self.i18n:t("me"), body, { ExtendBodyBehindHeader = true }))
     end
     if self.meScope then self.meScope:dispose() end
     local scope = self:octopusScope("Octopus/Data/Me.xml")
@@ -95,11 +97,12 @@ function People.me(self)
     -- The form: an edit copy of the reader's profile (Data/Me.xml).
     local editor = assert(filesystem.loadObject("Octopus/Pages/ProfileEditor"), "Missing Octopus/Pages/ProfileEditor")
     scope:member("ProfileForm"):begin(scope:exposedRecord("Profile"))
+    self.i18n:apply(editor)
     scope:attach(editor)
     content:findChild("ProfileActions", true):addChild(editor)
     self.status = editor:findChild("MeStatus", true)
     self.status:setTextContent("")
-    return self:tab("Me", C.page("me", content))
+    return self:tab("Me", C.page(self.i18n:t("me"), content))
 end
 
 -- Search -----------------------------------------------------------------------
@@ -115,6 +118,7 @@ function People.search(self)
     if not self.searchScope or self.searchScope.disposed then self.searchScope = self:octopusScope("Octopus/Data/Search.xml") end
     local scope = self.searchScope
     local page = assert(filesystem.loadObject("Octopus/Pages/Search"), "Missing Octopus/Pages/Search")
+    self.i18n:apply(page)
     scope:attach(page)
     self.visibility:watch(page, scope)
     self.status, self.statusBar = page:findChild("SearchStatus", true), page:findChild("SearchStatusBar", true)
@@ -122,9 +126,10 @@ function People.search(self)
     input.Text = state.query or ""
     self.leaving = function() state.query = input.Text end
     scope:member("Trending"):refresh()
-    local screen = self:tab("Search", C.page("search", page, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
+    local screen = self:tab("Search", C.page(self.i18n:t("search"), page, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
     -- A tag opened from a post searches straight away.
     if (state.query or ""):match("^#") then OctopusProvider.search(scope, state.query) end
+    self.i18n:apply(screen)
     return screen
 end
 

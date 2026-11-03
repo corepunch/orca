@@ -1275,6 +1275,18 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
     </class>
   </classes>
   <functions>
+    <function name="GetPreferredLanguage">
+      <summary>Returns the preferred application language as a BCP-47 tag.</summary>
+      <details>ORCA_LANGUAGE overrides the platform preference for deterministic previews. Apple matches the bundle localizations against preferred languages, falling back to the system list for command-line tools; other platforms use LANGUAGE, LC_ALL, LC_MESSAGES or LANG. Defaults to en.</details>
+      <returns type="string"/>
+    </function>
+    <function name="GetLocalizedString">
+      <summary>Looks up a text key in the nearest scoped Locale resource.</summary>
+      <details>Searches Locale components on the object and immediate Locale children of each ancestor. Missing entries fall back to the key. This keeps independent applications and detached templates isolated.</details>
+      <arg name="object" type="Object" pointer="true"/>
+      <arg name="key" type="string"/>
+      <returns type="string"/>
+    </function>
     <function name="CloneStructPayload" private="true">
       <summary>Copies reflected payload fields, owning duplicated strings and referenced objects. Unknown external pointers remain borrowed; arrays without length metadata are rejected.</summary>
       <arg name="desc" type="StructDesc" pointer="true" const="true"/>

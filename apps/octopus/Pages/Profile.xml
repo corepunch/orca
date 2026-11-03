@@ -17,15 +17,15 @@
   <Grid Name="ProfileCounts" Columns="1fr 1fr 1fr" Height="64">
     <StackView Spacing="0" JustifyContent="Start">
       <TextBlock Name="Countposts" Text="{Binding DataContext/Profile/PostsText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Text="posts" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+      <TextBlock Text="posts" TextResourceID="posts" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
     <StackView Spacing="0" JustifyContent="Start">
       <TextBlock Name="Countfollowers" Text="{Binding DataContext/Profile/FollowersText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Text="followers" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+      <TextBlock Text="followers" TextResourceID="followers" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
     <StackView Spacing="0" JustifyContent="Start">
       <TextBlock Name="Countfollowing" Text="{Binding DataContext/Profile/FollowingText}" FontSize="30" class="octopus-ink" IgnoreHitTest="true"/>
-      <TextBlock Text="following" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
+      <TextBlock Text="following" TextResourceID="following" FontSize="13" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
   </Grid>
   <StackView Name="ProfileActions" Spacing="12" JustifyContent="Start">
@@ -35,7 +35,7 @@
             FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" Text="{Binding DataContext/Profile/FollowText}"
             StateClasses="{Binding DataContext/Profile/FollowStyle}" class="octopus-action"/>
   </StackView>
-  <TextBlock Text="posts" FontSize="20" MarginTop="8" class="octopus-accent-text" IgnoreHitTest="true"/>
+  <TextBlock Text="posts" TextResourceID="posts" FontSize="20" MarginTop="8" class="octopus-accent-text" IgnoreHitTest="true"/>
   <StackView Name="ProfilePosts" Spacing="12" JustifyContent="Start">
     <ItemsStack Name="PostItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Post"
                 ItemsSource="{Binding DataContext/ProfilePosts/Items}" ItemTemplate="Octopus/Templates/PostCard"/>
@@ -43,12 +43,12 @@
       <ActivityIndicator Name="ProfileLoadingIndicator" class="octopus-dim"/>
     </Grid>
     <StackView Name="NoProfilePosts" Visible="{Binding DataContext/ProfilePosts/ShowEmpty}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
-      <TextBlock Text="no posts yet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
-      <TextBlock Visible="{Binding DataContext/Profile/Own}" Text="Use write to share your first post." FontSize="14" WordWrap="true"
+      <TextBlock Text="no posts yet" TextResourceID="no posts yet" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Visible="{Binding DataContext/Profile/Own}" Text="Use write to share your first post." TextResourceID="Use write to share your first post." FontSize="14" WordWrap="true"
                  class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
     <StackView Name="ProfilePostsError" Visible="{Binding DataContext/ProfilePosts/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
-      <TextBlock Text="can't load posts" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+      <TextBlock Text="can't load posts" TextResourceID="can't load posts" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
       <TextBlock Text="{Binding DataContext/ProfilePosts/ErrorMessage}" FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
     </StackView>
   </StackView>

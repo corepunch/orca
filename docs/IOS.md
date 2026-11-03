@@ -67,6 +67,9 @@ Host code generation uses the macOS SDK's libxml2.
 Run these commands from the repository root:
 
 ```sh
+make chat-ios                        # Build, sign, install and launch on a connected device
+make cluster-demo-ios                # Same workflow for any apps/<name>/package.lua project
+make chat-ios DEVICE=<identifier>     # Select a device when several are available
 make ios-sim                         # Build the simulator .app
 make ios-run                         # Install and launch an iPhone simulator
 make ios-run DEVICE_TYPE=iPad        # Install and launch an iPad simulator
@@ -74,6 +77,17 @@ make ios                             # Build the arm64 device .app
 make ios-devices                     # List devices and simulators
 make ios-install DEVICE=<identifier> # Sign, install and launch a physical iPhone
 make ios-install DEVICE_TYPE=iPad DEVICE=<identifier>
+```
+
+The `<app>-ios` shortcuts select `apps/<app>`, bundle identifier
+`org.orca.<app>` and display name `ORCA <app>`. They automatically choose a
+single available physical iPhone or iPad. If several are available, set
+`DEVICE=<identifier-or-name>` or narrow the family with `DEVICE_TYPE=iPhone`
+or `DEVICE_TYPE=iPad`. Override `PROJECT`, `BUNDLE_ID` and `DISPLAY_NAME`
+when needed, for example:
+
+```sh
+make my-app-ios PROJECT=/path/to/project BUNDLE_ID=com.example.myapp DISPLAY_NAME="My App"
 ```
 
 Simulator selection prefers a booted device; pass `DEVICE=<UDID-or-name>` to
@@ -193,6 +207,16 @@ Terminal environment variables are not inherited by apps installed on
 physical devices. The chat's public Appwrite endpoint, project ID and Function
 ID are defaults in `apps/chat/config.lua`, so installed builds connect without
 environment variables.
+
+Chat and Octopus ship English and Russian catalogs in `Locales/en.lua` and
+`Locales/ru.lua`. Both Make packaging and the Xcode generator derive
+`CFBundleLocalizations` from these language catalog filenames. The shared
+localization runtime selects the device's preferred supported language and
+falls back to English. Use `ORCA_LANGUAGE=ru` for Russian desktop previews;
+on iOS, select Russian in the device's language settings or the app's language
+settings. Regenerate the Xcode project after adding a catalog language.
+App Store descriptions and screenshots have their own localizations in App
+Store Connect; they are separate from the languages declared by the binary.
 
 The backend lives in the `libs/platform` Git submodule. When committing this
 feature, include its `ios/` sources in that repository and update ORCA's submodule

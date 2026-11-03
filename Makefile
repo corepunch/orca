@@ -394,6 +394,14 @@ ios-run:
 ios-install:
 	$(MAKE) -f tools/ios/Makefile SDK=iphoneos install
 
+# Build, sign, install and launch any apps/<name>/package.lua project.
+.PHONY: ios-deploy-force
+ios-deploy-force:
+
+%-ios: ios-deploy-force
+	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*); set PROJECT=<directory> containing package.lua.'; exit 1; }
+	$(MAKE) -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
+
 ios-devices:
 	$(MAKE) -f tools/ios/Makefile list-devices
 
@@ -576,6 +584,7 @@ $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-localization
 HEADLESS_LUA_TESTS += test-selection-controls
 HEADLESS_LUA_TESTS += test-radio-group
 HEADLESS_LUA_TESTS += test-text-leading
@@ -608,6 +617,7 @@ HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 # only apps/Example has Lisp twins. App tests that load pages run in XML builds.
 XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
 XML_APP_LUA_TESTS += test-chat-stress test-octopus-stress
+XML_APP_LUA_TESTS += test-chat-localization test-octopus-localization
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
 # Keep routine regression fixtures small; the explicit stress target uses 1,000
@@ -720,6 +730,9 @@ $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-itemscontrol,tests/test_itemscontrol.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-localization,tests/test_localization.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-chat-localization,tests/test_chat_localization.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-octopus-localization,tests/test_octopus_localization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-event-args,tests/test_event_args.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-event-serialization,tests/test_event_serialization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-controllers,tests/test_controllers.lua,unite))

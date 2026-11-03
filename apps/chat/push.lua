@@ -72,7 +72,11 @@ function Push:tick(current)
         elseif event.type == "error" then
             self.nativeError = event.code or "notifications"
             if self.lastError ~= self.nativeError and app.notice then
-                app:notice("Notifications: " .. (event.message or "Could not enable notifications."), true)
+                local message = event.message or "Could not enable notifications."
+                if app.localization then
+                    message = app.localization:t("Notifications: %{message}", { message = app.localization:t(message) })
+                else message = "Notifications: " .. message end
+                app:notice(message, true)
             end
             self.lastError = self.nativeError
             if event.code == "registration_failed" or event.code == "authorization_failed" or event.code == "invalid_token" then

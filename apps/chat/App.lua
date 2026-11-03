@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local Footer = require "orca.UIKit.Footer"
 local Application = require "orca.core.application"
@@ -29,8 +31,7 @@ local function updatePhotoDraft(composer, photos)
     local count, bytes = #(photos or {}), 0
     for _, photo in ipairs(photos or {}) do bytes = bytes + #photo.jpeg end
     composer.draft.HasPhoto = count > 0
-    composer.draft.PhotoLabel = count > 0 and (count .. "/9 " .. (count == 1 and "photo" or "photos")
-        .. " ready · " .. math.ceil(bytes / 1000) .. " KB") or ""
+    composer.draft.PhotoLabel = count > 0 and t("photos.ready", { count = count, kb = math.ceil(bytes / 1000) }) or ""
 end
 
 local App = Application:extend {
@@ -40,6 +41,8 @@ local App = Application:extend {
         Application.__init(self)
         self.diagnostics = Diagnostics.new(self)
         options = options or {}
+        I18n:setLanguage(options.language)
+        self.localization = I18n
         local config = require "Chat/config"
         local backend = config.backend or "appwrite"
         if options.client then self.client = options.client
@@ -55,7 +58,7 @@ local App = Application:extend {
                 self.restorePending = self.client ~= nil and settings.sessionStore ~= nil
             end
         elseif backend == "mock" then self.client = Chat.mock()
-        else self.configurationError = { message = "Choose CHAT_BACKEND=appwrite or mock." } end
+        else self.configurationError = { message = t("Choose CHAT_BACKEND=appwrite or mock.") } end
         self.media = options.media or require("Chat/media").new()
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
@@ -169,7 +172,7 @@ local App = Application:extend {
         local status = self.homeStatus
         if not status or query.mode ~= nil and not query.quiet then return end
         local err = query.error
-        status:setTextContent(err and err.message or "")
+        status:setTextContent(err and t(err.message) or "")
         status.StateClasses = err and "chat-error" or ""
         status.Visible = err ~= nil
     end,
@@ -219,8 +222,8 @@ local App = Application:extend {
                     if tab and self.currentRoute ~= route then self.status = status end
                 else
                     host:addChild(C.stack({ Spacing = 16, JustifyContent = "Center" }, {
-                        C.text(err and err.message or "Could not load this page.", { WordWrap = true, class = "chat-error" }),
-                        C.button("Retry", load, { Name = "RetryContent" }),
+                        C.text(err and t(err.message) or t("Could not load this page."), { WordWrap = true, class = "chat-error" }),
+                        C.button(t("Retry"), load, { Name = "RetryContent" }),
                     }))
                 end
             end)
@@ -269,10 +272,11 @@ local App = Application:extend {
         if tab then
             if not self.shell then
                 self.shell = Shell.new(self:frame(), function(route) self:show(route) end, {
-                    { "AppBarRefresh", "refresh", function() self:show(self.shell.routes[self.shell.active]) end },
-                    { "AppBarSignOut", "sign out", function() self:signOut() end },
+                    { "AppBarRefresh", t("refresh"), function() self:show(self.shell.routes[self.shell.active]) end },
+                    { "AppBarSignOut", t("sign out"), function() self:signOut() end },
                 })
             end
+            if content then I18n:apply(content) end
             return self.shell:show(tab, content)
         end
         local screen = ui.Screen {
@@ -281,7 +285,7 @@ local App = Application:extend {
             ClearColor = colors.background,
             StyleSheet = "Chat/Styles/app.css", StateClasses = "chat-" .. colors.appearance,
         }
-        if content then screen:addChild(content) end
+        if content then I18n:apply(content); screen:addChild(content) end
         return screen
     end,
 
@@ -317,7 +321,7 @@ local App = Application:extend {
 
     notice = function(self, text, error)
         if self.status then
-            self.status:setTextContent(text or "")
+            self.status:setTextContent(t(text or ""))
             self.status.StateClasses = error and "chat-error" or "chat-dim"
             self.status.Visible = text ~= nil and text ~= ""
         elseif error then
@@ -341,15 +345,15 @@ local App = Application:extend {
     home = function(self)
         local navigation = self.navigationEpoch
         if not self.client then
-            return self:frame(C.page("connect", C.stack({ Spacing = 16 }, {
-                C.text(self.configurationError.message, { WordWrap = true, class = "chat-error" }),
-                C.text("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID.", { WordWrap = true }),
+            return self:frame(C.page(t("connect"), C.stack({ Spacing = 16 }, {
+                C.text(t(self.configurationError.message), { WordWrap = true, class = "chat-error" }),
+                C.text(t("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID."), { WordWrap = true }),
             })))
         end
         if self.logoutPending then
-            return self:frame(C.page("sign out", C.stack({ Spacing = 16 }, {
-                C.text(self.logoutError or "Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, class = "chat-muted" }),
-                C.button("Retry sign out", function() self:signOut() end, { Name = "RetrySignOut" }),
+            return self:frame(C.page(t("sign out"), C.stack({ Spacing = 16 }, {
+                C.text(self.logoutError and t(self.logoutError) or t("Couldn't remove your saved login. Please retry signing out."), { WordWrap = true, class = "chat-muted" }),
+                C.button(t("Retry sign out"), function() self:signOut() end, { Name = "RetrySignOut" }),
             })))
         end
         if self.restorePending then
@@ -378,9 +382,9 @@ local App = Application:extend {
                     while screen:getFirstChild() do screen:getFirstChild():removeFromParent() end
                     screen.RespectSafeArea, screen.ClearColor = true, colors.background
                     self.brandScreen = nil
-                    screen:addChild(C.page("reconnect", C.stack({ Spacing = 16 }, {
-                        C.text("Couldn't restore your session. Please try again.", { WordWrap = true, class = "chat-muted" }),
-                        C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
+                    screen:addChild(C.page(t("reconnect"), C.stack({ Spacing = 16 }, {
+                        C.text(t("Couldn't restore your session. Please try again."), { WordWrap = true, class = "chat-muted" }),
+                        C.button(t("Retry"), function() self:show("/") end, { Name = "RetrySessionRestore" }),
                     })))
                 end
             end)
@@ -449,13 +453,13 @@ local App = Application:extend {
             sheet.Height, overlay.Visible = #items * 52 + 16, #items > 0
         end
         local items = {}
-        if message.values.CanEdit then items[#items + 1] = { "EditMessage", "edit", function() self:startEdit(message) end } end
+        if message.values.CanEdit then items[#items + 1] = { "EditMessage", t("edit"), function() self:startEdit(message) end } end
         if message.values.CanDelete then
             -- Deleting removes the message for everyone, so confirm it first.
-            items[#items + 1] = { "DeleteMessage", "delete", function()
+            items[#items + 1] = { "DeleteMessage", t("delete"), function()
                 show {
-                    { "ConfirmDeleteMessage", "delete for everyone", function() self:deleteMessage(message) end, "chat-error" },
-                    { "CancelDeleteMessage", "cancel", function() end },
+                    { "ConfirmDeleteMessage", t("delete for everyone"), function() self:deleteMessage(message) end, "chat-error" },
+                    { "CancelDeleteMessage", t("cancel"), function() end },
                 }
             end, "chat-error" }
         end
@@ -467,7 +471,7 @@ local App = Application:extend {
     startEdit = function(self, message)
         local scope, room = self.threadScope, self.room
         if not scope or not room or message.values.RoomId and message.values.RoomId ~= room.id then return end
-        if self.photoDrafts[room.id] then self:notice("Send or remove the photo before editing a message.", true); return end
+        if self.photoDrafts[room.id] then self:notice(t("Send or remove the photo before editing a message."), true); return end
         scope:member("Composer"):begin(message)
         self:notice("")
         if self.composer then self.composer:setFocus() end
@@ -493,32 +497,32 @@ local App = Application:extend {
 
     attachPhoto = function(self, scope)
         local composer = scope:member("Composer")
-        if composer.submitting then self:notice("Finish sending before adding another photo."); return end
-        if composer.target then self:notice("Finish editing before adding a photo."); return end
+        if composer.submitting then self:notice(t("Finish sending before adding another photo.")); return end
+        if composer.target then self:notice(t("Finish editing before adding a photo.")); return end
         local room = self.room
-        if #(self.photoDrafts[room.id] or {}) >= 9 then self:notice("Attach at most nine photos.", true); return end
+        if #(self.photoDrafts[room.id] or {}) >= 9 then self:notice(t("Attach at most nine photos."), true); return end
         local media = self:getMedia()
-        if not media then self:notice("Photo selection is unavailable on this platform.", true); return end
-        self:notice("Preparing photo…")
+        if not media then self:notice(t("Photo selection is unavailable on this platform."), true); return end
+        self:notice(t("Preparing photo…"))
         local photo, err = media:pick()
         if self.room ~= room or scope.disposed then return end
         if not photo then
-            self:notice(type(err) == "table" and err.message or err or "Photo selection cancelled.",
+            self:notice(type(err) == "table" and err.message or err or t("Photo selection cancelled."),
                 err ~= nil and not (type(err) == "table" and err.code == "cancelled"))
             return
         end
         local photos = self.photoDrafts[room.id] or {}
-        if #photos >= 9 then self:notice("Attach at most nine photos.", true); return end
-        if composer.submitting or composer.target then self:notice("Finish sending or editing before adding a photo."); return end
+        if #photos >= 9 then self:notice(t("Attach at most nine photos."), true); return end
+        if composer.submitting or composer.target then self:notice(t("Finish sending or editing before adding a photo.")); return end
         photos[#photos + 1] = photo
         self.photoDrafts[room.id] = photos
         updatePhotoDraft(composer, photos)
-        self:notice("Photos ready. Add more, write a caption or send.")
+        self:notice(t("Photos ready. Add more, write a caption or send."))
     end,
 
     removePhoto = function(self, scope, position)
         local composer, room = scope:member("Composer"), self.room
-        if composer.submitting then self:notice("The photos are being sent. Please wait."); return end
+        if composer.submitting then self:notice(t("The photos are being sent. Please wait.")); return end
         local photos = self.photoDrafts[room.id]
         if not photos then return end
         if #photos > 1 and not position then
@@ -530,7 +534,7 @@ local App = Application:extend {
                 local preview = photo.preview
                 if not preview then preview = self.media:storePreview(photo.thumbnail, "draft-" .. tostring(photo)); photo.preview = preview end
                 if preview then tile:addChild(ui.ImageView { Src = preview, Stretch = "UniformToFill", class = "avatar", IgnoreHitTest = true }) end
-                tile:addChild(C.button("remove " .. index, function()
+                tile:addChild(C.button(t("Remove photo %{index}", { index = index }), function()
                     overlay.Visible = false
                     if not scope.disposed and self.room == room then self:removePhoto(scope, index) end
                 end, { Name = "RemoveDraftPhoto" .. index, Height = 44, MarginTop = auto,
@@ -538,7 +542,7 @@ local App = Application:extend {
                 grid:addChild(tile)
             end
             sheet:addChild(grid)
-            sheet:addChild(C.button("cancel", function() overlay.Visible = false end,
+            sheet:addChild(C.button(t("cancel"), function() overlay.Visible = false end,
                 { Name = "CancelRemovePhoto", Height = 44, BorderWidth = 0, class = "chat-link" }))
             sheet.Height, overlay.Visible = grid.Height + 60, true
             return
@@ -552,7 +556,7 @@ local App = Application:extend {
         table.remove(photos, position or 1)
         self.photoDrafts[room.id] = #photos > 0 and photos or nil
         updatePhotoDraft(composer, photos)
-        self:notice("Photo removed. Your message is still here.")
+        self:notice(t("Photo removed. Your message is still here."))
     end,
 
     -- Page scopes (the open conversation, a routed page) end with their page.
@@ -574,6 +578,7 @@ local App = Application:extend {
         local shared = self.sessionData
         local page, scope, route = self.routes:open(path, self, { provider = shared.provider, store = shared.store,
             host = shared.host, valid = shared.valid })
+        I18n:apply(page)
         self.routeScope = scope
         self.status = page:findChild(route.status or "PageStatus", true)
         if self.status then self.status:setTextContent("") end
@@ -610,12 +615,14 @@ local App = Application:extend {
         scope:expose("Room", store:get("ChatRoom", room.id) or store:put("ChatRoom", room))
         local channel, readOnly = room.kind == "channel", room.can_post == false
         scope:expose("Thread", store:put("ChatThread", { id = "thread:" .. room.id, date = "", readOnly = readOnly,
-            historyText = "Earlier messages",
-            emptyTitle = channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello",
-            emptyHint = channel and (readOnly and "New posts will appear here when the channel publishes."
-                or "Publish your first update below.") or "Send the first message below." }))
+            historyText = t("Earlier messages"),
+            emptyTitle = channel and (readOnly and t("no posts yet") or t("your channel starts here")) or t("every good chat starts with a hello"),
+            emptyHint = channel and (readOnly and t("New posts will appear here when the channel publishes.")
+                or t("Publish your first update below.")) or t("Send the first message below.") }))
         local content = assert(filesystem.loadObject("Chat/Pages/Thread"), "Missing Chat/Pages/Thread")
+        I18n:apply(content)
         local composerArea = assert(filesystem.loadObject("Chat/Pages/Composer"), "Missing Chat/Pages/Composer")
+        I18n:apply(composerArea)
         self.messageList = content:findChild("Messages", true)
         local messages = scope:member("Messages")
         -- At the newest message the list follows new ones; otherwise the
@@ -646,7 +653,7 @@ local App = Application:extend {
         -- After Messenger: no command row. The title line goes back, as does a
         -- swipe in from the left edge, and the conversation's name opens its info.
         local screen = self:frame()
-        local kind = room.kind == "group" and "Messenger · group" or room.kind == "channel" and "Messenger · channel" or nil
+        local kind = room.kind == "group" and t("Messenger · group") or room.kind == "channel" and t("Messenger · channel") or nil
         Footer.layout(screen, C.page(room.name, content, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
             back = function() keepDraft(); self:goBack() end,
             details = function() keepDraft(); self:show("/details", "Forward") end }), footer,

@@ -105,7 +105,9 @@ They support iPhone, iPad and Simulator, with shared schemes for Xcode Cloud.
 Regenerate them offline using `sh tools/xcode/generate.sh --all`.
 
 Build standalone iOS apps with Make and the Xcode command-line tools; no
-Xcode project is required. Start with `make ios-run` for the chat app in an
+Xcode project is required. Use `make chat-ios` or `make <app>-ios` to build,
+sign, install and launch an `apps/<app>` project on a connected iPhone or iPad.
+Start with `make ios-run` for the chat app in an
 iPhone simulator, or `make ios-run DEVICE_TYPE=iPad` for an iPad simulator.
 `make ios` builds an arm64 device bundle; `make ios-install` signs, installs,
 and launches it using an installed development profile and identity.

@@ -14,7 +14,7 @@
           <BindingExpression Target="AspectRatio">IF(STEP(17, {DataContext/Recent/Count}), 2, 1)</BindingExpression>
           <BindingExpression Target="Columns">IF(STEP(17, {DataContext/Recent/Count}), "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr")</BindingExpression>
         </GridBox>
-        <TextBlock Name="ContactsRecentEmpty" Width="320" WordWrap="true" FontSize="18" class="chat-muted" IgnoreHitTest="true">
+        <TextBlock TextResourceID="Bring your people together. Find someone to start a conversation." Name="ContactsRecentEmpty" Width="320" WordWrap="true" FontSize="18" class="chat-muted" IgnoreHitTest="true">
           <BindingExpression Target="Visible">AND({DataContext/Recent/ShowEmpty}, {DataContext/Contacts/HasLoaded})</BindingExpression>Bring your people together. Find someone to start a conversation.</TextBlock>
       </StackView>
     </PanoramaItem>
@@ -26,10 +26,10 @@
                     ItemsSource="{Binding DataContext/ContactList/Items}" ItemTemplate="Chat/Templates/ContactRow"/>
         <TextBlock Name="ContactsEmpty" Visible="{Binding DataContext/ContactList/IsEmpty}" WordWrap="true" FontSize="16"
                    class="chat-muted" IgnoreHitTest="true">
-          <BindingExpression Target="Text">IF({DataContext/Contacts/ShowError}, "Your contacts could not be loaded.", IF({DataContext/Contacts/HasLoaded}, IF({DataContext/ContactList/Params/Search}, "No matching contacts.", "Your contacts will appear here."), "Loading contacts…"))</BindingExpression>
+          <BindingExpression Target="TextResourceID">IF({DataContext/Contacts/ShowError}, "Your contacts could not be loaded.", IF({DataContext/Contacts/HasLoaded}, IF({DataContext/ContactList/Params/Search}, "No matching contacts.", "Your contacts will appear here."), "Loading contacts…"))</BindingExpression>
         </TextBlock>
         <Button Name="ContactsFindNew" Click="FindSomeone" Height="48" FontSize="18" class="chat-action chat-link"
-                TextHorizontalAlignment="Left" TextVerticalAlignment="Center">find someone new</Button>
+                TextHorizontalAlignment="Left" TextVerticalAlignment="Center" TextResourceID="find someone new">find someone new</Button>
       </StackView>
     </PanoramaItem>
   </Panorama>
@@ -46,6 +46,6 @@
       <ActivityIndicator Name="ContactsOpening" class="chat-muted"/>
     </Node2D>
     <Button Name="ContactsRetry" Click="RefreshContacts" Visible="{Binding DataContext/Contacts/HasError}" Height="48"
-            FontSize="15" class="chat-action chat-link" TextHorizontalAlignment="Left" TextVerticalAlignment="Center">retry</Button>
+            FontSize="15" class="chat-action chat-link" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" TextResourceID="retry">retry</Button>
   </StackView>
 </Grid>

@@ -950,11 +950,11 @@ _GetTextBlockText(struct Object           *hObject,
                   struct TextRun          *pTextRun)
 {
   struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
-  if (pTextRun->Text && *pTextRun->Text)
-    return pTextRun->Text;
   if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID
       && !PROP_HasProgram(hProp))
-    return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
+    return core_GetLocalizedString(hObject, pTextBlockConcept->TextResourceID);
+  if (pTextRun->Text && *pTextRun->Text)
+    return pTextRun->Text;
   if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
     return OBJ_GetTextContent(hObject);
   return pTextBlockConcept->PlaceholderText;

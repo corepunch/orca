@@ -11,12 +11,12 @@
     <StackView Spacing="2" JustifyContent="Center">
       <TextBlock Name="MemberName" Text="{Binding DataContext/Title, Mode=OneTime}" FontSize="22" TextOverflow="Ellipsis" TextWrapping="NoWrap"
                  class="chat-ink" IgnoreHitTest="true"/>
-      <TextBlock Name="MemberRole" Text="{Binding DataContext/Role, Mode=OneTime}" FontSize="14" class="chat-dim" IgnoreHitTest="true"/>
+      <TextBlock Name="MemberRole" Text="{Binding DataContext/RoleText, Mode=OneTime}" FontSize="14" class="chat-dim" IgnoreHitTest="true"/>
     </StackView>
   </Grid>
   <Button Name="Role" Visible="{Binding DataContext/CanChangeRole, Mode=OneTime}" Click="SetRole" Text="{Binding DataContext/RoleAction, Mode=OneTime}"
           Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
           class="chat-action chat-outline"/>
   <Button Name="Remove" Visible="{Binding DataContext/CanRemove, Mode=OneTime}" Click="RemoveMember" Height="48" FontSize="15"
-          TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error">Remove</Button>
+          TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error" TextResourceID="Remove">Remove</Button>
 </StackView>

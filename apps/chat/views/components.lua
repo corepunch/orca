@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local C = { colors = require "Chat/theme", brandBackground = "#7930ff" }
 local colors = C.colors
@@ -150,9 +152,7 @@ function C.avatar(name, size, key, app, userId)
     local hash = 0
     for i = 1, #(key or name) do hash = hash + (key or name):byte(i) * i end
     local tone = colors.avatar[hash % #colors.avatar + 1]
-    local initials = name:match("^([%w])") or "C"
-    local last = name:match("%s+([%w])[%w]*$")
-    if last then initials = initials .. last end
+    local initials = I18n:initials(name)
     size = size or 52
     local tile = ui.Grid { Width = size, Height = size, Background = tone.background, class = "avatar", IgnoreHitTest = true }
     tile:addChild(C.text(initials:upper(), {
@@ -196,7 +196,7 @@ function C.page(header, content, props)
     props = props or {}
     local extend = props.ExtendBodyBehindHeader
     if extend == nil then extend = content.OverflowY == "Scroll" end
-    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true,
+    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or t("Messenger"), IsLocked = true,
         ExtendBodyBehindHeader = extend, class = props.class and props.class .. " chat-ink" or "chat-ink",
         BackIcon = props.back and "Chat/assets/icons/arrow-left.svg" or "", BackRequested = props.back,
         HeaderClick = props.details }
@@ -249,9 +249,7 @@ function C.time(iso)
 end
 
 function C.date(iso)
-    local y, m, d = (iso or ""):match("^(%d%d%d%d)%-(%d%d)%-(%d%d)")
-    if not y then return "CONVERSATION" end
-    return os.date("%a, %d %b", os.time { year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 12 })
+    return I18n:date(iso)
 end
 
 return C

@@ -115,6 +115,8 @@ def generate(args, app):
     if not app_dir.is_relative_to(ROOT) or not (app_dir / 'package.lua').is_file():
         raise ValueError('Expected an ORCA application with package.lua inside the repository: ' + app)
     name = app_dir.name
+    languages = sorted(path.stem for path in (app_dir / 'Locales').glob('*.lua')
+                       if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))
     if not re.fullmatch(r'[A-Za-z0-9_-]+', name):
         raise ValueError('App folder name must contain letters, digits, underscores or hyphens')
     output = (args.output or app_dir).resolve()
@@ -234,15 +236,17 @@ def generate(args, app):
                         children=[application, engine, plugins, native] + resource_references + [products],
                         sourceTree='<group>')
     root = project.add('project', 'PBXProject', buildConfigurationList=root_configs, compatibilityVersion='Xcode 14.0',
-                       developmentRegion='en', knownRegions=['en', 'Base'], mainGroup=group,
+                       developmentRegion='en', knownRegions=list(dict.fromkeys(['en', 'Base'] + languages)), mainGroup=group,
                        productRefGroup=products, projectDirPath='', projectRoot='', targets=[target])
     attributes = existing.get(root, {}).get('attributes', {'LastUpgradeCheck': '1600'})
     project.objects[root]['attributes'] = attributes
     write(bundle / 'project.pbxproj', '// !$*UTF8*$!\n' + encode(dict(
         archiveVersion=1, classes={}, objectVersion=56, objects=project.objects, rootObject=root)) + '\n')
     display_name = args.display_name or 'ORCA ' + name.replace('-', ' ').title()
-    write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info_plist(
-        display_name, launch_screen.stem if launch_screen.is_file() else None)).decode())
+    info = info_plist(display_name, launch_screen.stem if launch_screen.is_file() else None)
+    if languages:
+        info['CFBundleLocalizations'] = languages
+    write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info).decode())
     scheme(bundle / 'xcshareddata/xcschemes' / (target_name + '.xcscheme'), bundle.name,
            target_name, target, name + '.app')
     print(bundle)

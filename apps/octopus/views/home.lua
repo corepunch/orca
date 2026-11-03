@@ -38,10 +38,12 @@ function Home.page(self)
     end
     local scope = self:feedsScope()
     local page = assert(filesystem.loadObject("Octopus/Pages/Home"), "Missing Octopus/Pages/Home")
+    self.i18n:apply(page)
     scope:attach(page)
     self.status, self.statusBar = page:findChild("HomeStatus", true), page:findChild("HomeStatusBar", true)
     self.homeStatus, self.homeStatusBar = self.status, self.statusBar
     self.pivot = page:findChild("Timeline", true)
+    for _, name in ipairs(Home.feeds) do page:findChild("Feed" .. name, true).Header = self.i18n:t(name) end
     self.visibility:watch(page, scope)
     local screen = self:frame(page, "Home")
     Home.select(self, self.feed)

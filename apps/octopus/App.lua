@@ -24,6 +24,8 @@ local App = Application:extend {
     __init = function(self, options)
         Application.__init(self)
         options = options or {}
+        local Locales = require "Octopus/Locales"
+        self.i18n = Locales.new(options.language)
         local config = require "Octopus/config"
         local backend = config.backend or "appwrite"
         local cache
@@ -38,6 +40,7 @@ local App = Application:extend {
         elseif backend == "appwrite" then self.client, self.configurationError = Octopus.appwrite(config)
         elseif backend == "mock" then self.client = Octopus.mock()
         else self.configurationError = { message = "Choose OCTOPUS_BACKEND=appwrite or mock." } end
+        self.client = Locales.client(self.client, self.i18n)
         self.clock = self.client and self.client.clock or os.time
         self.media = options.media or require("Octopus/media").new { cache = cache }
         self.publicCache = cache
@@ -78,7 +81,7 @@ local App = Application:extend {
             self:resetSessionViews()
         end
         local provider = OctopusProvider.new {
-            client = self.client, media = self.media, now = function() return self.clock() end,
+            client = self.client, i18n = self.i18n, media = self.media, now = function() return self.clock() end,
             openPost = function(post) self:openPost(post) end,
             openProfile = function(id, name) self:openProfile(id, name) end,
             openTag = function(tag) self:openTag(tag) end,
@@ -120,7 +123,7 @@ local App = Application:extend {
             signOut = function() self:signOut() end,
             copyLink = function(url)
                 system.set_clipboard(url)
-                self:notice("Link copied: " .. url)
+                self:notice(self.i18n:t("Link copied: %{url}", { url = url }))
             end,
         }
         local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"),
@@ -226,29 +229,35 @@ local App = Application:extend {
     frame = function(self, content, tab)
         if tab then
             if not self.shell then
-                local menu = { { "AppBarRefresh", "refresh", function() self:refresh() end } }
+                local menu = { { "AppBarRefresh", self.i18n:t("refresh"), function() self:refresh() end } }
                 if self.client and self.client:getSession() then
-                    menu[#menu + 1] = { "AppBarSignOut", "sign out", function() self:signOut() end }
+                    menu[#menu + 1] = { "AppBarSignOut", self.i18n:t("sign out"), function() self:signOut() end }
                 else
-                    menu[#menu + 1] = { "AppBarSignIn", "sign in", function() self:show("/auth") end }
-                    menu[#menu + 1] = { "AppBarSignUp", "create account", function() self:show("/auth/signup") end }
+                    menu[#menu + 1] = { "AppBarSignIn", self.i18n:t("sign in"), function() self:show("/auth") end }
+                    menu[#menu + 1] = { "AppBarSignUp", self.i18n:t("create account"), function() self:show("/auth/signup") end }
                 end
-                self.shell = Shell.new(self:frame(), function(route) self:show(route) end, menu)
+                self.shell = Shell.new(self:frame(), function(route) self:show(route) end, menu, self.i18n)
             end
-            return self.shell:show(tab, content)
+            local screen = self.shell:show(tab, content)
+            self.i18n:apply(screen)
+            return screen
         end
         local screen = ui.Screen {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             ClearColor = colors.background, StyleSheet = "Octopus/Styles/app.css",
             class = "octopus-" .. colors.appearance,
         }
-        if content then screen:addChild(content) end
+        if content then screen:addChild(content); self.i18n:apply(screen) end
         return screen
     end,
 
     -- Show a root page whose content is rebuilt from state on each visit.
     tab = function(self, key, content)
-        if self.shell and self.shell:has(key) then return self.shell:replace(key, content) end
+        if self.shell and self.shell:has(key) then
+            local screen = self.shell:replace(key, content)
+            self.i18n:apply(screen)
+            return screen
+        end
         return self:frame(content, key)
     end,
 
@@ -286,7 +295,7 @@ local App = Application:extend {
     -- strip only shows while there is something to say.
     notice = function(self, text, isError)
         if self.status then
-            self.status:setTextContent(text or "")
+            self.status:setTextContent(self.i18n:t(text or ""))
             self.status.Foreground = isError and colors.error or colors.dim
         end
         if self.statusBar then self.statusBar.Visible = (text or "") ~= "" end
@@ -295,7 +304,7 @@ local App = Application:extend {
     -- Guests can read everything; writing asks them to sign in and come back.
     requireSession = function(self, reason)
         if self.client and self.client:getSession() then return true end
-        self.authReason, self.authReturn = reason, self.currentRoute
+        self.authReason, self.authReturn = self.i18n:t(reason), self.currentRoute
         self:show("/auth")
         return false
     end,
@@ -342,7 +351,7 @@ local App = Application:extend {
         self:task(function()
             local ok, err = self.client:signOut()
             self:resetSessionViews(); self:show("/")
-            if not ok then self:notice("Signed out on this device. " .. err.message, true) end
+            if not ok then self:notice(self.i18n:t("Signed out on this device. %{error}", { error = err.message }), true) end
         end)
     end,
 
@@ -352,9 +361,9 @@ local App = Application:extend {
 
     home = function(self)
         if not self.client then
-            return self:frame(C.page("connect", C.stack({ Spacing = 16 }, {
-                C.text(self.configurationError.message, { WordWrap = true, Foreground = colors.error }),
-                C.text("Check APPWRITE_ENDPOINT and APPWRITE_PROJECT_ID, then restart.", { WordWrap = true }),
+            return self:frame(C.page(self.i18n:t("connect"), C.stack({ Spacing = 16 }, {
+                C.text(self.i18n:t(self.configurationError.message), { WordWrap = true, Foreground = colors.error }),
+                C.text(self.i18n:t("Check APPWRITE_ENDPOINT and APPWRITE_PROJECT_ID, then restart."), { WordWrap = true }),
             })))
         end
         return Home.page(self)

@@ -1,3 +1,4 @@
+local I18n = require "Chat/i18n"
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local Diagnostics = {}
@@ -64,12 +65,12 @@ function Diagnostics:controller(err, stage)
     -- Fixed chrome rows keep the recovery UI independent of auto footer sizing.
     local layout = ui.Grid { Rows = "44px 52px 1fr 48px", Padding = "16", Spacing = 12,
         class = "chat-background chat-ink" }
-    layout:addChild(C.text("Chat error", { FontSize = 28, class = "chat-error" }))
-    layout:addChild(C.text("Something went wrong. Please share the details below.", { WordWrap = true }))
+    layout:addChild(C.text(I18n:t("Chat error"), { FontSize = 28, class = "chat-error" }))
+    layout:addChild(C.text(I18n:t("Something went wrong. Please share the details below."), { WordWrap = true }))
     local list = ui.ListBox { Name = "ErrorDetails", Spacing = 8 }
     list:addChild(C.text(details, { Name = "ErrorMessage", WordWrap = true, FontSize = 13 }))
     layout:addChild(list)
-    layout:addChild(C.button("Return to chat", function()
+    layout:addChild(C.button(I18n:t("Return to chat"), function()
         -- Rebuild the shell without signing out or discarding message drafts.
         app.shell, app.homeStatus, app.newStatus = nil, nil, nil
         app:show("/")

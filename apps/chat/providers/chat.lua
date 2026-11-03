@@ -1,3 +1,12 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
+local function localizedError(err)
+    if type(err) ~= "table" then return err end
+    local copy = {}
+    for key, value in pairs(err) do copy[key] = value end
+    copy.message = t(copy.message)
+    return copy
+end
 -- The Chat provider: operations, computed fields, filters and media behind
 -- the names Data/*.xml declares. It reuses the client-bound models and the
 -- service API; views never call them directly.
@@ -13,10 +22,7 @@ local Provider = {}
 local PhotoLayout = require "orca.UIKit.PhotoLayout"
 
 local function initials(name)
-    name = name or ""
-    local first = name:match("^([%w])") or "C"
-    local last = name:match("%s+([%w])[%w]*$")
-    return (first .. (last or "")):upper()
+    return I18n:initials(name)
 end
 
 -- The same tile colour as Lua-built avatars (views/components.lua).
@@ -32,9 +38,7 @@ local function clock(iso)
 end
 
 local function day(iso)
-    local y, m, d = (iso or ""):match("^(%d%d%d%d)%-(%d%d)%-(%d%d)")
-    if not y then return "CONVERSATION" end
-    return os.date("%a, %d %b", os.time { year = tonumber(y), month = tonumber(m), day = tonumber(d), hour = 12 })
+    return I18n:date(iso)
 end
 
 -- Photos keep their shape within a band that never dominates the thread.
@@ -48,11 +52,11 @@ end
 -- What the history control above the messages says.
 function Provider.historyText(query)
     local more = query.moreError
-    if query.mode == "more" then return "Loading earlier messages…" end
-    if query.gap then return "New messages · show latest" end
-    if more and more.code == "stale_cursor" then return "History changed · reload latest" end
-    if more then return "Could not load earlier messages · retry" end
-    return "Earlier messages"
+    if query.mode == "more" then return t("Loading earlier messages…") end
+    if query.gap then return t("New messages · show latest") end
+    if more and more.code == "stale_cursor" then return t("History changed · reload latest") end
+    if more then return t("Could not load earlier messages · retry") end
+    return t("Earlier messages")
 end
 
 function Provider.new(context)
@@ -66,7 +70,7 @@ function Provider.new(context)
         showPin = function(values) return values.IsPinned and not values.HasUnread end,
         roomState = function(values) return values.HasUnread and "unread" or "" end,
         roomTime = function(values) return clock(values.UpdatedAt or values.CreatedAt) end,
-        preview = function(values) return values.Subtitle or "Start the conversation" end,
+        preview = function(values) return values.Subtitle or t("Start the conversation") end,
         initials = function(values) return initials(values.Title) end,
         tone = function(values) return tone(values.Id) end,
         roomAvatar = function(values) return values.Kind == "direct" and values.PeerId or "" end,
@@ -74,7 +78,7 @@ function Provider.new(context)
         hasAvatar = function(values) return (values.AvatarPath or "") ~= "" end,
         roomSearch = function(values) return ((values.Title or "") .. " " .. (values.Subtitle or "")):lower() end,
         publicName = function(values)
-            return values.DisplayName ~= nil and values.DisplayName ~= "" and values.DisplayName or values.Username or "Member"
+            return values.DisplayName ~= nil and values.DisplayName ~= "" and values.DisplayName or values.Username or t("Member")
         end,
         handle = function(values) return (values.Username or "") ~= "" and "@" .. values.Username or "" end,
         -- Messages: a photo message is as wide as its photos and has no tail
@@ -82,7 +86,7 @@ function Provider.new(context)
         hasPhotos = function(_, record) return #(record.children.Attachments or {}) > 0 end,
         hasBody = function(values) return (values.Body or "") ~= "" end,
         showCaption = function(values) return values.HasBody or not values.HasPhotos end,
-        timestamp = function(values) return (values.EditedAt and "edited " or "") .. clock(values.CreatedAt) end,
+        timestamp = function(values) return (values.EditedAt and t("edited ") or "") .. clock(values.CreatedAt) end,
         showSender = function(values) return values.Group and values.First and not values.Mine end,
         incomingTail = function(values) return values.First and not values.Mine and values.ShowCaption end,
         outgoingTail = function(values) return values.Last and values.Mine and values.ShowCaption end,
@@ -113,27 +117,28 @@ function Provider.new(context)
         photoFailed = function(values) return values.PhotoState == "error" end,
         canPost = function(values) return not values.ReadOnly end,
         -- Conversation info.
-        kindText = function(values) return (values.Kind or "group"):upper() end,
+        kindText = function(values) return t("kind." .. (values.Kind or "group")) end,
+        roleText = function(values) return t("role." .. (values.Role or "member")) end,
         roomAbout = function(values)
-            return values.Kind == "channel" and "Only owners and admins can publish here."
-                or "A space for everyone in this conversation."
+            return values.Kind == "channel" and t("Only owners and admins can publish here.")
+                or t("A space for everyone in this conversation.")
         end,
         isOwner = function(values) return values.Role == "owner" end,
         canRename = function(values) return values.Kind ~= "direct" and values.Role == "owner" end,
         canInvite = function(values) return values.Kind ~= "direct" and (values.Role == "owner" or values.Role == "admin") end,
         canLeave = function(values) return values.Kind ~= "direct" and values.Role ~= "owner" end,
-        leaveText = function(values) return values.Kind == "channel" and "Leave channel" or "Leave group" end,
-        pinText = function(values) return values.IsPinned and "unpin" or "pin" end,
+        leaveText = function(values) return values.Kind == "channel" and t("Leave channel") or t("Leave group") end,
+        pinText = function(values) return values.IsPinned and t("unpin") or t("pin") end,
         hasInvite = function(values) return (values.InviteCode or "") ~= "" end,
         inviteText = function(values)
             if (values.InviteCode or "") ~= "" then
-                return "Invitation: " .. values.InviteCode .. "\nShare this code with someone you trust."
+                return t("Invitation: %{code}\nShare this code with someone you trust.", { code = values.InviteCode })
             end
-            return values.InviteRevoked and "Invitation revoked." or "Invitations expire and can be revoked."
+            return values.InviteRevoked and t("Invitation revoked.") or t("Invitations expire and can be revoked.")
         end,
         memberTone = function(values) return tone(values.UserId) end,
         memberAvatar = function(values) return values.UserId end,
-        roleAction = function(values) return values.Role == "admin" and "Make member" or "Make admin" end,
+        roleAction = function(values) return values.Role == "admin" and t("Make member") or t("Make admin") end,
     }
     local function signedIn()
         if client:getSession() then return true end
@@ -144,14 +149,14 @@ function Provider.new(context)
         -- Rooms first; contacts follow (Loaded) only when rooms exist.
         rooms = function()
             local rooms, err = models.Rooms:select()
-            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
-            if not rooms then return nil, err end
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            if not rooms then return nil, localizedError(err) end
             return rooms
         end,
         contacts = function()
             local contacts, err = models.Contacts:select()
-            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
-            return contacts, err
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            return contacts, localizedError(err)
         end,
         -- The portrait wall: people from the latest direct conversations,
         -- then everyone else by name. Derived from loaded records.
@@ -176,8 +181,8 @@ function Provider.new(context)
             local person, navigation = params.item, context.navigation()
             local room, err = models.Rooms:create { name = person.values.Title, member_ids = { person.key },
                 kind = "direct", visibility = "private" }
-            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
-            if not room then return nil, err or { message = "Could not open this conversation. Try again." } end
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            if not room then return nil, localizedError(err) or { message = t("Could not open this conversation. Try again.") } end
             if context.navigation() == navigation then context.openRoom(room) end
             return room
         end,
@@ -190,8 +195,8 @@ function Provider.new(context)
         -- Conversation info ------------------------------------------------
         members = function(params, _, _, query)
             local rows, err = client:listMembers(params.RoomId)
-            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
-            if not rows then return nil, err end
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            if not rows then return nil, localizedError(err) end
             local room = query.scope:exposedRecord("Room")
             local me = client:getSession().user.id
             local owner = room and room.values.Role == "owner"
@@ -210,7 +215,7 @@ function Provider.new(context)
         renameRoom = function(params)
             local room = params.target
             local updated, err = client:renameRoom(room.key, params.draft.Title)
-            if not updated then context.notice(err.message, true); return nil, err end
+            if not updated then context.notice(err.message, true); return nil, localizedError(err) end
             room.store:put("ChatRoom", { id = room.key, name = updated.name }, { partial = true })
             if context.roomRenamed then context.roomRenamed(room.key, updated.name) end
             return true
@@ -220,37 +225,37 @@ function Provider.new(context)
             local ordinary = room.values.Kind == "channel" and "subscriber" or "member"
             local ok, err = client:setMemberRole(room.key, member.values.UserId,
                 member.values.Role == "admin" and ordinary or "admin")
-            if not ok then context.notice(err.message, true); return nil, err end
+            if not ok then context.notice(err.message, true); return nil, localizedError(err) end
             return true
         end,
         removeMember = function(params, _, command)
             local ok, err = client:removeMember(command.scope:exposedRecord("Room").key, params.item.values.UserId)
-            if not ok then context.notice(err.message, true); return nil, err end
+            if not ok then context.notice(err.message, true); return nil, localizedError(err) end
             return true
         end,
         createInvite = function(_, _, command)
             local room = command.scope:exposedRecord("Room")
             if room.values.HasInvite then
-                context.notice("Revoke the current invitation before creating a new one.")
+                context.notice(t("Revoke the current invitation before creating a new one."))
                 return true
             end
             local result, err = client:createInvite(room.key)
-            if not result then context.notice(err.message, true); return nil, err end
+            if not result then context.notice(err.message, true); return nil, localizedError(err) end
             room.store:update(room, { InviteCode = tostring(result.code or result.token), InviteRevoked = false })
             return true
         end,
         revokeInvite = function(_, _, command)
             local room = command.scope:exposedRecord("Room")
-            if not room.values.HasInvite then context.notice("Create an invitation first."); return true end
+            if not room.values.HasInvite then context.notice(t("Create an invitation first.")); return true end
             local ok, err = client:revokeInvite(room.key, room.values.InviteCode)
-            if not ok then context.notice(err.message, true); return nil, err end
+            if not ok then context.notice(err.message, true); return nil, localizedError(err) end
             room.store:update(room, { InviteCode = "", InviteRevoked = true })
             return true
         end,
         leaveRoom = function(_, _, command)
             local room = command.scope:exposedRecord("Room")
             local ok, err = client:leaveRoom(room.key)
-            if not ok then context.notice(err.message, true); return nil, err end
+            if not ok then context.notice(err.message, true); return nil, localizedError(err) end
             context.roomLeft(room.key)
             return true
         end,
@@ -264,8 +269,8 @@ function Provider.new(context)
         messages = function(params, page)
             local result, err = models.Messages:page { room_id = params.RoomId, limit = page.size,
                 before = page.cursor }
-            if not signedIn() then return nil, { code = "unauthenticated", message = "Signed out." } end
-            if not result then return nil, err end
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            if not result then return nil, localizedError(err) end
             return { items = result.messages, cursor = result.next_cursor, hasMore = result.has_more }
         end,
         -- The composer: a new message (after uploading its photo) or an edit
@@ -276,20 +281,20 @@ function Provider.new(context)
             if target then
                 if text == (target.values.Body or "") then return true end
                 local row, err = client:editMessage(target.key, text)
-                if not row then context.notice(err.message, true); return nil, err end
+                if not row then context.notice(err.message, true); return nil, localizedError(err) end
                 command.scope.store:put("ChatMessage", row, { partial = true })
                 return true
             end
             if room.can_post == false then
-                return nil, { code = "forbidden", message = "Only channel admins can publish." }
+                return nil, { code = "forbidden", message = t("Only channel admins can publish.") }
             end
             local photos, attachments = context.photoDraft(room.id), {}
             for index, photo in ipairs(photos or {}) do
-                context.notice("Uploading photo " .. index .. " of " .. #photos .. "…")
+                context.notice(t("Uploading photo %{index} of %{count}…", { index = index, count = #photos }))
                 if not photo.attachment then
                     local attachment, err = client:uploadPhoto(room.id, photo)
                     if not attachment then
-                        local message = err.message .. " · Your draft is safe. Try sending again."
+                        local message = t(err.message) .. t(" · Your draft is safe. Try sending again.")
                         context.notice(message, true)
                         return nil, { code = err.code, message = message }
                     end
@@ -298,14 +303,14 @@ function Provider.new(context)
                 attachments[#attachments + 1] = photo.attachment.id
             end
             local message, err = models.Messages:create { room_id = room.id, body = text, attachment_ids = attachments }
-            if not message then context.notice(err.message, true); return nil, err end
+            if not message then context.notice(err.message, true); return nil, localizedError(err) end
             context.photoSent(room.id, photos)
             return message
         end,
         deleteMessage = function(params, _, command)
             local message = params.item
             local ok, err = client:deleteMessage(message.key)
-            if not ok then context.notice(err.message, true); return nil, err end
+            if not ok then context.notice(err.message, true); return nil, localizedError(err) end
             -- Its neighbours may now start or end a run.
             local messages, remaining = command.scope:member("Messages"), {}
             for _, record in ipairs(messages.items:records()) do
@@ -313,7 +318,7 @@ function Provider.new(context)
             end
             command.scope.provider.layoutThread(messages, remaining)
             message.store:remove("ChatMessage", message.key)
-            context.notice("Message deleted.")
+            context.notice(t("Message deleted."))
             return true
         end,
     }
@@ -338,7 +343,7 @@ function Provider.new(context)
                 local mine = values.SenderId == me and room.kind ~= "channel"
                 local person = context.contact(values.SenderId)
                 local sender = room.kind == "channel" and room.name
-                    or person and person.Title or "Member " .. tostring(values.SenderId or ""):sub(1, 8)
+                    or person and person.Title or t("Member %{id}", { id = tostring(values.SenderId or ""):sub(1, 8) })
                 local own = values.SenderId == me
                 local photos = record.children.Attachments or {}
                 local album = #photos > 0 and PhotoLayout.arrange(#photos, PHOTO_WIDTH, 2,
@@ -355,7 +360,7 @@ function Provider.new(context)
                 for position, photo in ipairs(photos) do
                     local tile = album.tiles[position]
                     updateDecoration(store, photo, { ShowTime = not values.HasBody and position == #photos,
-                        Timestamp = values.Timestamp, RetryLabel = #photos > 1 and "retry" or "photo unavailable · retry",
+                        Timestamp = values.Timestamp, RetryLabel = #photos > 1 and t("retry") or t("photo unavailable · retry"),
                         FrameWidth = tile.width, FrameHeight = tile.height,
                         FrameLeft = tile.x, FrameTop = tile.y,
                         CornerTopLeft = tile.topLeft and not showSender and 6 or 0,
@@ -435,7 +440,7 @@ function Provider.new(context)
         avatarStore = function(bytes, file, _, user)
             local path, err = context.media:storePreview(bytes, "avatar-" .. file)
             if path then context.avatarPaths[user] = path end
-            return path, err
+            return path, localizedError(err)
         end,
     }
     local conditions = {

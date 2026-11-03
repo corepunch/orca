@@ -23,15 +23,17 @@ local ACTIVITY = {
 }
 local PAGE_SIZE = 20
 
-local function number(value)
+local function number(value, i18n)
     if value == nil then return "–" end
-    if value >= 10000 then return string.format("%.0fk", value / 1000) end
-    if value >= 1000 then return string.format("%.1fk", value / 1000) end
+    if value >= 1000 then
+        local count = string.format(value >= 10000 and "%.0f" or "%.1f", value / 1000)
+        if i18n.language == "ru" then count = count:gsub("%.", ",") end
+        return i18n:t("%{count}k", { count = count })
+    end
     return tostring(value)
 end
 local function count(value) return value == nil and "…" or (value > 0 and tostring(value) or "") end
 local function tile(value) return value == nil and "…" or tostring(value) end
-local function label(value, singular, plural) return value == 1 and singular or plural end
 local function clamp(ratio) return math.max(TALLEST, math.min(WIDEST, ratio)) end
 
 -- Persisted dimensions first, then the decoded shape, then a guess.
@@ -85,7 +87,9 @@ function Provider.selectKind(scope, kind)
 end
 
 function Provider.new(context)
-    local client = context.client
+    local i18n = context.i18n or require("Octopus/Locales").new("en")
+    local function t(key, params) return i18n:t(key, params) end
+    local client = require("Octopus/Locales").client(context.client, i18n)
     local computed = {
         singlePhoto = function(v) return (v.PostType == "photo" or (v.PostType == "quote" and v.ImageId ~= nil)) and v.ImageCount < 2 end,
         hasGallery = function(v) return v.ImageCount > 1 end,
@@ -93,7 +97,7 @@ function Provider.new(context)
         isQuote = function(v) return v.PostType == "quote" end,
         isLink = function(v) return v.PostType == "link" end,
         isText = function(v) return v.PostType ~= "photo" and v.PostType ~= "quote" and v.PostType ~= "link" end,
-        kindLabel = function(v) return LABELS[v.PostType] or "post" end,
+        kindLabel = function(v) return t(LABELS[v.PostType] or "post") end,
         hasCaption = function(v) return v.PostType == "photo" and (v.Content or "") ~= "" end,
         excerpt = function(v) return Format.excerpt(v.Content) end,
         plain = function(v) return Format.plain(v.Content) end,
@@ -108,8 +112,8 @@ function Provider.new(context)
             return (v.PostType == "link" and (v.Content or "") ~= "")
                 or (v.PostType ~= "photo" and v.PostType ~= "quote" and v.PostType ~= "link")
         end,
-        age = function(v) return Format.ago(v.CreatedAt, context.now()) end,
-        stamp = function(v) return Format.stamp(v.CreatedAt) end,
+        age = function(v) return Format.ago(v.CreatedAt, context.now(), i18n) end,
+        stamp = function(v) return Format.stamp(v.CreatedAt, i18n) end,
         hasTags = function(_, record) return #(record.children.Tags or {}) > 0 end,
         likesText = function(v) return count(v.Likes) end,
         repostsText = function(v) return count(v.Reposts) end,
@@ -117,13 +121,13 @@ function Provider.new(context)
         likeCount = function(v) return tile(v.Likes) end,
         repostCount = function(v) return tile(v.Reposts) end,
         commentCount = function(v) return tile(v.Comments) end,
-        likesLabel = function(v) return label(v.Likes, "like", "likes") end,
-        repostsLabel = function(v) return label(v.Reposts, "repost", "reposts") end,
-        commentsLabel = function(v) return label(v.Comments, "comment", "comments") end,
+        likesLabel = function(v) return t("count.likes", { count = v.Likes or 0 }) end,
+        repostsLabel = function(v) return t("count.reposts", { count = v.Reposts or 0 }) end,
+        commentsLabel = function(v) return t("count.comments", { count = v.Comments or 0 }) end,
         liked = function(v) return v.LikeId ~= nil end,
         reposted = function(v) return v.RepostId ~= nil end,
-        likeText = function(v) return v.LikeId ~= nil and "unlike" or "like" end,
-        repostText = function(v) return v.RepostId ~= nil and "undo" or "repost" end,
+        likeText = function(v) return t(v.LikeId ~= nil and "unlike" or "like") end,
+        repostText = function(v) return t(v.RepostId ~= nil and "undo" or "repost") end,
         canReact = function(v) return v.StatsReady and not v.Busy end,
         locked = function(v) return not v.CanReact end,
         postState = function(v)
@@ -144,53 +148,53 @@ function Provider.new(context)
         hasAvatar = function(v) return (v.AvatarPath or "") ~= "" end,
         hashTag = function(v) return "#" .. (v.Label or "") end,
         isRepost = function(v) return v.RepostedById ~= nil end,
-        repostedText = function(v) return v.RepostedByName and v.RepostedByName .. " reposted" or "" end,
+        repostedText = function(v) return v.RepostedByName and t("%{name} reposted", { name = v.RepostedByName }) or "" end,
         -- Below the author line and, on reposts, the repost line (24 + 4 + 20 + 4).
         avatarTop = function(v) return 28 + (v.RepostedById ~= nil and 24 or 0) end,
-        activityLine = function(v) return v.Person .. (ACTIVITY[v.Kind] or ACTIVITY.follow).text end,
+        activityLine = function(v) return t("%{name}" .. (ACTIVITY[v.Kind] or ACTIVITY.follow).text, { name = v.Person }) end,
         activityIcon = function(v) return "Octopus/assets/icons/" .. (ACTIVITY[v.Kind] or ACTIVITY.follow).icon .. ".svg" end,
-        activityAge = function(v) return Format.ago(v.At, context.now()) end,
+        activityAge = function(v) return Format.ago(v.At, context.now(), i18n) end,
         activityHasBody = function(v) return v.Body ~= nil end,
         activityExcerpt = function(v) return Format.excerpt(v.Body, 140) end,
         activityHasPost = function(v) return v.PostId ~= nil end,
-        activitySummary = function(v) return v.PostSummary ~= nil and v.PostSummary ~= "" and v.PostSummary or "your photo" end,
+        activitySummary = function(v) return v.PostSummary ~= nil and v.PostSummary ~= "" and v.PostSummary or t("your photo") end,
         isGuest = function(v) return not v.SignedIn end,
         isMine = function(v) return context.readerId ~= nil and v.AuthorId == context.readerId() end,
         commentIndent = function(v) return v.Nested and 48 or 0 end,
-        composeHeading = function(v) return "new " .. (v.Kind == "text" and "post" or v.Kind) end,
+        composeHeading = function(v) return t("new " .. (v.Kind == "text" and "post" or v.Kind)) end,
         composeText = function(v) return v.Kind == "text" end,
         composePhoto = function(v) return v.Kind == "photo" end,
         composeQuote = function(v) return v.Kind == "quote" end,
         composeLink = function(v) return v.Kind == "link" end,
         composeTakesPhoto = function(v) return v.Kind == "photo" or v.Kind == "quote" end,
-        composePhotoLabel = function(v) return v.Kind == "quote" and "photos (optional, up to 9)" or "photos (up to 9)" end,
+        composePhotoLabel = function(v) return t(v.Kind == "quote" and "photos (optional, up to 9)" or "photos (up to 9)") end,
         composeTextTile = function(v) return v.Kind == "text" and "kind-on" or "kind-off" end,
         composePhotoTile = function(v) return v.Kind == "photo" and "kind-on" or "kind-off" end,
         composeQuoteTile = function(v) return v.Kind == "quote" and "kind-on" or "kind-off" end,
         composeLinkTile = function(v) return v.Kind == "link" and "kind-on" or "kind-off" end,
         commentLikes = function(v)
             if v.Likes == nil then return "…" end
-            return v.Likes > 0 and tostring(v.Likes) or "like"
+            return v.Likes > 0 and tostring(v.Likes) or t("like")
         end,
         personName = function(v) return v.DisplayName or "" end,
         searchHeading = function(v)
             local tag = (v.Query or ""):match("^%s*#(.-)%s*$")
-            return tag and "#" .. tag:lower() or "posts"
+            return tag and "#" .. tag:lower() or t("posts")
         end,
         searchMissing = function(v)
-            return "No posts or people match “" .. (v.Query or "") .. "”. Try another word or tag."
+            return t("No posts or people match “%{query}”. Try another word or tag.", { query = v.Query or "" })
         end,
         bioText = function(v)
             if (v.Bio or "") ~= "" then return v.Bio end
-            return v.Own and "Add a short bio below." or ""
+            return v.Own and t("Add a short bio below.") or ""
         end,
         bioExcerpt = function(v) return Format.excerpt(v.Bio or "", 80) end,
         hasBio = function(v) return (v.Bio or "") ~= "" end,
-        postsText = function(v) return number(v.PostCount) end,
-        followersText = function(v) return number(v.Followers) end,
-        followingText = function(v) return number(v.FollowingCount) end,
+        postsText = function(v) return number(v.PostCount, i18n) end,
+        followersText = function(v) return number(v.Followers, i18n) end,
+        followingText = function(v) return number(v.FollowingCount, i18n) end,
         isFollowing = function(v) return v.FollowId ~= nil and v.FollowId ~= "" end,
-        followText = function(v) return (v.FollowId or "") ~= "" and "Unfollow" or "Follow" end,
+        followText = function(v) return t((v.FollowId or "") ~= "" and "Unfollow" or "Follow") end,
         followStyle = function(v) return (v.FollowId or "") ~= "" and "octopus-outline" or "octopus-primary" end,
         canFollow = function(v) return v.FollowKnown and not v.Own end,
         personInitials = function(v) return Format.initials(v.DisplayName or "?") end,
@@ -311,7 +315,7 @@ function Provider.new(context)
     end
     operations.follow = function(_, _, command)
         local person = command.scope:exposedRecord("Profile")
-        if not person or not context.requireSession("Sign in to follow people.") then return true end
+        if not person or not context.requireSession(t("Sign in to follow people.")) then return true end
         if person.values.FollowBusy then return true end
         local store, scope = person.store, command.scope
         local token = scope:token()
@@ -330,7 +334,7 @@ function Provider.new(context)
                 followers = person.values.Followers + (now and 1 or 0) - (following and 1 or 0) }, { partial = true })
         end
         context.invalidateFeeds { "Home" }
-        context.notice(now and "You'll see their posts in your following timeline." or "Unfollowed.")
+        context.notice(now and t("You'll see their posts in your following timeline.") or t("Unfollowed."))
         return true
     end
     operations.searchPeople = function(params, _, _, query)
@@ -374,7 +378,7 @@ function Provider.new(context)
         if not profile then context.notice(err.message, true); return nil, err end
         command.scope.store:put("OctopusProfile", { userId = person.key, username = profile.username, bio = profile.bio },
             { partial = true })
-        context.notice("Profile saved. New posts use your account name.")
+        context.notice(t("Profile saved. New posts use your account name."))
         return true
     end
     operations.defaultAvatars = function()
@@ -403,7 +407,7 @@ function Provider.new(context)
         if not scope:valid(token) then return nil, { code = "stale" } end
         if not profile then context.notice(err.message, true); return nil, err end
         context.avatarChanged(person.key)
-        context.notice("Photo updated. It shows on the website and in Chat too.")
+        context.notice(t("Photo updated. It shows on the website and in Chat too."))
         return true
     end
 
@@ -458,7 +462,7 @@ function Provider.new(context)
     end
     operations.likeComment = function(params, _, command)
         local comment = params.item
-        if not context.requireSession("Sign in to like comments.") then return true end
+        if not context.requireSession(t("Sign in to like comments.")) then return true end
         if comment.values.Busy or not comment.values.StatsReady then return true end
         local store, scope = comment.store, command.scope
         local token = scope:token()
@@ -474,12 +478,12 @@ function Provider.new(context)
     end
     -- Replies attach to the top-level comment, as threads are one level deep.
     operations.reply = function(params, _, command)
-        if not context.requireSession("Sign in to reply.") then return true end
+        if not context.requireSession(t("Sign in to reply.")) then return true end
         local comment = params.item
         local draft = command.scope:member("Draft")
         local parent = comment.values.Nested and comment.values.ParentId or comment.key
         draft.draft.ReplyToId, draft.draft.Replying = parent, true
-        draft.draft.ReplyLabel = "replying to " .. comment.values.AuthorName
+        draft.draft.ReplyLabel = t("replying to %{name}", { name = comment.values.AuthorName })
         if context.focusComment then context.focusComment() end
         return true
     end
@@ -487,10 +491,10 @@ function Provider.new(context)
         local post = command.scope:exposedRecord("Post")
         local draft = params.draft
         local reply = (draft.ReplyToId or "") ~= "" and draft.ReplyToId or nil
-        context.notice("Posting…")
+        context.notice(t("Posting…"))
         local comment, err = client:addComment(post.key, draft.Text, reply)
         if not comment then
-            err = { code = err.code, message = err.message .. " Your comment is still here." }
+            err = { code = err.code, message = err.message .. t(" Your comment is still here.") }
             context.notice(err.message, true)
             return nil, err
         end
@@ -503,7 +507,7 @@ function Provider.new(context)
         local post = command.scope:exposedRecord("Post")
         if not command.confirming then
             command.confirming = true
-            context.notice("Delete this post? Choose delete again to confirm. This cannot be undone.", true)
+            context.notice(t("Delete this post? Choose delete again to confirm. This cannot be undone."), true)
             return true
         end
         command.confirming = nil
@@ -545,10 +549,10 @@ function Provider.new(context)
                 for i, photo in ipairs(photos[kind] or {}) do values.photos[i] = photo end
             else values[field] = draft[column] end
         end
-        context.notice(values.photos and #values.photos > 0 and "Uploading photos…" or "")
+        context.notice(values.photos and #values.photos > 0 and t("Uploading photos…") or "")
         local post, err = client:createPost(values)
         if not post then
-            local message = err.message .. (err.code == "validation" and "" or " Your draft is safe.")
+            local message = err.message .. (err.code == "validation" and "" or t(" Your draft is safe."))
             context.notice(message, true)
             return nil, { code = err.code, message = message }
         end
@@ -560,7 +564,7 @@ function Provider.new(context)
         return function(params, _, command)
             local post = postOf(params.item)
             if not post then return true end
-            if not context.requireSession(kind == "like" and "Sign in to like posts." or "Sign in to repost.") then return true end
+            if not context.requireSession(kind == "like" and t("Sign in to like posts.") or t("Sign in to repost.")) then return true end
             if post.values.Busy or not post.values.StatsReady then return true end
             local store, scope = post.store, command.scope
             local token = scope:token()
@@ -695,7 +699,8 @@ function Provider.new(context)
             local button = params.sender
             local picker = button:getParent():findChild("DefaultAvatarPicker")
             picker.Visible = not picker.Visible
-            button.Text = picker.Visible and "Hide characters" or "Choose a character"
+            button.TextResourceID = picker.Visible and "Hide characters" or "Choose a character"
+            button.Text = t(button.TextResourceID)
             local choices = scope:member("DefaultAvatars")
             if picker.Visible and not choices.loaded then choices:refresh() end
         end,
@@ -712,8 +717,8 @@ function Provider.new(context)
             local edit = scope:member("Draft")
             if edit.submitting then return end
             local kind = edit.key
-            if #(photos[kind] or {}) >= 9 then context.notice("You can add up to 9 photos.", true); return end
-            context.notice("Opening photos…")
+            if #(photos[kind] or {}) >= 9 then context.notice(t("You can add up to 9 photos."), true); return end
+            context.notice(t("Opening photos…"))
             local photo, err = context.media:pick()
             if not photo then
                 local cancelled = type(err) == "table" and err.code == "cancelled"
@@ -722,7 +727,7 @@ function Provider.new(context)
             end
             if scope.disposed or edit.key ~= kind then return end
             local selected = photos[kind] or {}
-            if #selected >= 9 then context.notice("You can add up to 9 photos.", true); return end
+            if #selected >= 9 then context.notice(t("You can add up to 9 photos."), true); return end
             selected[#selected + 1] = photo
             photos[kind] = selected
             refreshSelections(scope)
@@ -753,7 +758,7 @@ function Provider.new(context)
     }
     local validators = {
         comment = function(values)
-            if not (values.Text or ""):match("%S") then return { Text = "Write a comment first." } end
+            if not (values.Text or ""):match("%S") then return { Text = t("Write a comment first.") } end
         end,
     }
     return { computed = computed, operations = operations, hooks = hooks, caches = caches, media = media,

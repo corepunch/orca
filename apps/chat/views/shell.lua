@@ -1,3 +1,5 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local core = require "orca.core"
 local Footer = require "orca.UIKit.Footer"
@@ -21,7 +23,7 @@ function Shell.new(screen, navigate, menu)
     self.content = ui.PageHost { Name = "TabContent" }
     local buttons = {}
     for _, page in ipairs(pages) do
-        buttons[#buttons + 1] = { "AppBar" .. page.key, page.icon, page.label, function()
+        buttons[#buttons + 1] = { "AppBar" .. page.key, page.icon, t(page.label), function()
             if self.active ~= page.key then navigate(page.route) end
         end }
         self.routes[page.key] = page.route

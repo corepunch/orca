@@ -1,5 +1,6 @@
 """Offline regressions for standalone iOS packaging, signing and device selection."""
 import importlib.util
+import json
 from pathlib import Path
 import plistlib
 import shutil
@@ -29,6 +30,21 @@ def physical_device(identifier, kind='iPhone', reality='physical', name=None):
 
 
 class DeviceSelectionTests(unittest.TestCase):
+    def test_auto_family_selects_a_phone_or_tablet_and_ignores_other_devices(self):
+        for kind in ('iPhone', 'iPad'):
+            devices = [physical_device('watch', 'AppleWatch'),
+                       physical_device('sim', kind, reality='simulated'),
+                       physical_device('target', kind)]
+            with self.subTest(kind=kind):
+                self.assertEqual(deploy.select_device(devices, 'auto'), 'target')
+
+    def test_auto_family_requires_an_unambiguous_physical_device(self):
+        devices = [physical_device('phone'), physical_device('tablet', 'iPad')]
+        for candidates in ([], devices):
+            with self.subTest(count=len(candidates)), self.assertRaises(ValueError):
+                deploy.select_device(candidates, 'auto')
+        self.assertEqual(deploy.select_device(devices, 'auto', 'hardware-tablet'), 'tablet')
+
     def test_automatic_selection_ignores_simulated_and_other_families(self):
         devices = [physical_device('tablet', 'iPad'), physical_device('sim', reality='simulated'),
                    physical_device('phone')]
@@ -68,6 +84,17 @@ class DeviceSelectionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             deploy.select_simulator({'devices': {'runtime': [shutdown, dict(shutdown, udid='duplicate')]}},
                                     'iPhone', 'QA phone')
+
+    def test_auto_simulator_family_can_select_a_renamed_tablet(self):
+        phone = {'udid': 'phone', 'name': 'QA phone', 'state': 'Shutdown', 'isAvailable': True,
+                 'deviceTypeIdentifier': 'com.apple.CoreSimulator.SimDeviceType.iPhone-17'}
+        tablet = dict(phone, udid='tablet', name='QA tablet', state='Booted',
+                      deviceTypeIdentifier='com.apple.CoreSimulator.SimDeviceType.iPad-Pro')
+        watch = dict(phone, udid='watch', name='AAA watch', state='Booted',
+                     deviceTypeIdentifier='com.apple.CoreSimulator.SimDeviceType.Apple-Watch')
+        payload = {'devices': {'runtime': [phone, tablet, watch]}}
+        self.assertEqual(deploy.select_simulator(payload, 'auto')['udid'], 'tablet')
+        self.assertEqual(deploy.select_simulator(payload, 'auto', 'phone')['udid'], 'phone')
 
 
 class SigningTests(unittest.TestCase):
@@ -130,6 +157,52 @@ class SigningTests(unittest.TestCase):
 
 
 class BuildConfigurationTests(unittest.TestCase):
+    def invoke_app_target(self, target, *variables):
+        with tempfile.TemporaryDirectory(prefix='orca-ios-make-') as folder:
+            capture = Path(folder) / 'capture.py'
+            capture.write_text('import json, sys\nprint(json.dumps(sys.argv[1:]))\n')
+            result = subprocess.run(['make', target, 'UNAME_S=Linux',
+                                     'MAKE=' + sys.executable + ' ' + str(capture), *variables],
+                                    cwd=ROOT, capture_output=True, text=True)
+        invocations = [json.loads(line) for line in result.stdout.splitlines() if line.startswith('[')]
+        return result, invocations
+
+    def test_named_ios_targets_route_each_app_to_the_device_installer(self):
+        for app in ('chat', 'cluster-demo'):
+            with self.subTest(app=app):
+                result, invocations = self.invoke_app_target(app + '-ios')
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(len(invocations), 1, result.stdout)
+                arguments = invocations[0]
+                self.assertIn('tools/ios/Makefile', arguments)
+                self.assertIn('SDK=iphoneos', arguments)
+                self.assertIn('PROJECT=apps/' + app, arguments)
+                self.assertIn('BUNDLE_ID=org.orca.' + app, arguments)
+                self.assertIn('DEVICE_TYPE=auto', arguments)
+                self.assertIn('install', arguments)
+
+    def test_named_ios_target_preserves_project_and_signing_overrides(self):
+        with tempfile.TemporaryDirectory(prefix='orca external project ') as folder:
+            project = Path(folder)
+            (project / 'package.lua').write_text('Name = "External"\n')
+            result, invocations = self.invoke_app_target(
+                'external-ios', 'PROJECT=' + str(project), 'BUNDLE_ID=com.example.external',
+                'DISPLAY_NAME=External App', 'DEVICE_TYPE=iPad', 'DEVICE=My Tablet',
+                'TEAM=EXAMPLE', 'PROFILE=/tmp/example profile.mobileprovision')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(invocations), 1, result.stdout)
+        for argument in ('PROJECT=' + str(project), 'BUNDLE_ID=com.example.external',
+                         'DISPLAY_NAME=External App', 'DEVICE_TYPE=iPad'):
+            self.assertIn(argument, invocations[0])
+        # Make exports command-line options through MAKEFLAGS for the recursive installer.
+        self.assertNotIn('dependencies.py', result.stdout)
+
+    def test_missing_app_is_rejected_before_any_submake_build(self):
+        result, invocations = self.invoke_app_target('missing-ios-regression-app-ios')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('package.lua', result.stdout + result.stderr)
+        self.assertEqual(invocations, [])
+
     def test_invalid_sdk_and_arch_fail_before_toolchain_or_downloads(self):
         for sdk, arch, diagnostic in (('macosx', 'arm64', 'SDK must'),
                                       ('iphoneos', 'x86_64', 'require ARCH=arm64'),
@@ -183,6 +256,18 @@ class BundleTests(unittest.TestCase):
                 self.assertTrue((self.bundle / 'project/package.lua').is_file())
                 self.assertTrue((self.bundle / 'share/orca/startup.lua').is_file())
                 self.assertFalse((self.bundle / 'project/.git').exists())
+
+    def test_catalog_languages_are_declared_and_bundled(self):
+        catalogs = self.project / 'Locales'
+        catalogs.mkdir()
+        for language in ('ru', 'en'):
+            (catalogs / (language + '.lua')).write_text('return {}\n')
+        (catalogs / 'init.lua').write_text('return {}\n')
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertEqual(info['CFBundleLocalizations'], ['en', 'ru'])
+        self.assertTrue((self.bundle / 'project/Locales/ru.lua').is_file())
 
     def test_repackaging_removes_deleted_resources_and_obsolete_signatures(self):
         self.assertEqual(self.package().returncode, 0)

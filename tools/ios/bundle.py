@@ -4,6 +4,7 @@ import argparse
 import fnmatch
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -90,6 +91,10 @@ def main():
         },
     }
     info.update(compile_assets(project, bundle, args.sdk, args.minimum))
+    languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')
+                       if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))
+    if languages:
+        info['CFBundleLocalizations'] = languages
     if (project / 'Push.entitlements').is_file():
         info['ORCARemoteNotifications'] = True
     (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))

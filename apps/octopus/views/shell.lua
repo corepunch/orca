@@ -16,13 +16,13 @@ Shell.pages = {
     { key = "Me", route = "/me", label = "me", icon = "user-round" },
 }
 
-function Shell.new(screen, navigate, menu)
+function Shell.new(screen, navigate, menu, i18n)
     local self = setmetatable({ screen = screen, pages = {}, items = {}, routes = {} }, Shell)
     screen.Name = "OctopusShell"
     self.content = ui.PageHost { Name = "TabContent" }
     local buttons = {}
     for _, page in ipairs(Shell.pages) do
-        buttons[#buttons + 1] = { "AppBar" .. page.key, page.icon, page.label, function()
+        buttons[#buttons + 1] = { "AppBar" .. page.key, page.icon, i18n and i18n:t(page.label) or page.label, function()
             if self.active ~= page.key then navigate(page.route) end
         end }
         self.routes[page.key] = page.route

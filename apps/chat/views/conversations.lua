@@ -1,10 +1,12 @@
+local I18n = require "Chat/i18n"
+local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local colors = C.colors
 local Conversations = {}
 
 local function publicName(person)
-    return person.display_name and person.display_name ~= "" and person.display_name or person.username or "Member"
+    return person.display_name and person.display_name ~= "" and person.display_name or person.username or t("Member")
 end
 
 -- One list row after the Windows Phone People hub: a 52-point tile or avatar,
@@ -37,16 +39,16 @@ function Conversations.newRoom(self)
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
     self.newSelection = {}
-    local query = C.input("FindPerson", "Search username, email or phone", { class = "joined-left" })
+    local query = C.input("FindPerson", t("Search username, email or phone"), { class = "joined-left" })
     -- One pale field: the search command shares the input's fill, as in the inbox.
     local searchRow = ui.Grid { Columns = "1fr auto auto", Height = 48 }
     local searchBar = C.toolbar("Top", { searchRow }, { Name = "PeopleSearch", Padding = "20 0 20 12" })
-    local name = C.input("RoomName", "Group name")
-    local inviteCode = C.input("InviteCode", "Invitation code")
+    local name = C.input("RoomName", t("Group name"))
+    local inviteCode = C.input("InviteCode", t("Invitation code"))
     local status = C.text("", { Name = "NewChatStatus", WordWrap = true, FontSize = 14, StateClasses = "chat-muted" })
     self.status, self.newStatus = status, status
     local function notice(message, isError)
-        status:setTextContent(message or "")
+        status:setTextContent(t(message or ""))
         status.Visible = message ~= nil and message ~= ""
         status.StateClasses = isError and "chat-error" or "chat-muted"
     end
@@ -81,7 +83,7 @@ function Conversations.newRoom(self)
         local names = {}
         for _, person in pairs(self.newSelection) do names[#names + 1] = publicName(person) end
         table.sort(names)
-        selected:setTextContent(#names > 0 and table.concat(names, ", ") or "Select members or continue with an empty group.")
+        selected:setTextContent(#names > 0 and table.concat(names, ", ") or t("Select members or continue with an empty group."))
         for id, buttons in pairs(personButtons) do
             for _, button in ipairs(buttons) do button.StateClasses = self.newSelection[id] and "chat-soft" or "" end
         end
@@ -129,16 +131,16 @@ function Conversations.newRoom(self)
         people.Visible = mode == "direct" or mode == "group"
         findPeople.Visible = people.Visible
         findChannels.Visible = mode == "channels"
-        header(mode == "group" and "new group" or mode == "channel" and "new channel"
-            or mode == "channels" and "channels" or mode == "invite" and "join chat" or "new message")
+        header(mode == "group" and t("new group") or mode == "channel" and t("new channel")
+            or mode == "channels" and t("channels") or mode == "invite" and t("join chat") or t("new message"))
         showBack(mode ~= "direct")
         setup.Visible, invitation.Visible = mode == "channel", mode == "invite"
         selected.Visible, nextButton.Visible = mode == "group", mode == "group"
-        name.PlaceholderText = mode == "channel" and "Channel name" or "Group name"
-        query.PlaceholderText = mode == "channels" and "Search public channels" or "Search username, email or phone"
+        name.PlaceholderText = mode == "channel" and t("Channel name") or t("Group name")
+        query.PlaceholderText = mode == "channels" and t("Search public channels") or t("Search username, email or phone")
         visibilityButton.Visible = mode == "channel"
-        visibilityButton:setTextContent("Private channel · invitation required")
-        createButton:setTextContent(mode == "channel" and "Create channel" or "Create group")
+        visibilityButton:setTextContent(t("Private channel · invitation required"))
+        createButton:setTextContent(mode == "channel" and t("Create channel") or t("Create group"))
     end
     local function goBack()
         if busy then return end
@@ -149,28 +151,28 @@ function Conversations.newRoom(self)
         else changeMode("direct") end
     end
     for _, item in ipairs {
-        { "KindGroup", "users-round", "New group", "group" },
-        { "KindChannel", "megaphone", "New channel", "channel" },
-        { "SearchChannels", "compass", "Browse channels", "channels" },
-        { "ShowInvite", "ticket", "Join with invitation", "invite" },
+        { "KindGroup", "users-round", t("New group"), "group" },
+        { "KindChannel", "megaphone", t("New channel"), "channel" },
+        { "SearchChannels", "compass", t("Browse channels"), "channels" },
+        { "ShowInvite", "ticket", t("Join with invitation"), "invite" },
     } do
         local target = item[4]
         actions:addChild(C.command(item[1], item[2], item[3], function() changeMode(target) end))
     end
-    nextButton = C.button("Next", function()
+    nextButton = C.button(t("Next"), function()
         if mode ~= "group" or busy then return end
         clearResults(); notice("")
         setup.Visible, people.Visible, searchBar.Visible, results.Visible = true, false, false, false
         selected.Visible, findPeople.Visible, nextButton.Visible = false, false, false
     end, { Name = "GroupNext", class = "chat-primary" })
-    visibilityButton = C.button("Private channel · invitation required", function()
+    visibilityButton = C.button(t("Private channel · invitation required"), function()
         if busy then return end
         visibility = visibility == "private" and "public" or "private"
-        visibilityButton:setTextContent(visibility == "private" and "Private channel · invitation required" or "Public channel · anyone can join")
+        visibilityButton:setTextContent(visibility == "private" and t("Private channel · invitation required") or t("Public channel · anyone can join"))
     end, { Name = "ConversationVisibility", Background = colors.surface })
-    createButton = C.button("Create group", function()
+    createButton = C.button(t("Create group"), function()
         if busy or not setup.Visible or not active() then return end
-        if not name.Text:match("%S") then notice(mode == "channel" and "Enter a channel name." or "Enter a group name.", true); name:setFocus(); return end
+        if not name.Text:match("%S") then notice(mode == "channel" and t("Enter a channel name.") or t("Enter a group name."), true); name:setFocus(); return end
         local ids = {}
         for id in pairs(self.newSelection) do ids[#ids + 1] = id end
         table.sort(ids)
@@ -184,7 +186,7 @@ function Conversations.newRoom(self)
     end, { Name = "CreateConversation", class = "chat-primary" })
     setup:addChild(name); setup:addChild(visibilityButton); setup:addChild(createButton)
     invitation:addChild(inviteCode)
-    invitation:addChild(C.button("Join", function()
+    invitation:addChild(C.button(t("Join"), function()
         if busy or mode ~= "invite" or not active() then return end
         busy = true
         local room, err = self.client:joinInvite(inviteCode.Text)
@@ -206,7 +208,7 @@ function Conversations.newRoom(self)
         pending:removeFromParent()
         if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
-        if #found == 0 then results:addChild(C.text("No results. Ask them to set a public username in Profile, or enable Find me by email or phone for a verified login detail. You don't need to add a contact first.", {
+        if #found == 0 then results:addChild(C.text(t("No results. Ask them to set a public username in Profile, or enable Find me by email or phone for a verified login detail. You don't need to add a contact first."), {
             Name = "NoPeopleResults", FontSize = 14, class = "chat-muted", WordWrap = true, Padding = "0 8" })) end
         for _, person in ipairs(found) do addPerson(results, person, "FoundPerson") end
     end, searchCommand("FindPeople"), "chat-field-ink")
@@ -219,9 +221,9 @@ function Conversations.newRoom(self)
         pending:removeFromParent()
         if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
-        if #found == 0 then results:addChild(C.text("No channels found.", { FontSize = 14, class = "chat-muted", Padding = "0 8" })) end
+        if #found == 0 then results:addChild(C.text(t("No channels found."), { FontSize = 14, class = "chat-muted", Padding = "0 8" })) end
         for _, channel in ipairs(found) do
-            results:addChild(row("JoinChannel" .. channel.id, C.avatar(channel.name, 52, channel.id), channel.name, "Public channel", function()
+            results:addChild(row("JoinChannel" .. channel.id, C.avatar(channel.name, 52, channel.id), channel.name, t("Public channel"), function()
                 if busy or not active() or generation ~= request or query.Text ~= searched then return end
                 busy = true
                 local room, joinError = self.client:joinPublicChannel(channel.id)
@@ -241,7 +243,7 @@ function Conversations.newRoom(self)
     })
     local body = ui.Node2D {}
     body:addChild(list); body:addChild(searchBar)
-    page = C.page("new message", body, { Name = "NewMessagePage", class = "toolbar-page",
+    page = C.page(t("new message"), body, { Name = "NewMessagePage", class = "toolbar-page",
         ExtendBodyBehindHeader = true, back = goBack })
     changeMode("direct")
     local screen = self:frame(page, "New")
@@ -260,10 +262,10 @@ function Conversations.newRoom(self)
             if err then
                 notice(err.message, true)
                 local retry
-                retry = C.button("Retry contacts", function() retry:removeFromParent(); loadContacts() end, { Name = "RetryContacts" })
+                retry = C.button(t("Retry contacts"), function() retry:removeFromParent(); loadContacts() end, { Name = "RetryContacts" })
                 people:addChild(retry)
             elseif #contacts == 0 then
-                people:addChild(C.text("No contacts yet. Search for someone by their exact username to start a chat.", {
+                people:addChild(C.text(t("No contacts yet. Search for someone by their exact username to start a chat."), {
                     FontSize = 14, WordWrap = true, class = "chat-dim" }))
             else
                 table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)

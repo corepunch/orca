@@ -17,6 +17,7 @@ end
 function Compose.page(self)
     local scope = Compose.scope(self)
     local page = assert(filesystem.loadObject("Octopus/Pages/Write"), "Missing Octopus/Pages/Write")
+    self.i18n:apply(page)
     scope:attach(page)
     self.status, self.statusBar = page:findChild("WriteStatus", true), nil
     local pivot = C.page("", page)

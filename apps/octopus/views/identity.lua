@@ -36,27 +36,27 @@ function Identity.auth(self, mode)
 
     local form = C.stack({ Name = signup and "SignUpPage" or "SignInPage", Spacing = 16 })
     if signup then
-        form:addChild(field("Account name", input("AccountName", "Your unique account name", draft.handle)))
-        form:addChild(C.text("1–36 letters, digits, dots, underscores or hyphens. This is your permanent account ID.", {
+        form:addChild(field(self.i18n:t("Account name"), input("AccountName", self.i18n:t("Your unique account name"), draft.handle)))
+        form:addChild(C.text(self.i18n:t("1–36 letters, digits, dots, underscores or hyphens. This is your permanent account ID."), {
             FontSize = 12, Foreground = colors.muted, WordWrap = true }))
-        form:addChild(field("Display name", input("DisplayName", "How people will see you", draft.name)))
+        form:addChild(field(self.i18n:t("Display name"), input("DisplayName", self.i18n:t("How people will see you"), draft.name)))
     end
     local email = input("Email", "you@example.com", draft.email)
-    local password = input("Password", signup and "At least 8 characters" or "Your password", nil, { Type = "Password" })
-    form:addChild(field("Email address", email))
-    form:addChild(field("Password", password))
+    local password = input("Password", signup and self.i18n:t("At least 8 characters") or self.i18n:t("Your password"), nil, { Type = "Password" })
+    form:addChild(field(self.i18n:t("Email address"), email))
+    form:addChild(field(self.i18n:t("Password"), password))
     local confirm
     if signup then
-        confirm = input("ConfirmPassword", "Type it again", nil, { Type = "Password" })
-        form:addChild(field("Confirm password", confirm))
+        confirm = input("ConfirmPassword", self.i18n:t("Type it again"), nil, { Type = "Password" })
+        form:addChild(field(self.i18n:t("Confirm password"), confirm))
     end
-    local label = signup and "Create account" or "Sign in"
+    local label = signup and self.i18n:t("Create account") or self.i18n:t("Sign in")
     local submit
     submit = C.primary(label, function()
         if busy then return end
         remember()
         busy = true
-        submit:setTextContent(signup and "Creating account…" or "Signing in…")
+        submit:setTextContent(signup and self.i18n:t("Creating account…") or self.i18n:t("Signing in…"))
         self:notice("")
         local epoch = self.sessionEpoch
         self:task(function()
@@ -67,7 +67,7 @@ function Identity.auth(self, mode)
             if self.sessionEpoch ~= epoch then return end
             if not session then
                 submit:setTextContent(label)
-                self:notice(err and err.message or "Please try again.", true)
+                self:notice(err and err.message or self.i18n:t("Please try again."), true)
                 self:repaint()
                 return
             end
@@ -84,13 +84,13 @@ function Identity.auth(self, mode)
         email.Submit = function() password:setFocus() end
         password.Submit = function() confirm:setFocus() end
         confirm.Submit = function() submit:send("Node.LeftButtonUp") end
-        form:addChild(C.button("Already have an account? Sign in", function() leave("/auth") end, { Name = "GoToSignIn" }))
+        form:addChild(C.button(self.i18n:t("Already have an account? Sign in"), function() leave("/auth") end, { Name = "GoToSignIn" }))
     else
         email.Submit = function() password:setFocus() end
         password.Submit = function() submit:send("Node.LeftButtonUp") end
-        form:addChild(C.button("New here? Create an account", function() leave("/auth/signup") end, { Name = "GoToSignUp" }))
+        form:addChild(C.button(self.i18n:t("New here? Create an account"), function() leave("/auth/signup") end, { Name = "GoToSignUp" }))
     end
-    form:addChild(C.button("Continue without signing in", function() leave(returnRoute) end, {
+    form:addChild(C.button(self.i18n:t("Continue without signing in"), function() leave(returnRoute) end, {
         Name = "ContinueAsGuest", Foreground = colors.muted }))
 
     local brand = ui.Grid { Name = "AuthBrand", Columns = "40px 1fr", Height = 40, Spacing = 12, MarginBottom = 8 }
@@ -103,13 +103,13 @@ function Identity.auth(self, mode)
         Background = colors.background }, {
         brand,
         C.stack({ Spacing = 12 }, {
-            C.text(signup and "join octopus" or "sign in", { Name = "AuthTitle", FontSize = 40, WordWrap = true }),
-            C.text(signup and "Write posts, follow people and join the conversation. Your account works on the website too."
-                or "Welcome back. Your timeline is waiting.", { FontSize = 15, Foreground = colors.muted, WordWrap = true }),
+            C.text(signup and self.i18n:t("join octopus") or self.i18n:t("sign in"), { Name = "AuthTitle", FontSize = 40, WordWrap = true }),
+            C.text(signup and self.i18n:t("Write posts, follow people and join the conversation. Your account works on the website too.")
+                or self.i18n:t("Welcome back. Your timeline is waiting."), { FontSize = 15, Foreground = colors.muted, WordWrap = true }),
         }), form,
     })
     if not self.remote then
-        body:addChild(C.text("Offline demo · demo@example.invalid · password123", {
+        body:addChild(C.text(self.i18n:t("Offline demo · demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, Foreground = colors.dim, WordWrap = true }))
     end
     return self:frame(body)

@@ -26,8 +26,10 @@ def select_device(devices, device_type, requested=None):
         properties = device.get('deviceProperties', {})
         identity = device.get('identifier', '')
         name = properties.get('name', '')
-        is_target_type = (hardware.get('deviceType') == device_type
-                          or device_type.lower() in hardware.get('marketingName', '').lower())
+        families = ('iPhone', 'iPad') if device_type == 'auto' else (device_type,)
+        is_target_type = any(hardware.get('deviceType') == family
+                             or family.lower() in hardware.get('marketingName', '').lower()
+                             for family in families)
         if not is_target_type or hardware.get('reality') != 'physical':
             continue
         if requested:
@@ -36,6 +38,9 @@ def select_device(devices, device_type, requested=None):
         else:
             candidates.append(identity)
     if len(candidates) != 1:
+        if device_type == 'auto':
+            raise ValueError(f'Expected exactly one available physical iPhone or iPad; found {len(candidates)}. '
+                             'Run make ios-devices and set DEVICE=<identifier> or DEVICE_TYPE=iPhone/iPad.')
         if device_type == 'iPhone':
             guidance = 'Connect exactly one available physical iPhone; run make ios-devices to inspect devices.'
         else:
@@ -49,9 +54,11 @@ def run(*args):
 
 
 def select_simulator(payload, device_type, requested=None):
+    families = ('iPhone', 'iPad') if device_type == 'auto' else (device_type,)
     devices = [device for group in payload['devices'].values() for device in group
                if device.get('isAvailable') and
-               (device_type in device.get('deviceTypeIdentifier', '') or device_type in device['name'])]
+               any(family in device.get('deviceTypeIdentifier', '') or family in device['name']
+                   for family in families)]
     if requested:
         devices = [device for device in devices if requested in (device['udid'], device['name'])]
         if len(devices) > 1:
@@ -66,7 +73,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--bundle', type=Path, required=True)
     parser.add_argument('--device')
-    parser.add_argument('--device-type', choices=('iPhone', 'iPad'), default='iPhone')
+    parser.add_argument('--device-type', choices=('auto', 'iPhone', 'iPad'), default='iPhone')
     parser.add_argument('--team')
     parser.add_argument('--profile')
     parser.add_argument('--simulator', action='store_true')
@@ -94,7 +101,7 @@ def main():
         run(*device_list_command(args.device, output))
         payload = json.loads(output.read_text())
     device = select_device(payload['result']['devices'], args.device_type, args.device)
-    print('Selected ' + args.device_type + ' ' + device, flush=True)
+    print('Selected device ' + device, flush=True)
     sign = [sys.executable, str(Path(__file__).with_name('sign.py')), str(bundle), '--device', device]
     # The signer checks provisioning device UDIDs after resolving CoreDevice's identifier below.
     matching = next(d for d in payload['result']['devices'] if d['identifier'] == device)

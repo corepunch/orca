@@ -700,6 +700,7 @@
 "knownRegions" = (
 "en",
 "Base",
+"ru",
 );
 "mainGroup" = "664F835B1ED89846DAB355B5";
 "productRefGroup" = "BEAD8915881B60FC177E63AB";

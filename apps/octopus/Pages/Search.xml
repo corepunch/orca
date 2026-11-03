@@ -4,14 +4,14 @@
   <Grid>
     <StackView Name="SearchResults" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
       <StackView Name="SearchSuggestions" Visible="{Binding DataContext/SearchPosts/IsIdle}" Spacing="14" JustifyContent="Start">
-        <TextBlock Text="trending tags" FontSize="20" class="octopus-accent-text" IgnoreHitTest="true"/>
+        <TextBlock Text="trending tags" TextResourceID="trending tags" FontSize="20" class="octopus-accent-text" IgnoreHitTest="true"/>
         <ItemsStack Name="TrendingTags" Spacing="14" JustifyContent="Start" ItemNamePrefix="Trending"
                     ItemsSource="{Binding DataContext/Trending/Items}" ItemTemplate="Octopus/Templates/TrendingTag"/>
-        <TextBlock Text="Search post titles and people, or start with # to browse a tag." FontSize="13" WordWrap="true"
+        <TextBlock Text="Search post titles and people, or start with # to browse a tag." TextResourceID="Search post titles and people, or start with # to browse a tag." FontSize="13" WordWrap="true"
                    MarginTop="8" class="octopus-dim" IgnoreHitTest="true"/>
       </StackView>
       <StackView Name="SearchPeopleSection" Visible="{Binding DataContext/SearchPeople/HasItems}" Spacing="14" JustifyContent="Start">
-        <TextBlock Text="people" FontSize="20" class="octopus-accent-text" IgnoreHitTest="true"/>
+        <TextBlock Text="people" TextResourceID="people" FontSize="20" class="octopus-accent-text" IgnoreHitTest="true"/>
         <ItemsStack Name="PeopleItems" Spacing="14" JustifyContent="Start" ItemNamePrefix="Person"
                     ItemsSource="{Binding DataContext/SearchPeople/Items}" ItemTemplate="Octopus/Templates/Person"/>
       </StackView>
@@ -22,19 +22,19 @@
       </StackView>
       <StackView Name="PeopleSearchError" Visible="{Binding DataContext/SearchPeople/ShowError}" Spacing="8" JustifyContent="Start">
         <StackView Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
-          <TextBlock Text="can't load people" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+          <TextBlock Text="can't load people" TextResourceID="can't load people" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
           <TextBlock Text="{Binding DataContext/SearchPeople/ErrorMessage}" FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
         </StackView>
         <Button Name="RetryPeopleSearch" Click="SearchPeople.Retry" Height="48" FontSize="15" TextHorizontalAlignment="Left"
-                TextVerticalAlignment="Center" class="octopus-action octopus-link">retry search</Button>
+                TextVerticalAlignment="Center" class="octopus-action octopus-link" TextResourceID="retry search">retry search</Button>
       </StackView>
       <StackView Name="SearchFailed" Visible="{Binding DataContext/SearchPosts/ShowError}" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
-        <TextBlock Text="search failed" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+        <TextBlock Text="search failed" TextResourceID="search failed" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
         <TextBlock Text="{Binding DataContext/SearchPosts/ErrorMessage}" FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
       </StackView>
       <StackView Name="NothingFound" Spacing="8" Padding="0 0 24 0" JustifyContent="Start">
         <BindingExpression Target="Visible">AND({DataContext/SearchPosts/ShowEmpty}, {DataContext/SearchPeople/IsEmpty})</BindingExpression>
-        <TextBlock Text="nothing found" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+        <TextBlock Text="nothing found" TextResourceID="nothing found" FontSize="22" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
         <TextBlock Text="{Binding DataContext/Search/Missing}" FontSize="14" WordWrap="true" class="octopus-dim" IgnoreHitTest="true"/>
       </StackView>
     </StackView>

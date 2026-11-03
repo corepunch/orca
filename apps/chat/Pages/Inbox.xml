@@ -9,16 +9,16 @@
           <ItemsStack Name="ConversationListAll" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
                       ItemsSource="{Binding DataContext/AllRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
             <StackView Name="InboxErrorAll" Visible="{Binding DataContext/AllRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
-              <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+              <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true" TextResourceID="Couldn't load conversations."/>
               <Button Name="RetryInboxAll" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
-                      TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+                      TextHorizontalAlignment="Center" TextVerticalAlignment="Center" TextResourceID="Retry">Retry</Button>
             </StackView>
             <StackView Name="InboxEmptyAll" Visible="{Binding DataContext/AllRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
               <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
-                <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+                <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
               </TextBlock>
               <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
-                <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+                <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
               </TextBlock>
             </StackView>
           </ItemsStack>
@@ -41,16 +41,16 @@
         <ItemsStack Name="ConversationListUnread" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
                     ItemsSource="{Binding DataContext/UnreadRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
           <StackView Name="InboxErrorUnread" Visible="{Binding DataContext/UnreadRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
-            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true" TextResourceID="Couldn't load conversations."/>
             <Button Name="RetryInboxUnread" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
-                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center" TextResourceID="Retry">Retry</Button>
           </StackView>
           <StackView Name="InboxEmptyUnread" Visible="{Binding DataContext/UnreadRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
             <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
-              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+              <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
             </TextBlock>
             <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
-              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+              <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
             </TextBlock>
           </StackView>
         </ItemsStack>
@@ -62,16 +62,16 @@
         <ItemsStack Name="ConversationListPinned" Overflow="hidden scroll" JustifyContent="Start" ItemNamePrefix="Room"
                     ItemsSource="{Binding DataContext/PinnedRooms/Items}" ItemTemplate="Chat/Templates/RoomRow">
           <StackView Name="InboxErrorPinned" Visible="{Binding DataContext/PinnedRooms/ShowError}" Spacing="12" Padding="0 8" JustifyContent="Start">
-            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true"/>
+            <TextBlock Text="Couldn't load conversations." FontSize="22" class="chat-muted" IgnoreHitTest="true" TextResourceID="Couldn't load conversations."/>
             <Button Name="RetryInboxPinned" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link"
-                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center">Retry</Button>
+                    TextHorizontalAlignment="Center" TextVerticalAlignment="Center" TextResourceID="Retry">Retry</Button>
           </StackView>
           <StackView Name="InboxEmptyPinned" Visible="{Binding DataContext/PinnedRooms/ShowEmpty}" Spacing="8" Padding="0 8" JustifyContent="Start">
             <TextBlock FontSize="22" class="chat-muted" IgnoreHitTest="true">
-              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
+              <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "no conversations found", "you're all caught up")</BindingExpression>
             </TextBlock>
             <TextBlock FontSize="14" WordWrap="true" class="chat-dim" IgnoreHitTest="true">
-              <BindingExpression Target="Text">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
+              <BindingExpression Target="TextResourceID">IF({DataContext/Matching/Params/Search}, "Try another name or message.", "Start a new chat, or swipe to another list.")</BindingExpression>
             </TextBlock>
           </StackView>
         </ItemsStack>

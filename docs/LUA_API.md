@@ -149,3 +149,30 @@ keyboard focus.
 - `docs/lua-scripting.md`
 - `docs/app/moonscript/scenes-and-rebuild.md`
 - `docs/app/xml/triggers-actions-messages.md`
+
+## Application localization
+
+`orca.core.localization` reuses native `core.Locale` / `LocaleEntry` resources.
+Create one instance per application with
+`Localization.new { locale = options.language, fallback = "en", catalogs = { en = english, ru = russian } }`.
+`locale` is optional: `core.getPreferredLanguage()` reads the Apple preferred
+language, or the environment on other platforms. `ORCA_LANGUAGE=ru` overrides
+it for previews and tests. Regional tags such as `ru-RU` fall back to `ru`;
+unsupported languages fall back to English.
+
+Use `loc:t("key", {name = "Alice"})` for Lua presentation strings and `%{name}`
+placeholders. Plural entries contain `one`, `few`, `many` and `other` variants;
+pass `{count = n}` to select English or Russian cardinal forms. Missing keys
+remain readable keys/source text. Do not translate user posts, names or messages.
+
+Call `loc:apply(root)` after loading each XML page. This attaches a scoped native
+`Locale` dictionary, so `TextResourceID="key"` also works for templates created
+later. A static `Text` can remain as the English fallback. Bound `Text` retains
+ownership; conditional captions should bind `TextResourceID` instead. The helper
+also translates catalogued `PlaceholderText` chrome. Translate authored titles
+and headers explicitly with `loc:t`; these fields may contain user content.
+`core.getLocalizedString(object, key)` resolves the closest dictionary without
+process-wide active-language state. `loc:setLanguage(language)` changes the
+instance. Reapply explicitly live XML roots and rebuild Lua-composed views and
+provider labels when switching an already running application. Old navigation
+graphs are never revisited automatically.
