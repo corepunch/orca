@@ -4,15 +4,10 @@
     <Column Name="Path" Type="string"/>
     <Column Name="Label" Type="string"/>
     <Column Name="ClassName" Type="string"/>
-    <Column Name="Depth" Type="int"/>
-    <Column Name="Indent" Type="float"/>
     <Column Name="HasChildren" Type="bool"/>
-    <Column Name="Expanded" Type="bool"/>
     <Column Name="Hidden" Type="bool"/>
     <Column Name="Visible" Type="bool" Default="true"/>
-    <Column Name="Disclosure" Type="string"/>
     <Column Name="Icon" Type="string"/>
-    <Column Name="DisclosureIcon" Type="string"/>
   </Entity>
   <Entity Name="EditorFile" Key="Id" ObjectName="Id">
     <Column Name="Id" Type="string"/>
@@ -20,13 +15,8 @@
     <Column Name="Label" Type="string"/>
     <Column Name="Kind" Type="string"/>
     <Column Name="SourcePath" Type="string"/>
-    <Column Name="Depth" Type="int"/>
-    <Column Name="Indent" Type="float"/>
     <Column Name="HasChildren" Type="bool"/>
-    <Column Name="Expanded" Type="bool"/>
-    <Column Name="Disclosure" Type="string"/>
     <Column Name="Icon" Type="string"/>
-    <Column Name="DisclosureIcon" Type="string"/>
   </Entity>
   <Entity Name="EditorProperty" Key="Id" ObjectName="Id">
     <Column Name="Id" Type="string"/>

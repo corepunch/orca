@@ -8,27 +8,19 @@ ProjectView.focus, ProjectView.invalidate, ProjectView.checkResize = DataPanel.f
 ProjectView.selectedItem = DataPanel.selected
 
 function ProjectView:init()
-    self.collapsed = {}
     DataPanel.load(self, "Project")
     Workspace.on('document', function() self:invalidate() end)
 end
 function ProjectView:tools() return {} end
 function ProjectView:reload()
-    DataPanel.reload(self, 'get/data-project' .. DataPanel.query(self.collapsed))
+    DataPanel.reload(self, 'get/data-project' .. DataPanel.treeQuery())
     self.subtitle = Workspace.leaf(Workspace.project)
     if self.header then self.header:invalidate() end
 end
-function ProjectView:toggleItem(item)
-    if item and item.HasChildren then
-        self.collapsed[item.Path] = not self.collapsed[item.Path] or nil
-        self:reload()
-    end
-    return true
-end
-function ProjectView:openItem(item)
+function ProjectView:openItem(item, _, sender)
     item = item or self:selectedItem()
     if not item then return end
-    if item.HasChildren then self:toggleItem(item)
+    if item.HasChildren then return DataPanel.toggleTreeItem(self, item, sender)
     elseif item.SourcePath and item.SourcePath ~= '' then Workspace.open(item.SourcePath)
     else Workspace.log('info', "%s (%s)", item.Path, item.Kind) end
     return true
@@ -43,20 +35,23 @@ function ProjectView:contextMenu(item, args)
 end
 function ProjectView:documents()
     local items = {}
-    if self.source.Items then
-        for record in self.source.Items.children do
+    local function collect(source)
+        if not source then return end
+        for record in source.children do
             if record.SourcePath and record.SourcePath ~= '' then
                 local source = record.SourcePath
                 items[#items + 1] = { label = source:gsub('^[^/]*/', ''), checked = source == Workspace.document,
                     action = function() Workspace.open(source) end }
             end
+            collect(record:findChild('Children', false))
         end
     end
+    collect(self.source.Items)
     return items
 end
-function ProjectView:onKey(chord)
-    if chord == 'up' then DataPanel.move(self, -1)
-    elseif chord == 'down' then DataPanel.move(self, 1)
+function ProjectView:onKey(chord, args)
+    if chord == 'up' or chord == 'down' or chord == 'left' or chord == 'right' or chord == 'home' or chord == 'end' then
+        return args and self.list:send('Node.KeyDown', { keyCode = args.keyCode, text = args.text, modifiers = args.modifiers }) or false
     elseif chord == 'enter' then self:openItem()
     else return false end
     return true

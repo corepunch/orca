@@ -61,6 +61,19 @@ canonical_attr_name(lpcString_t raw, fixedString_t out)
 }
 
 static struct PropertyType const *
+inherited_propdesc(struct ClassDesc const *owner, uint32_t identifier)
+{
+  if (!owner) return NULL;
+  FOR_LOOP(i, owner->NumProperties)
+    if (owner->Properties[i].ShortIdentifier == identifier) return &owner->Properties[i];
+  for (uint32_t const *parent = owner->ParentClasses; *parent; parent++) {
+    struct PropertyType const *pd = inherited_propdesc(OBJ_FindClassW(*parent), identifier);
+    if (pd) return pd;
+  }
+  return NULL;
+}
+
+static struct PropertyType const *
 propdesc(struct Object *o, lpcString_t name)
 {
   struct PropertyType const *pd = OBJ_FindImplicitPropertyType(o, name);
@@ -70,6 +83,16 @@ propdesc(struct Object *o, lpcString_t name)
   pd = OBJ_FindExplicitPropertyType(o, name);
   if (pd) {
     return pd;
+  }
+  /* A derived owner may qualify an inherited property, as in
+     <TreeViewItem.Header>. Resolve only within that owner's ancestry. */
+  char const *dot = strchr(name, '.');
+  if (dot && dot - name < sizeof(fixedString_t)) {
+    fixedString_t ownerName = {0};
+    memcpy(ownerName, name, (size_t)(dot - name));
+    struct ClassDesc const *owner = OBJ_FindClass(ownerName);
+    if (owner && OBJ_GetComponent(o, owner->ClassID))
+      return inherited_propdesc(owner, fnv1a32(dot + 1));
   }
   return NULL;
 }

@@ -45,6 +45,57 @@ For checkboxes, radio groups and on/off switches, see
 [Selection controls](selection-controls.md): control choice, XML/Lua usage,
 bindings, events, keyboard behavior, CSS parts and compatibility.
 
+## Hierarchical collections
+
+`TreeView` presents only the root records in its `ItemsSource`. Each generated
+`TreeViewItem` is a `HeaderedItemsControl`: it owns a visual `Header` and a
+separate child `ItemsSource`. Its `ItemsControl` observes that direct child
+collection and retains its generated containers in an `ItemsPresenter` below
+the header. Descendants never become entries in the root generator.
+
+```xml
+<TreeView ItemsSource="{Binding ../Source/Items}"
+          ItemTemplate="App/Templates/TreeItem" ValueProperty="Path"/>
+```
+
+The item template declares its child binding and header content:
+
+```xml
+<TreeViewItem ItemsSource="{Binding DataContext/Children}">
+  <TreeViewItem.Header>
+    <TextBlock Text="{Binding DataContext/Label}"/>
+  </TreeViewItem.Header>
+</TreeViewItem>
+```
+
+Omitted `ItemTemplate` and `ItemNamePrefix` inherit from the enclosing items
+owner. Do not refer to the template's own resource path inside itself: resource
+loading is immediate, while container inheritance supplies the recursive
+template at attachment. `Header` can contain a Grid or StackView with an icon,
+label and other controls. The native `HeaderPresenter` places the `Expander`
+alongside that content; `HeaderHeight` sizes the row, and `Indent` insets the
+child presenter. Selection and hover styling belong to the header, not the
+whole subtree.
+
+`IsExpanded` defaults to false. Collapsing hides retained child containers;
+reopening preserves their identity and local state. Keep expansion in the
+container when refreshing remote data: binding it to a response field would
+replace local state on every reload. Filtered data should retain matching
+ancestor chains; `TreeView.ExpandAll` with `IsExpanded=true` reveals those
+results without asking the service for another projection.
+
+The root coordinates one `SelectedItem`/`SelectedValue` across all descendant
+containers. `ValueProperty` selects the record field used as a value, and
+`TreeView.SelectionChanged` reports changes. `TreeView.SelectItem` finds a
+value and expands its ancestor containers. Arrow keys navigate visible items;
+Left/Right collapse or expand branches, and Home/End choose the first/last
+visible item. `TreeViewItem.IsSelected` selects an individual container.
+
+This follows WPF's `TreeViewItem`/`HeaderedItemsControl` ownership and `Header`
+naming. ORCA currently authors visual header objects directly; it does not
+implement WPF's complete `ControlTemplate` or `HierarchicalDataTemplate` API.
+See [Microsoft's TreeView overview](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/controls/treeview).
+
 ## Text with a trailing footer
 
 `TextFooterPanel` puts a footer, such as a message time, at the end of its
@@ -396,7 +447,9 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 ### When to use
 
 - **Lists of items** where each item varies in layout properties (padding, color, visibility).
-- **Tree or nested structures** where depth is a property of data, not of layout.
+- **Flat projections** whose visual offset is supplied by data. For actual
+  hierarchical collections, use `TreeView` and per-item child `ItemsSource`
+  bindings as described above.
 - **Data that may change** — binding keeps the layout static and lets data drive appearance.
 
 ### Service data: ItemsStack and data scopes

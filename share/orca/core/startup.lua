@@ -70,7 +70,7 @@ function Startup.open(Application, path)
   require "orca.UIKit"
 
   local project = filesystem.init(path or DATADIR)
-  renderer.init(project.WindowWidth, project.WindowHeight, false)
+  renderer.init(project.WindowWidth, project.WindowHeight, SERVER == true)
 
   Startup.load_plugins()
 

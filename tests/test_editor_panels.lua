@@ -8,14 +8,21 @@ require("orca.core.startup").load_plugins()
 
 local Workspace = require "Editor.Scripts.Workspace"
 local hierarchyXML = [[<response status="success">
-  <EditorNode name="node-1" Id="node-1" Path="Example/Screens/Test" Label="Test" ClassName="Screen" Indent="0" HasChildren="true" Expanded="true" Disclosure="−"/>
-  <EditorNode name="node-2" Id="node-2" Path="Example/Screens/Test/Title" Label="Title" ClassName="TextBlock" Indent="16" HasChildren="false"/>
+  <EditorNode name="node-1" Id="node-1" Path="Example/Screens/Test" Label="Test" ClassName="Screen" HasChildren="true">
+    <Children>
+      <EditorNode name="node-2" Id="node-2" Path="Example/Screens/Test/Title" Label="Title" ClassName="TextBlock"/>
+      <EditorNode name="node-201" Id="node-201" Path="Example/Screens/Test/Group" Label="Group" ClassName="StackView" HasChildren="true">
+        <Children><EditorNode name="node-202" Id="node-202" Path="Example/Screens/Test/Group/Nested" Label="Nested" ClassName="TextBlock"/></Children>
+      </EditorNode>
+      <!-- additional nodes -->
+    </Children>
+  </EditorNode>
 </response>]]
 local additionalNodes = {}
 for i = 3, 200 do
-    additionalNodes[#additionalNodes + 1] = ('<EditorNode name="node-%d" Id="node-%d" Path="Example/Screens/Test/Node%d" Label="A long node label that must stay inside its column" ClassName="TextBlock" Indent="48"/>'):format(i, i, i)
+    additionalNodes[#additionalNodes + 1] = ('<EditorNode name="node-%d" Id="node-%d" Path="Example/Screens/Test/Node%d" Label="A long node label that must stay inside its column" ClassName="TextBlock"/>'):format(i, i, i)
 end
-hierarchyXML = hierarchyXML:gsub('</response>', table.concat(additionalNodes) .. '</response>')
+hierarchyXML = hierarchyXML:gsub('<!%-%- additional nodes %-%->', table.concat(additionalNodes))
 local propertyXML = [[<response status="success">
   <EditorProperty name="group" Id="group" Label="TextBlock" IsGroup="true" ReadOnly="true"/>
   <EditorProperty name="text" Id="text" PropertyName="TextBlock.Text" Label="Text" Value="Hello" Kind="String" IsText="true" IsProperty="true" IsBindable="true"/>
@@ -52,7 +59,14 @@ propertyXML = propertyXML:gsub('(<EditorProperty[^>]- Value="([^"]*)")', functio
     return tag .. ' DraftValue="' .. value .. '"'
 end)
 local projectXML = [[<response status="success">
-  <EditorFile name="file1" Id="file1" Path="Screens/Test.xml" Label="Test.xml" Kind="document" SourcePath="Example/Screens/Test" Indent="0"/>
+  <EditorFile name="folder1" Id="folder1" Path="Screens" Label="Screens" Kind="group" HasChildren="true">
+    <Children>
+      <EditorFile name="file1" Id="file1" Path="Screens/Test.xml" Label="Test.xml" Kind="document" SourcePath="Example/Screens/Test"/>
+      <EditorFile name="folder2" Id="folder2" Path="Screens/Nested" Label="Nested" Kind="group" HasChildren="true">
+        <Children><EditorFile name="file2" Id="file2" Path="Screens/Nested/Details.xml" Label="Details.xml" Kind="document" SourcePath="Example/Screens/Nested/Details"/></Children>
+      </EditorFile>
+    </Children>
+  </EditorFile>
 </response>]]
 local requests, edits, propertySource = {}, {}, nil
 Workspace.configureSource = function(source, request)
@@ -105,7 +119,19 @@ hierarchy:reload()
 project:reload()
 inspector:show(Workspace.document)
 settle()
-assert(hierarchy.view:findChild('SceneNodenode-2', true), 'Native node records generate hierarchy rows')
+assert(hierarchy.list:getClassName() == 'TreeView', 'Hierarchy uses the reusable native TreeView')
+assert(project.list:getClassName() == 'TreeView', 'Project uses the same native TreeView')
+local rootItem = assert(hierarchy.view:findChild('SceneNodenode-1', true))
+local rootRecord = assert(hierarchy.source.Items:findChild('node-1'))
+assert(rootItem.parent == hierarchy.list and hierarchy.source.Items:getFirstChild():getNext() == nil,
+    'TreeView presents only root records')
+assert(rootItem.ItemsSource == rootRecord:findChild('Children'), 'The item binds its own child collection')
+assert(not rootItem.IsExpanded, 'An item starts as one collapsed header row')
+rootItem.IsExpanded = true
+settle()
+local titleItem = assert(hierarchy.view:findChild('SceneNodenode-2', true), 'The root item generates its descendants')
+assert(titleItem.parent == rootItem:findChild('ItemsPresenter'), 'Children belong to the parent item presenter')
+assert(rootItem.Header ~= titleItem.Header, 'Each generated item owns a distinct header instance')
 for _, panel in ipairs {hierarchy, project, inspector} do
     assert(panel.view.ActualHeight <= 836 and panel.list.ActualHeight <= 836,
         panel.title .. ' remains bounded by the editor viewport')
@@ -113,12 +139,101 @@ end
 local labelRow = assert(hierarchy.view:findChild('SceneNodenode-3', true))
 local label, icon = labelRow:findChild('NodeLabel', true), labelRow:findChild('NodeIcon', true)
 assert(icon.ActualX + icon.ActualWidth <= label.ActualX, 'The class icon precedes the node label')
-assert(label.ActualX + label.ActualWidth <= labelRow.ActualWidth, 'Long node labels stay inside the row')
-hierarchy.list:send('ListBox.SelectItem', { Value = 'Example/Screens/Test/Title' })
+assert(label.ActualX + label.ActualWidth <= label.parent.ActualWidth, 'Long node labels stay inside their header')
+hierarchy.list:send('TreeView.SelectItem', { Value = 'Example/Screens/Test/Title' })
 settle()
-assert(Workspace.selection == 'Example/Screens/Test/Title', 'ListBox selection selects the runtime path')
-assert(project.view:findChild('ProjectFilefile1', true), 'Project native source creates asset rows')
-assert(#project:documents() == 1, 'Open Document menus read native records')
+assert(Workspace.selection == 'Example/Screens/Test/Title', 'TreeView descendant selection selects the runtime path')
+local function sceneRequestCount()
+    local count = 0
+    for _, request in ipairs(requests) do if request:find('data-scene/', 1, true) then count = count + 1 end end
+    return count
+end
+local requestCount = sceneRequestCount()
+local expander = assert(rootItem:findChild('Expander', true))
+expander:send('Node.LeftButtonUp')
+settle()
+assert(not rootItem.IsExpanded and sceneRequestCount() == requestCount, 'Disclosure collapses locally without requesting the scene again')
+expander:send('Node.LeftButtonUp')
+settle()
+assert(rootItem.IsExpanded and hierarchy.view:findChild('SceneNodenode-2', true) == titleItem, 'Reopening a branch retains its child container')
+rootItem.IsExpanded = false
+hierarchy:reload()
+settle()
+assert(hierarchy.view:findChild('SceneNodenode-1', true) == rootItem and not rootItem.IsExpanded,
+    'Data refresh preserves item identity and local expansion state')
+hierarchy.list:send('TreeView.SelectItem', { Value = 'Example/Screens/Test/Group/Nested' })
+settle()
+local groupItem = assert(hierarchy.view:findChild('SceneNodenode-201', true))
+assert(rootItem.IsExpanded and groupItem.IsExpanded and hierarchy.list.SelectedValue == 'Example/Screens/Test/Group/Nested',
+    'Revealing a deep selection expands its ancestor containers')
+local nestedItem = assert(hierarchy.view:findChild('SceneNodenode-202', true))
+assert(nestedItem.IsSelected and not rootItem.IsSelected and not groupItem.IsSelected,
+    'The tree has one selection across all nested item owners')
+hierarchyXML = hierarchyXML:gsub('Path="Example/Screens/Test/Group/Nested"', 'Path="Example/Screens/Test/Group/Renamed"')
+    :gsub('Label="Nested"', 'Label="Renamed"')
+hierarchy:reload()
+settle()
+assert(hierarchy.view:findChild('SceneNodenode-202', true) == nestedItem
+    and hierarchy.list.SelectedItem == nestedItem.DataContext
+    and hierarchy.list.SelectedValue == 'Example/Screens/Test/Group/Renamed',
+    'Renaming a nested record preserves its container and updates the selected value')
+assert(nestedItem.Header:findChild('NodeLabel', true).Text == 'Renamed'
+    and groupItem.Header:findChild('NodeLabel', true).Text == 'Group',
+    'Retained headers update in their own record scope without changing ancestor labels')
+requestCount = sceneRequestCount()
+hierarchy:expandAll(false)
+settle()
+assert(not rootItem.IsExpanded and not groupItem.IsExpanded and rootItem.IsSelected,
+    'Collapse All moves the hidden selection to its visible ancestor')
+hierarchy.view:post('Node.KeyDown', { keyCode = 131 })
+settle()
+assert(rootItem.IsExpanded and not groupItem.IsExpanded, 'The panel key controller delegates Right to the native tree')
+hierarchy.view:post('Node.KeyDown', { keyCode = 131 })
+settle()
+assert(titleItem.IsSelected and Workspace.selection == 'Example/Screens/Test/Title',
+    'Right from the root selects its first child through the editor selection event')
+hierarchy.view:post('Node.KeyDown', { keyCode = 129 })
+settle()
+assert(groupItem.IsSelected, 'The panel key controller follows native visible sibling order')
+groupItem.Header:post('Node.LeftDoubleClick', { x = 0, y = 0 })
+settle()
+assert(groupItem.IsExpanded and sceneRequestCount() == requestCount,
+    'Double clicking an authored branch Header expands its own children without a tree request')
+hierarchy:expandAll(true)
+settle()
+assert(rootItem.IsExpanded and groupItem.IsExpanded and sceneRequestCount() == requestCount,
+    'Expand All operates locally on nested containers without a tree request')
+local folderItem = assert(project.view:findChild('ProjectFilefolder1', true))
+assert(not folderItem.IsExpanded, 'Project folders start collapsed too')
+folderItem.IsExpanded = true
+settle()
+local documentItem = assert(project.view:findChild('ProjectFilefile1', true), 'A project folder creates its own child items')
+assert(documentItem.parent == folderItem:findChild('ItemsPresenter'), 'Project descendants belong to their folder')
+local nestedFolder = assert(project.view:findChild('ProjectFilefolder2', true))
+local nestedDocument = assert(project.view:findChild('ProjectFilefile2', true))
+assert(nestedDocument.parent == nestedFolder:findChild('ItemsPresenter') and not nestedFolder.IsExpanded,
+    'Project records preserve a second folder level independently of the root expansion')
+local documents = project:documents()
+assert(#documents == 2 and documents[2].label == 'Screens/Nested/Details',
+    'Open Document menus traverse native records even inside collapsed folders')
+local opened, oldOpen = {}, Workspace.open
+Workspace.open = function(path) opened[#opened + 1] = path end
+documents[2].action()
+nestedFolder.Header:post('Node.LeftDoubleClick', { x = 0, y = 0 })
+settle()
+assert(nestedFolder.IsExpanded, 'Project folder Header actions find their owning nested container')
+nestedDocument.Header:post('Node.LeftDoubleClick', { x = 0, y = 0 })
+settle()
+Workspace.open = oldOpen
+assert(#opened == 2 and opened[1] == 'Example/Screens/Nested/Details' and opened[2] == opened[1],
+    'Menu and authored document Header actions open the native SourcePath')
+local projectRequests = #requests
+nestedFolder.IsExpanded = false
+project:reload()
+settle()
+assert(#requests == projectRequests + 1 and project.view:findChild('ProjectFilefolder2', true) == nestedFolder
+    and not nestedFolder.IsExpanded and project.view:findChild('ProjectFilefile2', true) == nestedDocument,
+    'A project refresh retains nested folder state and document containers')
 local textRow = assert(inspector.view:findChild('Propertytext', true), 'Native property records generate inspector rows')
 local input = assert(textRow:findChild('PropertyText', true))
 assert(input.Text == 'Hello', 'Property text binds to the native record')
@@ -235,15 +350,28 @@ end
 draftField:post('Node.KeyDown', { keyCode = 27 })
 settle()
 assert(draftField.Text == original and #edits == editCount, 'Escape discards a draft without a runtime command')
+hierarchy:expandAll(false)
+settle()
 hierarchy:startSearch('Title')
 settle()
 assert(requests[#requests]:find('filter=Title', 1, true), 'Search is a runtime data-source query')
+assert(rootItem.IsExpanded and groupItem.IsExpanded,
+    'The editor reveals filtered results by expanding their native ancestors')
+local retainedItems, selectedBeforeError = hierarchy.source.Items, hierarchy.list.SelectedValue
 hierarchy.source.Content = '<response status="error">Runtime disconnected</response>'
 hierarchy.source:send('XmlDataSource.Reload')
 settle()
 local errorLabel = assert(hierarchy.view:findChild('DataSourceError', true))
 assert(errorLabel.Visible and errorLabel.Text == 'Runtime disconnected', 'Source errors bind directly into the panel')
-assert(hierarchy.view:findChild('SceneNodenode-2', true), 'A failed refresh keeps the last successful hierarchy')
+assert(hierarchy.source.Items == retainedItems and hierarchy.view:findChild('SceneNodenode-2', true) == titleItem
+    and rootItem.IsExpanded and groupItem.IsExpanded and hierarchy.list.SelectedValue == selectedBeforeError,
+    'A failed refresh keeps the last successful records, containers, expansion and selection')
+hierarchy:clearSearch()
+settle()
+assert(not errorLabel.Visible and not hierarchy.source.HasError and hierarchy.source.Items == retainedItems,
+    'Clearing search recovers the existing tree after a failed refresh')
+assert(hierarchy.view:findChild('SceneNodenode-202', true) == nestedItem and rootItem.IsExpanded,
+    'Successful recovery preserves the retained nested containers and local state')
 -- Exercise the real app configuration: Widget's class lookup can fall through
 -- a false class default, so ordinary q must reach the editor's focused input.
 local previousDataDir = DATADIR

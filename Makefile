@@ -637,6 +637,14 @@ test-macos-retina:
 	$(Q)echo "test-macos-retina requires macOS and a desktop display"
 endif
 
+.PHONY: test-macos-offscreen
+ifeq ($(UNAME_S),Darwin)
+$(eval $(call C_TEST_RULE,test-macos-offscreen,tests/test_macos_offscreen.m,$(BINDIR)/test_macos_offscreen,unite,-Wno-deprecated-declarations,$(TEST_LDFLAGS) -lplatform -framework AppKit -framework OpenGL))
+else
+test-macos-offscreen:
+	$(Q)echo "test-macos-offscreen requires macOS"
+endif
+
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 .PHONY: test-animation-clock
 $(eval $(call C_TEST_RULE,test-animation-clock,tests/test_animation_clock.c,$(BINDIR)/test_animation_clock,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
@@ -669,6 +677,8 @@ HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
 HEADLESS_LUA_TESTS += test-itemscontrol test-data-runtime test-data-lint
+HEADLESS_LUA_TESTS += test-treeview test-treeview-interaction test-treeview-updates
+HEADLESS_LUA_TESTS += test-startup-render-mode
 HEADLESS_LUA_TESTS += test-event-args
 .PHONY: test-event-args
 HEADLESS_LUA_TESTS += test-event-serialization test-controllers
@@ -803,6 +813,15 @@ $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-itemscontrol,tests/test_itemscontrol.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-treeview,tests/test_treeview.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-treeview-interaction,tests/test_treeview_interaction.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-treeview-updates,tests/test_treeview_updates.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-startup-render-mode,tests/test_startup_render_mode.lua,unite copyshare))
+.PHONY: test-treeviews
+test-treeviews: test-treeview test-treeview-interaction test-treeview-updates
+ifeq ($(SCENE_FORMAT),xml)
+test-treeviews: test-treeview-xml
+endif
 $(eval $(call LUA_TEST_RULE,test-localization,tests/test_localization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-chat-localization,tests/test_chat_localization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-octopus-localization,tests/test_octopus_localization.lua,unite))

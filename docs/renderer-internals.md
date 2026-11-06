@@ -249,6 +249,12 @@ The renderer has two distinct stages of initialization that are easy to conflate
 | **Module load** | `require "orca.renderer"` → `luaopen_orca_renderer` → `on_renderer_module_registered` | Calls `axInit()` for the platform window/display system. No OpenGL context yet. |
 | **Full init** | `renderer.init(width, height, offscreen)` | Creates the GL context, calls `R_InitBuffers()` (sets `tr.buffer`), loads built-in shaders and textures. |
 
+Application startup passes server mode to the renderer's `offscreen` argument.
+The editor runtime therefore creates a rendering surface for Preview without a
+native project window. On macOS, platform initialization keeps the application
+nonactivating; creating a visible window enables foreground activation. Loading
+the renderer or creating an offscreen surface alone cannot take focus.
+
 ### The `tr.buffer` Sentinel
 
 `tr.buffer` is set by `glGenBuffers` inside `R_InitBuffers()` during `renderer_Init()`. It is `0` until the full init completes. Use this as the canonical check for "is the renderer initialized?":

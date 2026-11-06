@@ -1,8 +1,8 @@
-<Grid Columns="16px 16px 1fr" Height="22" Spacing="4" Node.PaddingLeft="{Binding DataContext/Indent}"
-      LeftDoubleClick="Open" RightButtonUp="Context" class="editor-row project-row">
-  <Button Click="Toggle" class="disclosure">
-    <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
-  </Button>
-  <VectorView Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
-  <TextBlock Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-</Grid>
+<TreeViewItem ItemsSource="{Binding DataContext/Children}" ItemNamePrefix="ProjectFile" HeaderHeight="22" Indent="16">
+  <TreeViewItem.Header>
+    <Grid Name="FileHeader" Columns="16px 1fr" Height="22" Spacing="4" LeftDoubleClick="Open" RightButtonUp="Context" class="project-row">
+      <VectorView Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+    </Grid>
+  </TreeViewItem.Header>
+</TreeViewItem>

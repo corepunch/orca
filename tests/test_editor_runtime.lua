@@ -24,6 +24,12 @@ EnginePlugins={{Name='orca.UIKit'}}
 assert(fs.makeDirectory(fixture .. '/Styles'))
 write('Styles/base.css', 'TextBlock { color: #123456; }')
 write('Styles/alternate.css', 'TextBlock { color: #654321; }')
+local deep_path = ''
+for i = 1, 6 do
+    deep_path = deep_path .. (i == 1 and '' or '/') .. 'Level' .. i
+    assert(fs.makeDirectory(fixture .. '/' .. deep_path))
+end
+write(deep_path .. '/leaf.lua', 'return {}')
 write('Main.xml', [[<Screen Name="Main" Width="640" Height="480" ClearColor="#123456"
     SafeAreaLeft="1" SafeAreaTop="2" SafeAreaRight="3" SafeAreaBottom="4"
     StyleSheet="EditorFixture/Styles/base.css">
@@ -35,30 +41,85 @@ write('Main.xml', [[<Screen Name="Main" Width="640" Height="480" ClearColor="#12
 
 local connection = fs.ProcessConnection {}
 local source = fs.XmlDataSource { Schema='Editor/Data/Editor.Schema.xml', AutoLoad=false }
-local function find(field, value)
-    for row in source.Items.children do if row[field] == value then return row end end
+local function find(field, value, items)
+    for row in (items or source.Items).children do
+        if row[field] == value then return row end
+        local children = row:findChild('Children', false)
+        local descendant = children and find(field, value, children)
+        if descendant then return descendant end
+    end
 end
-local function count()
+local function count(items)
     local n = 0
-    for _ in source.Items.children do n = n + 1 end
+    for _ in (items or source.Items).children do n = n + 1 end
     return n
 end
 local ok, err = xpcall(function()
     Workspace.start(fixture, connection)
+    local arguments = connection.Arguments
+    assert(#arguments == 2 and arguments[1].Value == '-server=true' and arguments[2].Value == fixture,
+        'The editor starts its project runtime in offscreen server mode with literal project argv')
     Workspace.open('EditorFixture/Main')
     assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
     local root = source.Items
+    local screen_record = assert(find('Path', 'EditorFixture/Main'))
+    local screen_children = assert(screen_record:findChild('Children', false))
+    local branch = assert(find('Path', 'EditorFixture/Main/Root'))
+    local branch_children = assert(branch:findChild('Children', false))
     local title = assert(find('Path', 'EditorFixture/Main/Root/Title'))
-    assert(title.ClassName == 'TextBlock' and title.Indent == 32)
+    assert(count() == 1 and count(screen_children) == 1 and count(branch_children) == 2,
+        'The source exposes only roots; each record owns its direct child collection')
+    assert(title.ClassName == 'TextBlock' and title.parent == branch_children and branch.parent == screen_children)
+    assert(screen_record.HasChildren and branch.HasChildren and not title.HasChildren,
+        'Child membership, rather than flattened depth, describes the hierarchy')
+    local leaf_children = assert(title:findChild('Children', false))
+    assert(count(leaf_children) == 0, 'Leaf records own an empty Children collection rather than omitting the binding target')
     local id = title.Id
     Workspace.rename(title.Path, 'Renamed')
     assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
     assert(source.Items == root and find('Id', id) == title, 'Rename retains native record identity')
+    assert(find('Path', 'EditorFixture/Main') == screen_record and find('Path', 'EditorFixture/Main/Root') == branch
+        and branch:findChild('Children', false) == branch_children,
+        'Refreshing nested records preserves parents and their child collections')
     assert(title.Path == 'EditorFixture/Main/Root/Renamed' and title.Label == 'Renamed')
-    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main?collapse=EditorFixture/Main/Root'))
-    assert(not find('Id', id), 'Collapsed hierarchy excludes descendant records')
     assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main?filter=Renamed'))
-    assert(find('Id', id) and count() == 1, 'Runtime supplies filtered rows')
+    assert(find('Id', id) == title and count() == 1 and count(screen_children) == 1 and count(branch_children) == 1,
+        'Filtering retains the matching record beneath its ancestor chain')
+    assert(not find('Path', 'EditorFixture/Main/Root/Action'), 'Filtering excludes unrelated sibling branches')
+    assert(title.parent == branch_children and branch.parent == screen_children,
+        'Filtering never reparents a match into the root collection')
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
+    assert(find('Id', id) == title and count(branch_children) == 2,
+        'Clearing a filter restores siblings while retaining the matched record')
+
+    assert(title:findChild('Children', false) == leaf_children,
+        'Leaf child collections retain their identity through rename and filtering')
+    local branch_path = 'EditorFixture/Main/Root/Added'
+    assert(Workspace.create('EditorFixture/Main/Root', 'StackView', 'Added'))
+    assert(Workspace.create(branch_path, 'TextBlock', 'Leaf'))
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
+    local added = assert(find('Path', branch_path))
+    local added_children = assert(added:findChild('Children', false))
+    local added_leaf = assert(find('Path', branch_path .. '/Leaf'))
+    assert(added.parent == branch_children and added_leaf.parent == added_children
+        and added.HasChildren and not added_leaf.HasChildren and count(added_children) == 1,
+        'Creating a nested runtime branch populates only its owning child collections')
+    assert(find('Id', id) == title and find('Path', 'EditorFixture/Main') == screen_record,
+        'Structural insertion retains unrelated native records')
+    assert(Workspace.remove(branch_path))
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
+    assert(not find('Path', branch_path) and not find('Path', branch_path .. '/Leaf')
+        and count(branch_children) == 2 and find('Id', id) == title,
+        'Removing a runtime branch removes its subtree without recreating retained siblings')
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main?filter=__no_tree_match__'))
+    assert(source.Items == root and count() == 0 and not source.HasError,
+        'An unmatched scene filter is a successful empty collection')
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main?filter=TextBlock'))
+    local class_match = assert(find('ClassName', 'TextBlock'))
+    assert(count() == 1 and class_match.parent.parent.Label == 'Root'
+        and class_match.parent.parent.parent.parent.Label == 'Main',
+        'Class-name matches restore their full ancestor chain after an empty result')
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Main'))
 
     local screen_path = 'EditorFixture/Main'
     assert(Workspace.configureSource(source, 'get/data-properties/' .. screen_path))
@@ -165,7 +226,11 @@ local ok, err = xpcall(function()
     assert(Workspace.setValue(path, 'TextRun.Text', 'Saved'))
     local snapshot = assert(Workspace.snapshot(400, 300), 'Runtime renders the editor preview')
     local image = assert(io.open(snapshot, 'rb'))
-    assert(image:read(8) == '\137PNG\13\10\26\10', 'Preview is a native PNG frame')
+    local header = assert(image:read(24))
+    assert(header:sub(1, 8) == '\137PNG\13\10\26\10' and header:sub(13, 16) == 'IHDR',
+        'The offscreen runtime produces a native PNG preview frame')
+    local width, height = string.unpack('>I4I4', header, 17)
+    assert(width == 400 and height == 300, 'Offscreen Preview renders at the requested dimensions')
     image:close()
     os.remove(snapshot)
     Workspace.lastSnapshot = nil
@@ -189,9 +254,50 @@ local ok, err = xpcall(function()
     assert(restored:find('StyleSheet="EditorFixture/Styles/base.css"', 1, true), 'Resource reference undo remains valid across saves')
 
     assert(Workspace.configureSource(source, 'get/data-project'), source.ErrorMessage)
-    assert(find('SourcePath', 'EditorFixture/Main'), 'Project source exposes openable documents')
+    local project_record = source.Items:getFirstChild()
+    local document = assert(find('SourcePath', 'EditorFixture/Main'), 'Project source exposes openable documents')
+    assert(count() == 1 and document.parent == project_record:findChild('Children', false),
+        'Project files are owned by their project root rather than flattened beside it')
+    local deep_file = assert(find('Path', 'EditorFixture/' .. deep_path .. '/leaf.lua'),
+        'Project hierarchy includes folders deeper than the old three-level cap')
+    local ancestor = deep_file
+    for i = 6, 1, -1 do
+        ancestor = ancestor.parent.parent
+        assert(ancestor.Label == 'Level' .. i, 'Each deep folder owns its direct descendants')
+    end
+    assert(ancestor.parent.parent == project_record, 'Deep file ancestry reaches the project root')
+    local project_items = source.Items
+    local deep_folder = deep_file.parent.parent
+    local deep_children = deep_file.parent
+    assert(deep_file:findChild('Children', false) and count(deep_file:findChild('Children', false)) == 0,
+        'Project leaf records also provide an empty child collection')
+    write(deep_path .. '/данные & test.lua', 'return {}')
+    assert(Workspace.configureSource(source, 'get/data-project'))
+    local added_file = assert(find('Path', 'EditorFixture/' .. deep_path .. '/данные & test.lua'))
+    assert(added_file.Label == 'данные & test.lua' and added_file.parent == deep_children,
+        'Native XML transport preserves Unicode and escaped characters in nested file paths')
+    assert(find('Path', deep_folder.Path) == deep_folder and find('Path', deep_file.Path) == deep_file
+        and source.Items:getFirstChild() == project_record,
+        'Adding a project file retains its folder, existing siblings and project root')
+    os.remove(fixture .. '/' .. deep_path .. '/данные & test.lua')
+    assert(Workspace.configureSource(source, 'get/data-project'))
+    assert(not find('Path', 'EditorFixture/' .. deep_path .. '/данные & test.lua')
+        and deep_folder:findChild('Children', false) == deep_children and find('Path', deep_file.Path) == deep_file,
+        'Removing a project file updates only its direct native collection')
+    assert(Workspace.configureSource(source, 'get/data-project?filter=base.css'))
+    local stylesheet = assert(find('Label', 'base.css'))
+    assert(count() == 1 and stylesheet.parent.parent.Label == 'Styles'
+        and stylesheet.parent.parent.parent.parent == source.Items:getFirstChild(),
+        'Project filtering preserves the owning folder and project ancestor')
+    assert(Workspace.configureSource(source, 'get/data-project?filter=__no_tree_match__'))
+    assert(source.Items == project_items and count() == 0 and not source.HasError,
+        'An unmatched project filter yields a successful empty root collection')
+    assert(Workspace.configureSource(source, 'get/data-project'))
+    local last_project = source.Items:getFirstChild()
     assert(not Workspace.configureSource(source, 'get/data-scene/does-not-exist'))
     assert(source.HasError and source.ErrorMessage ~= '')
+    assert(source.Items == project_items and source.Items:getFirstChild() == last_project,
+        'A runtime error preserves the last successful hierarchical source')
     assert(Workspace.configureSource(source, 'get/data-project') and not source.HasError)
     core.flushQueue()
 end, debug.traceback)
@@ -201,6 +307,12 @@ os.remove(fixture .. '/package.lua')
 os.remove(fixture .. '/Styles/base.css')
 os.remove(fixture .. '/Styles/alternate.css')
 os.remove(fixture .. '/Styles')
+os.remove(fixture .. '/' .. deep_path .. '/leaf.lua')
+os.remove(fixture .. '/' .. deep_path .. '/данные & test.lua')
+for _ = 1, 6 do
+    os.remove(fixture .. '/' .. deep_path)
+    deep_path = deep_path:match('^(.*)/[^/]+$') or ''
+end
 os.remove(fixture)
 assert(ok, err)
 print('Editor runtime data-source and edit/save contract passed.')

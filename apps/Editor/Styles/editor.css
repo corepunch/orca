@@ -38,12 +38,17 @@
 .editor-input, .search-input { padding: 3 8; }
 .search-input { border-radius: 11; padding: 3 10; }
 
-/* Tree rows (hierarchy and project) */
-.editor-row { background-color: #00000000; }
-.editor-row:hover { background-color: var(--editor-hover); }
-.editor-row:dark:hover { background-color: var(--editor-hover-dark); }
-.editor-row:selected { background-color: var(--editor-selected); }
-.editor-row:dark:selected { background-color: var(--editor-selected-dark); }
+/* A TreeViewItem owns its Header row and nested ItemsPresenter. Only the
+   Header chrome highlights; descendants keep their own independent state. */
+.editor-tree .treeview-header { background-color: #00000000; }
+.editor-tree .treeview-header:hover { background-color: var(--editor-hover); }
+.editor-tree:dark .treeview-header:hover { background-color: var(--editor-hover-dark); }
+.editor-tree .treeview-header:selected { background-color: var(--editor-selected); }
+.editor-tree:dark .treeview-header:selected { background-color: var(--editor-selected-dark); }
+.editor-tree .treeview-expander { color: var(--ui-control-muted); }
+.editor-tree:dark .treeview-expander { color: var(--ui-control-muted-dark); }
+.editor-tree .treeview-expander:hover { background-color: var(--editor-hover); }
+.editor-tree:dark .treeview-expander:hover { background-color: var(--editor-hover-dark); }
 .row-label { color: var(--ui-control-foreground); text-vertical-align: center; }
 .row-label:dark { color: var(--ui-control-foreground-dark); }
 .row-icon { width: 14; height: 14; margin: auto; color: var(--editor-link); }

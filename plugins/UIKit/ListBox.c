@@ -11,7 +11,9 @@ struct ItemsControlEntry {
 static void
 ItemsControl_ReleaseEntry(struct Object *owner, struct ItemsControlEntry *entry)
 {
-  if (OBJ_GetParent(entry->view) == owner) OBJ_RemoveFromParent(entry->view);
+  struct ItemsControl *ic = GetItemsControl(owner);
+  struct Object *host = ic && ic->_itemsHost ? ic->_itemsHost : owner;
+  if (OBJ_GetParent(entry->view) == host) OBJ_RemoveFromParent(entry->view);
   OBJ_ReleaseRef(entry->view);
   OBJ_ReleaseRef(entry->data);
   free(entry);
@@ -30,6 +32,7 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
 {
   if (!ic) return;
   struct Object *hObject = CMP_GetObject(ic);
+  struct Object *host = ic->_itemsHost ? ic->_itemsHost : hObject;
   ic->_started = TRUE;
   if (ic->_refreshing) { ic->_refreshPending = TRUE; return; }
   ic->_refreshing = TRUE;
@@ -66,7 +69,7 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
       break;
     }
     size_t index = 0;
-    bool_t selectionPresent = !ic->SelectedItem;
+    bool_t selectionPresent = !ic->SelectedItem || ic->_selectionManaged;
     /* A template's Start handler may mutate the source while rows are created. */
     if (source) FOR_EACH_OBJECT(data, source) {
       if (!GetDataObject(data)) continue;
@@ -83,7 +86,9 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
       struct ItemsControlEntry **slot = ItemsControl_FindSlot(table, capacity, data);
       struct ItemsControlEntry *entry = *slot;
       if (!entry) {
-        struct Object *view = ic->ItemTemplate
+        struct Object *view = (struct Object *)_SendMessage(hObject, ItemsControl, CreateContainer,
+          .Item = data, .Template = ic->ItemTemplate);
+        if (!view) view = ic->ItemTemplate
           ? OBJ_Instantiate(CMP_GetObject(ic->ItemTemplate)) : OBJ_Create(ID_TextBlock);
         if (!view) { OBJ_ReleaseRef(data); continue; }
         entry = calloc(1, sizeof(*entry));
@@ -93,7 +98,8 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
         entry->next = ic->_entries;
         ic->_entries = entry;
         *slot = entry;
-        if (!ic->ItemTemplate) PROP_SetStringValue(OBJ_FindLongProperty(view, ID_TextRun_Text), "Item");
+        if (!ic->ItemTemplate && GetTextRun(view))
+          PROP_SetStringValue(OBJ_FindLongProperty(view, ID_TextRun_Text), "Item");
         PROP_SetValue(OBJ_FindLongProperty(view, ID_Node_DataContext), &data);
       } else {
         OBJ_ReleaseRef(data);
@@ -105,7 +111,7 @@ ItemsControl_Synchronize(struct ItemsControl *ic)
         snprintf(name, sizeof(name), "%s%s", ic->ItemNamePrefix, OBJ_GetName(data));
         if (strcmp(OBJ_GetName(entry->view), name)) OBJ_SetName(entry->view, name);
       }
-      if (OBJ_GetParent(entry->view) != hObject) OBJ_AddChild(hObject, entry->view);
+      if (OBJ_GetParent(entry->view) != host) OBJ_AddChild(host, entry->view);
     }
     struct ItemsControlEntry **link = &ic->_entries;
     while (*link) {

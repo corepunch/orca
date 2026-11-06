@@ -895,7 +895,19 @@ static lpcString_t asset_kind(lpcString_t name) {
   return "file";
 }
 
-static void list_assets(xmlNodePtr parent, lpcString_t dir, lpcString_t logical, int depth) {
+struct asset_ancestor {
+  dev_t device;
+  ino_t inode;
+  struct asset_ancestor const *parent;
+};
+
+static void list_assets(xmlNodePtr parent, lpcString_t dir, lpcString_t logical,
+                        struct asset_ancestor const *ancestors) {
+  struct stat directory;
+  if (stat(dir, &directory)) return;
+  for (struct asset_ancestor const *ancestor = ancestors; ancestor; ancestor = ancestor->parent)
+    if (ancestor->device == directory.st_dev && ancestor->inode == directory.st_ino) return;
+  struct asset_ancestor here = {directory.st_dev, directory.st_ino, ancestors};
   char **names = NULL;
   int n = list_dir(dir, &names);
   FOR_LOOP(i, n) {
@@ -906,7 +918,7 @@ static void list_assets(xmlNodePtr parent, lpcString_t dir, lpcString_t logical,
     if (S_ISDIR(st.st_mode)) {
       snprintf(path, sizeof(path), "%s/%s", logical, names[i]);
       xmlNodePtr folder = _xmlNewChild(parent, "Folder", "name", names[i], "data-type", "group");
-      if (depth < 3) list_assets(folder, fsPath, path, depth + 1);
+      list_assets(folder, fsPath, path, &here);
     } else {
       lpcString_t kind = asset_kind(names[i]);
       xmlNodePtr item = _xmlNewChild(parent, "Asset", "name", names[i], "data-type", kind,
@@ -929,7 +941,7 @@ SV_CMD(GET, project_overview) {
   struct Object *proj = OBJ_GetFirstChild(FS_GetWorkspace());
   if (!proj) return "No project opened";
   xmlNodePtr root = _xmlNewChild(response, "Project", "name", OBJ_GetName(proj), "data-type", "group");
-  list_assets(root, ".", OBJ_GetName(proj), 0);
+  list_assets(root, ".", OBJ_GetName(proj), NULL);
   return NULL;
 }
 
@@ -990,49 +1002,46 @@ static lpcString_t object_icon(struct Object *object) {
   return m.best < (int)(sizeof(class_icons) / sizeof(*class_icons)) ? class_icons[m.best][1] : "object";
 }
 
-static lpcString_t file_icon(lpcString_t kind, bool_t expanded) {
-  if (!kind || !strcmp(kind, "group")) return expanded ? "folder-open" : "folder";
+static lpcString_t file_icon(lpcString_t kind) {
+  if (!kind || !strcmp(kind, "group")) return "folder";
   if (!strcmp(kind, "document") || !strcmp(kind, "image") || !strcmp(kind, "style") ||
       !strcmp(kind, "script") || !strcmp(kind, "shader")) return kind;
   return "file";
 }
 
 static void data_scene(struct Object *object, xmlNodePtr response, lpcString_t path,
-                       int depth, lpcString_t collapse, lpcString_t filter, lpcString_t icons) {
-  bool_t children = OBJ_GetFirstChild(object) != NULL;
-  bool_t expanded = !data_collapsed(collapse, path);
-  if (data_matches(OBJ_GetName(object), filter) || data_matches(OBJ_GetClassName(object), filter)) {
-    char id[32];
-    snprintf(id, sizeof(id), "node-%u", OBJ_GetUniqueID(object));
-    xmlNodePtr row = _xmlNewChild(response, "EditorNode", "name", id, "Id", id,
-                                  "Path", path, "Label", OBJ_GetName(object),
-                                  "ClassName", OBJ_GetClassName(object));
-    xmlSetIntProp(row, XMLSTR("Depth"), depth);
-    xmlSetIntProp(row, XMLSTR("Indent"), filter && *filter ? 0 : depth * 16);
-    data_flag(row, "HasChildren", children);
-    data_flag(row, "Expanded", expanded);
-    data_flag(row, "Hidden", OBJ_IsHidden(object) || (GetNode(object) && GetNode(object)->QuickHide));
-    data_flag(row, "Visible", TRUE);
-    _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
-    data_icon(row, "Icon", icons, object_icon(object));
-    if (children) data_icon(row, "DisclosureIcon", icons, expanded ? "chevron-down" : "chevron-right");
-  }
-  if (!expanded && (!filter || !*filter)) return;
+                       lpcString_t filter, lpcString_t icons) {
+  char id[32];
+  snprintf(id, sizeof(id), "node-%u", OBJ_GetUniqueID(object));
+  xmlNodePtr row = _xmlNewChild(response, "EditorNode", "name", id, "Id", id,
+                                "Path", path, "Label", OBJ_GetName(object),
+                                "ClassName", OBJ_GetClassName(object));
+  xmlNodePtr children = xmlNewChild(row, NULL, XMLSTR("Children"), NULL);
   FOR_EACH_OBJECT(child, object) {
     path_t child_path = {0};
     snprintf(child_path, sizeof(child_path), "%s/%s", path, OBJ_GetName(child));
-    data_scene(child, response, child_path, depth + 1, collapse, filter, icons);
+    data_scene(child, children, child_path, filter, icons);
   }
+  if (!children->children && !data_matches(OBJ_GetName(object), filter) &&
+      !data_matches(OBJ_GetClassName(object), filter)) {
+    xmlUnlinkNode(row);
+    xmlFreeNode(row);
+    return;
+  }
+  data_flag(row, "HasChildren", children->children != NULL);
+  data_flag(row, "Hidden", OBJ_IsHidden(object) || (GetNode(object) && GetNode(object)->QuickHide));
+  data_flag(row, "Visible", TRUE);
+  data_icon(row, "Icon", icons, object_icon(object));
 }
 
 static SV_CMD(GET, data_scene) {
   REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
-  data_scene(object, response, endpoint, 0, SV_ARG("collapse"), SV_ARG("filter"), SV_ARG("icons"));
+  data_scene(object, response, endpoint, SV_ARG("filter"), SV_ARG("icons"));
   return NULL;
 }
 
 static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t parent_path,
-                       int depth, lpcString_t collapse, lpcString_t filter, lpcString_t icons) {
+                       lpcString_t filter, lpcString_t icons) {
   xmlForEach(node, parent) {
     if (node->type != XML_ELEMENT_NODE) continue;
     xmlChar *label = xmlGetProp(node, XMLSTR("name"));
@@ -1040,22 +1049,19 @@ static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t paren
     xmlChar *source = xmlGetProp(node, XMLSTR("data-source"));
     path_t path = {0};
     snprintf(path, sizeof(path), "%s%s%s", parent_path, *parent_path ? "/" : "", label ? (char *)label : "");
-    bool_t children = node->children != NULL;
-    bool_t expanded = !data_collapsed(collapse, path);
-    if (data_matches((char *)label, filter)) {
-      xmlNodePtr row = _xmlNewChild(response, "EditorFile", "name", path, "Id", path,
-                                    "Path", path, "Label", (char *)label,
-                                    "Kind", kind ? (char *)kind : "file",
-                                    "SourcePath", source ? (char *)source : "");
-      xmlSetIntProp(row, XMLSTR("Depth"), depth);
-      xmlSetIntProp(row, XMLSTR("Indent"), filter && *filter ? 0 : depth * 16);
-      data_flag(row, "HasChildren", children);
-      data_flag(row, "Expanded", expanded);
-      _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
-      data_icon(row, "Icon", icons, file_icon(kind ? (char *)kind : NULL, expanded));
-      if (children) data_icon(row, "DisclosureIcon", icons, expanded ? "chevron-down" : "chevron-right");
+    xmlNodePtr row = _xmlNewChild(response, "EditorFile", "name", path, "Id", path,
+                                  "Path", path, "Label", (char *)label,
+                                  "Kind", kind ? (char *)kind : "file",
+                                  "SourcePath", source ? (char *)source : "");
+    xmlNodePtr children = xmlNewChild(row, NULL, XMLSTR("Children"), NULL);
+    data_files(node, children, path, filter, icons);
+    if (!children->children && !data_matches((char *)label, filter)) {
+      xmlUnlinkNode(row);
+      xmlFreeNode(row);
+    } else {
+      data_flag(row, "HasChildren", children->children != NULL);
+      data_icon(row, "Icon", icons, file_icon(kind ? (char *)kind : NULL));
     }
-    if (expanded || (filter && *filter)) data_files(node, response, path, depth + 1, collapse, filter, icons);
     xmlFree(label); xmlFree(kind); xmlFree(source);
   }
 }
@@ -1063,7 +1069,7 @@ static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t paren
 static SV_CMD(GET, data_project) {
   xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("project"));
   lpcString_t error = GET_project_overview(L, tree, endpoint, rargs, nargs);
-  if (!error) data_files(tree, response, "", 0, SV_ARG("collapse"), SV_ARG("filter"), SV_ARG("icons"));
+  if (!error) data_files(tree, response, "", SV_ARG("filter"), SV_ARG("icons"));
   xmlFreeNode(tree);
   return error;
 }
