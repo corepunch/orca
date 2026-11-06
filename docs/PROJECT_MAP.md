@@ -6,7 +6,7 @@ Use this file to find the right subsystem before reading source.
 
 - `source/core/` — object runtime, components, property system, Lua bridge entry points
 - `source/data/` — schema parser, entity class registration for datasource records
-- `source/filesystem/` — package loading, XML/Lisp object loading, asset lookup
+- `source/filesystem/` — package loading, XML object loading, asset lookup
 - `source/parsers/` — parser helpers and XML support
 - `source/renderer/` — renderer, textures, meshes, shaders
 - `source/geometry/` — vectors, matrices, math types

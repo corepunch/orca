@@ -15,9 +15,9 @@ Read `docs/TESTING.md` before editing tests.
 2. Read the target test and at most one neighboring test with the same fixture
    style.
 3. Read `tests/test_local.h` only when using its shared macros.
-   Put a case that needs one scene format's loader or fixtures in
-   `tests/lisp/` or `tests/xml/`; see `docs/TESTING.md`. Apps other than
-   Example are XML-only: tests loading their pages join `XML_APP_LUA_TESTS`.
+   Put XML loader and fixture cases in `tests/xml/`; see `docs/TESTING.md`.
+   Add tests loading application pages to `APP_LUA_TESTS` in the Makefile.
+   All builds run the XML and application tests.
 4. Add the smallest arrange/act/assert case that proves the behavior and its
    important failure path.
 5. Use public aggregate headers in C tests. Declare a narrow local `extern`
@@ -44,7 +44,7 @@ Read `docs/TESTING.md` before editing tests.
   for cache, corrupt-image and binary/build provenance checks.
 
 Do not call `removeFromParent()` on roots returned by
-`loadObjectFromLispString()` or `loadObjectFromXmlString()`. Do not weaken
+`loadObjectFromXmlString()`. Do not weaken
 unrelated assertions to make a new test pass.
 
 ## Command selection

@@ -1,54 +1,45 @@
--- Run unchanged in the default XML build and with -DORCA_USE_LISP.
+-- XML scenes through generic loaders, roundtrips, schemas, apps and malformed input.
 local test = require 'orca.test'
 local core = require 'orca.core'
 local filesystem = require 'orca.filesystem'
 local system = require 'orca.system'
 require 'orca.UIKit'
 
-local has_lisp = filesystem.loadObjectFromLispString ~= nil
-local has_xml = filesystem.loadObjectFromXmlString ~= nil
-test.expect(has_lisp ~= has_xml, 'exactly one scene string loader is exported')
-test.expect_eq(filesystem.loadObjectFromLisp ~= nil, has_lisp, 'Lisp file and string API selection agrees')
-test.expect_eq(filesystem.loadObjectFromXml ~= nil, has_xml, 'XML file and string API selection agrees')
-
-test.expect(type(filesystem.loadObjectFromDisk) == 'function', 'format-independent disk loader is exported')
-test.expect(type(filesystem.loadObjectFromString) == 'function', 'format-independent string loader is exported')
-test.expect(type(filesystem.serializeObjectToString) == 'function', 'format-independent serializer is exported')
-test.expect(type(filesystem.getSceneExtension) == 'function', 'selected extension query is exported')
-test.expect(type(filesystem.getSceneTemplate) == 'function', 'selected template query is exported')
+test.expect(type(filesystem.loadObjectFromXmlString) == 'function', 'XML string loader is exported')
+test.expect(type(filesystem.loadObjectFromXml) == 'function', 'XML file loader is exported')
+test.expect(type(filesystem.loadObjectFromDisk) == 'function', 'generic disk loader is exported')
+test.expect(type(filesystem.loadObjectFromString) == 'function', 'generic string loader is exported')
+test.expect(type(filesystem.serializeObjectToString) == 'function', 'generic serializer is exported')
+test.expect(type(filesystem.getSceneExtension) == 'function', 'XML extension query is exported')
+test.expect(type(filesystem.getSceneTemplate) == 'function', 'XML template query is exported')
 local scene_extension = filesystem.getSceneExtension()
-test.expect_eq(scene_extension, has_lisp and '.lisp' or '.xml', 'extension query agrees with the active compatibility API')
-local extension = scene_extension:sub(2)
-local disabled = has_lisp and 'xml' or 'lisp'
-local expected = os.getenv('ORCA_EXPECT_SCENE_FORMAT')
-if expected then
-  test.expect_eq(extension, expected, 'loaded binary uses the requested scene format')
-end
+test.expect_eq(scene_extension, '.xml', 'scene files use the XML extension')
+local extension = 'xml'
 local load_string = filesystem.loadObjectFromString
 local load_file = filesystem.loadObjectFromDisk
 local serialize = filesystem.serializeObjectToString
 local fixture = 'tests/fixtures/scene_format/Scene'
 local source = filesystem.readTextFile(fixture .. '.' .. extension)
-test.expect(source ~= nil and source ~= '', 'selected fixture exists')
-test.expect(serialize ~= nil, 'selected serializer is available')
+test.expect(source ~= nil and source ~= '', 'XML fixture exists')
+test.expect(serialize ~= nil, 'XML serializer is available')
 
 local scaffold = filesystem.getSceneTemplate()
-test.expect(type(scaffold) == 'string' and scaffold ~= '', 'selected scene template is available')
+test.expect(type(scaffold) == 'string' and scaffold ~= '', 'XML scene template is available')
 local starter = load_string(string.format(scaffold, 'SceneFormat'))
-test.expect(starter ~= nil, 'generic string loader parses the selected scene template')
-test.expect_eq(starter.Name, 'Main', 'selected template constructs its screen')
+test.expect(starter ~= nil, 'generic string loader parses the XML template')
+test.expect_eq(starter.Name, 'Main', 'XML template constructs its screen')
 local greeting
 for child in starter.children do
   if child:getClassName() == 'TextBlock' then greeting = child.Text end
 end
-test.expect_eq(greeting, 'Hello, SceneFormat!', 'selected template preserves the application name')
+test.expect_eq(greeting, 'Hello, SceneFormat!', 'XML template preserves the application name')
 starter = nil
 
 -- DataContext paths address schema fields rather than Object's metadata names.
 local model = filesystem.loadXmlDataStringWithSchema(
   '<SceneFormatDraft Title="draft"/>',
   '<Schema><Entity Name="SceneFormatDraft"><Column Name="Title" Type="string"/></Entity></Schema>')
-test.expect_eq(model.Title, 'draft', 'XML data schemas remain available in either scene build')
+test.expect_eq(model.Title, 'draft', 'XML data schemas remain available')
 model = nil
 
 local function evaluate(root)
@@ -67,7 +58,7 @@ local function pump(root)
 end
 
 local function check_scene(root)
-  test.expect(root ~= nil, 'selected scene loads')
+  test.expect(root ~= nil, 'XML scene loads')
   test.expect_eq(root.Name, 'FormatScene', 'scene root is constructed')
   test.expect(root.DataContext ~= nil, 'node-valued property is assigned')
   test.expect_eq(root.DataContext.Name, 'Context', 'nested object keeps its fields')
@@ -94,23 +85,18 @@ local function check_scene(root)
   test.expect(not target.Visible, 'message action executes against its relative target')
 end
 
--- The format-independent APIs select one reader without callers branching on syntax.
+-- Generic and XML-specific entry points construct the same authored scene.
 check_scene(load_string(source))
 check_scene(load_file(fixture .. '.' .. extension))
 check_scene(load_file(fixture))
 check_scene(filesystem.loadObject(fixture)) -- Existing generic API remains compatible.
-test.expect(load_file(fixture .. '.' .. disabled) == nil,
-  'generic disk loader rejects an existing file of the disabled scene format')
-local disabled_source = filesystem.readTextFile(fixture .. '.' .. disabled)
-test.expect(load_string(disabled_source) == nil,
-  'generic string loader rejects the disabled syntax rather than auto-selecting another reader')
-print('PASS: exclusive ' .. extension .. ' API and file registration, bindings, objects and actions')
+print('PASS: XML APIs, file registration, bindings, objects and actions')
 
 local function roundtrip()
   local original = load_string(source)
   local encoded = serialize(original)
-  test.expect(type(encoded) == 'string' and #encoded > 0, 'selected serializer returns a scene')
-  test.expect(encoded:match(has_lisp and '^%s*%(' or '^%s*<') ~= nil, 'serializer uses the selected syntax')
+  test.expect(type(encoded) == 'string' and #encoded > 0, 'XML serializer returns a scene')
+  test.expect(encoded:match('^%s*<') ~= nil, 'serializer emits XML syntax')
   local restored = load_string(encoded)
   check_scene(restored)
   local instance = original:instantiate()
@@ -134,11 +120,11 @@ end
 test.expect_eq(core.objectCount(), baseline, 'loaded, roundtripped and instantiated trees release their owned objects')
 print('PASS: ' .. extension .. ' serialization, instantiation and lifetime')
 
--- XML remains a data format even when its scene reader is not compiled in.
+-- XML data parsing remains distinct from constructing scene classes.
 local data = filesystem.loadXmlDataStringWithSchema('<Node2D Width="12"/>', '')
 test.expect_eq(data:getClassName(), 'DataObject', 'XML data parser cannot construct scene classes')
 local legacy_data_loader = filesystem.loadObjectFromXmlStringWithSchema
-test.expect(type(legacy_data_loader) == 'function', 'legacy XML data API remains available in both builds')
+test.expect(type(legacy_data_loader) == 'function', 'legacy XML data API remains available')
 local legacy_data = legacy_data_loader('<Node2D Width="12"/>', '')
 test.expect_eq(legacy_data:getClassName(), 'DataObject', 'legacy XML data API cannot construct scene classes')
 local legacy_record = legacy_data_loader('<SceneFormatLegacyRow Title="kept"/>',
@@ -156,16 +142,16 @@ for _ = 1, 5 do
 end
 test.expect_eq(core.objectCount(), data_baseline, 'legacy XML data loader transfers its owning reference to Lua')
 
--- The package uses one extensionless startup path in both builds. Exercise the
+-- The package uses an extensionless XML startup path. Exercise the
 -- real screens, CSS, data-backed templates and popup rather than a copied UI.
 local function check_example_startup()
   local project = filesystem.init('apps/Example')
-  test.expect(project ~= nil, 'Example package initializes in the selected build')
-  test.expect_eq(project.StartupScreen, 'Example/Screens/Application', 'Example startup is independent of scene format')
+  test.expect(project ~= nil, 'Example package initializes')
+  test.expect_eq(project.StartupScreen, 'Example/Screens/Application', 'Example startup uses an extensionless path')
   local root = load_file(project.StartupScreen)
-  test.expect(root ~= nil, 'generic startup loader opens the selected Example scene')
+  test.expect(root ~= nil, 'generic startup loader opens the Example XML scene')
   test.expect(root:getSourceFile():match('%.' .. extension .. '$') ~= nil,
-    'extensionless Example startup selects the compiled scene format')
+    'extensionless Example startup loads XML')
   test.expect(root.StyleSheet ~= nil, 'Example stylesheet loads')
   test.expect_near(root.ClearColor.R, 0x0B / 255, 0.001, 'Example surface theme resolves red')
   test.expect_near(root.ClearColor.B, 0x12 / 255, 0.001, 'Example surface theme resolves blue')
@@ -197,7 +183,7 @@ local function check_example_startup()
   test.expect_eq(signal_title.Text, signal.Title, 'Example signal template binds the shared data')
   test.expect_eq(metric_value.Text, metric.Title, 'Example metric template binds the shared data')
   local original_title = signal.Title
-  signal.Title = 'Updated by scene-format test'
+  signal.Title = 'Updated by scene-loading test'
   evaluate(root)
   test.expect_eq(signal_title.Text, signal.Title, 'Example template reacts to datasource edits')
   signal.Title = original_title
@@ -209,7 +195,7 @@ local function check_example_startup()
   root:findChild('CtaButtonPrimary', true):send('Node.LeftButtonUp')
   pump(root)
   local popup = root:getNext()
-  test.expect(popup ~= nil, 'Example CTA loads its popup in the selected format')
+  test.expect(popup ~= nil, 'Example CTA loads its XML popup')
   test.expect_eq(popup:getClassName(), 'Popup', 'Example modal uses the Popup class')
   local close = popup:findChild('GetStartedPopupClose', true)
   test.expect(close ~= nil, 'Example popup contains its close action')
@@ -228,7 +214,7 @@ local function check_mvvm_form()
   test.expect(project ~= nil, 'MvvmForms package initializes')
   local form = load_file('MvvmForms/Views/Form')
   test.expect(form ~= nil, 'generic loader opens the actual MvvmForms form')
-  test.expect(form:getSourceFile():match('%.' .. extension .. '$') ~= nil, 'MvvmForms selects the compiled format')
+  test.expect(form:getSourceFile():match('%.' .. extension .. '$') ~= nil, 'MvvmForms loads XML')
   evaluate(form)
   local name = form:findChild('DisplayName', true)
   local preview = form:findChild('Preview', true)
@@ -245,58 +231,55 @@ local function check_mvvm_form()
   print('PASS: MvvmForms ' .. extension .. ' loading and two-way bindings')
 end
 
--- Applications other than Example are XML-only.
-if has_xml then check_mvvm_form() end
+check_mvvm_form()
 
-if has_xml then
-  for _, invalid in ipairs {
-    '<Node2D><Bogus/></Node2D>',
-    '<Node2D Width="{Binding }"/>',
-    '<Node2D LeftButtonUp="{HideAction Path=}"/>',
-  } do
-    test.expect(load_string(invalid) == nil, 'malformed XML scene must not return a partial tree: ' .. invalid)
-  end
-
-  -- Local fixtures prove external entities and DTD defaults stay unresolved.
-  -- No system files or network endpoints are involved in this check.
-  local directory = (os.getenv('PWD') or '.') .. '/tests/fixtures/scene_format/'
-  local sentinel = 'ORCA_SCENE_EXTERNAL_SENTINEL'
-  local external = directory .. 'External.txt'
-  local dtd = directory .. 'External.dtd'
-  local handle = assert(io.open(external, 'r'))
-  test.expect(handle:read('*a'):find(sentinel, 1, true) ~= nil, 'external entity fixture is present')
-  handle:close()
-  for _, document in ipairs {
-    '<!DOCTYPE TextBlock [<!ENTITY payload SYSTEM "' .. external .. '">]><TextBlock>&payload;</TextBlock>',
-    '<!DOCTYPE TextBlock SYSTEM "' .. dtd .. '"><TextBlock/>',
-    '<!DOCTYPE TextBlock [<!ENTITY % ext SYSTEM "' .. dtd .. '">%ext;]><TextBlock/>',
-    '<!DOCTYPE TextBlock [<!ENTITY payload SYSTEM "' .. external .. '">]><TextBlock Text="&payload;"/>',
-  } do
-    local node = load_string(document)
-    test.expect(node == nil or node.Text == nil or node.Text:find(sentinel, 1, true) == nil,
-      'XML scene reader must not resolve external entities or DTD default attributes')
-  end
-  local escaped = load_string('<TextBlock Text="&lt;hello&gt; &amp; &quot;world&quot;"/>')
-  test.expect_eq(escaped.Text, '<hello> & "world"', 'built-in XML entities still decode')
-  print('PASS: XML malformed-input rejection and external entity isolation')
-
-  -- Exercise an existing app asset unchanged, including its {Binding ...} markup.
-  local project = filesystem.init('apps/Adventure')
-  test.expect(project ~= nil, 'legacy Adventure package initializes')
-  local template = load_file('Adventure/Prefabs/TabItem.xml')
-  test.expect(template ~= nil, 'generic XML loader reads the existing Adventure prefab')
-  local host = load_string('<Node2D DataContextSource="Adventure/DataSources/Tabs:TabAdventures"/>')
-  test.expect(host.DataContext ~= nil, 'legacy datasource reference resolves')
-  template.DataContext = host.DataContext
-  evaluate(template)
-  test.expect_eq(template:findChild('TabItemLabel').Text, 'Adventures', 'old app binding shorthand still evaluates')
-  host.DataContext.Label = 'Renamed'
-  evaluate(template)
-  test.expect_eq(template:findChild('TabItemLabel').Text, 'Renamed', 'old app binding remains reactive')
-  template:clear()
-  host:clear()
-  filesystem.unloadProject(project)
-  print('PASS: unchanged Adventure XML prefab and legacy binding syntax')
+for _, invalid in ipairs {
+  '<Node2D><Bogus/></Node2D>',
+  '<Node2D Width="{Binding }"/>',
+  '<Node2D LeftButtonUp="{HideAction Path=}"/>',
+} do
+  test.expect(load_string(invalid) == nil, 'malformed XML scene must not return a partial tree: ' .. invalid)
 end
 
-print('All ' .. extension .. ' scene-format tests passed.')
+-- Local fixtures prove external entities and DTD defaults stay unresolved.
+-- No system files or network endpoints are involved in this check.
+local directory = (os.getenv('PWD') or '.') .. '/tests/fixtures/scene_format/'
+local sentinel = 'ORCA_SCENE_EXTERNAL_SENTINEL'
+local external = directory .. 'External.txt'
+local dtd = directory .. 'External.dtd'
+local handle = assert(io.open(external, 'r'))
+test.expect(handle:read('*a'):find(sentinel, 1, true) ~= nil, 'external entity fixture is present')
+handle:close()
+for _, document in ipairs {
+  '<!DOCTYPE TextBlock [<!ENTITY payload SYSTEM "' .. external .. '">]><TextBlock>&payload;</TextBlock>',
+  '<!DOCTYPE TextBlock SYSTEM "' .. dtd .. '"><TextBlock/>',
+  '<!DOCTYPE TextBlock [<!ENTITY % ext SYSTEM "' .. dtd .. '">%ext;]><TextBlock/>',
+  '<!DOCTYPE TextBlock [<!ENTITY payload SYSTEM "' .. external .. '">]><TextBlock Text="&payload;"/>',
+} do
+  local node = load_string(document)
+  test.expect(node == nil or node.Text == nil or node.Text:find(sentinel, 1, true) == nil,
+    'XML scene reader must not resolve external entities or DTD default attributes')
+end
+local escaped = load_string('<TextBlock Text="&lt;hello&gt; &amp; &quot;world&quot;"/>')
+test.expect_eq(escaped.Text, '<hello> & "world"', 'built-in XML entities still decode')
+print('PASS: XML malformed-input rejection and external entity isolation')
+
+-- Exercise an existing app asset unchanged, including its {Binding ...} markup.
+local project = filesystem.init('apps/Adventure')
+test.expect(project ~= nil, 'legacy Adventure package initializes')
+local template = load_file('Adventure/Prefabs/TabItem.xml')
+test.expect(template ~= nil, 'generic XML loader reads the existing Adventure prefab')
+local host = load_string('<Node2D DataContextSource="Adventure/DataSources/Tabs:TabAdventures"/>')
+test.expect(host.DataContext ~= nil, 'legacy datasource reference resolves')
+template.DataContext = host.DataContext
+evaluate(template)
+test.expect_eq(template:findChild('TabItemLabel').Text, 'Adventures', 'old app binding shorthand still evaluates')
+host.DataContext.Label = 'Renamed'
+evaluate(template)
+test.expect_eq(template:findChild('TabItemLabel').Text, 'Renamed', 'old app binding remains reactive')
+template:clear()
+host:clear()
+filesystem.unloadProject(project)
+print('PASS: unchanged Adventure XML prefab and legacy binding syntax')
+
+print('All ' .. extension .. ' scene-loading tests passed.')

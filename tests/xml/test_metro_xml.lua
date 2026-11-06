@@ -1,6 +1,6 @@
 local test = require "orca.test"
--- Windows Phone controls declared in Lisp; tests/test_metro.lua covers their
--- behavior in both scene formats.
+-- Windows Phone controls declared in XML; tests/test_metro.lua covers their
+-- behavior independently of scene loading.
 
 local orca = require "orca"
 orca.init()
@@ -22,14 +22,14 @@ local function layout(screen)
   screen:UpdateLayout(screen.Width, screen.Height)
 end
 
-local function test_lisp()
-  local screen = filesystem.loadObject("tests/fixtures/metro/Pivot.lisp")
+local function test_xml()
+  local screen = filesystem.loadObject("tests/fixtures/metro/Pivot.xml")
   layout(screen)
   local pivot = screen:findChild("Pivot", true)
-  test.expect(pivot and #children(pivot, "PivotHeaderItem") == 3, "Lisp declares Pivot and PivotItem")
+  test.expect(pivot and #children(pivot, "PivotHeaderItem") == 3, "XML declares Pivot and PivotItem")
   local bar = screen:findChild("AppBar", true)
-  test.expect(bar and #children(bar, "ApplicationBarIconButton") == 3, "Lisp declares the ApplicationBar")
-  print("PASS: test_lisp")
+  test.expect(bar and #children(bar, "ApplicationBarIconButton") == 3, "XML declares the ApplicationBar")
+  print("PASS: test_xml")
 end
 
-test_lisp()
+test_xml()

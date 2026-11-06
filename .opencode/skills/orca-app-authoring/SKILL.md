@@ -22,8 +22,7 @@ documents rather than duplicating them in skills.
   Example demonstrates themes and CSS. Do not copy an entire sample or treat
   the chat prototype's single app module as the standard.
 
-Author pages, templates and scenes in XML. Lisp is an experimental scene
-format used only by `apps/Example`; do not add `.lisp` twins to an app.
+Author pages, templates and scenes in XML.
 
 ## Establish ownership
 

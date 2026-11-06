@@ -1,4 +1,4 @@
-/* Focused C tests for the selected scene reader. */
+/* Focused C tests for the XML scene reader. */
 
 #include "test_local.h"
 #include "mem_tracker.h"
@@ -13,7 +13,6 @@
 #include <assert.h>
 
 #include <include/orca.h>
-#include <include/scene_format.h>
 #include <core/core.h>
 #include <filesystem/filesystem.h>
 
@@ -46,11 +45,7 @@ static void test_scene_tree(void)
 {
     RUN_TEST("scene_tree_preserves_names_and_children", {
         ensure_class_registry();
-#if ORCA_HAS_LISP
-        const char *source = "(Object Name=\"Root\" (Object Name=\"Child & \\\"quoted\\\"\"))";
-#else
         const char *source = "<Object Name=\"Root\"><Object Name=\"Child &amp; &quot;quoted&quot;\"/></Object>";
-#endif
         struct Object *root = FS_LoadObjectFromString(source);
         EXPECT(root != NULL);
         EXPECT_STR_EQ(OBJ_GetName(root), "Root");
@@ -67,13 +62,8 @@ static void test_scene_rejects_malformed_input(void)
 {
     RUN_TEST("scene_rejects_unterminated_and_trailing_input", {
         ensure_class_registry();
-#if ORCA_HAS_LISP
-        const char *unterminated = "(Object Name=\"broken\"";
-        const char *trailing = "(Object) (Object)";
-#else
         const char *unterminated = "<Object Name=\"broken\">";
         const char *trailing = "<Object/><Object/>";
-#endif
         EXPECT(FS_LoadObjectFromString(unterminated) == NULL);
         EXPECT(FS_LoadObjectFromString(trailing) == NULL);
     });

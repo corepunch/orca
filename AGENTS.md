@@ -11,11 +11,9 @@ choice or an established project architecture when doing local feature work.
 
 ### Scene format: XML only
 
-Author application pages, templates and scenes in XML. Lisp
-(`-DORCA_USE_LISP`) is an experimental scene format: only `apps/Example` has a
-Lisp version, which exercises the alternative reader. Do not add `.lisp` twins
-to other apps. Tests that load another app's pages belong in
-`XML_APP_LUA_TESTS` in the Makefile, which runs in XML builds only.
+Author application pages, templates and scenes in XML. All applications use
+the same XML reader. Add tests that load application pages to `APP_LUA_TESTS`
+in the Makefile.
 
 ## UI design skill
 

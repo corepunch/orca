@@ -642,7 +642,7 @@ HANDLER(XmlDataSource, Object, Attached) {
 int luaopen_io_open_override(lua_State* L);
 
 static struct Object* _scene_file_loader(int argc, const char* argv[]) {
-  return argc > 0 ? FS_GetSceneFormat()->Load(argv[0]) : NULL;
+  return argc > 0 ? FS_LoadObjectFromXml(argv[0]) : NULL;
 }
 
 static void
@@ -746,7 +746,7 @@ l_load_object_owned(lua_State *L)
   const char *source = luaL_checkstring(L, 1);
   int kind = (int)lua_tointeger(L, lua_upvalueindex(1));
   struct Object *object = kind == 0 ? FS_LoadObjectFromDisk(source)
-    : kind == 1 ? FS_GetSceneFormat()->Load(source) : FS_LoadObjectFromString(source);
+    : kind == 1 ? FS_LoadObjectFromXml(source) : FS_LoadObjectFromString(source);
   luaX_pushObject(L, object);
   if (object) OBJ_ReleaseRef(object);
   return 1;
@@ -815,17 +815,11 @@ void on_filesystem_module_registered(lua_State* L)
     { NULL, NULL }
   }), 0);
   lua_pop(L, 1);
-  const struct SceneFormat *format = FS_GetSceneFormat();
-  OBJ_RegisterFileLoader(format->Extension, _scene_file_loader);
+  OBJ_RegisterFileLoader(FS_GetSceneExtension(), _scene_file_loader);
   const char *loaders[] = {
-    "loadObject", "loadObjectFromDisk", "loadObjectFromString", format->FileApi, format->StringApi
+    "loadObject", "loadObjectFromDisk", "loadObjectFromString", "loadObjectFromXml", "loadObjectFromXmlString"
   };
   const int kinds[] = { 0, 0, 2, 1, 2 };
-  const char *disabled[] = { format->DisabledFileApi, format->DisabledStringApi };
-  for (int i = 0; i < 2; i++) {
-    lua_pushnil(L);
-    lua_setfield(L, -2, disabled[i]);
-  }
   for (int i = 0; i < ARRAY_SIZE(loaders); i++) {
     lua_pushinteger(L, kinds[i]);
     lua_pushcclosure(L, l_load_object_owned, 1);

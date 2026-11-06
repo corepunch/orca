@@ -284,8 +284,7 @@ every list of posts offers.
   (`{DataContext/A} + " · " + {DataContext/B}`, `IF(...)`, `AND`, `OR`);
   keep algorithms in provider operations.
 
-Author pages and templates in XML. Lisp is an experimental scene format used
-only by `apps/Example`; applications do not carry `.lisp` twins.
+Author pages and templates in XML.
 
 ## Routes
 

@@ -7,24 +7,13 @@ Use this file as the default map for adding or fixing tests.
 - C tests: `tests/test_*.c`
 - Lua tests: `tests/test_*.lua`
 - Lua spec-style tests: `tests/*_spec.lua`
-- Scene-format tests: `tests/lisp/test_*.lua` and `tests/xml/test_*.lua`
+- XML fixture tests: `tests/xml/test_*.lua`
 
-Tests in `tests/` run in both scene-format builds. A test that needs one
-format's loader or fixtures (`loadObjectFromLispString`, a `.lisp` file) goes in
-`tests/<format>/`, and only that build runs it. The Makefile picks these files
-up by wildcard: `tests/lisp/test_metro_lisp.lua` becomes `make test-metro-lisp`
-in the Lisp build. When a test file mixes both kinds of case, keep the
-format-independent cases in `tests/` and move the others to
-`tests/<format>/test_<name>_<format>.lua`.
-
-Applications other than `apps/Example` are XML-only (Lisp is an experiment).
-A test that loads such an app's pages joins `XML_APP_LUA_TESTS` in the
-Makefile and runs only in the XML build.
-
-```bash
-make test-headless                                              # XML build
-make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless # Lisp build
-```
+All builds use XML scenes. Put focused XML loader and fixture tests in
+`tests/xml/`; the Makefile discovers them by wildcard in `XML_LUA_TESTS` and
+includes them in `test-headless`. Add tests loading application pages to
+`APP_LUA_TESTS` in the Makefile. Engine tests and application tests run
+together with `make test-headless`.
 
 ## Authoritative commands
 
@@ -52,8 +41,8 @@ expansion, real pointer and focused keyboard dispatch, selection event snapshots
 CSS states, empty trees and a 64-level hierarchy. Update cases cover root and
 child source replacement, leaf/branch transitions, Header and template changes,
 shared sources and repeated teardown against the native object-count baseline.
-These suites join `test-headless` in both scene-format builds. The XML build also
-runs authored-header, nested-binding, template and typed selection-key cases.
+These suites join `test-headless`, including authored-header, nested-binding,
+template and typed selection-key cases.
 
 The XML-only editor panel test checks controller actions, selection, local
 expansion without runtime requests, retained containers, search and refresh
@@ -242,7 +231,7 @@ Good references:
 
 - For explicit test screen sizes, always set `ResizeMode = "NoResize"` in Lua or `ResizeMode="NoResize"` in XML.
 - Call `core.flushQueue()` after `rebuild()` and before asserting queued behavior.
-- Do not call `removeFromParent()` on root objects created by `loadObjectFromLispString()` or `loadObjectFromXmlString()`.
+- Do not call `removeFromParent()` on root objects created by `loadObjectFromXmlString()`.
 - Prefer one focused new test over broad rewrites of existing tests.
 
 ## Test macros (test_local.h)

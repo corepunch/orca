@@ -1,4 +1,4 @@
-/* XML scene reader, included only by fs_scene.c in XML builds. */
+/* XML scene reader, included by fs_scene.c. */
 struct xml_scene_reader { const char *p, *end; bool_t failed; };
 
 static void
@@ -248,7 +248,7 @@ xml_scene_binding(const char *target, const char *text)
 
 /* Called after prefab/class creation, so inherited properties and aliases are
    resolved against the actual object rather than guessed from the XML tag. */
-static bool_t
+bool_t
 FS_NormalizeXmlSceneAttributes(struct Object *object, xmlNodePtr node)
 {
   if (!node->doc || node->doc->_private != (void *)FS_XML_SCENE_DOCUMENT) return TRUE;

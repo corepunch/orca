@@ -195,7 +195,7 @@ end
 
 local function test_scene_tracks()
 	local filesystem = require "orca.filesystem"
-	-- A throwaway project, so the selected parser reads Rows exactly as authored.
+	-- A throwaway project, so the XML reader reads Rows exactly as authored.
 	local root = os.tmpname()
 	os.remove(root)
 	os.execute("mkdir -p '" .. root .. "/Screens'")
@@ -205,13 +205,7 @@ local function test_scene_tracks()
 		f:close()
 	end
 	write("package.lua", 'Name = "Tracks"\nScreenLibrary = { IsExternal = true }\n')
-	local has_lisp = filesystem.loadObjectFromLispString ~= nil
-	local source = has_lisp and [[
-(Screen Name="Tracks" Width=400 Height=600 ResizeMode="NoResize"
-  (Grid Rows="auto * 48"
-    (Node2D Name="Header" Height=50)
-    (Node2D Name="Body")
-    (Node2D Name="Footer")))]] or [[
+	local source = [[
 <Screen Name="Tracks" Width="400" Height="600" ResizeMode="NoResize">
   <Grid Rows="auto * 48">
     <Node2D Name="Header" Height="50"/>
@@ -219,10 +213,10 @@ local function test_scene_tracks()
     <Node2D Name="Footer"/>
   </Grid>
 </Screen>]]
-	write("Screens/Tracks." .. (has_lisp and "lisp" or "xml"), source)
+	write("Screens/Tracks.xml", source)
 	filesystem.init(root)
 	local s = filesystem.loadObject("Tracks/Screens/Tracks")
-	test.expect(s ~= nil, "Track fixture loads through the selected scene reader")
+	test.expect(s ~= nil, "Track fixture loads through the XML scene reader")
 	layout(s)
 	test.expect_eq(rows { s:findChild("Header", true), s:findChild("Body", true), s:findChild("Footer", true) },
 		"0+50 50+502 552+48", "Scene Rows use the same track grammar")

@@ -289,9 +289,9 @@ $(WASM_DEPS_DIR)/lib/liblz4.a:
 	   /tmp/wasm-lz4/lib/lz4frame.h $(WASM_DEPS_DIR)/include/
 	cp /tmp/wasm-lz4/lib/liblz4.a $(WASM_DEPS_DIR)/lib/
 
-# Apply selection after all ordinary flags, including command-line overrides.
-override WEBGL_CFLAGS += $(CPPFLAGS) $(SCENE_FORMAT_FLAGS)
-override WEBGL_DEBUG_CFLAGS += $(CPPFLAGS) $(SCENE_FORMAT_FLAGS)
+# Apply preprocessor flags after all ordinary flags, including command-line overrides.
+override WEBGL_CFLAGS += $(CPPFLAGS)
+override WEBGL_DEBUG_CFLAGS += $(CPPFLAGS)
 
 # Build the same checked-in dependency revisions used by native builds.
 WASM_FT_OBJS = $(patsubst %.c,$(WEBGL_DIR)/freetype/%.o,$(FREETYPE_SRCS))
