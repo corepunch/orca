@@ -51,7 +51,36 @@ local function test_console_view_erase_resets_state()
   print("PASS: test_console_view_erase_resets_state")
 end
 
+local function test_console_view_buffer_resize_and_bounds()
+  -- The buffer follows BufferWidth/BufferHeight assigned after creation, and
+  -- lines past the last row are dropped instead of overrunning it.
+  local cv = screen + ui.ConsoleView {}
+  cv.BufferWidth, cv.BufferHeight = 16, 4
+  for i = 1, 10 do cv:Println { Index = i, Text = string.rep("x", 40) } end
+  test.expect(cv.ContentHeight <= 4,
+    string.format("ContentHeight must stay within 4 rows, got %d", cv.ContentHeight))
+  cv:Erase()
+  test.expect_eq(cv.ContentHeight, 0, "Erase after resize resets content")
+  cv:removeFromParent()
+  print("PASS: test_console_view_buffer_resize_and_bounds")
+end
+
+local function test_console_view_draws_foreground_and_unpacks()
+  local cv = screen + ui.ConsoleView { BufferWidth = 80, BufferHeight = 8 }
+  test.expect(cv:send("Node2D.ForegroundContent"), "ConsoleView must report foreground content")
+  cv:Println { Index = 7, Text = "ab" }
+  -- Pointer coordinates are in screen space; lay out so the view has a matrix.
+  screen:UpdateLayout(1000, 1000)
+  local packed = cv:send("ConsoleView.Unpack", { X = 9, Y = 4 })
+  test.expect_eq((packed >> 32) & 0xffff, 7, "Unpack returns the item index of the cell")
+  test.expect_eq(string.char(packed & 0xff), "b", "Unpack returns the glyph of the cell")
+  cv:removeFromParent()
+  print("PASS: test_console_view_draws_foreground_and_unpacks")
+end
+
 test_console_view_println_advances_state()
+test_console_view_buffer_resize_and_bounds()
+test_console_view_draws_foreground_and_unpacks()
 test_console_view_multiple_println()
 test_console_view_erase_resets_state()
 print("All ConsoleView tests passed.")

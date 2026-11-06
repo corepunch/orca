@@ -52,6 +52,19 @@ _RenderTexture_Create(PCREATERTSTRUCT _in, struct Texture* image)
 }
 
 HRESULT
+RenderTexture_ReadPixels(struct Texture const* image, void* rgba)
+{
+  if (!image || !image->framebuffer || !rgba) return E_INVALIDARG;
+  GLint previous = 0;
+  R_Call(glGetIntegerv, GL_FRAMEBUFFER_BINDING, &previous);
+  R_Call(glBindFramebuffer, GL_FRAMEBUFFER, image->framebuffer);
+  R_Call(glReadPixels, 0, 0, image->Width * image->Scale, image->Height * image->Scale,
+         GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+  R_Call(glBindFramebuffer, GL_FRAMEBUFFER, previous);
+  return S_OK;
+}
+
+HRESULT
 RenderTexture_Create(PCREATERTSTRUCT _in, struct Texture** img)
 {
   *img = ZeroAlloc(sizeof(struct Texture));

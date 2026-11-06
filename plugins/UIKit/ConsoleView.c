@@ -8,7 +8,23 @@
 #define BUFFER_WIDTH 256
 #define BUFFER_HEIGHT 256
 #define TAB_SIZE 4
-#define MEMSIZE(T) (T->BufferWidth*T->BufferHeight*4)
+#define CELLS(T) ((T)->BufferWidth*(T)->BufferHeight)
+
+/* BufferWidth/BufferHeight may be assigned after creation; keep the
+   allocation in step so every write stays inside it. */
+static bool_t
+ensure_buffer(struct ConsoleView *t)
+{
+  int cells = CELLS(t);
+  if (cells <= 0) return FALSE;
+  if (t->_buffer && t->_capacity == cells) return TRUE;
+  free(t->_buffer);
+  t->_buffer = ZeroAlloc(cells * sizeof(*t->_buffer));
+  t->_capacity = t->_buffer ? cells : 0;
+  t->Cursor = 0;
+  t->ContentHeight = 0;
+  return t->_buffer != NULL;
+}
 
 #define kMsgPaint 0x36b37bd3
 
@@ -18,7 +34,7 @@ PointToData(struct ConsoleView const* t, int mx, int my, uint32_t *cursor)
   struct vec2 scrolled = VEC2_Sub(&(struct vec2){mx, my}, &t->_scroll);
   uint32_t x = scrolled.x / CONSOLE_CHAR_WIDTH;
   uint32_t y = scrolled.y / CONSOLE_CHAR_HEIGHT;
-  if (x < t->BufferWidth && y < t->BufferHeight) {
+  if (x < t->BufferWidth && y < t->BufferHeight && (int)(x + y * t->BufferWidth) < t->_capacity) {
     if (cursor) *cursor = y * t->BufferWidth + x;
     return t->_buffer[x + y * t->BufferWidth];
   }
@@ -76,7 +92,9 @@ _println(struct ConsoleView *t, int32_t index, lpcString_t text, size_t slen)
 {
   struct tstate state = { .foreground = 7, .item = (uint16_t)index };
   int c = t->Cursor;
-  for (lpcString_t s = text; s - text < (ptrdiff_t)slen; s++) {
+  /* Content past the last row is dropped rather than written out of bounds. */
+  if (t->Cursor < 0 || t->Cursor + t->BufferWidth > t->_capacity) return;
+  for (lpcString_t s = text; s - text < (ptrdiff_t)slen && t->Cursor < t->_capacity; s++) {
     if (*s == '\x21' && *(s+1) == '[') {
       s = _cmd(t, ++s, &state);
     } else if (*s == '\n') {
@@ -89,7 +107,7 @@ _println(struct ConsoleView *t, int32_t index, lpcString_t text, size_t slen)
       t->_buffer[t->Cursor++] = *(uint32_t*)&state;
     }
   }
-  while (t->Cursor % t->BufferWidth) {
+  while (t->Cursor % t->BufferWidth && t->Cursor < t->_capacity) {
     state.glyph = 0;
     t->_buffer[t->Cursor++] = *(uint32_t*)&state;
   }
@@ -112,12 +130,9 @@ pack_position(int32_t x, int32_t y)
 static uint64_t
 query_unpack(struct Object *obj, struct ConsoleView const* t, float x, float y)
 {
-#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
-  struct vec3 out = (struct vec3){x,y,0};
-#else
+  /* Pointer events reach Lua handlers in screen space. */
   struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
   struct vec3 out = MAT4_MultiplyVector3D(&inv, &(struct vec3){x,y,0});
-#endif
   uint32_t data = PointToData(t, out.x, out.y, NULL);
 
   return pack_index_glyph(data >> 16, data & 0xff);
@@ -135,7 +150,7 @@ query_index_position(struct Object *o,
 {
   if (i == 0)
     return FALSE;
-  FOR_LOOP(j, t->BufferWidth*t->BufferHeight) {
+  FOR_LOOP(j, t->_capacity) {
     if (t->_buffer[j]>>16 == i) {
       if (global) {
         struct vec3 p = {
@@ -180,7 +195,7 @@ HANDLER(ConsoleView, ConsoleView, GetIndexPosition) {
 
 // ConsoleView_Println
 HANDLER(ConsoleView, ConsoleView, Println) {
-  if (!pConsoleView->_buffer) return FALSE;
+  if (!ensure_buffer(pConsoleView)) return FALSE;
   lpcString_t text = pPrintln ? pPrintln->Text : NULL;
   int32_t index = pPrintln ? pPrintln->Index : 0;
   if (text) {
@@ -193,8 +208,8 @@ HANDLER(ConsoleView, ConsoleView, Println) {
 
 // ConsoleView_Erase
 HANDLER(ConsoleView, ConsoleView, Erase) {
-  if (!pConsoleView->_buffer) return FALSE;
-  memset(pConsoleView->_buffer, 0, MEMSIZE(pConsoleView));
+  if (!ensure_buffer(pConsoleView)) return FALSE;
+  memset(pConsoleView->_buffer, 0, pConsoleView->_capacity * sizeof(*pConsoleView->_buffer));
   pConsoleView->Cursor = 0;
   pConsoleView->ContentHeight = 0;
   return FALSE;
@@ -208,9 +223,22 @@ HANDLER(ConsoleView, ConsoleView, Invalidate) {
 
 // ConsoleView_Create
 HANDLER(ConsoleView, Object, Create) {
-  pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
+  ensure_buffer(pConsoleView);
   axPostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
+}
+
+// ConsoleView_Destroy
+HANDLER(ConsoleView, Object, Destroy) {
+  free(pConsoleView->_buffer);
+  pConsoleView->_buffer = NULL;
+  pConsoleView->_capacity = 0;
+  return FALSE;
+}
+
+// ConsoleView_ForegroundContent: the character grid is always foreground.
+HANDLER(ConsoleView, Node2D, ForegroundContent) {
+  return pConsoleView->_buffer != NULL;
 }
 
 // ConsoleView_DrawForeground
@@ -219,7 +247,7 @@ HANDLER(ConsoleView, Node2D, DrawForeground) {
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
     .Buffer = pConsoleView->_buffer,
     .Width = pConsoleView->BufferWidth,
-    .Height = pConsoleView->ContentHeight+1,
+    .Height = MIN(pConsoleView->ContentHeight + 1, pConsoleView->_capacity / MAX(1, pConsoleView->BufferWidth)),
     .Scroll = pConsoleView->_scroll,
     .Cursor = pConsoleView->Cursor,
     .SelectedItem = pConsoleView->SelectedIndex,

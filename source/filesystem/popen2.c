@@ -62,7 +62,7 @@ static int l_process_read(lua_State *L) {
   lua_Integer len = luaL_optinteger(L, 2, 4096);
   if (lp->read_fd < 0 || len <= 0) return luaL_error(L, "invalid process or length");
   
-  char *buf = malloc(len);
+  char *buf = malloc(len + 1);
   if (!buf) return luaL_error(L, "out of memory");
   
   size_t total = 0, buf_size = len;
@@ -71,7 +71,7 @@ static int l_process_read(lua_State *L) {
   while (1) {
     if (total + len > buf_size) {
       buf_size *= 2;
-      char *new_buf = realloc(buf, buf_size);
+      char *new_buf = realloc(buf, buf_size + 1);
       if (!new_buf) { free(buf); return luaL_error(L, "out of memory"); }
       buf = new_buf;
     }
@@ -84,9 +84,11 @@ static int l_process_read(lua_State *L) {
     if (total >= strlen(end_response) && strstr(buf, end_response)) break;
   }
   
-//  Con_Error("%s", buf);
-  
-  lua_pushlstring(L, buf, total);
+  /* Skip anything the child printed to stdout before its reply. */
+  char *start = strstr(buf, "<?xml");
+  if (!start) start = strstr(buf, "<response");
+  if (!start) start = buf;
+  lua_pushlstring(L, start, total - (start - buf));
   free(buf);
   return 1;
 }

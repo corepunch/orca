@@ -1,62 +1,71 @@
-local xml = require "orca.parsers.xml"
-local ui = require "orca.ui"
-local workspace = require "Editor.Scripts.Workspace"
+-- Application menu bar; each title opens a dropdown Menu.
+local config = require "Editor.Scripts.config"
+local Terminal = require "Editor.Scripts.Terminal"
+local Menu = require "Editor.Scripts.Menu"
+local Popups = require "Editor.Scripts.Popups"
 
-local keymap = {
-	up = function (self) self.SelectedIndex = math.max(1, self.SelectedIndex - 1) end,
-	down = function (self) self.SelectedIndex = math.min(self:numItems(), self.SelectedIndex + 1) end,
--- 	right = function (self, name) self.expanded[name] = true return true end,
--- 	left = function (self, name) self.expanded[name] = nil return true end,
-}
+local MenuBar = Terminal:extend {}
 
-local menu = { 'File', 'Edit', 'View', 'Help' }
+function MenuBar:init(menus, status)
+	self.menus = menus     -- { { title = "File", items = function() ... end }, ... }
+	self.status = status   -- function() -> right-aligned text
+	Terminal.init(self, { Height = config.char_height })
+end
 
-local MenuBar = ui.TerminalView:extend {
-	onPaint = function (self)
-		local padded = {}
-		for i, v in ipairs(menu) do
-			padded[i] = string.format('![%dc %s ', i, v)
+function MenuBar:draw()
+	local parts, col = { '![1;15m ' }, 1
+	self.spans = {}
+	for i, m in ipairs(self.menus) do
+		local label = ' ' .. m.title .. ' '
+		local color = self.openIndex == i and '![15;1m' or '![1;15m'
+		parts[#parts + 1] = color .. label .. '![1;15m'
+		self.spans[i] = { from = col, to = col + #label - 1 }
+		col = col + #label
+	end
+	local status = self.status and self.status() or ''
+	local cols = self:columns()
+	local pad = math.max(1, cols - col - #status - 1)
+	self:println(nil, table.concat(parts), string.rep(' ', pad), '![8;15m', Terminal.escape(status), ' ')
+end
+
+function MenuBar:indexAt(x)
+	local col = math.floor(x / config.char_width)
+	for i, s in ipairs(self.spans or {}) do
+		if col >= s.from and col <= s.to then return i end
+	end
+end
+
+function MenuBar:open(index)
+	Popups.closeAll()
+	local m = self.menus[index]
+	if not m then return end
+	self.openIndex = index
+	self:invalidate()
+	local menu = Menu(m.items(), {
+		onNavigate = function(dir)
+			self:open((index - 1 + dir) % #self.menus + 1)
+		end,
+	})
+	menu.onClose = function()
+		if self.openIndex == index then
+			self.openIndex = nil
+			self:invalidate()
 		end
-		self:erase()
-		self:println(nil, ' ', table.concat(padded)..'![0c')
-		self.SelectedIndex = 2
-		-- for node in self.doc.children do
-		-- 	self:println(node, ' '..node.text)
-		-- end
-	end,
-	onLeftButtonUp = function (self, _, ...)
-		local _, index, _ = self:unpack(...)
-		self.SelectedIndex = index
+	end
+	Popups.push(menu, self.spans[index].from * config.char_width, config.char_height)
+end
 
-		local ctx = xml.Element'context-menu'
-		xml.SubElement(ctx, 'menu-item', { type='doc:new-file', header='New File'})
-		xml.SubElement(ctx, 'menu-item', { type='doc:open-file', header='Open File'})
-		xml.SubElement(ctx, 'menu-item', { type='doc:save-project', header='Save Project'})
-		xml.SubElement(ctx, 'menu-item', { type='doc:quit', header='Quit'})
+function MenuBar:onMouseDown(_, _, _, args)
+	local i = self:indexAt(args.x)
+	if i then self:open(i) end
+end
 
-		local x, y = self:getIndexPosition(index, 0, 1)
-		self:showDropDown(ctx, x, y).callback = function(enum)
-			-- self:setItemValue(item, enum.text)
-			print(enum.text)
-		end
-	end,
-	-- onLeftButtonUp = function (self, _, ...)
-	-- 	local item, _, _ = self:unpack(...)
-	-- 	if self.callback then
-	-- 		self.callback(item, self.doc)
-	-- 	-- else
-	-- 	-- 	self.doc:set('value', item.text)
-	-- 	end
-	-- 	self.owner:setFocus()
-	-- 	self.owner:invalidate()
-	-- end,
-	-- onKeyDown = function (self, _, key)
-	-- 	if not self.selectedItem then return end
-	-- 	local action = keymap[key]
-	-- 	if action and action(self, self.selectedItem:get'name') then
-	-- 		self:invalidate()
-	-- 	end
-	-- end,
-}
+-- Alt+letter opens the matching menu.
+function MenuBar:accelerator(letter)
+	for i, m in ipairs(self.menus) do
+		if m.title:sub(1, 1):lower() == letter then self:open(i) return true end
+	end
+	return false
+end
 
 return MenuBar

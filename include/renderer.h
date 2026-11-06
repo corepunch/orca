@@ -566,6 +566,10 @@ ORCA_API HRESULT R_SetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_GetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
+
+/* Copy a render texture's color buffer into rgba (Width*Height*4 bytes, rows
+   bottom-up as GL stores them). */
+ORCA_API HRESULT RenderTexture_ReadPixels(struct Texture const*, void* rgba);
 ORCA_API HRESULT R_BlurTexture(struct Texture const *src, struct Texture *dst,
                                 struct Texture *scratch, float sigma);
 // Capture of the framebuffer behind an entity and its blur targets, reused
