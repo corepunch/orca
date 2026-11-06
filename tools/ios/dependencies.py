@@ -19,9 +19,20 @@ SOURCES = {
 MIRRORS = {
     'curl-8.10.1': ('https://github.com/curl/curl/releases/download/curl-8_10_1/curl-8.10.1.tar.xz',),
 }
-# Lua and LZ4 come from the repository's submodules, like the desktop build, so
-# a clean Xcode Cloud archive does not depend on lua.org or codeload being up.
-SUBMODULES = {'lua': 'libs/lua', 'lz4': 'libs/lz4/lib'}
+# Lua, LZ4, FreeType, libpng and libjpeg come from the repository's submodules,
+# like the desktop build, so a clean Xcode Cloud archive does not depend on
+# lua.org, freetype.org or codeload being up.
+SUBMODULES = {'lua': 'libs/lua', 'lz4': 'libs/lz4/lib', 'freetype': 'libs/freetype',
+              'libpng': 'libs/libpng', 'libjpeg': 'libs/libjpeg', 'libxml2': 'libs/libxml2'}
+SUBMODULE_MARKERS = {'lua': 'lua.h', 'lz4': 'lz4.h', 'freetype': 'include/ft2build.h',
+                     'libpng': 'configure', 'libjpeg': 'configure', 'libxml2': 'include/libxml/parser.h'}
+# FreeType is compiled from these files with the module list in
+# source/renderer/third_party/freetype_modules.h, matching the desktop Makefile.
+FREETYPE_SOURCES = ('base/ftbase.c', 'base/ftinit.c', 'base/ftsystem.c', 'base/ftglyph.c',
+                    'base/ftbitmap.c', 'base/ftdebug.c', 'base/ftmm.c', 'gzip/ftgzip.c',
+                    'autofit/autofit.c', 'truetype/truetype.c', 'cff/cff.c', 'psaux/psaux.c',
+                    'psnames/psnames.c', 'pshinter/pshinter.c', 'sfnt/sfnt.c', 'smooth/smooth.c',
+                    'raster/raster.c')
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -59,9 +70,8 @@ def source_tree(name, cache):
 
 def submodule(name):
     source = ROOT / SUBMODULES[name]
-    marker = source / ('lua.h' if name == 'lua' else 'lz4.h')
-    if not marker.is_file():
-        raise SystemExit('Missing ' + str(source) + '. Run: git submodule update --init libs/lua libs/lz4')
+    if not (source / SUBMODULE_MARKERS[name]).is_file():
+        raise SystemExit('Missing ' + str(source) + '. Run: git submodule update --init ' + SUBMODULES[name])
     return source
 
 
@@ -84,11 +94,18 @@ def main():
     lua, lz4 = submodule('lua'), submodule('lz4')
     revision = hashlib.sha256(b''.join(path.read_bytes() for folder in (lua, lz4)
                                        for path in sorted(folder.glob('*.[ch]')))).hexdigest()
+    # Submodule commits pin the FreeType, libpng and libjpeg sources.
+    pinned = {name: subprocess.check_output(['git', '-C', str(submodule(name)), 'rev-parse', 'HEAD'],
+                                            text=True).strip()
+              for name in ('freetype', 'libpng', 'libjpeg', 'libxml2')}
     settings = json.dumps({'sdk': sdk, 'arch': args.arch, 'minimum': args.minimum,
-                           'sources': SOURCES, 'submodules': revision, 'recipe': hashlib.sha256(
+                           'sources': SOURCES, 'submodules': revision, 'pinned': pinned,
+                           'recipe': hashlib.sha256(
                                Path(__file__).read_bytes() + lua_config.read_bytes()).hexdigest()}, sort_keys=True)
     if stamp.exists() and stamp.read_text() == settings and all(
-            (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'liblz4.a', 'libcurl.a')):
+            (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'liblz4.a', 'libfreetype.a',
+                                                           'libpng16.a', 'libjpeg.a', 'libxml2.a',
+                                                           'libcurl.a')):
         return
     (prefix / 'lib').mkdir(parents=True, exist_ok=True)
     (prefix / 'include').mkdir(exist_ok=True)
@@ -134,7 +151,36 @@ def main():
     run('xcrun', '--sdk', args.sdk, 'ar', 'rcs', prefix / 'lib/liblz4.a', *objects)
     for path in lz4.glob('*.h'):
         shutil.copy2(path, prefix / 'include' / path.name)
+    output = root / 'dependency-build' / 'freetype'
+    output.mkdir(parents=True, exist_ok=True)
+    freetype = submodule('freetype')
+    modules = ROOT / 'source/renderer/third_party/freetype_modules.h'
+    objects = []
+    for rel in FREETYPE_SOURCES:
+        obj = output / (rel.replace('/', '_')[:-2] + '.o')
+        run(compiler, *flags, '-I' + str(freetype / 'include'), '-I' + str(freetype), '-DFT2_BUILD_LIBRARY',
+            '-DFT_CONFIG_MODULES_H="' + str(modules) + '"', '-c', freetype / 'src' / rel, '-o', obj)
+        objects.append(obj)
+    run('xcrun', '--sdk', args.sdk, 'ar', 'rcs', prefix / 'lib/libfreetype.a', *objects)
+    shutil.copytree(freetype / 'include', prefix / 'include', dirs_exist_ok=True)
+    # libxml2 is compiled from tools/libxml2/sources.txt, like FreeType above. Its headers
+    # go to include/libxml2/libxml, where the iOS and Xcode builds look for them.
+    libxml2 = submodule('libxml2')
+    generated = ROOT / 'tools/libxml2'
+    output = root / 'dependency-build' / 'libxml2'
+    output.mkdir(parents=True, exist_ok=True)
+    objects = []
+    for rel in (generated / 'sources.txt').read_text().split():
+        obj = output / (rel[:-2] + '.o')
+        run(compiler, *flags, '-fPIC', '-I' + str(generated), '-I' + str(generated / 'include'),
+            '-I' + str(libxml2 / 'include'), '-c', libxml2 / rel, '-o', obj)
+        objects.append(obj)
+    run('xcrun', '--sdk', args.sdk, 'ar', 'rcs', prefix / 'lib/libxml2.a', *objects)
+    shutil.copytree(libxml2 / 'include' / 'libxml', prefix / 'include' / 'libxml2' / 'libxml', dirs_exist_ok=True)
+    shutil.copytree(generated / 'include' / 'libxml', prefix / 'include' / 'libxml2' / 'libxml', dirs_exist_ok=True)
     builds = (
+        ('libpng', ['--disable-shared', '--enable-static']),
+        ('libjpeg', ['--disable-shared', '--enable-static']),
         ('curl-8.10.1', ['--with-secure-transport', '--without-openssl', '--without-libpsl',
                        '--without-libidn2', '--without-nghttp2', '--without-brotli', '--without-zstd',
                        '--without-ca-bundle', '--without-ca-path', '--disable-ldap', '--disable-ldaps',
@@ -145,12 +191,14 @@ def main():
     for name, options in builds:
         log = root / (name + '.log')
         print('Building ' + name + '; log: ' + str(log), flush=True)
+        # Submodules and cached tarballs are both copied into scratch before configure.
+        origin = sources[name] if name in sources else submodule(name)
         # Upstream make/configure files do not support spaces in build or source paths.
         # Keep only their transient work in a path without spaces, then retain static outputs.
         with tempfile.TemporaryDirectory(prefix='orca-ios-', dir='/tmp') as temporary:
             scratch = Path(temporary)
             source, output, install = scratch / 'source', scratch / 'build', scratch / 'install'
-            shutil.copytree(sources[name], source)
+            shutil.copytree(origin, source)
             output.mkdir()
             with log.open('w') as stream:
                 commands = ([str(source / 'configure'), '--host=' + args.arch + '-apple-darwin',

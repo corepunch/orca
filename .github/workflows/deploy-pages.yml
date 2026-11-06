@@ -46,7 +46,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt update
-          sudo apt install -y pkg-config libxml2-dev
+          sudo apt install -y pkg-config
 
       - name: Install MkDocs
         run: pip install mkdocs-material
@@ -57,7 +57,7 @@ jobs:
           version: 3.1.74
           actions-cache-folder: emsdk-cache
 
-      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+      - name: Build WASM dependencies (lua5.4, liblz4, libpng, libjpeg)
         run: emmake make wasm-deps
 
       - name: Build platform library for WebGL

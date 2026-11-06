@@ -31,7 +31,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
-            libxml2-dev \
             zlib1g-dev \
             libcurl4-openssl-dev \
             libwayland-dev \

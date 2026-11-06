@@ -17,8 +17,8 @@ SOURCES = {
     'mbedtls-3.6.2': ('https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-3.6.2/mbedtls-3.6.2.tar.bz2',
                       '8b54fb9bcf4d5a7078028e0520acddefb7900b3e66fec7f7175bb5b7d85ccdca', ()),
 }
-# libxml2 publishes no GitHub archive; its tag is pinned by commit instead.
-GIT = {'libxml2-2.13.5': ('https://github.com/GNOME/libxml2.git', 'v2.13.5', 'de918d45e1b2276a28a4cd32bcf556bef65284e4')}
+# libxml2 comes from the libs/libxml2 submodule (v2.13.5), like Lua and LZ4.
+LIBXML2 = Path(__file__).resolve().parents[2] / 'libs/libxml2'
 ABIS = ('arm64-v8a', 'x86_64')
 
 
@@ -53,16 +53,10 @@ def archive_tree(name, cache):
     return source
 
 
-def git_tree(name, cache):
-    url, tag, commit = GIT[name]
-    source = cache / 'sources' / name
-    if not (source / '.git').is_dir():
-        shutil.rmtree(source, ignore_errors=True)
-        run('git', 'clone', '--quiet', '--depth', '1', '--branch', tag, url, source)
-    actual = subprocess.check_output(['git', '-C', str(source), 'rev-parse', 'HEAD'], text=True).strip()
-    if actual != commit:
-        raise SystemExit(f'{name} is at {actual}, expected the pinned {commit}.')
-    return source
+def libxml2_tree():
+    if not (LIBXML2 / 'include/libxml/parser.h').is_file():
+        raise SystemExit('Missing ' + str(LIBXML2) + '. Run: git submodule update --init libs/libxml2')
+    return LIBXML2
 
 
 def cmake(source, build, prefix, common, *options):
@@ -83,7 +77,9 @@ def main():
     cache = args.build_dir.resolve()
     root = cache / args.abi
     prefix = root / 'deps'
-    settings = {'ndk': str(args.ndk.resolve()), 'api': args.api, 'sources': sorted([*SOURCES, *GIT])}
+    pinned = subprocess.check_output(['git', '-C', str(libxml2_tree()), 'rev-parse', 'HEAD'], text=True).strip()
+    settings = {'ndk': str(args.ndk.resolve()), 'api': args.api, 'sources': sorted(SOURCES),
+                'libxml2': pinned}
     stamp = prefix / 'settings.json'
     if stamp.is_file() and json.loads(stamp.read_text()) == settings and (prefix / 'lib/libcurl.a').is_file():
         return
@@ -97,7 +93,7 @@ def main():
     shutil.rmtree(work, ignore_errors=True)
     cmake(archive_tree('mbedtls-3.6.2', cache), work / 'mbedtls', prefix, common,
           '-DENABLE_TESTING=OFF', '-DENABLE_PROGRAMS=OFF', '-DMBEDTLS_FATAL_WARNINGS=OFF')
-    cmake(git_tree('libxml2-2.13.5', cache), work / 'libxml2', prefix, common,
+    cmake(libxml2_tree(), work / 'libxml2', prefix, common,
           *('-DLIBXML2_WITH_' + name + '=OFF' for name in
             ('PYTHON', 'ICONV', 'ICU', 'LZMA', 'PROGRAMS', 'TESTS', 'HTTP', 'FTP', 'MODULES')),
           '-DLIBXML2_WITH_ZLIB=ON')

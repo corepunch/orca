@@ -11,7 +11,6 @@ Before installing ORCA via LuaRocks, ensure you have the required system librari
 **Ubuntu/Debian:**
 ```bash
 sudo apt update && sudo apt install -y \
-    libxml2-dev \
     zlib1g-dev \
     libcurl4-openssl-dev \
     libwayland-dev \
@@ -22,7 +21,6 @@ sudo apt update && sudo apt install -y \
 **Fedora:**
 ```bash
 sudo dnf install -y \
-    libxml2-devel \
     zlib-devel \
     libcurl-devel
 ```

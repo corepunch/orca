@@ -19,3 +19,6 @@
 [submodule "libs/zlib"]
 	path = libs/zlib
 	url = https://github.com/madler/zlib.git
+[submodule "libs/libxml2"]
+	path = libs/libxml2
+	url = https://gitlab.gnome.org/GNOME/libxml2.git

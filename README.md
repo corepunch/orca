@@ -27,7 +27,6 @@ To install the required dependencies on **Linux**, run the following commands:
 
 ```sh
 sudo apt update && sudo apt install -y \
-    libxml2-dev \
     zlib1g-dev \
     libcurl4-openssl-dev \
     libwayland-dev \
@@ -39,7 +38,6 @@ For **Fedora**, use:
 
 ```sh
 sudo dnf install -y \
-    libxml2-devel \
     zlib-devel \
     libcurl-devel
 ```
@@ -47,7 +45,7 @@ sudo dnf install -y \
 For **Arch Linux**, use:
 
 ```sh
-sudo pacman -S libxml2 zlib curl
+sudo pacman -S zlib curl
 ```
 
 ### macOS

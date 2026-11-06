@@ -139,7 +139,7 @@ def generate(args, app):
         'ENABLE_USER_SCRIPT_SANDBOXING': 'NO', 'ALWAYS_SEARCH_USER_PATHS': 'NO',
         'HEADER_SEARCH_PATHS': ['$(inherited)', '$(DERIVED_FILE_DIR)', '$(DERIVED_FILE_DIR)/include',
                                 '$(DERIVED_FILE_DIR)/dependencies/include',
-                                '$(ORCA_ROOT)', '$(SDKROOT)/usr/include/libxml2'],
+                                '$(ORCA_ROOT)', '$(DERIVED_FILE_DIR)/dependencies/include/libxml2'],
         'LIBRARY_SEARCH_PATHS': ['$(inherited)', '$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib'],
         'GCC_PREPROCESSOR_DEFINITIONS': ['$(inherited)', 'ORCA_IOS=1', 'ORCA_STATIC=1', 'GL_SILENCE_DEPRECATION'],
         'OTHER_CFLAGS': ['$(inherited)', '-Wno-deprecated-declarations'],
@@ -159,7 +159,7 @@ def generate(args, app):
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
                   'UserNotifications', 'AuthenticationServices')
-    linker = ['$(inherited)', '-llua', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
+    linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
     target_settings = {

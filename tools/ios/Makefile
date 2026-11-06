@@ -29,7 +29,7 @@ BUNDLE := $(ROOT)/Orca.app
 SDK_PATH := $(shell xcrun --sdk $(SDK) --show-sdk-path)
 CC := xcrun --sdk $(SDK) clang
 MIN_FLAG := $(if $(filter iphoneos,$(SDK)),-miphoneos-version-min,-mios-simulator-version-min)=$(IOS_MIN)
-FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I"$(SDK_PATH)/usr/include/libxml2"
+FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I$(DEPS)/include/libxml2
 include tools/mobile/third_party.mk
 VENDOR_FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -fPIC -MMD -MP
 FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
@@ -42,7 +42,7 @@ OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(RO
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_animation.o ios_scroll.o)
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules

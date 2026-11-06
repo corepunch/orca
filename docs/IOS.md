@@ -60,7 +60,7 @@ builds download pinned, SHA256-verified curl 8.10.1 sources (from curl.se, or
 its GitHub release mirror), then build static libraries for the selected SDK
 and CPU. Downloads are cached under `build/ios/`. curl uses Apple's Secure Transport
 for HTTPS. Host Homebrew libraries are never linked into iOS executables.
-Host code generation uses the macOS SDK's libxml2.
+Host code generation uses the libxml2 built from `libs/libxml2`, not a host copy.
 
 ## Build and launch
 

@@ -14,8 +14,8 @@ Use this file as the fast path for local setup and command selection.
 git submodule update --init --recursive
 ```
 
-On macOS, the Xcode Command Line Tools are enough: libxml2 and curl come
-from the SDK, and nothing is needed from Homebrew. On Linux, install the
+On macOS, the Xcode Command Line Tools are enough: curl comes from the SDK,
+libxml2 and zlib are built from `libs/`, and nothing is needed from Homebrew. On Linux, install the
 development packages listed in the [README](../README.md).
 
 Lua, LZ4, FreeType, libpng, libjpeg and zlib are built from submodules:

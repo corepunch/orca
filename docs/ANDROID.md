@@ -23,7 +23,7 @@ adb install -r tools/android/project/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 `tools/android/dependencies.py` builds mbedTLS 3.6.2 and curl 8.10.1 from
-SHA256-verified archives, and libxml2 2.13.5 from its tag, pinned by commit.
+SHA256-verified archives, and libxml2 2.13.5 comes from the `libs/libxml2` submodule.
 curl trusts Android's system CA directory. Lua and LZ4 come from the
 submodules. Outputs are cached under `build/android/<abi>/`.
 

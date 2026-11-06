@@ -15,13 +15,13 @@ CODEGEN := $(BINDIR)/cgen
 CODEGEN_SRC := $(shell find $(MODULE_ROOT)tools/codegen/src -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGIN_SRC := $(shell find $(MODULE_ROOT)tools/codegen/plugins -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGINS := $(patsubst $(MODULE_ROOT)tools/codegen/plugins/%.c,$(BUILDDIR)/plugins/codegen/lib%.so,$(CODEGEN_PLUGIN_SRC))
-HOST_XML_LIBS := -lxml2
-ifeq ($(shell uname -s),Darwin)
-HOST_SDK := $(shell xcrun --sdk macosx --show-sdk-path)
-HOST_XML_CFLAGS := -isysroot "$(HOST_SDK)" -I"$(HOST_SDK)/usr/include/libxml2"
-else
-HOST_XML_CFLAGS := -I/usr/include/libxml2
-endif
+# The code generator parses .cgen files with libxml2, compiled from libs/libxml2.
+LIBXML2_ROOT := $(MODULE_ROOT)
+LIBXML2_OBJDIR := $(BUILDDIR)/obj/libxml2-host
+include $(MODULE_ROOT)tools/libxml2/libxml2.mk
+# The libxml2 objects are prerequisites of $(CODEGEN), so $^ links them.
+HOST_XML_LIBS :=
+HOST_XML_CFLAGS := -I$(LIBXML2_GENDIR)/include -I$(LIBXML2_SRCDIR)/include
 CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -I$(MODULE_ROOT)tools/codegen/include -I$(MODULE_ROOT)tools/codegen/src $(HOST_XML_CFLAGS)
 CODEGEN_LDFLAGS := $(HOST_XML_LIBS) -ldl $(ARCH_FLAGS)
 CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
@@ -96,7 +96,7 @@ endef
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_DIFF_RULE,$(mod))))
 
 modules-c-diff: modules-c-preview $(foreach mod,$(MODULES),cgen-diff-$(mod))
-$(CODEGEN): $(CODEGEN_SRC) | directories
+$(CODEGEN): $(CODEGEN_SRC) $(LIBXML2_OBJS) | directories
 	$(Q)$(CC) $(CODEGEN_CFLAGS) $^ -o $@ $(CODEGEN_LDFLAGS)
 
 $(BUILDDIR)/plugins/codegen/lib%.so: $(MODULE_ROOT)tools/codegen/plugins/%.c $(MODULE_ROOT)tools/codegen/include/cg_api.h | directories

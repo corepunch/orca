@@ -84,8 +84,12 @@ LUA_CFLAGS = $(VENDOR_CFLAGS) -DLUA_COMPAT_5_3
 LZ4_SRCDIR = libs/lz4/lib
 UNITEOBJECTS += lz4.o
 CFLAGS += -I$(LUA_SRCDIR) -I$(LZ4_SRCDIR)
-# libxml2 comes from the system; zlib is built from its submodule.
-LDFLAGS += -llua5.4 -lxml2 $(ZLIB_LIB) -lm
+# zlib and libxml2 are built from their submodules; libxml2 by tools/libxml2/libxml2.mk.
+LDFLAGS += -llua5.4 $(ZLIB_LIB) -lm
+LIBXML2_ROOT =
+LIBXML2_OBJDIR = $(OBJECTDIR)/libxml2
+include tools/libxml2/libxml2.mk
+CFLAGS += -I$(LIBXML2_GENDIR)/include -I$(LIBXML2_SRCDIR)/include
 # FreeType is compiled from libs/freetype with the module list in
 # source/renderer/third_party/freetype_modules.h. libpng and libjpeg are
 # configured and built from their submodules into build/third-party.
@@ -108,7 +112,6 @@ CFLAGS += -I$(ZLIB_SRCDIR) -I$(FREETYPE_SRCDIR)/include -I$(PNG_SRCDIR) -I$(PNG_
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
-	CFLAGS += -I$(shell xcrun --sdk macosx --show-sdk-path)/usr/include/libxml2
 	LIBS += -framework OpenGL -framework IOSurface
 	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
 	UNITEOBJECTS += media_apple.o
@@ -120,7 +123,6 @@ ifeq ($(UNAME_S),Darwin)
 	LUA_SONAME = -Wl,-install_name,@rpath/liblua5.4.so
 else
 	LIBS += -lGL
-	CFLAGS += -I/usr/include/libxml2
 	EXE_RPATH = -Wl,-rpath,'$$ORIGIN/../../$(LIBDIR)'
 	LUA_CFLAGS += -DLUA_USE_LINUX
 	LUA_SONAME = -Wl,-soname,liblua5.4.so
@@ -184,7 +186,7 @@ $(JPEG_LIB): | directories
 	$(Q)cd $(JPEG_BUILDDIR) && $(abspath $(JPEG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" > configure.log 2>&1
 	$(Q)$(MAKE) -C $(JPEG_BUILDDIR) libjpeg.la > build.log 2>&1
 
-buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(ZLIB_LIB)
+buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(ZLIB_LIB) $(LIBXML2_OBJS)
 $(OBJECTDIR)/lz4.o: $(LZ4_SRCDIR)/lz4.c | directories
 	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
 
@@ -219,10 +221,10 @@ endif
 buildlib: platform lua buildunite
 ifeq ($(shell uname -s),Darwin)
 	$(Q)echo "Linking $(notdir $(TARGETLIB))"
-	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(LIBXML2_OBJS) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
 else
 	$(Q)echo "Linking $(notdir $(TARGETLIB))"
-	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(LIBXML2_OBJS) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
 .SECONDEXPANSION:
@@ -249,9 +251,9 @@ unite: directories lua buildunite buildlib buildplugins app copyshare
 
 # FBX -> .mesh converter used by tools/blender-export.py. Optional: needs the Autodesk FBX SDK.
 FBX_SDK ?= /Applications/Autodesk/FBX SDK/2020.2
-orca-fbx: directories $(ZLIB_LIB)
-	$(CXX) -std=c++17 -O2 -w -I. -Igenerated -I"$(FBX_SDK)/include" tools/fbx-import.cpp \
-		"$(FBX_SDK)/lib/clang/release/libfbxsdk.a" -framework CoreFoundation -liconv -lxml2 $(ZLIB_LIB) \
+orca-fbx: directories $(ZLIB_LIB) $(LIBXML2_OBJS)
+	$(CXX) -std=c++17 -O2 -w -I. -Igenerated -I$(LIBXML2_GENDIR)/include -I$(LIBXML2_SRCDIR)/include -I"$(FBX_SDK)/include" tools/fbx-import.cpp \
+		"$(FBX_SDK)/lib/clang/release/libfbxsdk.a" $(LIBXML2_OBJS) -framework CoreFoundation -liconv $(ZLIB_LIB) \
 		-o $(BINDIR)/orca-fbx
 
 %.o: %.c $(HEADERS) | modules

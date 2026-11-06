@@ -99,21 +99,21 @@ The debug target differs from the production build in the following ways:
 
 The following libraries must be compiled for WASM before running `make webgl`.
 Run `emmake make wasm-deps` once (with `emcc` in PATH) to build and install
-them into `build/wasm-deps/`:
+them into `build/wasm-deps/`. libxml2 (2.13.5) is compiled from `libs/libxml2`
+by `make webgl` itself.
 
 | Library  | Version | Source                                          |
 |----------|---------|-------------------------------------------------|
 | lua 5.4  | 5.4.7   | https://www.lua.org/download.html               |
-| libxml2  | 2.9.14  | https://gitlab.gnome.org/GNOME/libxml2          |
 | liblz4   | 1.10.0  | https://github.com/lz4/lz4                      |
 | FreeType | 2.15.0  | `libs/freetype` submodule                       |
 | libpng   | 1.6.59  | `libs/libpng` submodule                         |
 | libjpeg  | IJG 10  | `libs/libjpeg` submodule                        |
 | zlib     | 1.4     | `libs/zlib` submodule                           |
 
-All three are compiled with `CFLAGS="-O2 -DNDEBUG"` (no `-g`) so that no
+The wasm-deps libraries are compiled with `CFLAGS="-O2 -DNDEBUG"` (no `-g`) so that no
 DWARF debug sections are embedded in the resulting `.a` archives.  Without
-this, libxml2's autoconf default CFLAGS would include `-g`, causing DWARF
+this, a configure script's default CFLAGS would include `-g`, causing DWARF
 entries that reference every transitively-included header (including emsdk's
 internal OpenSSL headers) to propagate into the final `orca.js` / `orca.wasm`
 output via Emscripten's DWARF processing pass.

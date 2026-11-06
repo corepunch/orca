@@ -29,7 +29,6 @@ jobs:
           sudo apt install -y \
             luarocks \
             liblua5.4-dev \
-            libxml2-dev \
             zlib1g-dev \
             libcurl4-openssl-dev \
             libwayland-dev \
@@ -134,7 +133,7 @@ jobs:
       - name: Install codegen dependencies
         run: |
           sudo apt update
-          sudo apt install -y pkg-config libxml2-dev zlib1g-dev cmake
+          sudo apt install -y pkg-config zlib1g-dev cmake
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -172,7 +171,7 @@ jobs:
       - name: Install codegen dependencies
         run: |
           sudo apt update
-          sudo apt install -y pkg-config libxml2-dev
+          sudo apt install -y pkg-config
 
       - name: Install Emscripten
         uses: mymindstorm/setup-emsdk@v14
@@ -180,7 +179,7 @@ jobs:
           version: 3.1.74
           actions-cache-folder: emsdk-cache
 
-      - name: Build WASM dependencies (lua5.4, libxml2, liblz4)
+      - name: Build WASM dependencies (lua5.4, liblz4, libpng, libjpeg)
         # Builds into build/wasm-deps/ (WASM_DEPS_DIR default in Makefile.webgl).
         run: emmake make wasm-deps
 
