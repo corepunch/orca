@@ -54,6 +54,20 @@ struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageASTC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageJPEG(GLenum target, struct AXbuffer* rgb);
 struct AXsize R_TexImageJPEGwithAlpha(GLenum target,struct AXbuffer* rgb,struct AXbuffer* alpha,bool_t premultiply_alpha);
+struct AXsize R_PNGSize(struct AXbuffer* sb);
+struct AXsize R_JPEGSize(struct AXbuffer* sb);
+
+// Headless layout reads dimensions from the header without a GL texture.
+struct AXsize
+R_ImageSize(struct AXbuffer* sb)
+{
+  static byte_t const png_signature[8] = { 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n' };
+  if (!sb || !sb->data || sb->cursize < sizeof png_signature) return MAKE_TEX_SIZE(0, 0);
+  byte_t const* bytes = sb->data;
+  if (bytes[0] == 0xff && bytes[1] == 0xd8) return R_JPEGSize(sb);
+  if (!memcmp(bytes, png_signature, sizeof png_signature)) return R_PNGSize(sb);
+  return MAKE_TEX_SIZE(0, 0);
+}
 
 
 void

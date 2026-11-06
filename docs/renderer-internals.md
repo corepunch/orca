@@ -56,7 +56,7 @@ Available built-in shader types:
 
 ## Text Rendering Pipeline
 
-`TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via the vendored `stb_truetype`, then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).
+`TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via FreeType (`libs/freetype`), then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).
 
 ### Font registration and loading
 
@@ -81,10 +81,10 @@ When layout or draw requests text, the `TextBlockConcept` handler for `MakeText`
 
 `TextBlockText_Print()` calls `T_LayoutText(bRender=TRUE)` which does a **two-pass** layout:
 
-- **Pass 1** (`bRender=FALSE`): measures each word with `T_MeasureWord()` using stb glyph advances and kerning to determine the final pixel dimensions. No allocation.
+- **Pass 1** (`bRender=FALSE`): measures each word with `T_MeasureWord()` using FreeType glyph advances and kerning to determine the final pixel dimensions. No allocation.
 - **Pass 2** (`bRender=TRUE`): allocates a `uint8_t` bitmap of `width × height` bytes (alpha8), then blits each word with `T_BlitWord()`:
     - `T_BeginRun()` calls `FontFamily_GetFace()` then `FontFace_GetMetrics()` for the requested pixel height.
-    - `T_BlitWord()` calls `FontFace_RenderGlyph()`, then `T_BlitGlyph()` copies each grayscale bitmap row into the pixel buffer with stb advance and kerning values.
+    - `T_BlitWord()` calls `FontFace_RenderGlyph()`, then `T_BlitGlyph()` copies each grayscale bitmap row into the pixel buffer with FreeType advance and kerning values.
   - `T_BlitEllipsis()` renders trailing `"..."` when `TextOverflow=ellipsis`.
   - `T_BlitUnderline()` fills horizontal spans for `TextDecoration=underline`.
 
@@ -144,7 +144,7 @@ Node2D_Draw2DContent
 
 ### 3D draw path (`TextBlock3D`)
 
-The stb_truetype rasterization path is identical to 2D. The difference is the entry point and the `ViewEntity` setup:
+The FreeType rasterization path is identical to 2D. The difference is the entry point and the `ViewEntity` setup:
 
 ```
 Viewport3D_Node2D_ForegroundContent (Viewport3D.c)
@@ -263,7 +263,7 @@ if (!tr.buffer) {
 
 ### Shutdown Safety
 
-The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `Font_Shutdown` → `AX_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). `Font_Shutdown` releases loaded font bytes; stb_truetype has no global library state. If the renderer was never fully initialized, `renderer_Shutdown` returns early and `AX_Shutdown` tears down the window system cleanly.
+The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `Font_Shutdown` → `AX_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). `Font_Shutdown` releases loaded fonts and calls `FT_Done_FreeType`. If the renderer was never fully initialized, `renderer_Shutdown` returns early and `AX_Shutdown` tears down the window system cleanly.
 
 > **Contributor note:** If you add new resources to `struct renderer`, ensure they are initialized with a sentinel value that `renderer_Shutdown` can detect before cleaning them up. The simplest pattern is to initialize to `NULL`/`0` (the `memset(&tr, 0, ...)` in `renderer_Shutdown` already clears them) and guard deletions with `SafeDelete`.
 

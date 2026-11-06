@@ -1,5 +1,7 @@
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_GLYPH_H
+#include FT_ADVANCES_H
 
 #include "r_local.h"
 #include <filesystem/filesystem.h>
@@ -24,7 +26,7 @@ static struct fontface* Font_LoadStyle(lpcString_t, struct FontFamily*, FontStyl
 
 struct fontface
 {
-  stbtt_fontinfo info;
+  FT_Face face;
   byte_t* mem;
 };
 
@@ -34,6 +36,7 @@ static struct _FONTGLOBALS
   struct FontFamily defaultFontStorage;
   struct FontFamily* defaultFont;
   bool_t defaultFontTried;
+  FT_Library ft;
 } fg = { 0 };
 
 static struct FontFamily const*
@@ -77,6 +80,8 @@ FontFamily_GetFace(struct FontFamily const *family, uint32_t fontStyle)
 HRESULT
 Font_Release(struct fontface* font)
 {
+  // Faces die with the library: after FT_Done_FreeType only the memory is left.
+  if (font->face && fg.ft) FT_Done_Face(font->face);
   free(font->mem);
   free(font);
   return S_OK;
@@ -88,13 +93,17 @@ Font_LoadFromMemory(void* buffer,
                     struct FontFamily* family,
                     FontStyle style)
 {
+  if (!fg.ft && FT_Init_FreeType(&fg.ft)) {
+    FONT_ERROR("Unable to initialize FreeType.");
+    return NULL;
+  }
+
   byte_t* mem = ZeroAlloc(fileSize);
   memcpy(mem, buffer, fileSize);
 
-  int const offset = stbtt_GetFontOffsetForIndex(mem, 0);
   struct fontface* fontface = ZeroAlloc(sizeof(*fontface));
-  if (offset < 0 || !stbtt_InitFont(&fontface->info, mem, offset)) {
-    FONT_ERROR("Unable to initialize TrueType font");
+  if (FT_New_Memory_Face(fg.ft, mem, fileSize, 0, &fontface->face)) {
+    FONT_ERROR("Unable to initialize FreeType font");
     free(fontface);
     free(mem);
     return NULL;
@@ -107,6 +116,15 @@ Font_LoadFromMemory(void* buffer,
   return fontface;
 }
 
+// Glyph rasterization sizes the face in pixels: `scale` is pixels per font unit.
+static void
+Face_SetScale(struct fontface* face, float scale)
+{
+  FT_Set_Char_Size(face->face, 0,
+                   (FT_F26Dot6)lroundf(scale * face->face->units_per_EM * 64.0f),
+                   72, 72);
+}
+
 int
 FontFace_GetMetrics(struct fontface* face,
                     float logical_height,
@@ -114,19 +132,16 @@ FontFace_GetMetrics(struct fontface* face,
                     struct font_metrics* metrics)
 {
   if (!face || !metrics || logical_height <= 0 || device_scale <= 0) return FALSE;
-  int ascent;
-  int descent;
-  int line_gap;
-  stbtt_GetFontVMetrics(&face->info, &ascent, &descent, &line_gap);
+  FT_Face const f = face->face;
+  // FontSize specifies the em, not ascent minus descent.
   float const device_height = logical_height * device_scale;
-  // Match FreeType's pixel sizes: FontSize specifies the em, not ascent minus descent.
-  metrics->raster_scale = stbtt_ScaleForMappingEmToPixels(&face->info, device_height);
-  metrics->ascender = (int)ceilf(ascent * metrics->raster_scale);
-  metrics->descender = (int)floorf(descent * metrics->raster_scale);
+  metrics->raster_scale = device_height / f->units_per_EM;
+  metrics->ascender = (int)ceilf(f->ascender * metrics->raster_scale);
+  metrics->descender = (int)floorf(f->descender * metrics->raster_scale);
   metrics->height = metrics->ascender - metrics->descender;
-  metrics->underline_position = (int)floorf(descent * metrics->raster_scale * 0.5f);
-  int space_advance;
-  stbtt_GetCodepointHMetrics(&face->info, ' ', &space_advance, NULL);
+  metrics->underline_position = (int)floorf(f->descender * metrics->raster_scale * 0.5f);
+  FT_Fixed space_advance = 0;
+  FT_Get_Advance(f, FT_Get_Char_Index(f, ' '), FT_LOAD_NO_SCALE, &space_advance);
   metrics->space_advance = (int32_t)lroundf(space_advance * metrics->raster_scale * 65536.0f);
   return TRUE;
 }
@@ -134,15 +149,15 @@ FontFace_GetMetrics(struct fontface* face,
 uint32_t
 FontFace_GetGlyphIndex(struct fontface* face, uint32_t codepoint)
 {
-  return face ? (uint32_t)stbtt_FindGlyphIndex(&face->info, (int)codepoint) : 0;
+  return face ? (uint32_t)FT_Get_Char_Index(face->face, codepoint) : 0;
 }
 
 int32_t
 FontFace_GetGlyphAdvance(struct fontface* face, uint32_t glyph, float scale)
 {
-  int advance;
+  FT_Fixed advance = 0;
   if (!face || !glyph) return 0;
-  stbtt_GetGlyphHMetrics(&face->info, (int)glyph, &advance, NULL);
+  if (FT_Get_Advance(face->face, glyph, FT_LOAD_NO_SCALE, &advance)) return 0;
   return (int32_t)lroundf(advance * scale * 65536.0f);
 }
 
@@ -152,9 +167,10 @@ FontFace_GetGlyphKerning(struct fontface* face,
                          uint32_t right,
                          float scale)
 {
+  FT_Vector kern = { 0, 0 };
   if (!face || !left || !right) return 0;
-  int const kern = stbtt_GetGlyphKernAdvance(&face->info, (int)left, (int)right);
-  return (int32_t)lroundf(kern * scale * 65536.0f);
+  if (FT_Get_Kerning(face->face, left, right, FT_KERNING_UNSCALED, &kern)) return 0;
+  return (int32_t)lroundf(kern.x * scale * 65536.0f);
 }
 
 int
@@ -164,12 +180,18 @@ FontFace_GetGlyphBounds(struct fontface* face,
                         struct font_glyph* output)
 {
   if (!face || !glyph || !output) return FALSE;
-  int right, bottom;
   memset(output, 0, sizeof(*output));
-  stbtt_GetGlyphBitmapBox(&face->info, (int)glyph, scale, scale,
-                          &output->xoff, &output->yoff, &right, &bottom);
-  output->width = right - output->xoff;
-  output->height = bottom - output->yoff;
+  Face_SetScale(face, scale);
+  if (FT_Load_Glyph(face->face, glyph, FT_LOAD_DEFAULT)) return FALSE;
+  FT_Glyph image;
+  if (FT_Get_Glyph(face->face->glyph, &image)) return FALSE;
+  FT_BBox box;
+  FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &box);
+  FT_Done_Glyph(image);
+  output->xoff = (int)box.xMin;
+  output->yoff = -(int)box.yMax;
+  output->width = (int)(box.xMax - box.xMin);
+  output->height = (int)(box.yMax - box.yMin);
   return output->width > 0 && output->height > 0;
 }
 
@@ -181,22 +203,32 @@ FontFace_RenderGlyph(struct fontface* face,
 {
   if (!face || !glyph || !output) return FALSE;
   memset(output, 0, sizeof(*output));
-  output->bitmap = stbtt_GetGlyphBitmap(&face->info,
-                                       scale,
-                                       scale,
-                                       (int)glyph,
-                                       &output->width,
-                                       &output->height,
-                                       &output->xoff,
-                                       &output->yoff);
-  return output->bitmap != NULL;
+  Face_SetScale(face, scale);
+  if (FT_Load_Glyph(face->face, glyph, FT_LOAD_DEFAULT) ||
+      FT_Render_Glyph(face->face->glyph, FT_RENDER_MODE_NORMAL)) {
+    return FALSE;
+  }
+  FT_Bitmap const* bitmap = &face->face->glyph->bitmap;
+  if (!bitmap->width || !bitmap->rows || bitmap->pitch < 0) return FALSE;
+  output->bitmap = malloc((size_t)bitmap->width * bitmap->rows);
+  if (!output->bitmap) return FALSE;
+  for (unsigned row = 0; row < bitmap->rows; row++) {
+    memcpy(output->bitmap + (size_t)row * bitmap->width,
+           bitmap->buffer + (size_t)row * bitmap->pitch,
+           bitmap->width);
+  }
+  output->width = (int)bitmap->width;
+  output->height = (int)bitmap->rows;
+  output->xoff = face->face->glyph->bitmap_left;
+  output->yoff = -face->face->glyph->bitmap_top;
+  return TRUE;
 }
 
 void
 FontFace_FreeGlyph(struct font_glyph* glyph)
 {
   if (!glyph) return;
-  stbtt_FreeBitmap(glyph->bitmap, NULL);
+  free(glyph->bitmap);
   glyph->bitmap = NULL;
 }
 
@@ -249,6 +281,10 @@ Font_Shutdown(void)
   fg.defaultFont = NULL;
   fg.defaultFontTried = FALSE;
 
+  if (fg.ft) {
+    FT_Done_FreeType(fg.ft);
+    fg.ft = NULL;
+  }
 }
 
 static struct fontface*

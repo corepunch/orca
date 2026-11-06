@@ -86,6 +86,21 @@ UNITEOBJECTS += lz4.o
 CFLAGS += -I$(LUA_SRCDIR) -I$(LZ4_SRCDIR)
 # zlib and libxml2 come with the system: the macOS SDK or the distribution's packages.
 LDFLAGS += -llua5.4 -lxml2 -lz -lm
+# FreeType is compiled from libs/freetype with the module list in
+# source/renderer/third_party/freetype_modules.h. libpng and libjpeg are
+# configured and built from their submodules into build/third-party.
+THIRD_PARTY_DIR = $(BUILDDIR)/third-party
+FREETYPE_SRCDIR = libs/freetype
+FREETYPE_MODULES_H = source/renderer/third_party/freetype_modules.h
+FREETYPE_SRCS = base/ftbase.c base/ftinit.c base/ftsystem.c base/ftglyph.c base/ftbitmap.c base/ftdebug.c base/ftmm.c gzip/ftgzip.c autofit/autofit.c truetype/truetype.c cff/cff.c psaux/psaux.c psnames/psnames.c pshinter/pshinter.c sfnt/sfnt.c smooth/smooth.c raster/raster.c
+FREETYPE_OBJS = $(patsubst %.c,$(OBJECTDIR)/freetype/%.o,$(FREETYPE_SRCS))
+PNG_SRCDIR = libs/libpng
+PNG_BUILDDIR = $(THIRD_PARTY_DIR)/libpng
+PNG_LIB = $(PNG_BUILDDIR)/.libs/libpng16.a
+JPEG_SRCDIR = libs/libjpeg
+JPEG_BUILDDIR = $(THIRD_PARTY_DIR)/libjpeg
+JPEG_LIB = $(JPEG_BUILDDIR)/.libs/libjpeg.a
+CFLAGS += -I$(FREETYPE_SRCDIR)/include -I$(PNG_SRCDIR) -I$(PNG_BUILDDIR) -I$(JPEG_SRCDIR) -I$(JPEG_BUILDDIR)
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
@@ -129,7 +144,7 @@ build: default
 
 # Phony: a module target such as /media must not match an existing root directory.
 .PHONY: $(SOURCEMODULES2)
-$(SOURCEMODULES2): /%: | modules directories
+$(SOURCEMODULES2): /%: $(PNG_LIB) $(JPEG_LIB) | modules directories
 	$(Q)echo "Compiling $(notdir $@)"
 	$(Q)find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
@@ -140,10 +155,24 @@ $(SOURCEMODULES2): | directories
 
 lua: $(LUA_LIB) $(LUA_BIN)
 
-$(LUA_SRCDIR)/lua.h $(LZ4_SRCDIR)/lz4.c:
+$(LUA_SRCDIR)/lua.h $(LZ4_SRCDIR)/lz4.c $(FREETYPE_SRCDIR)/src/base/ftbase.c $(PNG_SRCDIR)/configure $(JPEG_SRCDIR)/configure:
 	$(error Submodules are missing. Run: git submodule update --init --recursive)
 
-buildunite: $(OBJECTDIR)/lz4.o
+$(OBJECTDIR)/freetype/%.o: $(FREETYPE_SRCDIR)/src/%.c $(FREETYPE_MODULES_H) | directories
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CC) $(VENDOR_CFLAGS) -I. -I$(FREETYPE_SRCDIR)/include -DFT2_BUILD_LIBRARY -DFT_CONFIG_MODULES_H='"$(FREETYPE_MODULES_H)"' -c $< -o $@
+
+$(PNG_LIB): | directories
+	$(Q)mkdir -p $(PNG_BUILDDIR)
+	$(Q)cd $(PNG_BUILDDIR) && $(abspath $(PNG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" > configure.log 2>&1
+	$(Q)$(MAKE) -C $(PNG_BUILDDIR) libpng16.la > build.log 2>&1
+
+$(JPEG_LIB): | directories
+	$(Q)mkdir -p $(JPEG_BUILDDIR)
+	$(Q)cd $(JPEG_BUILDDIR) && $(abspath $(JPEG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" > configure.log 2>&1
+	$(Q)$(MAKE) -C $(JPEG_BUILDDIR) libjpeg.la > build.log 2>&1
+
+buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB)
 $(OBJECTDIR)/lz4.o: $(LZ4_SRCDIR)/lz4.c | directories
 	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
 
@@ -178,10 +207,10 @@ endif
 buildlib: platform lua buildunite
 ifeq ($(shell uname -s),Darwin)
 	$(Q)echo "Linking $(notdir $(TARGETLIB))"
-	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
 else
 	$(Q)echo "Linking $(notdir $(TARGETLIB))"
-	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
 .SECONDEXPANSION:
