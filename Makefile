@@ -241,7 +241,7 @@ else
 		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca $(PLUGIN_EXTRA_LIBS_$*) -o $@ $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..'
 endif
 
-app: modules platform lua
+app: modules platform lua $(ZLIB_LIB)
 	$(Q)echo "Linking $(APPNAME)"
 	$(Q)$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
@@ -425,7 +425,7 @@ test-live-emulated:
 	$(NODE) --test-reporter=spec $(CHAT_LIVE_DIR)/emulated.js
 
 ifeq ($(UNAME_S),Darwin)
-$(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules $(LUA_LIB) | directories
+$(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules $(LUA_LIB) $(ZLIB_LIB) | directories
 	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
 
 test-media: $(BINDIR)/test_media
