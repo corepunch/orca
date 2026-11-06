@@ -14,6 +14,13 @@
     <external struct="StructDesc"/>
   </externals>
   <enums>
+    <enum name="Appearance">
+      <summary>Controls the light or dark appearance of a styled subtree.</summary>
+      <value name="Inherit">Use the nearest ancestor appearance, or the operating system when none is set.</value>
+      <value name="System">Follow the operating system, ignoring an ancestor's forced appearance.</value>
+      <value name="Light">Use the light palette.</value>
+      <value name="Dark">Use the dark palette.</value>
+    </enum>
     <enum name="ScrollPhase">
       <summary>Direct-touch scrolling lifecycle; None preserves ordinary wheel scrolling.</summary>
       <value name="None">Discrete wheel event</value>
@@ -849,6 +856,7 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
       </handles>
       <properties>
         <property name="StyleSheet" type="StyleSheet" pointer="true">The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.</property>
+        <property name="Appearance" type="Appearance" default="Inherit">Appearance for this object and descendants. Inherit follows the nearest ancestor or the operating system. System resets an ancestor override; Light and Dark force a palette. Changes restyle retained descendants without rebuilding them.</property>
         <property name="StateClasses" type="string">Space-separated style classes derived from data, normally bound to a record field (for example StateClasses="{Binding DataContext/State}"). Replacing the value removes the classes it previously added, keeps authored classes, and restyles the object and its descendants. Bound values are not serialized as authored classes.</property>
       </properties>
       <fields>

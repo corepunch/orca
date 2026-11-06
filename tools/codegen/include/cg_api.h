@@ -48,7 +48,7 @@ typedef enum cg_kind {
  *   METHOD    : name=method-name  type=return-type  extra=export-name
  *   MESSAGE   : name=msg-name     type=routing      extra=same-as (parent msg)
  *   FIELD     : name=field-name   type=C-type       extra=fixed-array-count
- *   PROPERTY  : name=prop-name    type=C-type       extra=default-value
+ *   PROPERTY  : name=prop-name    type=C-type       extra=default-value aux=inspector-group aux2=inspector-label
  *   HANDLE    : name=NS.MsgName   type=""           extra=""
  *   ARG       : name=arg-name     type=C-type       extra=default-value
  *   RETURNS   : name=""           type=C-type       extra=default-value

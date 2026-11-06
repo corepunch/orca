@@ -1,0 +1,9 @@
+<Button Height="44" Click="Choose" MouseMoved="Hover" class="value-picker-row resource-choice">
+  <Grid Columns="18px 1fr" Spacing="8" IgnoreHitTest="true">
+    <VectorView Source="{Binding DataContext/Icon}" class="property-resource-icon"/>
+    <Grid Rows="1fr 1fr" Columns="1fr">
+      <TextBlock Text="{Binding DataContext/Label}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
+      <TextBlock Text="{Binding DataContext/Path}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" class="picker-detail"/>
+    </Grid>
+  </Grid>
+</Button>

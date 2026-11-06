@@ -6,8 +6,9 @@ it, and the Inspector on the right. The edited project runs in a separate
 `orca -server=true` process; every change is applied to that running scene
 and the preview is re-rendered from it. Panels, menus and dialogs use native
 UIKit controls authored in XML. Buttons, inputs and checkboxes use the
-engine's default stylesheet with a dark palette from `package.lua`; the
-editor's own CSS only sizes and lays out its panels.
+engine's default stylesheet with semantic light/dark palettes from
+`package.lua`. Appearance follows the operating system and updates retained
+controls immediately, preserving focus, selection and unfinished text.
 
 Panels never build rows themselves. The runtime answers each panel's
 `XmlDataSource` with typed records, including the icon path for every node
@@ -35,8 +36,10 @@ directly.
 | Find a node | Ctrl+F focuses the Hierarchy search field; Enter applies the filter |
 | Create a child | Create menu, Hierarchy + button, or right-click > Create Child (common classes first, the rest under More) |
 | Rename, duplicate, delete | F2 / Ctrl+D / Delete, or the Hierarchy context menu |
-| Edit a value | Click it in the Inspector: checkboxes toggle, enums open a dropdown, other values edit inline |
-| Edit Margin, Padding, BorderWidth, BorderRadius | Type all edges in one row (`4`, `4 8` or `left top right bottom`), or expand the row to edit each edge |
+| Edit a value | Checkboxes toggle; enums open a keyboard-accessible dropdown; strings and numbers edit inline. Enter or leaving a field commits; Escape restores its value. |
+| Edit Margin, Padding, SafeArea or BorderWidth | Edit labelled L/T/R/B fields in one compact row; expand the disclosure to access individual bindings. |
+| Edit a mixed compound such as Font | Expand its concise summary to edit family, size, weight and other fields. |
+| Choose an object/resource | Click the resource chip to browse compatible objects. The picker shows canonical paths, supports filtering and includes None. |
 | Bind a property | Click the binding button beside a property, press Ctrl+B, or use its context menu |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) |
 | Save | Ctrl+S writes the open document back to its XML file |
@@ -78,7 +81,7 @@ completion viewports are clipped and scroll without covering the dialog footer.
 | `Screens/Editor.xml`, `App.lua` | XML shell, shared runtime connection, global commands |
 | `Pages/*.xml`, `Templates/*.xml` | Hierarchy, Project and Inspector layouts and row templates |
 | `Views/*.xml`, `Styles/editor.css` | Native menus, headers, logs, inputs, dialogs and editor layout styling |
-| `package.lua` `ThemeLibrary`, `Icons/*.svg` | Dark `ui-*` palette for the engine default stylesheet; Lucide icons named by runtime records |
+| `package.lua` `ThemeLibrary`, `Icons/*.svg` | Semantic light/dark palettes for the engine default stylesheet; Lucide icons named by runtime records |
 | `Data/Editor.Schema.xml` | Typed runtime node, file and property records |
 | `Scripts/Workspace.lua` | Selection, edit/save commands, undo/redo and events |
 | `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panel actions and source request parameters |
@@ -118,6 +121,7 @@ reply is an XML `<response status="success|error">` document.
 | `get/data-project` | Native file records for the Project list |
 | `get/data-scene/<doc>?filter=...&collapsed=...` | Native node records projected into visible hierarchy rows |
 | `get/data-properties/<path>` | Typed property records and enum options for the Inspector |
+| `get/data-resources/<path>?property=<qualified>&filter=...` | Compatible typed resource records for the native picker |
 | `get/data-functions` | Native function catalog for the binding palette |
 | `get/project-overview` | Project metadata for document commands |
 | `get/startup-screen`, `get/scene-hierarchy/<doc>` | Node tree |
@@ -128,6 +132,24 @@ reply is an XML `<response status="success|error">` document.
 | `get/snapshot/<doc>?width=&height=&file=` | Render offscreen to PNG, plus each node's rectangle |
 | `get/binding-functions`, `get/class/<base>` | Completion data |
 | `post/save/<doc>` | Replay this session's edits onto the source XML |
+
+Inspector compounds come from generated shorthand/struct metadata; explicit
+`inspector-group` and `inspector-label` metadata covers independently declared
+groups such as SafeArea. Numeric compounds include native `Fields` records;
+mixed compounds expose a summary and only emit detail rows when expanded or
+matched by a filter. Each leaf keeps its qualified property identifier, value,
+binding and read-only state. Lua handles actions without converting runtime
+records to tables. The same native list picker displays enum options and
+resource results directly.
+
+The interaction follows compact spacing controls in
+[Figma](https://help.figma.com/hc/en-us/articles/31289464393751-Use-the-horizontal-and-vertical-flows-in-auto-layout),
+expandable property editors and binding markers in
+[Visual Studio](https://learn.microsoft.com/en-us/visualstudio/xaml-tools/creating-a-ui-by-using-xaml-designer-in-visual-studio),
+and typed object fields in
+[Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-uxml-element-ObjectField.html).
+Collapsible groups also follow the rollout approach used in
+[3ds Max](https://help.autodesk.com/cloudhelp/2024/ENU/3DSMax-Basics/files/GUID-FD2F49B2-B86F-445B-AE4B-03F020671485.htm).
 
 ## Saving
 

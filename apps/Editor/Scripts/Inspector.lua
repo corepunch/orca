@@ -4,6 +4,7 @@ local DataPanel = require "Editor.Scripts.DataPanel"
 local Native = require "Editor.Scripts.Native"
 local Workspace = require "Editor.Scripts.Workspace"
 local Menu = require "Editor.Scripts.Menu"
+local ValuePicker = require "Editor.Scripts.ValuePicker"
 local Inspector = Class:extend { title = "Inspector" }
 Inspector.focus, Inspector.invalidate, Inspector.checkResize = DataPanel.focus, DataPanel.invalidate, DataPanel.checkResize
 Inspector.selectedItem = DataPanel.selected
@@ -43,6 +44,19 @@ function Inspector:submitValue(item, args)
     if args.Text ~= item.Value then Workspace.setValue(self.path, item.PropertyName, args.Text) end
     return true
 end
+function Inspector:commitValue(item, _, sender)
+    if item and sender.Text ~= item.Value then return self:submitValue(item, { Text = sender.Text }) end
+    return false
+end
+function Inspector:fieldKey(item, args, sender)
+    local chord = Native.chord(args)
+    if chord == 'ctrl+b' then return self:editBinding(item) end
+    if self.hotkey and self.hotkey(chord) then return true end
+    if chord == 'escape' and item then
+        sender.Text = item.Value
+    end
+    return sender:send('Node.KeyDown', { keyCode = args.keyCode, text = args.text, modifiers = args.modifiers }) or false
+end
 function Inspector:toggleBoolean(item, args)
     if not item or item.ReadOnly or not self.path then return false end
     -- Binding initialization also emits CheckedChanged; only user changes edit.
@@ -55,22 +69,27 @@ end
 function Inspector:selectEnum(item, _, sender)
     if not item or item.ReadOnly or not self.path then return false end
     if item.HasBinding then return self:editBinding(item) end
-    local menu, options = {}, item:findChild('Options', false)
-    if options then
-        for option in options.children do
-            local value = option.Value
-            menu[#menu + 1] = { label = option.Label, checked = value == item.Value,
-                action = function() Workspace.setValue(self.path, item.PropertyName, value) end }
-        end
-    end
-    local x, y = Native.origin(sender)
-    Menu.show(menu, x, y + (sender.ActualHeight or 30))
+    local path = self.path
+    ValuePicker.show { anchor = sender, items = item:findChild('Options', false), value = item.Value,
+        onAccept = function(value) Workspace.setValue(path, item.PropertyName, value) end }
+    return true
+end
+function Inspector:selectReference(item, _, sender)
+    if not item or item.ReadOnly or not self.path then return false end
+    if item.HasBinding then return self:editBinding(item) end
+    local path = self.path
+    ValuePicker.show { anchor = sender, value = item.Value,
+        request = 'get/data-resources/' .. Workspace.encode(path, true)
+            .. '?property=' .. Workspace.encode(item.PropertyName) .. '&icons=' .. Workspace.encode(DataPanel.icons),
+        onAccept = function(value) Workspace.setValue(path, item.PropertyName, value) end }
     return true
 end
 function Inspector:bindItem(item) return self:editBinding(item) end
 function Inspector:editBinding(item)
     if not item or item.IsGroup or not self.path then return Workspace.log('warning', 'Select a property to bind') end
     if item.ReadOnly then return Workspace.log('warning', '%s is read-only', item.Label) end
+    if item.IsCompound and not item.IsBindable then return self:toggleItem(item) end
+    if not item.IsBindable then return Workspace.log('warning', '%s has no independent binding property', item.Label) end
     self.openBindingEditor {
         path = self.path, property = item.PropertyName, name = item.Label,
         type = item.Kind, expression = item.Expression or '', value = item.Value,
@@ -79,18 +98,27 @@ function Inspector:editBinding(item)
     return true
 end
 function Inspector:propertyIds()
-    local ids = {}
-    if self.source.Items then
-        for record in self.source.Items.children do
-            if not record.IsGroup then ids[#ids + 1] = record.PropertyName end
+    local ids, seen = {}, {}
+    local function collect(source)
+        if not source then return end
+        for record in source.children do
+            if record.IsBindable and not seen[record.PropertyName] then
+                ids[#ids + 1], seen[record.PropertyName] = record.PropertyName, true
+            end
+            collect(record:findChild('Fields', false))
         end
     end
+    collect(self.source.Items)
     return ids
 end
 function Inspector:contextMenu(item, args)
     if not item or item.IsGroup then return false end
+    if item.IsCompound and not item.IsBindable then
+        Menu.show({ { label = item.Expanded and 'Collapse' or 'Expand', action = function() self:toggleItem(item) end } }, args.x, args.y)
+        return true
+    end
     Menu.show({
-        { label = item.HasBinding and 'Edit Binding' or 'Add Binding', shortcut = 'Ctrl+B', disabled = item.ReadOnly,
+        { label = item.HasBinding and 'Edit Binding' or 'Add Binding', shortcut = 'Ctrl+B', disabled = item.ReadOnly or not item.IsBindable,
             action = function() self:editBinding(item) end },
         { label = 'Remove Binding', disabled = not item.HasBinding or item.ReadOnly,
             action = function() Workspace.setBinding(self.path, item.PropertyName, '', 'Expression') end },

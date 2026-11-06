@@ -327,6 +327,15 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, ", .TypeString = \"%s\"",
                 n ? export_name(n) : actual_type) < 0) return -1;
     }
+    cg_node const *owner = find_kind(m, owner_name, CG_KIND_CLASS);
+    if (owner) cg_foreach(m, owner->id, CG_KIND_PROPERTY, property) {
+        if (strcmp(property->name, segs[0])) continue;
+        if (property->aux && property->aux[0])
+            if (ob_printf(b, ", .InspectorGroup = \"%s\"", property->aux) < 0) return -1;
+        if (property->aux2 && property->aux2[0])
+            if (ob_printf(b, ", .InspectorLabel = \"%s\"", property->aux2) < 0) return -1;
+        break;
+    }
     if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
     return 0;
 }

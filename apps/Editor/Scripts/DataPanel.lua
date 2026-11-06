@@ -21,7 +21,7 @@ function Controller.invalidate() end
 function Controller.checkResize() end
 
 function Controller.move(panel, delta)
-	local source, previous = panel.source.Items, nil
+	local source, previous = panel.list.ItemsSource, nil
 	if not source then return end
 	local current = panel.list.SelectedValue
 	local property = panel.list.ValueProperty or "Name"
@@ -80,8 +80,11 @@ Controller.Refresh = dispatch("reload")
 Controller.Create = dispatch("showCreateMenu")
 Controller.Bind = dispatch("bindItem")
 Controller.Value = dispatch("submitValue")
+Controller.Commit = dispatch("commitValue")
+Controller.FieldKey = dispatch("fieldKey")
 Controller.Boolean = dispatch("toggleBoolean")
 Controller.Enum = dispatch("selectEnum")
+Controller.Reference = dispatch("selectReference")
 Controller.Key = function(_, args, sender)
 	local panel = Native.owner(sender)
 	local chord = Native.chord(args)

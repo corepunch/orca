@@ -1731,4 +1731,73 @@ end
 
 test_focus_styles_restore_component_defaults()
 
+local function test_appearance_change_restyles_existing_views()
+  local system = require "orca.system"
+  local screen = ui.Screen {
+    Width = 320, Height = 200, ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString ".appearance-field { opacity: 0.7; }",
+  }
+  local panel = screen + ui.StackView { Name = "Panel" }
+  local field = panel + ui.Input { Name = "Draft", Text = "unsaved {value}", class = "appearance-field" }
+  field:setFocus()
+  test.expect_near(field.Opacity, 0.7, 0.001, "initial palette applies")
+
+  -- The appearance event must update retained descendants, even while editing.
+  screen.StyleSheet = ui.loadObjectFromCssString ".appearance-field { opacity: 0.9; }"
+  local event = system.Event { message = "Window.AppearanceChanged" }
+  test.expect(system.dispatchMessage(screen, event), "appearance event requests a repaint")
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.9, 0.001, "appearance event reapplies descendant styles")
+  test.expect_eq(screen:findChild("Draft", true), field, "appearance changes retain controls")
+  test.expect_eq(field.Text, "unsaved {value}", "appearance changes preserve drafts")
+  test.expect(field:isFocused(), "appearance changes preserve text-input focus")
+  screen:setFocus()
+  field:removeFromParent()
+  panel:removeFromParent()
+  print("PASS: test_appearance_change_restyles_existing_views")
+end
+
+test_appearance_change_restyles_existing_views()
+
+local function test_appearance_scopes()
+  local system = require "orca.system"
+  local screen = ui.Screen {
+    Width = 320, Height = 200, ResizeMode = "NoResize", Appearance = "Light",
+    StyleSheet = ui.loadObjectFromCssString [[
+      .appearance-probe { opacity: 0.25; }
+      .appearance-probe:dark { opacity: 0.75; }
+    ]],
+  }
+  local panel = screen + ui.StackView {}
+  local field = panel + ui.Input { Text = "draft", class = "appearance-probe" }
+  field:setFocus()
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.25, 0.001, "a light root scopes descendants")
+
+  screen.Appearance = "Dark"
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.75, 0.001, "appearance changes restyle existing descendants")
+  panel.Appearance = "Light"
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.25, 0.001, "a nested light scope overrides a dark ancestor")
+  panel.Appearance = "System"
+  core.flushQueue()
+  test.expect_near(field.Opacity, system.is_dark_theme() and 0.75 or 0.25, 0.001,
+    "System resets an ancestor override to the operating system")
+  panel.Appearance = "Inherit"
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.75, 0.001, "Inherit restores the ancestor's appearance")
+  screen.Appearance = "Light"
+  core.flushQueue()
+  test.expect_near(field.Opacity, 0.25, 0.001, "returning to light removes dark overrides")
+  test.expect_eq(field.Text, "draft", "appearance scopes retain drafts")
+  test.expect(field:isFocused(), "appearance scopes retain focus")
+  screen:setFocus()
+  field:removeFromParent()
+  panel:removeFromParent()
+  print("PASS: test_appearance_scopes")
+end
+
+test_appearance_scopes()
+
 print("All style tests passed.")

@@ -24,6 +24,23 @@ The Example stylesheet uses `var(--accent)` to resolve these theme keys;
 ORCA's `$accent` notation is also used by property values. A `ThemeLibrary`
 key is not a browser custom-property declaration or a full CSS variables API.
 
+Use `:dark` rules for the operating system's dark appearance, with ordinary
+rules defining the light palette. `StyleController.Appearance` defaults to
+`Inherit`: descendants use their nearest ancestor's appearance, and a root
+follows the operating system. Set `Appearance="Light"` or `"Dark"` to force
+a palette for a subtree, or `"System"` to follow the operating system inside
+an overridden subtree. Changing the property restyles existing descendants.
+On platforms that report appearance changes, dispatching
+`Window.AppearanceChanged` automatically reapplies styles to the
+retained screen tree and requests a repaint. This preserves focus, drafts,
+selection and scroll position; it does not reload the application. A Lua
+event-loop handler for that notification can update cached application
+colors using `system.is_dark_theme()`.
+
+The default UIKit stylesheet accepts optional appearance-specific keys such
+as `ui-input-dark` and `ui-control-dark`. Missing dark variants fall back to
+the corresponding `ui-input` and `ui-control` keys, preserving existing palettes.
+
 **Convention:** define colors by their role, including surfaces, text,
 borders, primary actions, and feedback. Keep palette literals in the theme
 rather than repeating hex values throughout views. Add a role when its

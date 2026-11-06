@@ -2,6 +2,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <zlib.h>
+#include <errno.h>
+#include <limits.h>
 
 
 #include <source/filesystem/fs_local.h>
@@ -207,6 +209,50 @@ find_existing_property(struct Object const *obj, struct PropertyType const *pdes
   return NULL;
 }
 
+static struct Object *
+property_object(struct PropertyType const *pd, void const *value)
+{
+  if (!value || !*(void *const *)value) return NULL;
+  return pd->TypeString && strcmp(pd->TypeString, "Object")
+    ? CMP_GetObject(*(void *const *)value) : *(struct Object *const *)value;
+}
+
+/* SourceFile is the filesystem's canonical loadable resource path. Detached
+   scene children instead retain their containing document's path. */
+static void
+object_reference_path(struct Object const *object, LPSTR path, size_t size)
+{
+  if (!object || !size) return;
+  lpcString_t source = OBJ_GetSourceFile(object);
+  if (source && *source) {
+    size_t length = strlen(source), extension = strlen(FS_GetSceneExtension());
+    if (length >= extension && !strcmp(source + length - extension, FS_GetSceneExtension())) length -= extension;
+    snprintf(path, size, "%.*s", (int)length, source);
+    return;
+  }
+  struct Object *parent = OBJ_GetParent(object);
+  if (!parent || parent == FS_GetWorkspace()) {
+    snprintf(path, size, "%s", OBJ_GetName(object));
+    return;
+  }
+  object_reference_path(parent, path, size);
+  size_t used = strlen(path);
+  snprintf(path + used, size - used, "%s%s", used ? "/" : "", OBJ_GetName(object));
+}
+
+static bool_t
+numeric_struct(struct StructDesc const *desc)
+{
+  if (!desc || desc->NumProperties < 2 || desc->NumProperties > 4) return FALSE;
+  FOR_LOOP(i, desc->NumProperties) {
+    struct PropertyType const *field = &desc->Properties[i];
+    if (field->IsArray || field->IsPointer || field->IsReadOnly ||
+        (field->DataType != kDataTypeFloat && field->DataType != kDataTypeInt) ||
+        field->Offset + field->DataSize > desc->StructSize) return FALSE;
+  }
+  return TRUE;
+}
+
 static int
 add_subproperty(xmlNodePtr xml,
                 struct Object const *obj,
@@ -221,16 +267,23 @@ add_subproperty(xmlNodePtr xml,
     return pdesc ? (pdesc->Offset + pdesc->DataSize) : 0;
   }
 
+  struct Property *prop = find_existing_property(obj, pdesc);
   path_t buf = {0};
   if (pdesc->IsArray) snprintf(buf, sizeof(buf), "(array)");
+  else if (dest && pdesc->DataType == kDataTypeObject) {
+    void const *resolved = prop ? PROP_GetValue(prop) : NULL;
+    struct Object *reference = prop ? (resolved ? *(struct Object *const *)resolved : NULL) : property_object(pdesc, dest);
+    object_reference_path(reference, buf, sizeof(buf));
+  }
   else if (dest) OBJ_FormatPropertyValue(pdesc, dest, buf, sizeof(buf));
   if (!xmlCheckUTF8(XMLSTR(buf))) *buf = 0;
   xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
-  if (pdesc->IsArray) _xmlSetProp(n, "data-readonly", "true");
+  if (pdesc->IsArray || pdesc->IsReadOnly) _xmlSetProp(n, "data-readonly", "true");
+  if (pdesc->InspectorLabel && *pdesc->InspectorLabel)
+    _xmlSetProp(n, "data-short-label", pdesc->InspectorLabel);
   if (pdesc->Category && *pdesc->Category) {
     _xmlSetPropFormat(n, "data-id", "%s.%s", pdesc->Category, pdesc->Name);
   }
-  struct Property *prop = find_existing_property(obj, pdesc);
   if (prop && (PROP_GetFlags(prop) & PF_MODIFIED)) {
     _xmlSetProp(n, "data-set", "true");
   }
@@ -256,9 +309,9 @@ add_subproperty(xmlNodePtr xml,
       break;
     case kDataTypeStruct:
       _xmlSetProp(n, "data-compound", "true");
-      /* Fields come from the struct descriptor; their values are shown for
-         reference and edited through the parent's textual value. */
       WITH(struct StructDesc const, sd, OBJ_FindStructDesc(pdesc->TypeString), (void)) {
+        bool_t editable = numeric_struct(sd) && sd->StructSize <= pdesc->DataSize;
+        if (editable) _xmlSetProp(n, "data-numeric-struct", "true");
         FOR_LOOP(i, sd->NumProperties) {
           struct PropertyType const *field = &sd->Properties[i];
           if (!field->Name || field->DataType < 0 || field->DataType > kDataTypeObject) continue;
@@ -266,7 +319,20 @@ add_subproperty(xmlNodePtr xml,
           if (dest) OBJ_FormatPropertyValue(field, (byte_t const *)dest + field->Offset, fbuf, sizeof(fbuf));
           if (!xmlCheckUTF8(XMLSTR(fbuf))) *fbuf = 0;
           xmlNodePtr f = _xmlAddProp(n, field->Name, fbuf, field->DataType);
-          _xmlSetProp(f, "data-readonly", "true");
+          if (editable) {
+            if (pdesc->Category && *pdesc->Category) {
+              _xmlSetPropFormat(f, "data-id", "%s.%s.%s", pdesc->Category, pdesc->Name, field->Name);
+            } else {
+              _xmlSetPropFormat(f, "data-id", "%s.%s", pdesc->Name, field->Name);
+            }
+            _xmlSetProp(f, "data-unbindable", "true");
+            if (strlen(field->Name) == 1) {
+              char label[] = {(char)toupper((unsigned char)field->Name[0]), 0};
+              _xmlSetProp(f, "data-short-label", label);
+            }
+          }
+          if (!editable || pdesc->IsReadOnly || (expression && *expression))
+            _xmlSetProp(f, "data-readonly", "true");
         }
       }
       break;
@@ -300,18 +366,6 @@ is_box_shorthand(struct PropertyShorthand const *sh)
   return sh->TypeString && (!strcmp(sh->TypeString, "Thickness") || !strcmp(sh->TypeString, "CornerRadius"));
 }
 
-static struct PropertyShorthand const *
-box_shorthand(struct ClassDesc const *cdesc, uint32_t id, uint32_t *index)
-{
-  FOR_LOOP(i, cdesc->NumShorthands) {
-    struct PropertyShorthand const *sh = &cdesc->Shorthands[i];
-    if (!is_box_shorthand(sh)) continue;
-    FOR_LOOP(t, sh->NumTargets)
-      if (sh->Targets[t].PropertyID == id) return *index = t, sh;
-  }
-  return NULL;
-}
-
 /* Thickness targets run l r t b (then depth); XAML text is l t r b. */
 static void
 format_box(struct PropertyShorthand const *sh, float const *v, LPSTR out, size_t size)
@@ -337,50 +391,127 @@ is_depth_edge(lpcString_t name)
   return (n > 5 && !strcmp(name + n - 5, "Front")) || (n > 4 && !strcmp(name + n - 4, "Back"));
 }
 
-static void
-add_box_shorthand(xmlNodePtr group, struct Object const *obj, struct ClassDesc const *cdesc,
-                  struct PropertyShorthand const *sh, byte_t const *base)
+static bool_t
+shorthand_contains(struct PropertyShorthand const *sh, uint32_t id)
 {
-  float v[6] = {0};
-  struct PropertyType const *leaves[6] = {0};
-  uint32_t n = MIN(sh->NumTargets, 6);
-  FOR_LOOP(i, n) {
-    leaves[i] = class_property(cdesc, sh->Targets[i].PropertyID);
-    if (leaves[i] && leaves[i]->DataType == kDataTypeFloat) v[i] = *(float const *)(base + leaves[i]->Offset);
+  FOR_LOOP(i, sh->NumTargets) if (sh->Targets[i].PropertyID == id) return TRUE;
+  return FALSE;
+}
+
+static bool_t
+shorthand_subset(struct PropertyShorthand const *child, struct PropertyShorthand const *parent)
+{
+  if (!parent || child->NumTargets >= parent->NumTargets) return FALSE;
+  FOR_LOOP(i, child->NumTargets)
+    if (!shorthand_contains(parent, child->Targets[i].PropertyID)) return FALSE;
+  return TRUE;
+}
+
+static struct PropertyShorthand const *
+property_shorthand(struct ClassDesc const *cd, uint32_t id, struct PropertyShorthand const *parent)
+{
+  struct PropertyShorthand const *best = NULL;
+  FOR_LOOP(i, cd->NumShorthands) {
+    struct PropertyShorthand const *sh = &cd->Shorthands[i];
+    if ((!parent || shorthand_subset(sh, parent)) && shorthand_contains(sh, id) &&
+        (!best || sh->NumTargets > best->NumTargets)) best = sh;
   }
-  char value[96];
-  format_box(sh, v, value, sizeof(value));
-  xmlNodePtr row = _xmlNewChild(group, "Box", "name", sh->Name, "value", value, "data-type", "Box");
-  _xmlSetPropFormat(row, "data-id", "%s.%s", sh->Category, sh->Name);
-  _xmlSetProp(row, "data-shorthand", "true");
-  FOR_LOOP(i, n) {
-    if (!leaves[i] || (is_depth_edge(leaves[i]->Name) && v[i] == 0)) continue;
-    add_subproperty(row, obj, leaves[i], base + leaves[i]->Offset);
-    /* PaddingLeft reads as Left under Padding; data-id keeps the full name. */
-    size_t prefix = strlen(sh->Name);
-    if (row->last && !strncmp(leaves[i]->Name, sh->Name, prefix) && leaves[i]->Name[prefix])
-      _xmlSetProp(row->last, "name", leaves[i]->Name + prefix);
-  }
+  return best;
 }
 
 static void
-add_property(struct Object const *obj,
-             struct PropertyType const *pdesc,
-             struct ClassDesc const *cdesc,
-             void const* dest,
-             void* parm)
+add_compound_summary(xmlNodePtr row)
 {
-  xmlNodePtr group = xmlFindNode(parm, XMLSTR(cdesc->ClassName));
-  if (!group) {
-    group = xmlFindNode(parm, XMLSTR(DEFAULT_GROUP));
+  char summary[512] = {0};
+  xmlForEach(child, row) {
+    xmlChar *value = xmlGetProp(child, XMLSTR("value"));
+    if (value && *value) {
+      size_t used = strlen(summary);
+      snprintf(summary + used, sizeof(summary) - used, "%s%s", used ? " · " : "", value);
+    }
+    xmlFree(value);
   }
-  uint32_t index = 0;
-  struct PropertyShorthand const *sh = box_shorthand(cdesc, pdesc->FullIdentifier, &index);
-  if (sh) {
-    if (!index) add_box_shorthand(group, obj, cdesc, sh, (byte_t const *)dest - pdesc->Offset);
+  _xmlSetProp(row, "value", summary);
+}
+
+static void
+add_shorthand(xmlNodePtr group, struct Object const *obj, struct ClassDesc const *cd,
+              struct PropertyShorthand const *sh, byte_t const *base)
+{
+  xmlNodePtr row = _xmlNewChild(group, "Compound", "name", sh->Name, "data-type", sh->TypeString,
+                                "data-shorthand", "true");
+  _xmlSetPropFormat(row, "data-id", "%s.%s", sh->Category, sh->Name);
+  uint32_t order[] = {0, 2, 1, 3, 4, 5};
+  FOR_LOOP(k, sh->NumTargets) {
+    uint32_t i = !strcmp(sh->TypeString, "Thickness") && k < 6 ? order[k] : k;
+    struct PropertyShorthandTarget const *target = &sh->Targets[i];
+    struct PropertyType const *leaf = class_property(cd, target->PropertyID);
+    if (!leaf) continue;
+    struct PropertyShorthand const *child = is_box_shorthand(sh) ? NULL : property_shorthand(cd, target->PropertyID, sh);
+    if (child) {
+      if (child->Targets[0].PropertyID == target->PropertyID) {
+        add_shorthand(row, obj, cd, child, base);
+        size_t prefix = strlen(sh->Name);
+        if (!strncmp(child->Name, sh->Name, prefix) && child->Name[prefix])
+          _xmlSetProp(row->last, "name", child->Name + prefix);
+      }
+      continue;
+    }
+    if (is_depth_edge(leaf->Name) && leaf->DataType == kDataTypeFloat &&
+        *(float const *)(base + leaf->Offset) == 0) continue;
+    add_subproperty(row, obj, leaf, base + leaf->Offset);
+    lpcString_t label = target->Name;
+    if (!strcmp(sh->TypeString, "Thickness")) {
+      /* Thickness's axis mapping is part of its public shorthand grammar. */
+      static lpcString_t const labels[] = {"Left", "Right", "Top", "Bottom", "Front", "Back"};
+      label = labels[i];
+    }
+    if (!strchr(label, '.') && !strchr(label, '[')) _xmlSetProp(row->last, "name", label);
+    if (!strcmp(sh->TypeString, "Thickness")) {
+      static lpcString_t const labels[] = {"L", "R", "T", "B", "F", "Bk"};
+      _xmlSetProp(row->last, "data-short-label", labels[i]);
+    } else if (!strcmp(sh->TypeString, "CornerRadius")) {
+      static lpcString_t const labels[] = {"TL", "TR", "BR", "BL"};
+      if (i < 4) _xmlSetProp(row->last, "data-short-label", labels[i]);
+    }
+  }
+  add_compound_summary(row);
+}
+
+static void
+add_property(struct Object const *obj, struct PropertyType const *pd,
+             struct ClassDesc const *cd, void const *dest, void *parm)
+{
+  if (pd->IsHidden) return;
+  xmlNodePtr group = xmlFindNode(parm, XMLSTR(cd->ClassName));
+  if (!group) group = xmlFindNode(parm, XMLSTR(DEFAULT_GROUP));
+  if (pd->InspectorGroup && *pd->InspectorGroup) {
+    xmlNodePtr compound = NULL;
+    xmlForEach(child, group) {
+      xmlChar *name = xmlGetProp(child, XMLSTR("name"));
+      bool_t match = name && !strcmp((char *)name, pd->InspectorGroup);
+      xmlFree(name);
+      if (match) { compound = child; break; }
+    }
+    if (!compound) {
+      compound = _xmlNewChild(group, "Compound", "name", pd->InspectorGroup,
+                               "data-shorthand", "true", "data-synthetic", "true");
+      _xmlSetPropFormat(compound, "data-id", "%s.%s", cd->ClassName, pd->InspectorGroup);
+    }
+    add_subproperty(compound, obj, pd, dest);
+    size_t prefix = strlen(pd->InspectorGroup);
+    if (!strncmp(pd->Name, pd->InspectorGroup, prefix) && pd->Name[prefix])
+      _xmlSetProp(compound->last, "name", pd->Name + prefix);
+    add_compound_summary(compound);
     return;
   }
-  add_subproperty(group, obj, pdesc, dest);
+  struct PropertyShorthand const *sh = property_shorthand(cd, pd->FullIdentifier, NULL);
+  if (sh) {
+    if (sh->Targets[0].PropertyID == pd->FullIdentifier)
+      add_shorthand(group, obj, cd, sh, (byte_t const *)dest - pd->Offset);
+    return;
+  }
+  add_subproperty(group, obj, pd, dest);
 }
 
 SV_CMD(GET, node)
@@ -461,10 +592,56 @@ find_property_type(struct Object *obj, lpcString_t name)
                            : OBJ_FindImplicitPropertyType(obj, name);
 }
 
+/* Numeric sealed structs are real atomic properties. Their inspector fields
+   update one reflected component and journal the parent's serialized value. */
+static lpcString_t
+set_struct_component(struct Object *object, lpcString_t path, lpcString_t name,
+                      lpcString_t value, xmlNodePtr response)
+{
+  lpcString_t dot = strrchr(name, '.');
+  if (!dot) return "Unknown property";
+  path_t parent_name = {0};
+  snprintf(parent_name, sizeof(parent_name), "%.*s", (int)(dot - name), name);
+  struct PropertyType const *pd = find_property_type(object, parent_name);
+  struct StructDesc const *sd = pd && pd->DataType == kDataTypeStruct ? OBJ_FindStructDesc(pd->TypeString) : NULL;
+  if (!numeric_struct(sd) || pd->IsArray || pd->IsReadOnly || pd->DataSize > MAX_PROPERTY_STRING ||
+      sd->StructSize > pd->DataSize) return "Unknown property";
+  struct PropertyType const *field = NULL;
+  FOR_LOOP(i, sd->NumProperties)
+    if (!strcmp(sd->Properties[i].Name, dot + 1)) { field = &sd->Properties[i]; break; }
+  if (!field) return "Unknown struct component";
+  struct Property *parent = OBJ_FindLongProperty(object, pd->FullIdentifier);
+  if (!parent) return "Can't create property";
+  if (PROP_GetBindingExpression(parent)) return "Edit the parent's binding instead";
+  void const *current = PROP_GetValue(parent);
+  if (!current) return "Can't read property";
+  float payload[MAX_PROPERTY_STRING / sizeof(float)] = {0};
+  memcpy(payload, current, pd->DataSize);
+  byte_t *component = (byte_t *)payload + field->Offset;
+  path_t previous = {0}, formatted = {0};
+  OBJ_FormatPropertyValue(field, component, previous, sizeof(previous));
+  char *end = NULL;
+  errno = 0;
+  if (field->DataType == kDataTypeFloat && strcasecmp(value, "auto")) strtof(value, &end);
+  else if (field->DataType == kDataTypeInt) {
+    long long number = strtoll(value, &end, 10);
+    if (number < (field->IsUnsigned ? 0 : INT_MIN) || number > (field->IsUnsigned ? (long long)UINT32_MAX : INT_MAX))
+      return "Component value is out of range";
+  } else end = (char *)value + strlen(value);
+  if (errno || !end || end == value) return "Can't parse component value";
+  while (isspace((unsigned char)*end)) end++;
+  if (*end || !parse_property(value, field, component)) return "Can't parse component value";
+  OBJ_FormatPropertyValue(pd, payload, formatted, sizeof(formatted));
+  PROP_SetValue(parent, payload);
+  _xmlAddProp(response, name, previous, field->DataType);
+  record_edit(EDIT_SET, path, pd->Name, formatted, parent_name);
+  return NULL;
+}
+
 /* Assign one textual value the way the XML reader does, recording the previous
    value in the response so the editor can undo the edit. */
 static lpcString_t
-set_property_text(struct Object *obj, lpcString_t path, lpcString_t name, lpcString_t value, xmlNodePtr response)
+set_property_text(lua_State *L, struct Object *obj, lpcString_t path, lpcString_t name, lpcString_t value, xmlNodePtr response)
 {
   struct PropertyType const *pd = find_property_type(obj, name);
   if (!pd) {
@@ -480,6 +657,7 @@ set_property_text(struct Object *obj, lpcString_t path, lpcString_t name, lpcStr
       format_box(sh, v, old, sizeof(old));
       _xmlNewChild(response, "Box", "name", name, "value", old, "data-type", "Box");
     }
+    if (!sh) return set_struct_component(obj, path, name, value, response);
     if (OBJ_SetShorthandValueFromString(obj, name, value)) {
       lpcString_t attribute = strrchr(name, '.');
       record_edit(EDIT_SET, path, attribute ? attribute + 1 : name, value, name);
@@ -490,16 +668,37 @@ set_property_text(struct Object *obj, lpcString_t path, lpcString_t name, lpcStr
   struct Property *p = OBJ_FindLongProperty(obj, pd->FullIdentifier);
   if (!p) return "Can't create property";
   path_t old = {0};
-  OBJ_FormatPropertyValue(pd, PROP_GetValue(p), old, sizeof(old));
+  if (pd->IsReadOnly || pd->IsArray) return "Property is read-only";
+  if (pd->DataType == kDataTypeObject) object_reference_path(PROP_GetObjectValue(p), old, sizeof(old));
+  else OBJ_FormatPropertyValue(pd, PROP_GetValue(p), old, sizeof(old));
   _xmlAddProp(response, name, old, pd->DataType);
-  if (pd->DataType == kDataTypeString) {
+  if (pd->DataType == kDataTypeObject) {
+    struct Object *reference = NULL;
+    bool_t loaded = FALSE;
+    if (value && *value) {
+      reference = find_object(L, value);
+      if (!reference) {
+        char parsed[MAX_PROPERTY_STRING] = {0};
+        if (!parse_property(value, pd, parsed)) return "Can't resolve resource";
+        reference = *(struct Object **)parsed;
+        loaded = TRUE;
+      }
+      if (pd->TypeString && strcmp(pd->TypeString, "Object") &&
+          !OBJ_GetComponent(reference, fnv1a32(pd->TypeString))) {
+        if (loaded) OBJ_ReleaseRef(reference);
+        return "Incompatible resource type";
+      }
+    }
+    PROP_SetValue(p, &reference);
+    if (loaded) OBJ_ReleaseRef(reference);
+  } else if (pd->DataType == kDataTypeString) {
     PROP_SetStringValue(p, value);
   } else {
     char tmp[MAX_PROPERTY_STRING] = {0};
     if (!parse_property(value, pd, tmp)) return "Can't parse value";
     PROP_SetValue(p, tmp);
   }
-  record_edit(EDIT_SET, path, pd->Name, value, name);
+  record_edit(EDIT_SET, path, pd->Name, pd->DataType == kDataTypeObject && !*value ? NULL : value, name);
   return NULL;
 }
 
@@ -514,7 +713,7 @@ SV_CMD(PUT, node)
       OBJ_SetName(obj, arg->value);
       record_edit(EDIT_RENAME, endpoint, NULL, arg->value, NULL);
     } else {
-      lpcString_t err = set_property_text(obj, endpoint, arg->name, arg->value, response);
+      lpcString_t err = set_property_text(L, obj, endpoint, arg->name, arg->value, response);
       if (err) return err;
     }
   }
@@ -869,53 +1068,100 @@ static SV_CMD(GET, data_project) {
   return error;
 }
 
+static bool_t
+property_matches(xmlNodePtr property, lpcString_t group, lpcString_t filter)
+{
+  if (!filter || !*filter || data_matches(group, filter)) return TRUE;
+  xmlChar *name = xmlGetProp(property, XMLSTR("name"));
+  xmlChar *qualified = xmlGetProp(property, XMLSTR("data-id"));
+  bool_t matches = data_matches((char *)name, filter) || data_matches((char *)qualified, filter);
+  xmlFree(name); xmlFree(qualified);
+  if (matches) return TRUE;
+  xmlForEach(child, property)
+    if (child->type == XML_ELEMENT_NODE && xmlStrcmp(child->name, XMLSTR("menu-item")) &&
+        property_matches(child, group, filter)) return TRUE;
+  return FALSE;
+}
+
 static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t group,
                           uint32_t uid, bool_t readonly, int depth,
                           lpcString_t parent_key, lpcString_t filter, lpcString_t expand,
                           lpcString_t icons) {
+  if (!property_matches(prop, group, filter)) return;
   xmlChar *label = xmlGetProp(prop, XMLSTR("name"));
   xmlChar *value = xmlGetProp(prop, XMLSTR("value"));
   xmlChar *qualified = xmlGetProp(prop, XMLSTR("data-id"));
   xmlChar *expression = xmlGetProp(prop, XMLSTR("data-program"));
   xmlChar *locked = xmlGetProp(prop, XMLSTR("data-readonly"));
+  xmlChar *short_label = xmlGetProp(prop, XMLSTR("data-short-label"));
   readonly = readonly || locked;
   lpcString_t property = qualified ? (char *)qualified : (char *)label;
   path_t key = {0};
   snprintf(key, sizeof(key), "%s/%s", parent_key, property ? property : "");
-  if (!data_matches((char *)label, filter) && !data_matches(group, filter)) {
-    xmlForEach(field, prop)
-      if (field->type == XML_ELEMENT_NODE && xmlStrcmp(field->name, XMLSTR("menu-item")))
-        data_property(field, response, group, uid, TRUE, depth + 1, key, filter, expand, icons);
-    xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
-    return;
-  }
   char id[64];
   snprintf(id, sizeof(id), "property-%u-%08x", uid, fnv1a32(key));
   xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
                                 "PropertyName", property ? property : "", "Label", (char *)label,
-                                "Value", value ? (char *)value : "", "Kind", (char *)prop->name,
+                                "ShortLabel", short_label ? (char *)short_label : (char *)label,
+                                "Value", value ? (char *)value : "", "DraftValue", value ? (char *)value : "",
+                                "Kind", (char *)prop->name,
                                 "GroupName", group, "Expression", expression ? (char *)expression : "");
-  xmlChar *shorthand = xmlGetProp(prop, XMLSTR("data-shorthand"));
-  bool_t compound = shorthand != NULL, open = compound && data_collapsed(expand, property);
-  xmlFree(shorthand);
+  bool_t shorthand = xmlHasProp(prop, XMLSTR("data-shorthand")) != NULL;
+  bool_t structure = !shorthand && xmlHasProp(prop, XMLSTR("data-compound"));
+  bool_t numeric_structure = structure && xmlHasProp(prop, XMLSTR("data-numeric-struct"));
+  bool_t compound = shorthand || structure;
+  bool_t open = compound && (data_collapsed(expand, property) || (filter && *filter));
+  bool_t numeric = shorthand || numeric_structure;
+  uint32_t field_count = 0;
+  xmlForEach(field, prop) {
+    if (field->type != XML_ELEMENT_NODE) continue;
+    field_count++;
+    if (xmlStrcasecmp(field->name, XMLSTR("Float")) && xmlStrcasecmp(field->name, XMLSTR("Int"))) numeric = FALSE;
+  }
+  numeric = numeric && field_count >= 2 && field_count <= 4;
   data_flag(row, "IsCompound", compound);
+  data_flag(row, "IsNumericCompound", numeric);
+  if (numeric) {
+    char columns[64] = {0};
+    FOR_LOOP(i, field_count) strncat(columns, i ? " 1fr" : "1fr", sizeof(columns) - strlen(columns) - 1);
+    _xmlSetProp(row, "FieldColumns", columns);
+  }
+  data_flag(row, "IsSummary", compound && !numeric && !structure);
   data_flag(row, "HasChildren", compound);
   data_flag(row, "Expanded", open);
   if (compound) data_icon(row, "DisclosureIcon", icons, open ? "chevron-down" : "chevron-right");
   bool_t boolean = !xmlStrcasecmp(prop->name, XMLSTR("Bool"));
   bool_t enumeration = !xmlStrcasecmp(prop->name, XMLSTR("Enum"));
   bool_t reference = !xmlStrcasecmp(prop->name, XMLSTR("Object"));
+  bool_t color = !xmlStrcasecmp(prop->name, XMLSTR("Color"));
+  bool_t binding = expression && *expression;
   data_flag(row, "IsGroup", FALSE);
   data_flag(row, "IsProperty", TRUE);
   data_flag(row, "ReadOnly", readonly);
-  data_flag(row, "ValueReadOnly", readonly || reference);
+  data_flag(row, "ValueReadOnly", readonly && !reference && (!compound || (structure && !numeric)) && !color);
   data_flag(row, "IsBool", boolean && !readonly);
   data_flag(row, "IsEnum", enumeration && !readonly);
-  data_flag(row, "IsText", !boolean && !enumeration && !reference && !readonly);
+  data_flag(row, "IsText", (!compound || (structure && !numeric)) && !color && !boolean && !enumeration && !reference && !readonly);
   data_flag(row, "IsReference", reference);
+  data_flag(row, "IsColor", color);
+  data_flag(row, "IsBindable", !readonly && (!compound || structure) && !xmlHasProp(prop, XMLSTR("data-unbindable")));
   data_flag(row, "BoolValue", value && (!xmlStrcasecmp(value, XMLSTR("true")) || !xmlStrcmp(value, XMLSTR("1"))));
-  data_flag(row, "HasBinding", expression && *expression);
+  data_flag(row, "HasBinding", binding);
+  _xmlSetProp(row, "State", binding ? "property-bound" : readonly ? "property-readonly" : "");
   xmlSetIntProp(row, XMLSTR("Indent"), depth * 12);
+  if (reference) {
+    xmlChar *type = xmlGetProp(prop, XMLSTR("data-content"));
+    lpcString_t path = value ? (char *)value : "";
+    lpcString_t leaf = strrchr(path, '/');
+    _xmlSetProp(row, "ReferencePath", path);
+    _xmlSetProp(row, "ReferenceType", type ? (char *)type : "Object");
+    if (*path) {
+      _xmlSetProp(row, "ReferenceLabel", leaf ? leaf + 1 : path);
+    } else {
+      _xmlSetPropFormat(row, "ReferenceLabel", "None (%s)", type ? (char *)type : "Object");
+    }
+    xmlFree(type);
+  }
   if (enumeration) {
     xmlNodePtr options = xmlNewChild(row, NULL, XMLSTR("Options"), NULL);
     xmlForEach(option, prop) {
@@ -925,15 +1171,18 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
       xmlFree(text);
     }
   } else if (compound) {
-    /* Edge rows stay editable; they are listed only while expanded. */
-    if (open || (filter && *filter))
+    if (numeric) {
+      xmlNodePtr fields = xmlNewChild(row, NULL, XMLSTR("Fields"), NULL);
       xmlForEach(field, prop)
-        if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, readonly, depth + 1, key, NULL, expand, icons);
+        if (field->type == XML_ELEMENT_NODE) data_property(field, fields, group, uid, readonly, 0, key, NULL, expand, icons);
+    }
+    if (open) xmlForEach(field, prop)
+      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, readonly, depth + 1, key, NULL, expand, icons);
   } else {
     xmlForEach(field, prop)
       if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, TRUE, depth + 1, key, filter, expand, icons);
   }
-  xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
+  xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked); xmlFree(short_label);
 }
 
 static SV_CMD(GET, data_properties) {
@@ -969,6 +1218,140 @@ static SV_CMD(GET, data_properties) {
   }
   xmlFreeNode(tree);
   return error;
+}
+
+struct resource_query {
+  xmlNodePtr response;
+  lpcString_t type, filter, icons;
+};
+
+static bool_t
+resource_class_matches(struct ClassDesc const *cd, lpcString_t type)
+{
+  if (!cd) return FALSE;
+  if (!type || !*type || !strcmp(type, "Object") || !strcmp(cd->ClassName, type)) return TRUE;
+  for (uint32_t const *parent = cd->ParentClasses; *parent; parent++)
+    if (resource_class_matches(OBJ_FindClassW(*parent), type)) return TRUE;
+  return FALSE;
+}
+
+static void
+resource_candidate(struct resource_query *query, lpcString_t label, lpcString_t path,
+                    lpcString_t kind, lpcString_t icon)
+{
+  if (!data_matches(label, query->filter) && !data_matches(path, query->filter)) return;
+  xmlForEach(row, query->response) {
+    xmlChar *value = xmlGetProp(row, XMLSTR("Value"));
+    bool_t duplicate = value && !strcmp((char *)value, path);
+    xmlFree(value);
+    if (duplicate) return;
+  }
+  char id[32];
+  snprintf(id, sizeof(id), "resource-%08x", fnv1a32(path));
+  xmlNodePtr row = _xmlNewChild(query->response, "EditorResource", "name", id, "Id", id,
+                                "Label", label, "Value", path, "Path", path, "Kind", kind);
+  data_icon(row, "Icon", query->icons, icon);
+}
+
+static void
+resource_object(struct resource_query *query, struct Object *object)
+{
+  if (!object) return;
+  if (resource_class_matches(OBJ_FindClass(OBJ_GetClassName(object)), query->type)) {
+    path_t path = {0};
+    object_reference_path(object, path, sizeof(path));
+    lpcString_t leaf = strrchr(path, '/');
+    resource_candidate(query, leaf ? leaf + 1 : path, path, OBJ_GetClassName(object), object_icon(object));
+  }
+  FOR_EACH_OBJECT(child, object) resource_object(query, child);
+}
+
+/* Inspect declarations without constructing screens, controllers or GPU
+   resources just to show their names in a picker. */
+static void
+resource_xml(struct resource_query *query, lpcString_t filename, lpcString_t logical)
+{
+  xmlDocPtr doc = xmlReadFile(filename, NULL, XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+  xmlNodePtr root = doc ? xmlDocGetRootElement(doc) : NULL;
+  struct ClassDesc const *cd = root ? OBJ_FindClass((char *)root->name) : NULL;
+  if (cd && resource_class_matches(cd, query->type) && strcmp(cd->ClassName, "Library")) {
+    lpcString_t label = strrchr(logical, '/');
+    path_t path = {0};
+    lpcString_t ext = strrchr(logical, '.');
+    snprintf(path, sizeof(path), "%.*s", ext ? (int)(ext - logical) : (int)strlen(logical), logical);
+    resource_candidate(query, label ? label + 1 : logical, path, cd->ClassName, "object");
+  } else if (root) {
+    xmlForEach(child, root) {
+      if (child->type != XML_ELEMENT_NODE) continue;
+      cd = OBJ_FindClass((char *)child->name);
+      if (!resource_class_matches(cd, query->type)) continue;
+      xmlChar *name = xmlGetProp(child, XMLSTR("Name"));
+      if (!name) name = xmlGetProp(child, XMLSTR("name"));
+      if (name && *name) {
+        path_t path = {0};
+        lpcString_t ext = strrchr(logical, '.');
+        snprintf(path, sizeof(path), "%.*s/%s", ext ? (int)(ext - logical) : (int)strlen(logical), logical, name);
+        resource_candidate(query, (char *)name, path, cd->ClassName, "object");
+      }
+      xmlFree(name);
+    }
+  }
+  if (doc) xmlFreeDoc(doc);
+}
+
+static void
+resource_directory(struct resource_query *query, lpcString_t directory, lpcString_t logical, unsigned depth)
+{
+  if (depth > 32) return;
+  char **names = NULL;
+  int count = list_dir(directory, &names);
+  FOR_LOOP(i, count) {
+    path_t file = {0}, path = {0};
+    snprintf(file, sizeof(file), "%s/%s", directory, names[i]);
+    snprintf(path, sizeof(path), "%s/%s", logical, names[i]);
+    struct stat st;
+    if (!lstat(file, &st)) {
+      if (S_ISDIR(st.st_mode)) resource_directory(query, file, path, depth + 1);
+      else if (S_ISREG(st.st_mode)) {
+        lpcString_t ext = strrchr(names[i], '.');
+        if (ext && !strcasecmp(ext, ".xml")) resource_xml(query, file, path);
+        else if (ext && !strcasecmp(ext, ".css") && resource_class_matches(OBJ_FindClass("StyleSheet"), query->type))
+          resource_candidate(query, names[i], path, "StyleSheet", "style");
+        else if (ext && (!strcasecmp(ext, ".png") || !strcasecmp(ext, ".jpg") ||
+                 !strcasecmp(ext, ".jpeg") || !strcasecmp(ext, ".svg")) &&
+                 resource_class_matches(OBJ_FindClass("Image"), query->type))
+          resource_candidate(query, names[i], path, "Image", "image");
+      }
+    }
+    free(names[i]);
+  }
+  free(names);
+}
+
+static SV_CMD(GET, data_resources) {
+  REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(lpcString_t, property, SV_ARG("property"), "Missing property");
+  struct PropertyType const *pd = find_property_type(object, property);
+  if (!pd || pd->DataType != kDataTypeObject || pd->IsArray) return "Property is not a resource reference";
+  struct resource_query query = {response, pd->TypeString, SV_ARG("filter"), SV_ARG("icons")};
+  char none[128];
+  snprintf(none, sizeof(none), "None (%s)", pd->TypeString ? pd->TypeString : "Object");
+  resource_candidate(&query, none, "", pd->TypeString ? pd->TypeString : "Object", "x");
+  struct Property *current = find_existing_property(object, pd);
+  void const *resolved = current ? PROP_GetValue(current) : NULL;
+  struct Object *reference = resolved ? *(struct Object *const *)resolved : NULL;
+  if (reference) {
+    path_t path = {0};
+    object_reference_path(reference, path, sizeof(path));
+    lpcString_t leaf = strrchr(path, '/');
+    resource_candidate(&query, leaf ? leaf + 1 : path, path, OBJ_GetClassName(reference), object_icon(reference));
+  }
+  FOR_EACH_OBJECT(project, FS_GetWorkspace()) {
+    resource_object(&query, project);
+    struct Directory *dir = GetDirectory(project);
+    if (dir && dir->Path) resource_directory(&query, dir->Path, OBJ_GetName(project), 0);
+  }
+  return NULL;
 }
 
 static SV_CMD(GET, data_functions) {
@@ -1211,7 +1594,8 @@ apply_edit(xmlDocPtr doc, xmlNodePtr root, struct edit const *e, lpcString_t rel
   switch (e->op) {
     case EDIT_SET:
       if (e->extra && strcmp(e->extra, e->name)) xmlUnsetProp(n, XMLSTR(e->extra));
-      xmlSetProp(n, XMLSTR(e->name), XMLSTR(e->value));
+      if (e->value) xmlSetProp(n, XMLSTR(e->name), XMLSTR(e->value));
+      else xmlUnsetProp(n, XMLSTR(e->name));
       return TRUE;
     case EDIT_RENAME:
       xmlSetProp(n, XMLSTR("Name"), XMLSTR(e->value));
@@ -1348,6 +1732,7 @@ struct {
   { "data-scene/", ROUTE(GET, data_scene) },
   { "data-project", ROUTE(GET, data_project) },
   { "data-properties/", ROUTE(GET, data_properties) },
+  { "data-resources/", ROUTE(GET, data_resources) },
   { "data-functions", ROUTE(GET, data_functions) },
   { "whoami", ROUTE(GET, whoami) },
   { "scene-hierarchy/", ROUTE(GET, scene_hierarchy) },

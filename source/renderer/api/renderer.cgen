@@ -211,6 +211,10 @@
         <message name="ChangedScreen">
           <summary>Sent when the window moves to a different display screen (e.g. monitor with different DPI).</summary>
         </message>
+        <message name="AppearanceChanged">
+          <summary>Sent when the operating system changes its light or dark appearance.</summary>
+          <details>Dispatch reapplies styles recursively to the target screen without rebuilding its content. Applications with cached Lua colors may handle this notification in their event loop and query system.is_dark_theme() to update their palette.</details>
+        </message>
       </messages>
     </interface>
   </interfaces>

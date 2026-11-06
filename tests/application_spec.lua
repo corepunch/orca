@@ -447,6 +447,38 @@ local function test_editor_run_keeps_runtime_and_text_input()
   print("PASS: test_editor_run_keeps_runtime_and_text_input")
 end
 
+local function test_appearance_change_keeps_running_application()
+  local get_message, dispatch, translate = system.getMessage, system.dispatchMessage, system.translateMessage
+  local changed, is_dark = filesystem.hasChangedFiles, system.is_dark_theme
+  local events = { "Window.AppearanceChanged", "Window.Paint", "Window.Closed" }
+  local next_event, dispatched, paints = 0, {}, 0
+  local app = Application()
+  app.screen = { post = function(_, name) if name == "Window.Paint" then paints = paints + 1 end end }
+  system.getMessage = function()
+    next_event = next_event + 1
+    local name = events[next_event]
+    if name then return { is = function(_, candidate) return candidate == name end, name = name } end
+  end
+  system.dispatchMessage = function(screen, event)
+    test.expect_eq(screen, app.screen, "appearance dispatch uses the retained screen")
+    dispatched[#dispatched + 1] = event.name
+    return event.name == "Window.AppearanceChanged"
+  end
+  system.translateMessage = function() end
+  system.is_dark_theme = function() error("Appearance must be event-driven, not polled during paint") end
+  filesystem.hasChangedFiles = function() return false end
+  local ok, result = pcall(app.run, app)
+  system.getMessage, system.dispatchMessage, system.translateMessage = get_message, dispatch, translate
+  filesystem.hasChangedFiles, system.is_dark_theme = changed, is_dark
+  test.expect(ok, tostring(result))
+  test.expect_eq(result, nil, "appearance does not request a reload")
+  test.expect_eq(next_event, 3, "the same application continues until Closed")
+  test.expect_eq(dispatched[1], "Window.AppearanceChanged", "appearance notification reaches the screen")
+  test.expect_eq(dispatched[2], "Window.Paint", "paint following appearance is still dispatched")
+  test.expect_eq(paints, 2, "handled appearance schedules a new paint")
+  print("PASS: test_appearance_change_keeps_running_application")
+end
+
 -- Run all
 test_route_result_stored_in_inner()
 test_layout_content_called()
@@ -466,6 +498,7 @@ test_activate_controller_updates_screen()
 test_application_current_returns_app()
 test_run_dispatches_with_screen()
 test_editor_run_keeps_runtime_and_text_input()
+test_appearance_change_keeps_running_application()
 
 -- ---------------------------------------------------------------------------
 -- Test 16: before_filter runs before the route action

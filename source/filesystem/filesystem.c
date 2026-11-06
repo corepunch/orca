@@ -1210,6 +1210,13 @@ _xml_ds_revert(struct Object *root, const char *params)
   return TRUE;
 }
 
+static struct Object *
+loaded_object_source(struct Object *object, lpcString_t path)
+{
+  if (object && !OBJ_GetSourceFile(object)) OBJ_SetSourceFile(object, path);
+  return object;
+}
+
 // Loads the object at path. A path with an extension goes to the loader
 // registered for it. A bare path tries each loader's extension in turn
 // ("Dir/Name" -> the selected scene extension, ".png", ...) and then entry
@@ -1224,12 +1231,13 @@ FS_LoadObject(lpcString_t path)
   {
     path_t file = {0};
     if (ext) {
-      if (!strcmp(ext, loader->extension)) return loader->fn(1, (const char *[]){ path });
+      if (!strcmp(ext, loader->extension))
+        return loaded_object_source(loader->fn(1, (const char *[]){ path }), path);
       continue;
     }
     int n = snprintf(file, sizeof(file), "%s%s", path, loader->extension);
     if (n > 0 && n < (int)sizeof(file) && FS_FileExists(file)) {
-      return loader->fn(1, (const char *[]){ file });
+      return loaded_object_source(loader->fn(1, (const char *[]){ file }), path);
     }
   }
   struct Object *o = ext ? NULL : FS_GetSceneFormat()->LoadLibrary(path);

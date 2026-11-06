@@ -141,6 +141,9 @@ push_event_message(lua_State *L, struct AXmessage *msg)
     case kEventWindowClosed:
       msg->message = ID_Window_Closed;
       break;
+    case kEventAppearanceChanged:
+      msg->message = ID_Window_AppearanceChanged;
+      break;
   }
   struct AXmessage* out = lua_newuserdata(L, sizeof(struct AXmessage));
   luaL_setmetatable(L, "Event");
@@ -237,6 +240,7 @@ int f_dispatch_message(lua_State* L)
       case ID_Window_Closed:
       case ID_Window_Activated:
       case ID_Window_Deactivated:
+      case ID_Window_AppearanceChanged:
         event->target = lua_isnil(L, 1) ? NULL : *(struct Object **)luaL_checkudata(L, 1, "Object");
         break;
     }
@@ -301,6 +305,12 @@ ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   struct MessageStat *stat = message_stats_enabled ? message_stat : NULL;
   double started = stat ? stats_now_ms() : 0;
   message_stat = NULL;
+  bool_t appearance = target && msg->message == ID_Window_AppearanceChanged;
+  if (appearance) {
+    /* Native appearance synchronization precedes ordinary message routing. */
+    _SendMessage(target, StyleController, ThemeChanged, .recursive = TRUE);
+    OBJ_SetDirty(target);
+  }
   bool_t handled = dispatch_message(L, msg);
   if (stat) {
     float ms = (float)(stats_now_ms() - started);
@@ -309,7 +319,7 @@ ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   }
   OBJ_EndMessage(target);
   axDisposeMessage(msg);
-  return handled;
+  return handled || appearance;
 }
 
 int f_event_gc(lua_State *L)
