@@ -1133,6 +1133,8 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawForeground"/>
+        <handle message="Object.Destroy"/>
+        <handle message="Node2D.ForegroundContent"/>
         <handle message="Node.ScrollWheel"/>
         <handle message="ConsoleView.Println"/>
         <handle message="ConsoleView.Erase"/>
@@ -1150,6 +1152,7 @@
       </properties>
       <fields>
         <field name="_buffer" type="int" pointer="true">Buffer used for characters</field>
+        <field name="_capacity" type="int">Number of cells allocated in _buffer</field>
         <field name="_scroll" type="vec2">Scroll position</field>
       </fields>
       <messages>

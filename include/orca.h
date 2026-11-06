@@ -594,7 +594,7 @@ struct file {
 
 typedef struct reqArg {
   shortStr_t name;
-  shortStr_t value;
+  char value[1024]; /* percent-decoded; long enough for binding expressions */
 } reqArg_t;
 
 struct Package;

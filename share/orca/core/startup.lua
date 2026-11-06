@@ -74,6 +74,9 @@ function Startup.open(Application, path)
 
   Startup.load_plugins()
 
+  -- Server mode backs the Editor app: EditorKit answers its requests on stdin.
+  if SERVER then require "orca.EditorKit" end
+
   local app
   local startup_view_controller = project.StartupViewController
   if startup_view_controller then

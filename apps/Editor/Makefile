@@ -1,30 +1,14 @@
-APP_NAME = orca
-BUILD_DIR = ../../build/bin
-DATA_DIR = .
-LIB_PATH = $(BUILD_DIR)
+# ORCA Editor. PROJECT selects the project to edit (default: ../Example).
+BUILD_DIR = ../../build
+PROJECT ?= ../Example
 
-# Targets
-.PHONY: run clean
+.PHONY: run help
 
 help:
 	@echo "Available targets:"
-	@echo "  run               - Run the game in GUI mode"
-	@echo "  clean             - Clean up build artifacts"
+	@echo "  run [PROJECT=path]  - Open the editor on a project (default ../Example)"
 
 run:
-	@echo "Setting DYLD_LIBRARY_PATH to $(LIB_PATH) and running $(APP_NAME)..."
-	DYLD_LIBRARY_PATH=$(LIB_PATH) $(BUILD_DIR)/$(APP_NAME) $(DATA_DIR)
-
-cluster:
-	@echo "Setting DYLD_LIBRARY_PATH to $(LIB_PATH) and running $(APP_NAME)..."
-	DYLD_LIBRARY_PATH=$(LIB_PATH) $(BUILD_DIR)/$(APP_NAME) -lib=$(BUILD_DIR) -data=$(CLUSTER_DIR)
-
-copy-resources:
-	@echo "Copying contents of current directory to $(RESOURCES_DIR)..."
-	@mkdir -p $(RESOURCES_DIR)  # Ensure the target directory exists
-	@cp -r ./* $(RESOURCES_DIR)
-
-clean:
-	@echo "Cleaning up..."
-	# Add cleaning commands here if needed
-
+	ORCA_EDITOR_PROJECT=$(abspath $(PROJECT)) \
+	LD_LIBRARY_PATH=$(BUILD_DIR)/lib DYLD_LIBRARY_PATH=$(BUILD_DIR)/lib \
+	$(BUILD_DIR)/bin/orca .

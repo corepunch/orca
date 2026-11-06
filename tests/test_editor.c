@@ -131,6 +131,25 @@ static void test_paint_not_consumed_when_hidden(void)
 }
 
 /* ------------------------------------------------------------------ */
+/* Project server request parsing                                      */
+/* ------------------------------------------------------------------ */
+
+static void test_parse_args_decodes_values(void)
+{
+    RUN_TEST("parse_args_percent_decodes_path_and_values", {
+        char url[] = "Example/Screens/Main%20Screen/Root?property=Node.Width"
+                     "&expression=MAX(%7BScreen.Width%7D%2C%20100)&mode=Expression";
+        reqArg_t args[4] = {0};
+        lpcString_t endpoint = FS_ParseArgs(url, args, 4);
+        EXPECT(!strcmp(endpoint, "Example/Screens/Main Screen/Root"));
+        EXPECT(!strcmp(args[0].name, "property"));
+        EXPECT(!strcmp(args[0].value, "Node.Width"));
+        EXPECT(!strcmp(args[1].value, "MAX({Screen.Width}, 100)"));
+        EXPECT(!strcmp(args[2].value, "Expression"));
+    });
+}
+
+/* ------------------------------------------------------------------ */
 /* Entry point                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -148,6 +167,7 @@ int main(void)
     test_backtick_toggles_off();
     test_paint_invokes_draw_when_visible();
     test_paint_not_consumed_when_hidden();
+    test_parse_args_decodes_values();
 
     FS_ShutdownHash();
 

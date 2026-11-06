@@ -121,7 +121,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite lua orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-texture-downscale test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite lua orca-fbx buildlib buildplugins app platform example editor weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-texture-downscale test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -272,6 +272,10 @@ run:
 example:
 	$(TARGET) apps/Example
 
+# Live project editor (apps/Editor). PROJECT=apps/Weather edits another project.
+editor: copyshare
+	ORCA_EDITOR_PROJECT=$(abspath $(or $(PROJECT),apps/Example)) $(TARGET) apps/Editor
+
 # Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.
 cluster: unite
 	CLUSTER_DEMO_START=$(START) $(TARGET) apps/cluster-demo
@@ -348,6 +352,9 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 NODE ?= node
 test-octopus-theme: $(LUA_BIN)
 	$(LUA) tests/test_octopus_theme.lua
+
+test-editor-app: $(LUA_BIN)
+	$(LUA) tests/test_editor_app.lua
 
 test-octopus-startup-api: $(LUA_BIN)
 	$(LUA) tests/test_octopus_startup_api.lua
@@ -757,7 +764,7 @@ $(eval $(call LUA_TEST_RULE,test-event-args,tests/test_event_args.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-event-serialization,tests/test_event_serialization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-controllers,tests/test_controllers.lua,unite))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

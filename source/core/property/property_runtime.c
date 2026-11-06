@@ -478,9 +478,8 @@ tok_op(call)
   CALL_XYZ(EXTRACTEULERY, EXTRACT_XYZ, 1);
   CALL_XYZ(EXTRACTEULERZ, EXTRACT_XYZ, 2);
 
+  /* A typo in an authored or edited binding must not abort the process. */
   Con_Error("Unsupported operation %s\n", token->text);
-
-  assert(0);
 
   return show_error();
 }

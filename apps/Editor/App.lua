@@ -1,0 +1,269 @@
+-- ORCA Editor: menu bar, Hierarchy/Project on the left, live Preview and
+-- Console in the middle, Inspector on the right, status bar at the bottom.
+-- The edited project runs in a separate `orca -server=true` process
+-- (plugins/EditorKit/server.c); set ORCA_EDITOR_PROJECT to choose it.
+local Application = require "orca.core.application"
+local ui = require "orca.UIKit"
+local config = require "Editor.Scripts.config"
+local Terminal = require "Editor.Scripts.Terminal"
+local Workspace = require "Editor.Scripts.Workspace"
+local Popups = require "Editor.Scripts.Popups"
+local Panel = require "Editor.Scripts.Panel"
+local MenuBar = require "Editor.Scripts.MenuBar"
+local Hierarchy = require "Editor.Scripts.Hierarchy"
+local ProjectView = require "Editor.Scripts.ProjectView"
+local Inspector = require "Editor.Scripts.Inspector"
+local Preview = require "Editor.Scripts.Preview"
+local Console = require "Editor.Scripts.Console"
+local StatusBar = require "Editor.Scripts.StatusBar"
+local BindingEditor = require "Editor.Scripts.BindingEditor"
+local Dialog = require "Editor.Scripts.Dialog"
+
+local SHORTCUTS = {
+	{ 'Ctrl+S', 'Save document' },
+	{ 'Ctrl+Z', 'Undo' },
+	{ 'Ctrl+Shift+Z', 'Redo (also Ctrl+Y)' },
+	{ 'Ctrl+B', 'Edit binding of the selected property' },
+	{ 'Ctrl+D', 'Duplicate selected node' },
+	{ 'F2', 'Rename selected node' },
+	{ 'Delete', 'Delete selected node (Hierarchy)' },
+	{ 'Ctrl+F', 'Find in Hierarchy (or just type)' },
+	{ 'F5', 'Refresh preview' },
+	{ 'Ctrl+1..4', 'Focus Hierarchy, Project, Inspector, Console' },
+	{ 'Alt+F/E/C/V/H', 'Open a menu' },
+	{},
+	{ 'Binding editor' },
+	{ 'Ctrl+Enter', 'Apply binding' },
+	{ 'Ctrl+Space', 'Complete function or {property}' },
+	{ 'Tab', 'Accept completion' },
+	{ 'Esc', 'Dismiss completion, then close' },
+}
+
+local App = Application:extend {
+	layout = function(self, context) return context.slots.inner end,
+
+	["/"] = function(self) return self:build() end,
+
+	afterPaint = function(self)
+		if not self.started then
+			self.started = true
+			self.project:reload()
+			Workspace.open()
+		end
+		self.preview:update()
+		for _, t in ipairs(self.terminals) do t:checkResize() end
+	end,
+}
+
+function App:focusPanel(panel)
+	if self.activePanel == panel then return end
+	if self.activePanel then
+		self.activePanel.active = false
+		if self.activePanel.header then self.activePanel.header:invalidate() end
+	end
+	self.activePanel = panel
+	if panel and panel.header then
+		panel.active = true
+		panel.header:invalidate()
+	end
+end
+
+function App:activate(panel)
+	self:focusPanel(panel)
+	if panel and panel.focus then panel:focus() end
+end
+
+function App:editBinding()
+	local item = self.inspector:selectedItem()
+	if item and not item.isGroup then
+		self.inspector:editBinding(item)
+	else
+		Workspace.log('warning', "Select a property in the Inspector, then press Ctrl+B")
+	end
+end
+
+function App:menus()
+	local app = self
+	local function selection() return Workspace.selection end
+	local function canEdit() return selection() and selection() ~= Workspace.document end
+	local function documents()
+		local items = {}
+		local function walk(node)
+			for c in node:each() do
+				if c:get'data-source' then
+					local source = c:get'data-source'
+					items[#items + 1] = { label = source:gsub('^[^/]*/', ''), checked = source == Workspace.document,
+						action = function() Workspace.open(source) end }
+				end
+				walk(c)
+			end
+		end
+		if app.project.root then walk(app.project.root) end
+		if #items == 0 then items[1] = { label = 'No documents', disabled = true } end
+		return items
+	end
+	return {
+		{ title = 'File', items = function() return {
+			{ label = 'Open Document', items = documents() },
+			{ label = 'Save', shortcut = 'Ctrl+S', disabled = not Workspace.document, action = Workspace.save },
+			{ separator = true },
+			{ label = 'Reload Project', action = function() app:restartServer() end },
+			{ separator = true },
+			{ label = 'Quit', shortcut = 'Ctrl+Q', action = function() os.exit(0) end },
+		} end },
+		{ title = 'Edit', items = function() return {
+			{ label = 'Undo', shortcut = 'Ctrl+Z', disabled = #Workspace.undoStack == 0, action = Workspace.undo },
+			{ label = 'Redo', shortcut = 'Ctrl+Shift+Z', disabled = #Workspace.redoStack == 0, action = Workspace.redo },
+			{ separator = true },
+			{ label = 'Rename', shortcut = 'F2', disabled = not canEdit(), action = function() app.hierarchy:rename(selection()) end },
+			{ label = 'Duplicate', shortcut = 'Ctrl+D', disabled = not canEdit(), action = function() Workspace.duplicate(selection()) end },
+			{ label = 'Delete', shortcut = 'Del', disabled = not canEdit(), action = function() Workspace.remove(selection()) end },
+			{ separator = true },
+			{ label = 'Edit Binding...', shortcut = 'Ctrl+B', action = function() app:editBinding() end },
+			{ label = 'Find in Hierarchy', shortcut = 'Ctrl+F', action = function()
+				app:activate(app.hierarchy)
+				app.hierarchy:startSearch('')
+			end },
+		} end },
+		{ title = 'Create', items = function()
+			local parent = selection() or Workspace.document
+			if not parent then return { { label = 'Open a document first', disabled = true } } end
+			return app.hierarchy:classMenu(parent)
+		end },
+		{ title = 'View', items = function() return {
+			{ label = 'Refresh Preview', shortcut = 'F5', action = function() app.preview:refresh() end },
+			{ separator = true },
+			{ label = 'Project Panel', checked = app.showProject, action = function() app:toggle('showProject') end },
+			{ label = 'Console Panel', checked = app.showConsole, action = function() app:toggle('showConsole') end },
+			{ separator = true },
+			{ label = 'Expand All', action = function() app.hierarchy:expandAll(true) end },
+			{ label = 'Collapse All', action = function() app.hierarchy:expandAll(false) end },
+		} end },
+		{ title = 'Help', items = function() return {
+			{ label = 'Keyboard Shortcuts', shortcut = 'F1', action = function() Dialog.show('Keyboard Shortcuts', SHORTCUTS) end },
+			{ label = 'About ORCA Editor', action = function()
+				Dialog.show('About ORCA Editor', {
+					{ 'Edit ORCA projects live: the project runs in a server process' },
+					{ 'and every change is applied to the running scene.' },
+					{},
+					{ 'Project', Workspace.project or '' },
+				})
+			end },
+		} end },
+	}
+end
+
+function App:toggle(key)
+	self[key] = not self[key]
+	self.left.Rows = self.showProject and "1fr 1fr" or "1fr 0px"
+	self.center.Rows = self.showConsole and "1fr 168px" or "1fr 0px"
+	self.preview.stale = true
+end
+
+function App:restartServer()
+	Workspace.process = nil
+	collectgarbage()
+	Workspace.start(Workspace.project)
+	BindingEditor.functions = nil
+	self.project:reload()
+	Workspace.open()
+end
+
+function App:hotkey(chord)
+	local actions = {
+		['ctrl+s'] = Workspace.save,
+		['ctrl+z'] = Workspace.undo,
+		['ctrl+shift+z'] = Workspace.redo,
+		['ctrl+y'] = Workspace.redo,
+		['ctrl+b'] = function() self:editBinding() end,
+		['ctrl+d'] = function()
+			if Workspace.selection and Workspace.selection ~= Workspace.document then Workspace.duplicate(Workspace.selection) end
+		end,
+		['f2'] = function() self.hierarchy:rename(Workspace.selection) end,
+		['f5'] = function() self.preview:refresh() end,
+		['f1'] = function() Dialog.show('Keyboard Shortcuts', SHORTCUTS) end,
+		['ctrl+f'] = function() self:activate(self.hierarchy) self.hierarchy:startSearch('') end,
+		['ctrl+q'] = function() os.exit(0) end,
+		['ctrl+1'] = function() self:activate(self.hierarchy) end,
+		['ctrl+2'] = function() self:activate(self.project) end,
+		['ctrl+3'] = function() self:activate(self.inspector) end,
+		['ctrl+4'] = function() self:activate(self.console) end,
+	}
+	local action = actions[chord]
+	if action then action() return true end
+	local letter = chord:match('^alt%+(%a)$')
+	return letter and self.menubar:accelerator(letter) or false
+end
+
+function App:build()
+	local app = self
+	self.showProject, self.showConsole = true, true
+	Workspace.start()
+
+	self.hierarchy = Hierarchy()
+	self.project = ProjectView()
+	self.inspector = Inspector(function(opts) BindingEditor.open(opts) end)
+	self.preview = Preview()
+	self.console = Console()
+	self.statusbar = StatusBar()
+	self.menubar = MenuBar(self:menus(), function()
+		return 'ORCA Editor  ' .. (Workspace.project and Workspace.leaf(Workspace.project) or '')
+	end)
+
+	local hotkey = function(chord) return app:hotkey(chord) end
+	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.menubar, self.statusbar } do
+		p.hotkey = hotkey
+	end
+	Terminal.onActivate = function(panel) if panel.header then app:focusPanel(panel) end end
+
+	local screen = ui.Screen { Background = config.gutter }
+	local root = ui.Grid { Rows = "16px 1fr 16px" }
+	local main = ui.Grid { Columns = "300px 1fr 420px", Spacing = 2 }
+	self.left = ui.Grid { Rows = "1fr 1fr", Spacing = 2 }
+	self.center = ui.Grid { Rows = "1fr 168px", Spacing = 2 }
+	self.left:addChild(Panel.wrap(self.hierarchy))
+	self.left:addChild(Panel.wrap(self.project))
+	self.center:addChild(Panel.wrap(self.preview))
+	self.center:addChild(Panel.wrap(self.console))
+	main:addChild(self.left)
+	main:addChild(self.center)
+	main:addChild(Panel.wrap(self.inspector))
+	root:addChild(self.menubar.view)
+	root:addChild(main)
+	root:addChild(self.statusbar.view)
+	screen:addChild(root)
+
+	local overlay = ui.Node2D {
+		Visible = false,
+		LeftButtonDown = function(_, args) return Popups.outside(args) end,
+		RightButtonDown = function(_, args) return Popups.outside(args) end,
+	}
+	screen:addChild(overlay)
+	Popups.attach(overlay, function(args)
+		if args.y < config.char_height then
+			local i = app.menubar:indexAt(args.x)
+			if i then app.menubar:open(i) end
+		end
+	end)
+	Popups.restoreFocus = function() if app.activePanel then app.activePanel:focus() end end
+
+	for _, event in ipairs { 'document', 'select', 'changed', 'structure', 'saved' } do
+		Workspace.on(event, function()
+			app.statusbar:invalidate()
+			app.menubar:invalidate()
+		end)
+	end
+	self.terminals = { self.menubar, self.statusbar, self.hierarchy, self.project, self.inspector, self.console }
+	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.preview } do
+		if p.header then
+			p.header:invalidate()
+			self.terminals[#self.terminals + 1] = p.header
+		end
+	end
+	self.menubar:invalidate()
+	self.statusbar:invalidate()
+	self:activate(self.hierarchy)
+	return screen
+end
+
+return App
