@@ -40,6 +40,41 @@ xvfb-run make test
 - Headless Lua/UI/layout work: use `make test-headless`.
 - Display-backed behavior: use `xvfb-run make test`.
 
+## TreeView controls and editor trees
+
+```bash
+make test-treeviews
+build/bin/orca -test=tests/test_editor_panels.lua
+```
+
+The control group covers recursive container ownership, cloned headers, local
+expansion, real pointer and focused keyboard dispatch, selection event snapshots,
+CSS states, empty trees and a 64-level hierarchy. Update cases cover root and
+child source replacement, leaf/branch transitions, Header and template changes,
+shared sources and repeated teardown against the native object-count baseline.
+These suites join `test-headless` in both scene-format builds. The XML build also
+runs authored-header, nested-binding, template and typed selection-key cases.
+
+The XML-only editor panel test checks controller actions, selection, local
+expansion without runtime requests, retained containers, search and refresh
+failure recovery. `make test-editor-runtime` separately exercises the native
+process connection and nested XML data against a rendered local project, including
+structural edits, filters and project-file changes. It requires a renderer and
+stays outside `test-headless`.
+
+## Editor Preview startup
+
+`make test-startup-render-mode` checks the shared startup policy for both screen
+and controller apps: server mode requests offscreen rendering, while ordinary
+startup keeps its visible window. On macOS, `make test-macos-offscreen` creates
+an actual GL surface, reads rendered pixels and checks that no native windows
+exist and the process cannot become the foreground app. The startup policy test
+joins `test-headless`; the native macOS check runs separately because it needs
+an unrestricted desktop session for AppKit registration.
+
+`make test-editor-runtime` additionally checks the editor's server launch arguments
+and the PNG dimensions returned by an actual Preview snapshot request.
+
 ## Fast Chat iteration
 
 Appwrite validation is **unit-only by default**. Use

@@ -19,4 +19,9 @@ register(ui.loadObjectFromCss(SHAREDIR .. "/orca/UIKit/default.css"))
 register(ui.loadObjectFromCssString(string.format(
     'CheckBox .control-check { -orca-source: url(%q); }',
     SHAREDIR .. "/orca/UIKit/check.svg")))
+register(ui.loadObjectFromCssString(string.format(
+    '.treeview-expander .treeview-chevron { -orca-source: url(%q); } '
+    .. '.treeview-expander:checked .treeview-chevron { -orca-source: url(%q); }',
+    SHAREDIR .. "/orca/UIKit/tree-chevron-right.svg",
+    SHAREDIR .. "/orca/UIKit/tree-chevron-down.svg")))
 ui._defaultStylesLoaded = true

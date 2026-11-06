@@ -1,8 +1,8 @@
-<Grid Columns="16px 16px 1fr" Height="22" Spacing="4" Node.PaddingLeft="{Binding DataContext/Indent}"
-      LeftDoubleClick="Open" RightButtonUp="Context" class="editor-row hierarchy-row">
-  <Button Click="Toggle" class="disclosure">
-    <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
-  </Button>
-  <VectorView Name="NodeIcon" Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
-  <TextBlock Name="NodeLabel" Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-</Grid>
+<TreeViewItem ItemsSource="{Binding DataContext/Children}" ItemNamePrefix="SceneNode" HeaderHeight="22" Indent="16">
+  <TreeViewItem.Header>
+    <Grid Name="NodeHeader" Columns="16px 1fr" Height="22" Spacing="4" LeftDoubleClick="Open" RightButtonUp="Context" class="hierarchy-row">
+      <VectorView Name="NodeIcon" Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
+      <TextBlock Name="NodeLabel" Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+    </Grid>
+  </TreeViewItem.Header>
+</TreeViewItem>

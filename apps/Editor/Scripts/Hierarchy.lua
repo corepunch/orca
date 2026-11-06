@@ -1,4 +1,4 @@
--- Runtime XML records feed the native ListBox without Lua materialization.
+-- Nested runtime records feed native TreeViewItems without Lua materialization.
 local Class = require "Editor.Scripts.Class"
 local DataPanel = require "Editor.Scripts.DataPanel"
 local Native = require "Editor.Scripts.Native"
@@ -14,13 +14,11 @@ Hierarchy.focus, Hierarchy.invalidate, Hierarchy.checkResize = DataPanel.focus, 
 Hierarchy.selectedItem = DataPanel.selected
 
 function Hierarchy:init()
-    self.collapsed = {}
     DataPanel.load(self, "Hierarchy")
-    Workspace.on('document', function() self.collapsed = {} self:reload() end)
+    Workspace.on('document', function() self:reload() end)
     Workspace.on('structure', function() self:reload() end)
     Workspace.on('select', function(path)
         self:reveal(path)
-        if path and self.list.SelectedValue ~= path then self.list:send("ListBox.SelectItem", { Value = path }) end
     end)
 end
 
@@ -29,18 +27,14 @@ function Hierarchy:tools() return {} end
 function Hierarchy:reload()
     self.subtitle = Workspace.leaf(Workspace.document)
     if Workspace.document then
-        DataPanel.reload(self, 'get/data-scene/' .. Workspace.encode(Workspace.document, true) .. DataPanel.query(self.collapsed, self.filter))
+        DataPanel.reload(self, 'get/data-scene/' .. Workspace.encode(Workspace.document, true) .. DataPanel.treeQuery(self.filter))
+        if self.filter and self.filter ~= '' then self.list:post('TreeView.ExpandAll', { IsExpanded = true }) end
     end
     if self.header then self.header:invalidate() end
 end
 
 function Hierarchy:reveal(path)
-    local changed, parent = false, Workspace.parentPath(path)
-    while parent do
-        if self.collapsed[parent] then self.collapsed[parent], changed = nil, true end
-        parent = Workspace.parentPath(parent)
-    end
-    if changed then self:reload() end
+    if path then self.list:send('TreeView.SelectItem', { Value = path }) end
 end
 
 function Hierarchy:selectionChanged(_, args)
@@ -48,15 +42,11 @@ function Hierarchy:selectionChanged(_, args)
     if path and path ~= '' and path ~= Workspace.selection then Workspace.select(path) end
 end
 
-function Hierarchy:toggleItem(item)
-    if item and item.HasChildren then
-        self.collapsed[item.Path] = not self.collapsed[item.Path] or nil
-        self:reload()
-    end
+function Hierarchy:openItem(item, _, sender)
+    if item and item.HasChildren then return DataPanel.toggleTreeItem(self, item, sender) end
+    if item then self:rename(item.Path) end
     return true
 end
-
-function Hierarchy:openItem(item) if item then self:rename(item.Path) end end
 function Hierarchy:contextMenu(item, args)
     local path = item and item.Path or Workspace.document
     if path then Workspace.select(path) Menu.show(self:contextItems(path), args.x, args.y) end
@@ -115,19 +105,18 @@ end
 
 function Hierarchy:create(parent, class)
 	local base, n, taken = class, 1, {}
-	for item in self.source.Items.children do taken[Workspace.leaf(item.Path)] = true end
+	local record = DataPanel.findRecord(self.source.Items, 'Path', parent)
+	local children = record and record:findChild('Children', false)
+	if children then for item in children.children do taken[Workspace.leaf(item.Path)] = true end end
 	local name = base
 	while taken[name] do n = n + 1; name = base .. n end
 	if Workspace.create(parent, class, name) then
-		self.collapsed[parent] = nil
 		self:rename(parent .. '/' .. name)
 	end
 end
 
 function Hierarchy:expandAll(open)
-    self.collapsed = {}
-    if not open and Workspace.document then self.collapsed[Workspace.document] = true end
-    self:reload()
+    self.list:send('TreeView.ExpandAll', { IsExpanded = open })
 end
 
 function Hierarchy:rename(path)
@@ -150,14 +139,10 @@ function Hierarchy:startSearch(text)
 end
 function Hierarchy:search(_, args) self.filter = args.Text self:reload() end
 function Hierarchy:clearSearch() self.filter = nil self.searchInput.Text = '' self:reload() end
-function Hierarchy:onKey(chord)
+function Hierarchy:onKey(chord, args)
     local item = self:selectedItem()
-    if chord == 'up' then DataPanel.move(self, -1)
-    elseif chord == 'down' then DataPanel.move(self, 1)
-    elseif chord == 'right' and item then self.collapsed[item.Path] = nil self:reload()
-    elseif chord == 'left' and item then
-        if item.HasChildren and not self.collapsed[item.Path] then self.collapsed[item.Path] = true self:reload()
-        elseif item.Path ~= Workspace.document then Workspace.select(Workspace.parentPath(item.Path)) end
+    if chord == 'up' or chord == 'down' or chord == 'left' or chord == 'right' or chord == 'home' or chord == 'end' then
+        return args and self.list:send('Node.KeyDown', { keyCode = args.keyCode, text = args.text, modifiers = args.modifiers }) or false
     elseif chord == 'f2' or chord == 'enter' then self:rename(Workspace.selection)
     elseif chord == 'delete' and item and item.Path ~= Workspace.document then Workspace.remove(item.Path)
     elseif chord == 'escape' then self:clearSearch()

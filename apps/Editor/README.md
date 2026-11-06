@@ -13,7 +13,9 @@ controls immediately, preserving focus, selection and unfinished text.
 Panels never build rows themselves. The runtime answers each panel's
 `XmlDataSource` with typed records, including the icon path for every node
 class and file kind (the request names the icon folder with `icons=`), and
-the row templates bind straight to them.
+the item templates bind straight to them. Hierarchy and Project use nested
+`TreeViewItem` containers: every item owns its `Header` and the child
+`ItemsPresenter` generated from its own `ItemsSource`.
 
 ## Running
 
@@ -92,14 +94,36 @@ completion viewports are clipped and scroll without covering the dialog footer.
 
 `Screens/Editor.xml` declares one `ProcessConnection` named `Runtime`. Each
 panel declares an `XmlDataSource` with `ConnectionPath="Runtime"` and the
-editor schema, then binds its list directly to `Source.Items`:
+editor schema. The root `TreeView` binds directly to `Source.Items`:
 
 ```xml
 <XmlDataSource Name="Source" ConnectionPath="Runtime"
                Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
-<ListBox ItemsSource="{Binding ../Source/Items}"
-         ItemTemplate="Editor/Templates/SceneNodeRow"/>
+<TreeView ItemsSource="{Binding ../Source/Items}"
+          ItemTemplate="Editor/Templates/SceneNodeRow"/>
 ```
+
+Its template is a `TreeViewItem` whose `Header` holds an icon and name.
+The native container supplies the disclosure, header selection and child
+`ItemsPresenter`; each item's `ItemsSource` binds its record's `Children`.
+Descendants inherit the parent's item template, so the template does not
+load its own resource recursively:
+
+```xml
+<TreeViewItem ItemsSource="{Binding DataContext/Children}">
+  <TreeViewItem.Header>
+    <TextBlock Text="{Binding DataContext/Label}"/>
+  </TreeViewItem.Header>
+</TreeViewItem>
+```
+
+Only root records belong to the root `TreeView`. Child containers belong
+to their parent item and remain attached while collapsed. `IsExpanded`
+is local control state, initially false, retained through runtime refresh;
+disclosure and arrow keys never rebuild or request the flattened tree.
+Selecting a descendant reveals its ancestors. Search preserves matching
+ancestor chains and expands the filtered results. The Inspector continues
+to use a flat property list, which is a different presentation.
 
 The workspace sets the request in `Source` and sends `XmlDataSource.Reload`
 when a document, selection or filter changes. Runtime response XML becomes
@@ -118,8 +142,8 @@ reply is an XML `<response status="success|error">` document.
 
 | Route | Purpose |
 |---|---|
-| `get/data-project` | Native file records for the Project list |
-| `get/data-scene/<doc>?filter=...&collapsed=...` | Native node records projected into visible hierarchy rows |
+| `get/data-project` | Nested native file records for Project, including each record's `Children` |
+| `get/data-scene/<doc>?filter=...` | Nested native node records, retaining ancestors of filter matches |
 | `get/data-properties/<path>` | Typed property records and enum options for the Inspector |
 | `get/data-resources/<path>?property=<qualified>&filter=...` | Compatible typed resource records for the native picker |
 | `get/data-functions` | Native function catalog for the binding palette |

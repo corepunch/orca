@@ -1507,6 +1507,8 @@
         <property name="ItemNamePrefix" type="string">When set, each generated view is named this prefix followed by its record's Name (for example "Room" + "alex" gives "Roomalex"), so tests, tools and accessibility can address the view of one record regardless of its position. Empty keeps the template's name.</property>
       </properties>
       <fields>
+        <field name="_selectionManaged" type="bool">A derived control coordinates selection beyond this direct collection.</field>
+        <field name="_itemsHost" type="Object" pointer="true">Optional child presenter receiving this owner's generated views; not a separate collection owner.</field>
         <field name="_entries" type="ItemsControlEntry" pointer="true">Owned generated views and their source identities.</field>
         <field name="_observedSource" type="Object" pointer="true">Owned reference to the collection currently observed, retained until unsubscribe.</field>
         <field name="_appliedTemplate" type="Node2D" pointer="true">Template used by the current generated views.</field>
@@ -1515,12 +1517,106 @@
         <field name="_refreshPending" type="bool"/>
       </fields>
       <messages>
+        <message name="CreateContainer">
+          <summary>Native container factory override. A handler returns an owned Object pointer as its synchronous result; zero uses the ordinary ItemTemplate instance.</summary>
+          <fields><field name="Item" type="Object" pointer="true"/><field name="Template" type="Node2D" pointer="true"/></fields>
+        </message>
         <message name="Refresh">
           <summary>Synchronizes generated rows with ItemsSource immediately, preserving existing views for retained data objects. Send from Lua with object:send("ItemsControl.Refresh").</summary>
         </message>
         <message name="ItemsChanged">
           <summary>Sent synchronously after generated views and DataContexts match the current collection; ListBox uses this to restore selection.</summary>
         </message>
+      </messages>
+    </class>
+    <class name="ItemsPresenter" parent="StackView">
+      <summary>Layout host for the child containers owned by a HeaderedItemsControl.</summary>
+      <details>The presenter has no data source or item generator of its own. Its owning HeaderedItemsControl retains the ItemsControl and observes its direct ItemsSource collection.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    </class>
+    <class name="HeaderedItemsControl" parent="Node2D,ItemsControl">
+      <summary>An item collection with independently authored Header content.</summary>
+      <details>Header is a visual object, normally authored with HeaderedItemsControl.Header or TreeViewItem.Header XML property syntax. The native HeaderPresenter displays it above an ItemsPresenter, while this control owns its generated child containers. Header content is cloned with an item template and inherits that item's DataContext.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.Attached"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="ItemsControl.ItemsChanged"/>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
+      </handles>
+      <properties>
+        <property name="Header" type="Node2D" pointer="true">Visual header content, such as a Grid containing an icon and TextBlock.</property>
+        <property name="HeaderHeight" type="float" default="24">Height of the header row, independently of its descendants.</property>
+        <property name="Indent" type="float" default="16">Inset of the child ItemsPresenter relative to the header.</property>
+        <property name="HasItems" type="bool">Maintained from the owned item collection; true when at least one child container exists.</property>
+      </properties>
+      <fields>
+        <field name="_headerPresenter" type="Object" pointer="true"/>
+        <field name="_itemsPresenter" type="Object" pointer="true"/>
+        <field name="_headerContent" type="Object" pointer="true"/>
+        <field name="_building" type="bool"/>
+      </fields>
+    </class>
+    <class name="TreeViewHeader" parent="Grid">
+      <summary>Native header row containing a TreeViewItem's expander and Header.</summary>
+      <handles><handle message="Node.LeftButtonUp"/></handles>
+    </class>
+    <class name="TreeViewExpander" parent="Node2D">
+      <summary>Disclosure control generated in a TreeViewItem header row.</summary>
+      <handles><handle message="Node.LeftButtonUp"/></handles>
+    </class>
+    <class name="TreeViewItem" parent="HeaderedItemsControl">
+      <summary>A recursive tree container owning its Header and child ItemsSource.</summary>
+      <details>Its ItemsControl generates children inside its own ItemsPresenter. Omitted ItemTemplate and ItemNamePrefix inherit the nearest items owner's values. Collapsing hides retained child containers. The header alone receives selection styling.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.Attached"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.KeyDown"/>
+        <handle message="TreeViewItem.ToggleExpanded"/>
+        <handle message="ItemsControl.CreateContainer"/>
+      </handles>
+      <properties>
+        <property name="IsExpanded" type="bool">Whether the owned child presenter is visible. Defaults to collapsed.</property>
+        <property name="IsSelected" type="bool">Selects this container within its TreeView. The root coordinates a single selected item.</property>
+        <property name="SelectionValue" type="string" private="true">Internal binding to the root ValueProperty on this item's data record.</property>
+      </properties>
+      <fields>
+        <field name="_expander" type="Object" pointer="true"/>
+        <field name="_inheritedTemplate" type="Node2D" pointer="true"/>
+      </fields>
+      <messages><message name="ToggleExpanded"><summary>Toggle this item's retained child presenter.</summary></message></messages>
+    </class>
+    <class name="TreeView" parent="StackView,ItemsControl">
+      <summary>Hierarchical items control whose own ItemsSource contains only root records.</summary>
+      <details>Each root container is a TreeViewItem whose separate ItemsSource owns the next level. TreeView coordinates single selection and keyboard navigation across retained visible containers; it does not flatten descendant data into its root collection. ItemTemplate should create a TreeViewItem with Header and a binding to its child collection.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="ItemsControl.ItemsChanged"/>
+        <handle message="Node.KeyDown"/>
+        <handle message="TreeView.SelectItem"/>
+        <handle message="ItemsControl.CreateContainer"/>
+        <handle message="TreeView.ExpandAll"/>
+        <handle message="Node2D.MeasureOverride"/>
+      </handles>
+      <properties>
+        <property name="SelectedValue" type="string">Value of the selected record, including records owned by descendant containers.</property>
+        <property name="ValueProperty" type="string">Data property used as the selection value; defaults to Name.</property>
+      </properties>
+      <fields>
+        <field name="_ensuring" type="bool"/>
+        <field name="_selectedContainer" type="Object" pointer="true">Weak identity of the selected container, checked against the retained tree before use.</field>
+        <field name="_changing" type="bool"/>
+      </fields>
+      <messages>
+        <message name="SelectItem"><summary>Select a descendant by value and reveal its ancestors.</summary><fields><field name="Value" type="string"/></fields></message>
+        <message name="ExpandAll"><summary>Set expansion locally for all retained descendants.</summary><fields><field name="IsExpanded" type="bool"/></fields></message>
+        <message name="SelectionChanged"><summary>The selected record changed.</summary><fields><field name="SelectedValue" type="string"/><field name="OldValue" type="string"/></fields></message>
       </messages>
     </class>
     <class name="ListBox" parent="StackView,ItemsControl">

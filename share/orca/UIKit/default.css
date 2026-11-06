@@ -125,3 +125,17 @@ CheckBox:hover .control-indicator, RadioButton:hover .control-indicator { border
 CheckBox:active .control-indicator, RadioButton:active .control-indicator { opacity: 0.8; }
 CheckBox:focus-visible, RadioButton:focus-visible, ToggleSwitch:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
 CheckBox:disabled, RadioButton:disabled, ToggleSwitch:disabled { opacity: 0.4; }
+
+/* TreeViewItem owns the header and child presenter. Selection never paints
+   an ancestor container's descendants. */
+TreeView { background-color: #00000000; }
+.treeview-header { background-color: #00000000; }
+.treeview-header:hover { background-color: var(--ui-control-hover, #dcdfe6); }
+.treeview-header:dark:hover { background-color: var(--ui-control-hover-dark, var(--ui-control-hover, #464c59)); }
+.treeview-header:selected { background-color: var(--ui-accent, #3b82f6); color: var(--ui-accent-foreground, #ffffff); }
+.treeview-header:dark:selected { background-color: var(--ui-accent, #3b82f6); color: var(--ui-accent-foreground, #ffffff); }
+TreeViewItem:focus-visible > .treeview-header, .treeview-header:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
+.treeview-expander { background-color: #00000000; }
+.treeview-expander:hover { background-color: var(--ui-control-hover, #dcdfe6); }
+.treeview-expander:dark:hover { background-color: var(--ui-control-hover-dark, var(--ui-control-hover, #464c59)); }
+.treeview-chevron { width: 12; height: 12; margin: auto; }

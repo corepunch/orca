@@ -48,6 +48,10 @@ end
 -- Records name their own icons; the runtime only needs to know where they live.
 Controller.icons = "Editor/Icons"
 
+function Controller.treeQuery(filter)
+	return "?filter=" .. Workspace.encode(filter or "") .. "&icons=" .. Workspace.encode(Controller.icons)
+end
+
 function Controller.query(collapsed, filter, expanded)
 	return "?collapse=" .. keys(collapsed) .. "&filter=" .. Workspace.encode(filter or "")
 		.. (expanded and "&expand=" .. keys(expanded) or "")
@@ -58,6 +62,22 @@ function Controller.record(sender)
 	while sender do
 		if sender.DataContext then return sender.DataContext end
 		sender = sender.parent
+	end
+end
+
+function Controller.toggleTreeItem(panel, record, sender)
+	while sender and sender:getClassName() ~= 'TreeViewItem' do sender = sender.parent end
+	local container = sender or (record and panel.list:findChild((panel.list.ItemNamePrefix or '') .. record.Name, true))
+	if container then container:send('TreeViewItem.ToggleExpanded') end
+	return true
+end
+
+function Controller.findRecord(source, field, value)
+	if not source then return end
+	for record in source.children do
+		if record[field] == value then return record end
+		local found = Controller.findRecord(record:findChild('Children', false), field, value)
+		if found then return found end
 	end
 end
 
@@ -89,7 +109,7 @@ Controller.Key = function(_, args, sender)
 	local panel = Native.owner(sender)
 	local chord = Native.chord(args)
 	if not panel or not chord then return false end
-	if panel.onKey and panel:onKey(chord) then return true end
+	if panel.onKey and panel:onKey(chord, args) then return true end
 	return panel.hotkey and panel.hotkey(chord) or false
 end
 
