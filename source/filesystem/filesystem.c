@@ -1097,14 +1097,14 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
       OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
       FS_RegisterProjectDataSource(CMP_GetObject(project), qualified,
                                    "Xml", params, ds->Schema);
-      if (!xds->Data) {
+      if (!xds->Data && !xds->Connection && (!xds->ConnectionPath || !*xds->ConnectionPath) && xds->AutoLoad) {
         struct Object *data = FS_ResolveDataSource(qualified, NULL);
         if (data && GetDataObject(data)) {
           xds->Data = GetDataObject(data);
           OBJ_AddChild(child, data);
         }
       }
-      if (xds->Source && *xds->Source) {
+      if (xds->Source && *xds->Source && !xds->Connection && (!xds->ConnectionPath || !*xds->ConnectionPath)) {
         FS_RegisterProjectDataSource(CMP_GetObject(project), xds->Source,
                                      "Xml", params, ds->Schema);
       }

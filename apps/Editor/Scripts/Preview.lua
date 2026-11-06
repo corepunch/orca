@@ -1,42 +1,23 @@
 -- Live preview: the project server renders the open document offscreen at
 -- the panel's size; the editor shows that image with the selection outlined.
 -- Clicking selects the deepest node under the pointer.
-local ui = require "orca.UIKit"
-local config = require "Editor.Scripts.config"
+local Native = require "Editor.Scripts.Native"
 local Class = require "Editor.Scripts.Class"
 local Workspace = require "Editor.Scripts.Workspace"
 
 local Preview = Class:extend { title = "Preview" }
 
-local function outline(color)
-	return ui.Node2D {
-		HorizontalAlignment = "Left", VerticalAlignment = "Top",
-		BorderWidth = 1, BorderColor = color, IgnoreHitTest = true, Visible = false,
-	}
-end
-
 function Preview:init()
 	local preview = self
 	self.stale = true
 	self.rects = {}
-	self.image = ui.ImageView { Stretch = "None", IgnoreHitTest = true,
-		HorizontalAlignment = "Left", VerticalAlignment = "Top" }
-	self.hover = outline("#8db7ff80")
-	self.selection = outline("#fcef8d")
-	self.view = ui.Node2D {
-		Background = config.preview_background,
-		OverflowX = "Hidden", OverflowY = "Hidden",
-		LeftButtonDown = function(_, args) preview:pick(args) return true end,
-		MouseMoved = function(_, args) preview:hoverAt(args) return true end,
-	}
-	-- A zero-size canvas keeps the image and outlines out of layout
-	-- measurement, so the preview never pushes the panels around.
-	self.canvas = ui.Node2D { Width = 0, Height = 0, IgnoreHitTest = true,
-		HorizontalAlignment = "Left", VerticalAlignment = "Top" }
-	self.canvas:addChild(self.image)
-	self.canvas:addChild(self.hover)
-	self.canvas:addChild(self.selection)
-	self.view:addChild(self.canvas)
+	self.view = Native.register(Native.load('Editor/Views/Preview'), self)
+	self.canvas = self.view:findChild('Canvas')
+	self.image = self.canvas:findChild('Image')
+	self.hover = self.canvas:findChild('Hover')
+	self.selection = self.canvas:findChild('Selection')
+	self.view.LeftButtonDown = function(_, args) preview:pick(args) return true end
+	self.view.MouseMoved = function(_, args) preview:hoverAt(args) return true end
 	local function stale() self.stale = true end
 	Workspace.on('document', stale)
 	Workspace.on('changed', stale)
@@ -114,6 +95,7 @@ function Preview:hitTest(args)
 end
 
 function Preview:pick(args)
+	if Native.onActivate then Native.onActivate(self) end
 	local r = self:hitTest(args)
 	Workspace.select(r and r.path or Workspace.document)
 end

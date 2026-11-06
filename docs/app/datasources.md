@@ -75,6 +75,55 @@ feed entry is `feed:post`) and embed the shared record. Stores are per account
 `Schema.null` clears a nullable field; a missing field is left alone. Records
 that nothing shows are evicted beyond the store's capacity.
 
+## Native XML sources over a process connection
+
+For a service that already returns schema-shaped XML, `XmlDataSource` can feed
+an ItemsControl directly. A shared native `ProcessConnection` owns the child
+process; XML sources reference it by `ConnectionPath`. The editor is the
+working example:
+
+```xml
+<Screen>
+  <ProcessConnection Name="Runtime" Executable="build/bin/orca" Timeout="10000">
+    <ProcessConnection.Arguments>
+      <ProcessArgument Value="-server=true"/>
+      <ProcessArgument Value="apps/Example"/>
+    </ProcessConnection.Arguments>
+  </ProcessConnection>
+  <Grid Rows="1fr">
+    <XmlDataSource Name="Files" ConnectionPath="Runtime"
+                   Source="get/data-project"
+                   Schema="Editor/Data/Editor.Schema.xml"/>
+    <ListBox ItemsSource="{Binding ../Files/Items}"
+             ItemTemplate="Editor/Templates/ProjectRow"/>
+  </Grid>
+</Screen>
+```
+
+This example uses the editor's schema and template resources, available when
+loading its package. Process arguments are literal argv entries, never shell
+commands. `ConnectionPath` searches ancestor scopes for a named connection;
+a path beginning with a dot resolves relative to the source.
+
+`Source` is the request when a connection is supplied, otherwise a file path.
+`Content` accepts XML text directly for fixtures or local records. Parsing and
+typed record materialization are native; `Items` binds directly to a list,
+without Lua tables, providers or application row construction. Each direct
+record child of the response becomes one list item. An XML `name` and matching
+class identify a retained record across reloads.
+
+Use `AutoLoad="false"` when the request needs document or selection parameters.
+Set `Source` to the new request and dispatch `XmlDataSource.Reload` (or call
+`source:reload()`). Parameter changes and refresh policy remain with the owner;
+this source does not implicitly poll. `IsLoading`, `HasError` and `ErrorMessage`
+are bindable, and a failed response preserves the last successful collection.
+
+Process requests are synchronous and bounded by `Timeout` in milliseconds
+(default 10000), so they can block the calling UI thread until completion or
+the deadline. HTTP transport and background asynchronous fetching are not
+implemented by this API. Use the scope/provider runtime below for existing
+asynchronous service workflows.
+
 ## Scope declarations
 
 ```xml
@@ -297,8 +346,9 @@ conversation and the photo viewer remain Lua; they own no records and call
 the same providers and services.
 
 Not provided: virtualization, an optimistic placeholder engine, offline
-mutation queues, generic form generation and a visual editor. The metadata
-above (`Schema:describe`, `Declarations.describe`, lint) is what an editor
+mutation queues, generic form generation and visual editing of data-scope
+declarations. The metadata above (`Schema:describe`,
+`Declarations.describe`, lint) is what an editor
 would read and write; its output is ordinary ORCA assets.
 
 ## Tests

@@ -795,20 +795,20 @@ FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema)
   return load_file(path, schema);
 }
 
+struct Object *
+FS_ParseXmlDataTree(lpcString_t source, const struct ds_schema *schema)
+{
+  return source ? build_root(read_doc(source, (int)strlen(source), NULL), NULL, schema) : NULL;
+}
+
 ORCA_API struct Object *
 FS_LoadXmlDataStringWithSchema(lpcString_t xml_string, lpcString_t schema_xml)
 {
-  struct ds_schema *schema = NULL;
-  if (schema_xml && *schema_xml) {
-    /* Write schema XML to a temp file so libxml can parse it via the file API,
-       or parse it inline via DS_ParseSchemaFromString if available.
-       For now: parse schema from a temp string using xmlReadMemory directly. */
-    schema = DS_ParseSchemaFromString(schema_xml);
-  }
+  const struct ds_schema *schema = schema_xml && *schema_xml
+    ? FS_GetCachedXmlDataSchema(schema_xml, schema_xml) : NULL;
   struct Object *o = build_root(read_doc(xml_string, (int)strlen(xml_string), NULL), NULL, schema);
   if (!o) Con_Error("FS_LoadXmlDataStringWithSchema: failed to parse XML");
-  /* Schema classes stay registered until DS_FreeSchema; caller owns the schema.
-     For the in-process test use-case we leave classes registered until shutdown. */
+  /* Cached schema registrations outlive module shutdown and retained records. */
   return o;
 }
 

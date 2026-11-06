@@ -33,6 +33,7 @@ local DefaultLayout = Widget:extend {
 local Application
 Application = Widget:extend {
   layout = DefaultLayout,
+  quitOnQ = true,
 
   __init = function(self)
     Widget.__init(self)
@@ -170,9 +171,11 @@ Application = Widget:extend {
     local startup_dark_theme = system.get_theme()
     self.screen:post("Window.Paint", renderer.getSize())
     for msg in system.getMessage do
-      if filesystem.hasChangedFiles() then return DATADIR end
+      -- The editor owns its live scene and save journal. Saving source XML
+      -- must not replace that runtime or abandon its pending pipe request.
+      if not SERVER and filesystem.hasChangedFiles() then return DATADIR end
       if msg:is "Window.Closed" then return
-      elseif msg:is "Node.KeyDown" and msg.key == "q" then return
+      elseif self.quitOnQ and msg:is "Node.KeyDown" and msg.key == "q" then return
       elseif msg:is "RequestReload" then return DATADIR
       else
         -- Detect OS appearance changes by polling is_dark_theme() on each

@@ -1,0 +1,4 @@
+<Node2D class="editor-panel">
+  <ItemsStack Name="Messages" ItemTemplate="Editor/Views/LogRow" OverflowY="Scroll"/>
+  <TextBlock Name="Empty" Text="No messages" class="editor-muted" Padding="12"/>
+</Node2D>

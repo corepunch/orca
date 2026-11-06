@@ -1,0 +1,10 @@
+<Grid Name="InspectorPanel" Rows="36px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
+  <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
+  <Grid Columns="1fr 32px" Spacing="4" Padding="6 2">
+    <Input Name="Search" PlaceholderText="Filter properties" Submit="Search" class="editor-input"/>
+    <Button Text="×" Click="ClearSearch" class="toolbar-button"/>
+  </Grid>
+  <ListBox Name="Items" ItemsSource="{Binding ../Source/Items}" ItemTemplate="Editor/Templates/PropertyRow"
+           ItemNamePrefix="Property" ValueProperty="Id" OverflowY="Scroll" class="editor-list"/>
+  <TextBlock Name="DataSourceError" Text="{Binding ../Source/ErrorMessage}" Visible="{Binding ../Source/HasError}" class="editor-error" Padding="8" TextWrapping="Wrap"/>
+</Grid>

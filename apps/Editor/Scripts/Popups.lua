@@ -16,6 +16,10 @@ end
 -- inside the window.
 function Popups.push(panel, x, y, modal)
 	local view = panel.view
+	-- A click inside a native control must not bubble into the outside-click
+	-- dismiss layer while the control waits for its release event.
+	view.LeftButtonDown = function() return true end
+	view.RightButtonDown = function() return true end
 	local sw, sh = Popups.size()
 	local w, h = view.Width or 0, view.Height or 0
 	if sw > 0 and x + w > sw then x = math.max(0, sw - w) end

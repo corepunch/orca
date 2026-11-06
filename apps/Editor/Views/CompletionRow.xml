@@ -1,0 +1,6 @@
+<Button Click="Invoke" class="completion-row" StateClasses="{Binding DataContext/State}" Height="32">
+  <Grid Columns="180px 1fr" Spacing="12" IgnoreHitTest="true">
+    <TextBlock Text="{Binding DataContext/Label}"/>
+    <TextBlock Text="{Binding DataContext/Detail}" class="editor-muted"/>
+  </Grid>
+</Button>

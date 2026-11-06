@@ -1,6 +1,5 @@
 -- Editor model: the project server process, the open document, selection,
 -- undo/redo and a small event bus that panels subscribe to.
-local fs = require "orca.filesystem"
 local Xml = require "Editor.Scripts.Xml"
 local config = require "Editor.Scripts.config"
 
@@ -48,20 +47,34 @@ function Workspace.projectPath()
 	return (project and project ~= '') and project or (DATADIR .. "/../Example")
 end
 
-function Workspace.start(project)
+function Workspace.start(project, connection)
 	Workspace.project = project or Workspace.projectPath()
-	Workspace.process = fs.pipe.popen(EXENAME, "-server=true", Workspace.project)
+	Workspace.connection = connection or Workspace.connection
+	assert(Workspace.connection, "Editor runtime connection is missing")
+	Workspace.connection:close()
+	Workspace.connection.Executable = EXENAME
+	Workspace.connection.Arguments = { { Value = '-server=true' }, { Value = Workspace.project } }
 	Workspace.log('info', "Opened project %s", Workspace.project)
+end
+
+-- This configures the native source; responses never pass through Lua.
+function Workspace.configureSource(source, request)
+	if not source.ConnectionPath or source.ConnectionPath == '' then source.Connection = Workspace.connection end
+	source.Source = request
+	local ok = source:reload()
+	if not ok then Workspace.log('error', "%s", source.ErrorMessage or 'Data source failed') end
+	return ok
 end
 
 -- One request/response round trip. Returns the response root, or nil and
 -- the server's error text.
 function Workspace.request(method, route, path, args)
-	if not Workspace.process then return nil, "No project server" end
+	if not Workspace.connection then return nil, "No project server" end
 	local url = method .. "/" .. route .. (path and Workspace.encode(path, true) or "") .. query(args)
 	local ok, reply = pcall(function()
-		Workspace.process:write(url .. "\n")
-		return Workspace.process:read()
+		local reply = Workspace.connection:request(url)
+		if not reply then error(Workspace.connection.ErrorMessage or 'Runtime request failed') end
+		return reply
 	end)
 	local root, err
 	if ok then root, err = Xml.parse(reply) else err = reply end

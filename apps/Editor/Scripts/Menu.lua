@@ -1,151 +1,90 @@
--- Dropdown and context menus. Items are plain tables:
---   { label = "Save", shortcut = "Ctrl+S", action = fn, checked = bool,
---     disabled = bool, items = { ...submenu... } } or { separator = true }
-local config = require "Editor.Scripts.config"
-local Terminal = require "Editor.Scripts.Terminal"
-local Popups = require "Editor.Scripts.Popups"
-
-local C = {
-	text = '![1;15m',
-	dim = '![8;15m',
-	key = '![8;15m',
-	check = '![1;15m',
-	rule = '![8;15m',
-}
-
-local Menu = Terminal:extend {}
-
-local function selectable(item)
-	return item and not item.separator and not item.disabled
-end
-
-function Menu:init(items, opts)
-	opts = opts or {}
-	self.entries = items
-	self.parentMenu = opts.parent
-	self.onNavigate = opts.onNavigate -- left/right at the top level (menu bar)
-	local label, key = 4, 0
-	for _, it in ipairs(items) do
-		if not it.separator then
-			label = math.max(label, #(it.label or ''))
-			key = math.max(key, #(it.shortcut or ''))
-		end
+-- Native menu records and an XML row template; UIKit owns layout and hit tests.
+local Class=require "Editor.Scripts.Class"
+local Native=require "Editor.Scripts.Native"
+local Popups=require "Editor.Scripts.Popups"
+local Menu=Class:extend {}
+local function selectable(item) return item and not item.separator and not item.disabled end
+function Menu:init(items,opts)
+	opts=opts or {}
+	self.entries,self.parentMenu,self.onNavigate=items,opts.parent,opts.onNavigate
+	self.view=Native.register(Native.load('Editor/Views/Menu'),self)
+	self.selected=1
+	local rows,height={},8
+	for i,item in ipairs(items) do
+		rows[#rows+1]={Label=item.label,Detail=item.shortcut,Mark=item.checked and '✓' or '',
+			Tail=item.items and '›' or '',Disabled=item.disabled or false,
+			Separator=item.separator or false,IsItem=not item.separator,State=item.disabled and 'menu-disabled' or ''}
+		height=height+(item.separator and 11 or 32)
 	end
-	self.labelWidth = label
-	self.keyWidth = key
-	self.cols = 3 + label + (key > 0 and key + 3 or 0) + 4
-	Terminal.init(self, {
-		Width = self.cols * config.char_width,
-		Height = #items * config.char_height,
-		DropShadow = true,
-	})
-	for i, it in ipairs(items) do
-		if selectable(it) then self.selected = i break end
-	end
-	self:invalidate()
+	self.view.Height=math.min(600,height)
+	self.view.ItemsSource=Native.records(rows)
+	Native.keys(self)
+	for i,item in ipairs(items) do if selectable(item) then self:select(i) break end end
 end
-
-function Menu:draw()
-	for _, it in ipairs(self.entries) do
-		if it.separator then
-			self:println(it, C.rule, ' ', string.rep(config.icons.hline, self.cols - 2), ' ')
-		else
-			local color = it.disabled and C.dim or C.text
-			local mark = it.checked and (C.check .. config.icons.check .. color) or ' '
-			local tail = it.items and (C.dim .. config.icons.collapsed) or '  '
-			local key = self.keyWidth > 0
-				and ('   ' .. C.key .. Terminal.fit(it.shortcut or '', self.keyWidth) .. color) or ''
-			self:println(it, color, ' ', mark, ' ', Terminal.fit(Terminal.escape(it.label), self.labelWidth), key, ' ', tail, ' ')
-		end
-	end
+function Menu:focus() self.view:setFocus() end
+function Menu:invalidate() end
+function Menu:checkResize() end
+function Menu:select(index)
+	if self.selectedRecord then self.selectedRecord.State='' end
+	self.selected=index
+	local record=self.view.ItemsSource and self.view.ItemsSource:getFirstChild()
+	while record and record.Index~=index do record=record:getNext() end
+	self.selectedRecord=record
+	if record then record.State='menu-selected' end
 end
-
+function Menu:invoke(record) if record then self:activate(record.Index) end return true end
+function Menu:hover(record,args,sender)
+	if not record or not selectable(self.entries[record.Index]) then return false end
+	self:select(record.Index)
+	if self.child and Popups.isOpen(self.child) and self.child.source~=self.entries[record.Index] then Popups.close(self.child) end
+	if self.entries[record.Index].items then self:openSubmenu(record.Index,sender) end
+	return true
+end
 function Menu:move(dir)
-	local n, i = #self.entries, self.selected
-	for _ = 1, n do
-		i = (i - 1 + dir) % n + 1
-		if selectable(self.entries[i]) then self:select(i) return end
+	local n,index=#self.entries,self.selected
+	for _=1,n do
+		index=(index-1+dir)%n+1
+		if selectable(self.entries[index]) then self:select(index) return end
 	end
 end
-
-function Menu:openSubmenu(index)
-	local it = self.entries[index]
-	if not it or not it.items or it.disabled then return false end
+function Menu:openSubmenu(index,sender)
+	local item=self.entries[index]
+	if not selectable(item) or not item.items then return false end
 	if self.child and Popups.isOpen(self.child) then
-		if self.child.source == it then return true end
+		if self.child.source==item then return true end
 		Popups.close(self.child)
 	end
-	local x, y = self:positionOf(index, self.cols, 0)
-	self.child = Menu(it.items, { parent = self, onNavigate = self.onNavigate })
-	self.child.source = it
-	self.child.root = self.root or self
-	Popups.push(self.child, (x or 0) - 2, y or 0)
+	local x,y=Native.origin(sender or self.view)
+	if not sender then y=y+(index-1)*32 end
+	self.child=Menu(item.items,{parent=self,onNavigate=self.onNavigate})
+	self.child.source=item
+	Popups.push(self.child,x+(self.view.ActualWidth or 320)-4,y)
 	return true
 end
-
 function Menu:activate(index)
-	local it = self.entries[index]
-	if not selectable(it) then return end
-	if it.items then return self:openSubmenu(index) end
-	Popups.closeAll()
-	if it.action then it.action(it) end
-end
-
-function Menu:onHover(item, index)
+	local item=self.entries[index]
 	if not selectable(item) then return end
-	if self.selected == index then
-		if item.items and not (self.child and Popups.isOpen(self.child)) then self:openSubmenu(index) end
-		return
-	end
-	self:select(index)
-	if self.child and Popups.isOpen(self.child) and self.child.source ~= item then
-		Popups.close(self.child)
-		self:focus()
-	end
-	if item.items and not item.disabled then self:openSubmenu(index) end
+	if item.items then return self:openSubmenu(index) end
+	Popups.closeAll()
+	if item.action then item.action(item) end
 end
-
-function Menu:onMouseDown() end
-
-function Menu:onClick(item, index)
-	if item then self:activate(index) end
-end
-
 function Menu:onKey(chord)
-	if chord == 'up' then self:move(-1)
-	elseif chord == 'down' then self:move(1)
-	elseif chord == 'enter' or chord == 'space' then self:activate(self.selected)
-	elseif chord == 'right' then
-		if not self:openSubmenu(self.selected) and self.onNavigate then
-			self.onNavigate(1)
+	if chord=='up' then self:move(-1)
+	elseif chord=='down' then self:move(1)
+	elseif chord=='enter' or chord=='space' then self:activate(self.selected)
+	elseif chord=='right' then
+		if not self:openSubmenu(self.selected) and self.onNavigate then self.onNavigate(1) end
+	elseif chord=='left' then
+		if self.parentMenu then Popups.close(self) elseif self.onNavigate then self.onNavigate(-1) end
+	elseif chord=='escape' then if self.parentMenu then Popups.close(self) else Popups.closeAll() end
+	elseif #chord==1 then
+		local n=#self.entries
+		for offset=1,n do
+			local i=(self.selected-1+offset)%n+1
+			if selectable(self.entries[i]) and (self.entries[i].label or ''):sub(1,1):lower()==chord then self:select(i) break end
 		end
-	elseif chord == 'left' then
-		if self.parentMenu then Popups.close(self)
-		elseif self.onNavigate then self.onNavigate(-1) end
-	elseif chord == 'escape' then
-		if self.parentMenu then Popups.close(self) else Popups.closeAll() end
-	else
-		return false
-	end
+	else return false end
 	return true
 end
-
--- Accelerator: first letter jumps to the next matching item.
-function Menu:onText(text)
-	local ch = text:lower()
-	local n, i = #self.entries, self.selected
-	for _ = 1, n do
-		i = i % n + 1
-		local it = self.entries[i]
-		if selectable(it) and (it.label or ''):sub(1, 1):lower() == ch then
-			self:select(i)
-			return
-		end
-	end
-end
-
-function Menu.show(items, x, y, opts)
-	return Popups.push(Menu(items, opts), x, y)
-end
-
+function Menu.show(items,x,y,opts) return Popups.push(Menu(items,opts),x,y) end
 return Menu

@@ -1,0 +1,6 @@
+<Grid Columns="24px 1fr auto" Height="30" Spacing="4" Node.PaddingLeft="{Binding DataContext/Indent}"
+      LeftDoubleClick="Open" RightButtonUp="Context" class="editor-row project-row">
+  <Button Text="{Binding DataContext/Disclosure}" Visible="{Binding DataContext/HasChildren}" Click="Toggle" class="toolbar-button"/>
+  <TextBlock Text="{Binding DataContext/Label}" class="editor-label" TextOverflow="Ellipsis" TextWrapping="NoWrap" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+  <TextBlock Text="{Binding DataContext/Kind}" class="editor-muted" TextVerticalAlignment="Center" IgnoreHitTest="true" Padding="0 0 8 0"/>
+</Grid>

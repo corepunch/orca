@@ -4,20 +4,20 @@ A live editor for ORCA projects, laid out like Kanzi Studio and Unity:
 Hierarchy and Project on the left, a rendered Preview with a Console below
 it, and the Inspector on the right. The edited project runs in a separate
 `orca -server=true` process; every change is applied to that running scene
-and the preview is re-rendered from it.
-
-![Editor overview](docs/overview.png)
+and the preview is re-rendered from it. Panels, menus and dialogs use native
+UIKit controls authored in XML, with CSS styling.
 
 ## Running
 
 ```bash
+make unite                        # first build after native data-source/API changes
 make editor                       # edits apps/Example
 make editor PROJECT=apps/Weather  # any XML project
 cd apps/Editor && make run PROJECT=../Example
 ```
 
 `ORCA_EDITOR_PROJECT` selects the project when launching `orca apps/Editor`
-directly. `ORCA_EDITOR_DEBUG=1` traces pointer and key routing to stderr.
+directly.
 
 ## Common tasks
 
@@ -25,11 +25,11 @@ directly. `ORCA_EDITOR_DEBUG=1` traces pointer and key routing to stderr.
 |---|---|
 | Open a screen or prefab | Double-click it in Project, or File > Open Document |
 | Select a node | Click it in Hierarchy or in the Preview (hover shows the node under the pointer) |
-| Find a node | Ctrl+F, or start typing in Hierarchy; Esc clears |
-| Create a child | Create menu, Hierarchy `[+]`, or right-click > Create Child (common classes first, the rest under More) |
+| Find a node | Ctrl+F focuses the Hierarchy search field; Enter applies the filter |
+| Create a child | Create menu, Hierarchy + button, or right-click > Create Child (common classes first, the rest under More) |
 | Rename, duplicate, delete | F2 / Ctrl+D / Delete, or the Hierarchy context menu |
 | Edit a value | Click it in the Inspector: checkboxes toggle, enums open a dropdown, other values edit inline |
-| Bind a property | Click the gutter left of a property, press Ctrl+B, or right-click > Add Binding |
+| Bind a property | Click the binding button beside a property, press Ctrl+B, or use its context menu |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) |
 | Save | Ctrl+S writes the open document back to its XML file |
 
@@ -39,13 +39,13 @@ disabled items, shortcuts, arrow-key navigation and first-letter jumps.
 
 ## Binding editor
 
-![Binding editor](docs/binding-editor.png)
+The binding editor places a syntax-colored code surface inside a native UIKit
+dialog for ORCA binding expressions:
 
-The binding editor is a modal code editor for ORCA binding expressions:
-
-- syntax highlighting for functions, `{property}` paths, numbers, strings and
-  `#` comments; unknown functions are shown in red;
-- bracket matching around the caret and unbalanced brackets marked as errors;
+- syntax colors for functions, `{property}` paths, strings, numbers and
+  comments, with unknown functions and syntax errors marked in color;
+- bracket matching around the caret and diagnostics for unbalanced brackets
+  and unknown functions;
 - signature help for the call around the caret (`STEP(edge, x)`, argument 2);
 - completion of functions and of `{` property paths (Ctrl+Space, Tab or Enter
   to accept), plus a clickable function palette;
@@ -57,18 +57,48 @@ The binding editor is a modal code editor for ORCA binding expressions:
 The binding VM reads a newline as a statement separator, so the editor joins
 the lines (dropping `#` comments) into one expression when it applies it.
 
+Only the code surface uses `CodeInput`, a narrowly scoped ConsoleView wrapper
+that preserves the original syntax colors, line numbers, bracket highlights
+and caret editing. Menus, panels, lists, diagnostics, completion, the function
+palette and dialog buttons use native XML/UIKit controls. The palette and
+completion viewports are clipped and scroll without covering the dialog footer.
+
 ## Architecture
 
 | File | Role |
 |---|---|
-| `App.lua` | Application shell: layout, menus, global shortcuts |
-| `Scripts/Workspace.lua` | Server process, requests, selection, undo/redo, events |
-| `Scripts/Terminal.lua` | Character-grid panel on `ConsoleView`: items, hit testing, keys |
-| `Scripts/Menu.lua`, `MenuBar.lua`, `Popups.lua` | Dropdown/context menus and the popup layer |
-| `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panels |
+| `Screens/Editor.xml`, `App.lua` | XML shell, shared runtime connection, global commands |
+| `Pages/*.xml`, `Templates/*.xml` | Hierarchy, Project and Inspector layouts and row templates |
+| `Views/*.xml`, `Styles/editor.css` | Native menus, headers, logs, inputs, dialogs and styling |
+| `Data/Editor.Schema.xml` | Typed runtime node, file and property records |
+| `Scripts/Workspace.lua` | Selection, edit/save commands, undo/redo and events |
+| `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panel actions and source request parameters |
+| `Scripts/Native.lua`, `ChromeController.lua`, `DataPanel.lua` | XML event dispatch and local chrome records |
 | `Scripts/Preview.lua` | Snapshot image, selection and hover outlines, click-to-select |
-| `Scripts/BindingEditor.lua`, `Syntax.lua` | Binding editor and its pure-Lua tokenizer |
-| `Scripts/Xml.lua` | Reader for server replies (plain Lua tables) |
+| `Scripts/BindingEditor.lua`, `CodeInput.lua`, `Syntax.lua` | Syntax-colored code input, native completion and validation |
+| `Scripts/Xml.lua` | Reader for command replies and preview metadata; panel records bypass it |
+
+`Screens/Editor.xml` declares one `ProcessConnection` named `Runtime`. Each
+panel declares an `XmlDataSource` with `ConnectionPath="Runtime"` and the
+editor schema, then binds its list directly to `Source.Items`:
+
+```xml
+<XmlDataSource Name="Source" ConnectionPath="Runtime"
+               Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
+<ListBox ItemsSource="{Binding ../Source/Items}"
+         ItemTemplate="Editor/Templates/SceneNodeRow"/>
+```
+
+The workspace sets the request in `Source` and sends `XmlDataSource.Reload`
+when a document, selection or filter changes. Runtime response XML becomes
+native typed records directly; no Lua table conversion, row construction or
+per-row event wiring occurs. Reload retains records by XML `name` and class,
+which keeps generated control identity and selection. Failed responses keep
+the last successful records and expose `HasError`/`ErrorMessage`.
+
+The connection uses literal process arguments and synchronous pipe requests
+with a configurable deadline (`Timeout`, 10 seconds by default). This is a
+native process transport, not an HTTP data-source implementation.
 
 The server side is `plugins/EditorKit/server.c`. Requests are single lines,
 `<method>/<route><path>?<args>`, with percent-encoded paths and values; each
@@ -76,7 +106,11 @@ reply is an XML `<response status="success|error">` document.
 
 | Route | Purpose |
 |---|---|
-| `get/project-overview` | Project files on disk; scenes are openable documents |
+| `get/data-project` | Native file records for the Project list |
+| `get/data-scene/<doc>?filter=...&collapsed=...` | Native node records projected into visible hierarchy rows |
+| `get/data-properties/<path>` | Typed property records and enum options for the Inspector |
+| `get/data-functions` | Native function catalog for the binding palette |
+| `get/project-overview` | Project metadata for document commands |
 | `get/startup-screen`, `get/scene-hierarchy/<doc>` | Node tree |
 | `get/node/<path>` | Properties grouped by class, with `data-id`, `data-set` and `data-program` (binding) |
 | `put/node/<path>?Prop=value` | Set values; the reply carries the previous values for undo |

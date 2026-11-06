@@ -347,14 +347,21 @@ static char apply_shift(char ch) {
 
 int f_translate_message(lua_State* L) {
   struct AXmessage const* msg = luaL_checkudata(L, 1, "Event");
-  if (msg->message == kEventKeyDown && is_printable_char(msg->wParam & 0xff)) {
+  if (msg->message != kEventKeyDown || !is_printable_char(msg->wParam & 0xff) ||
+      (msg->wParam & (AX_MOD_CTRL | AX_MOD_CMD))) return 0;
+  lParam_t text = msg->lParam;
+  if (*(unsigned char *)&text) {
+    /* Platform KeyDown payloads already contain the keyboard layout's text.
+       Preserve shifted punctuation and UTF-8 rather than translating a key name. */
+    if (*(unsigned char *)&text < 32 || *(unsigned char *)&text == 127) return 0;
+  } else {
+    /* Direct synthetic key events may omit a native text payload. */
     char ch = msg->wParam & 0xff;
-    if (msg->wParam & AX_MOD_SHIFT)
-      ch = apply_shift(ch);
-    lParam_t lp = 0;
-    *(char*)&lp = ch;
-    axPostMessageW(msg->target, kEventChar, msg->wParam, lp);
+    if (msg->wParam & AX_MOD_SHIFT) ch = apply_shift(ch);
+    text = 0;
+    *(char *)&text = ch;
   }
+  axPostMessageW(msg->target, kEventChar, msg->wParam, text);
   return 0;
 }
 
@@ -362,7 +369,7 @@ ORCA_API void
 axKeyEventToText(struct AXmessage const* e, char* buf, size_t size)
 {
   if (e->message == kEventChar) {
-    /* lParam stores the computed character written by f_translate_message. */
+    /* Native or translated Char payloads contain the original UTF-8 text. */
     uint32_t len = 0;
     while (len < sizeof(e->lParam) && ((lpcString_t)&e->lParam)[len])
       len++;

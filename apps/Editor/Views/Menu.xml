@@ -1,0 +1,2 @@
+<ListBox Name="Menu" Width="320" Controller="Editor/Scripts/ChromeController"
+         class="editor-menu" ItemTemplate="Editor/Views/MenuRow"/>

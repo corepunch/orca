@@ -1,0 +1,14 @@
+<Grid Height="34" Rows="1fr" Columns="1fr" RightButtonUp="Context" class="property-row">
+  <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Visible="{Binding DataContext/IsGroup}" Click="Toggle"
+          class="property-group" Padding="10 0" TextHorizontalAlignment="Left" TextVerticalAlignment="Center"/>
+  <Grid Rows="1fr" Columns="26px 120px 1fr" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 1">
+    <Button Name="BindProperty" Text="ƒ" Click="Bind" class="toolbar-button"/>
+    <TextBlock Text="{Binding DataContext/Label}" Node.PaddingLeft="{Binding DataContext/Indent}" class="property-label" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+    <Grid Rows="1fr" Columns="1fr">
+      <Input Name="PropertyText" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsText}" Submit="Value" class="editor-input"/>
+      <CheckBox Name="PropertyBoolean" IsChecked="{Binding DataContext/BoolValue}" Visible="{Binding DataContext/IsBool}" CheckedChanged="Boolean" IndicatorSize="18"/>
+      <Button Name="PropertyEnum" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsEnum}" Click="Enum" class="editor-button"/>
+      <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" TextVerticalAlignment="Center" class="editor-muted"/>
+    </Grid>
+  </Grid>
+</Grid>
