@@ -37,6 +37,8 @@ static struct _FONTGLOBALS
   struct FontFamily* defaultFont;
   bool_t defaultFontTried;
   FT_Library ft;
+  unsigned faceCount;
+  bool_t shutdownRequested;
 } fg = { 0 };
 
 static struct FontFamily const*
@@ -80,10 +82,16 @@ FontFamily_GetFace(struct FontFamily const *family, uint32_t fontStyle)
 HRESULT
 Font_Release(struct fontface* font)
 {
-  // Faces die with the library: after FT_Done_FreeType only the memory is left.
-  if (font->face && fg.ft) FT_Done_Face(font->face);
+  if (font->face) {
+    FT_Done_Face(font->face);
+    fg.faceCount--;
+  }
   free(font->mem);
   free(font);
+  if (fg.shutdownRequested && !fg.faceCount && fg.ft) {
+    FT_Done_FreeType(fg.ft);
+    fg.ft = NULL;
+  }
   return S_OK;
 }
 
@@ -109,6 +117,8 @@ Font_LoadFromMemory(void* buffer,
     return NULL;
   }
 
+  fg.shutdownRequested = FALSE;
+  fg.faceCount++;
   fontface->mem = mem;
   SafeDelete((&family->regular)[style], Font_Release);
   (&family->regular)[style] = fontface;
@@ -281,7 +291,8 @@ Font_Shutdown(void)
   fg.defaultFont = NULL;
   fg.defaultFontTried = FALSE;
 
-  if (fg.ft) {
+  fg.shutdownRequested = TRUE;
+  if (fg.ft && !fg.faceCount) {
     FT_Done_FreeType(fg.ft);
     fg.ft = NULL;
   }

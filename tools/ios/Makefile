@@ -30,6 +30,9 @@ SDK_PATH := $(shell xcrun --sdk $(SDK) --show-sdk-path)
 CC := xcrun --sdk $(SDK) clang
 MIN_FLAG := $(if $(filter iphoneos,$(SDK)),-miphoneos-version-min,-mios-simulator-version-min)=$(IOS_MIN)
 FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I"$(SDK_PATH)/usr/include/libxml2"
+include tools/mobile/third_party.mk
+VENDOR_FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -fPIC -MMD -MP
+FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
 CFLAGS := $(FLAGS) -Igenerated
 # UIKit/UIKit.h in generated/ is the engine API, not Apple's framework header.
 OBJCFLAGS := $(FLAGS) -idirafter generated -fmodules-cache-path=$(ROOT)/module-cache
@@ -39,7 +42,7 @@ OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(RO
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_animation.o ios_scroll.o)
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules
@@ -55,7 +58,7 @@ settings:
 $(ROOT)/settings: settings
 
 define unity
-$(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings tools/ios/Makefile | generated dependencies
+$(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings tools/ios/Makefile $(VENDOR_HEADERS) | generated dependencies
 	@mkdir -p "$$(@D)"
 	@find $(2) -name '*.c' | sort | sed 's/.*/#include "&"/' > "$(ROOT)/obj/$(1).c"
 	$(CC) $(CFLAGS) -c "$(ROOT)/obj/$(1).c" -o "$$@"
@@ -78,8 +81,8 @@ simulated:
 	@python3 tools/ios/sign.py --simulated-entitlements "$(SIMULATED)" --identifier "$(BUNDLE_ID)"
 $(SIMULATED): simulated
 endif
-$(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(DEPS_STAMP) $(SIMULATED)
-	$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
+$(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(DEPS_STAMP) $(SIMULATED)
+	$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
 app: $(ROOT)/Orca
 	python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)"
 ifeq ($(SDK),iphonesimulator)
@@ -94,4 +97,4 @@ install: app
 list-devices:
 	xcrun devicectl list devices
 	xcrun simctl list devices available
--include $(OBJECTS:.o=.d) $(PLATFORM_OBJECTS:.o=.d) $(IOS_OBJECTS:.o=.d)
+-include $(VENDOR_OBJECTS:.o=.d) $(OBJECTS:.o=.d) $(PLATFORM_OBJECTS:.o=.d) $(IOS_OBJECTS:.o=.d)

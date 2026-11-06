@@ -6,7 +6,7 @@
 #   cd emsdk && ./emsdk install latest && ./emsdk activate latest
 #   source ./emsdk_env.sh
 #
-# Build the WASM dependencies (lua5.4, libxml2, liblz4) once before running
+# Build the WASM dependencies (Lua, libxml2, LZ4 and bundled image/font libraries) before running
 # make webgl:
 #   emmake make wasm-deps
 #
@@ -60,11 +60,10 @@ WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/
 WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 
 WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
-                -sUSE_ZLIB=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sFETCH=1
 
-WEBGL_LDFLAGS = -sUSE_ZLIB=1 \
+WEBGL_LDFLAGS = \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sINITIAL_MEMORY=64MB \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
@@ -98,8 +97,8 @@ XML2_VERSION    = 2.9.14
 # Add WASM dep headers / libraries to the WebGL compiler and linker flags.
 # libxml2 installs headers to $(prefix)/include/libxml2/libxml/, so both the
 # top-level include dir and the libxml2 sub-directory must be on the path.
-WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2
-WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4
+WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2 -Ilibs/freetype/include
+WEBGL_LDFLAGS += -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 -lfreetype -lpng16 -ljpeg -lz
 
 # Enable static plugin Lua-module registration (consumed by orcalib.c).
 # orcalib.c uses __has_include("plugins_luaopen.h") to detect the generated
@@ -131,7 +130,7 @@ webgl-modules:
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the section at the top of this file
 # for a full list of prerequisites and usage notes.
-webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR) wasm-image-deps
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -188,17 +187,16 @@ webgl-demo:
 
 # Debug CFLAGS: replace -Oz -flto with -g -O1.
 WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
-                      -sUSE_ZLIB=1 \
-                      -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
+                            -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sFETCH=1 \
-                      -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2 \
+                      -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 -I$(WASM_DEPS_DIR)/include/libxml2 -Ilibs/freetype/include \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
 
 
 # Debug LDFLAGS: no --closure, ASSERTIONS=1, SAFE_HEAP, source map, stack traces.
 # (ASSERTIONS=1 rather than 2: see comment above for why 2 crashes on iOS touch)
-WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 \
+WEBGL_DEBUG_LDFLAGS = \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sINITIAL_MEMORY=64MB \
                       -sSTACK_SIZE=1048576 \
@@ -209,7 +207,7 @@ WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 \
                       -sSTACK_OVERFLOW_CHECK=2 \
                       -gsource-map --source-map-base ./ \
                       -sFETCH=1 \
-                      -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 \
+                      -L$(WASM_DEPS_DIR)/lib -llua5.4 -lxml2 -llz4 -lfreetype -lpng16 -ljpeg -lz \
                       --preload-file share@/share --exclude-file *.xcf
 
 ifneq ($(WEBGL_DATA),)
@@ -217,7 +215,7 @@ WEBGL_DEBUG_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_DEBUG_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-webgl-debug: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl-debug: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR) wasm-image-deps
 	$(WEBGL_EMCC) $(WEBGL_DEBUG_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -253,7 +251,7 @@ $(WEBGL_PLUGINS_H): $(WEBGL_PLUGIN_SRCS) | $(WEBGL_DIR)
 
 # ─── WASM dependency build recipes ────────────────────────────────────────
 
-wasm-deps: wasm-lua wasm-lz4 wasm-xml2
+wasm-deps: wasm-lua wasm-lz4 wasm-xml2 wasm-image-deps
 
 wasm-lua: $(WASM_DEPS_DIR)/lib/liblua5.4.a
 
@@ -307,3 +305,37 @@ $(WASM_DEPS_DIR)/lib/libxml2.a:
 # Apply selection after all ordinary flags, including command-line overrides.
 override WEBGL_CFLAGS += $(CPPFLAGS) $(SCENE_FORMAT_FLAGS)
 override WEBGL_DEBUG_CFLAGS += $(CPPFLAGS) $(SCENE_FORMAT_FLAGS)
+
+# Build the same checked-in dependency revisions used by native builds.
+WASM_FT_OBJS = $(patsubst %.c,$(WEBGL_DIR)/freetype/%.o,$(FREETYPE_SRCS))
+WASM_Z_OBJS = $(addprefix $(WEBGL_DIR)/zlib/,$(addsuffix .o,$(ZLIB_SRCS)))
+
+.PHONY: wasm-image-deps
+wasm-image-deps: $(WASM_DEPS_DIR)/lib/libfreetype.a $(WASM_DEPS_DIR)/lib/libpng16.a $(WASM_DEPS_DIR)/lib/libjpeg.a
+
+$(WEBGL_DIR)/freetype/%.o: libs/freetype/src/%.c $(FREETYPE_MODULES_H)
+	@mkdir -p $(@D)
+	emcc -O2 -I. -Ilibs/freetype/include -DFT2_BUILD_LIBRARY -DFT_CONFIG_MODULES_H='"$(FREETYPE_MODULES_H)"' -c $< -o $@
+
+$(WASM_DEPS_DIR)/lib/libfreetype.a: $(WASM_FT_OBJS)
+	@mkdir -p $(@D)
+	emar rcs $@ $^
+
+$(WEBGL_DIR)/zlib/%.o: libs/zlib/%.c libs/zlib/zlib.h
+	@mkdir -p $(@D)
+	emcc -O2 -Ilibs/zlib -c $< -o $@
+
+$(WASM_DEPS_DIR)/lib/libz.a: $(WASM_Z_OBJS)
+	@mkdir -p $(@D) $(WASM_DEPS_DIR)/include
+	emar rcs $@ $^
+	cp libs/zlib/zlib.h libs/zlib/zconf.h $(WASM_DEPS_DIR)/include/
+
+$(WASM_DEPS_DIR)/lib/libpng16.a: $(WASM_DEPS_DIR)/lib/libz.a
+	@mkdir -p $(WEBGL_DIR)/libpng
+	cd $(WEBGL_DIR)/libpng && emconfigure $(abspath libs/libpng)/configure --host=wasm32-unknown-emscripten --prefix=$(abspath $(WASM_DEPS_DIR)) --disable-shared --enable-static CPPFLAGS="-I$(abspath $(WASM_DEPS_DIR))/include" LDFLAGS="-L$(abspath $(WASM_DEPS_DIR))/lib"
+	emmake $(MAKE) -C $(WEBGL_DIR)/libpng install
+
+$(WASM_DEPS_DIR)/lib/libjpeg.a:
+	@mkdir -p $(WEBGL_DIR)/libjpeg
+	cd $(WEBGL_DIR)/libjpeg && emconfigure $(abspath libs/libjpeg)/configure --host=wasm32-unknown-emscripten --prefix=$(abspath $(WASM_DEPS_DIR)) --disable-shared --enable-static
+	emmake $(MAKE) -C $(WEBGL_DIR)/libjpeg install

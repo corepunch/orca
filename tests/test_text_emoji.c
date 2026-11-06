@@ -14,6 +14,33 @@ extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_renderer(lua_State *L);
 extern int luaopen_orca_UIKit(lua_State *L);
+/* Exercise renderer shutdown while a FontFamily still owns a face. */
+extern struct fontface *Font_Load(char const *, struct FontFamily *);
+extern void Font_Shutdown(void);
+
+static void
+check_font_lifetime(void)
+{
+  char const *path = "share/fonts/NotoSans/NotoSans-Regular.ttf";
+  struct Object *first = OBJ_Create(ID_FontFamily);
+  struct fontface *old = Font_Load(path, GetFontFamily(first));
+  assert(old);
+  uint32_t const glyph = FontFace_GetGlyphIndex(old, 'A');
+  assert(glyph);
+  Font_Shutdown();
+  struct font_metrics metrics;
+  assert(FontFace_GetMetrics(old, 20, 1, &metrics));
+  assert(FontFace_GetGlyphAdvance(old, glyph, metrics.raster_scale) > 0);
+
+  struct Object *second = OBJ_Create(ID_FontFamily);
+  struct fontface *fresh = Font_Load(path, GetFontFamily(second));
+  assert(fresh);
+  OBJ_ReleaseRef(first);
+  assert(FontFace_GetGlyphIndex(fresh, 'A'));
+  Font_Shutdown();
+  assert(FontFace_GetMetrics(fresh, 20, 1, &metrics));
+  OBJ_ReleaseRef(second);
+}
 
 static void
 check_sequences(void)
@@ -191,6 +218,7 @@ main(void)
   check_input();
   char const *preview = getenv("ORCA_TEXT_EMOJI_PREVIEW");
   if (preview) save_preview(preview);
+  check_font_lifetime();
   lua_close(L);
   puts("PASS: emoji sequences, advances, wrapping, cursor, Input editing and the RGBA emoji layer");
   return 0;

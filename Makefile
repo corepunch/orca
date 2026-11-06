@@ -84,12 +84,16 @@ LUA_CFLAGS = $(VENDOR_CFLAGS) -DLUA_COMPAT_5_3
 LZ4_SRCDIR = libs/lz4/lib
 UNITEOBJECTS += lz4.o
 CFLAGS += -I$(LUA_SRCDIR) -I$(LZ4_SRCDIR)
-# zlib and libxml2 come with the system: the macOS SDK or the distribution's packages.
-LDFLAGS += -llua5.4 -lxml2 -lz -lm
+# libxml2 comes from the system; zlib is built from its submodule.
+LDFLAGS += -llua5.4 -lxml2 $(ZLIB_LIB) -lm
 # FreeType is compiled from libs/freetype with the module list in
 # source/renderer/third_party/freetype_modules.h. libpng and libjpeg are
 # configured and built from their submodules into build/third-party.
 THIRD_PARTY_DIR = $(BUILDDIR)/third-party
+ZLIB_SRCDIR = libs/zlib
+ZLIB_LIB = $(THIRD_PARTY_DIR)/libz.a
+ZLIB_SRCS = adler32 compress crc32 deflate infback inffast inflate inftrees trees uncompr zutil
+ZLIB_OBJS = $(addprefix $(OBJECTDIR)/zlib/,$(addsuffix .o,$(ZLIB_SRCS)))
 FREETYPE_SRCDIR = libs/freetype
 FREETYPE_MODULES_H = source/renderer/third_party/freetype_modules.h
 FREETYPE_SRCS = base/ftbase.c base/ftinit.c base/ftsystem.c base/ftglyph.c base/ftbitmap.c base/ftdebug.c base/ftmm.c gzip/ftgzip.c autofit/autofit.c truetype/truetype.c cff/cff.c psaux/psaux.c psnames/psnames.c pshinter/pshinter.c sfnt/sfnt.c smooth/smooth.c raster/raster.c
@@ -100,7 +104,7 @@ PNG_LIB = $(PNG_BUILDDIR)/.libs/libpng16.a
 JPEG_SRCDIR = libs/libjpeg
 JPEG_BUILDDIR = $(THIRD_PARTY_DIR)/libjpeg
 JPEG_LIB = $(JPEG_BUILDDIR)/.libs/libjpeg.a
-CFLAGS += -I$(FREETYPE_SRCDIR)/include -I$(PNG_SRCDIR) -I$(PNG_BUILDDIR) -I$(JPEG_SRCDIR) -I$(JPEG_BUILDDIR)
+CFLAGS += -I$(ZLIB_SRCDIR) -I$(FREETYPE_SRCDIR)/include -I$(PNG_SRCDIR) -I$(PNG_BUILDDIR) -I$(JPEG_SRCDIR) -I$(JPEG_BUILDDIR)
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
@@ -155,16 +159,24 @@ $(SOURCEMODULES2): | directories
 
 lua: $(LUA_LIB) $(LUA_BIN)
 
-$(LUA_SRCDIR)/lua.h $(LZ4_SRCDIR)/lz4.c $(FREETYPE_SRCDIR)/src/base/ftbase.c $(PNG_SRCDIR)/configure $(JPEG_SRCDIR)/configure:
+$(LUA_SRCDIR)/lua.h $(LZ4_SRCDIR)/lz4.c $(FREETYPE_SRCDIR)/src/base/ftbase.c $(PNG_SRCDIR)/configure $(JPEG_SRCDIR)/configure $(ZLIB_SRCDIR)/zlib.h:
 	$(error Submodules are missing. Run: git submodule update --init --recursive)
 
 $(OBJECTDIR)/freetype/%.o: $(FREETYPE_SRCDIR)/src/%.c $(FREETYPE_MODULES_H) | directories
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(VENDOR_CFLAGS) -I. -I$(FREETYPE_SRCDIR)/include -DFT2_BUILD_LIBRARY -DFT_CONFIG_MODULES_H='"$(FREETYPE_MODULES_H)"' -c $< -o $@
 
-$(PNG_LIB): | directories
+$(OBJECTDIR)/zlib/%.o: $(ZLIB_SRCDIR)/%.c $(ZLIB_SRCDIR)/zlib.h | directories
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CC) $(VENDOR_CFLAGS) -I$(ZLIB_SRCDIR) -c $< -o $@
+
+$(ZLIB_LIB): $(ZLIB_OBJS)
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(AR) rcs $@ $^
+
+$(PNG_LIB): $(ZLIB_LIB) | directories
 	$(Q)mkdir -p $(PNG_BUILDDIR)
-	$(Q)cd $(PNG_BUILDDIR) && $(abspath $(PNG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" > configure.log 2>&1
+	$(Q)cd $(PNG_BUILDDIR) && $(abspath $(PNG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" CPPFLAGS="-I$(abspath $(ZLIB_SRCDIR))" LDFLAGS="-L$(abspath $(THIRD_PARTY_DIR))" > configure.log 2>&1
 	$(Q)$(MAKE) -C $(PNG_BUILDDIR) libpng16.la > build.log 2>&1
 
 $(JPEG_LIB): | directories
@@ -172,7 +184,7 @@ $(JPEG_LIB): | directories
 	$(Q)cd $(JPEG_BUILDDIR) && $(abspath $(JPEG_SRCDIR))/configure --disable-shared --enable-static --with-pic CFLAGS="$(VENDOR_CFLAGS)" > configure.log 2>&1
 	$(Q)$(MAKE) -C $(JPEG_BUILDDIR) libjpeg.la > build.log 2>&1
 
-buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB)
+buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(ZLIB_LIB)
 $(OBJECTDIR)/lz4.o: $(LZ4_SRCDIR)/lz4.c | directories
 	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
 
@@ -630,11 +642,13 @@ $(eval $(call C_TEST_RULE,test-animation-clock,tests/test_animation_clock.c,$(BI
 $(eval $(call C_TEST_RULE,test-text-leading,tests/test_text_leading.c,$(BINDIR)/test_text_leading,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
 .PHONY: test-text-emoji
 $(eval $(call C_TEST_RULE,test-text-emoji,tests/test_text_emoji.c,$(BINDIR)/test_text_emoji,unite copyshare,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
+.PHONY: test-image-decoding
+$(eval $(call C_TEST_RULE,test-image-decoding,tests/test_image_decoding.c,$(BINDIR)/test_image_decoding,unite,,$(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/test_timer_cancel,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform))
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox
-HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-imageview test-image-decoding
 HEADLESS_LUA_TESTS += test-localization
 HEADLESS_LUA_TESTS += test-selection-controls
 HEADLESS_LUA_TESTS += test-radio-group

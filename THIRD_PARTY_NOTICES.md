@@ -37,6 +37,11 @@ Licensed under the libpng License (`libs/libpng/LICENSE`).
 JPEG decoding: `libs/libjpeg` (IJG jpeg v10), built from source into the engine.
 Licensed under the Independent JPEG Group license (`libs/libjpeg/README`).
 
+## zlib
+
+Compression used by image decoding and packages: `libs/zlib` (1.4), built
+from source. Licensed under the zlib license (`libs/zlib/LICENSE`).
+
 ## Noto fonts
 
 Noto Sans, Noto Sans Mono and Noto Serif, the default font families in
