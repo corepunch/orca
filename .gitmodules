@@ -7,3 +7,15 @@
 [submodule "libs/lz4"]
 	path = libs/lz4
 	url = https://github.com/lz4/lz4.git
+[submodule "libs/freetype"]
+	path = libs/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule "libs/libpng"]
+	path = libs/libpng
+	url = https://github.com/pnggroup/libpng.git
+[submodule "libs/libjpeg"]
+	path = libs/libjpeg
+	url = https://github.com/libjpeg-turbo/ijg.git
+[submodule "libs/zlib"]
+	path = libs/zlib
+	url = https://github.com/madler/zlib.git
