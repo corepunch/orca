@@ -1,5 +1,5 @@
 local test = require "orca.test"
--- Headless tests for orca.core.widget modals with popups declared in Lisp;
+-- Headless tests for orca.core.widget modals with popups declared in XML;
 -- tests/widget_spec.lua covers the format-independent widget behavior.
 
 local Widget = require "orca.core.widget"
@@ -22,12 +22,16 @@ end
 -- ---------------------------------------------------------------------------
 local function test_show_modal_attaches_and_closes_popup()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local modal = filesystem.loadObjectFromLispString([[
-(Popup Name="DialogPopup"
-  (StackView Name="DialogPopupOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding=24 BackgroundColor="#00000088"
-    (StackView Name="DialogPopupCard" Direction="Vertical" Spacing=12 Width=240 BackgroundColor="#223344" Padding=16
-      (TextBlock Name="DialogPopupClose" Text="Close" Height=32 BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" LeftButtonUp=(Popup.ClosePopup ReturnValue=2.25)))))]])
-  test.expect(modal ~= nil, "popup Lisp should load")
+  local modal = filesystem.loadObjectFromXmlString([[
+<Popup Name="DialogPopup">
+  <StackView Name="DialogPopupOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24" BackgroundColor="#00000088">
+    <StackView Name="DialogPopupCard" Direction="Vertical" Spacing="12" Width="240" BackgroundColor="#223344" Padding="16">
+      <TextBlock Name="DialogPopupClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" LeftButtonUp="{Popup.ClosePopup ReturnValue=2.25}" />
+    </StackView>
+  </StackView>
+</Popup>
+]])
+  test.expect(modal ~= nil, "popup XML should load")
   local close = modal:findChild("DialogPopupClose", true)
   test.expect(close ~= nil, "close label should exist")
 
@@ -51,11 +55,14 @@ test_show_modal_attaches_and_closes_popup()
 -- ---------------------------------------------------------------------------
 local function test_show_modal_waits_for_popup_close_result()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local modal = filesystem.loadObjectFromLispString([[
-(Popup Name="CoroutineDialogPopup"
-  (StackView Name="CoroutineDialogOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding=24 BackgroundColor="#00000088"
-    (TextBlock Name="CoroutineDialogClose" Text="Close" Height=32 BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" LeftButtonUp=(Popup.ClosePopup ReturnValue=2))))]])
-  test.expect(modal ~= nil, "popup Lisp should load")
+  local modal = filesystem.loadObjectFromXmlString([[
+<Popup Name="CoroutineDialogPopup">
+  <StackView Name="CoroutineDialogOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24" BackgroundColor="#00000088">
+    <TextBlock Name="CoroutineDialogClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" LeftButtonUp="{Popup.ClosePopup ReturnValue=2}" />
+  </StackView>
+</Popup>
+]])
+  test.expect(modal ~= nil, "popup XML should load")
   local close = modal:findChild("CoroutineDialogClose", true)
   test.expect(close ~= nil, "close label should exist")
 
@@ -91,4 +98,4 @@ end
 
 test_show_modal_waits_for_popup_close_result()
 
-print("All Lisp widget tests passed.")
+print("All XML widget tests passed.")

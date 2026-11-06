@@ -308,7 +308,7 @@ int main(int argc, LPSTR *argv) {
         static path_t result; strncpy(result, lua_tostring(co, -1), sizeof(result));
         szProject = result;
       } else szProject = NULL;
-    } else if (strstr(g_args.test, ".xml") || strstr(g_args.test, ".lisp")) {
+    } else if (strstr(g_args.test, ".xml")) {
       RunTest(L, g_args.test);
     } else if (strstr(g_args.test, ".moon")) {
       char const *moon =

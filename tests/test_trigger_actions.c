@@ -3,7 +3,6 @@
 #include <lualib.h>
 
 #include <include/orca.h>
-#include <include/scene_format.h>
 #include <include/codegen.h>
 #include <core/core.h>
 #include <filesystem/filesystem.h>
@@ -345,20 +344,12 @@ test_generated_action_scene(void)
   RUN_TEST("generated_action_scene", {
     reset_observed();
 
-#if ORCA_HAS_LISP
-    const char *scene =
-      "(TestTriggerHost Name=\"Root\" "
-      "(TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\" "
-      "(TestTriggerSink Name=\"Target\") "
-      "(Object.Start Target=\"Target\")))";
-#else
     const char *scene =
       "<TestTriggerHost Name=\"Root\">"
       "<TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">"
       "<TestTriggerSink Name=\"Target\"/>"
       "<Object.Start Target=\"Target\"/>"
       "</TestEventTriggerSource></TestTriggerHost>";
-#endif
     struct Object *root = FS_LoadObjectFromString(scene);
     EXPECT(root != NULL);
     reset_observed();

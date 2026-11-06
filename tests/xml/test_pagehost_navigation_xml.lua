@@ -1,5 +1,5 @@
 local test = require "orca.test"
--- PageHost navigation declared in Lisp; tests/test_pagehost_listbox.lua covers
+-- PageHost navigation declared in XML; tests/test_pagehost_listbox.lua covers
 -- the format-independent PageHost and ListBox behavior.
 local orca = require "orca"
 require "orca.UIKit"
@@ -19,12 +19,20 @@ end
 -- PageHost: NavigateToPage passes a DataContext to the destination
 -- ---------------------------------------------------------------------------
 local function test_pagehost_navigation_context()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (PageHost Name="Host" Width=400 Height=800 ActivePage="alpha"
-    (Page Name="alpha" Path="/alpha" Width=400 Height=800
-      (TextBlock Name="Card" Width=400 Height=100 Text="Game" DataContext=(DataObject Name="zork1") LeftButtonUp=(PageHost.NavigateToPage URL="/beta")))
-    (Page Name="beta" Path="/beta" Width=400 Height=800)))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <PageHost Name="Host" Width="400" Height="800" ActivePage="alpha">
+    <Page Name="alpha" Path="/alpha" Width="400" Height="800">
+      <TextBlock Name="Card" Width="400" Height="100" Text="Game" LeftButtonUp="{PageHost.NavigateToPage URL=/beta}">
+        <TextBlock.DataContext>
+          <DataObject Name="zork1" />
+        </TextBlock.DataContext>
+      </TextBlock>
+    </Page>
+    <Page Name="beta" Path="/beta" Width="400" Height="800" />
+  </PageHost>
+</Screen>
+]])
     local card = screen:findChild("Card", true)
     local page_b = screen:findChild("beta", true)
 
@@ -43,4 +51,4 @@ end
 -- Run all tests
 test_pagehost_navigation_context()
 
-print("\nAll Lisp PageHost tests passed.")
+print("\nAll XML PageHost tests passed.")

@@ -40,8 +40,7 @@ or browser behavior.
    observes native DataObject collection changes and retains rows by record
    identity; replacing ItemTemplate recreates generated rows. Bind a declared
    data query or view (`docs/app/datasources.md`); plain Lua tables are not
-   sources. Applications are XML-only: Lisp is an experiment used only by
-   `apps/Example`, so do not add `.lisp` twins.
+   sources. Applications use XML scenes.
 6. Use exact generated property names. Qualify inherited properties when it
    removes ambiguity, such as `Node.PaddingLeft`.
 

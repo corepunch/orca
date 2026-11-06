@@ -345,7 +345,7 @@
     </function>
     <function name="LoadObject" export="loadObject">
       <summary>Loads an object through the registered file loaders</summary>
-      <details>Loads the named file or resource using its registered loader. Scene syntax follows the compile-time reader selection. Returns the root object on success, or nil on failure.</details>
+      <details>Loads the named file or resource using its registered loader. Scenes use XML syntax. Returns the root object on success, or nil on failure.</details>
       <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
       <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
     </function>
@@ -356,52 +356,40 @@
       <returns type="Object" pointer="true">Result, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromString" export="loadObjectFromString">
-      <summary>Parses a scene using the reader selected at compile time</summary>
+      <summary>Parses an XML scene</summary>
       <details>C callers own the returned reference; Lua transfers ownership to userdata.</details>
       <arg name="source" type="string">Scene source</arg>
       <returns type="Object" pointer="true">Result, or nil on failure</returns>
     </function>
     <function name="SerializeObjectToString" export="serializeObjectToString">
-      <summary>Serializes a scene using the format selected at compile time</summary>
+      <summary>Serializes a scene to XML</summary>
       <details>C callers must free the returned heap-allocated string.</details>
       <arg name="object" type="Object" const="true" pointer="true">Object tree</arg>
       <returns type="string">Result, or nil on failure</returns>
     </function>
     <function name="GetSceneExtension" export="getSceneExtension">
-      <summary>Returns the selected scene file extension</summary>
+      <summary>Returns the XML scene file extension</summary>
       <returns type="string">Result, or nil on failure</returns>
     </function>
     <function name="GetSceneTemplate" export="getSceneTemplate">
-      <summary>Returns the selected new-project scene printf template</summary>
+      <summary>Returns the XML new-project scene printf template</summary>
       <returns type="string">Result, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromXml" export="loadObjectFromXml">
-      <summary>Loads an object tree from an XML scene file when XML scenes are enabled</summary>
-      <details>Returns an owning reference in C, transferred to Lua userdata. The Lua API is absent in Lisp builds; the C function returns NULL.</details>
+      <summary>Loads an object tree from an XML scene file</summary>
+      <details>Returns an owning reference in C, transferred to Lua userdata.</details>
       <arg name="path" type="string">Path to the XML scene</arg>
       <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromXmlString" export="loadObjectFromXmlString">
-      <summary>Parses an XML scene when XML scenes are enabled</summary>
-      <details>Supports legacy binding and inline-object shorthand through the shared scene builder. Returns an owning reference in C, transferred to Lua userdata. The Lua API is absent in Lisp builds; the C function returns NULL.</details>
-      <arg name="source" type="string">Scene source</arg>
-      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
-    </function>
-    <function name="LoadObjectFromLisp" export="loadObjectFromLisp">
-      <summary>Loads an object tree from a Lisp scene file</summary>
-      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata. The Lua API is absent in XML builds; the C function returns NULL.</details>
-      <arg name="path" type="string">Path to the Lisp scene</arg>
-      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
-    </function>
-    <function name="LoadObjectFromLispString" export="loadObjectFromLispString">
-      <summary>Parses a Lisp scene with scalar, object and binding property values</summary>
-      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata. The Lua API is absent in XML builds; the C function returns NULL.</details>
+      <summary>Parses an XML scene</summary>
+      <details>Supports legacy binding and inline-object shorthand through the shared scene builder. Returns an owning reference in C, transferred to Lua userdata.</details>
       <arg name="source" type="string">Scene source</arg>
       <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromXmlStringWithSchema" export="loadObjectFromXmlStringWithSchema">
       <summary>Compatibility name for loading XML data with an optional schema</summary>
-      <details>Delegates to LoadXmlDataStringWithSchema. Available in both scene builds; this data parser never constructs scene classes. C callers own the returned reference; Lua receives ownership through userdata.</details>
+      <details>Delegates to LoadXmlDataStringWithSchema. This data parser never constructs scene classes. C callers own the returned reference; Lua receives ownership through userdata.</details>
       <arg name="xmlString" type="string">The data XML string to parse</arg>
       <arg name="schemaXml" type="string">Schema XML, or an empty string for untyped data</arg>
       <returns type="Object" pointer="true">The data object tree, or nil on failure</returns>
@@ -425,12 +413,6 @@
       <!-- <arg name="themeGroup" type="Object" pointer="true">Pointer to the ThemeGroup object to query</arg> -->
       <arg name="key" type="string">The key identifying the specific theme value to retrieve</arg>
       <returns type="string">The value associated with the specified key in the current theme, or nil if not found</returns>
-    </function>
-    <function name="SerializeObjectToLispString" export="serializeObjectToLispString">
-      <summary>Serializes an object tree to a Lisp scene string.</summary>
-      <details>Preserves serializable properties, children, style classes, bindings, and prefab references. The caller must free the returned heap-allocated string. Returns NULL for a NULL object or on failure.</details>
-      <arg name="object" type="Object" const="true" pointer="true">The root object to serialize</arg>
-      <returns type="string">Heap-allocated Lisp scene string, or NULL</returns>
     </function>
     <function name="SerializeObjectToXmlString" export="serializeObjectToXmlString">
       <summary>Serializes an object tree to an XML string</summary>

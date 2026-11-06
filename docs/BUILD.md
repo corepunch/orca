@@ -38,45 +38,16 @@ make test-headless
 xvfb-run make test
 ```
 
-## Scene format selection
+## XML scenes
 
-Scene readers are selected at compile time. XML is the default; Lisp is enabled with `-DORCA_USE_LISP`, an
-alternative build using the same object construction and lifetime handling:
+Application pages, templates, resource libraries and scenes use XML on every
+platform. Extensionless resource paths resolve to `.xml` files. The loader,
+library and font lookup, cloning, editor saves and project scaffolding all use
+the same XML scene support.
 
-```bash
-make unite
-make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp unite
-make test-headless
-make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless
-```
-
-Use separate output directories to keep both binaries. `test-headless` runs the
-common engine tests and the selected-format loader regression in both builds;
-Lisp fixture tests run only in the Lisp build, and application tests that load
-pages (`XML_APP_LUA_TESTS`) run only in the XML build. `test-scene-format`
-is the focused selection test.
-
-Define `ORCA_USE_LISP` in any build system to choose Lisp, as declared in
-`include/scene_format.h`. Make also accepts `SCENE_FORMAT=lisp` as a shorthand
-for adding `-DORCA_USE_LISP`; raw flags in `CPPFLAGS` or `CFLAGS` select the same
-mode. WebGL builds receive the same selection. The unselected scene reader is not
-compiled and its Lua file/string loader APIs are absent; C entry points remain
-as unavailable stubs for the generated ABI. The generic loader, library/font
-lookup, cloning, editor scene saves and project scaffolding follow the selection.
-
-The public I/O API is format-neutral: `loadObjectFromDisk(path)`,
-`loadObjectFromString(source)`, and `serializeObjectToString(object)`.
-Legacy format-specific names remain compatibility aliases for the active
-reader. Parser selection lives in one `fs_scene.c` block; the configuration
-header contains the other format-selection block. The readers share object
-construction and registration through one immutable descriptor.
-
-Applications are authored in XML. Lisp is an experimental format: only
-`apps/Example` includes Lisp scenes, and its extensionless startup paths select
-the matching assets. Every other application requires the default XML build;
-do not add `.lisp` twins to them. This switch concerns scene
-reading only. XML data/schema parsing, libxml2, and both serialization utilities
-remain available independently.
+Use `loadObjectFromDisk(path)`, `loadObjectFromString(source)`, and
+`serializeObjectToString(object)` for scene I/O. `make test-headless` includes
+the engine, XML fixture and application tests.
 
 ## What each command is for
 

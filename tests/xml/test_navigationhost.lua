@@ -17,11 +17,19 @@ end
 -- NavigationHost: pushed pages replace the tab shell and inherit row context
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_push_pop()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800
-      (TextBlock Name="Card" Text="Game" DataContext=(DataObject Name="zork1") LeftButtonUp=(NavigationHost.Push Path="tests/fixtures/navigation/Game.lisp")))))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800">
+      <TextBlock Name="Card" Text="Game" LeftButtonUp="{NavigationHost.Push Path=tests/fixtures/navigation/Game.xml}">
+        <TextBlock.DataContext>
+          <DataObject Name="zork1" />
+        </TextBlock.DataContext>
+      </TextBlock>
+    </Page>
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
     local root = screen:findChild("RootPage", true)
     local card = screen:findChild("Card", true)
@@ -52,10 +60,13 @@ end
 -- NavigationHost: CanGoBack is false on root, true after push
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_cangoback()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800)))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800" />
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
 
     test.expect(navigation.CanGoBack == false, "CanGoBack should be false on root")
@@ -64,7 +75,7 @@ local function test_navigationhost_cangoback()
 
     test.expect(navigation.CanGoBack == false, "CanGoBack should remain false with only root")
 
-    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.lisp" })
+    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.xml" })
     pump_messages(screen)
 
     test.expect(navigation.CanGoBack, "CanGoBack should be true after push")
@@ -82,11 +93,15 @@ end
 -- NavigationHost: multiple pushes build stack, pops unwind in LIFO order
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_push_pop_stack()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800
-      (TextBlock Name="RootLabel" Text="Root"))))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800">
+      <TextBlock Name="RootLabel" Text="Root" />
+    </Page>
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
     local root = screen:findChild("RootPage", true)
 
@@ -94,7 +109,7 @@ local function test_navigationhost_push_pop_stack()
     pump_messages(screen)
 
     -- Push first page
-    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.lisp" })
+    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.xml" })
     pump_messages(screen)
     local page1 = screen:findChild("GamePage", true)
     test.expect(page1 ~= nil, "first push should load GamePage")
@@ -102,7 +117,7 @@ local function test_navigationhost_push_pop_stack()
     test.expect(root.Visible == false, "root should hide after first push")
 
     -- Push second page (same template, different instance)
-    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.lisp" })
+    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.xml" })
     pump_messages(screen)
     -- Both pushed pages share the template name; find the visible one
     local pages = {}
@@ -134,10 +149,13 @@ end
 -- NavigationHost: Pop on root page is a no-op
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_pop_root_noop()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800)))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800" />
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
     local root = screen:findChild("RootPage", true)
 
@@ -161,11 +179,19 @@ end
 -- NavigationHost: Push with DataContext passes it to the pushed page
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_push_with_context()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800
-      (TextBlock Name="Card" Text="Game" DataContext=(DataObject Name="zork1") LeftButtonUp=(NavigationHost.Push Path="tests/fixtures/navigation/Game.lisp")))))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800">
+      <TextBlock Name="Card" Text="Game" LeftButtonUp="{NavigationHost.Push Path=tests/fixtures/navigation/Game.xml}">
+        <TextBlock.DataContext>
+          <DataObject Name="zork1" />
+        </TextBlock.DataContext>
+      </TextBlock>
+    </Page>
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
     local card = screen:findChild("Card", true)
 
@@ -186,16 +212,19 @@ end
 -- NavigationHost: Push without DataContext leaves pushed page DataContext nil
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_push_without_context()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800)))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800" />
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
 
     navigation:send("Node.ViewDidLoad")
     pump_messages(screen)
 
-    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.lisp" })
+    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.xml" })
     pump_messages(screen)
 
     local detail = screen:findChild("GamePage", true)
@@ -210,16 +239,19 @@ end
 -- NavigationHost: popped page is removed from the hierarchy
 -- ---------------------------------------------------------------------------
 local function test_navigationhost_pop_removes_page()
-    local screen = filesystem.loadObjectFromLispString([[
-(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
-  (NavigationHost Name="Navigation" Width=400 Height=800
-    (Page Name="RootPage" Width=400 Height=800)))]])
+    local screen = filesystem.loadObjectFromXmlString([[
+<Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+  <NavigationHost Name="Navigation" Width="400" Height="800">
+    <Page Name="RootPage" Width="400" Height="800" />
+  </NavigationHost>
+</Screen>
+]])
     local navigation = screen:findChild("Navigation", true)
 
     navigation:send("Node.ViewDidLoad")
     pump_messages(screen)
 
-    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.lisp" })
+    navigation:send("NavigationHost.Push", { Path = "tests/fixtures/navigation/Game.xml" })
     pump_messages(screen)
     test.expect(screen:findChild("GamePage", true) ~= nil, "GamePage should exist after push")
 

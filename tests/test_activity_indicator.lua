@@ -52,12 +52,9 @@ for _, size in ipairs { { 20, 120, 0, 20 }, { 120, 20, 0, 20 }, { 24, 96, 4, 16 
     if native then screen:send("Screen.RenderScreen", { width = 320, height = 240 }) end
 end
 
-local load_scene = filesystem.loadObjectFromXmlString or filesystem.loadObjectFromLispString
-local source = filesystem.loadObjectFromXmlString
-    and '<ActivityIndicator IsActive="False" Width="24" Height="24"/>'
-    or '(ActivityIndicator IsActive=false Width=24 Height=24)'
-local scene = load_scene(source)
+local scene = filesystem.loadObjectFromXmlString(
+    '<ActivityIndicator IsActive="False" Width="24" Height="24"/>')
 assert(scene and not scene.IsActive and scene.Width == 24 and scene.IgnoreHitTest,
-    "The loading control must support the selected declarative scene format as well as Lua")
+    "The loading control must support declarative XML as well as Lua")
 screen:clear()
 print("PASS: ActivityIndicator 64-point defaults, container clamping, centering, explicit sizing, inactive/hidden/detached states and scene loading")

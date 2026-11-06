@@ -50,9 +50,6 @@ jobs:
       - name: Test (headless layout)
         run: make test-headless
 
-      - name: Test (Lisp opt-in)
-        run: make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless
-
       - name: Test (display required)
         run: xvfb-run make test
 
@@ -102,9 +99,6 @@ jobs:
 
       - name: Test (headless layout)
         run: make test-headless
-
-      - name: Test (Lisp opt-in)
-        run: make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless
 
       - name: Test
         run: make test

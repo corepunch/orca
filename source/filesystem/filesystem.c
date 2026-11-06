@@ -872,7 +872,7 @@ static void
 read_font_family_name(lpcString_t filename, lpcString_t fallback, LPSTR out, size_t out_size)
 {
   snprintf(out, out_size, "%s", fallback);
-  FS_GetSceneFormat()->EnumLibrary(filename, _ReadFontFamilyName,
+  FS_EnumXmlLibrary(filename, _ReadFontFamilyName,
                     &(struct font_name_result){ out, out_size });
 }
 
@@ -890,8 +890,7 @@ _RegisterLibraryFont(lpcString_t name, void *arg)
   CORE_RegisterFontFamily(name, object_path);
 }
 
-// Font families use the selected scene extension, in per-family files
-// or a single named library.
+// Font families use XML declarations in per-family files or a named library.
 static void
 _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 {
@@ -906,7 +905,7 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
   FS_JoinPaths(font_dir, sizeof(font_dir), szDirname, library_name);
   path_t library_file = {0};
   snprintf(library_file, sizeof(library_file), "%s%s", font_dir, FS_GetSceneExtension());
-  FS_GetSceneFormat()->EnumLibrary(library_file, _RegisterLibraryFont,
+  FS_EnumXmlLibrary(library_file, _RegisterLibraryFont,
                     &(struct font_scope){ project_name, library_name });
 
   DIR *dir = opendir(font_dir);
@@ -1219,8 +1218,7 @@ loaded_object_source(struct Object *object, lpcString_t path)
 
 // Loads the object at path. A path with an extension goes to the loader
 // registered for it. A bare path tries each loader's extension in turn
-// ("Dir/Name" -> the selected scene extension, ".png", ...) and then entry
-// "Name" of the selected-format library "Dir".
+// ("Dir/Name" -> ".xml", ".png", ...) and then entry "Name" of "Dir.xml".
 struct Object *
 FS_LoadObject(lpcString_t path)
 {
@@ -1240,7 +1238,7 @@ FS_LoadObject(lpcString_t path)
       return loaded_object_source(loader->fn(1, (const char *[]){ file }), path);
     }
   }
-  struct Object *o = ext ? NULL : FS_GetSceneFormat()->LoadLibrary(path);
+  struct Object *o = ext ? NULL : FS_LoadObjectFromXmlLibrary(path);
   if (!o) Con_Error("Cannot load object '%s'", path);
   return o;
 }

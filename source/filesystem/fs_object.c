@@ -270,7 +270,7 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
     case '{':
     case '<':
       if (pd->DataType == kDataTypeString) break;
-      Con_Error("Inline XML/brace objects are not supported; use a Lisp node value");
+      Con_Error("Inline objects are not supported here; use a child property element");
       return;
   }
   // Plain string on an event property → defer to BindHandler (controller not loaded yet).
@@ -677,7 +677,7 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
     return NULL;
   }
 
-  if (!FS_GetSceneFormat()->Normalize(o, x)) {
+  if (!FS_NormalizeXmlSceneAttributes(o, x)) {
     OBJ_ReleaseRef(o);
     return NULL;
   }
@@ -835,7 +835,7 @@ FS_LoadXmlDataStringWithSchema(lpcString_t xml_string, lpcString_t schema_xml)
   return o;
 }
 
-/* Build a scene from the Lisp reader's tree. The caller owns the tree. */
+/* Build a scene from an XML tree. The caller owns the tree. */
 struct Object *
 FS_BuildObjectTree(struct _xmlNode *root, lpcString_t source)
 {

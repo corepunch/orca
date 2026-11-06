@@ -34,27 +34,12 @@ struct file *_ReadOnDisk(FILE *fp);
 
 struct Object *FS_BuildObjectTree(struct _xmlNode *root, lpcString_t source);
 struct _xmlDoc *FS_SerializeObjectTree(struct Object const *object);
-struct Object *FS_LoadObjectFromLispLibrary(lpcString_t path);
-void FS_EnumLispLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
 struct Object *FS_LoadObjectFromXmlLibrary(lpcString_t path);
 void FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
 #define FS_XML_SCENE_DOCUMENT 2
 
-struct SceneFormat {
-  const char *Extension;
-  struct Object *(*Load)(const char *path);
-  struct Object *(*Parse)(const char *source);
-  const char *(*Serialize)(const struct Object *object);
-  struct Object *(*LoadLibrary)(const char *path);
-  void (*EnumLibrary)(const char *path, void (*fn)(const char *name, void *arg), void *arg);
-  bool_t (*Normalize)(struct Object *object, struct _xmlNode *node);
-  const char *FileApi, *StringApi, *DisabledFileApi, *DisabledStringApi;
-  const char *Scaffold;
-};
+bool_t FS_NormalizeXmlSceneAttributes(struct Object *object, struct _xmlNode *node);
 
-const struct SceneFormat *FS_GetSceneFormat(void);
-
-/* Datasource XML remains available regardless of the scene-format selection. */
 const struct ds_schema *FS_GetCachedXmlDataSchema(const char *key, const char *xml);
 struct Object *FS_ParseXmlDataTree(lpcString_t source, const struct ds_schema *schema);
 struct Object *FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema);

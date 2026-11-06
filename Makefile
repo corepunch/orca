@@ -1,19 +1,4 @@
 APPNAME = orca
-ifndef SCENE_FORMAT
-SCENE_FORMAT := $(if $(findstring -DORCA_USE_LISP,$(CPPFLAGS) $(CFLAGS) $(CC)),lisp,xml)
-endif
-ifeq ($(SCENE_FORMAT),lisp)
-SCENE_FORMAT_FLAGS = -DORCA_USE_LISP
-SCENE_FORMAT_EXT = .lisp
-else ifeq ($(SCENE_FORMAT),xml)
-ifneq ($(findstring -DORCA_USE_LISP,$(CPPFLAGS) $(CFLAGS) $(CC)),)
-$(error SCENE_FORMAT=xml conflicts with -DORCA_USE_LISP)
-endif
-SCENE_FORMAT_FLAGS =
-SCENE_FORMAT_EXT = .xml
-else
-$(error SCENE_FORMAT must be lisp or xml)
-endif
 LIBNAME = orca
 BUILDDIR = build
 SOURCEDIR = source
@@ -684,21 +669,17 @@ HEADLESS_LUA_TESTS += test-event-args
 HEADLESS_LUA_TESTS += test-event-serialization test-controllers
 .PHONY: test-itemscontrol
 HEADLESS_LUA_TESTS += test-scene-format
-# Tests in tests/ run in both scene formats. Tests that need one format's loader
-# or fixtures live in tests/<format>/ and run only in that build; tests/lisp/
-# test_metro_lisp.lua becomes test-metro-lisp.
-FORMAT_LUA_TESTS := $(patsubst tests/$(SCENE_FORMAT)/test_%.lua,test-%,$(wildcard tests/$(SCENE_FORMAT)/test_*.lua))
-FORMAT_LUA_TESTS := $(subst _,-,$(FORMAT_LUA_TESTS))
-$(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_FORMAT)/$(subst -,_,$(t)).lua,unite)))
-.PHONY: $(FORMAT_LUA_TESTS)
-HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
-# Applications are authored in XML; Lisp is an experimental scene format and
-# only apps/Example has Lisp twins. App tests that load pages run in XML builds.
-XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
-XML_APP_LUA_TESTS += test-chat-stress test-octopus-stress
-XML_APP_LUA_TESTS += test-chat-localization test-octopus-localization
-XML_APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
-XML_APP_LUA_TESTS += test-editor-welcome
+# XML loader and fixture tests keep their focused targets under tests/xml/.
+XML_LUA_TESTS := $(patsubst tests/xml/test_%.lua,test-%,$(wildcard tests/xml/test_*.lua))
+XML_LUA_TESTS := $(subst _,-,$(XML_LUA_TESTS))
+$(foreach t,$(XML_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/xml/$(subst -,_,$(t)).lua,unite)))
+.PHONY: $(XML_LUA_TESTS)
+HEADLESS_LUA_TESTS += $(XML_LUA_TESTS)
+APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
+APP_LUA_TESTS += test-chat-stress test-octopus-stress
+APP_LUA_TESTS += test-chat-localization test-octopus-localization
+APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
+APP_LUA_TESTS += test-editor-welcome
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -707,8 +688,7 @@ OCTOPUS_STRESS_ROWS ?= 1000
 test-headless: CHAT_STRESS_ROWS = 100
 test-headless: OCTOPUS_STRESS_ROWS = 100
 .PHONY: test-view-stress
-ifeq ($(SCENE_FORMAT),xml)
-HEADLESS_LUA_TESTS += $(XML_APP_LUA_TESTS)
+HEADLESS_LUA_TESTS += $(APP_LUA_TESTS)
 .PHONY: test-chat-stress test-octopus-stress
 test-chat-stress: copyshare
 	ORCA_CHAT_STRESS_ROWS=$(CHAT_STRESS_ROWS) $(TARGET) -test=tests/test_chat_stress.lua
@@ -716,11 +696,6 @@ test-octopus-stress: copyshare
 	OCTOPUS_STRESS_ROWS=$(OCTOPUS_STRESS_ROWS) $(TARGET) -test=tests/test_octopus_stress.lua
 test-view-stress: test-chat-stress test-octopus-stress test-data-visibility test-viewport-observer-stress
 	$(TARGET) -test=tests/xml/test_long_list_layout_xml.lua
-else
-test-view-stress:
-	@echo "Long app view stress tests require the XML build."
-	@exit 1
-endif
 .PHONY: test-scene-format
 # Manual, offline timing benchmark; never part of test-headless/CI.
 .PHONY: bench-bindings
@@ -728,7 +703,7 @@ bench-bindings: unite
 	$(Q)$(TARGET) -test=tests/bench_bindings.lua
 
 test-scene-format: unite
-	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
+	$(Q)$(TARGET) -test=tests/test_scene_format.lua
 HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader
 HEADLESS_LUA_TESTS += test-default-avatars
 HEADLESS_LUA_TESTS += test-data-visibility test-viewport-observer-stress
@@ -821,9 +796,7 @@ $(eval $(call LUA_TEST_RULE,test-treeview-updates,tests/test_treeview_updates.lu
 $(eval $(call LUA_TEST_RULE,test-startup-render-mode,tests/test_startup_render_mode.lua,unite copyshare))
 .PHONY: test-treeviews
 test-treeviews: test-treeview test-treeview-interaction test-treeview-updates
-ifeq ($(SCENE_FORMAT),xml)
 test-treeviews: test-treeview-xml
-endif
 $(eval $(call LUA_TEST_RULE,test-localization,tests/test_localization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-chat-localization,tests/test_chat_localization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-octopus-localization,tests/test_octopus_localization.lua,unite))
@@ -841,9 +814,9 @@ test-headless: unite test-properties test-styles test-filesystem test-message-re
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"
-	$(Q)$(TARGET) -test=tests/test$(SCENE_FORMAT_EXT)
+	$(Q)$(TARGET) -test=tests/test.xml
 
 include Makefile.webgl
 
-# Apply selection after all ordinary flags, including command-line overrides.
-override CFLAGS += $(CPPFLAGS) $(SCENE_FORMAT_FLAGS)
+# Apply preprocessor flags after all ordinary flags, including command-line overrides.
+override CFLAGS += $(CPPFLAGS)
