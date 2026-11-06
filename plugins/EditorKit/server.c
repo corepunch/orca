@@ -291,6 +291,78 @@ xmlFindNode(xmlNodePtr node, xmlChar const *name) {
 #define DEFAULT_GROUP "Object"
 #define CUSTOM_GROUP "Custom"
 
+/* Box shorthands (Margin, Padding, BorderWidth, BorderRadius) are listed as
+   one compound row, edited as "uniform", "h v" or "l t r b" like in XML, and
+   expandable into their edge properties. Depth edges show only when used. */
+static bool_t
+is_box_shorthand(struct PropertyShorthand const *sh)
+{
+  return sh->TypeString && (!strcmp(sh->TypeString, "Thickness") || !strcmp(sh->TypeString, "CornerRadius"));
+}
+
+static struct PropertyShorthand const *
+box_shorthand(struct ClassDesc const *cdesc, uint32_t id, uint32_t *index)
+{
+  FOR_LOOP(i, cdesc->NumShorthands) {
+    struct PropertyShorthand const *sh = &cdesc->Shorthands[i];
+    if (!is_box_shorthand(sh)) continue;
+    FOR_LOOP(t, sh->NumTargets)
+      if (sh->Targets[t].PropertyID == id) return *index = t, sh;
+  }
+  return NULL;
+}
+
+/* Thickness targets run l r t b (then depth); XAML text is l t r b. */
+static void
+format_box(struct PropertyShorthand const *sh, float const *v, LPSTR out, size_t size)
+{
+  if (v[0] == v[1] && v[0] == v[2] && v[0] == v[3]) snprintf(out, size, "%g", v[0]);
+  else if (strcmp(sh->TypeString, "Thickness")) snprintf(out, size, "%g %g %g %g", v[0], v[1], v[2], v[3]);
+  else if (v[0] == v[1] && v[2] == v[3]) snprintf(out, size, "%g %g", v[0], v[2]);
+  else snprintf(out, size, "%g %g %g %g", v[0], v[2], v[1], v[3]);
+}
+
+static struct PropertyType const *
+class_property(struct ClassDesc const *cdesc, uint32_t id)
+{
+  FOR_LOOP(i, cdesc->NumProperties)
+    if (cdesc->Properties[i].FullIdentifier == id) return &cdesc->Properties[i];
+  return NULL;
+}
+
+static bool_t
+is_depth_edge(lpcString_t name)
+{
+  size_t n = strlen(name);
+  return (n > 5 && !strcmp(name + n - 5, "Front")) || (n > 4 && !strcmp(name + n - 4, "Back"));
+}
+
+static void
+add_box_shorthand(xmlNodePtr group, struct Object const *obj, struct ClassDesc const *cdesc,
+                  struct PropertyShorthand const *sh, byte_t const *base)
+{
+  float v[6] = {0};
+  struct PropertyType const *leaves[6] = {0};
+  uint32_t n = MIN(sh->NumTargets, 6);
+  FOR_LOOP(i, n) {
+    leaves[i] = class_property(cdesc, sh->Targets[i].PropertyID);
+    if (leaves[i] && leaves[i]->DataType == kDataTypeFloat) v[i] = *(float const *)(base + leaves[i]->Offset);
+  }
+  char value[96];
+  format_box(sh, v, value, sizeof(value));
+  xmlNodePtr row = _xmlNewChild(group, "Box", "name", sh->Name, "value", value, "data-type", "Box");
+  _xmlSetPropFormat(row, "data-id", "%s.%s", sh->Category, sh->Name);
+  _xmlSetProp(row, "data-shorthand", "true");
+  FOR_LOOP(i, n) {
+    if (!leaves[i] || (is_depth_edge(leaves[i]->Name) && v[i] == 0)) continue;
+    add_subproperty(row, obj, leaves[i], base + leaves[i]->Offset);
+    /* PaddingLeft reads as Left under Padding; data-id keeps the full name. */
+    size_t prefix = strlen(sh->Name);
+    if (row->last && !strncmp(leaves[i]->Name, sh->Name, prefix) && leaves[i]->Name[prefix])
+      _xmlSetProp(row->last, "name", leaves[i]->Name + prefix);
+  }
+}
+
 static void
 add_property(struct Object const *obj,
              struct PropertyType const *pdesc,
@@ -301,6 +373,12 @@ add_property(struct Object const *obj,
   xmlNodePtr group = xmlFindNode(parm, XMLSTR(cdesc->ClassName));
   if (!group) {
     group = xmlFindNode(parm, XMLSTR(DEFAULT_GROUP));
+  }
+  uint32_t index = 0;
+  struct PropertyShorthand const *sh = box_shorthand(cdesc, pdesc->FullIdentifier, &index);
+  if (sh) {
+    if (!index) add_box_shorthand(group, obj, cdesc, sh, (byte_t const *)dest - pdesc->Offset);
+    return;
   }
   add_subproperty(group, obj, pdesc, dest);
 }
@@ -390,8 +468,21 @@ set_property_text(struct Object *obj, lpcString_t path, lpcString_t name, lpcStr
 {
   struct PropertyType const *pd = find_property_type(obj, name);
   if (!pd) {
+    struct PropertyShorthand const *sh = strchr(name, '.') ? OBJ_FindExplicitShorthand(obj, name)
+                                                           : OBJ_FindImplicitShorthand(obj, name);
+    if (sh && is_box_shorthand(sh)) {
+      float v[6] = {0};
+      FOR_LOOP(i, MIN(sh->NumTargets, 6)) {
+        struct Property *p = OBJ_FindLongProperty(obj, sh->Targets[i].PropertyID);
+        if (p && PROP_GetType(p) == kDataTypeFloat) PROP_CopyValue(p, &v[i]);
+      }
+      char old[96];
+      format_box(sh, v, old, sizeof(old));
+      _xmlNewChild(response, "Box", "name", name, "value", old, "data-type", "Box");
+    }
     if (OBJ_SetShorthandValueFromString(obj, name, value)) {
-      record_edit(EDIT_SET, path, name, value, NULL);
+      lpcString_t attribute = strrchr(name, '.');
+      record_edit(EDIT_SET, path, attribute ? attribute + 1 : name, value, name);
       return NULL;
     }
     return "Unknown property";
@@ -666,8 +757,49 @@ static void data_flag(xmlNodePtr row, lpcString_t name, bool_t value) {
   _xmlSetProp(row, name, value ? "true" : "false");
 }
 
+/* Icons are part of the records: the editor names its icon folder in the
+   request (?icons=Editor/Icons) and binds VectorView.Source to the path. */
+static lpcString_t const class_icons[][2] = {
+  { "Screen", "screen" }, { "Page", "page" }, { "PrefabView2D", "page" },
+  { "CheckBox", "checkbox" }, { "RadioButton", "radio" }, { "ToggleSwitch", "toggle" },
+  { "TabBar", "tabs" }, { "TabView", "tabs" }, { "Tab", "tabs" },
+  { "Button", "button" }, { "Input", "input" }, { "ListBox", "list" },
+  { "ScrollView", "scroll" }, { "ImageView", "image" }, { "VectorView", "vector" },
+  { "TextBlock", "text" }, { "Grid", "grid" }, { "UniformGrid", "grid" },
+  { "StackView", "stack" }, { "XmlDataSource", "data" }, { "DataSource", "data" },
+  { "Node3D", "box" }, { "Scene", "box" }, { "Node2D", "node" }, { "Node", "node" },
+};
+
+struct icon_match { int best; };
+
+static void match_icon(struct ClassDesc const *desc, void *parm) {
+  struct icon_match *m = parm;
+  FOR_LOOP(i, (int)(sizeof(class_icons) / sizeof(*class_icons)))
+    if (i < m->best && !strcmp(desc->ClassName, class_icons[i][0])) m->best = i;
+}
+
+static void data_icon(xmlNodePtr row, lpcString_t attr, lpcString_t folder, lpcString_t name) {
+  if (!folder || !*folder || !name) return;
+  path_t path = {0};
+  snprintf(path, sizeof(path), "%s/%s.svg", folder, name);
+  _xmlSetProp(row, attr, path);
+}
+
+static lpcString_t object_icon(struct Object *object) {
+  struct icon_match m = { (int)(sizeof(class_icons) / sizeof(*class_icons)) };
+  OBJ_EnumObjectClasses(object, match_icon, &m);
+  return m.best < (int)(sizeof(class_icons) / sizeof(*class_icons)) ? class_icons[m.best][1] : "object";
+}
+
+static lpcString_t file_icon(lpcString_t kind, bool_t expanded) {
+  if (!kind || !strcmp(kind, "group")) return expanded ? "folder-open" : "folder";
+  if (!strcmp(kind, "document") || !strcmp(kind, "image") || !strcmp(kind, "style") ||
+      !strcmp(kind, "script") || !strcmp(kind, "shader")) return kind;
+  return "file";
+}
+
 static void data_scene(struct Object *object, xmlNodePtr response, lpcString_t path,
-                       int depth, lpcString_t collapse, lpcString_t filter) {
+                       int depth, lpcString_t collapse, lpcString_t filter, lpcString_t icons) {
   bool_t children = OBJ_GetFirstChild(object) != NULL;
   bool_t expanded = !data_collapsed(collapse, path);
   if (data_matches(OBJ_GetName(object), filter) || data_matches(OBJ_GetClassName(object), filter)) {
@@ -683,23 +815,25 @@ static void data_scene(struct Object *object, xmlNodePtr response, lpcString_t p
     data_flag(row, "Hidden", OBJ_IsHidden(object) || (GetNode(object) && GetNode(object)->QuickHide));
     data_flag(row, "Visible", TRUE);
     _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
+    data_icon(row, "Icon", icons, object_icon(object));
+    if (children) data_icon(row, "DisclosureIcon", icons, expanded ? "chevron-down" : "chevron-right");
   }
   if (!expanded && (!filter || !*filter)) return;
   FOR_EACH_OBJECT(child, object) {
     path_t child_path = {0};
     snprintf(child_path, sizeof(child_path), "%s/%s", path, OBJ_GetName(child));
-    data_scene(child, response, child_path, depth + 1, collapse, filter);
+    data_scene(child, response, child_path, depth + 1, collapse, filter, icons);
   }
 }
 
 static SV_CMD(GET, data_scene) {
   REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
-  data_scene(object, response, endpoint, 0, SV_ARG("collapse"), SV_ARG("filter"));
+  data_scene(object, response, endpoint, 0, SV_ARG("collapse"), SV_ARG("filter"), SV_ARG("icons"));
   return NULL;
 }
 
 static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t parent_path,
-                       int depth, lpcString_t collapse, lpcString_t filter) {
+                       int depth, lpcString_t collapse, lpcString_t filter, lpcString_t icons) {
   xmlForEach(node, parent) {
     if (node->type != XML_ELEMENT_NODE) continue;
     xmlChar *label = xmlGetProp(node, XMLSTR("name"));
@@ -719,8 +853,10 @@ static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t paren
       data_flag(row, "HasChildren", children);
       data_flag(row, "Expanded", expanded);
       _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
+      data_icon(row, "Icon", icons, file_icon(kind ? (char *)kind : NULL, expanded));
+      if (children) data_icon(row, "DisclosureIcon", icons, expanded ? "chevron-down" : "chevron-right");
     }
-    if (expanded || (filter && *filter)) data_files(node, response, path, depth + 1, collapse, filter);
+    if (expanded || (filter && *filter)) data_files(node, response, path, depth + 1, collapse, filter, icons);
     xmlFree(label); xmlFree(kind); xmlFree(source);
   }
 }
@@ -728,14 +864,15 @@ static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t paren
 static SV_CMD(GET, data_project) {
   xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("project"));
   lpcString_t error = GET_project_overview(L, tree, endpoint, rargs, nargs);
-  if (!error) data_files(tree, response, "", 0, SV_ARG("collapse"), SV_ARG("filter"));
+  if (!error) data_files(tree, response, "", 0, SV_ARG("collapse"), SV_ARG("filter"), SV_ARG("icons"));
   xmlFreeNode(tree);
   return error;
 }
 
 static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t group,
                           uint32_t uid, bool_t readonly, int depth,
-                          lpcString_t parent_key, lpcString_t filter) {
+                          lpcString_t parent_key, lpcString_t filter, lpcString_t expand,
+                          lpcString_t icons) {
   xmlChar *label = xmlGetProp(prop, XMLSTR("name"));
   xmlChar *value = xmlGetProp(prop, XMLSTR("value"));
   xmlChar *qualified = xmlGetProp(prop, XMLSTR("data-id"));
@@ -748,7 +885,7 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
   if (!data_matches((char *)label, filter) && !data_matches(group, filter)) {
     xmlForEach(field, prop)
       if (field->type == XML_ELEMENT_NODE && xmlStrcmp(field->name, XMLSTR("menu-item")))
-        data_property(field, response, group, uid, TRUE, depth + 1, key, filter);
+        data_property(field, response, group, uid, TRUE, depth + 1, key, filter, expand, icons);
     xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
     return;
   }
@@ -758,6 +895,13 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
                                 "PropertyName", property ? property : "", "Label", (char *)label,
                                 "Value", value ? (char *)value : "", "Kind", (char *)prop->name,
                                 "GroupName", group, "Expression", expression ? (char *)expression : "");
+  xmlChar *shorthand = xmlGetProp(prop, XMLSTR("data-shorthand"));
+  bool_t compound = shorthand != NULL, open = compound && data_collapsed(expand, property);
+  xmlFree(shorthand);
+  data_flag(row, "IsCompound", compound);
+  data_flag(row, "HasChildren", compound);
+  data_flag(row, "Expanded", open);
+  if (compound) data_icon(row, "DisclosureIcon", icons, open ? "chevron-down" : "chevron-right");
   bool_t boolean = !xmlStrcasecmp(prop->name, XMLSTR("Bool"));
   bool_t enumeration = !xmlStrcasecmp(prop->name, XMLSTR("Enum"));
   bool_t reference = !xmlStrcasecmp(prop->name, XMLSTR("Object"));
@@ -780,9 +924,14 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
                              "Label", (char *)text, "Value", (char *)text);
       xmlFree(text);
     }
+  } else if (compound) {
+    /* Edge rows stay editable; they are listed only while expanded. */
+    if (open || (filter && *filter))
+      xmlForEach(field, prop)
+        if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, readonly, depth + 1, key, NULL, expand, icons);
   } else {
     xmlForEach(field, prop)
-      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, TRUE, depth + 1, key, filter);
+      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, TRUE, depth + 1, key, filter, expand, icons);
   }
   xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
 }
@@ -803,10 +952,14 @@ static SV_CMD(GET, data_properties) {
     data_flag(row, "IsGroup", TRUE);
     data_flag(row, "IsProperty", FALSE);
     data_flag(row, "ReadOnly", TRUE);
-    if ((SV_ARG("filter") && *SV_ARG("filter")) || !data_collapsed(SV_ARG("collapse"), (char *)label)) {
+    bool_t open = (SV_ARG("filter") && *SV_ARG("filter")) || !data_collapsed(SV_ARG("collapse"), (char *)label);
+    data_flag(row, "Expanded", open);
+    data_icon(row, "DisclosureIcon", SV_ARG("icons"), open ? "chevron-down" : "chevron-right");
+    if (open) {
       xmlForEach(prop, group)
         if (prop->type == XML_ELEMENT_NODE)
-          data_property(prop, response, (char *)label, uid, locked != NULL, 0, (char *)label, SV_ARG("filter"));
+          data_property(prop, response, (char *)label, uid, locked != NULL, 0, (char *)label,
+                        SV_ARG("filter"), SV_ARG("expand"), SV_ARG("icons"));
     }
     if (SV_ARG("filter") && *SV_ARG("filter") && response->last == row) {
       xmlUnlinkNode(row);

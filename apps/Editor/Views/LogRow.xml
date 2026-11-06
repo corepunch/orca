@@ -1,4 +1,4 @@
-<Grid Columns="70px 68px 1fr" Height="28" Padding="10 0" Spacing="10"
+<Grid Columns="70px 68px 1fr" Height="20" Padding="10 0" Spacing="10"
       StateClasses="{Binding DataContext/State}" class="log-row">
   <TextBlock Text="{Binding DataContext/Time}" class="editor-muted"/>
   <TextBlock Text="{Binding DataContext/Detail}" class="log-level"/>

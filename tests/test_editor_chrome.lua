@@ -63,7 +63,7 @@ assert(lastAction==1 and #Popups.stack==0,'Screen-routed pointer clicks activate
 local bar=MenuBar({{title='File',items=function() return {{label='Save',action=function() end}} end}},function() return 'ORCA Editor' end)
 screen:addChild(bar.view)
 settle()
-assert(bar.view.Height==36 and bar:indexAt(20)==1,'Menu titles use native dimensions and hit bounds')
+assert(bar.view.Height==28 and bar:indexAt(20)==1,'Menu titles use native dimensions and hit bounds')
 local console=Console()
 screen:addChild(Panel.wrap(console))
 overlay:moveBefore(nil)

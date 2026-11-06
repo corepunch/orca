@@ -1,6 +1,6 @@
 <Grid Rows="auto" StateClasses="{Binding DataContext/State}">
-  <Node2D Height="1" Margin="8 5" Background="#484b54" Visible="{Binding DataContext/Separator}"/>
-  <Button Visible="{Binding DataContext/IsItem}" Height="32" class="menu-item"
+  <Node2D Height="1" Margin="8 4" class="menu-separator" Visible="{Binding DataContext/Separator}"/>
+  <Button Visible="{Binding DataContext/IsItem}" Height="24" class="menu-item"
           IgnoreHitTest="{Binding DataContext/Disabled}" Click="Invoke" MouseMoved="Hover">
     <Grid Columns="20px 1fr auto 16px" Padding="10 0" Spacing="8" IgnoreHitTest="true">
       <TextBlock Text="{Binding DataContext/Mark}" class="menu-mark"/>

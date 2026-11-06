@@ -14,7 +14,7 @@ function Menu:init(items,opts)
 		rows[#rows+1]={Label=item.label,Detail=item.shortcut,Mark=item.checked and '✓' or '',
 			Tail=item.items and '›' or '',Disabled=item.disabled or false,
 			Separator=item.separator or false,IsItem=not item.separator,State=item.disabled and 'menu-disabled' or ''}
-		height=height+(item.separator and 11 or 32)
+		height=height+(item.separator and 9 or 24)
 	end
 	self.view.Height=math.min(600,height)
 	self.view.ItemsSource=Native.records(rows)
@@ -55,7 +55,7 @@ function Menu:openSubmenu(index,sender)
 		Popups.close(self.child)
 	end
 	local x,y=Native.origin(sender or self.view)
-	if not sender then y=y+(index-1)*32 end
+	if not sender then y=y+(index-1)*24 end
 	self.child=Menu(item.items,{parent=self,onNavigate=self.onNavigate})
 	self.child.source=item
 	Popups.push(self.child,x+(self.view.ActualWidth or 320)-4,y)

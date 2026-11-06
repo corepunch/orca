@@ -1,14 +1,25 @@
-<Grid Height="34" Rows="1fr" Columns="1fr" RightButtonUp="Context" class="property-row">
-  <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Visible="{Binding DataContext/IsGroup}" Click="Toggle"
-          class="property-group" Padding="10 0" TextHorizontalAlignment="Left" TextVerticalAlignment="Center"/>
-  <Grid Rows="1fr" Columns="26px 120px 1fr" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 1">
-    <Button Name="BindProperty" Text="ƒ" Click="Bind" class="toolbar-button"/>
-    <TextBlock Text="{Binding DataContext/Label}" Node.PaddingLeft="{Binding DataContext/Indent}" class="property-label" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+<Grid Height="24" Rows="1fr" Columns="1fr" RightButtonUp="Context" class="property-row">
+  <Grid Rows="1fr" Columns="16px 1fr" Visible="{Binding DataContext/IsGroup}" class="property-group">
+    <Button Click="Toggle" class="disclosure">
+      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
+    </Button>
+    <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Click="Toggle" class="property-group-title"/>
+  </Grid>
+  <Grid Rows="1fr" Columns="16px 112px 1fr 20px" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 0 6 0">
+    <Button Click="Toggle" class="disclosure">
+      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
+    </Button>
+    <TextBlock Text="{Binding DataContext/Label}" Node.PaddingLeft="{Binding DataContext/Indent}" class="property-label"
+               OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
     <Grid Rows="1fr" Columns="1fr">
-      <Input Name="PropertyText" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsText}" Submit="Value" class="editor-input"/>
-      <CheckBox Name="PropertyBoolean" IsChecked="{Binding DataContext/BoolValue}" Visible="{Binding DataContext/IsBool}" CheckedChanged="Boolean" IndicatorSize="18"/>
-      <Button Name="PropertyEnum" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsEnum}" Click="Enum" class="editor-button"/>
-      <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" TextVerticalAlignment="Center" class="editor-muted"/>
+      <Input Name="PropertyText" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsText}" Submit="Value" class="property-input"/>
+      <CheckBox Name="PropertyBoolean" IsChecked="{Binding DataContext/BoolValue}" Visible="{Binding DataContext/IsBool}" CheckedChanged="Boolean" class="property-check"/>
+      <Button Name="PropertyEnum" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsEnum}" Click="Enum" class="property-enum"/>
+      <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" class="property-readonly"
+                 OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
     </Grid>
+    <Button Name="BindProperty" Click="Bind" class="bind-button">
+      <VectorView Source="Editor/Icons/link.svg" class="bind-icon" IgnoreHitTest="true"/>
+    </Button>
   </Grid>
 </Grid>

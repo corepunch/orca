@@ -1,6 +1,8 @@
-<Grid Columns="24px 1fr 96px" Height="30" Spacing="4" Node.PaddingLeft="{Binding DataContext/Indent}"
+<Grid Columns="16px 16px 1fr" Height="22" Spacing="4" Node.PaddingLeft="{Binding DataContext/Indent}"
       LeftDoubleClick="Open" RightButtonUp="Context" class="editor-row hierarchy-row">
-  <Button Text="{Binding DataContext/Disclosure}" Visible="{Binding DataContext/HasChildren}" Click="Toggle" class="toolbar-button"/>
-  <TextBlock Name="NodeLabel" Text="{Binding DataContext/Label}" class="editor-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
-  <TextBlock Name="NodeClass" Text="{Binding DataContext/ClassName}" class="editor-muted" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" TextHorizontalAlignment="Right" TextVerticalAlignment="Center" IgnoreHitTest="true" Padding="0 0 8 0"/>
+  <Button Click="Toggle" class="disclosure">
+    <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
+  </Button>
+  <VectorView Name="NodeIcon" Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
+  <TextBlock Name="NodeLabel" Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
 </Grid>

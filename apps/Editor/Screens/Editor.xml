@@ -5,9 +5,9 @@
       <ProcessArgument Value="apps/Example"/>
     </ProcessConnection.Arguments>
   </ProcessConnection>
-  <Grid Name="EditorRoot" Rows="36px 1fr 28px" Columns="1fr">
+  <Grid Name="EditorRoot" Rows="28px 1fr 22px" Columns="1fr">
     <Grid Name="MenuSlot" Rows="1fr" Columns="1fr"/>
-    <Grid Rows="1fr" Columns="280px 1fr 390px" Spacing="1">
+    <Grid Rows="1fr" Columns="260px 1fr 360px" Spacing="1">
       <Grid Name="LeftPanels" Rows="1fr 1fr" Columns="1fr" Spacing="1">
         <Grid Name="HierarchySlot" Rows="1fr" Columns="1fr"/>
         <Grid Name="ProjectSlot" Rows="1fr" Columns="1fr"/>

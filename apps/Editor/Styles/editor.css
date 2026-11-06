@@ -1,68 +1,95 @@
-.editor {
- background-color: #1d2026;
- color: #e4e8ef;
- font-family: Arial;
- font-size: 13;
-}
-.editor-panel { background-color: #262a32; color: #e4e8ef; }
-.panel-header { background-color: #303540; color: #dce2eb; }
-.panel-active { background-color: #34415a; }
-.panel-title { font-size: 12; font-weight: Bold; text-vertical-align: center; }
-.panel-subtitle { font-size: 11; color: #a7b1c2; text-vertical-align: center; }
-.toolbar-button { height: 26; padding: 3 10; margin: 4 4 4 0; background-color: #3d4655; border-radius: 4; font-size: 12; }
-.toolbar-button:hover { background-color: #4b5b75; }
-.toolbar-button:active { background-color: #2567b7; }
-.menu-bar { background-color: #181b21; color: #dbe2ed; }
-.menu-title { background-color: transparent; padding: 0 14; text-vertical-align: center; border-radius: 0; }
-.menu-title:hover { background-color: #303846; }
-.menu-status { color: #a0adbf; padding: 0 14; text-vertical-align: center; font-size: 12; }
-.status-bar { background-color: #181b21; color: #b9c6da; font-size: 11; }
-.status-bar TextBlock { text-vertical-align: center; }
-.editor-popup, .editor-menu, .editor-dialog { background-color: #292f3b; color: #e4e8ef; border: 1 solid #505c70; border-radius: 6; }
-.editor-menu { padding: 4 0; overflow-y: scroll; }
-.menu-item { background-color: transparent; border-radius: 0; padding: 0; text-vertical-align: center; }
-.menu-item TextBlock { text-vertical-align: center; }
-.menu-item:hover { background-color: #3c5275; }
-.menu-item:focus { background-color: #355580; }
-.menu-disabled { opacity: 0.45; }
-.menu-mark { color: #9dc7ff; }
-.editor-muted, .editor-label { color: #aab5c6; }
-.editor-input { background-color: #1d222b; color: #e9edf5; border: 1 solid #4a566a; border-radius: 4; padding: 6 8; font-size: 13; }
-.editor-input:focus { border-color: #6aabff; }
-.editor-button { background-color: #3a4556; color: #e9edf5; border-radius: 4; padding: 6 12; text-vertical-align: center; text-align: center; }
-.editor-button:hover { background-color: #4a5b74; }
-.editor-button:active { background-color: #2b67ad; }
-.primary-button { background-color: #2874ce; }
-.primary-button:hover { background-color: #3988e5; }
-.editor-button:focus-visible, .menu-title:focus-visible, .toolbar-button:focus-visible { ring: 0 2 #6aabff; }
-.dialog-title { background-color: #343e4e; color: #f3f6fc; padding: 14 16; font-size: 16; font-weight: Bold; }
-.log-row { font-size: 12; }
-.log-row TextBlock { text-vertical-align: center; }
-.log-row:hover { background-color: #303846; }
-.log-level { color: #8cb9f6; }
-.log-error .log-level { color: #ff9292; }
-.log-warning .log-level { color: #eac46b; }
-.log-ok .log-level { color: #86d6ad; }
-.editor-list { background-color: #262a32; color: #e4e8ef; }
-.editor-row, .scene-row, .hierarchy-row, .project-row { background-color: transparent; font-size: 13; }
-.editor-row:hover, .scene-row:hover, .hierarchy-row:hover, .project-row:hover { background-color: #333e50; }
-.property-row { padding: 4 10; border-bottom: 1 solid #313742; }
-.property-label { color: #c4cddc; font-size: 12; text-vertical-align: center; }
-.property-value { color: #e4e8ef; font-size: 12; }
-.property-group { background-color: #303744; color: #e2e7f0; font-weight: Bold; font-size: 12; padding: 8 10; }
-.property-bound { color: #8ebaff; }
-.code-input { font-family: monospace; font-size: 14; text-vertical-align: top; line-height: 1.5; }
-.code-status { font-size: 12; color: #a9c2e5; padding: 4 0; }
-.function-palette { background-color: #232934; }
-.completion-row { background-color: transparent; padding: 5 8; text-vertical-align: center; text-align: left; border-radius: 0; }
-.completion-row:hover { background-color: #3b5275; }
-.menu-selected .menu-item, .completion-selected { background-color: #355580; }
-.hierarchy-row .toolbar-button, .project-row .toolbar-button { height: 22; margin: 4 0; padding: 0; }
-.property-row .toolbar-button { height: 24; margin: 0; padding: 0; }
-.property-group { text-align: left; }
+/* Editor chrome. Controls (Button, Input, CheckBox) come from the engine's
+   default stylesheet, themed by the ui-* keys in package.lua; this sheet only
+   lays out panels and sizes things for a dense desktop tool: 12px text,
+   22-24px rows, like Godot, Unity and Unreal. */
 
-.editor-preview { background-color: #16171b; }
-.editor-row:selected, .property-row:selected { background-color: #324e73; }
-.property-row CheckBox { min-height: 0; height: 24; color: #e4e8ef; font-size: 12; }
-.property-row CheckBox .control-indicator { background-color: #1d222b; border-color: #798aa3; }
-.property-row CheckBox:checked .control-indicator { background-color: #2874ce; border-color: #6aabff; }
+.editor { background-color: #17181b; color: #dfe2e7; font-family: Arial; font-size: 12; }
+.editor Button, .editor Input, .editor TextBlock { font-size: 12; }
+
+/* Panels */
+.editor-panel, .editor-list { background-color: #232529; color: #dfe2e7; }
+.panel-header { background-color: #2a2c31; }
+.panel-active .panel-header { background-color: #2d3646; }
+.panel-title { font-weight: Bold; text-vertical-align: center; }
+.panel-subtitle { color: #8d939e; text-vertical-align: center; }
+.panel-toolbar { background-color: #232529; }
+.editor-muted, .editor-label { color: #959ba6; text-vertical-align: center; }
+.editor-error { color: #ff8a8a; }
+.editor-preview { background-color: #141518; }
+
+/* Buttons: icon and toolbar variants of the default Button */
+.toolbar-button { height: 22; padding: 0 10; margin: 3 4 3 0; }
+.icon-button { padding: 0; background-color: #00000000; }
+.icon-button:hover { background-color: #3a3d44; }
+.icon-button:active { background-color: #2e3137; }
+.tool-icon { width: 14; height: 14; margin: auto; color: #b9bec7; }
+.editor-button { padding: 5 12; }
+.primary-button { background-color: #4a8cf7; color: #ffffff; }
+.primary-button:hover { background-color: #5c98f8; }
+.primary-button:active { background-color: #3b78db; }
+.editor-input, .search-input { padding: 3 8; }
+.search-input { border-radius: 11; padding: 3 10; }
+
+/* Tree rows (hierarchy and project) */
+.editor-row { background-color: #00000000; }
+.editor-row:hover { background-color: #2c2f35; }
+.editor-row:selected { background-color: #2c4a78; }
+.row-label { color: #dfe2e7; text-vertical-align: center; }
+.row-icon { width: 14; height: 14; margin: auto; color: #8fb4f0; }
+.project-row .row-icon { color: #c8a96a; }
+.disclosure { padding: 0; background-color: #00000000; border-radius: 3; }
+.disclosure:hover { background-color: #3a3d44; }
+.disclosure-icon { width: 12; height: 12; margin: auto; color: #8d939e; }
+
+/* Inspector */
+.property-row { background-color: #00000000; }
+.property-row:hover { background-color: #282a2f; }
+.property-row:selected { background-color: #2c4a78; }
+.property-group { background-color: #2a2c31; }
+.property-group-title { background-color: #00000000; color: #dfe2e7; font-weight: Bold; text-align: left; padding: 0 4; border-radius: 0; }
+.property-group-title:hover { background-color: #00000000; }
+.property-label { color: #b4b9c2; text-vertical-align: center; }
+.property-input { padding: 1 6; margin: 2 0; border-radius: 3; }
+.property-enum { padding: 0 8; margin: 2 0; text-align: left; border-radius: 3; }
+.property-readonly { color: #858b96; text-vertical-align: center; }
+.property-check { min-height: 0; -orca-indicator-spacing: 0; }
+.property-check .control-indicator { width: 14; height: 14; border-width: 1; }
+.property-check .control-check { width: 10; height: 10; }
+.bind-button { padding: 0; margin: 2 0; background-color: #00000000; border-radius: 3; }
+.bind-button:hover { background-color: #3a3d44; }
+.bind-icon { width: 12; height: 12; margin: auto; color: #6c727d; }
+.property-bound .bind-icon { color: #4a8cf7; }
+
+/* Menu bar, menus and status bar */
+.menu-bar { background-color: #1b1c1f; color: #dfe2e7; }
+.menu-title { background-color: #00000000; color: #dfe2e7; padding: 0 10; border-radius: 0; }
+.menu-title:hover { background-color: #2f3238; }
+.menu-status { color: #8d939e; padding: 0 12; text-vertical-align: center; }
+.status-bar { background-color: #1b1c1f; color: #a3a9b3; font-size: 11; }
+.status-bar TextBlock { font-size: 11; text-vertical-align: center; }
+.editor-popup, .editor-menu, .editor-dialog { background-color: #2a2c31; color: #dfe2e7; border: 1 solid #3d4047; border-radius: 6; }
+.editor-menu { padding: 4 0; overflow-y: scroll; }
+.menu-item { background-color: #00000000; color: #dfe2e7; border-radius: 0; padding: 0; text-align: left; }
+.menu-item TextBlock { text-vertical-align: center; }
+.menu-item:hover, .menu-item:focus, .menu-selected .menu-item { background-color: #3a6fd0; }
+.menu-separator { background-color: #3d4047; }
+.menu-disabled { opacity: 0.45; }
+.menu-mark { color: #8fb4f0; }
+.dialog-title { background-color: #303238; color: #f0f2f5; padding: 12 16; font-size: 14; font-weight: Bold; }
+
+/* Console */
+.log-row { background-color: #00000000; }
+.log-row TextBlock { text-vertical-align: center; }
+.log-row:hover { background-color: #2a2c31; }
+.log-level { color: #7fa9ef; }
+.log-error .log-level { color: #ff8a8a; }
+.log-warning .log-level { color: #e6c06a; }
+.log-ok .log-level { color: #7fd1a6; }
+
+/* Binding editor */
+.code-input { font-family: monospace; font-size: 13; text-vertical-align: top; line-height: 1.5; }
+.code-status { color: #a3b8d8; padding: 4 0; }
+.function-palette { background-color: #1f2125; }
+.completion-row { background-color: #00000000; color: #dfe2e7; padding: 4 8; text-align: left; border-radius: 0; }
+.completion-row:hover { background-color: #34373e; }
+.completion-selected { background-color: #3a6fd0; }

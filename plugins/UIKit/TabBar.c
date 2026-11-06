@@ -1,20 +1,13 @@
 #include <include/orca.h>
-#include <source/filesystem/theme_palette.h>
 
 #include <UIKit/UIKit.h>
 
 HANDLER(TabBar, Object, Create)
 {
-  struct Node *node = GetNode(hObject);
   struct StackView *stack = GetStackView(hObject);
   if (stack) {
     stack->Direction = kDirectionHorizontal;
   }
-
-  node->Border.Color = FS_GetThemeColor(THEME_COLOR_ACCENT);
-
-  node->Border.Width.Axis[1].Right = 1.0f;
-  node->Padding.Axis[1].Right = 1.0f;
 
   return FALSE;
 }

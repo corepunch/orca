@@ -1,4 +1,4 @@
-<Grid Height="36" Columns="auto 1fr" class="menu-bar" Controller="Editor/Scripts/ChromeController">
+<Grid Height="28" Columns="auto 1fr" class="menu-bar" Controller="Editor/Scripts/ChromeController">
   <ItemsStack Name="Menus" Direction="Horizontal" ItemTemplate="Editor/Views/MenuTitle"/>
   <TextBlock Name="Status" TextHorizontalAlignment="Right" class="menu-status"/>
 </Grid>

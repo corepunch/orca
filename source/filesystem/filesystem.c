@@ -480,6 +480,12 @@ _BuildAppPath(lpcString_t input, fixedString_t output)
 // Returns the value string owned by the ResourceEntry, or NULL if not found.
 // Single-threaded only: Lua and XML loading run on one thread.
 ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
+  lpcString_t value = FS_FindThemeValue(key);
+  if (!value && key && key[0]) fprintf(stderr, "FS_GetThemeValue: missing theme key '%s'\n", key);
+  return value;
+}
+
+ORCA_API lpcString_t FS_FindThemeValue(lpcString_t key) {
   if (!key || !key[0]) return NULL;
   lpcString_t name = key[0] == '$' ? key + 1 : key;
   struct Object *ws = FS_GetWorkspace();
@@ -511,7 +517,6 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
       return fallback;
     }
   }
-  fprintf(stderr, "FS_GetThemeValue: missing theme key '%s'\n", key);
   return NULL;
 }
 
