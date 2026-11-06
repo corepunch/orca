@@ -17,8 +17,10 @@ local Console = require "Editor.Scripts.Console"
 local StatusBar = require "Editor.Scripts.StatusBar"
 local BindingEditor = require "Editor.Scripts.BindingEditor"
 local Dialog = require "Editor.Scripts.Dialog"
+local Welcome = require "Editor.Scripts.Welcome"
 
 local SHORTCUTS = {
+	{ 'Ctrl+O', 'Choose project' },
 	{ 'Ctrl+S', 'Save document' },
 	{ 'Ctrl+Z', 'Undo' },
 	{ 'Ctrl+Shift+Z', 'Redo (also Ctrl+Y)' },
@@ -44,6 +46,7 @@ local App = Application:extend {
 	["/"] = function(self) return self:build() end,
 
 	afterPaint = function(self)
+		if self.welcome.view.Visible then self.welcome:update() return end
 		if not self.started then
 			self.started = true
 			self.project:reload()
@@ -93,6 +96,8 @@ function App:menus()
 	end
 	return {
 		{ title = 'File', items = function() return {
+			{ label = 'Choose Project…', shortcut = 'Ctrl+O', action = function() app:showWelcome() end },
+			{ separator = true },
 			{ label = 'Open Document', items = documents() },
 			{ label = 'Save', shortcut = 'Ctrl+S', disabled = not Workspace.document, action = Workspace.save },
 			{ separator = true },
@@ -156,9 +161,39 @@ function App:restartServer()
 	Workspace.open()
 end
 
+function App:showWelcome()
+	if Workspace.dirty then
+		Dialog.show('Save before switching projects', {
+			{ 'Save your current document before opening another project.' },
+			{ 'Choose File > Save, then Choose Project again.' },
+		})
+		return false
+	end
+	Popups.closeAll()
+	self.editorRoot.Visible = false
+	self.welcome:show(self.projectOpened)
+	return true
+end
+
+function App:openProject(path)
+	Workspace.document, Workspace.selection, Workspace.dirty = nil, nil, false
+	Workspace.undoStack, Workspace.redoStack = {}, {}
+	Workspace.start(path, self.runtime)
+	BindingEditor.functions = nil
+	self.preview.image.Src = ''
+	self.preview.rects, self.preview.size, self.preview.stale = {}, nil, true
+	self.preview.selection.Visible, self.preview.hover.Visible = false, false
+	self.started, self.projectOpened = false, true
+	self.welcome.view.Visible = false
+	self.editorRoot.Visible = true
+	self:activate(self.hierarchy)
+	return true
+end
+
 function App:hotkey(chord)
 	if not chord then return false end
 	local actions = {
+		['ctrl+o'] = function() self:showWelcome() end,
 		['ctrl+s'] = Workspace.save,
 		['ctrl+z'] = Workspace.undo,
 		['ctrl+shift+z'] = Workspace.redo,
@@ -188,8 +223,9 @@ function App:build()
 	self.quitOnQ = false
 	self.showProject, self.showConsole = true, true
 	local screen = fs.loadObject('Editor/Screens/Editor')
-	screen:findChild('EditorRoot').KeyDown = function(_, args) return app:hotkey(Native.chord(args)) end
-	Workspace.start(nil, screen:findChild('Runtime'))
+	self.editorRoot = screen:findChild('EditorRoot')
+	self.editorRoot.KeyDown = function(_, args) return app:hotkey(Native.chord(args)) end
+	self.runtime = screen:findChild('Runtime')
 
 	self.hierarchy = Hierarchy()
 	self.project = ProjectView()
@@ -240,7 +276,18 @@ function App:build()
 	end
 	self.menubar:invalidate()
 	self.statusbar:invalidate()
-	self:activate(self.hierarchy)
+	self.welcome = Welcome.new {
+		open = function(path) return app:openProject(path) end,
+		cancel = function()
+			if not app.projectOpened then return end
+			app.welcome.view.Visible = false
+			app.editorRoot.Visible = true
+			app:activate(app.hierarchy)
+		end,
+		warning = function(err) Workspace.log('warning', 'Recent projects: %s', err) end,
+	}
+	screen:addChild(self.welcome.view)
+	self.editorRoot.Visible = false
 	return screen
 end
 

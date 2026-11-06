@@ -1,0 +1,78 @@
+<Grid Name="Welcome" Columns="416px 1fr" Rows="1fr" StyleSheet="Editor/Styles/welcome.css" class="welcome" Controller="Editor/Scripts/Welcome" KeyDown="Key">
+  <Node2D Name="Artwork" class="welcome-art">
+    <ImageView Name="Splash" Source="Editor/Images/WelcomeSplash" Stretch="UniformToFill" IgnoreHitTest="true"/>
+    <Grid Rows="auto 1fr auto" Padding="28" IgnoreHitTest="true">
+      <StackView Spacing="6">
+        <TextBlock Text="ORCA" class="welcome-wordmark"/>
+        <TextBlock Text="THE CREATIVE EDITOR" class="welcome-art-caption"/>
+      </StackView>
+      <Node2D/>
+      <StackView Spacing="16">
+        <TextBlock Text="Give your ideas&#10;a new dimension." class="welcome-art-title"/>
+        <TextBlock Text="REAL-TIME UI  /  3D SCENES  /  LIVE EDITING" class="welcome-art-caption"/>
+      </StackView>
+    </Grid>
+  </Node2D>
+  <Node2D Name="WelcomeContent" class="welcome-content">
+    <Grid Name="ProjectChooser" Rows="auto auto auto 1fr auto auto" Padding="28" Spacing="18">
+      <Grid Columns="1fr auto" Rows="auto">
+        <TextBlock Text="YOUR WORKSPACE" class="welcome-eyebrow"/>
+        <Button Name="Browse" Text="Open project…" Click="Browse" class="welcome-secondary"/>
+      </Grid>
+      <StackView Spacing="10">
+        <TextBlock Text="Welcome to ORCA" class="welcome-title"/>
+        <TextBlock Text="Pick up where you left off, or explore something new." class="welcome-muted" TextWrapping="Wrap"/>
+      </StackView>
+      <Grid Columns="auto auto 1fr" Rows="40px" Spacing="8">
+        <Button Name="AllProjects" Text="All projects" Click="All" class="welcome-tab"/>
+        <Button Name="RecentProjects" Text="Recent" Click="Recent" class="welcome-tab"/>
+        <Input Name="ProjectSearch" PlaceholderText="Find a project" class="welcome-search" Margin="12 0 0 0"/>
+      </Grid>
+      <Node2D>
+        <ListBox Name="Projects" ValueProperty="Name" ItemTemplate="Editor/Templates/WelcomeProject" ItemNamePrefix="WelcomeProject" OverflowX="Hidden" OverflowY="Scroll" Spacing="8" SelectionChanged="Select" class="welcome-list"/>
+        <StackView Name="NoProjects" Visible="false" Spacing="12" Margin="16 32">
+          <TextBlock Name="EmptyTitle" Text="No projects yet" class="welcome-empty-title"/>
+          <TextBlock Name="EmptyDetail" Text="Open a project folder to get started." class="welcome-muted" TextWrapping="Wrap"/>
+        </StackView>
+      </Node2D>
+      <StackView Spacing="12">
+        <TextBlock Name="WelcomeError" Visible="false" class="welcome-error" TextWrapping="Wrap"/>
+        <Grid Columns="1fr auto" Rows="48px" Spacing="16" class="welcome-launch">
+          <StackView Spacing="5" class="welcome-row-content">
+            <TextBlock Name="SelectedTitle" Text="Choose a project" class="welcome-selected-title" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
+            <TextBlock Name="SelectedPath" Text="Select a project above to continue." class="welcome-path" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
+          </StackView>
+          <Button Name="OpenSelected" Text="Open project" Click="Open" class="welcome-primary"/>
+        </Grid>
+      </StackView>
+      <Grid Columns="1fr auto" Rows="auto" class="welcome-footer">
+        <TextBlock Text="ORCA EDITOR" class="welcome-footer-text"/>
+        <Button Name="ReturnToEditor" Text="Back to editor" Visible="false" Click="Return" class="welcome-text-button"/>
+      </Grid>
+    </Grid>
+    <Grid Name="FolderBrowser" Visible="false" Rows="auto auto auto 1fr auto auto" Padding="28" Spacing="18">
+      <Grid Columns="1fr auto" Rows="auto">
+        <TextBlock Text="OPEN A PROJECT" class="welcome-eyebrow"/>
+        <Button Text="Cancel" Click="CancelBrowse" class="welcome-secondary"/>
+      </Grid>
+      <StackView Spacing="10">
+        <TextBlock Text="Find your next project" class="welcome-title"/>
+        <TextBlock Text="Choose a folder containing an ORCA package.lua file." class="welcome-muted" TextWrapping="Wrap"/>
+      </StackView>
+      <Grid Columns="auto 1fr auto" Rows="44px" Spacing="8">
+        <Button Text="Up" Click="ParentFolder" class="welcome-secondary" Width="44"/>
+        <Input Name="FolderPath" PlaceholderText="Project folder or package.lua path" Submit="GoFolder" class="welcome-search"/>
+        <Button Text="Go" Click="GoFolder" class="welcome-secondary"/>
+      </Grid>
+      <Node2D>
+        <ListBox Name="Folders" ValueProperty="Name" ItemTemplate="Editor/Templates/WelcomeFolder" OverflowX="Hidden" OverflowY="Scroll" Spacing="8" class="welcome-list"/>
+        <TextBlock Name="NoFolders" Text="No subfolders here. You can open this folder if it contains package.lua." Visible="false" class="welcome-muted" Margin="16 24" TextWrapping="Wrap"/>
+      </Node2D>
+      <StackView Spacing="16">
+        <TextBlock Name="FolderError" Visible="false" class="welcome-error" TextWrapping="Wrap"/>
+        <Button Name="OpenFolder" Text="Open this project" Click="OpenFolder" class="welcome-primary" Height="48"/>
+      </StackView>
+      <TextBlock Text="You can also paste the full path to a project above." class="welcome-path"/>
+    </Grid>
+  </Node2D>
+</Grid>

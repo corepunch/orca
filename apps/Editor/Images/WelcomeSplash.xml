@@ -1,0 +1,3 @@
+<Image Source="Editor/Images/welcome-sculpture@2x.png" Scale="2"
+       MinificationFilter="Linear" MagnificationFilter="Linear"
+       HasMipmaps="true" MipmapMode="Linear"/>

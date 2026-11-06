@@ -317,7 +317,7 @@ example:
 
 # Live project editor (apps/Editor). PROJECT=apps/Weather edits another project.
 editor: copyshare
-	ORCA_EDITOR_PROJECT=$(abspath $(or $(PROJECT),apps/Example)) $(TARGET) apps/Editor
+	$(if $(PROJECT),ORCA_EDITOR_PROJECT=$(abspath $(PROJECT))) $(TARGET) apps/Editor
 
 # Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.
 cluster: unite
@@ -698,6 +698,8 @@ XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test
 XML_APP_LUA_TESTS += test-chat-stress test-octopus-stress
 XML_APP_LUA_TESTS += test-chat-localization test-octopus-localization
 XML_APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
+XML_APP_LUA_TESTS += test-editor-welcome
+HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
 # Keep routine regression fixtures small; the explicit stress target uses 1,000
@@ -832,6 +834,8 @@ $(eval $(call LUA_TEST_RULE,test-editor-panels,tests/test_editor_panels.lua,unit
 $(eval $(call LUA_TEST_RULE,test-editor-palette,tests/test_editor_palette.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-runtime,tests/test_editor_runtime.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-chrome,tests/test_editor_chrome.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-editor-welcome,tests/test_editor_welcome.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-editor-projects,tests/test_editor_projects.lua,unite copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 

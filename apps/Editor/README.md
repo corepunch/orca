@@ -10,6 +10,24 @@ engine's default stylesheet with semantic light/dark palettes from
 `package.lua`. Appearance follows the operating system and updates retained
 controls immediately, preserving focus, selection and unfinished text.
 
+The editor starts in a compact 1040 × 680 window with original 3D splash artwork, a
+searchable project list, and recent projects. Select a project and choose
+Open project, double-click a row, or press Enter. Open project… (Ctrl+O)
+opens an in-app folder browser; paste a folder or `package.lua` path, or
+navigate through folders. The project runtime starts only after a selection.
+File > Choose Project returns here; Back to editor keeps the current
+workspace. Save pending edits before switching projects. Small windows hide
+the artwork to preserve space for project controls.
+
+Recents are stored as literal paths in `~/.orca-editor-recent-projects`;
+`ORCA_EDITOR_RECENTS` overrides the history file. Discovery never evaluates
+package files. The splash was made with the built-in ImageGen tool; its
+reproduction prompt is in `Images/welcome-sculpture.prompt.txt`. Its runtime
+export is 832 × 1360, exactly twice the 416 × 680 panel, with explicit linear
+texture filtering and mipmaps. The original ImageGen master is retained.
+
+![Project welcome screen](docs/welcome.png)
+
 Panels never build rows themselves. The runtime answers each panel's
 `XmlDataSource` with typed records, including the icon path for every node
 class and file kind (the request names the icon folder with `icons=`), and
@@ -21,18 +39,19 @@ the item templates bind straight to them. Hierarchy and Project use nested
 
 ```bash
 make unite                        # first build after native data-source/API changes
-make editor                       # edits apps/Example
-make editor PROJECT=apps/Weather  # any XML project
+make editor                       # shows the project welcome screen
+make editor PROJECT=apps/Weather  # preselects a project in the welcome screen
 cd apps/Editor && make run PROJECT=../Example
 ```
 
-`ORCA_EDITOR_PROJECT` selects the project when launching `orca apps/Editor`
-directly.
+`ORCA_EDITOR_PROJECT` adds and preselects a project when launching
+`orca apps/Editor` directly. Remembered projects retain their recent order.
 
 ## Common tasks
 
 | Task | How |
 |---|---|
+| Open another project | File > Choose Project (Ctrl+O), then select or browse to a folder |
 | Open a screen or prefab | Double-click it in Project, or File > Open Document |
 | Select a node | Click it in Hierarchy or in the Preview (hover shows the node under the pointer) |
 | Find a node | Ctrl+F focuses the Hierarchy search field; Enter applies the filter |

@@ -186,3 +186,5 @@
 .completion-row:dark:hover { background-color: var(--editor-hover-dark); }
 .completion-selected { background-color: var(--ui-accent); color: #ffffff; }
 .completion-selected:dark { background-color: var(--ui-accent); color: #ffffff; }
+
+@import "welcome.css";

@@ -1,8 +1,8 @@
 Name = "Editor"
 StartupViewController = "Editor/App"
 StartupRoute = "/"
-WindowWidth = 1440
-WindowHeight = 900
+WindowWidth = 1040
+WindowHeight = 680
 EnginePlugins = {
 	{ Name = "orca.UIKit" },
 }

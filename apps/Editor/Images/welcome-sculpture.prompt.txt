@@ -1,0 +1,14 @@
+Generated with the built-in ImageGen tool on 2026-11-06.
+Master: welcome-sculpture.png (1024 × 1536).
+Runtime export: welcome-sculpture@2x.png (832 × 1360), 2x the default
+416 × 680 artwork panel. Resampled to 1360 high with macOS sips, then
+center-cropped to 832 wide. Source artwork is preserved in the master.
+WelcomeSplash.xml declares Scale=2, linear minification/magnification,
+and mipmaps for smooth rendering when the window is resized.
+
+Use case: stylized-concept
+Asset type: splash artwork for the ORCA creative 3D and UI editor welcome screen, a tall panel cropped from a portrait 1024x1536 composition.
+Primary request: an extraordinary polished abstract 3D sculpture with the sophistication of premium 3D software splash art. A flowing, folded loop of pearlescent frosted glass and brushed silver, its interior glowing vivid electric coral orange, balanced above a dark charcoal stone plinth. Small precise architectural blocks and one matte sphere give scale, a warm luminous seam cuts across the base. Tactile physically based materials, art-directed industrial geometry, cinematic depth, restrained technical beauty, collectible digital sculpture.
+Scene/backdrop: seamless deep midnight charcoal studio with subtle haze, faint floor reflections; the sculpture occupies the middle 60 percent, generous dark negative space in the upper quarter and bottom fifth for interface typography added separately.
+Composition/framing: portrait editorial composition, slightly elevated three-quarter view, sophisticated asymmetric balance. Premium high-end raytraced 3D rendering, crisp material detail with soft atmosphere, studio lighting, orange rim light and cool silvery highlights.
+Constraints: artwork only, no text, no logos, no letters, no watermark, no interface, no frame. Keep the composition readable behind white text in top and bottom margins.
