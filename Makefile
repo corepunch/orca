@@ -92,7 +92,7 @@ LDFLAGS += -llua5.4 -lxml2 $(ZLIB_LIB) -lm
 THIRD_PARTY_DIR = $(BUILDDIR)/third-party
 ZLIB_SRCDIR = libs/zlib
 ZLIB_LIB = $(THIRD_PARTY_DIR)/libz.a
-ZLIB_SRCS = adler32 compress crc32 deflate infback inffast inflate inftrees trees uncompr zutil
+ZLIB_SRCS = adler32 compress crc32 deflate gzclose gzlib gzread gzwrite infback inffast inflate inftrees trees uncompr zutil
 ZLIB_OBJS = $(addprefix $(OBJECTDIR)/zlib/,$(addsuffix .o,$(ZLIB_SRCS)))
 FREETYPE_SRCDIR = libs/freetype
 FREETYPE_MODULES_H = source/renderer/third_party/freetype_modules.h
@@ -168,7 +168,7 @@ $(OBJECTDIR)/freetype/%.o: $(FREETYPE_SRCDIR)/src/%.c $(FREETYPE_MODULES_H) | di
 
 $(OBJECTDIR)/zlib/%.o: $(ZLIB_SRCDIR)/%.c $(ZLIB_SRCDIR)/zlib.h | directories
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CC) $(VENDOR_CFLAGS) -I$(ZLIB_SRCDIR) -c $< -o $@
+	$(Q)$(CC) $(VENDOR_CFLAGS) -DHAVE_UNISTD_H=1 -I$(ZLIB_SRCDIR) -c $< -o $@
 
 $(ZLIB_LIB): $(ZLIB_OBJS)
 	$(Q)mkdir -p $(dir $@)
