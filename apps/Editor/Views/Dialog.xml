@@ -1,0 +1,5 @@
+<Grid Width="640" Height="560" Rows="48px 1fr 52px" class="editor-dialog">
+  <TextBlock Name="Title" class="dialog-title"/>
+  <ItemsStack Name="Lines" ItemTemplate="Editor/Views/DialogRow" OverflowY="Scroll" Padding="16"/>
+  <Button Name="Close" Text="Close" class="editor-button" Width="96" Margin="16 8" HorizontalAlignment="Right"/>
+</Grid>

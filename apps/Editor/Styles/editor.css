@@ -1,0 +1,68 @@
+.editor {
+ background-color: #1d2026;
+ color: #e4e8ef;
+ font-family: Arial;
+ font-size: 13;
+}
+.editor-panel { background-color: #262a32; color: #e4e8ef; }
+.panel-header { background-color: #303540; color: #dce2eb; }
+.panel-active { background-color: #34415a; }
+.panel-title { font-size: 12; font-weight: Bold; text-vertical-align: center; }
+.panel-subtitle { font-size: 11; color: #a7b1c2; text-vertical-align: center; }
+.toolbar-button { height: 26; padding: 3 10; margin: 4 4 4 0; background-color: #3d4655; border-radius: 4; font-size: 12; }
+.toolbar-button:hover { background-color: #4b5b75; }
+.toolbar-button:active { background-color: #2567b7; }
+.menu-bar { background-color: #181b21; color: #dbe2ed; }
+.menu-title { background-color: transparent; padding: 0 14; text-vertical-align: center; border-radius: 0; }
+.menu-title:hover { background-color: #303846; }
+.menu-status { color: #a0adbf; padding: 0 14; text-vertical-align: center; font-size: 12; }
+.status-bar { background-color: #181b21; color: #b9c6da; font-size: 11; }
+.status-bar TextBlock { text-vertical-align: center; }
+.editor-popup, .editor-menu, .editor-dialog { background-color: #292f3b; color: #e4e8ef; border: 1 solid #505c70; border-radius: 6; }
+.editor-menu { padding: 4 0; overflow-y: scroll; }
+.menu-item { background-color: transparent; border-radius: 0; padding: 0; text-vertical-align: center; }
+.menu-item TextBlock { text-vertical-align: center; }
+.menu-item:hover { background-color: #3c5275; }
+.menu-item:focus { background-color: #355580; }
+.menu-disabled { opacity: 0.45; }
+.menu-mark { color: #9dc7ff; }
+.editor-muted, .editor-label { color: #aab5c6; }
+.editor-input { background-color: #1d222b; color: #e9edf5; border: 1 solid #4a566a; border-radius: 4; padding: 6 8; font-size: 13; }
+.editor-input:focus { border-color: #6aabff; }
+.editor-button { background-color: #3a4556; color: #e9edf5; border-radius: 4; padding: 6 12; text-vertical-align: center; text-align: center; }
+.editor-button:hover { background-color: #4a5b74; }
+.editor-button:active { background-color: #2b67ad; }
+.primary-button { background-color: #2874ce; }
+.primary-button:hover { background-color: #3988e5; }
+.editor-button:focus-visible, .menu-title:focus-visible, .toolbar-button:focus-visible { ring: 0 2 #6aabff; }
+.dialog-title { background-color: #343e4e; color: #f3f6fc; padding: 14 16; font-size: 16; font-weight: Bold; }
+.log-row { font-size: 12; }
+.log-row TextBlock { text-vertical-align: center; }
+.log-row:hover { background-color: #303846; }
+.log-level { color: #8cb9f6; }
+.log-error .log-level { color: #ff9292; }
+.log-warning .log-level { color: #eac46b; }
+.log-ok .log-level { color: #86d6ad; }
+.editor-list { background-color: #262a32; color: #e4e8ef; }
+.editor-row, .scene-row, .hierarchy-row, .project-row { background-color: transparent; font-size: 13; }
+.editor-row:hover, .scene-row:hover, .hierarchy-row:hover, .project-row:hover { background-color: #333e50; }
+.property-row { padding: 4 10; border-bottom: 1 solid #313742; }
+.property-label { color: #c4cddc; font-size: 12; text-vertical-align: center; }
+.property-value { color: #e4e8ef; font-size: 12; }
+.property-group { background-color: #303744; color: #e2e7f0; font-weight: Bold; font-size: 12; padding: 8 10; }
+.property-bound { color: #8ebaff; }
+.code-input { font-family: monospace; font-size: 14; text-vertical-align: top; line-height: 1.5; }
+.code-status { font-size: 12; color: #a9c2e5; padding: 4 0; }
+.function-palette { background-color: #232934; }
+.completion-row { background-color: transparent; padding: 5 8; text-vertical-align: center; text-align: left; border-radius: 0; }
+.completion-row:hover { background-color: #3b5275; }
+.menu-selected .menu-item, .completion-selected { background-color: #355580; }
+.hierarchy-row .toolbar-button, .project-row .toolbar-button { height: 22; margin: 4 0; padding: 0; }
+.property-row .toolbar-button { height: 24; margin: 0; padding: 0; }
+.property-group { text-align: left; }
+
+.editor-preview { background-color: #16171b; }
+.editor-row:selected, .property-row:selected { background-color: #324e73; }
+.property-row CheckBox { min-height: 0; height: 24; color: #e4e8ef; font-size: 12; }
+.property-row CheckBox .control-indicator { background-color: #1d222b; border-color: #798aa3; }
+.property-row CheckBox:checked .control-indicator { background-color: #2874ce; border-color: #6aabff; }

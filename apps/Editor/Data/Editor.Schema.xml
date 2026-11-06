@@ -1,0 +1,51 @@
+<Schema>
+  <Entity Name="EditorNode" Key="Id" ObjectName="Id">
+    <Column Name="Id" Type="string"/>
+    <Column Name="Path" Type="string"/>
+    <Column Name="Label" Type="string"/>
+    <Column Name="ClassName" Type="string"/>
+    <Column Name="Depth" Type="int"/>
+    <Column Name="Indent" Type="float"/>
+    <Column Name="HasChildren" Type="bool"/>
+    <Column Name="Expanded" Type="bool"/>
+    <Column Name="Hidden" Type="bool"/>
+    <Column Name="Visible" Type="bool" Default="true"/>
+    <Column Name="Disclosure" Type="string"/>
+  </Entity>
+  <Entity Name="EditorFile" Key="Id" ObjectName="Id">
+    <Column Name="Id" Type="string"/>
+    <Column Name="Path" Type="string"/>
+    <Column Name="Label" Type="string"/>
+    <Column Name="Kind" Type="string"/>
+    <Column Name="SourcePath" Type="string"/>
+    <Column Name="Depth" Type="int"/>
+    <Column Name="Indent" Type="float"/>
+    <Column Name="HasChildren" Type="bool"/>
+    <Column Name="Expanded" Type="bool"/>
+    <Column Name="Disclosure" Type="string"/>
+  </Entity>
+  <Entity Name="EditorProperty" Key="Id" ObjectName="Id">
+    <Column Name="Id" Type="string"/>
+    <Column Name="PropertyName" Type="string"/>
+    <Column Name="Label" Type="string"/>
+    <Column Name="Value" Type="string"/>
+    <Column Name="Kind" Type="string"/>
+    <Column Name="GroupName" Type="string"/>
+    <Column Name="Expression" Type="string"/>
+    <Column Name="IsGroup" Type="bool"/>
+    <Column Name="IsProperty" Type="bool"/>
+    <Column Name="IsBool" Type="bool"/>
+    <Column Name="IsEnum" Type="bool"/>
+    <Column Name="IsText" Type="bool"/>
+    <Column Name="IsReference" Type="bool"/>
+    <Column Name="ReadOnly" Type="bool"/>
+    <Column Name="ValueReadOnly" Type="bool"/>
+    <Column Name="BoolValue" Type="bool"/>
+    <Column Name="HasBinding" Type="bool"/>
+    <Column Name="Indent" Type="float"/>
+  </Entity>
+  <Entity Name="EditorOption">
+    <Column Name="Label" Type="string"/>
+    <Column Name="Value" Type="string"/>
+  </Entity>
+</Schema>

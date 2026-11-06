@@ -3,9 +3,8 @@
 -- The edited project runs in a separate `orca -server=true` process
 -- (plugins/EditorKit/server.c); set ORCA_EDITOR_PROJECT to choose it.
 local Application = require "orca.core.application"
-local ui = require "orca.UIKit"
-local config = require "Editor.Scripts.config"
-local Terminal = require "Editor.Scripts.Terminal"
+local fs = require "orca.filesystem"
+local Native = require "Editor.Scripts.Native"
 local Workspace = require "Editor.Scripts.Workspace"
 local Popups = require "Editor.Scripts.Popups"
 local Panel = require "Editor.Scripts.Panel"
@@ -51,7 +50,8 @@ local App = Application:extend {
 			Workspace.open()
 		end
 		self.preview:update()
-		for _, t in ipairs(self.terminals) do t:checkResize() end
+		local popup = Popups.top()
+		if popup and popup.checkResize then popup:checkResize() end
 	end,
 }
 
@@ -75,7 +75,7 @@ end
 
 function App:editBinding()
 	local item = self.inspector:selectedItem()
-	if item and not item.isGroup then
+	if item and not item.IsGroup then
 		self.inspector:editBinding(item)
 	else
 		Workspace.log('warning', "Select a property in the Inspector, then press Ctrl+B")
@@ -87,18 +87,7 @@ function App:menus()
 	local function selection() return Workspace.selection end
 	local function canEdit() return selection() and selection() ~= Workspace.document end
 	local function documents()
-		local items = {}
-		local function walk(node)
-			for c in node:each() do
-				if c:get'data-source' then
-					local source = c:get'data-source'
-					items[#items + 1] = { label = source:gsub('^[^/]*/', ''), checked = source == Workspace.document,
-						action = function() Workspace.open(source) end }
-				end
-				walk(c)
-			end
-		end
-		if app.project.root then walk(app.project.root) end
+		local items = app.project:documents()
 		if #items == 0 then items[1] = { label = 'No documents', disabled = true } end
 		return items
 	end
@@ -156,13 +145,11 @@ end
 function App:toggle(key)
 	self[key] = not self[key]
 	self.left.Rows = self.showProject and "1fr 1fr" or "1fr 0px"
-	self.center.Rows = self.showConsole and "1fr 168px" or "1fr 0px"
+	self.center.Rows = self.showConsole and "1fr 190px" or "1fr 0px"
 	self.preview.stale = true
 end
 
 function App:restartServer()
-	Workspace.process = nil
-	collectgarbage()
 	Workspace.start(Workspace.project)
 	BindingEditor.functions = nil
 	self.project:reload()
@@ -170,6 +157,7 @@ function App:restartServer()
 end
 
 function App:hotkey(chord)
+	if not chord then return false end
 	local actions = {
 		['ctrl+s'] = Workspace.save,
 		['ctrl+z'] = Workspace.undo,
@@ -197,8 +185,11 @@ end
 
 function App:build()
 	local app = self
+	self.quitOnQ = false
 	self.showProject, self.showConsole = true, true
-	Workspace.start()
+	local screen = fs.loadObject('Editor/Screens/Editor')
+	screen:findChild('EditorRoot').KeyDown = function(_, args) return app:hotkey(Native.chord(args)) end
+	Workspace.start(nil, screen:findChild('Runtime'))
 
 	self.hierarchy = Hierarchy()
 	self.project = ProjectView()
@@ -211,36 +202,25 @@ function App:build()
 	end)
 
 	local hotkey = function(chord) return app:hotkey(chord) end
+	Native.onActivate = function(panel) if panel.header then app:focusPanel(panel) end end
 	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.menubar, self.statusbar } do
 		p.hotkey = hotkey
 	end
-	Terminal.onActivate = function(panel) if panel.header then app:focusPanel(panel) end end
-
-	local screen = ui.Screen { Background = config.gutter }
-	local root = ui.Grid { Rows = "16px 1fr 16px" }
-	local main = ui.Grid { Columns = "300px 1fr 420px", Spacing = 2 }
-	self.left = ui.Grid { Rows = "1fr 1fr", Spacing = 2 }
-	self.center = ui.Grid { Rows = "1fr 168px", Spacing = 2 }
-	self.left:addChild(Panel.wrap(self.hierarchy))
-	self.left:addChild(Panel.wrap(self.project))
-	self.center:addChild(Panel.wrap(self.preview))
-	self.center:addChild(Panel.wrap(self.console))
-	main:addChild(self.left)
-	main:addChild(self.center)
-	main:addChild(Panel.wrap(self.inspector))
-	root:addChild(self.menubar.view)
-	root:addChild(main)
-	root:addChild(self.statusbar.view)
-	screen:addChild(root)
-
-	local overlay = ui.Node2D {
-		Visible = false,
-		LeftButtonDown = function(_, args) return Popups.outside(args) end,
-		RightButtonDown = function(_, args) return Popups.outside(args) end,
-	}
-	screen:addChild(overlay)
+	self.left = screen:findChild('LeftPanels', true)
+	self.center = screen:findChild('CenterPanels', true)
+	local function mount(name, view) screen:findChild(name, true):addChild(view) end
+	mount('MenuSlot', self.menubar.view)
+	mount('HierarchySlot', Panel.wrap(self.hierarchy))
+	mount('ProjectSlot', Panel.wrap(self.project))
+	mount('PreviewSlot', Panel.wrap(self.preview))
+	mount('ConsoleSlot', Panel.wrap(self.console))
+	mount('InspectorSlot', Panel.wrap(self.inspector))
+	mount('StatusSlot', self.statusbar.view)
+	local overlay = screen:findChild('Overlay')
+	overlay.LeftButtonDown = function(_, args) return Popups.outside(args) end
+	overlay.RightButtonDown = function(_, args) return Popups.outside(args) end
 	Popups.attach(overlay, function(args)
-		if args.y < config.char_height then
+		if args.y < 36 then
 			local i = app.menubar:indexAt(args.x)
 			if i then app.menubar:open(i) end
 		end
@@ -253,11 +233,9 @@ function App:build()
 			app.menubar:invalidate()
 		end)
 	end
-	self.terminals = { self.menubar, self.statusbar, self.hierarchy, self.project, self.inspector, self.console }
 	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.preview } do
 		if p.header then
 			p.header:invalidate()
-			self.terminals[#self.terminals + 1] = p.header
 		end
 	end
 	self.menubar:invalidate()

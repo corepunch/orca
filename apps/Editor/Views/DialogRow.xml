@@ -1,0 +1,4 @@
+<Grid Columns="160px 1fr" Padding="0 4" Spacing="16">
+  <TextBlock Text="{Binding DataContext/Label}" class="editor-muted" TextWrapping="Wrap"/>
+  <TextBlock Text="{Binding DataContext/Detail}" TextWrapping="Wrap"/>
+</Grid>

@@ -471,18 +471,8 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
     .wParam = 0,
     .lParam = &key,
   });
-  /* Synthesize a TextInput message for printable key presses so tests (and
-     any direct KeyDown dispatch) still accumulate text without requiring a
-     separate translateMessage/dispatch cycle. */
-  if (handled && msg == ID_Node_KeyDown &&
-      key.character >= 32 && (unsigned char)key.character < 127) {
-    CORE_HandleObjectMessage(L, &(struct AXmessage) {
-      .target = core_GetFocus(),
-      .message = ID_Node_TextInput,
-      .wParam = 0,
-      .lParam = &key,
-    });
-  }
+  /* Only native Char events carry translated text. KeyDown is for shortcuts
+     and navigation; its key-name text is never user input. */
   return handled;
   // for (struct Object *obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
   //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);

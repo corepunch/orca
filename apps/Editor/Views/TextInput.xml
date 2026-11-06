@@ -1,0 +1,3 @@
+<Grid Width="320" Height="42" Padding="4" class="editor-popup">
+  <Input Name="Value" class="editor-input"/>
+</Grid>

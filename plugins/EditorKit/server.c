@@ -191,9 +191,6 @@ static void add_group(struct ClassDesc const *dec, void* parm) {
   _xmlSetProp(p, "data-compound", "true");
 }
 
-ORCA_API lpcString_t
-PDESC_Print(struct PropertyType const *pdesc, LPSTR buffer, uint32_t len, float const* pf);
-
 #define _xmlAddProp(parent, name, value, type)\
 _xmlNewChild(parent, DataTypeToString(type), "name", name, "value", value, "data-type", DataTypeToString(type))
 
@@ -220,14 +217,16 @@ add_subproperty(xmlNodePtr xml,
    * Dynamic/custom properties may carry invalid type IDs; skip them to keep
    * the editor server endpoint robust instead of asserting in DataTypeToString.
    */
-  if (!pdesc || pdesc->DataType < 0 || pdesc->DataType > kDataTypeObject) {
+  if (!pdesc || pdesc->DataType < 0 || pdesc->DataType > kDataTypeObject || pdesc->DataType == kDataTypeEvent) {
     return pdesc ? (pdesc->Offset + pdesc->DataSize) : 0;
   }
 
   path_t buf = {0};
-  if (dest) PDESC_Print(pdesc, buf, sizeof(buf), dest);
+  if (pdesc->IsArray) snprintf(buf, sizeof(buf), "(array)");
+  else if (dest) OBJ_FormatPropertyValue(pdesc, dest, buf, sizeof(buf));
   if (!xmlCheckUTF8(XMLSTR(buf))) *buf = 0;
   xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
+  if (pdesc->IsArray) _xmlSetProp(n, "data-readonly", "true");
   if (pdesc->Category && *pdesc->Category) {
     _xmlSetPropFormat(n, "data-id", "%s.%s", pdesc->Category, pdesc->Name);
   }
@@ -239,6 +238,7 @@ add_subproperty(xmlNodePtr xml,
   if (expression) {
     _xmlSetProp(n, "data-program", expression);
   }
+  if (pdesc->IsArray) return pdesc->Offset + pdesc->DataSize;
   switch (pdesc->DataType) {
     case kDataTypeObject:
       _xmlSetProp(n, "data-content", pdesc->TypeString);
@@ -263,7 +263,7 @@ add_subproperty(xmlNodePtr xml,
           struct PropertyType const *field = &sd->Properties[i];
           if (!field->Name || field->DataType < 0 || field->DataType > kDataTypeObject) continue;
           path_t fbuf = {0};
-          if (dest) PDESC_Print(field, fbuf, sizeof(fbuf), (float const *)((byte_t const *)dest + field->Offset));
+          if (dest) OBJ_FormatPropertyValue(field, (byte_t const *)dest + field->Offset, fbuf, sizeof(fbuf));
           if (!xmlCheckUTF8(XMLSTR(fbuf))) *fbuf = 0;
           xmlNodePtr f = _xmlAddProp(n, field->Name, fbuf, field->DataType);
           _xmlSetProp(f, "data-readonly", "true");
@@ -399,7 +399,7 @@ set_property_text(struct Object *obj, lpcString_t path, lpcString_t name, lpcStr
   struct Property *p = OBJ_FindLongProperty(obj, pd->FullIdentifier);
   if (!p) return "Can't create property";
   path_t old = {0};
-  PROP_Print(p, old, sizeof(old));
+  OBJ_FormatPropertyValue(pd, PROP_GetValue(p), old, sizeof(old));
   _xmlAddProp(response, name, old, pd->DataType);
   if (pd->DataType == kDataTypeString) {
     PROP_SetStringValue(p, value);
@@ -643,6 +643,196 @@ SV_CMD(GET, project_overview) {
   return NULL;
 }
 
+/* Editor panels consume these records through XmlDataSource, without a Lua
+   representation of the response or application-created presentation rows. */
+static bool_t data_collapsed(lpcString_t paths, lpcString_t path) {
+  size_t len = strlen(path);
+  for (lpcString_t p = paths; p && *p;) {
+    lpcString_t end = strchr(p, '|');
+    if ((end ? (size_t)(end - p) : strlen(p)) == len && !strncmp(p, path, len)) return TRUE;
+    p = end ? end + 1 : NULL;
+  }
+  return FALSE;
+}
+
+static bool_t data_matches(lpcString_t text, lpcString_t filter) {
+  if (!filter || !*filter) return TRUE;
+  for (lpcString_t p = text; p && *p; p++)
+    if (!strncasecmp(p, filter, strlen(filter))) return TRUE;
+  return FALSE;
+}
+
+static void data_flag(xmlNodePtr row, lpcString_t name, bool_t value) {
+  _xmlSetProp(row, name, value ? "true" : "false");
+}
+
+static void data_scene(struct Object *object, xmlNodePtr response, lpcString_t path,
+                       int depth, lpcString_t collapse, lpcString_t filter) {
+  bool_t children = OBJ_GetFirstChild(object) != NULL;
+  bool_t expanded = !data_collapsed(collapse, path);
+  if (data_matches(OBJ_GetName(object), filter) || data_matches(OBJ_GetClassName(object), filter)) {
+    char id[32];
+    snprintf(id, sizeof(id), "node-%u", OBJ_GetUniqueID(object));
+    xmlNodePtr row = _xmlNewChild(response, "EditorNode", "name", id, "Id", id,
+                                  "Path", path, "Label", OBJ_GetName(object),
+                                  "ClassName", OBJ_GetClassName(object));
+    xmlSetIntProp(row, XMLSTR("Depth"), depth);
+    xmlSetIntProp(row, XMLSTR("Indent"), filter && *filter ? 0 : depth * 16);
+    data_flag(row, "HasChildren", children);
+    data_flag(row, "Expanded", expanded);
+    data_flag(row, "Hidden", OBJ_IsHidden(object) || (GetNode(object) && GetNode(object)->QuickHide));
+    data_flag(row, "Visible", TRUE);
+    _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
+  }
+  if (!expanded && (!filter || !*filter)) return;
+  FOR_EACH_OBJECT(child, object) {
+    path_t child_path = {0};
+    snprintf(child_path, sizeof(child_path), "%s/%s", path, OBJ_GetName(child));
+    data_scene(child, response, child_path, depth + 1, collapse, filter);
+  }
+}
+
+static SV_CMD(GET, data_scene) {
+  REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
+  data_scene(object, response, endpoint, 0, SV_ARG("collapse"), SV_ARG("filter"));
+  return NULL;
+}
+
+static void data_files(xmlNodePtr parent, xmlNodePtr response, lpcString_t parent_path,
+                       int depth, lpcString_t collapse, lpcString_t filter) {
+  xmlForEach(node, parent) {
+    if (node->type != XML_ELEMENT_NODE) continue;
+    xmlChar *label = xmlGetProp(node, XMLSTR("name"));
+    xmlChar *kind = xmlGetProp(node, XMLSTR("data-type"));
+    xmlChar *source = xmlGetProp(node, XMLSTR("data-source"));
+    path_t path = {0};
+    snprintf(path, sizeof(path), "%s%s%s", parent_path, *parent_path ? "/" : "", label ? (char *)label : "");
+    bool_t children = node->children != NULL;
+    bool_t expanded = !data_collapsed(collapse, path);
+    if (data_matches((char *)label, filter)) {
+      xmlNodePtr row = _xmlNewChild(response, "EditorFile", "name", path, "Id", path,
+                                    "Path", path, "Label", (char *)label,
+                                    "Kind", kind ? (char *)kind : "file",
+                                    "SourcePath", source ? (char *)source : "");
+      xmlSetIntProp(row, XMLSTR("Depth"), depth);
+      xmlSetIntProp(row, XMLSTR("Indent"), filter && *filter ? 0 : depth * 16);
+      data_flag(row, "HasChildren", children);
+      data_flag(row, "Expanded", expanded);
+      _xmlSetProp(row, "Disclosure", children ? (expanded ? "−" : "+") : "");
+    }
+    if (expanded || (filter && *filter)) data_files(node, response, path, depth + 1, collapse, filter);
+    xmlFree(label); xmlFree(kind); xmlFree(source);
+  }
+}
+
+static SV_CMD(GET, data_project) {
+  xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("project"));
+  lpcString_t error = GET_project_overview(L, tree, endpoint, rargs, nargs);
+  if (!error) data_files(tree, response, "", 0, SV_ARG("collapse"), SV_ARG("filter"));
+  xmlFreeNode(tree);
+  return error;
+}
+
+static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t group,
+                          uint32_t uid, bool_t readonly, int depth,
+                          lpcString_t parent_key, lpcString_t filter) {
+  xmlChar *label = xmlGetProp(prop, XMLSTR("name"));
+  xmlChar *value = xmlGetProp(prop, XMLSTR("value"));
+  xmlChar *qualified = xmlGetProp(prop, XMLSTR("data-id"));
+  xmlChar *expression = xmlGetProp(prop, XMLSTR("data-program"));
+  xmlChar *locked = xmlGetProp(prop, XMLSTR("data-readonly"));
+  readonly = readonly || locked;
+  lpcString_t property = qualified ? (char *)qualified : (char *)label;
+  path_t key = {0};
+  snprintf(key, sizeof(key), "%s/%s", parent_key, property ? property : "");
+  if (!data_matches((char *)label, filter) && !data_matches(group, filter)) {
+    xmlForEach(field, prop)
+      if (field->type == XML_ELEMENT_NODE && xmlStrcmp(field->name, XMLSTR("menu-item")))
+        data_property(field, response, group, uid, TRUE, depth + 1, key, filter);
+    xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
+    return;
+  }
+  char id[64];
+  snprintf(id, sizeof(id), "property-%u-%08x", uid, fnv1a32(key));
+  xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
+                                "PropertyName", property ? property : "", "Label", (char *)label,
+                                "Value", value ? (char *)value : "", "Kind", (char *)prop->name,
+                                "GroupName", group, "Expression", expression ? (char *)expression : "");
+  bool_t boolean = !xmlStrcasecmp(prop->name, XMLSTR("Bool"));
+  bool_t enumeration = !xmlStrcasecmp(prop->name, XMLSTR("Enum"));
+  bool_t reference = !xmlStrcasecmp(prop->name, XMLSTR("Object"));
+  data_flag(row, "IsGroup", FALSE);
+  data_flag(row, "IsProperty", TRUE);
+  data_flag(row, "ReadOnly", readonly);
+  data_flag(row, "ValueReadOnly", readonly || reference);
+  data_flag(row, "IsBool", boolean && !readonly);
+  data_flag(row, "IsEnum", enumeration && !readonly);
+  data_flag(row, "IsText", !boolean && !enumeration && !reference && !readonly);
+  data_flag(row, "IsReference", reference);
+  data_flag(row, "BoolValue", value && (!xmlStrcasecmp(value, XMLSTR("true")) || !xmlStrcmp(value, XMLSTR("1"))));
+  data_flag(row, "HasBinding", expression && *expression);
+  xmlSetIntProp(row, XMLSTR("Indent"), depth * 12);
+  if (enumeration) {
+    xmlNodePtr options = xmlNewChild(row, NULL, XMLSTR("Options"), NULL);
+    xmlForEach(option, prop) {
+      xmlChar *text = xmlGetProp(option, XMLSTR("name"));
+      if (text) _xmlNewChild(options, "EditorOption", "name", (char *)text,
+                             "Label", (char *)text, "Value", (char *)text);
+      xmlFree(text);
+    }
+  } else {
+    xmlForEach(field, prop)
+      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, TRUE, depth + 1, key, filter);
+  }
+  xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked);
+}
+
+static SV_CMD(GET, data_properties) {
+  REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
+  xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("properties"));
+  lpcString_t error = GET_node(L, tree, endpoint, rargs, nargs);
+  uint32_t uid = OBJ_GetUniqueID(object);
+  xmlForEach(group, tree) {
+    xmlChar *label = xmlGetProp(group, XMLSTR("name"));
+    xmlChar *locked = xmlGetProp(group, XMLSTR("data-readonly"));
+    if (!label || !group->children) { xmlFree(label); xmlFree(locked); continue; }
+    char id[64];
+    snprintf(id, sizeof(id), "group-%u-%08x", uid, fnv1a32((char *)label));
+    xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
+                                  "Label", (char *)label, "GroupName", (char *)label);
+    data_flag(row, "IsGroup", TRUE);
+    data_flag(row, "IsProperty", FALSE);
+    data_flag(row, "ReadOnly", TRUE);
+    if ((SV_ARG("filter") && *SV_ARG("filter")) || !data_collapsed(SV_ARG("collapse"), (char *)label)) {
+      xmlForEach(prop, group)
+        if (prop->type == XML_ELEMENT_NODE)
+          data_property(prop, response, (char *)label, uid, locked != NULL, 0, (char *)label, SV_ARG("filter"));
+    }
+    if (SV_ARG("filter") && *SV_ARG("filter") && response->last == row) {
+      xmlUnlinkNode(row);
+      xmlFreeNode(row);
+    }
+    xmlFree(label); xmlFree(locked);
+  }
+  xmlFreeNode(tree);
+  return error;
+}
+
+static SV_CMD(GET, data_functions) {
+  xmlNodePtr functions = xmlNewNode(NULL, XMLSTR("functions"));
+  lpcString_t error = GET_binding_functions(L, functions, endpoint, rargs, nargs);
+  xmlForEach(function, functions) {
+    xmlChar *name = xmlGetProp(function, XMLSTR("name"));
+    xmlChar *signature = xmlGetProp(function, XMLSTR("signature"));
+    xmlChar *summary = xmlGetProp(function, XMLSTR("summary"));
+    _xmlNewChild(response, "EditorFunction", "name", (char *)name,
+                 "FunctionName", (char *)name, "Signature", (char *)signature, "Summary", (char *)summary);
+    xmlFree(name); xmlFree(signature); xmlFree(summary);
+  }
+  xmlFreeNode(functions);
+  return error;
+}
+
 SV_CMD(GET, whoami) {
   struct Object *project = OBJ_GetFirstChild(FS_GetWorkspace());
   if (project) {
@@ -769,9 +959,14 @@ SV_CMD(GET, snapshot)
   }
   ORCA_API void CORE_AdvanceFrame(void);
   CORE_AdvanceFrame();
+  /* Bindings must see the preview viewport before measuring its content. */
+  _SendMessage(screen, Screen, UpdateLayout, .Width = w, .Height = h);
   PROP_RunAllPrograms(screen);
   _SendMessage(screen, Screen, UpdateLayout, .Width = w, .Height = h);
   _SendMessage(screen, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
+  R_BindFramebuffer(rt);
+  R_ClearScreen(GetScreen(screen)->ClearColor, 1, 0);
+  R_BindFramebuffer(NULL);
   _SendMessage(screen, Screen, RenderScreen, .width = w, .height = h, .target = rt);
   byte_t *pixels = malloc(w * h * 4);
   bool_t ok = pixels && SUCCEEDED(RenderTexture_ReadPixels(rt, pixels)) && write_png(file, pixels, w, h);
@@ -997,6 +1192,10 @@ struct {
   enum cmd op;
   lpcString_t (*func)(lua_State*, xmlNodePtr, lpcString_t, reqArg_t const*, uint32_t);
 } routes[] = {
+  { "data-scene/", ROUTE(GET, data_scene) },
+  { "data-project", ROUTE(GET, data_project) },
+  { "data-properties/", ROUTE(GET, data_properties) },
+  { "data-functions", ROUTE(GET, data_functions) },
   { "whoami", ROUTE(GET, whoami) },
   { "scene-hierarchy/", ROUTE(GET, scene_hierarchy) },
   { "startup-screen", ROUTE(GET, startup_screen) },

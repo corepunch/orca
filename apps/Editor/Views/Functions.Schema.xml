@@ -1,0 +1,7 @@
+<Schema>
+  <Entity Name="EditorFunction" Key="FunctionName">
+    <Column Name="FunctionName" Type="string"/>
+    <Column Name="Signature" Type="string"/>
+    <Column Name="Summary" Type="string"/>
+  </Entity>
+</Schema>

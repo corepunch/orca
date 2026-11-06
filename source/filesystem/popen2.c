@@ -315,3 +315,184 @@ int luaopen_orca_pipe(lua_State *L) {
   luaL_newlib(L, pipe_funcs);
   return 1;
 }
+
+/* Native shared XML transport. Unlike the legacy Lua pipe helper this never
+ * invokes a shell, and bounds every exchange so a failed child cannot hang UI. */
+#include <include/orca.h>
+#include <filesystem/filesystem.h>
+#include <filesystem/filesystem_properties.h>
+#include <sys/socket.h>
+#include <poll.h>
+#include <fcntl.h>
+#include <time.h>
+
+struct xml_process {
+  int fd;
+  pid_t pid;
+  char *reply;
+};
+
+static int64_t
+process_now(void)
+{
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (int64_t)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+static const char *
+process_error(struct ProcessConnection *connection, const char *message)
+{
+  PROP_SetStringValue(OBJ_FindLongProperty(CMP_GetObject(connection),
+      ID_ProcessConnection_ErrorMessage), message);
+  return NULL;
+}
+
+ORCA_API void
+ProcessConnection_Close(struct ProcessConnection *connection)
+{
+  struct xml_process *process = connection ? connection->_process : NULL;
+  if (!process) return;
+  close(process->fd);
+  if (process->pid > 0) {
+    kill(process->pid, SIGTERM);
+    if (waitpid(process->pid, NULL, WNOHANG) == 0) {
+      kill(process->pid, SIGKILL);
+      while (waitpid(process->pid, NULL, 0) < 0 && errno == EINTR) {}
+    }
+  }
+  free(process->reply);
+  free(process);
+  connection->_process = NULL;
+}
+
+static bool_t
+process_open(struct ProcessConnection *connection)
+{
+  if (connection->_process) return TRUE;
+  if (!connection->Executable || !*connection->Executable)
+    return process_error(connection, "No executable configured"), FALSE;
+  int sockets[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0)
+    return process_error(connection, strerror(errno)), FALSE;
+  fcntl(sockets[0], F_SETFD, FD_CLOEXEC);
+  fcntl(sockets[1], F_SETFD, FD_CLOEXEC);
+  char **argv = calloc((size_t)connection->NumArguments + 2, sizeof(char *));
+  struct xml_process *process = calloc(1, sizeof(*process));
+  if (!argv || !process) {
+    close(sockets[0]); close(sockets[1]); free(argv); free(process);
+    return process_error(connection, "Out of memory"), FALSE;
+  }
+  argv[0] = (char *)connection->Executable;
+  for (int i = 0; i < connection->NumArguments; i++)
+    argv[i + 1] = (char *)(connection->Arguments[i].Value ? connection->Arguments[i].Value : "");
+  pid_t pid = fork();
+  if (pid == 0) {
+    dup2(sockets[1], STDIN_FILENO);
+    dup2(sockets[1], STDOUT_FILENO);
+    close(sockets[0]); close(sockets[1]);
+    execvp(argv[0], argv);
+    _exit(127);
+  }
+  free(argv);
+  close(sockets[1]);
+  if (pid < 0) {
+    close(sockets[0]); free(process);
+    return process_error(connection, strerror(errno)), FALSE;
+  }
+#ifdef SO_NOSIGPIPE
+  int no_sigpipe = 1;
+  setsockopt(sockets[0], SOL_SOCKET, SO_NOSIGPIPE, &no_sigpipe, sizeof(no_sigpipe));
+#endif
+  fcntl(sockets[0], F_SETFL, fcntl(sockets[0], F_GETFL, 0) | O_NONBLOCK);
+  process->fd = sockets[0];
+  process->pid = pid;
+  connection->_process = process;
+  return TRUE;
+}
+
+static bool_t
+process_ready(int fd, short events, int64_t deadline)
+{
+  struct pollfd pfd = { .fd = fd, .events = events };
+  for (;;) {
+    int64_t remaining = deadline - process_now();
+    if (remaining <= 0) { errno = ETIMEDOUT; return FALSE; }
+    int n = poll(&pfd, 1, (int)remaining);
+    if (n > 0) return (pfd.revents & events) != 0;
+    if (n < 0 && errno == EINTR) continue;
+    if (n == 0) errno = ETIMEDOUT;
+    return FALSE;
+  }
+}
+
+ORCA_API const char *
+ProcessConnection_Request(struct ProcessConnection *connection, const char *request)
+{
+  if (!connection || !request) return NULL;
+  if (strchr(request, '\n') || strchr(request, '\r'))
+    return process_error(connection, "A request must be a single line");
+  if (!process_open(connection)) return NULL;
+  struct xml_process *process = connection->_process;
+  free(process->reply);
+  process->reply = NULL;
+  int64_t deadline = process_now() + (connection->Timeout > 0 ? connection->Timeout : 10000);
+  size_t len = strlen(request), sent = 0;
+  char *line = malloc(len + 2);
+  if (!line) return process_error(connection, "Out of memory");
+  memcpy(line, request, len); line[len++] = '\n'; line[len] = 0;
+  while (sent < len) {
+    if (!process_ready(process->fd, POLLOUT, deadline)) break;
+#ifdef MSG_NOSIGNAL
+    ssize_t n = send(process->fd, line + sent, len - sent, MSG_NOSIGNAL);
+#else
+    ssize_t n = send(process->fd, line + sent, len - sent, 0);
+#endif
+    if (n < 0 && (errno == EINTR || errno == EAGAIN)) continue;
+    if (n <= 0) break;
+    sent += n;
+  }
+  free(line);
+  if (sent != len) {
+    process_error(connection, "Could not write request before deadline");
+    ProcessConnection_Close(connection);
+    return NULL;
+  }
+  size_t size = 4096, used = 0;
+  char *reply = malloc(size + 1);
+  if (!reply) return process_error(connection, "Out of memory");
+  const char *marker = connection->EndMarker && *connection->EndMarker
+    ? connection->EndMarker : "</response>";
+  for (;;) {
+    if (used == size) {
+      if (size >= 16 * 1024 * 1024) break;
+      size *= 2;
+      char *larger = realloc(reply, size + 1);
+      if (!larger) break;
+      reply = larger;
+    }
+    if (!process_ready(process->fd, POLLIN, deadline)) break;
+    ssize_t n = read(process->fd, reply + used, size - used);
+    if (n < 0 && (errno == EINTR || errno == EAGAIN)) continue;
+    if (n <= 0) break;
+    used += n; reply[used] = 0;
+    char *end = strstr(reply, marker);
+    if (!end) continue;
+    end[strlen(marker)] = 0;
+    char *start = strstr(reply, "<?xml");
+    if (!start) start = strstr(reply, "<response");
+    if (start && start != reply) memmove(reply, start, strlen(start) + 1);
+    process->reply = reply;
+    process_error(connection, "");
+    return reply;
+  }
+  free(reply);
+  process_error(connection, "Incomplete XML response, closed connection, or request deadline exceeded");
+  ProcessConnection_Close(connection);
+  return NULL;
+}
+
+HANDLER(ProcessConnection, Object, Release) {
+  ProcessConnection_Close(pProcessConnection);
+  return FALSE;
+}

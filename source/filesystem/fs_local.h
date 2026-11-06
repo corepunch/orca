@@ -55,6 +55,8 @@ struct SceneFormat {
 const struct SceneFormat *FS_GetSceneFormat(void);
 
 /* Datasource XML remains available regardless of the scene-format selection. */
+const struct ds_schema *FS_GetCachedXmlDataSchema(const char *key, const char *xml);
+struct Object *FS_ParseXmlDataTree(lpcString_t source, const struct ds_schema *schema);
 struct Object *FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema);
 struct Object *FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema);
 

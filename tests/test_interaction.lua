@@ -30,7 +30,7 @@ local function test_button_interaction()
 end
 
 -- ---------------------------------------------------------------------------
--- Input: typed characters via KeyDown events are accumulated into Text
+-- Input: native Char events accumulate translated text
 -- ---------------------------------------------------------------------------
 local function test_input_interaction()
 	local config = { text = "Hello World!" }
@@ -77,6 +77,62 @@ local function test_input_native_event_routing()
 	orca.system.translateMessage(event)
 	pump_messages(screen)
 	test.expect_eq(input.Text, "a", "The application screen should route untargeted native text to the focused input")
+	input:removeFromParent()
+end
+
+local function test_input_preserves_platform_translation()
+	pump_messages(screen)
+	local input = screen + ui.Input { Width = 300, Height = 40 }
+	input:setFocus()
+	local cases = {
+		{ key = 91, text = "{", modifiers = 1 },
+		{ key = 93, text = "}", modifiers = 1 },
+		{ key = 105, text = "I", modifiers = 1 },
+		{ key = 32, text = " ", modifiers = 0 },
+		{ key = 101, text = "é", modifiers = 0 },
+	}
+	for _, stroke in ipairs(cases) do
+		local event = orca.system.Event { target = screen, message = "KeyDown",
+			key = stroke.key, text = stroke.text, modflags = stroke.modifiers }
+		orca.system.dispatchMessage(nil, event)
+		orca.system.translateMessage(event)
+		pump_messages(screen)
+	end
+	test.expect_eq(input.Text, "{}I é", "Translation preserves native braces, case, spaces and UTF-8")
+	for _, modifier in ipairs { 2, 8 } do
+		local event = orca.system.Event { target = screen, message = "KeyDown",
+			key = 115, text = "s", modflags = modifier }
+		orca.system.dispatchMessage(nil, event)
+		orca.system.translateMessage(event)
+		pump_messages(screen)
+	end
+	test.expect_eq(input.Text, "{}I é", "Control and Command shortcuts do not insert text")
+	input:removeFromParent()
+end
+
+local function test_input_native_text_with_ancestor_shortcuts()
+	local keys = 0
+	local root = ui.Screen { Width = 320, Height = 120, ResizeMode = "NoResize" }
+	local shortcuts = root + ui.Grid { KeyDown = function() keys = keys + 1; return false end }
+	local input = shortcuts + ui.Input { Width = 300, Height = 40 }
+	input:setFocus()
+	for _, stroke in ipairs {
+		{ key = 105, text = "i", translated = "I", modifiers = 1 },
+		{ key = 32, text = "space", translated = " ", modifiers = 0 },
+		{ key = 91, text = "[", translated = "{", modifiers = 1 },
+	} do
+		local before = input.Text or ""
+		orca.system.dispatchMessage { target = root, message = "KeyDown",
+			key = stroke.key, text = stroke.text, modflags = stroke.modifiers }
+		pump_messages(root)
+		test.expect_eq(input.Text or "", before,
+			"An ancestor shortcut callback must not turn physical KeyDown names into input")
+		orca.system.dispatchMessage { target = root, message = "Char",
+			text = stroke.translated, modflags = stroke.modifiers }
+		pump_messages(root)
+	end
+	test.expect_eq(keys, 3, "Printable keys still reach the ancestor shortcut callback")
+	test.expect_eq(input.Text, "I {", "Native text preserves shifted case, spaces and punctuation exactly once")
 	input:removeFromParent()
 end
 
@@ -334,6 +390,8 @@ test_input_interaction()
 test_input_unicode("Text")
 test_input_unicode("Password")
 test_input_native_event_routing()
+test_input_preserves_platform_translation()
+test_input_native_text_with_ancestor_shortcuts()
 test_input_checkbox()
 test_form_populate_inputs()
 test_radio_group_interaction()

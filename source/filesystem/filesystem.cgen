@@ -7,6 +7,10 @@
     <external struct="_PACK"/>
   </externals>
   <structs>
+    <struct name="ProcessArgument" sealed="true">
+      <summary>One literal argument passed to a child executable without a shell.</summary>
+      <fields><field name="Value" type="string"/></fields>
+    </struct>
     <struct name="ProjectReference" sealed="true">
       <summary>External project reference</summary>
       <details>Consists of a name and a relative path to the project</details>
@@ -60,20 +64,54 @@
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
     </class>
+    <class name="ProcessConnection">
+      <summary>Shared connection to a child process using XML request/reply framing.</summary>
+      <details>Starts the executable lazily on the first request. Arguments are literal argv values, never shell commands. Requests are synchronous and bounded by Timeout; replies end with EndMarker. Share one connection between data sources and edit commands.</details>
+      <handles><handle message="Object.Release"/></handles>
+      <properties>
+        <property name="Executable" type="string"/>
+        <property name="Arguments" type="ProcessArgument" array="true"/>
+        <property name="EndMarker" type="string" default="&lt;/response&gt;"/>
+        <property name="Timeout" type="int" default="10000">Request deadline in milliseconds.</property>
+        <property name="ErrorMessage" type="string"/>
+      </properties>
+      <fields><field name="_process" type="void" pointer="true"/></fields>
+      <methods>
+        <method name="Request"><arg name="request" type="string"/><returns type="string">Raw reply or nil; ErrorMessage describes failure. The returned text remains valid until the next request or close.</returns></method>
+        <method name="Close"/>
+      </methods>
+    </class>
     <class name="XmlDataSource" parent="DataSource">
-      <summary>XML-backed datasource that loads an object tree from a source file.</summary>
-      <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. On Object.Start it loads the XML source into a tree of DataObject, DataObjectString, DataObjectInt, DataObjectFloat, and DataObjectBool instances.</details>
+      <summary>Native XML records loaded from a file, XML content, or a shared process connection.</summary>
+      <details>Source names a file unless Connection or ConnectionPath is set, in which case it is the request sent to that process. Content parses XML directly. Items exposes the native collection to ItemsSource. Reload retains rows by their XML name and class, so controls and selection survive refresh. Error responses leave the last successful records intact.</details>
       <fields>
         <field name="Data" type="DataObject" pointer="true"/>
+        <field name="_schema" type="void" pointer="true"/>
+        <field name="_loading" type="bool"/>
+        <field name="_started" type="bool"/>
       </fields>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Attached"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="XmlDataSource.Reload"/>
         <handle message="DataContext.GetData"/>
       </handles>
       <properties>
-        <property name="Source" type="string">Path to the XML file to load, relative to the workspace (for example "Adventure/Data/Games").</property>
+        <property name="Source" type="string">File path, or request when Connection is supplied.</property>
+        <property name="Connection" type="ProcessConnection" pointer="true"/>
+        <property name="ConnectionPath" type="string">Path to a shared ProcessConnection resolved at reload. Relative paths beginning with a dot resolve from this source; other paths search its ancestor scopes.</property>
+        <property name="Content" type="string">XML content parsed directly into native records.</property>
+        <property name="AutoLoad" type="bool" default="TRUE"/>
+        <property name="Items" type="DataObject" pointer="true"/>
+        <property name="IsLoading" type="bool"/>
+        <property name="HasError" type="bool"/>
+        <property name="ErrorMessage" type="string"/>
       </properties>
+      <methods>
+        <method name="ReloadData" export="reload"><returns type="bool">True when records loaded successfully.</returns></method>
+      </methods>
+      <messages><message name="Reload"><summary>Loads or refreshes the source.</summary></message></messages>
     </class>
     <class name="Project">
       <handles>

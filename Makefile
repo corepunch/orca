@@ -685,6 +685,7 @@ HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 XML_APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
 XML_APP_LUA_TESTS += test-chat-stress test-octopus-stress
 XML_APP_LUA_TESTS += test-chat-localization test-octopus-localization
+XML_APP_LUA_TESTS += test-editor-panels test-editor-chrome
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
 # Keep routine regression fixtures small; the explicit stress target uses 1,000
@@ -806,6 +807,9 @@ $(eval $(call LUA_TEST_RULE,test-octopus-localization,tests/test_octopus_localiz
 $(eval $(call LUA_TEST_RULE,test-event-args,tests/test_event_args.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-event-serialization,tests/test_event_serialization.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-controllers,tests/test_controllers.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-editor-panels,tests/test_editor_panels.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-editor-runtime,tests/test_editor_runtime.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-editor-chrome,tests/test_editor_chrome.lua,unite copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 

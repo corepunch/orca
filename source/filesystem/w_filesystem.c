@@ -1,5 +1,6 @@
 #include <include/api.h>
 #include <include/orca.h>
+#include <libxml/parser.h>
 
 #include "fs_local.h"
 
@@ -384,20 +385,224 @@ HANDLER(Project, Object, Release) {
   return TRUE;
 }
 
-// XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
-HANDLER(XmlDataSource, Object, Start) {
-  if (!pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
-  if (!fs_can_start_datasource) return FALSE;
-  struct DataSource *ds = GetDataSource(hObject);
-  struct Object *data = FS_LoadXmlDataSource(pXmlDataSource->Source, ds ? ds->Schema : NULL);
-  if (!data || !GetDataObject(data)) {
-    Con_Printf("Could not load XmlDataSource '%s' from '%s'",
-               OBJ_GetName(hObject), pXmlDataSource->Source);
-    return FALSE;
-  }
-  pXmlDataSource->Data = GetDataObject(data);
-  OBJ_AddChild(hObject, data);
+static void
+xml_source_bool(struct XmlDataSource *source, uint32_t id, bool_t value)
+{
+  PROP_SetValue(OBJ_FindLongProperty(CMP_GetObject(source), id), &value);
+}
+
+static bool_t
+xml_source_error(struct XmlDataSource *source, const char *message)
+{
+  xml_source_bool(source, ID_XmlDataSource_HasError, message && *message);
+  PROP_SetStringValue(OBJ_FindLongProperty(CMP_GetObject(source), ID_XmlDataSource_ErrorMessage), message ? message : "");
   return FALSE;
+}
+
+static void
+xml_source_copy_field(struct Object const *incoming, struct PropertyType const *desc,
+                      struct ClassDesc const *class, void const *value, void *context)
+{
+  if (class->ParentClasses[0] != ID_DataObject ||
+      (desc->DataType != kDataTypeString && desc->DataType != kDataTypeInt &&
+       desc->DataType != kDataTypeFloat && desc->DataType != kDataTypeBool)) return;
+  struct Property *source = OBJ_FindLongProperty((struct Object *)incoming, desc->FullIdentifier);
+  struct Property *target = OBJ_FindLongProperty(context, desc->FullIdentifier);
+  if (source && target) PROP_SetValue(target, PROP_GetValue(source));
+}
+
+/* XML names are the identity contract. Keep native records and their bindings
+ * while applying new typed fields, membership and order as one collection batch. */
+static void
+xml_source_merge(struct Object *target, struct Object *incoming)
+{
+  OBJ_EnumClassProperties(incoming, xml_source_copy_field, target);
+  FOR_EACH_PROPERTY(p, OBJ_GetProperties(incoming)) {
+    struct Property *dest = OBJ_FindLongProperty(target, PROP_GetLongIdentifier(p));
+    if (dest && PROP_GetType(dest) == PROP_GetType(p) && PROP_GetType(p) != kDataTypeObject)
+      PROP_SetValue(dest, PROP_GetValue(p));
+  }
+  size_t count = 0;
+  FOR_EACH_OBJECT(child, incoming) count++;
+  struct Object **ordered = count ? calloc(count, sizeof(*ordered)) : NULL;
+  if (count && !ordered) return;
+  OBJ_BeginUpdate(target);
+  size_t i = 0;
+  for (struct Object *child = OBJ_GetFirstChild(incoming), *next; child; child = next) {
+    next = OBJ_GetNext(child);
+    struct Object *existing = NULL;
+    const char *name = OBJ_GetName(child);
+    if (name && *name) {
+      FOR_EACH_OBJECT(candidate, target) {
+        if (!strcmp(OBJ_GetName(candidate), name) &&
+            !strcmp(OBJ_GetClassName(candidate), OBJ_GetClassName(child))) {
+          existing = candidate;
+          break;
+        }
+      }
+    }
+    if (existing) xml_source_merge(existing, child);
+    else { existing = child; OBJ_AddChild(target, existing); }
+    ordered[i++] = existing;
+  }
+  for (struct Object *child = OBJ_GetFirstChild(target), *next; child; child = next) {
+    next = OBJ_GetNext(child);
+    bool_t keep = FALSE;
+    for (size_t j = 0; j < count; j++) if (ordered[j] == child) { keep = TRUE; break; }
+    if (!keep) OBJ_RemoveFromParent(child);
+  }
+  for (size_t j = 0; j < count; j++) OBJ_MoveBefore(ordered[j], NULL);
+  OBJ_EndUpdate(target);
+  free(ordered);
+}
+
+struct xml_source_schema {
+  char *path;
+  struct ds_schema *schema;
+  struct xml_source_schema *next;
+};
+static struct xml_source_schema *xml_source_schemas;
+
+const struct ds_schema *
+FS_GetCachedXmlDataSchema(const char *key, const char *xml)
+{
+  if (!key || !*key) return NULL;
+  for (struct xml_source_schema *entry = xml_source_schemas; entry; entry = entry->next) {
+    if (!strcmp(entry->path, key)) return entry->schema;
+  }
+  if (!xml || !*xml) return NULL;
+  struct xml_source_schema *entry = calloc(1, sizeof(*entry));
+  if (!entry) return NULL;
+  entry->path = strdup(key);
+  entry->schema = entry->path ? DS_ParseSchemaFromString(xml) : NULL;
+  if (!entry->schema) { free(entry->path); free(entry); return NULL; }
+  /* Descriptors back retained records in every source using this schema, so
+   * keep one registration per resource/content for the process lifetime. A
+   * filesystem/Lua module can shut down while native records remain alive. */
+  entry->next = xml_source_schemas;
+  xml_source_schemas = entry;
+  return entry->schema;
+}
+
+static const struct ds_schema *
+xml_source_schema(struct XmlDataSource *source)
+{
+  struct DataSource *base = GetDataSource(CMP_GetObject(source));
+  if (!base || !base->Schema || !*base->Schema) return NULL;
+  const struct ds_schema *schema = FS_GetCachedXmlDataSchema(base->Schema, NULL);
+  if (schema) return schema;
+  struct file *file = FS_LoadFile(base->Schema);
+  if (!file) return NULL;
+  schema = FS_GetCachedXmlDataSchema(base->Schema, (const char *)file->data);
+  FS_FreeFile(file);
+  source->_schema = (void *)schema;
+  return schema;
+}
+
+ORCA_API bool_t
+XmlDataSource_ReloadData(struct XmlDataSource *source)
+{
+  if (!source || source->_loading) return FALSE;
+  source->_loading = TRUE;
+  xml_source_bool(source, ID_XmlDataSource_IsLoading, TRUE);
+  struct Object *object = CMP_GetObject(source), *data = NULL;
+  struct ProcessConnection *connection = source->Connection;
+  if (!connection && (!source->Content || !*source->Content) && source->ConnectionPath && *source->ConnectionPath) {
+    struct Object *scope = object, *found = NULL;
+    do {
+      found = OBJ_FindByPath(scope, source->ConnectionPath);
+      if (GetProcessConnection(found) || source->ConnectionPath[0] == '.') break;
+      scope = OBJ_GetParent(scope);
+    } while (scope);
+    connection = GetProcessConnection(found);
+    if (!connection) {
+      xml_source_error(source, "Could not resolve datasource ConnectionPath");
+      xml_source_bool(source, ID_XmlDataSource_IsLoading, FALSE);
+      source->_loading = FALSE;
+      return FALSE;
+    }
+  }
+  const struct ds_schema *schema = xml_source_schema(source);
+  struct DataSource *base = GetDataSource(object);
+  bool_t ok = FALSE;
+  if (base && base->Schema && *base->Schema && !schema) {
+    xml_source_error(source, "Could not load datasource schema");
+    goto done;
+  }
+  if ((source->Content && *source->Content) || connection) {
+    const char *content = source->Content && *source->Content ? source->Content
+      : ProcessConnection_Request(connection, source->Source ? source->Source : "");
+    if (!content) {
+      xml_source_error(source, connection ? connection->ErrorMessage : "No XML content");
+      goto done;
+    }
+    xmlDocPtr doc = xmlReadMemory(content, (int)strlen(content), NULL, NULL,
+                                  XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+    xmlNodePtr root = doc ? xmlDocGetRootElement(doc) : NULL;
+    if (!root) {
+      if (doc) xmlFreeDoc(doc);
+      xml_source_error(source, "Invalid XML datasource response");
+      goto done;
+    }
+    xmlChar *status = xmlGetProp(root, XMLSTR("status"));
+    if (status && !xmlStrcmp(status, XMLSTR("error"))) {
+      xmlChar *message = xmlNodeGetContent(root);
+      xml_source_error(source, message ? (const char *)message : "Datasource request failed");
+      xmlFree(message); xmlFree(status); xmlFreeDoc(doc);
+      goto done;
+    }
+    xmlFree(status); xmlFreeDoc(doc);
+    data = FS_ParseXmlDataTree(content, schema);
+  } else if (source->Source && *source->Source) {
+    path_t path;
+    const char *leaf = strrchr(source->Source, '/');
+    bool_t extension = strchr(leaf ? leaf + 1 : source->Source, '.') != NULL;
+    snprintf(path, sizeof(path), "%s%s", source->Source, extension ? "" : ".xml");
+    data = FS_LoadXmlDataTree(path, schema);
+  }
+  if (!data || !GetDataObject(data)) {
+    if (data) OBJ_ReleaseRef(data);
+    xml_source_error(source, "Could not load XML datasource");
+    goto done;
+  }
+  if (source->Data && !strcmp(OBJ_GetClassName(CMP_GetObject(source->Data)), OBJ_GetClassName(data))) {
+    xml_source_merge(CMP_GetObject(source->Data), data);
+    OBJ_ReleaseRef(data);
+  } else {
+    struct Object *old = source->Data ? CMP_GetObject(source->Data) : NULL;
+    OBJ_AddChild(object, data);
+    source->Data = GetDataObject(data);
+    PROP_SetValue(OBJ_FindLongProperty(object, ID_XmlDataSource_Items), &data);
+    if (old) OBJ_RemoveFromParent(old);
+    OBJ_ReleaseRef(data);
+  }
+  xml_source_error(source, "");
+  ok = TRUE;
+done:
+  xml_source_bool(source, ID_XmlDataSource_IsLoading, FALSE);
+  source->_loading = FALSE;
+  return ok;
+}
+
+HANDLER(XmlDataSource, Object, Start) {
+  if (!fs_can_start_datasource && OBJ_FindParentOfClass(hObject, ID_Project)) return FALSE;
+  pXmlDataSource->_started = TRUE;
+  if (pXmlDataSource->AutoLoad) XmlDataSource_ReloadData(pXmlDataSource);
+  return FALSE;
+}
+
+HANDLER(XmlDataSource, Object, PropertyChanged) {
+  uint32_t id = pPropertyChanged->Property ? PROP_GetLongIdentifier(pPropertyChanged->Property) : 0;
+  if (pXmlDataSource->_loading) return FALSE;
+  if (id == ID_XmlDataSource_Content ||
+      (pXmlDataSource->_started && pXmlDataSource->AutoLoad &&
+       (id == ID_XmlDataSource_Source || id == ID_XmlDataSource_Connection || id == ID_XmlDataSource_ConnectionPath)))
+    XmlDataSource_ReloadData(pXmlDataSource);
+  return FALSE;
+}
+
+HANDLER(XmlDataSource, XmlDataSource, Reload) {
+  return XmlDataSource_ReloadData(pXmlDataSource);
 }
 
 HANDLER(XmlDataSource, DataContext, GetData) {
@@ -413,7 +618,7 @@ HANDLER(XmlDataSource, Object, Attached) {
   struct DataSource *ds = GetDataSource(hObject);
   struct Object *library = OBJ_GetParent(hObject);
   struct Object *project = library ? OBJ_GetParent(library) : NULL;
-  if (!ds || !library || !project) {
+  if (!ds || !GetLibrary(library) || !GetProject(project)) {
     return TRUE;
   }
   lpcString_t project_name = OBJ_GetName(project);
@@ -567,8 +772,49 @@ l_serialize_object_owned(lua_State *L)
   return 1;
 }
 
+/* Class methods have native declarations, while Object owns the shared Lua
+ * metatable. These adapters expose the declared operations without a data bridge. */
+static int
+l_process_connection_request(lua_State *L)
+{
+  struct ProcessConnection *connection = GetProcessConnection(luaX_checkObject(L, 1));
+  luaL_argcheck(L, connection, 1, "ProcessConnection required");
+  const char *reply = ProcessConnection_Request(connection, luaL_checkstring(L, 2));
+  lua_pushstring(L, reply);
+  if (reply) return 1;
+  lua_pushstring(L, connection->ErrorMessage);
+  return 2;
+}
+
+static int
+l_process_connection_close(lua_State *L)
+{
+  struct ProcessConnection *connection = GetProcessConnection(luaX_checkObject(L, 1));
+  luaL_argcheck(L, connection, 1, "ProcessConnection required");
+  ProcessConnection_Close(connection);
+  return 0;
+}
+
+static int
+l_xml_source_reload(lua_State *L)
+{
+  struct XmlDataSource *source = GetXmlDataSource(luaX_checkObject(L, 1));
+  luaL_argcheck(L, source, 1, "XmlDataSource required");
+  lua_pushboolean(L, XmlDataSource_ReloadData(source));
+  return 1;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
+  luaX_require(L, "orca.core", 0);
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  luaL_setfuncs(L, ((luaL_Reg[]) {
+    { "request", l_process_connection_request },
+    { "close", l_process_connection_close },
+    { "reload", l_xml_source_reload },
+    { NULL, NULL }
+  }), 0);
+  lua_pop(L, 1);
   const struct SceneFormat *format = FS_GetSceneFormat();
   OBJ_RegisterFileLoader(format->Extension, _scene_file_loader);
   const char *loaders[] = {

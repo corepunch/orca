@@ -422,6 +422,31 @@ local function test_run_dispatches_with_screen()
   print("PASS: test_run_dispatches_with_screen")
 end
 
+local function test_editor_run_keeps_runtime_and_text_input()
+  local previous_server = SERVER
+  local get_message, dispatch, translate = system.getMessage, system.dispatchMessage, system.translateMessage
+  local changed = filesystem.hasChangedFiles
+  local q = { key = "q", is = function(_, name) return name == "Node.KeyDown" end }
+  local closed = { is = function(_, name) return name == "Window.Closed" end }
+  local index, received, changes_checked = 0, nil, false
+  SERVER = true
+  system.getMessage = function() index = index + 1; return ({q, closed})[index] end
+  system.dispatchMessage = function(_, msg) received = msg; return false end
+  system.translateMessage = function() end
+  filesystem.hasChangedFiles = function() changes_checked = true; return true end
+  local app = Application()
+  app.quitOnQ = false
+  app.screen = { post = function() end }
+  local result = app:run()
+  SERVER = previous_server
+  system.getMessage, system.dispatchMessage, system.translateMessage = get_message, dispatch, translate
+  filesystem.hasChangedFiles = changed
+  test.expect_eq(received, q, "Editor text input must receive ordinary q")
+  test.expect_eq(result, nil, "Server must not reload after saving its source")
+  test.expect_eq(changes_checked, false, "Editor runtime keeps its current scene")
+  print("PASS: test_editor_run_keeps_runtime_and_text_input")
+end
+
 -- Run all
 test_route_result_stored_in_inner()
 test_layout_content_called()
@@ -440,6 +465,7 @@ test_detached_helper_method_keeps_argument()
 test_activate_controller_updates_screen()
 test_application_current_returns_app()
 test_run_dispatches_with_screen()
+test_editor_run_keeps_runtime_and_text_input()
 
 -- ---------------------------------------------------------------------------
 -- Test 16: before_filter runs before the route action

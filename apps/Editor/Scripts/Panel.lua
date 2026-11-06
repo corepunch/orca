@@ -1,60 +1,30 @@
--- Docked panel: a one-line title bar with tool buttons above a body view.
-local ui = require "orca.UIKit"
-local config = require "Editor.Scripts.config"
-local Terminal = require "Editor.Scripts.Terminal"
-
-local Header = Terminal:extend {}
-
-function Header:init(panel)
-	self.panel = panel
-	Terminal.init(self, { Height = config.char_height })
-end
-
-function Header:draw()
-	local panel = self.panel
-	local tools = panel.tools and panel:tools() or {}
-	local title = ' ' .. panel.title:upper() .. (panel.subtitle and ('  ' .. panel.subtitle) or '')
-	local cols = self:columns()
-	local right = {}
-	for _, t in ipairs(tools) do right[#right + 1] = '[' .. t.label .. ']' end
-	local tail = table.concat(right, ' ') .. ' '
-	local color = panel.active and config.colors.header or '![9;1m'
-	self:println(nil, color, Terminal.fit(Terminal.escape(title), math.max(0, cols - #tail)), '![11;1m', tail)
-	-- Tool buttons are matched by column on click.
-	self.toolSpans = {}
-	local col = math.max(0, cols - #tail)
-	for i, t in ipairs(tools) do
-		local w = #right[i]
-		self.toolSpans[#self.toolSpans + 1] = { from = col, to = col + w - 1, tool = t }
-		col = col + w + 1
-	end
-end
-
-function Header:onClick(_, _, _, args)
-	local col = math.floor((args.x - (self:origin())) / config.char_width)
-	for _, span in ipairs(self.toolSpans or {}) do
-		if col >= span.from and col <= span.to then span.tool.action() return end
-	end
-	self.panel:focus()
-end
-
--- Header lines carry no items, so measure from the view's screen origin.
-function Header:origin()
-	local x, o = 0, self.view
-	while o do x = x + (o.ActualX or 0); o = o.parent end
-	return x
-end
-
+local Native = require "Editor.Scripts.Native"
 local Panel = {}
-
--- Wrap a body Terminal: body.title, body.tools() and body.subtitle feed the header.
 function Panel.wrap(body, bodyView)
-	body.header = Header(body)
-	local grid = ui.Grid { Rows = "16px 1fr" }
-	grid:addChild(body.header.view)
-	grid:addChild(bodyView or body.view)
-	body.container = grid
-	return grid
+	local view = Native.load('Editor/Views/Panel')
+	local header = {view=view:findChild('Header',true),panel=body}
+	local tools = view:findChild('Tools',true)
+	function header:invalidate()
+		view:findChild('Title',true).Text=body.title or ''
+		view:findChild('Subtitle',true).Text=body.subtitle or ''
+		self.entries=body.tools and body:tools() or {}
+		local rows={}
+		for _,tool in ipairs(self.entries) do rows[#rows+1]={Label=tool.label} end
+		tools.ItemsSource=Native.records(rows)
+		self.view.StateClasses=body.active and 'panel-active' or ''
+	end
+	function header:invoke(record)
+		local tool=record and self.entries[record.Index]
+		if tool and tool.action then tool.action() end
+		return true
+	end
+	function header:origin() return Native.origin(self.view) end
+	function header:focus() if body.focus then body:focus() end end
+	function header:checkResize() end
+	Native.register(view,header)
+	body.header,body.container=header,view
+	view:addChild(bodyView or body.view)
+	header:invalidate()
+	return view
 end
-
 return Panel

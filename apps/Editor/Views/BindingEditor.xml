@@ -1,0 +1,26 @@
+<Grid Width="840" Height="640" Rows="48px 40px 1fr 54px 48px 112px 52px"
+      class="editor-dialog" Controller="Editor/Scripts/ChromeController">
+  <XmlDataSource Name="Functions" Source="get/data-functions" ConnectionPath="Runtime" AutoLoad="false"
+                 Schema="Editor/Views/Functions.Schema.xml"/>
+  <TextBlock Name="Title" class="dialog-title"/>
+  <Grid Columns="1fr 164px" Padding="16 4" Spacing="12">
+    <TextBlock Name="Target" class="editor-muted" TextVerticalAlignment="Center"/>
+    <Button Name="Mode" Text="Expression" class="editor-button"/>
+  </Grid>
+  <ConsoleView Name="Code" BufferWidth="256" BufferHeight="1024" Margin="16 4"
+               OverflowX="Hidden" OverflowY="Hidden"/>
+  <TextBlock Name="Diagnostics" class="code-status" Margin="16 4" TextWrapping="Wrap"/>
+  <TextBlock Name="Signature" class="editor-muted" Margin="16 4" TextWrapping="Wrap"/>
+  <Node2D Name="Choices" Margin="16 0" Height="112" OverflowX="Hidden" OverflowY="Scroll">
+    <GridBox Name="Palette" Columns="1fr 1fr 1fr 1fr" Height="112" OverflowX="Hidden" OverflowY="Visible"
+             ItemsSource="{Binding ../../Functions/Items}" ItemTemplate="Editor/Views/FunctionRow" class="function-palette"/>
+    <ItemsStack Name="Completions" Height="112" OverflowX="Hidden" OverflowY="Scroll" Visible="false"
+                ItemTemplate="Editor/Views/CompletionRow" class="function-palette"/>
+  </Node2D>
+  <Grid Columns="1fr auto auto auto" Padding="16 8" Spacing="10">
+    <TextBlock Text="Ctrl+Space completes · Ctrl+Enter applies" class="editor-muted" TextVerticalAlignment="Center"/>
+    <Button Name="Remove" Text="Remove binding" class="editor-button"/>
+    <Button Name="Cancel" Text="Cancel" class="editor-button"/>
+    <Button Name="Apply" Text="Apply" class="editor-button primary-button"/>
+  </Grid>
+</Grid>

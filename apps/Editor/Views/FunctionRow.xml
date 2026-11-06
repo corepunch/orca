@@ -1,0 +1,1 @@
+<Button Text="{Binding DataContext/FunctionName}" Click="Invoke" class="completion-row" Height="28"/>
