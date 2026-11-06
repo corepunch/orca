@@ -95,15 +95,6 @@ The debug target differs from the production build in the following ways:
 
 ## Prerequisites
 
-### Emscripten ports (automatic)
-
-These libraries are fetched and compiled automatically by Emscripten via
-`-sUSE_*` linker flags — no manual work required:
-
-| Library   | Flag              |
-|-----------|-------------------|
-| zlib      | `-sUSE_ZLIB=1`    |
-
 ### WASM libraries (built from source with emmake)
 
 The following libraries must be compiled for WASM before running `make webgl`.
@@ -115,6 +106,10 @@ them into `build/wasm-deps/`:
 | lua 5.4  | 5.4.7   | https://www.lua.org/download.html               |
 | libxml2  | 2.9.14  | https://gitlab.gnome.org/GNOME/libxml2          |
 | liblz4   | 1.10.0  | https://github.com/lz4/lz4                      |
+| FreeType | 2.15.0  | `libs/freetype` submodule                       |
+| libpng   | 1.6.59  | `libs/libpng` submodule                         |
+| libjpeg  | IJG 10  | `libs/libjpeg` submodule                        |
+| zlib     | 1.4     | `libs/zlib` submodule                           |
 
 All three are compiled with `CFLAGS="-O2 -DNDEBUG"` (no `-g`) so that no
 DWARF debug sections are embedded in the resulting `.a` archives.  Without

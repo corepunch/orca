@@ -249,9 +249,9 @@ unite: directories lua buildunite buildlib buildplugins app copyshare
 
 # FBX -> .mesh converter used by tools/blender-export.py. Optional: needs the Autodesk FBX SDK.
 FBX_SDK ?= /Applications/Autodesk/FBX SDK/2020.2
-orca-fbx: directories
+orca-fbx: directories $(ZLIB_LIB)
 	$(CXX) -std=c++17 -O2 -w -I. -Igenerated -I"$(FBX_SDK)/include" tools/fbx-import.cpp \
-		"$(FBX_SDK)/lib/clang/release/libfbxsdk.a" -framework CoreFoundation -liconv -lxml2 -lz \
+		"$(FBX_SDK)/lib/clang/release/libfbxsdk.a" -framework CoreFoundation -liconv -lxml2 $(ZLIB_LIB) \
 		-o $(BINDIR)/orca-fbx
 
 %.o: %.c $(HEADERS) | modules
