@@ -891,10 +891,10 @@
         <property name="ClearColor" type="color">Background clear color for the screen </property>
         <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
         <property name="RespectSafeArea" type="bool" default="TRUE">Lay out children within the safe area while retaining the full viewport and background. Set false for custom edge-to-edge content layouts.</property>
-        <property name="SafeAreaLeft" type="float">Left safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
-        <property name="SafeAreaTop" type="float">Top safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
-        <property name="SafeAreaRight" type="float">Right safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
-        <property name="SafeAreaBottom" type="float">Bottom safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaLeft" type="float" inspector-group="SafeArea" inspector-label="L">Left safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaTop" type="float" inspector-group="SafeArea" inspector-label="T">Top safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaRight" type="float" inspector-group="SafeArea" inspector-label="R">Right safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaBottom" type="float" inspector-group="SafeArea" inspector-label="B">Bottom safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
         <property name="KeyboardInsetBottom" type="float">Bottom occlusion from a docked keyboard in logical pixels, zero when hidden or floating. Does not change the drawable dimensions or safe-area insets. Refreshed from iOS for CanResize screens; writable for other screens and tests. RespectSafeArea avoids the larger of this inset and SafeAreaBottom.</property>
       </properties>
       <fields>

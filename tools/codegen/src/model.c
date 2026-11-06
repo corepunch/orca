@@ -217,6 +217,8 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "type");
             n.extra = xattr(e, "default");
+            n.aux = xattr(e, "inspector-group");
+            n.aux2 = xattr(e, "inspector-label");
             if (bflag(e, "pointer")) n.flags |= CG_FLAG_POINTER;
             if (bflag(e, "const"))   n.flags |= CG_FLAG_CONST;
             if (bflag(e, "private")) n.flags |= CG_FLAG_PRIVATE;

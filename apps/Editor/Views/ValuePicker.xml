@@ -1,0 +1,8 @@
+<Grid Name="ValuePicker" Width="320" Height="280" Rows="auto 1fr auto" Columns="1fr"
+      class="editor-popup value-picker" Controller="Editor/Scripts/ValuePicker" KeyDown="Key">
+  <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
+  <Input Name="Search" Height="26" Margin="6" PlaceholderText="Find a resource" Submit="Search" KeyDown="FilterKey" class="search-input"/>
+  <ListBox Name="Items" ValueProperty="Value" ItemNamePrefix="Choice" OverflowY="Scroll" class="picker-list"/>
+  <TextBlock Name="DataSourceError" Text="{Binding ../Source/ErrorMessage}" Visible="{Binding ../Source/HasError}"
+             Padding="8" TextWrapping="Wrap" class="editor-error"/>
+</Grid>

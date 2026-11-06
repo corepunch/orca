@@ -743,6 +743,8 @@
       <fields>
         <field name="Name" type="string">Unique name identifier for the property type.</field>
         <field name="Category" type="string">Organizational category for this property, used for grouping in editors and UIs.</field>
+        <field name="InspectorGroup" type="string">Optional inspector-only compound group for related atomic properties; does not introduce an assignable runtime property.</field>
+        <field name="InspectorLabel" type="string">Compact label within an explicitly declared inspector group.</field>
         <field name="DataType" type="DataType">Underlying data type that determines how the property value is interpreted and stored.</field>
         <field name="DefaultValue" type="string">Default value assigned when the property is not explicitly set.</field>
         <field name="TypeString" type="string">String representation of the property type, used to store struct/object type names.</field>

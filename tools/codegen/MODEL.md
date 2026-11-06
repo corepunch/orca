@@ -50,7 +50,7 @@ typedef struct cg_model {
 | `METHOD` | method name | return type | export name | lua binding name | output type |
 | `MESSAGE` | message name | routing | — | output | bufsize |
 | `FIELD` | field name | C type | default value | same-as | fixed-array size |
-| `PROPERTY` | property name | C type | default value | — | — |
+| `PROPERTY` | property name | C type | default value | inspector group | inspector label |
 | `HANDLE` | handle name | — | — | — | — |
 | `ARG` | arg name | C type | — | — | — |
 | `RETURNS` | — | return type | — | — | — |

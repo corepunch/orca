@@ -629,3 +629,13 @@ When a type is public, assume a local model may read only the generated docs and
 - Check `docs/schemas/module.dtd` for the complete schema definition
 - See `tools/codegen/src/model.c` for the C model loader that parses `.cgen` files
 - See `tools/codegen/plugins/` for the generator plugins
+
+### Inspector compound metadata
+
+A non-sealed struct property already generates shorthand metadata that the
+editor uses for compact, expandable compound controls. For related properties
+that intentionally remain independent in the runtime API, declare
+`inspector-group="SafeArea"` and `inspector-label="L"` on each `<property>`.
+The generator records these as `PropertyType.InspectorGroup` and
+`InspectorLabel`; grouping does not create an assignable or bindable parent
+property. Each editor field continues to write the original qualified property.

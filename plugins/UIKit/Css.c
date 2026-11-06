@@ -1462,6 +1462,7 @@ struct Object *UIKit_LoadObjectFromCss(const char* path)
   }
 
   struct Object *sheet = UIKit_LoadObjectFromCssString(css_text);
+  if (sheet) OBJ_SetSourceFile(sheet, path);
   free(css_text);
   return sheet;
 }

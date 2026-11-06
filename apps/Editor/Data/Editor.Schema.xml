@@ -31,8 +31,10 @@
   <Entity Name="EditorProperty" Key="Id" ObjectName="Id">
     <Column Name="Id" Type="string"/>
     <Column Name="PropertyName" Type="string"/>
+    <Column Name="State" Type="string"/>
     <Column Name="Label" Type="string"/>
     <Column Name="Value" Type="string"/>
+    <Column Name="DraftValue" Type="string"/>
     <Column Name="Kind" Type="string"/>
     <Column Name="GroupName" Type="string"/>
     <Column Name="Expression" Type="string"/>
@@ -48,6 +50,15 @@
     <Column Name="HasBinding" Type="bool"/>
     <Column Name="Indent" Type="float"/>
     <Column Name="IsCompound" Type="bool"/>
+    <Column Name="IsNumericCompound" Type="bool"/>
+    <Column Name="FieldColumns" Type="string"/>
+    <Column Name="IsSummary" Type="bool"/>
+    <Column Name="IsColor" Type="bool"/>
+    <Column Name="IsBindable" Type="bool"/>
+    <Column Name="ShortLabel" Type="string"/>
+    <Column Name="ReferencePath" Type="string"/>
+    <Column Name="ReferenceLabel" Type="string"/>
+    <Column Name="ReferenceType" Type="string"/>
     <Column Name="HasChildren" Type="bool"/>
     <Column Name="Expanded" Type="bool"/>
     <Column Name="DisclosureIcon" Type="string"/>
@@ -55,5 +66,13 @@
   <Entity Name="EditorOption">
     <Column Name="Label" Type="string"/>
     <Column Name="Value" Type="string"/>
+  </Entity>
+  <Entity Name="EditorResource" Key="Id" ObjectName="Id">
+    <Column Name="Id" Type="string"/>
+    <Column Name="Label" Type="string"/>
+    <Column Name="Value" Type="string"/>
+    <Column Name="Path" Type="string"/>
+    <Column Name="Kind" Type="string"/>
+    <Column Name="Icon" Type="string"/>
   </Entity>
 </Schema>

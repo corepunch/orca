@@ -8,7 +8,7 @@
     <Button Name="Mode" Text="Expression" class="editor-button"/>
   </Grid>
   <ConsoleView Name="Code" BufferWidth="256" BufferHeight="1024" Margin="16 4"
-               OverflowX="Hidden" OverflowY="Hidden"/>
+               OverflowX="Hidden" OverflowY="Hidden" class="code-input"/>
   <TextBlock Name="Diagnostics" class="code-status" Margin="16 4" TextWrapping="Wrap"/>
   <TextBlock Name="Signature" class="editor-muted" Margin="16 4" TextWrapping="Wrap"/>
   <Node2D Name="Choices" Margin="16 0" Height="112" OverflowX="Hidden" OverflowY="Scroll">

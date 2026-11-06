@@ -168,7 +168,6 @@ Application = Widget:extend {
   afterPaint = function(self) end,
 
   run = function(self)
-    local startup_dark_theme = system.get_theme()
     self.screen:post("Window.Paint", renderer.getSize())
     for msg in system.getMessage do
       -- The editor owns its live scene and save journal. Saving source XML
@@ -178,12 +177,6 @@ Application = Widget:extend {
       elseif self.quitOnQ and msg:is "Node.KeyDown" and msg.key == "q" then return
       elseif msg:is "RequestReload" then return DATADIR
       else
-        -- Detect OS appearance changes by polling is_dark_theme() on each
-        -- paint event. When the theme flips we trigger a full reload so
-        -- project theme values are evaluated again at startup.
-        if msg:is "Window.Paint" and system.is_dark_theme() ~= startup_dark_theme then
-          return DATADIR
-        end
         local ok, result = pcall(system.dispatchMessage, self.screen, msg)
         if not ok then
           io.stderr:write(tostring(result) .. "\n")

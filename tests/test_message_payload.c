@@ -1,5 +1,6 @@
 #include <include/api.h>
 #include <core/core.h>
+#include <renderer/renderer.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -36,6 +37,7 @@ static void post_owned(void *target, uint32_t event, uint32_t word)
 static void drain(void)
 {
   struct AXmessage message;
+
   while (axPeekMessage(&message)) axDisposeMessage(&message);
 }
 
@@ -55,6 +57,14 @@ int main(void)
   drain();
   int a, b;
   struct AXmessage message;
+
+  axPostMessageW(NULL, kEventAppearanceChanged, 1, NULL);
+  assert(f_peek_message(L) == 1);
+  struct AXmessage *appearance = luaL_checkudata(L, -1, "Event");
+  assert(appearance->message == ID_Window_AppearanceChanged && appearance->wParam == 1);
+  assert(!appearance->target && !appearance->lParam);
+  lua_pop(L, 1);
+  puts("PASS: OS appearance notifications map to the reflected Window event");
 
   unsigned char *bytes = malloc(100000);
   for (unsigned i = 0; i < 100000; i++) bytes[i] = (unsigned char)i;

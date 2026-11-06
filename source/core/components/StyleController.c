@@ -327,6 +327,19 @@ _ReleaseNativeStyleSheet(struct Object *sheetObj)
 // STYLE RESOLUTION
 // ============================================================================
 
+static bool_t
+_IsDarkAppearance(struct Object *object)
+{
+  for (struct Object *scope = object; scope; scope = OBJ_GetParent(scope)) {
+    struct StyleController *style = GetStyleController(scope);
+    if (!style || style->Appearance == kAppearanceInherit) continue;
+    if (style->Appearance == kAppearanceLight) return FALSE;
+    if (style->Appearance == kAppearanceDark) return TRUE;
+    break;
+  }
+  return axIsDarkTheme();
+}
+
 // Return the current pseudo-state flags for an object (hover, focus, dark, selected)
 uint32_t
 OBJ_GetStyleFlags(struct Object *pobj)
@@ -344,7 +357,7 @@ OBJ_GetStyleFlags(struct Object *pobj)
     if (OBJ_GetFlags(p) & OF_DISABLED) { disabled = TRUE; break; }
   }
   dwValue |= disabled ? STYLE_DISABLED : STYLE_ENABLED;
-  if (axIsDarkTheme()) dwValue |= STYLE_DARK;
+  if (_IsDarkAppearance(pobj)) dwValue |= STYLE_DARK;
   return dwValue;
 }
 
@@ -780,9 +793,14 @@ HANDLER(StyleController, StyleController, AddClasses)
  * authored classes survive and descendant selectors restyle with the record. */
 HANDLER(StyleController, Object, PropertyChanged)
 {
-  if (!pPropertyChanged || !pPropertyChanged->Property ||
-      PROP_GetLongIdentifier(pPropertyChanged->Property) != ID_StyleController_StateClasses)
+  if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
+  uint32_t property = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  if (property == ID_StyleController_Appearance) {
+    _SendMessage(hObject, StyleController, ThemeChanged, .recursive = TRUE);
+    OBJ_SetDirty(hObject);
     return FALSE;
+  }
+  if (property != ID_StyleController_StateClasses) return FALSE;
   struct style_class_selector **link = &pStyleController->classes;
   while (*link) {
     struct style_class_selector *cls = *link;

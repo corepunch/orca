@@ -1,0 +1,1 @@
+<Button Height="26" Text="{Binding DataContext/Label}" Click="Choose" MouseMoved="Hover" class="value-picker-row"/>
