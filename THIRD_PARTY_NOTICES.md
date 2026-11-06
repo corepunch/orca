@@ -20,55 +20,22 @@ Color emoji graphics, packed into `share/emoji/twemoji.emj` by
 CC-BY 4.0 requires visible attribution in any app that displays the
 graphics, with a link to the license.
 
-## stb_image
+## FreeType
 
-PNG and JPEG decoding: `source/renderer/texture/stb_image.h` (v2.30).
+Font parsing and glyph rasterization: `libs/freetype` (2.15.0), compiled into
+liborca with the module list in `source/renderer/third_party/freetype_modules.h`.
+Licensed under the FreeType License (`libs/freetype/LICENSE.TXT`); ORCA uses it
+under that license.
 
-## stb_truetype
+## libpng
 
-TrueType font parsing and glyph rasterization:
-`source/renderer/stb_truetype.h` (v1.26).
+PNG decoding: `libs/libpng` (1.6.59), built from source into the engine.
+Licensed under the libpng License (`libs/libpng/LICENSE`).
 
-Both stb libraries are by Sean Barrett (<https://github.com/nothings/stb>),
-and you may use either one under whichever of these licenses you prefer:
+## libjpeg
 
-```
-ALTERNATIVE A - MIT License
-Copyright (c) 2017 Sean Barrett
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-ALTERNATIVE B - Public Domain (www.unlicense.org)
-This is free and unencumbered software released into the public domain.
-Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
-software, either in source code form or as a compiled binary, for any purpose,
-commercial or non-commercial, and by any means.
-In jurisdictions that recognize copyright laws, the author or authors of this
-software dedicate any and all copyright interest in the software to the public
-domain. We make this dedication for the benefit of the public at large and to
-the detriment of our heirs and successors. We intend this dedication to be an
-overt act of relinquishment in perpetuity of all present and future rights to
-this software under copyright law.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-```
+JPEG decoding: `libs/libjpeg` (IJG jpeg v10), built from source into the engine.
+Licensed under the Independent JPEG Group license (`libs/libjpeg/README`).
 
 ## Noto fonts
 

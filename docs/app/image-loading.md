@@ -11,13 +11,13 @@ Thumbnail → full means two complete encoded images. Each can be decoded with
 the existing decoder; it does not require incremental decoding or JPEG 2000.
 Do not migrate uploads or add a decoder merely to display a smaller image first.
 
-`stb_image` supports baseline and progressive JPEG, but has no JPEG 2000 decoder.
+libjpeg supports baseline and progressive JPEG, but ORCA has no JPEG 2000 decoder.
 Its `read`/`skip`/`eof` callbacks supply encoded input to a synchronous decode;
 they are not notifications that a lower-quality decoded frame is ready. The
 public load API returns a pixel buffer or failure, without a resumable scan/frame
-interface. Check the bundled version and compile flags before assuming that a
-format accepted by a server is accepted by ORCA. See the
-[upstream header](https://github.com/nothings/stb/blob/master/stb_image.h).
+interface. Check the bundled libjpeg and libpng versions and compile flags before assuming
+that a format accepted by a server is accepted by ORCA. The decoders live in
+`source/renderer/texture/r_image_jpeg.c` and `r_image_png.c`.
 
 The application paths differ:
 

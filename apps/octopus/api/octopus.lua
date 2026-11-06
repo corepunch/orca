@@ -1128,7 +1128,7 @@ function Client:getImage(fileId, variant, onPreview)
         return failure("validation", "Choose an image size.")
     end
     local base = "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(fileId)
-    -- A complete small JPEG works with stb_image while the selected full-size
+    -- A complete small JPEG decodes with libjpeg while the selected full-size
     -- image is pending. Transformations are optional on the Appwrite project.
     if type(onPreview) == "function" then
         local preview = self:_request("GET", base .. "/preview?width=96&output=jpg&quality=35", { binary = true })

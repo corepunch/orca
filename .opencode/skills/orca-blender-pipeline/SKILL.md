@@ -16,7 +16,7 @@ running). This skill is about what the Blender file must look like.
 ## Setup
 
 ```bash
-brew install lz4 freetype                     # engine deps on macOS
+brew install lz4                             # engine deps on macOS (FreeType is built from libs/)
 make                                           # engine
 make orca-fbx                                  # needs /Applications/Autodesk/FBX SDK/2020.2
 ```

@@ -341,7 +341,7 @@ local function profileBody(self, profile)
         rows { previewToggle },
         C.eyebrow(t("about")),
         -- Twemoji's CC-BY license requires visible credit; see THIRD_PARTY_NOTICES.md.
-        C.text(t("Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Image and font loading by stb_image and stb_truetype by Sean Barrett, public domain. LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."),
+        C.text(t("Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."),
             { Name = "Credits", FontSize = 14, class = "chat-muted", WordWrap = true }),
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
     })
