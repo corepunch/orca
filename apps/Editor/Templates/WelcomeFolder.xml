@@ -1,0 +1,8 @@
+<Button Height="66" Click="EnterFolder" class="welcome-folder">
+  <Grid Columns="24px 1fr auto 14px" Spacing="16" Padding="14" IgnoreHitTest="true">
+    <VectorView Source="Editor/Icons/folder.svg" Width="22" Height="22" class="welcome-folder-icon welcome-centered-icon"/>
+    <TextBlock Text="{Binding DataContext/Label}" TextVerticalAlignment="Center" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
+    <TextBlock Text="{Binding DataContext/Tail}" class="welcome-path" TextVerticalAlignment="Center"/>
+    <VectorView Source="Editor/Icons/chevron-right.svg" Width="14" Height="14" class="welcome-centered-icon welcome-folder-icon"/>
+  </Grid>
+</Button>

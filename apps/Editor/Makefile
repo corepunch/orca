@@ -1,14 +1,13 @@
-# ORCA Editor. PROJECT selects the project to edit (default: ../Example).
+# ORCA Editor. PROJECT preselects a project in the welcome screen.
 BUILD_DIR = ../../build
-PROJECT ?= ../Example
 
 .PHONY: run help
 
 help:
 	@echo "Available targets:"
-	@echo "  run [PROJECT=path]  - Open the editor on a project (default ../Example)"
+	@echo "  run [PROJECT=path]  - Show the welcome screen, optionally preselecting a project"
 
 run:
-	ORCA_EDITOR_PROJECT=$(abspath $(PROJECT)) \
+	$(if $(PROJECT),ORCA_EDITOR_PROJECT=$(abspath $(PROJECT))) \
 	LD_LIBRARY_PATH=$(BUILD_DIR)/lib DYLD_LIBRARY_PATH=$(BUILD_DIR)/lib \
 	$(BUILD_DIR)/bin/orca .

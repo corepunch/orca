@@ -1,0 +1,10 @@
+<Grid Height="64" Columns="36px 1fr auto" Spacing="12" Padding="12 8" class="welcome-project" LeftDoubleClick="OpenRow">
+  <Grid class="welcome-project-icon" IgnoreHitTest="true">
+    <VectorView Source="Editor/Icons/object.svg" Width="24" Height="24" class="welcome-centered-icon"/>
+  </Grid>
+  <StackView Spacing="7" class="welcome-row-content" IgnoreHitTest="true">
+    <TextBlock Text="{Binding DataContext/Label}" class="welcome-project-title" TextWrapping="NoWrap" TextOverflow="Ellipsis"/>
+    <TextBlock Text="{Binding DataContext/Detail}" class="welcome-path" TextWrapping="NoWrap" TextOverflow="Ellipsis"/>
+  </StackView>
+  <TextBlock Text="{Binding DataContext/Tail}" class="welcome-badge welcome-row-content" IgnoreHitTest="true"/>
+</Grid>

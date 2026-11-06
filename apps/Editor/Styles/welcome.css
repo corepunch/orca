@@ -1,0 +1,71 @@
+/* The welcome view has its own editorial scale, separate from dense editor chrome. */
+.welcome { background-color: #f7f8fa; color: #20242b; font-family: Arial; font-size: 14; }
+.welcome:dark { background-color: #202226; color: #f1f2f4; }
+.welcome-art { background-color: #161a1e; color: #ffffff; }
+.welcome-wordmark { font-size: 28; font-weight: Bold; color: #ffffff; }
+.welcome-art-caption { font-size: 10; color: #c6cbd0; }
+.welcome-art-title { font-size: 28; line-height: 1.12; color: #ffffff; }
+.welcome-eyebrow { font-size: 11; font-weight: Bold; color: #69717d; text-vertical-align: center; }
+.welcome-eyebrow:dark { color: #a5adb8; }
+.welcome-title { font-size: 26; font-weight: Bold; }
+.welcome-muted { font-size: 14; color: #69717d; line-height: 1.4; }
+.welcome-muted:dark { color: #aeb6c1; }
+.welcome Button, .welcome Input { font-size: 13; border-radius: 6; }
+.welcome-secondary { padding: 10 16; background-color: #e9edf2; color: #353c46; }
+.welcome-secondary:dark { background-color: #34383f; color: #e4e8ee; }
+.welcome-secondary:hover { background-color: #dce3ed; }
+.welcome-secondary:dark:hover { background-color: #444b55; }
+.welcome-secondary:active { background-color: #ccd6e4; }
+.welcome-secondary:dark:active { background-color: #292e36; }
+.welcome-tab { padding: 0 14; background-color: transparent; color: #717987; }
+.welcome-tab:dark { color: #a8b0bd; }
+.welcome-tab:hover { background-color: #e9edf2; }
+.welcome-tab:dark:hover { background-color: #34383f; }
+.welcome-tab-selected { background-color: #e5ebf3; color: #232c39; font-weight: Bold; }
+.welcome-tab-selected:dark { background-color: #3b424d; color: #ffffff; }
+.welcome-search { padding: 8 12; background-color: #ffffff; color: #272d36; border: 1 solid #d9dfe7; }
+.welcome-search:dark { background-color: #272a30; color: #ecf0f6; border-color: #444b57; }
+.welcome-search:focus { border-color: #397ce5; }
+.welcome-search:dark:focus { border-color: #729fe9; }
+.welcome-list { background-color: transparent; }
+.welcome-project { border: 1 solid #dfe4eb; border-radius: 8; background-color: #ffffff; }
+.welcome-project:dark { background-color: #282b31; border-color: #3a4049; }
+.welcome-project:hover { background-color: #f0f4fa; border-color: #c0ccde; }
+.welcome-project:dark:hover { background-color: #323842; border-color: #59677b; }
+.welcome-project:selected { background-color: #eaf1fe; border-color: #648fd1; }
+.welcome-project:dark:selected { background-color: #2d3c53; border-color: #7198d1; }
+.welcome-project-icon { border-radius: 8; background-color: #edf2f8; color: #57759b; }
+.welcome-project-icon:dark { background-color: #3b4554; color: #aec8ec; }
+.welcome-project-title { font-size: 14; font-weight: Bold; }
+.welcome-path { font-size: 11; color: #747e8c; }
+.welcome-path:dark { color: #a4adba; }
+.welcome-badge { padding: 5 8; border-radius: 4; font-size: 10; background-color: #eef1f5; color: #697584; }
+.welcome-badge:dark { background-color: #343b45; color: #b7c1ce; }
+.welcome-launch { border-top-width: 1; border-color: #dfe4eb; padding-top: 16; }
+.welcome-launch:dark { border-color: #3a4049; }
+.welcome-selected-title { font-size: 13; font-weight: Bold; }
+.welcome-primary { padding: 12 22; background-color: #397ce5; color: #ffffff; font-weight: Bold; }
+.welcome-primary:hover { background-color: #518ff0; }
+.welcome-primary:active { background-color: #2866c5; }
+.welcome-primary-unavailable { opacity: 0.45; }
+.welcome Button:focus-visible, .welcome-project:focus-visible { ring: 0 2 #397ce5; }
+.welcome-footer { padding-top: 8; }
+.welcome-footer-text { font-size: 10; color: #858e9b; text-vertical-align: center; }
+.welcome-text-button { padding: 0; color: #3970bd; background-color: transparent; }
+.welcome-text-button:dark { color: #9bbcf0; }
+.welcome-text-button:hover { color: #21549e; }
+.welcome-text-button:dark:hover { color: #ffffff; }
+.welcome-error { color: #b63242; font-size: 12; }
+.welcome-error:dark { color: #ff9aa4; }
+.welcome-empty-title { font-size: 18; font-weight: Bold; }
+.welcome-folder { background-color: #ffffff; color: #353c46; text-align: left; border: 1 solid #dfe4eb; }
+.welcome-folder:dark { background-color: #282b31; color: #e4e8ee; border-color: #3a4049; }
+.welcome-folder:hover { background-color: #eaf1fe; }
+.welcome-folder:dark:hover { background-color: #323e50; }
+.welcome-folder:active { background-color: #d4e4fc; }
+.welcome-folder:dark:active { background-color: #28364a; }
+.welcome-folder-icon { color: #57759b; }
+.welcome-folder-icon:dark { color: #aec8ec; }
+
+.welcome-centered-icon { margin: auto; }
+.welcome-row-content { margin-top: auto; margin-bottom: auto; }
