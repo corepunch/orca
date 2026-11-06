@@ -1,8 +1,5 @@
-#if __has_include(<libpng16/png.h>)
-#include <libpng16/png.h>
-#else
+#include <limits.h>
 #include <png.h>
-#endif
 
 #include "../r_local.h"
 
@@ -14,7 +11,8 @@ static void
 png_readcallback(png_struct* ps, png_byte* data, png_size_t length)
 {
   struct AXbuffer* sb = png_get_io_ptr(ps);
-  if (sb->readcount + length > sb->cursize) {
+  if (sb->readcount < 0 || sb->readcount > sb->cursize ||
+      length > (size_t)(sb->cursize - sb->readcount)) {
     png_error(ps, "Read Error!");
   } else {
     memcpy(data, sb->data + sb->readcount, length);
@@ -25,7 +23,8 @@ png_readcallback(png_struct* ps, png_byte* data, png_size_t length)
 static bool_t
 png_open(struct AXbuffer* sb, png_structp* ps, png_infop* info)
 {
-  if (sb->cursize < PNGU_SIG_BYTES || png_sig_cmp(sb->data, 0, PNGU_SIG_BYTES)) {
+  if (!sb || !sb->data || sb->cursize < PNGU_SIG_BYTES ||
+      png_sig_cmp(sb->data, 0, PNGU_SIG_BYTES)) {
     PNG_ERROR("File is not a PNG.");
     return FALSE;
   }
@@ -67,24 +66,27 @@ png_decode(struct AXbuffer* sb, bool_t flip_rows, int* width, int* height)
   int color_type = png_get_color_type(ps, info);
   int bit_depth = png_get_bit_depth(ps, info);
 
+  if (!w || !h || w > INT_MAX || h > INT_MAX || w > (uint32_t)(INT_MAX / 4) / h)
+    goto done;
   if (bit_depth == 16) png_set_strip_16(ps);
-  if (png_get_valid(ps, info, PNG_INFO_tRNS)) png_set_tRNS_to_alpha(ps);
+  bool_t has_transparency = png_get_valid(ps, info, PNG_INFO_tRNS) != 0;
+  if (has_transparency) png_set_tRNS_to_alpha(ps);
 
   switch (color_type) {
     case PNG_COLOR_TYPE_PALETTE:
       png_set_palette_to_rgb(ps);
-      png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
+      if (!has_transparency) png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
       break;
     case PNG_COLOR_TYPE_GRAY:
       png_set_expand_gray_1_2_4_to_8(ps);
-      png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
+      if (!has_transparency) png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
       png_set_gray_to_rgb(ps);
       break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
       png_set_gray_to_rgb(ps);
       break;
     case PNG_COLOR_TYPE_RGB:
-      png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
+      if (!has_transparency) png_set_filler(ps, 0xFF, PNG_FILLER_AFTER);
       break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
       break;
@@ -94,6 +96,8 @@ png_decode(struct AXbuffer* sb, bool_t flip_rows, int* width, int* height)
   png_read_update_info(ps, info);
 
   size_t rowbytes = png_get_rowbytes(ps, info);
+  if (rowbytes != (size_t)w * 4 || rowbytes > SIZE_MAX / h ||
+      (size_t)h > SIZE_MAX / sizeof(png_bytep)) goto done;
   image = malloc(rowbytes * h);
   rows = malloc(h * sizeof(png_bytep));
   if (!image || !rows) {
@@ -105,6 +109,7 @@ png_decode(struct AXbuffer* sb, bool_t flip_rows, int* width, int* height)
     rows[i] = image + (size_t)(flip_rows ? h - 1 - i : i) * rowbytes;
   }
   png_read_image(ps, (png_bytep*)rows);
+  png_read_end(ps, NULL);
   *width = (int)w;
   *height = (int)h;
 
@@ -155,7 +160,9 @@ R_PNGSize(struct AXbuffer* sb)
   struct AXsize size = MAKE_TEX_SIZE(0, 0);
   if (!setjmp(png_jmpbuf(ps))) {
     png_read_info(ps, info);
-    size = MAKE_TEX_SIZE(png_get_image_width(ps, info), png_get_image_height(ps, info));
+    uint32_t w = png_get_image_width(ps, info), h = png_get_image_height(ps, info);
+    if (w && h && w <= (uint32_t)(INT_MAX / 4) / h)
+      size = MAKE_TEX_SIZE(w, h);
   }
   png_destroy_read_struct(&ps, &info, NULL);
   return size;
@@ -170,6 +177,7 @@ R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
 
   if (premultiply_alpha) premultiply_rgba(image, width * height);
 
+  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 4);
   R_Call(glTexImage2D,target,0,
 #ifdef R_USE_SRGB
          GL_SRGB8_ALPHA8,

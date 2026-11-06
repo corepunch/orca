@@ -25,15 +25,18 @@ DEPS := $(ROOT)/deps
 GLUE := $(ANDROID_NDK)/sources/android/native_app_glue
 FLAGS := -fPIC -O2 -g -MMD -MP -DORCA_STATIC=1 -DHAVE_WINDOWING -I. -I$(ROOT)/include -I$(DEPS)/include \
 	-I$(DEPS)/include/libxml2 -Ilibs/lua -Ilibs/lz4/lib -I$(GLUE)
+include tools/mobile/third_party.mk
+VENDOR_FLAGS := -fPIC -O2 -g -MMD -MP
+FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
 CFLAGS := $(FLAGS) -Igenerated
 MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials notifications signin
 PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS)))
 LUA_SOURCES := $(filter-out $(addprefix libs/lua/,lua.c luac.c onelua.c ltests.c),$(wildcard libs/lua/*.c))
 NATIVE_OBJECTS := $(ROOT)/obj/platform.o $(ROOT)/obj/lua.o $(ROOT)/obj/lz4.o $(ROOT)/obj/glue.o \
-	$(ROOT)/obj/source/android/android_main.o
+	$(ROOT)/obj/source/android/android_main.o $(VENDOR_OBJECTS)
 LIBS := $(addprefix $(DEPS)/lib/,libcurl.a libmbedtls.a libmbedx509.a libmbedcrypto.a libxml2.a) \
-	-lEGL -lGLESv3 -landroid -llog -lz -lm -ldl
+	-lEGL -lGLESv3 -landroid -llog -lm -ldl
 LIBRARY := $(BUILD_DIR)/gradle/jniLibs/$(ABI)/libmain.so
 .PHONY: library dependencies generated settings apk assets clean
 
@@ -51,7 +54,7 @@ $(ROOT)/settings: settings
 
 # One translation unit per engine module or plugin, as for iOS.
 define unity
-$(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings tools/android/Makefile | generated dependencies
+$(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings tools/android/Makefile $(VENDOR_HEADERS) | generated dependencies
 	@mkdir -p "$$(@D)"
 	@find $(2) -name '*.c' | sort | sed 's/.*/#include "&"/' > "$(ROOT)/obj/$(1).c"
 	$(CC) $(CFLAGS) -c "$(ROOT)/obj/$(1).c" -o "$$@"
@@ -98,4 +101,4 @@ apk:
 clean:
 	rm -rf "$(BUILD_DIR)"
 
--include $(wildcard $(ROOT)/obj/*.d $(ROOT)/obj/source/android/*.d)
+-include $(VENDOR_OBJECTS:.o=.d) $(wildcard $(ROOT)/obj/*.d $(ROOT)/obj/source/android/*.d)

@@ -1,164 +1,180 @@
-// clang-format off
 #include <stdio.h>
+#include <setjmp.h>
+#include <limits.h>
 #include <jpeglib.h>
-// clang-format on
 
 #include "../r_local.h"
 
 struct jpeg_imageinfo
 {
-  uint32_t width;
-  uint32_t height;
-  int channels;
-  int size;
-  int type;
+  int width, height;
   byte_t* data;
 };
 
-static struct jpeg_imageinfo
-jpeg_readimage(struct AXbuffer* buf)
+struct orca_jpeg_error
 {
-  struct jpeg_decompress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, buf->data, buf->cursize);
-  jpeg_read_header(&cinfo, TRUE);
-  jpeg_start_decompress(&cinfo);
-  struct jpeg_imageinfo image = {
-    .width = cinfo.output_width,
-    .height = cinfo.output_height,
-    .channels = cinfo.num_components,
-    .size = cinfo.output_width * cinfo.output_height * cinfo.num_components,
-    .type = cinfo.num_components == 4 ? GL_RGBA : GL_RGB,
-    .data = ZeroAlloc(cinfo.output_width * cinfo.output_height *
-                      cinfo.num_components),
-  };
-  byte_t* p1 = image.data + (image.height - 1) * image.channels * image.width;
-  byte_t** p2 = &p1;
-  while (cinfo.output_scanline < image.height) {
-    unsigned long const numlines = jpeg_read_scanlines(&cinfo, p2, 1);
-    *p2 -= numlines * image.channels * image.width;
+  struct jpeg_error_mgr base;
+  jmp_buf jump;
+};
+
+struct orca_jpeg_decoder
+{
+  struct jpeg_decompress_struct codec;
+  struct orca_jpeg_error error;
+  byte_t* pixels;
+  bool_t created;
+};
+
+static void
+orca_jpeg_error_exit(j_common_ptr codec)
+{
+  struct orca_jpeg_error* error = (struct orca_jpeg_error*)codec->err;
+  longjmp(error->jump, 1);
+}
+
+static bool_t
+orca_jpeg_dimensions(unsigned int width, unsigned int height)
+{
+  return width && height && width <= INT_MAX && height <= INT_MAX &&
+         width <= (unsigned int)(INT_MAX / 4) / height;
+}
+
+/* The heap-owned state remains valid across a libjpeg longjmp. */
+static struct jpeg_imageinfo
+jpeg_readimage(struct AXbuffer* buf, bool_t size_only)
+{
+  struct jpeg_imageinfo image = {0};
+  if (!buf || !buf->data || buf->cursize <= 0) return image;
+  struct orca_jpeg_decoder* decoder = calloc(1, sizeof(*decoder));
+  if (!decoder) return image;
+  struct jpeg_decompress_struct* codec = &decoder->codec;
+  codec->err = jpeg_std_error(&decoder->error.base);
+  decoder->error.base.error_exit = orca_jpeg_error_exit;
+  if (setjmp(decoder->error.jump)) goto done;
+  jpeg_create_decompress(codec);
+  decoder->created = TRUE;
+  jpeg_mem_src(codec, buf->data, (unsigned long)buf->cursize);
+  if (jpeg_read_header(codec, TRUE) != JPEG_HEADER_OK ||
+      !orca_jpeg_dimensions(codec->image_width, codec->image_height)) goto done;
+  if (size_only) {
+    image.width = codec->image_width;
+    image.height = codec->image_height;
+    goto done;
   }
-  jpeg_finish_decompress(&cinfo);
-  jpeg_destroy_decompress(&cinfo);
+
+  bool_t cmyk = codec->jpeg_color_space == JCS_CMYK || codec->jpeg_color_space == JCS_YCCK;
+  codec->out_color_space = cmyk ? JCS_CMYK : JCS_RGB;
+  jpeg_start_decompress(codec);
+  if (!orca_jpeg_dimensions(codec->output_width, codec->output_height)) goto done;
+  size_t stride = (size_t)codec->output_width * 3;
+  decoder->pixels = malloc(stride * codec->output_height);
+  if (!decoder->pixels) goto done;
+  JSAMPARRAY row = (*codec->mem->alloc_sarray)((j_common_ptr)codec, JPOOL_IMAGE,
+                                               codec->output_width * codec->output_components, 1);
+  while (codec->output_scanline < codec->output_height) {
+    unsigned int y = codec->output_scanline;
+    if (jpeg_read_scanlines(codec, row, 1) != 1) goto done;
+    byte_t* dest = decoder->pixels + (codec->output_height - 1 - y) * stride;
+    if (!cmyk) memcpy(dest, row[0], stride);
+    else for (unsigned int x = 0; x < codec->output_width; x++) {
+      byte_t* src = row[0] + x * 4;
+      unsigned int k = codec->saw_Adobe_marker ? src[3] : 255 - src[3];
+      for (int c = 0; c < 3; c++)
+        dest[x * 3 + c] = (codec->saw_Adobe_marker ? src[c] : 255 - src[c]) * k / 255;
+    }
+  }
+  jpeg_finish_decompress(codec);
+  if (decoder->error.base.num_warnings) goto done;
+  image.width = codec->output_width;
+  image.height = codec->output_height;
+  image.data = decoder->pixels;
+  decoder->pixels = NULL;
+
+done:
+  if (decoder->created) jpeg_destroy_decompress(codec);
+  free(decoder->pixels);
+  free(decoder);
   return image;
 }
 
-static void
-jpeg_releaseimage(struct jpeg_imageinfo const* image)
+/* Bottom-up RGB pixels for texture upload; caller frees the result. */
+byte_t*
+R_DecodeJPEG_RGB(struct AXbuffer* buf, int* width, int* height)
 {
-  free(image->data);
+  struct jpeg_imageinfo image = jpeg_readimage(buf, FALSE);
+  *width = image.width;
+  *height = image.height;
+  return image.data;
+}
+
+static void
+jpeg_upload(GLenum target, struct jpeg_imageinfo const* image)
+{
+  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 1);
+  R_Call(glTexImage2D, target, 0,
+#ifdef R_USE_SRGB
+         GL_SRGB8,
+#else
+         GL_RGB,
+#endif
+         image->width, image->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
 }
 
 struct AXsize
 R_TexImageJPEG(GLenum target, struct AXbuffer* rgb)
 {
-  struct jpeg_imageinfo const image = jpeg_readimage(rgb);
-
-  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, image.type != GL_RGBA ? 1 : 4);
-  R_Call(glTexImage2D,
-         target,
-         0,
-#ifdef R_USE_SRGB
-         image.type == GL_RGBA ? GL_SRGB8_ALPHA8 : GL_SRGB8,
-#else
-         image.type,
-#endif
-         image.width,
-         image.height,
-         0,
-         image.type,
-         GL_UNSIGNED_BYTE,
-         image.data);
-
-  jpeg_releaseimage(&image);
-
+  struct jpeg_imageinfo image = {0};
+  image.data = R_DecodeJPEG_RGB(rgb, &image.width, &image.height);
+  if (!image.data) return MAKE_TEX_SIZE(0, 0);
+  jpeg_upload(target, &image);
+  free(image.data);
   return MAKE_TEX_SIZE(image.width, image.height);
 }
 
 struct AXsize
-R_TexImageJPEGwithAlpha(GLenum target,
-                        struct AXbuffer* buf_rgb,
-                        struct AXbuffer* buf_alpha,
-                        bool_t premultiply_alpha)
+R_TexImageJPEGwithAlpha(GLenum target, struct AXbuffer* buf_rgb,
+                        struct AXbuffer* buf_alpha, bool_t premultiply_alpha)
 {
-  struct jpeg_imageinfo const rgb = jpeg_readimage(buf_rgb);
-  struct jpeg_imageinfo const alpha = jpeg_readimage(buf_alpha);
-
+  struct jpeg_imageinfo rgb = jpeg_readimage(buf_rgb, FALSE);
+  struct jpeg_imageinfo alpha = jpeg_readimage(buf_alpha, FALSE);
+  if (!rgb.data || !alpha.data) {
+    free(rgb.data);
+    free(alpha.data);
+    return MAKE_TEX_SIZE(0, 0);
+  }
   if (rgb.width == alpha.width && rgb.height == alpha.height) {
-    struct color32* data = ZeroAlloc((size_t)rgb.width * rgb.height * sizeof *data);
-
-    FOR_LOOP(index, rgb.width * rgb.height)
-    {
-      byte_t* _rgb = rgb.data + index * rgb.channels;
-      byte_t _alpha = *(alpha.data + index * alpha.channels);
-      if (premultiply_alpha) {
-        data[index].r = _rgb[0] * _alpha / 255;
-        data[index].g = _rgb[1] * _alpha / 255;
-        data[index].b = _rgb[2] * _alpha / 255;
-        data[index].a = _alpha;
-      } else {
-        data[index].r = _rgb[0];
-        data[index].g = _rgb[1];
-        data[index].b = _rgb[2];
-        data[index].a = _alpha;
-      }
+    size_t count = (size_t)rgb.width * rgb.height;
+    struct color32* data = malloc(count * sizeof(*data));
+    if (!data) {
+      free(rgb.data);
+      free(alpha.data);
+      return MAKE_TEX_SIZE(0, 0);
     }
-
+    for (size_t i = 0; i < count; i++) {
+      byte_t a = alpha.data[i * 3];
+      data[i].r = premultiply_alpha ? rgb.data[i * 3] * a / 255 : rgb.data[i * 3];
+      data[i].g = premultiply_alpha ? rgb.data[i * 3 + 1] * a / 255 : rgb.data[i * 3 + 1];
+      data[i].b = premultiply_alpha ? rgb.data[i * 3 + 2] * a / 255 : rgb.data[i * 3 + 2];
+      data[i].a = a;
+    }
     R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 4);
-    R_Call(glTexImage2D,
-           target,
-           0,
+    R_Call(glTexImage2D, target, 0,
 #ifdef R_USE_SRGB
            GL_SRGB8_ALPHA8,
 #else
            GL_RGBA,
 #endif
-           rgb.width,
-           rgb.height,
-           0,
-           GL_RGBA,
-           GL_UNSIGNED_BYTE,
-           data);
-
+           rgb.width, rgb.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     free(data);
-  } else {
-    R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, rgb.type != GL_RGBA ? 1 : 4);
-    R_Call(glTexImage2D,
-           target,
-           0,
-#ifdef R_USE_SRGB
-           rgb.type == GL_RGBA ? GL_SRGB8_ALPHA8 : GL_SRGB8,
-#else
-           rgb.type,
-#endif
-           rgb.width,
-           rgb.height,
-           0,
-           rgb.type,
-           GL_UNSIGNED_BYTE,
-           rgb.data);
-  }
-
-  jpeg_releaseimage(&rgb);
-  jpeg_releaseimage(&alpha);
-
+  } else jpeg_upload(target, &rgb);
+  free(rgb.data);
+  free(alpha.data);
   return MAKE_TEX_SIZE(rgb.width, rgb.height);
 }
 
 struct AXsize
 R_JPEGSize(struct AXbuffer* buf)
 {
-  struct jpeg_decompress_struct cinfo;
-  struct jpeg_error_mgr jerr;
-  cinfo.err = jpeg_std_error(&jerr);
-  jpeg_create_decompress(&cinfo);
-  jpeg_mem_src(&cinfo, buf->data, buf->cursize);
-  struct AXsize size = MAKE_TEX_SIZE(0, 0);
-  if (jpeg_read_header(&cinfo, TRUE) == JPEG_HEADER_OK) {
-    size = MAKE_TEX_SIZE(cinfo.image_width, cinfo.image_height);
-  }
-  jpeg_destroy_decompress(&cinfo);
-  return size;
+  struct jpeg_imageinfo image = jpeg_readimage(buf, TRUE);
+  return MAKE_TEX_SIZE(image.width, image.height);
 }
