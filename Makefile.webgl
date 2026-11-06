@@ -323,7 +323,7 @@ $(WASM_DEPS_DIR)/lib/libfreetype.a: $(WASM_FT_OBJS)
 
 $(WEBGL_DIR)/zlib/%.o: libs/zlib/%.c libs/zlib/zlib.h
 	@mkdir -p $(@D)
-	emcc -O2 -Ilibs/zlib -c $< -o $@
+	emcc -O2 -DHAVE_UNISTD_H=1 -Ilibs/zlib -c $< -o $@
 
 $(WASM_DEPS_DIR)/lib/libz.a: $(WASM_Z_OBJS)
 	@mkdir -p $(@D) $(WASM_DEPS_DIR)/include
