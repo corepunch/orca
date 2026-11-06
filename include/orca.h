@@ -193,6 +193,7 @@ enum
   PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
   PF_OWNS_OBJECT_CHILD = (1 << 12), // table-created Object value is parented
   PF_DATA_FIELD = (1 << 13), // property belongs to a schema-generated entity class
+  PF_STYLED = (1 << 14), // value was last written by a stylesheet rule, not authored inline
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"

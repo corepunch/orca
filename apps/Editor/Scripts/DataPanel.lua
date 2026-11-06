@@ -38,11 +38,20 @@ function Controller.move(panel, delta)
 	end
 end
 
-function Controller.query(collapsed, filter)
-	local paths = {}
-	for path, value in pairs(collapsed or {}) do if value then paths[#paths + 1] = path end end
-	table.sort(paths)
-	return "?collapse=" .. Workspace.encode(table.concat(paths, "|")) .. "&filter=" .. Workspace.encode(filter or "")
+local function keys(set)
+	local list = {}
+	for key, value in pairs(set or {}) do if value then list[#list + 1] = key end end
+	table.sort(list)
+	return Workspace.encode(table.concat(list, "|"))
+end
+
+-- Records name their own icons; the runtime only needs to know where they live.
+Controller.icons = "Editor/Icons"
+
+function Controller.query(collapsed, filter, expanded)
+	return "?collapse=" .. keys(collapsed) .. "&filter=" .. Workspace.encode(filter or "")
+		.. (expanded and "&expand=" .. keys(expanded) or "")
+		.. "&icons=" .. Workspace.encode(Controller.icons)
 end
 
 function Controller.record(sender)

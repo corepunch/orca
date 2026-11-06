@@ -1033,7 +1033,8 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
   char token[CSS_MAX_VALLEN] = {0};
   copy_trim(token, start, comma, (int)sizeof(token));
   if (token[0] == '-' && token[1] == '-') {
-    lpcString_t theme_value = FS_GetThemeValue(token + 2);
+    lpcString_t theme_value = comma < end ? FS_FindThemeValue(token + 2)
+                                          : FS_GetThemeValue(token + 2);
     if (theme_value) {
       css_copy_cstr(out, out_size, theme_value);
       return out;

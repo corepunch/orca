@@ -5,7 +5,14 @@ Hierarchy and Project on the left, a rendered Preview with a Console below
 it, and the Inspector on the right. The edited project runs in a separate
 `orca -server=true` process; every change is applied to that running scene
 and the preview is re-rendered from it. Panels, menus and dialogs use native
-UIKit controls authored in XML, with CSS styling.
+UIKit controls authored in XML. Buttons, inputs and checkboxes use the
+engine's default stylesheet with a dark palette from `package.lua`; the
+editor's own CSS only sizes and lays out its panels.
+
+Panels never build rows themselves. The runtime answers each panel's
+`XmlDataSource` with typed records, including the icon path for every node
+class and file kind (the request names the icon folder with `icons=`), and
+the row templates bind straight to them.
 
 ## Running
 
@@ -29,6 +36,7 @@ directly.
 | Create a child | Create menu, Hierarchy + button, or right-click > Create Child (common classes first, the rest under More) |
 | Rename, duplicate, delete | F2 / Ctrl+D / Delete, or the Hierarchy context menu |
 | Edit a value | Click it in the Inspector: checkboxes toggle, enums open a dropdown, other values edit inline |
+| Edit Margin, Padding, BorderWidth, BorderRadius | Type all edges in one row (`4`, `4 8` or `left top right bottom`), or expand the row to edit each edge |
 | Bind a property | Click the binding button beside a property, press Ctrl+B, or use its context menu |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) |
 | Save | Ctrl+S writes the open document back to its XML file |
@@ -69,7 +77,8 @@ completion viewports are clipped and scroll without covering the dialog footer.
 |---|---|
 | `Screens/Editor.xml`, `App.lua` | XML shell, shared runtime connection, global commands |
 | `Pages/*.xml`, `Templates/*.xml` | Hierarchy, Project and Inspector layouts and row templates |
-| `Views/*.xml`, `Styles/editor.css` | Native menus, headers, logs, inputs, dialogs and styling |
+| `Views/*.xml`, `Styles/editor.css` | Native menus, headers, logs, inputs, dialogs and editor layout styling |
+| `package.lua` `ThemeLibrary`, `Icons/*.svg` | Dark `ui-*` palette for the engine default stylesheet; Lucide icons named by runtime records |
 | `Data/Editor.Schema.xml` | Typed runtime node, file and property records |
 | `Scripts/Workspace.lua` | Selection, edit/save commands, undo/redo and events |
 | `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panel actions and source request parameters |

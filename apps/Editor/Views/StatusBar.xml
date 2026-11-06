@@ -1,4 +1,4 @@
-<Grid Height="28" Columns="1fr auto auto" Padding="10 0" Spacing="18" class="status-bar">
+<Grid Height="22" Columns="1fr auto auto" Padding="10 0" Spacing="18" class="status-bar">
   <TextBlock Name="Selection"/>
   <TextBlock Name="History" class="editor-muted"/>
   <TextBlock Name="State"/>

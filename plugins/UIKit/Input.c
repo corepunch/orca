@@ -1,7 +1,6 @@
 #include "Layout.h"
 #include <include/orca.h>
 
-#include <source/filesystem/theme_palette.h>
 #include <UIKit/UIKit.h>
 #include <include/renderer_font.h>
 #include "TextBlockText.h"
@@ -10,25 +9,6 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
 
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
-
-static void
-Input_ApplyTextDefaults(struct Object *hObject)
-{
-  struct Node *node = GetNode(hObject);
-  struct Node2D *node2d = GetNode2D(hObject);
-  if (!node || !node2d) return;
-
-  node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
-  struct color foreground = FS_GetThemeColor(THEME_COLOR_CONTROL_FOREGROUND);
-  struct Property *foregroundProp = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
-  if (foregroundProp) {
-    PROP_SetValue(foregroundProp, &foreground);
-  }
-  node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
-  node->Border.Width = (struct Thickness){{{1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f}}};
-  node->Padding = (struct Thickness){{{8.0f, 8.0f}, {6.0f, 6.0f}, {0.0f, 0.0f}}};
-  GetTextBlockConcept(hObject)->TextVerticalAlignment = kTextVerticalAlignmentCenter;
-}
 
 HANDLER(Input, Node2D, DrawForeground)
 {
@@ -66,38 +46,22 @@ HANDLER(Input, Node2D, DrawForeground)
     R_DrawEntity(pDrawForeground->viewdef, &entity);
   }
 
-  if (pInput->Type == kInputTypeCheckbox) {
-    struct color unchecked = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
-    struct color checked = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
-    struct color checkmark = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
+  /* Legacy checkbox Input: the box is the node's CSS background and border;
+     the checked mark is an inset square in the foreground color. */
+  if (pInput->Type == kInputTypeCheckbox && pInput->Checked) {
     memset(&entity, 0, sizeof(entity));
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawForeground->brush);
-    struct vec3 size = {
-      Node2D_GetFrame(pNode2D, kBox3FieldWidth),
-      Node2D_GetFrame(pNode2D, kBox3FieldHeight),
-      0,
-    };
-    entity.bbox.max = VEC3_Add(&entity.bbox.min, &size);
-    entity.radius = (struct vec4) {4,4,4,4};
-    entity.material.color = unchecked;
+    float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth), h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+    float inset = MIN(w, h) / 4;
+    entity.bbox.min = VEC3_Add(&entity.bbox.min, &(struct vec3){ inset, inset, 0 });
+    entity.bbox.max = VEC3_Add(&entity.bbox.min, &(struct vec3){ w - 2 * inset, h - 2 * inset, 0 });
+    entity.radius = (struct vec4){2, 2, 2, 2};
+    entity.borderWidth = (struct vec4){0, 0, 0, 0};
+    entity.material.color = pDrawForeground->brush.Color;
     entity.material.opacity = pNode2D->_opacity;
     entity.material.blendMode = BLEND_MODE_ALPHA;
     entity.material.texture = NULL;
     R_DrawEntity(pDrawForeground->viewdef, &entity);
-
-    if (pInput->Checked) {
-      entity.radius = (struct vec4) {0,0,0,0};
-      entity.material.color = checked;
-      entity.material.opacity = pNode2D->_opacity;
-      entity.material.texture = NULL;
-      entity.borderWidth = (struct vec4){0, 0, 0, 0};
-      R_DrawEntity(pDrawForeground->viewdef, &entity);
-
-      entity.material.color = checkmark;
-      entity.material.opacity = pNode2D->_opacity;
-      entity.material.texture = pInput->_checkmark;
-      R_DrawEntity(pDrawForeground->viewdef, &entity);
-    }
   }
   return FALSE;
 }
@@ -341,8 +305,6 @@ HANDLER(Input, Object, PropertyChanged)
 
 HANDLER(Input, Object, Create)
 {
-//  pInput->_checkmark = Texture_Load("#checkmark");
-  Input_ApplyTextDefaults(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }

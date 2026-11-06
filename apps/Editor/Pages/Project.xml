@@ -1,8 +1,8 @@
-<Grid Name="ProjectPanel" Rows="36px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
+<Grid Name="ProjectPanel" Rows="32px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
   <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
-  <Grid Columns="1fr auto" Spacing="4" Padding="6 2">
+  <Grid Columns="1fr 22px" Spacing="4" Padding="10 4 6 4" class="panel-toolbar">
     <TextBlock Text="Project assets" class="editor-muted" TextVerticalAlignment="Center"/>
-    <Button Text="Refresh" Click="Refresh" class="toolbar-button"/>
+    <Button Click="Refresh" class="icon-button"><VectorView Source="Editor/Icons/refresh.svg" class="tool-icon" IgnoreHitTest="true"/></Button>
   </Grid>
   <ListBox Name="Items" ItemsSource="{Binding ../Source/Items}" ItemTemplate="Editor/Templates/ProjectRow"
            ItemNamePrefix="ProjectFile" ValueProperty="Path" OverflowY="Scroll" class="editor-list"/>

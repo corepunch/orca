@@ -71,8 +71,9 @@ for _, panel in ipairs {hierarchy, project, inspector} do
         panel.title .. ' remains bounded by the editor viewport')
 end
 local labelRow = assert(hierarchy.view:findChild('SceneNodenode-3', true))
-local label, class = labelRow:findChild('NodeLabel', true), labelRow:findChild('NodeClass', true)
-assert(label.ActualX + label.ActualWidth <= class.ActualX, 'Long node labels stay outside the class column')
+local label, icon = labelRow:findChild('NodeLabel', true), labelRow:findChild('NodeIcon', true)
+assert(icon.ActualX + icon.ActualWidth <= label.ActualX, 'The class icon precedes the node label')
+assert(label.ActualX + label.ActualWidth <= labelRow.ActualWidth, 'Long node labels stay inside the row')
 hierarchy.list:send('ListBox.SelectItem', { Value = 'Example/Screens/Test/Title' })
 settle()
 assert(Workspace.selection == 'Example/Screens/Test/Title', 'ListBox selection selects the runtime path')

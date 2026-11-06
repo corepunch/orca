@@ -299,7 +299,7 @@ PROP_ClearSpecialized(struct Property *pprop) {
   FOR_EACH_LIST(struct Property, p, pprop) {
     if (p->flags & PF_SPECIALIZED) {
       PROP_Clear(p);
-      p->flags &= ~PF_SPECIALIZED;
+      p->flags &= ~(PF_SPECIALIZED | PF_STYLED);
       if (p->specializedBase) {
         struct Property *base = p->specializedBase;
         memcpy(p->value, base->value, PROP_GetSize(p));

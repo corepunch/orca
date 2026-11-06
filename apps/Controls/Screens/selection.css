@@ -8,6 +8,17 @@
 .subtitle { font-size: 14; opacity: 0.6; margin-top: 2; }
 .section { font-size: 25; margin-top: 25; margin-bottom: 8; }
 CheckBox, RadioButton, ToggleSwitch { height: 44; font-size: 19; }
+/* Windows Phone skin over the engine default: square 24-point indicators with
+   2-point outlines and a 52x24 switch rail. */
+CheckBox .control-indicator, RadioButton .control-indicator, ToggleSwitch .control-indicator { width: 24; height: 24; border-width: 2; background-color: #00000000; }
+CheckBox .control-check { width: 24; height: 24; }
+CheckBox .control-indeterminate { width: 14; height: 4; border-radius: 0; }
+CheckBox:checked .control-indicator, CheckBox:indeterminate .control-indicator, RadioButton:checked .control-indicator { background-color: #00000000; }
+RadioButton .control-indicator { border-radius: 12; }
+RadioButton .control-mark { width: 12; height: 12; border-radius: 6; }
+ToggleSwitch .control-track { width: 52; height: 24; border-radius: 12; }
+ToggleSwitch .control-thumb { width: 16; height: 16; margin-left: 2; }
+ToggleSwitch:checked .control-thumb { margin-left: auto; margin-right: 2; }
 .footnote { font-size: 12; opacity: 0.6; margin-top: 25; }
 
 /* Scope each panel explicitly so its appearance is independent of the host OS. */

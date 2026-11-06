@@ -1,6 +1,6 @@
-<Grid Name="Panel" Rows="34px 1fr" class="editor-panel" Controller="Editor/Scripts/ChromeController">
+<Grid Name="Panel" Rows="28px 1fr" class="editor-panel" Controller="Editor/Scripts/ChromeController">
   <Grid Name="Header" Columns="1fr auto" class="panel-header">
-    <StackView Direction="Horizontal" Spacing="10" AlignItems="Center" Padding="10 0">
+    <StackView Direction="Horizontal" Spacing="8" AlignItems="Center" Padding="10 0">
       <TextBlock Name="Title" class="panel-title"/>
       <TextBlock Name="Subtitle" class="panel-subtitle"/>
     </StackView>

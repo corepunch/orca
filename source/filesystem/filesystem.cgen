@@ -413,6 +413,12 @@
       <arg name="schemaXml" type="string">The schema XML string defining entities and columns</arg>
       <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
     </function>
+    <function name="FindThemeValue">
+      <summary>Looks up a theme value without reporting a missing key</summary>
+      <details>Resolves the key like GetThemeValue, but returns nil silently when no theme defines it. Use it where the caller supplies its own fallback, such as CSS var(--key, fallback).</details>
+      <arg name="key" type="string">The key identifying the theme value</arg>
+      <returns type="string">The theme value, or nil if not found</returns>
+    </function>
     <function name="GetThemeValue">
       <summary>Retrieves a theme value based on the provided key and theme group</summary>
       <details>Fetches the value associated with the specified key from the currently selected theme. This allows for dynamic theming of UI elements based on the active theme settings. The function returns the theme value as a string when found. If the key is not found, the function returns nil.</details>

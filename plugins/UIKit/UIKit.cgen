@@ -616,14 +616,9 @@
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
         <handle message="Node2D.MeasureOverride"/>
-        <handle message="Node2D.DrawForeground"/>
       </handles>
       <properties>
         <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
-        <property name="DiffuseColor" type="color" default="0.3,0.55,0.85,1">Base fill color for the button face used by the built-in 3D shader</property>
-        <property name="CornerRadius" type="float" default="6">Corner rounding radius in pixels for the built-in rounded-box shader</property>
-        <property name="SpecularPower" type="float" default="1.5">Specular highlight intensity (shininess) for the built-in 3D shader</property>
-        <property name="LightDirection" type="vec3" default="0,-1,-0.5">Direction of virtual light for built-in 3D shading</property>
       </properties>
       <messages>
         <message name="Click">
@@ -773,7 +768,6 @@
       <properties>
         <property name="IsChecked" type="bool">Whether this option is currently selected</property>
         <property name="Value" type="string">String value reported to the parent RadioGroup when this button is selected</property>
-        <property name="AccentColor" type="color" default="0.3,0.55,0.85,1">Legacy theme accent value retained for compatibility; style control-mark with CSS to change its color</property>
         <property name="IndicatorSize" type="float" default="16">Legacy indicator diameter in points; explicitly setting it overrides CSS indicator width and height</property>
       </properties>
     </class>
@@ -808,13 +802,10 @@
         <handle message="Object.Create"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
-        <handle message="Node2D.DrawBackground"/>
       </handles>
       <properties>
-        <property name="IsSelected" type="bool">Whether this tab is currently selected</property>
+        <property name="IsSelected" type="bool">Whether this tab is currently selected; CSS styles it with Tab:selected</property>
         <property name="Value" type="string">String value reported to the parent TabBar when this tab is selected</property>
-        <property name="SelectedColor" type="color" default="0.24,0.36,0.58,1">Background color when the tab is selected</property>
-        <property name="UnselectedColor" type="color" default="0.18,0.19,0.22,0.95">Background color when the tab is not selected</property>
       </properties>
     </class>
     <class name="TabBar" parent="StackView">

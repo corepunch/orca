@@ -10,7 +10,7 @@ Inspector.selectedItem = DataPanel.selected
 
 function Inspector:init(openBindingEditor)
     self.openBindingEditor = openBindingEditor
-    self.collapsed = {}
+    self.collapsed, self.expanded = {}, {}
     DataPanel.load(self, "Inspector")
     Workspace.on('select', function(path) self:show(path) end)
     Workspace.on('changed', function(path) if path == self.path then self:reload() end end)
@@ -23,11 +23,14 @@ function Inspector:show(path)
 end
 function Inspector:reload()
     if not self.path then return end
-    DataPanel.reload(self, 'get/data-properties/' .. Workspace.encode(self.path, true) .. DataPanel.query(self.collapsed, self.filter))
+    DataPanel.reload(self, 'get/data-properties/' .. Workspace.encode(self.path, true) .. DataPanel.query(self.collapsed, self.filter, self.expanded))
 end
 function Inspector:toggleItem(item)
     if item and item.IsGroup then
         self.collapsed[item.GroupName] = not self.collapsed[item.GroupName] or nil
+        self:reload()
+    elseif item and item.IsCompound then
+        self.expanded[item.PropertyName] = not self.expanded[item.PropertyName] or nil
         self:reload()
     end
     return true

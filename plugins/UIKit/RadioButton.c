@@ -1,7 +1,6 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
 #include "SelectionControl.h"
-#include <source/filesystem/theme_palette.h>
 
 #include <UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
@@ -120,7 +119,6 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 
 HANDLER(RadioButton, Object, Create)
 {
-  pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
   SelectionControl_Build(hObject, "radio-button", FALSE);
   struct Property *prop = OBJ_FindLongProperty(hObject, ID_RadioButton_IsChecked);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);

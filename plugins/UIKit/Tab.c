@@ -1,7 +1,6 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
 #include <filesystem/filesystem.h>
-#include <source/filesystem/theme_palette.h>
 
 #include <UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
@@ -69,18 +68,9 @@ Tab_Select(struct Object *object, struct Tab *tab)
 
 HANDLER(Tab, Object, Create)
 {
-  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = OBJ_FindLongProperty(hObject, ID_Tab_IsSelected);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
-
-  if (text) {
-    text->TextHorizontalAlignment = kTextHorizontalAlignmentCenter;
-    text->TextVerticalAlignment = kTextVerticalAlignmentCenter;
-  }
-
-  pTab->SelectedColor = FS_GetThemeColor(THEME_COLOR_ACCENT);
-  pTab->UnselectedColor = FS_GetThemeColor(THEME_COLOR_PANEL_BACKGROUND);
 
   Tab_SetSelected(hObject, pTab, pTab->IsSelected);
   return FALSE;
@@ -103,41 +93,3 @@ HANDLER(Tab, Node, LeftButtonUp)
   return Tab_Select(hObject, pTab);
 }
 
-HANDLER(Tab, Node2D, DrawBackground)
-{
-  struct Node2D *pNode2D = GetNode2D(hObject);
-  if (!pNode2D) return FALSE;
-
-  struct ViewEntity entity;
-  Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBackground->brush);
-  /* Keep the tab background anchored to the control bounds. Text alignment
-     only affects the text layout rect, not the tab surface itself. */
-  entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
-
-  float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-  float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  entity.bbox.max.x = entity.bbox.min.x + w;
-  entity.bbox.max.y = entity.bbox.min.y + h;
-
-  entity.radius = (struct vec4){4, 4, 0, 0};
-  entity.material = (struct ViewMaterial){
-    .color   = pTab->IsSelected ? pTab->SelectedColor : pTab->UnselectedColor,
-    .opacity = pNode2D->_opacity,
-    .blendMode = BLEND_MODE_ALPHA,
-  };
-
-  R_DrawEntity(pDrawBackground->viewdef, &entity);
-
-  if (pTab->IsSelected) {
-    /* Draw a bottom highlight bar to visually connect the tab to the content */
-    struct ViewEntity bar = entity;
-    float barH = 3.0f;
-    bar.bbox.min.y = entity.bbox.max.y - barH;
-    bar.bbox.max.y = entity.bbox.max.y;
-    bar.radius = (struct vec4){0, 0, 0, 0};
-    bar.material.color = pTab->SelectedColor;
-    R_DrawEntity(pDrawBackground->viewdef, &bar);
-  }
-
-  return TRUE;
-}

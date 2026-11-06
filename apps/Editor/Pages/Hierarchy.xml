@@ -1,9 +1,9 @@
-<Grid Name="HierarchyPanel" Rows="36px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
+<Grid Name="HierarchyPanel" Rows="32px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
   <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
-  <Grid Columns="1fr 32px 32px" Spacing="4" Padding="6 2">
-    <Input Name="Search" PlaceholderText="Find node or class" Submit="Search" class="editor-input"/>
-    <Button Text="×" Click="ClearSearch" class="toolbar-button"/>
-    <Button Text="+" Click="Create" class="toolbar-button"/>
+  <Grid Columns="1fr 22px 22px" Spacing="4" Padding="6 4" class="panel-toolbar">
+    <Input Name="Search" PlaceholderText="Find node or class" Submit="Search" class="search-input"/>
+    <Button Click="ClearSearch" class="icon-button"><VectorView Source="Editor/Icons/x.svg" class="tool-icon" IgnoreHitTest="true"/></Button>
+    <Button Click="Create" class="icon-button"><VectorView Source="Editor/Icons/plus.svg" class="tool-icon" IgnoreHitTest="true"/></Button>
   </Grid>
   <ListBox Name="Items" ItemsSource="{Binding ../Source/Items}" ItemTemplate="Editor/Templates/SceneNodeRow"
            ItemNamePrefix="SceneNode" ValueProperty="Path" SelectionChanged="Select" OverflowY="Scroll" class="editor-list"/>

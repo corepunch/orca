@@ -37,7 +37,7 @@ PROP_SetFlag(struct Property *property, uint32_t value)
     struct Property *base = ZeroAlloc(sizeof(*base));
     base->object = property->object;
     base->pdesc = property->pdesc;
-    base->flags = property->flags & (PF_MODIFIED | PF_OWNS_OBJECT_CHILD);
+    base->flags = property->flags & (PF_MODIFIED | PF_OWNS_OBJECT_CHILD | PF_STYLED);
     property->flags &= ~PF_OWNS_OBJECT_CHILD;
     base->value = ZeroAlloc(PROP_GetSize(property));
     memcpy(base->value, property->value, PROP_GetSize(property));
@@ -115,7 +115,8 @@ PROP_GetValue(struct Property const *property)
 void
 PROP_SetDirty(struct Property *property)
 {
-  property->flags |= PF_MODIFIED;
+  /* Any write is authored until the style engine marks it PF_STYLED again. */
+  property->flags = (property->flags | PF_MODIFIED) & ~PF_STYLED;
   if (PROP_GetShortID(property) != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
   } else {

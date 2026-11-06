@@ -38,7 +38,7 @@ function MenuBar:open(index,sender)
 	menu.onClose=function() self.openIndex=nil end
 	local x,y=Native.origin(sender or self.view)
 	if not sender then x=x+(index-1)*64 end
-	Popups.push(menu,x,y+36)
+	Popups.push(menu,x,y+28)
 end
 function MenuBar:accelerator(letter)
 	for i,menu in ipairs(self.menus) do if menu.title:sub(1,1):lower()==letter then self:open(i) return true end end

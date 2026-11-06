@@ -17,7 +17,7 @@ for _, prefix in ipairs { "Dark", "Light" } do
   for _, suffix in ipairs { "Unchecked", "Checked", "Mixed", "Disabled" } do
     local control = assert(screen:findChild(prefix .. suffix, true))
     test.expect_eq(control.ActualHeight, 44, "XML gallery checkbox keeps authored 44-point row")
-    test.expect_eq(control:findChild("Indicator").ActualWidth, 24, "XML checkbox receives default indicator CSS")
+    test.expect_eq(control:findChild("Indicator").ActualWidth, 24, "XML checkbox receives the gallery indicator CSS")
     if previous then
       test.expect_eq(control.ActualY - previous.ActualY, 44, "checkbox rows stack without overlapping")
     end

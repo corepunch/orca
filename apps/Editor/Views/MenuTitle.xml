@@ -1,1 +1,1 @@
-<Button class="menu-title" Height="36" Text="{Binding DataContext/Label}" Click="Invoke"/>
+<Button class="menu-title" Height="28" Text="{Binding DataContext/Label}" Click="Invoke"/>

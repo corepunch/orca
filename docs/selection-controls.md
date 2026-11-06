@@ -232,9 +232,10 @@ its appearance. This provides state-based skins without a WPF-style
 style the generated parts rather than replacing the control with a picture
 and app-written click logic.
 
-Normal startup loads `share/plugins/selection-controls.lua`, which registers
-the shared `share/orca/UIKit/selection-controls.css` before application sheets
-and assigns the bundled Lucide SVG to the checkmark. Custom startup/test
+Normal startup loads `share/plugins/default-styles.lua`, which registers the
+engine's [default stylesheet](theme-values.md#default-stylesheet)
+`share/orca/UIKit/default.css` before application sheets and assigns the
+bundled Lucide SVG to the checkmark. Custom startup/test
 harnesses must load the startup plugins too if they need this default skin.
 
 | Control | Part class | Role |
@@ -339,8 +340,7 @@ offer mixed state, or gain the dedicated control's events simply by matching
 `RadioGroup`. Preserve old forms when necessary, or migrate their `Checked`
 binding to `CheckBox.IsChecked` and use its built-in `Text` label.
 
-`RadioButton.AccentColor` is retained for source compatibility; CSS
-`RadioButton .control-mark` now owns the visible dot color. Explicit legacy
+CSS `RadioButton .control-mark` owns the visible dot color. Explicit legacy
 `RadioButton.IndicatorSize` still overrides indicator sizing. Do not
 instantiate `SelectionControl` as a selectable widget: concrete subclasses
 build the parts and implement activation.

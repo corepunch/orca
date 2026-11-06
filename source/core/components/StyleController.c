@@ -154,6 +154,8 @@ _PseudoFlagFromToken(lpcString_t token, size_t len)
   else if (len == 5 && !strncmp(token, "focus",  5)) return STYLE_FOCUS;
   else if (len == 13 && !strncmp(token, "focus-visible", 13)) return STYLE_FOCUS_VISIBLE;
   else if (len == 6 && !strncmp(token, "active", 6)) return STYLE_SELECT;
+  // OF_SELECTED marks both a pressed control and a selected tab or list row.
+  else if (len == 8 && !strncmp(token, "selected", 8)) return STYLE_SELECT;
   else if (len == 4 && !strncmp(token, "dark",   4)) return STYLE_DARK;
   else if (len == 7 && !strncmp(token, "checked", 7)) return STYLE_CHECKED;
   else if (len == 13 && !strncmp(token, "indeterminate", 13)) return STYLE_INDETERMINATE;
@@ -599,7 +601,8 @@ _StyleRuleBaseMatches(struct Object *target,
 // cls: the resolved class selector; carries per-usage opacity (cls->opacity).
 static void
 _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
-                uint32_t ruleFlags, struct style_class_selector* cls)
+                uint32_t ruleFlags, struct style_class_selector* cls,
+                bool_t defaults)
 {
   int prop_count = 0;
   int skip_type = 0, skip_null = 0, skip_pdesc = 0, skip_hprop = 0;
@@ -617,6 +620,11 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
     struct Property *hprop = OBJ_FindLongProperty(target, pdesc->FullIdentifier);
     if (!hprop) { skip_hprop++; continue; }
 
+    // Like a browser's user-agent sheet, the default stylesheet never
+    // overrides a value authored inline in XML or Lua, in any state.
+    uint32_t pflags = PROP_GetFlags(hprop);
+    if (defaults && (pflags & PF_MODIFIED) && !(pflags & PF_STYLED)) continue;
+
     if (ruleFlags) {
       PROP_SetFlag(hprop, PF_SPECIALIZED);
     }
@@ -630,6 +638,7 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
       if (expr && expr[0]) {
         PROP_SetBinding(hprop, expr, kBindingModeOneWay, TRUE);
         PROP_Update(hprop);  // Force immediate evaluation of the binding
+        PROP_SetFlag(hprop, PF_STYLED);
         continue;
       }
     }
@@ -644,13 +653,14 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
       clr.a = cls->opacity / 100.f;
       PROP_SetValue(hprop, &clr);
     }
+    PROP_SetFlag(hprop, PF_STYLED);
   }
 }
 
 // Walk one stylesheet's rules for a matching selector and invoke _ApplyStyleRule.
 static void
 _EnumSheetRules(struct Object *sheetObj, struct Object *target,
-                uint32_t objFlags)
+                uint32_t objFlags, bool_t defaults)
 {
   if (!sheetObj) return;
   bool_t stateClasses = FALSE;
@@ -675,7 +685,7 @@ _EnumSheetRules(struct Object *sheetObj, struct Object *target,
       uint32_t state = sr->flags | (cls ? cls->flags : 0);
       if (selectorState) state |= STYLE_SELECT;
       if (!!state != statePass) continue;
-      _ApplyStyleRule(target, child, state, cls);
+      _ApplyStyleRule(target, child, state, cls, defaults);
     }
   }
 }
@@ -692,13 +702,13 @@ OBJ_EnumStyleClasses(struct Object *pobj,
   uint32_t objFlags  = OBJ_GetStyleFlags(pobj);
 
   // Global stylesheet first
-  _EnumSheetRules(static_stylesheet, pobj, objFlags);
+  _EnumSheetRules(static_stylesheet, pobj, objFlags, TRUE);
 
   // Walk up the object hierarchy
   for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc || !sc->StyleSheet) continue;
-    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags);
+    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags, FALSE);
   }
 }
 

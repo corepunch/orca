@@ -11,6 +11,8 @@
     <Column Name="Hidden" Type="bool"/>
     <Column Name="Visible" Type="bool" Default="true"/>
     <Column Name="Disclosure" Type="string"/>
+    <Column Name="Icon" Type="string"/>
+    <Column Name="DisclosureIcon" Type="string"/>
   </Entity>
   <Entity Name="EditorFile" Key="Id" ObjectName="Id">
     <Column Name="Id" Type="string"/>
@@ -23,6 +25,8 @@
     <Column Name="HasChildren" Type="bool"/>
     <Column Name="Expanded" Type="bool"/>
     <Column Name="Disclosure" Type="string"/>
+    <Column Name="Icon" Type="string"/>
+    <Column Name="DisclosureIcon" Type="string"/>
   </Entity>
   <Entity Name="EditorProperty" Key="Id" ObjectName="Id">
     <Column Name="Id" Type="string"/>
@@ -43,6 +47,10 @@
     <Column Name="BoolValue" Type="bool"/>
     <Column Name="HasBinding" Type="bool"/>
     <Column Name="Indent" Type="float"/>
+    <Column Name="IsCompound" Type="bool"/>
+    <Column Name="HasChildren" Type="bool"/>
+    <Column Name="Expanded" Type="bool"/>
+    <Column Name="DisclosureIcon" Type="string"/>
   </Entity>
   <Entity Name="EditorOption">
     <Column Name="Label" Type="string"/>

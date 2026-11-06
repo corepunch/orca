@@ -1,0 +1,123 @@
+/* ORCA default stylesheet: the engine's equivalent of a browser's user-agent
+   sheet. It is registered before any application sheet, so an app rule for the
+   same property always wins, exactly like stacking several <link> sheets.
+
+   Controls carry no colors, borders or padding in C; everything visual starts
+   here. Each value reads an optional theme key from the project's
+   ThemeLibrary (--ui-*), falling back to a neutral light or dark palette that
+   follows the system appearance. Override a key in package.lua to retheme
+   every control, or write ordinary CSS rules for anything more specific. */
+
+/* --- Buttons ------------------------------------------------------------- */
+
+Button {
+  background-color: var(--ui-control, #e7e9ee);
+  color: var(--ui-control-foreground, #1d2129);
+  border-radius: var(--ui-radius, 5);
+  text-align: center;
+  text-vertical-align: center;
+  text-wrap: nowrap;
+}
+Button:dark {
+  background-color: var(--ui-control, #3a3f4a);
+  color: var(--ui-control-foreground, #e6e9ef);
+}
+Button:hover { background-color: var(--ui-control-hover, #dcdfe6); }
+Button:dark:hover { background-color: var(--ui-control-hover, #464c59); }
+Button:active { background-color: var(--ui-control-active, #cdd2db); }
+Button:dark:active { background-color: var(--ui-control-active, #2f343d); }
+Button:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
+Button:disabled { opacity: 0.45; }
+
+/* --- Text input ---------------------------------------------------------- */
+
+Input {
+  background-color: var(--ui-input, #ffffff);
+  color: var(--ui-control-foreground, #1d2129);
+  border: 1 solid #c7ccd5;
+  border-color: var(--ui-input-border, #c7ccd5);
+  border-radius: var(--ui-radius, 5);
+  padding: 6 8;
+  text-vertical-align: center;
+}
+Input:dark {
+  background-color: var(--ui-input, #1e2128);
+  color: var(--ui-control-foreground, #e6e9ef);
+  border-color: var(--ui-input-border, #414753);
+}
+Input:hover { border-color: var(--ui-input-border-hover, #a9b0bc); }
+Input:dark:hover { border-color: var(--ui-input-border-hover, #555c6a); }
+Input:focus { border-color: var(--ui-accent, #3b82f6); }
+Input:checked { color: var(--ui-accent, #3b82f6); }
+Input:disabled { opacity: 0.45; }
+
+/* --- Tabs ---------------------------------------------------------------- */
+
+TabBar { border-bottom-width: 1; padding-bottom: 1; border-color: var(--ui-accent, var(--accent, #3b82f6)); }
+Tab {
+  background-color: #00000000;
+  border-radius: 5 5 0 0;
+  padding: 6 14;
+  text-align: center;
+  text-vertical-align: center;
+}
+Tab:hover { background-color: var(--ui-control-hover, #dcdfe6); }
+Tab:dark:hover { background-color: var(--ui-control-hover, #464c59); }
+/* Tabs historically follow the project accent, so fall back to it first. */
+Tab:selected { background-color: var(--ui-accent, var(--accent, #3b82f6)); }
+Tab:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
+
+/* --- Selection controls --------------------------------------------------
+   Built-in parts are ordinary nodes: .control-indicator, .control-mark,
+   .control-check, .control-indeterminate, .control-track, .control-thumb and
+   .control-label. Rows keep 44-point touch targets by default. */
+
+CheckBox, RadioButton, ToggleSwitch {
+  min-height: 44;
+  font-size: 17;
+  color: var(--ui-control-foreground, #1d2129);
+  background-color: #00000000;
+  -orca-indicator-spacing: 10;
+}
+CheckBox:dark, RadioButton:dark, ToggleSwitch:dark { color: var(--ui-control-foreground, #e6e9ef); }
+CheckBox .control-label, RadioButton .control-label, ToggleSwitch .control-label { text-vertical-align: center; text-wrap: nowrap; text-overflow: ellipsis; }
+
+CheckBox .control-indicator, RadioButton .control-indicator, ToggleSwitch .control-indicator {
+  width: 20; height: 20;
+  border: 1.5 solid #9aa1ad;
+  border-color: var(--ui-input-border, #9aa1ad);
+  background-color: var(--ui-input, #ffffff);
+  color: var(--ui-accent-foreground, #ffffff);
+}
+CheckBox:dark .control-indicator, RadioButton:dark .control-indicator, ToggleSwitch:dark .control-indicator {
+  border-color: var(--ui-input-border, #5d6573);
+  background-color: var(--ui-input, #1e2128);
+}
+CheckBox .control-mark, RadioButton .control-mark, ToggleSwitch .control-mark { opacity: 0; margin: auto; }
+
+CheckBox .control-indicator { border-radius: var(--ui-radius-small, 4); }
+CheckBox .control-check { width: 14; height: 14; color: var(--ui-accent-foreground, #ffffff); }
+CheckBox .control-indeterminate { width: 10; height: 2; margin: auto; border-radius: 1; background-color: var(--ui-accent-foreground, #ffffff); opacity: 0; }
+CheckBox:checked .control-indicator, CheckBox:indeterminate .control-indicator {
+  background-color: var(--ui-accent, #3b82f6);
+  border-color: var(--ui-accent, #3b82f6);
+}
+CheckBox:checked .control-mark { opacity: 1; }
+CheckBox:indeterminate .control-mark { opacity: 0; }
+CheckBox:indeterminate .control-indeterminate { opacity: 1; }
+
+RadioButton .control-indicator { border-radius: 10; }
+RadioButton .control-mark { width: 8; height: 8; border-radius: 4; background-color: var(--ui-accent-foreground, #ffffff); }
+RadioButton:checked .control-indicator { background-color: var(--ui-accent, #3b82f6); border-color: var(--ui-accent, #3b82f6); }
+RadioButton:checked .control-mark { opacity: 1; }
+
+ToggleSwitch .control-track { width: 36; height: 20; padding: 2; border-radius: 10; background-color: var(--ui-control, #d7dbe2); }
+ToggleSwitch:dark .control-track { background-color: var(--ui-control, #4a505c); }
+ToggleSwitch .control-thumb { width: 16; height: 16; border-radius: 8; margin-top: auto; margin-bottom: auto; margin-left: 0; margin-right: auto; background-color: #ffffff; }
+ToggleSwitch:checked .control-track { background-color: var(--ui-accent, #3b82f6); border-color: var(--ui-accent, #3b82f6); }
+ToggleSwitch:checked .control-thumb { margin-left: auto; margin-right: 0; }
+
+CheckBox:hover .control-indicator, RadioButton:hover .control-indicator { border-color: var(--ui-accent, #3b82f6); }
+CheckBox:active .control-indicator, RadioButton:active .control-indicator { opacity: 0.8; }
+CheckBox:focus-visible, RadioButton:focus-visible, ToggleSwitch:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
+CheckBox:disabled, RadioButton:disabled, ToggleSwitch:disabled { opacity: 0.4; }

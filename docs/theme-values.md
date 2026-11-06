@@ -30,70 +30,56 @@ That makes missing theme entries much easier to spot during development.
 
 ## How Theme Lookup Works
 
-Theme keys are resolved by `FS_GetThemeValue()` during XML load and by helpers like
-`FS_GetThemeColor()` in component startup code.
+Theme keys are resolved by `FS_GetThemeValue()` during XML load and by CSS
+`var(--key)` while a stylesheet is parsed. `FS_FindThemeValue()` performs the
+same lookup without reporting a missing key.
 
 The practical rule is simple:
 
 1. Define the key in your project `ThemeLibrary`.
 2. Reference it from XML as `$your-key`.
-3. Let the component fall back to its built-in default if the key is absent.
+3. Reference it from CSS as `var(--your-key, fallback)`.
 
-## Common UIKit Theme Keys
+## Default Stylesheet
 
-These are the default keys used by UIKit controls and the easiest ones to override in a theme:
+UIKit controls have no colors, borders or padding built into C. Their look comes
+from `share/orca/UIKit/default.css`, the engine's equivalent of a browser's
+user-agent stylesheet. Normal startup registers it (through
+`share/plugins/default-styles.lua`) before any application sheet, so an
+application rule for the same property always wins, exactly like loading
+several stylesheets one after another:
 
-| Key | Used by | Purpose |
-|---|---|---|
-| `accent` | Tabs, selected states, emphasis text | Main accent color |
-| `accent-background` | Tabs, buttons, tab bar underline | Filled accent surfaces |
-| `accent-foreground` | Buttons and accent surfaces | Text/icon color on accent backgrounds |
-| `control-background` | Buttons, tabs, general controls | Default control fill |
-| `control-foreground` | Buttons and control labels | Default foreground text/icon color |
-| `control-border` | Controls that draw borders | Subtle border color |
-| `control-muted` | Muted control states | Disabled or secondary control color |
-| `card-background` | Card-style containers | Neutral card background |
-
-## Default Colors In Tabs And Buttons
-
-If you only want to override a few colors, start here:
-
-### Tabs
-
-Tabs use these theme keys by default:
-
-- Selected tab background: `accent-background`, then `accent`
-- Unselected tab background: `control-background`, then `card-background`
-- Tab text foreground: whatever the `Tab` component style resolves for text, with selected state using the accent palette
-- Tab bar underline: `accent-background`, then `accent`
-
-### Buttons
-
-Buttons use these theme keys by default:
-
-- Button fill: `control-background`, then `accent-background`, then `accent`
-- Button text foreground: `control-foreground`, then `accent-foreground`
-- Button border and muted states: `control-border` and `control-muted`
-
-That means you can make buttons and tabs feel consistent across the whole app by changing just a few theme entries.
-
-## Example Theme Override
-
-Here is a small theme block that gives you a darker control surface and a brighter accent:
-
-```lua
-ThemeLibrary = {
-  { Key = "accent",             Value = "#7C3AED" },
-  { Key = "accent-background",  Value = "#2C1D4A" },
-  { Key = "accent-foreground",  Value = "#FFFFFF" },
-  { Key = "control-background", Value = "#181824" },
-  { Key = "control-foreground", Value = "#F8FAFC" },
-  { Key = "control-border",     Value = "#30344A" },
-  { Key = "control-muted",      Value = "#677089" },
-}
+```css
+/* Your app sheet: only what differs from the default */
+.danger { background-color: #c0392b; }
+Button { border-radius: 0; }
 ```
 
-With those values in place, tabs, buttons, and other UIKit controls will immediately pick up the new palette.
+The default sheet covers `Button`, `Input`, `TabBar`/`Tab`, `CheckBox`,
+`RadioButton` and `ToggleSwitch`, including `:hover`, `:active`,
+`:selected`, `:checked`, `:focus`, `:focus-visible` and `:disabled`. It follows
+the system appearance (`:dark`) unless the project sets its palette.
+
+### Palette keys
+
+Each color in the default sheet reads an optional `ui-*` theme key and falls
+back to a neutral light or dark value. Define the keys in `package.lua` to
+retheme every control at once:
+
+| Key | Used for |
+|---|---|
+| `ui-accent`, `ui-accent-foreground` | Checked boxes, radios, switches, focus rings, input focus |
+| `ui-control`, `ui-control-hover`, `ui-control-active` | Button fill and its states |
+| `ui-control-foreground`, `ui-control-muted` | Control text |
+| `ui-input`, `ui-input-border`, `ui-input-border-hover` | Input and indicator surfaces |
+| `ui-separator` | Separator lines |
+| `ui-radius`, `ui-radius-small` | Corner radii (buttons/inputs, checkboxes) |
+
+Tabs and the tab bar underline fall back to the project `accent` key before
+the sheet's own blue. `apps/Editor/package.lua` is a complete dark palette.
+
+`var(--key, fallback)` resolves when the sheet is parsed and accepts nested
+fallbacks. With a fallback, a missing key is not reported.
 
 ## Example XML
 
