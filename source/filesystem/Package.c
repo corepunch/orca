@@ -1,4 +1,5 @@
 #include <lz4.h>
+#include <unistd.h>
 
 #ifndef ORCA_NO_ZIP
 #include <zlib.h>
