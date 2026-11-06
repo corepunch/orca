@@ -23,7 +23,7 @@ include $(MODULE_ROOT)tools/libxml2/libxml2.mk
 HOST_XML_LIBS :=
 HOST_XML_CFLAGS := -I$(LIBXML2_GENDIR)/include -I$(LIBXML2_SRCDIR)/include
 CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -I$(MODULE_ROOT)tools/codegen/include -I$(MODULE_ROOT)tools/codegen/src $(HOST_XML_CFLAGS)
-CODEGEN_LDFLAGS := $(HOST_XML_LIBS) -ldl $(ARCH_FLAGS)
+CODEGEN_LDFLAGS := $(HOST_XML_LIBS) -ldl -lm $(ARCH_FLAGS)
 CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
 CODEGEN_PROPERTIES_PLUGIN := $(BUILDDIR)/plugins/codegen/libproperties.so
 CODEGEN_EXPORT_PLUGIN := $(BUILDDIR)/plugins/codegen/libexport.so
