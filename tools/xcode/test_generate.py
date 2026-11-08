@@ -204,6 +204,15 @@ class GenerateProjectTests(unittest.TestCase):
         native = {objects[uid]['path'] for uid in groups['Native Sources']['children']}
         self.assertEqual(compiled, paths | plugin_paths | native)
 
+    def test_chat_links_bundled_renderer_libraries_in_committed_and_generated_projects(self):
+        expected = {'-lfreetype', '-lpng16', '-ljpeg'}
+        for label, bundle in (('committed', ROOT / 'apps/chat/chat.xcodeproj'),
+                              ('generated', self.generate('chat'))):
+            for name, settings in self.effective_configurations(self.read_project(bundle)).items():
+                with self.subTest(project=label, configuration=name):
+                    self.assertTrue(expected <= set(settings['OTHER_LDFLAGS']),
+                                    'Regenerate Chat after changing bundled renderer dependencies')
+
     def test_chat_device_signing_has_matching_debug_and_release_push_environments(self):
         bundle = self.generate('chat')
         for name, settings in self.effective_configurations(self.read_project(bundle)).items():

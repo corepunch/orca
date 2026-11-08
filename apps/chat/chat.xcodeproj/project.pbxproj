@@ -28,7 +28,7 @@
 "$(DERIVED_FILE_DIR)/include",
 "$(DERIVED_FILE_DIR)/dependencies/include",
 "$(ORCA_ROOT)",
-"$(SDKROOT)/usr/include/libxml2",
+"$(DERIVED_FILE_DIR)/dependencies/include/libxml2",
 );
 "LIBRARY_SEARCH_PATHS" = (
 "$(inherited)",
@@ -78,7 +78,7 @@
 "$(DERIVED_FILE_DIR)/include",
 "$(DERIVED_FILE_DIR)/dependencies/include",
 "$(ORCA_ROOT)",
-"$(SDKROOT)/usr/include/libxml2",
+"$(DERIVED_FILE_DIR)/dependencies/include/libxml2",
 );
 "LIBRARY_SEARCH_PATHS" = (
 "$(inherited)",
@@ -124,6 +124,9 @@
 "$(inherited)",
 "-llua",
 "-llz4",
+"-lfreetype",
+"-lpng16",
+"-ljpeg",
 "-lcurl",
 "-lxml2",
 "-lz",
@@ -179,6 +182,9 @@
 "$(inherited)",
 "-llua",
 "-llz4",
+"-lfreetype",
+"-lpng16",
+"-ljpeg",
 "-lcurl",
 "-lxml2",
 "-lz",
