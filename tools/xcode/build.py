@@ -52,9 +52,8 @@ def generate_api(root, output, config):
         'MODULES=' + ' '.join(targets), 'BUILDDIR=host-codegen', 'BINDIR=host-codegen/bin',
         'LIBDIR=host-codegen/lib', 'OBJECTDIR=host-codegen/obj', 'GENERATEDDIR=generated',
         'CODEGEN_PLUGINS=' + ' '.join(plugins), 'CODEGEN_DOCS_PLUGIN=',
-        'CC=' + shlex.quote(compiler), 'ARCH_FLAGS=-arch ' + os.uname().machine,
-        'HOST_XML_CFLAGS=' + shlex.join(['-isysroot', sdk, '-I' + sdk + '/usr/include/libxml2']),
-        'HOST_XML_LIBS=-lxml2', *targets, cwd=output, env=environment)
+        'CC=' + shlex.join([compiler, '-isysroot', sdk]),
+        'ARCH_FLAGS=-arch ' + os.uname().machine, *targets, cwd=output, env=environment)
     # Module rules regenerate text each time; keep unchanged headers from recompiling the app.
     for path, (content, stat) in previous.items():
         if path.is_file() and path.read_bytes() == content:
