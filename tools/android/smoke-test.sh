@@ -11,7 +11,14 @@ scheme=$(sed -n 's/^URLSchemes *= *{ *"\([^"]*\)".*/\1/p' "$project/package.lua"
 mkdir -p "$out"
 trap 'adb logcat -d > "$out/logcat.txt" 2>/dev/null || true' EXIT
 
-fail() { echo "FAIL: $*" >&2; exit 1; }
+fail() {
+    echo "FAIL: $*" >&2
+    echo "--- app log (orca, crashes) ---" >&2
+    log | tail -n 200 >&2 || true
+    echo "--- process ---" >&2
+    adb shell "ps -A | grep $id; dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity'" >&2 || true
+    exit 1
+}
 log() { adb logcat -d -s orca:V AndroidRuntime:E DEBUG:V libc:F; }
 # wait_for PATTERN SECONDS: polls the app's log until PATTERN appears.
 wait_for() {
