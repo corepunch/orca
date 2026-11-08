@@ -192,6 +192,14 @@ is inset, as `adjustedContentInset` insets it on iOS.
   publishes the applied inset as `AdjustedContentInsetTop` and
   `AdjustedContentInsetBottom`: the visible part of a scrolling node lies
   between them, for example to find the first message below the header.
+- Page padding is owned by the container, as a Windows Phone `PivotItem`
+  template margin was. `Pivot` keeps 20 points between its header's edge and
+  the page. When the body extends behind the header, that padding is part of
+  its safe area: scrolling content rests 20 points below the header, a docked
+  top bar (unless `Never`) still meets the header's edge but insets its own
+  content by the padding, and content below that bar keeps the padding too.
+  Bars and pages therefore declare no top padding toward the header.
+  `tests/test_metro.lua` (`test_pivot_content_padding`) pins this.
 - `ScrollAnchor = "Bottom"`, after SwiftUI's `defaultScrollAnchor(.bottom)`,
   keeps a scrolling node that is at its end at its end when layout changes its
   content or insets: a chat stays at its newest message as the keyboard opens

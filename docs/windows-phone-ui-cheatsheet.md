@@ -99,7 +99,7 @@ explicit exception, not an error to round to eight.
 | Pattern | Logical units | Owner / interpretation |
 | --- | --- | --- |
 | Metro leading/trailing inset | 12 | `plugins/UIKit/Metro.h`; Pivot arranges the item inside it |
-| Pivot title / selected header | 15 / 44 font size | `Pivot.c`; title top 14, title-to-header offset 2, header-to-hairline 8, hairline-to-content 20 |
+| Pivot title / selected header | 15 / 44 font size | `Pivot.c`; title top 14, title-to-header offset 2, header-to-hairline 8, hairline-to-content 20; the Pivot owns that 20 for page content and docked bars, as the PivotItem template margin did |
 | Pivot header spacing | 18 | Engine header-strip metric, not general form spacing |
 | Panorama title / section header | 110 / 36 font size | `Panorama.c`; section width factor 0.875 creates a next-section hint |
 | ApplicationBar normal / minimized height | 58 / 24 | `ApplicationBar.c`; system inset is additional |

@@ -653,7 +653,48 @@ local function test_pivot_fill()
   print("PASS: test_pivot_fill")
 end
 
+-- As a Windows Phone PivotItem's template margin, the Pivot owns the space
+-- between its header and the page: neither page content nor a bar docked
+-- under the header can start against the header's edge.
+local function test_pivot_content_padding()
+  local PADDING = 20
+  for _, extend in ipairs { false, true } do
+    local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+    local pivot = screen + ui.Pivot { Title = "Messenger", IsLocked = true, ExtendBodyBehindHeader = extend }
+    local item = pivot + ui.PivotItem { Header = "page" }
+    local body = item + ui.Node2D {}
+    local bar = body + ui.Node2D { SafeAreaEdge = "Top" }
+    local field = bar + ui.Node2D { Height = 48 }
+    local list = body + ui.StackView { Overflow = "hidden scroll", JustifyContent = "Start" }
+    local row = list + ui.Node2D { Height = 40 }
+    layout(screen)
+    local edge
+    for _, child in ipairs(children(pivot, "Node2D")) do edge = select(2, origin(child)) + child.ActualHeight end
+    local _, barY = origin(bar)
+    local _, fieldY = origin(field)
+    local mode = extend and "behind the header" or "below the header"
+    if extend then
+      test.expect(math.abs(barY - edge) < 1, "A docked bar meets the header's edge (" .. mode .. ")")
+    end
+    test.expect(math.abs(fieldY - (edge + PADDING)) < 1,
+      "A docked bar's content starts one page padding below the header (" .. mode .. "): " .. fieldY - edge)
+    local _, rowY = origin(row)
+    -- Below the header, a bar is ordinary page content that already sits
+    -- inside the padding; behind it, the padding continues below the bar.
+    local gap = extend and PADDING or 0
+    test.expect(math.abs(rowY - (barY + bar.ActualHeight + gap)) < 1,
+      "Content below a docked bar keeps the page padding (" .. mode .. "): " .. rowY - barY - bar.ActualHeight)
+    bar:removeFromParent()
+    layout(screen)
+    _, rowY = origin(row)
+    test.expect(math.abs(rowY - (edge + PADDING)) < 1,
+      "Page content starts one page padding below the header (" .. mode .. "): " .. rowY - edge)
+  end
+  print("PASS: test_pivot_content_padding")
+end
+
 test_pivot()
+test_pivot_content_padding()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_wide_headers()

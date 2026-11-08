@@ -179,7 +179,7 @@
     </enum>
     <enum name="ContentInsetAdjustment">
       <summary>Whether a node insets its content by the safe area it overlaps, after UIScrollView contentInsetAdjustmentBehavior</summary>
-      <value name="Automatic">Scrolling nodes inset their content; other nodes leave it under the bars</value>
+      <value name="Automatic">Scrolling nodes inset their content; other nodes leave it under the bars. A docked bar still extends through the page padding below an ancestor's bar and insets its content by it</value>
       <value name="Never">Never inset the content</value>
       <value name="Always">Always inset the content, whether or not the node scrolls</value>
     </enum>
@@ -442,6 +442,7 @@
         <field name="_measureCount" type="uint">Valid entries in the measure cache</field>
         <field name="_measureSerial" type="uint">Object change serial the measure cache was taken at</field>
         <field name="_barInset" type="vec2">Part of _safeArea covered by docked bars rather than by system insets</field>
+        <field name="_barPadding" type="vec2">Content padding a docked bar insets at its edge: the page padding below an ancestor's bar, set by the parent that docks it</field>
       </fields>
       <methods>
         <method name="SetFrame">

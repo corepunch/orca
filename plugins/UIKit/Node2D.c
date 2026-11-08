@@ -843,8 +843,10 @@ Node2D_AdjustContentInset(struct Object *object, struct Node2D *node)
 {
   bool_t adjust = node->ContentInsetAdjustment == kContentInsetAdjustmentAlways ||
     (node->ContentInsetAdjustment == kContentInsetAdjustmentAutomatic && node->Overflow.y == kOverflowScroll);
-  struct vec2 inset = adjust ? node->_safeArea : (struct vec2){ 0 };
-  if (adjust) node->_safeArea = node->_barInset = (struct vec2){ 0 };
+  // A docked bar's background reaches its ancestor's bar, but its content
+  // keeps the page padding, so no bar needs its own padding toward the header.
+  struct vec2 inset = adjust ? node->_safeArea : node->_barPadding;
+  if (adjust || inset.x || inset.y) node->_safeArea = node->_barInset = (struct vec2){ 0 };
   float values[2] = { inset.x, inset.y };
   uint32_t const ids[2] = { ID_Node2D_AdjustedContentInsetTop, ID_Node2D_AdjustedContentInsetBottom };
   float *edges[2] = { &NODE2D_INSET(node)._RIGHT, &NODE2D_INSET(node)._LEFT };
@@ -1063,7 +1065,8 @@ HANDLER(Node2D, Node2D, MeasureOverride)
 // other children are laid out under them, and the area the bars cover joins
 // the safe area that reaches those children. A bar that always insets its
 // content extends through the system inset at its edge, like an iOS toolbar
-// under the home indicator, while its content stays clear of it.
+// under the home indicator, while its content stays clear of it. Any other
+// bar (unless Never) extends through the page padding below an ancestor's bar.
 static void
 Node2D_ArrangeBars(struct Object *hObject, struct Node2D *pNode2D,
                    Node2D_ArrangeOverrideMsgPtr pArrangeOverride)
@@ -1075,14 +1078,28 @@ Node2D_ArrangeBars(struct Object *hObject, struct Node2D *pNode2D,
     MAX(pNode2D->_safeArea.x - top, 0),
     MAX(pNode2D->_safeArea.y - (height - bottom), 0),
   };
+  // Below an ancestor's bar, the rest of the safe area is the page's content
+  // padding (a Pivot's top padding), not a system inset: it stays between
+  // these bars and the content too, as Windows Phone's PivotItem margin did.
+  struct vec2 padding = {
+    pNode2D->_barInset.x > 0 ? system.x : 0,
+    pNode2D->_barInset.y > 0 ? system.y : 0,
+  };
   bool_t docked[2] = { FALSE, FALSE };
   FOR_EACH_LAYOUTABLE(hChild, hObject) {
     struct Node2D *child = GetNode2D(hChild);
     if (child->SafeAreaEdge == kSafeAreaEdgeNone) continue;
     bool_t atTop = child->SafeAreaEdge == kSafeAreaEdgeTop;
     float size = NODE2D_FRAME(child, Size, 1).Desired + TOTAL_MARGIN(child, 1);
-    if (child->ContentInsetAdjustment == kContentInsetAdjustmentAlways && !docked[!atTop])
+    bool_t first = !docked[!atTop];
+    child->_barPadding = (struct vec2){ 0 };
+    if (child->ContentInsetAdjustment == kContentInsetAdjustmentAlways && first) {
       size += atTop ? system.x : system.y;
+    } else if (child->ContentInsetAdjustment == kContentInsetAdjustmentAutomatic && first) {
+      float pad = atTop ? padding.x : padding.y;
+      size += pad;
+      child->_barPadding = atTop ? (struct vec2){ pad, 0 } : (struct vec2){ 0, pad };
+    }
     Layout_Arrange(hChild,
                  .X = pArrangeOverride->X,
                  .Y = atTop ? top : bottom - size,
@@ -1093,11 +1110,11 @@ Node2D_ArrangeBars(struct Object *hObject, struct Node2D *pNode2D,
   }
   if (docked[0]) {
     pNode2D->_barInset.x = MAX(pNode2D->_barInset.x, top);
-    pNode2D->_safeArea.x = MAX(pNode2D->_safeArea.x, top);
+    pNode2D->_safeArea.x = MAX(pNode2D->_safeArea.x, top + padding.x);
   }
   if (docked[1]) {
     pNode2D->_barInset.y = MAX(pNode2D->_barInset.y, height - bottom);
-    pNode2D->_safeArea.y = MAX(pNode2D->_safeArea.y, height - bottom);
+    pNode2D->_safeArea.y = MAX(pNode2D->_safeArea.y, height - bottom + padding.y);
   }
 }
 
