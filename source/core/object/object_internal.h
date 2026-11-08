@@ -46,6 +46,7 @@ struct Object
   uint32_t alias;
   uint32_t unique;
   uint32_t flags;
+  uint32_t serial; // last OBJ_SetDirty that touched this object or a descendant
 
   longTime_t dirty;
   event_t body_ref;

@@ -887,9 +887,48 @@ Node2D_RevealFocus(struct Object *object, struct Node2D *view, float previousBot
   if (target != offset) Node2D_ScrollOffset(object, view, target);
 }
 
+static bool_t _SameExtent(float a, float b) { return a == b || (isnan(a) && isnan(b)); }
+
+// A measure result holds while nothing in the subtree changed; property writes,
+// child changes and text updates advance the object's change serial through
+// OBJ_SetDirty. A few recent available sizes are kept because containers
+// measure a child at max-content and again within the real slot.
+static bool_t
+Node2D_CachedMeasure(struct Object *object, struct Node2D *n, Node2D_MeasureMsgPtr args, struct Size *size)
+{
+  if (n->_measureSerial != OBJ_GetChangeSerial(object)) {
+    n->_measureSerial = OBJ_GetChangeSerial(object);
+    n->_measureCount = 0;
+    return FALSE;
+  }
+  FOR_LOOP(i, n->_measureCount) {
+    if (!_SameExtent(n->_measureKeys[i].width, args->Width)) continue;
+    if (!_SameExtent(n->_measureKeys[i].height, args->Height)) continue;
+    *size = n->_measureSizes[i];
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void
+Node2D_StoreMeasure(struct Node2D *n, Node2D_MeasureMsgPtr args, struct Size size)
+{
+  uint32_t const capacity = ARRAY_SIZE(n->_measureKeys);
+  if (n->_measureCount == capacity) {
+    memmove(n->_measureKeys, n->_measureKeys + 1, sizeof(*n->_measureKeys) * (capacity - 1));
+    memmove(n->_measureSizes, n->_measureSizes + 1, sizeof(*n->_measureSizes) * (capacity - 1));
+    n->_measureCount--;
+  }
+  n->_measureKeys[n->_measureCount] = (struct Size){ args->Width, args->Height };
+  n->_measureSizes[n->_measureCount++] = size;
+}
+
 HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
+  struct Size cached;
+  if (Node2D_CachedMeasure(hObject, n, pMeasure, &cached))
+    return Layout_Return(pMeasure, cached.width, cached.height);
   float space[2] = { pMeasure->Width - TOTAL_MARGIN(n, 0), pMeasure->Height - TOTAL_MARGIN(n, 1) };
   float avail[2] = { _MeasureAxis(n, space[0], 0), _MeasureAxis(n, space[1], 1) };
   bool_t const aspect = _HasAspectRatio(n, avail[0]);
@@ -926,8 +965,12 @@ HANDLER(Node2D, Node2D, Measure)
   } else {
     NODE2D_FRAME(n, Size, 1).Desired = NODE2D_FRAME(n, Size, 1).Requested;
   }
-  return Layout_Return(pMeasure, NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
-                   NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1));
+  struct Size result = { NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
+                         NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1) };
+  // Measuring may itself have changed the subtree (bindings, generated items);
+  // only a result taken from a settled subtree is kept.
+  if (n->_measureSerial == OBJ_GetChangeSerial(hObject)) Node2D_StoreMeasure(n, pMeasure, result);
+  return Layout_Return(pMeasure, result.width, result.height);
 }
 
 HANDLER(Node2D, Node2D, Arrange)

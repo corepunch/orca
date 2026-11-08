@@ -82,6 +82,10 @@ long OBJ_GetTimestamp(struct Object const *pobj) {
   return pobj->dirty;
 }
 
+uint32_t OBJ_GetChangeSerial(struct Object const *pobj) {
+  return pobj->serial;
+}
+
 uint32_t OBJ_GetStyle(struct Object const *pobj) {
   return pobj->flags;
 }

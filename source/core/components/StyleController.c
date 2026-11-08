@@ -263,21 +263,20 @@ _ParseClass(lpcString_t str)
   classLen = MIN(classLen, sizeof(shortStr_t) - 1);
   memcpy(cls->value, baseStart, classLen);
   cls->value[classLen] = '\0';
+  cls->hash = fnv1a32(cls->value);
 
   cls->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
   return cls;
 }
 
 static struct style_class_selector*
-_FindMatchingClass(struct Object *obj, lpcString_t className, uint32_t objFlags)
+_FindMatchingClass(struct Object *obj, uint32_t hash, lpcString_t className, uint32_t objFlags)
 {
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) return NULL;
   FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) {
-    if (!strcmp(cls->value, className) &&
-        ((objFlags & cls->flags) == cls->flags)) {
+    if (cls->hash == hash && (objFlags & cls->flags) == cls->flags && !strcmp(cls->value, className))
       return cls;
-    }
   }
   return NULL;
 }
@@ -340,9 +339,17 @@ _IsDarkAppearance(struct Object *object)
   return axIsDarkTheme();
 }
 
-// Return the current pseudo-state flags for an object (hover, focus, dark, selected)
-uint32_t
-OBJ_GetStyleFlags(struct Object *pobj)
+static bool_t
+_IsDisabled(struct Object *object)
+{
+  for (struct Object *p = object; p; p = OBJ_GetParent(p))
+    if (OBJ_GetFlags(p) & OF_DISABLED) return TRUE;
+  return FALSE;
+}
+
+// Pseudo-state flags from the object's own state plus the inherited ones.
+static uint32_t
+_StyleFlags(struct Object *pobj, bool_t disabled, bool_t dark)
 {
   uint32_t dwValue = 0;
   if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
@@ -352,122 +359,138 @@ OBJ_GetStyleFlags(struct Object *pobj)
   if (flags & OF_SELECTED) dwValue |= STYLE_SELECT;
   if (flags & OF_CHECKED) dwValue |= STYLE_CHECKED;
   if (flags & OF_INDETERMINATE) dwValue |= STYLE_INDETERMINATE;
-  bool_t disabled = FALSE;
-  for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
-    if (OBJ_GetFlags(p) & OF_DISABLED) { disabled = TRUE; break; }
-  }
   dwValue |= disabled ? STYLE_DISABLED : STYLE_ENABLED;
-  if (_IsDarkAppearance(pobj)) dwValue |= STYLE_DARK;
+  if (dark) dwValue |= STYLE_DARK;
   return dwValue;
+}
+
+// Return the current pseudo-state flags for an object (hover, focus, dark, selected)
+uint32_t
+OBJ_GetStyleFlags(struct Object *pobj)
+{
+  return _StyleFlags(pobj, _IsDisabled(pobj), _IsDarkAppearance(pobj));
+}
+
+// The target's ancestor chain with each object's pseudo-state flags, resolved
+// once per restyle. Combinator matching walks this instead of recomputing the
+// inherited disabled and appearance state for every rule.
+#define MAX_STYLE_CHAIN 64
+struct style_chain
+{
+  int count;
+  struct Object *objects[MAX_STYLE_CHAIN];
+  uint32_t flags[MAX_STYLE_CHAIN];
+};
+
+static void
+_BuildStyleChain(struct Object *target, struct style_chain *chain)
+{
+  chain->count = 0;
+  for (struct Object *p = target; p && chain->count < MAX_STYLE_CHAIN; p = OBJ_GetParent(p))
+    chain->objects[chain->count++] = p;
+  struct Object *above = OBJ_GetParent(chain->objects[chain->count - 1]);
+  bool_t system = axIsDarkTheme();
+  bool_t disabled = above ? _IsDisabled(above) : FALSE;
+  bool_t dark = above ? _IsDarkAppearance(above) : system;
+  for (int i = chain->count - 1; i >= 0; i--) {
+    struct Object *object = chain->objects[i];
+    if (OBJ_GetFlags(object) & OF_DISABLED) disabled = TRUE;
+    struct StyleController *style = GetStyleController(object);
+    if (style && style->Appearance == kAppearanceLight) dark = FALSE;
+    else if (style && style->Appearance == kAppearanceDark) dark = TRUE;
+    else if (style && style->Appearance == kAppearanceSystem) dark = system;
+    chain->flags[i] = _StyleFlags(object, disabled, dark);
+  }
+}
+
+static uint32_t
+_ChainFlags(struct style_chain const *chain, int index, struct Object *object)
+{
+  return index < chain->count ? chain->flags[index] : OBJ_GetStyleFlags(object);
+}
+
+// Split "Type.class#name:hover" into its compiled fields. A part that cannot
+// match anything keeps STYLE_INVALID so the rule is skipped without parsing.
+static void
+_CompileSelectorPart(struct style_selector_part *part)
+{
+  char base[MAX_PROPERTY_STRING];
+  _SplitSelectorPseudo(part->selector, base, sizeof(base), &part->pseudo);
+  lpcString_t p = base;
+  if (!*p) goto invalid;
+  if (*p != '.' && *p != '#') {
+    lpcString_t start = p;
+    while (*p && *p != '.' && *p != '#') p++;
+    shortStr_t token;
+    _CopyTrim(token, sizeof(token), start, p);
+    if (!strcmp(token, "body")) part->body = TRUE;
+    else {
+      strcpy(part->type, token);
+      part->typeHash = fnv1a32(token);
+      // Compatibility with programmatic StyleRule users: a bare selector
+      // still matches a style class. CSS authors should prefer ".class".
+      part->bare = !*p;
+    }
+  }
+  while (*p) {
+    char marker = *p++;
+    lpcString_t start = p;
+    while (*p && *p != '.' && *p != '#') p++;
+    if (start == p) goto invalid;
+    if (marker == '#') {
+      _CopyTrim(part->name, sizeof(part->name), start, p);
+      continue;
+    }
+    if (part->classCount >= MAX_STYLE_PART_CLASSES) goto invalid;
+    _CopyTrim(part->classes[part->classCount], sizeof(shortStr_t), start, p);
+    part->classHashes[part->classCount] = fnv1a32(part->classes[part->classCount]);
+    part->classCount++;
+  }
+  return;
+invalid:
+  part->pseudo |= STYLE_INVALID;
 }
 
 static bool_t
 _MatchSimpleSelectorImpl(struct Object *target,
-                     lpcString_t selector,
-                     uint32_t objFlags,
-                     struct style_class_selector** matchedClass)
+                         struct style_selector_part const *part,
+                         uint32_t objFlags,
+                         struct style_class_selector** matchedClass)
 {
-  if (!selector || !selector[0]) return FALSE;
-
-  char baseSelector[256] = {0};
-  uint32_t requiredFlags = 0;
-  _SplitSelectorPseudo(selector, baseSelector, sizeof(baseSelector), &requiredFlags);
-
-  if ((objFlags & requiredFlags) != requiredFlags) {
-    return FALSE;
-  }
-
-  selector = baseSelector;
-  if (!selector[0]) return FALSE;
-
-  bool_t hasCompoundMarker = strchr(selector, '.') || strchr(selector, '#');
-  if (hasCompoundMarker) {
-    lpcString_t p = selector;
-
-    if (*p != '.' && *p != '#') {
-      lpcString_t typeStart = p;
-      while (*p && *p != '.' && *p != '#') p++;
-      char typeName[256] = {0};
-      _CopyTrim(typeName, sizeof(typeName), typeStart, p);
-
-      if (!strcmp(typeName, "body")) {
-        if (OBJ_GetParent(target) != NULL) return FALSE;
-      } else {
-        lpcString_t className = OBJ_GetClassName(target);
-        if (!className || strcmp(className, typeName)) return FALSE;
-      }
+  if ((objFlags & part->pseudo) != part->pseudo) return FALSE;
+  if (part->body && OBJ_GetParent(target)) return FALSE;
+  if (part->type[0]) {
+    lpcString_t className = OBJ_GetClassName(target);
+    if (!className || strcmp(className, part->type)) {
+      if (!part->bare) return FALSE;
+      struct style_class_selector *cls = _FindMatchingClass(target, part->typeHash, part->type, objFlags);
+      if (!cls) return FALSE;
+      if (matchedClass) *matchedClass = cls;
     }
-
-    while (*p) {
-      char marker = *p++;
-      lpcString_t valueStart = p;
-      while (*p && *p != '.' && *p != '#') p++;
-      if (valueStart == p) return FALSE;
-
-      char value[256] = {0};
-      _CopyTrim(value, sizeof(value), valueStart, p);
-
-      if (marker == '.') {
-        struct style_class_selector* cls =
-          _FindMatchingClass(target, value, objFlags);
-        if (!cls) return FALSE;
-        if (matchedClass && !*matchedClass) *matchedClass = cls;
-      } else if (marker == '#') {
-        lpcString_t name = OBJ_GetName(target);
-        if (!name || strcmp(name, value)) return FALSE;
-      } else {
-        return FALSE;
-      }
-    }
-
-    return TRUE;
   }
-
-  if (selector[0] == '.') {
-    struct style_class_selector* cls =
-      _FindMatchingClass(target, selector + 1, objFlags);
-    if (!cls) return FALSE;
-    if (matchedClass) *matchedClass = cls;
-    return TRUE;
-  }
-
-  if (selector[0] == '#') {
+  if (part->name[0]) {
     lpcString_t name = OBJ_GetName(target);
-    return name && !strcmp(name, selector + 1);
+    if (!name || strcmp(name, part->name)) return FALSE;
   }
-
-  if (!strcmp(selector, "body")) {
-    return OBJ_GetParent(target) == NULL;
+  FOR_LOOP(i, part->classCount) {
+    struct style_class_selector* cls =
+      _FindMatchingClass(target, part->classHashes[i], part->classes[i], objFlags);
+    if (!cls) return FALSE;
+    if (matchedClass && !*matchedClass) *matchedClass = cls;
   }
-
-  lpcString_t className = OBJ_GetClassName(target);
-  if (className && !strcmp(className, selector)) {
-    return TRUE;
-  }
-
-  // Compatibility with existing programmatic StyleRule users: a bare selector
-  // still matches a style class. CSS authors should prefer ".class" for class
-  // selectors and "TypeName" for type selectors.
-  struct style_class_selector* cls =
-    _FindMatchingClass(target, selector, objFlags);
-  if (!cls) return FALSE;
-  if (matchedClass) *matchedClass = cls;
   return TRUE;
 }
 
 static bool_t
-_MatchSimpleSelector(struct Object *target, lpcString_t selector,
+_MatchSimpleSelector(struct Object *target, struct style_selector_part const *part,
                      uint32_t objFlags, struct style_class_selector **matchedClass,
                      bool_t discoverHover)
 {
-  bool_t matched = _MatchSimpleSelectorImpl(target, selector,
+  bool_t matched = _MatchSimpleSelectorImpl(target, part,
                                             discoverHover ? ~STYLE_INVALID : objFlags,
                                             matchedClass);
-  if (matched && discoverHover) {
-    lpcString_t colon = strchr(selector, ':');
-    if (colon && (OBJ_ParseStylePseudo(colon + 1) & STYLE_HOVER))
-      OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
-  }
+  if (matched && discoverHover && (part->pseudo & STYLE_HOVER))
+    OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
   return matched;
 }
 
@@ -532,6 +555,10 @@ OBJ_CompileStyleSelector(lpcString_t selector)
   }
 
   compiled->count = (byte_t)count;
+  FOR_LOOP(i, count) {
+    _CompileSelectorPart(&compiled->parts[i]);
+    compiled->pseudo |= compiled->parts[i].pseudo;
+  }
   return compiled;
 }
 
@@ -546,37 +573,36 @@ _SelectorMatchesTarget(struct Object *target,
                        struct style_selector const *selector,
                        uint32_t objFlags,
                        struct style_class_selector** matchedClass,
-                       bool_t discoverHover)
+                       bool_t discoverHover,
+                       struct style_chain const *chain)
 {
   if (!selector || selector->count == 0) return FALSE;
 
-  if (!_MatchSimpleSelector(target,
-                            selector->parts[selector->count - 1].selector,
-                            objFlags,
-                            matchedClass,
-                            discoverHover)) {
+  if (!_MatchSimpleSelector(target, &selector->parts[selector->count - 1], objFlags,
+                            matchedClass, discoverHover)) {
     return FALSE;
   }
 
   struct Object *cursor = target;
+  int depth = 0;
   for (int i = selector->count - 1; i > 0; i--) {
+    struct style_selector_part const *part = &selector->parts[i - 1];
     if (selector->parts[i].combinator == STYLE_COMBINATOR_CHILD) {
       cursor = OBJ_GetParent(cursor);
+      depth++;
       if (!cursor) return FALSE;
-      uint32_t flags = OBJ_GetStyleFlags(cursor);
-      if (!_MatchSimpleSelector(cursor, selector->parts[i - 1].selector, flags, NULL, discoverHover)) {
+      if (!_MatchSimpleSelector(cursor, part, _ChainFlags(chain, depth, cursor), NULL, discoverHover))
         return FALSE;
-      }
       continue;
     }
 
     struct Object *ancestor = OBJ_GetParent(cursor);
+    depth++;
     while (ancestor) {
-      uint32_t flags = OBJ_GetStyleFlags(ancestor);
-      if (_MatchSimpleSelector(ancestor, selector->parts[i - 1].selector, flags, NULL, discoverHover)) {
+      if (_MatchSimpleSelector(ancestor, part, _ChainFlags(chain, depth, ancestor), NULL, discoverHover))
         break;
-      }
       ancestor = OBJ_GetParent(ancestor);
+      depth++;
     }
     if (!ancestor) return FALSE;
     cursor = ancestor;
@@ -589,23 +615,16 @@ static bool_t
 _StyleRuleBaseMatches(struct Object *target,
                       struct StyleRule* sr,
                       uint32_t objFlags,
-                      struct style_class_selector** matchedClass)
+                      struct style_class_selector** matchedClass,
+                      struct style_chain const *chain)
 {
-  if (!sr || !sr->ClassName || !sr->ClassName[0]) return FALSE;
+  if (!sr || !sr->selector) return FALSE;
   if (matchedClass) *matchedClass = NULL;
 
   struct style_selector *selector = sr->selector;
-  bool_t freeSelector = FALSE;
-  if (!selector) {
-    selector = OBJ_CompileStyleSelector(sr->ClassName);
-    freeSelector = TRUE;
-  }
-
-  if (strstr(sr->ClassName, ":hover"))
-    _SelectorMatchesTarget(target, selector, objFlags, NULL, TRUE);
-  bool_t matched = _SelectorMatchesTarget(target, selector, objFlags, matchedClass, FALSE);
-  if (freeSelector) OBJ_FreeStyleSelector(selector);
-  return matched;
+  if (selector->pseudo & STYLE_HOVER)
+    _SelectorMatchesTarget(target, selector, objFlags, NULL, TRUE, chain);
+  return _SelectorMatchesTarget(target, selector, objFlags, matchedClass, FALSE, chain);
 }
 
 // Apply all C property overrides from ruleObj to the target object.
@@ -673,7 +692,7 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
 // Walk one stylesheet's rules for a matching selector and invoke _ApplyStyleRule.
 static void
 _EnumSheetRules(struct Object *sheetObj, struct Object *target,
-                uint32_t objFlags, bool_t defaults)
+                uint32_t objFlags, bool_t defaults, struct style_chain const *chain)
 {
   if (!sheetObj) return;
   bool_t stateClasses = FALSE;
@@ -688,10 +707,14 @@ _EnumSheetRules(struct Object *sheetObj, struct Object *target,
     FOR_EACH_OBJECT(child, sheetObj) {
       struct StyleRule* sr = GetStyleRule(child);
       if (!sr) continue;
-      bool_t selectorState = sr->flags || (sr->ClassName && strchr(sr->ClassName, ':'));
+      // Rules created outside StyleRule.PropertyChanged compile on first use.
+      if (!sr->selector && sr->ClassName && sr->ClassName[0])
+        sr->selector = OBJ_CompileStyleSelector(sr->ClassName);
+      if (!sr->selector) continue;
+      bool_t selectorState = sr->flags || sr->selector->pseudo;
       if ((!statePass && selectorState) || (statePass && !selectorState && !stateClasses)) continue;
       struct style_class_selector* cls = NULL;
-      if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls)) continue;
+      if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls, chain)) continue;
       if (sr->flags & STYLE_HOVER)
         OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
       if ((objFlags & sr->flags) != sr->flags) continue;
@@ -712,16 +735,18 @@ OBJ_EnumStyleClasses(struct Object *pobj,
 {
   (void)classname;
   (void)cls;
-  uint32_t objFlags  = OBJ_GetStyleFlags(pobj);
+  struct style_chain chain;
+  _BuildStyleChain(pobj, &chain);
+  uint32_t objFlags = chain.flags[0];
 
   // Global stylesheet first
-  _EnumSheetRules(static_stylesheet, pobj, objFlags, TRUE);
+  _EnumSheetRules(static_stylesheet, pobj, objFlags, TRUE, &chain);
 
   // Walk up the object hierarchy
   for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc || !sc->StyleSheet) continue;
-    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags, FALSE);
+    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags, FALSE, &chain);
   }
 }
 
