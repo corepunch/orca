@@ -1,8 +1,14 @@
 local Localization = require "orca.core.localization"
 
+local function catalog(language)
+    local values = require("Chat/Locales/" .. language)
+    for key, value in pairs(require("Chat/Locales/post_types")[language]) do values[key] = value end
+    return values
+end
+
 local strings = Localization.new {
     fallback = "en",
-    catalogs = { en = require "Chat/Locales/en", ru = require "Chat/Locales/ru" },
+    catalogs = { en = catalog("en"), ru = catalog("ru") },
 }
 
 -- These nodes are authored page chrome. Never translate conversation or profile

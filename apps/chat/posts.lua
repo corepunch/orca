@@ -15,13 +15,29 @@ local I18n = require "Chat/i18n"
 local Posts = {}
 Posts.__index = Posts
 
-local ROUTES = { ["/"] = "/posts", ["/search"] = "/posts/search", ["/write"] = "/posts/write",
+local ROUTES = { ["/"] = "/posts", ["/search"] = "/posts/search", ["/choose"] = "/posts/write", ["/write"] = "/posts/compose",
     ["/post"] = "/posts/post", ["/user"] = "/posts/user", ["/me"] = "/posts/me" }
 local INTERNAL = {}
 for path, route in pairs(ROUTES) do INTERNAL[route] = path end
 
 local function userName(user)
     return user.name or user.user_metadata and user.user_metadata.display_name or user.email or user.id
+end
+
+-- Choosing a type is a navigation step. The shared Compose scope retains an
+-- independent draft for each kind when the editor is left or Back is used.
+function Posts:chooseType()
+    local page = assert(filesystem.loadObject("Chat/Pages/PostTypes"), "Missing Chat/Pages/PostTypes")
+    for _, kind in ipairs { "text", "photo", "quote", "link" } do
+        page:findChild("Kind" .. kind, true).Click = function()
+            local scope = Compose.scope(self.app)
+            require("Octopus/providers/octopus").selectKind(scope, kind)
+            self.chat:show("/posts/compose", "Forward")
+        end
+    end
+    local content = require("Chat/views/components").page(I18n:t("new post"), page,
+        { Name = "PostTypesPage" })
+    return self:tab("Types", content)
 end
 
 -- Demo identities agree across the two offline providers, just as Appwrite
@@ -125,8 +141,10 @@ function Posts.new(chat, options)
     app.tab = function(_, key, content) return feature:tab(key, content) end
     app.show = function(_, route, direction)
         if route == "/auth" or route == "/auth/signup" then
+            local composer = app.composeScope and app.composeScope:exposedRecord("Composer")
             local state = { route = ROUTES[app.currentRoute] or "/posts", post = app.post,
-                profileId = app.profileId, profileName = app.profileName, query = app.searchState.query, feed = app.feed }
+                profileId = app.profileId, profileName = app.profileName, query = app.searchState.query, feed = app.feed,
+                composeKind = composer and composer.values.Kind }
             chat.publicAuthResume = function(parent) parent:posts():resume(state) end
             return chat:show(route, direction)
         end
@@ -215,7 +233,7 @@ function Posts:tab(key, content)
     end
     self:decorate(content)
     -- Search, profile editing and creation are focused tasks with header Back.
-    local back = key == "Me" and "/me" or "/posts"
+    local back = key == "Me" and "/me" or key == "Write" and "/posts/write" or "/posts"
     visit(content, function(node)
         if node.className == "Pivot" then
             node.BackIcon = "Chat/assets/icons/arrow-left.svg"
@@ -238,7 +256,8 @@ function Posts:page(route)
     local result
     if path == "/" then result = Home.page(app)
     elseif path == "/search" then result = People.search(app)
-    elseif path == "/write" then result = Compose.page(app)
+    elseif path == "/choose" then result = self:chooseType()
+    elseif path == "/write" then result = Compose.page(app, { hideTypes = true })
     elseif path == "/post" then result = Thread.page(app)
     elseif path == "/user" then result = People.profile(app)
     elseif path == "/me" then result = People.me(app) end
@@ -254,6 +273,9 @@ function Posts:resume(state)
     local app = self.app
     app.post, app.profileId, app.profileName = state.post, state.profileId, state.profileName
     app.searchState.query, app.feed = state.query or "", state.feed or app.feed
+    if state.composeKind then
+        require("Octopus/providers/octopus").selectKind(Compose.scope(app), state.composeKind)
+    end
     return self.chat:show(state.route or "/posts")
 end
 

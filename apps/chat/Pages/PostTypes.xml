@@ -1,0 +1,35 @@
+<!-- Step one: a Tumblr-style type chooser, using Windows Phone colour tiles.
+     Step two is the existing bound editor, reached only after a type is picked. -->
+<StackView Name="PostTypes" Spacing="16" JustifyContent="Start" Overflow="hidden scroll">
+  <TextBlock TextResourceID="choose a type" FontSize="18" class="chat-muted" IgnoreHitTest="true">choose a type</TextBlock>
+  <Grid Name="PostTypeTiles" Columns="1fr 1fr" Rows="auto auto" Spacing="12">
+    <Button Name="Kindtext" AspectRatio="1" BorderWidth="0" class="chat-action post-type post-type-text">
+      <Grid IgnoreHitTest="true">
+        <VectorView Name="TypeIcontext" Source="Octopus/assets/icons/file-text.svg" Width="48" Height="48"
+                    MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="post-type-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="TypeLabeltext" TextResourceID="text" FontSize="23" Padding="14 10" MarginTop="auto" class="post-type-ink" IgnoreHitTest="true">text</TextBlock>
+      </Grid>
+    </Button>
+    <Button Name="Kindphoto" AspectRatio="1" BorderWidth="0" class="chat-action post-type post-type-photo">
+      <Grid IgnoreHitTest="true">
+        <VectorView Name="TypeIconphoto" Source="Octopus/assets/icons/image.svg" Width="48" Height="48"
+                    MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="post-type-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="TypeLabelphoto" TextResourceID="photo" FontSize="23" Padding="14 10" MarginTop="auto" class="post-type-ink" IgnoreHitTest="true">photo</TextBlock>
+      </Grid>
+    </Button>
+    <Button Name="Kindquote" AspectRatio="1" BorderWidth="0" class="chat-action post-type post-type-quote">
+      <Grid IgnoreHitTest="true">
+        <VectorView Name="TypeIconquote" Source="Octopus/assets/icons/quote.svg" Width="48" Height="48"
+                    MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="post-type-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="TypeLabelquote" TextResourceID="quote" FontSize="23" Padding="14 10" MarginTop="auto" class="post-type-ink" IgnoreHitTest="true">quote</TextBlock>
+      </Grid>
+    </Button>
+    <Button Name="Kindlink" AspectRatio="1" BorderWidth="0" class="chat-action post-type post-type-link">
+      <Grid IgnoreHitTest="true">
+        <VectorView Name="TypeIconlink" Source="Octopus/assets/icons/link.svg" Width="48" Height="48"
+                    MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="post-type-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="TypeLabellink" TextResourceID="link" FontSize="23" Padding="14 10" MarginTop="auto" class="post-type-ink" IgnoreHitTest="true">link</TextBlock>
+      </Grid>
+    </Button>
+  </Grid>
+</StackView>

@@ -16,6 +16,14 @@ captures, not iPhone simulator/device validation.
 
 [Public posts in light mode](social-posts-light.png).
 
+The public composer now has two pages: choose a type, then edit that type's
+post. The colored square tiles and white icons/labels stay the same in both
+themes. Back from the editor returns to the picker and preserves each draft.
+
+| Choose a type | Compose the post | Type picker in light mode |
+| --- | --- | --- |
+| ![Type picker](social-post-types.png) | ![Composer](social-compose.png) | ![Light type picker](social-post-types-light.png) |
+
 ## Reproduce
 
 Build the native engine following [BUILD.md](../../../../docs/BUILD.md). From the
@@ -40,7 +48,8 @@ with ImageMagick in a third terminal:
 DISPLAY=:100 import -window root /tmp/social-posts.png
 ```
 
-Use `/`, `/contacts`, `/posts`, `/me`, `/posts/user` or `/posts/write` for
+Use `/`, `/contacts`, `/posts`, `/me`, `/posts/user`, `/posts/write` (type picker)
+or `/posts/compose` (text editor) for
 `ORCA_CAPTURE_ROUTE`. Use `CHAT_APPEARANCE=light` for the light capture. Close the
 previous fixture before starting another; keep other tests on a different display.
 

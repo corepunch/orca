@@ -69,11 +69,15 @@ assert(app.screen:findChild("Postp-small", true), "Real Octopus cards are availa
 app:show("/"); app:show("/posts"); settle(app)
 assert(app.screen:findChild("PostsPage", true) == retained and app.shell.bar == bar, "Posts root retained")
 press(app, "NewPublicPost")
-assert(app.currentRoute == "/posts/write")
+assert(app.currentRoute == "/posts/write" and app.screen:findChild("Kindtext", true))
+assert(not app.screen:findChild("Publish", true), "Type choice precedes editing")
+press(app, "Kindtext")
+assert(app.currentRoute == "/posts/compose")
 assert(app.screen:findChild("Publish", true).TextResourceID == "Publish publicly")
 app.screen:findChild("PostTitle", true).Text = "A retained public draft"
 app.screen:findChild("PostContent", true).Text = "Publish only from the public editor."
 app:show("/"); app:show("/posts/write"); settle(app)
+press(app, "Kindtext")
 assert(app.screen:findChild("PostTitle", true).Text == "A retained public draft")
 press(app, "Publish")
 assert(app.currentRoute == "/posts/post" and feature.app.post.title == "A retained public draft")
@@ -130,12 +134,15 @@ for _, width in ipairs { 320, 390, 768 } do
 end
 -- Protected public actions resume their exact route after the one Chat login.
 guest:show("/posts/write"); settle(guest)
+press(guest, "Kindquote")
 press(guest, "WriteSignInButton")
 guest.screen:findChild("Email", true).Text = "demo@example.invalid"
 press(guest, "RequestCode")
 guest.screen:findChild("VerificationCode", true).Text = "123456"
 press(guest, "VerifyCode")
-assert(guest.client:getSession() and guest.currentRoute == "/posts/write")
-assert(guest.screen:findChild("PostTitle", true), "Sign-in returns to the public editor")
+assert(guest.client:getSession() and guest.currentRoute == "/posts/compose")
+assert(guest:posts().app.composeScope:exposedRecord("Composer").values.Kind == "quote",
+    "Sign-in preserves the selected public post type")
+assert(guest.screen:findChild("QuoteText", true), "Sign-in returns to the selected public editor")
 orca.async = savedAsync
 print("Chat social navigation, public profiles, explicit sharing and guest browsing: OK")
