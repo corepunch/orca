@@ -47,7 +47,7 @@ local function drain()
 end
 app:show("/contacts")
 drain()
-assert(app.shell.active == "Contacts" and node("AppBarContacts").IsEnabled == false)
+assert(app.shell.active == "Contacts" and node("AppBarContacts").selected == true)
 assert(node("AppBarPosts") and node("AppBarMe") and node("AppBarChats"))
 assert(node("ContactsPanorama").Title == "people")
 assert(node("ContactsRecent").Orientation == "Horizontal")

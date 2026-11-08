@@ -218,6 +218,7 @@ function C.appBar(buttons, menu)
     for _, b in ipairs(buttons) do
         bar:addChild(ui.ApplicationBarIconButton {
             Name = b[1], IconUri = "Chat/assets/icons/" .. b[2] .. ".svg", Text = b[3], Click = b[4],
+            class = "appbar-command",
         })
     end
     for _, m in ipairs(menu or {}) do bar:addChild(ui.ApplicationBarMenuItem { Name = m[1], Text = m[2], Click = m[3] }) end

@@ -433,12 +433,13 @@ screen:UpdateLayout(390, 844)
 assert(app:refreshMessages())
 
 -- Appending to a sender run moves its tail without moving an earlier reading anchor.
--- Messages scroll under the header, so the reading position is just above its bottom edge.
+-- Messages scroll under the header; the list's top inset is the header plus
+-- the Pivot's 20-point content padding, so a resting list starts clear of it.
 local reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
 local visibleTop = app.messageList.AdjustedContentInsetTop
 header = headerOf(screen:findChild("ThreadPage", true))
-assert(math.abs(visibleTop - (screenY(header) + header.ActualHeight + 8)) < 1,
-    "The message list's top inset must end at the bottom of the header")
+assert(math.abs(visibleTop - (screenY(header) + header.ActualHeight + 8 + 20)) < 1,
+    "The message list's top inset must be the header plus the page's top padding")
 app.messageList.ContentOffset = { X = 0, Y = visibleTop - reading.ActualY - 5 }
 local readingY = reading.ActualY + app.messageList.ContentOffset.Y
 assert(app.client:sendMessage(app.room.id, "Another message from the same sender"))
@@ -502,10 +503,10 @@ local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
 assert(profile:getFirstChild().BackIcon ~= "" and not profile:findChild("AppBar", true),
     "Settings is a focused page with header Back to Me and no root navigation bar")
--- As on Windows Phone, the bar draws each button's circle: antialiased vector artwork, not a bordered box.
-local ring = home:findChild("AppBarChats", true):getFirstChild()
-assert(ring.className == "VectorView" and tostring(ring.Source):match("/orca/UIKit/appbar%-ring%.svg$"),
-    "App bar buttons draw their circle from the shared vector ring: " .. tostring(ring.Source))
+-- App bar buttons are plain glyphs: the first part is the icon itself, not a circle.
+local glyph = home:findChild("AppBarChats", true):getFirstChild()
+assert(glyph.className == "VectorView" and tostring(glyph.Source):match("message%-circle%.svg$"),
+    "App bar buttons draw only their glyph: " .. tostring(glyph.Source))
 -- The keyboard lifts a focused settings field above itself on the focused page.
 drain(app)
 -- Tapping the Mobile row opens the number field in place, as in Telegram.
@@ -578,7 +579,8 @@ local function assertTabs(selected)
     for _, tab in ipairs(tabs) do
         local view = tab.view
         assert(bar:findChild(tab.name, true) == view, "Bar buttons must survive navigation")
-        assert(view.IsEnabled == (tab.value ~= selected), "Only the current page's button is disabled")
+        assert(view.IsEnabled and view.selected == (tab.value == selected),
+            "Only the current page's button is selected; none is dimmed as disabled")
         assert(isShown(view), "Every bar button must remain visible")
         assert(view.ActualWidth >= 44 and view.ActualHeight >= 44, "Bar buttons need usable hit areas")
         assert(type(view.IconUri) == "string" and view.IconUri ~= "", "Each bar button needs an SVG icon")

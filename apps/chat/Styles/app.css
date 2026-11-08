@@ -109,6 +109,9 @@
    Bars follow the app palette rather than the OS, like everything else. */
 .chat-light .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
 .chat-dark .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; }
+/* The app-bar button for the page in view is selected: accent, not dimmed. */
+.chat-light .appbar-command:selected { color: #006ad1; }
+.chat-dark .appbar-command:selected { color: #41beec; }
 .chat-light .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
 .chat-dark .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; border-bottom-width: 0.5; border-color: #38383a; }
 .chat-light .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }

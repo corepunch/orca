@@ -1,9 +1,9 @@
 # Chat with public posts: native screenshots
 
 Captured 8 November 2026 from the production Chat and Octopus XML/Lua views on
-Linux/X11 with software OpenGL. The type-picker and composer PNGs are unretouched
-**780 × 1688** native renders of the **390 × 844** logical layout at 2× density.
-Earlier hub overview PNGs remain 390 × 844 at 1×. No screenshot is enlarged. The data comes from isolated offline mock clients and bundled fictional
+Linux/X11 with software OpenGL. Every PNG is an unretouched **780 × 1688**
+native render of the **390 × 844** logical layout at 2× density (see
+[Native 2× captures](#native-2-picker-and-composer-captures)). No screenshot is enlarged. The data comes from isolated offline mock clients and bundled fictional
 portraits; no Appwrite request or live account is used. These are desktop native
 captures, not iPhone simulator/device validation.
 

@@ -99,11 +99,11 @@ explicit exception, not an error to round to eight.
 | Pattern | Logical units | Owner / interpretation |
 | --- | --- | --- |
 | Metro leading/trailing inset | 12 | `plugins/UIKit/Metro.h`; Pivot arranges the item inside it |
-| Pivot title / selected header | 15 / 44 font size | `Pivot.c`; title top 14, title-to-header offset 2, content offset 8 |
+| Pivot title / selected header | 15 / 44 font size | `Pivot.c`; title top 14, title-to-header offset 2, header-to-hairline 8, hairline-to-content 20 |
 | Pivot header spacing | 18 | Engine header-strip metric, not general form spacing |
 | Panorama title / section header | 110 / 36 font size | `Panorama.c`; section width factor 0.875 creates a next-section hint |
 | ApplicationBar normal / minimized height | 58 / 24 | `ApplicationBar.c`; system inset is additional |
-| App-bar ring / glyph | 38 / 18 | Engine-drawn ring; icon artwork contains only the glyph |
+| App-bar button row / glyph | 38 / 28 | `ApplicationBar.c`; ORCA decision: plain glyphs, no Windows Phone circle |
 | Header Back ring / glyph / minimum target | 30 / 16 / 44 | Visual artwork is smaller than its hit area |
 | Ordinary Chat button / input | 48 outer height; 15 text | `views/components.lua`; border counts outside the padding box |
 | Ordinary icon action | 44 target; 20 glyph | `C.iconButton` |
