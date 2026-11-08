@@ -2,7 +2,7 @@
 
 Chat uses the existing **Octopus** project (`69f1c06800389dc6a1a0`), Frankfurt
 endpoint `https://fra.cloud.appwrite.io/v1`, and database `octopus-db`.
-`schema.json` defines seven private collections with shared names. They have
+`schema.json` defines ten private collections with shared names. They have
 **no client permissions** and `documentSecurity=false`. The Function joins the
 existing public Octopus `profiles` with private `account-directory` records;
 verified email, the private phone number and discovery preferences never enter
@@ -53,7 +53,7 @@ and requests these dynamic-key scopes:
 | Scope | Purpose |
 | --- | --- |
 | `users.read` | Validate member IDs and verify discovery/identity uniqueness |
-| `users.write` | Apply an email/phone change after ownership proof; synchronize the account display name |
+| `users.write` | Apply a verified identity change; synchronize display names; block and delete the caller's shared account after confirmed deletion |
 | `documents.read`, `documents.write` | Read and update shared profiles and private conversation documents |
 | `files.read`, `files.write` | Store encrypted objects and serve member-authorized plaintext |
 | `targets.write` | Create temporary identifier-link challenge targets |
@@ -68,8 +68,10 @@ Execution identity comes only from Appwrite's runtime `x-appwrite-user-jwt` and
 `x-appwrite-user-id` headers. The function validates the JWT against native
 `/account` using `X-Appwrite-JWT` without the server key and compares the returned
 account ID with the runtime caller ID. JSON `session`, `jwt` or user ID fields
-cannot choose the caller. Console/API-key executions without a user JWT return
-401. The dynamic key is read from the runtime `x-appwrite-key` header, is used only
+cannot choose the caller. Ordinary console/API-key executions without a user JWT
+return 401. Platform event/schedule executions process only durable deletion jobs,
+without taking user IDs or arbitrary paths from an ordinary client request.
+The dynamic key is read from the runtime `x-appwrite-key` header, is used only
 for domain storage/verified identity operations, and is never sent to the app.
 See [Appwrite function context](https://appwrite.io/docs/products/functions/develop)
 for the runtime identity-header contract.
@@ -83,6 +85,9 @@ Set the following **server function variables**, without committing secrets:
 | `CHAT_OTP_HMAC_KEY` | A stable random secret of at least 32 characters, required for identity linking |
 | `CHAT_EMAIL_PROVIDER_ID` | Configured Appwrite Messaging email provider ID, required to link/change email |
 | `CHAT_PUSH_ENABLED` | `true` enables new-message push; absent/other values keep it disabled |
+| `CHAT_APPLE_CLIENT_ID` | Apple Services ID used by Appwrite's browser OAuth flow; required to delete an Apple-linked account |
+| `CHAT_APPLE_CLIENT_SECRET` | Secret ES256 client JWT for that Services ID; maintain/rotate it before its Apple expiration |
+| `CHAT_BLOCKED_TERMS` | Optional JSON array of additional prohibited whole words/phrases (up to 200 entries); built-in text filtering remains active when absent |
 
 `APPWRITE_FUNCTION_PROJECT_ID` and `APPWRITE_FUNCTION_API_ENDPOINT` come from the
 runtime; the source defaults to this Octopus project and Frankfurt endpoint.
@@ -340,6 +345,153 @@ Exact discovery requires the corresponding opt-in flag and rechecks the live
 native verified identity. Twenty lookups per account/minute are allowed.
 Usernames have a unique index. Contacts come from shared authorized rooms;
 channel subscribers see themselves and staff, without a peer subscriber list.
+
+## Blocking, reports and moderation
+
+The backend persists user blocks in administrator-only `user-blocks`, with a
+unique blocker/blocked pair. `set_chat_user_block` accepts
+`{target_user,blocked}`; `list_chat_blocks` returns only the verified caller's
+own blocked-person list. Neither RPC accepts a caller override. Blocks apply
+in both directions to exact discovery, direct-room creation, direct text/photo
+publication and direct-message edits. A shared pair lock serializes direct
+publication with blocking. They also prevent adding a blocked person to a new
+group/channel, using an invitation from a blocked inviter/room owner, joining
+a blocked owner's public channel, and discovering their public channels.
+Existing direct history and shared-group messages remain readable; blocking
+does not remove the person from shared groups or hide all shared-group content.
+
+`report_chat_content` accepts `{target_user,reason,details?,target_message?}`.
+Reasons are `spam`, `harassment`, `sexual_content`, `violence`, `hate`, `other`;
+details have a 2000-byte UTF-8 limit. A message report checks current room access
+and verifies its author against the target user. A person report requires a
+shared conversation or an existing public username. The private
+`moderation-reports` record contains authenticated reporter, target, reason,
+details, status, timestamp, and optional room/message IDs plus original message
+text and ordered photo attachment IDs. Reports are limited to 10 per hour per
+account. There is no public queue/list/resolve/takedown/suspension RPC. Neither
+report content nor another user's block list enters client responses.
+
+Server text filtering runs before creating/editing messages, changing public
+profile display names/handles, and creating/renaming groups or channels. It
+normalizes Unicode width/case and invisible formatting and matches a built-in
+whole-word/phrase list for severe profanity, hateful slurs and threats. The
+optional server `CHAT_BLOCKED_TERMS` array extends it. Legacy display names from
+the shared public profile collection are filtered to `Member` when read. This
+is a limited deterministic text filter: it is not a semantic classifier, cannot
+catch every obfuscation/language, and does not classify photo pixels. Photo-only
+messages remain supported. Photo/message reports and human review with actual
+takedown/suspension are the image-abuse handling path; do not claim automated
+image moderation or blanket quarantine.
+
+`get_chat_rules_state` returns current rules version (`2026-11-08`) and the
+caller's accepted version; `accept_chat_rules` records that exact version and
+timestamp privately. Acceptance is an explicit client action, not inferred
+from sign-in. Existing deployed clients are not silently gated on a new field.
+
+### Manual moderator workflow
+
+Use a private operator key with `documents.read/write`, `files.read/write` and
+`users.read/write`. No new client or Function scopes are granted. Keep the key
+in a private env file, never a command argument, source archive or repository.
+From this directory, after setting the endpoint/project and operator key:
+
+```sh
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js list
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js show REPORT_ID
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js photo REPORT_ID ATTACHMENT_ID /private/tmp/reported-photo.jpg
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js takedown REPORT_ID --confirm 'Reviewed prohibited photo'
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js suspend REPORT_ID --confirm 'Reviewed repeated abuse'
+node --env-file=/private/tmp/chat-moderation.env src/moderation.js dismiss REPORT_ID --confirm 'Reviewed; no violation'
+```
+
+`list` emits open report summaries, and `show` emits private evidence for the
+authorized reviewer; do not paste its output into public issues. `photo` exports
+the decrypted full JPEG only when that attachment is listed in the selected
+report and its uploader/message still match. Its explicit absolute output path
+is created mode0600 without overwriting files. It exports no keys and exposes
+no client endpoint. Inspect the image in a private local viewer, then remove
+the temporary evidence file after reviewing it. Never put exported photos in
+Git, shared folders or public issues. A takedown
+unpublishes only the reported message, then deletes its associated encrypted
+photos/thumbnails and metadata. Partial file cleanup is retryable from the
+report's original attachment IDs. Suspension sets the reported shared Appwrite
+account's status to false, stopping its authenticated Chat, Octopus and website
+access. It is an operator decision, never an automatic consequence of receiving
+a report. Resolution records action, reviewer notes and timestamp. Repeating the
+same resolution is idempotent; changing an already-resolved decision fails.
+Respond promptly to reports and check this queue during operations; there is no
+background human moderator or external report-delivery service implied by this
+tool. Reports involving either side of a deleted account are removed by the
+account-deletion worker along with its blocking and acceptance records.
+
+Run focused offline checks with
+`node --test --test-name-pattern='safety' test/backend.test.js`. These exercise
+server enforcement and the executable operator workflow using injected data.
+
+## Account deletion
+
+`POST /rest/v1/rpc/delete_chat_account` accepts only
+`{"confirmation":"DELETE"}`. Runtime identity selects the caller; the request
+cannot select another user. It creates a durable private `account-deletions` job
+before blocking the shared Appwrite account and returns
+`{"accepted":true,"deleted":false}`. The client clears its private session and
+push-target stores after acceptance. This is a permanent deletion request, not
+an immediate deletion-complete response. It affects Chat, Octopus and the shared
+website account.
+
+Before deploying this feature, run the shared schema migration to create the
+administrator-only `account-deletions` collection and attachment room index.
+Deploy the Function with both configured deletion-collection create/update
+events and the **60-minute recovery interval** from the manifest. The interval
+works on Appwrite Cloud Free; minute cron schedules require a paid plan. This
+does not request a plan upgrade. A request is not a substitute for deploying the
+worker settings. The first worker step blocks the account and waits at least
+65 seconds so previously authenticated 60-second Chat invocations can finish.
+Cleanup normally starts on the next hourly recovery sweep after this grace
+period, and failures can delay completion further. The recovery interval then
+resumes cleanup. Each successful checkpoint emits
+one update event for the next bounded step. Missing/failed events and ordinary
+upstream errors retain the job for recovery; no client connection is required.
+A persisted sweep cursor rotates past failed jobs rather than starving later
+accounts. Per-job locks serialize event/interval/duplicate deliveries. Worker
+REST work has a 35-second total deadline, with independent short lock-release
+signals reserving time to unwind before the 60-second Function timeout.
+
+Cleanup deletes the caller's Chat messages/photos/uploads, invitations, private
+identity state, discovery entry and public profile. Group/channel ownership
+passes to an existing admin or another remaining member; their messages remain.
+Empty rooms and their inaccessible history are reclaimed. Direct chats retain
+the other participant's history under a deleted-account label. It also removes
+authored Octopus posts and feed copies, comments, likes, reposts, follows, and
+uploaded files whose Storage ACL establishes ownership, including abandoned
+uploads. A post's child comments/reactions are removed with that post. A user
+cannot authorize deletion of somebody else's file merely by putting its ID in
+their editable profile or post. Auth and its sessions/identities/targets are
+removed last, followed by the private job, so failed cleanup remains retryable.
+Appwrite removes its associated identities and targets asynchronously in its own
+background cleanup; blocking at acceptance does not claim immediate session or
+push-target deletion. See [Appwrite identity cleanup](https://appwrite.io/docs/products/auth/identities#clean-up-identities).
+Content already copied or saved outside the service cannot be recalled.
+
+For Sign in with Apple, the request checks linked Appwrite identities before
+accepting deletion. The job privately retains the provider refresh token (or
+access-token fallback), and the worker calls Apple's `/auth/revoke` endpoint
+before deleting Auth. It does not assume that Appwrite user deletion revokes the
+Apple authorization. Missing client credentials or provider tokens reject the
+request without blocking the account; failed revocation leaves the durable job
+pending. Configure and maintain the two Apple variables above before enabling
+this feature for Apple-linked accounts. Never log job payloads or include them
+in client responses. See [Appwrite identity fields](https://appwrite.io/docs/references/cloud/models/identity),
+[Apple token revocation](https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens),
+and [Appwrite interval scheduling](https://appwrite.io/changelog/entry/2026-10-15-1).
+
+The focused offline cases are
+`node --test test/account-deletion.test.js`. They use injected REST data and do
+not delete real accounts. As with other room mutations, a worker killed while
+holding an existing non-expiring room lock needs operator inspection; never
+steal a live room lock or log the job's identity/token contents. Apple-linked
+deletion and live event/interval delivery require separate explicitly requested
+live verification after deployment.
 
 ## Rooms, messages and encrypted photos
 

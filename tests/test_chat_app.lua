@@ -1125,8 +1125,12 @@ click(editApp, "DismissMessageActions")
 assert(not actionsMenu.Visible, "Tapping outside dismisses the actions")
 editApp:openRoom(roomById("alex"))
 drain(editApp)
-assert(inEntry(editApp, "a1", "MessageBubble") and not isShown(inEntry(editApp, "a1", "MessageActions")),
-    "Other people's messages in a direct chat have no actions")
+assert(inEntry(editApp, "a1", "MessageBubble") and isShown(inEntry(editApp, "a1", "MessageActions")),
+    "Incoming direct messages expose a reporting action")
+press(editApp, "MessageEntrya1", "MessageActions")
+assert(editApp.screen:findChild("ReportMessage", true) and not editApp.screen:findChild("EditMessage", true)
+    and not editApp.screen:findChild("DeleteMessage", true), "Reporting does not grant edit or delete rights over a peer's direct messages")
+click(editApp, "DismissMessageActions")
 
 -- Interleave a newer tab request inside the offline transport response. Both
 -- requests still use the real client and mock endpoint implementation.

@@ -206,7 +206,7 @@ APPWRITE_PROJECT_ID=69f1c06800389dc6a1a0 \
 APPWRITE_CHAT_FUNCTION_ID=orca-chat-api make chat
 ```
 
-Seven private `chat_` collections and their indexes are provisioned in the
+Ten private `chat_` collections and their indexes are provisioned in the
 existing `octopus-db` database. They cover profiles and discovery, conversations,
 membership and roles, messages, photos, invitations, and verification/rate-limit
 state. Access goes through the trusted Function; clients have no direct database
@@ -283,6 +283,17 @@ enabled, alerts include the sender and a short message preview, or a photo label
 On iPhone, **Settings → Notifications → ORCA Chat → Show Previews → When Unlocked**
 keeps notification content hidden until the phone unlocks, including with Face ID.
 Video and live subscriptions remain future work.
+Settings includes the full bundled privacy policy, community rules, a persisted
+blocked-person list and **delete account**. Deletion requires confirmation and
+affects the shared Chat/Octopus account. The server disables the account first;
+background cleanup can take an hour or longer, while the app clears its private
+device state. Incoming messages and other conversation members expose
+**report or block**. Reports go to a private moderation queue; the operator tools
+can inspect reported photos, remove content and suspend accounts. Server text
+screening filters a defined denylist, without claiming automated image analysis.
+Deploy the new private collections, Function code and worker settings before
+shipping these controls; see the backend setup guide. Current uploaded builds
+do not gain these features from a metadata-only update.
 During a Function rollout, a missing history RPC falls back to a bounded recent
 page through the existing endpoint. Older cursor pages become available when
 the new Function is deployed; the client retries capability discovery after a minute.

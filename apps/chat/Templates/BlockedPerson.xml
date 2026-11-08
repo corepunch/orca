@@ -1,0 +1,2 @@
+<Button Name="OpenBlockedPerson" Click="OpenBlockedPerson" Text="{Binding DataContext/Title, Mode=OneTime}" Height="56" FontSize="20"
+        TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>

@@ -48,6 +48,7 @@ end
 
 function SignIn:complete(url)
     local app = self.app
+    if app.accountDeletionPending then return end
     if app.client:getSession() then app:notice(t("You're already signed in.")); return end
     if self.busy then return end
     self.busy = true

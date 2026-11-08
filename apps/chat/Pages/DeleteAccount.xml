@@ -1,0 +1,15 @@
+<StackView Name="DeleteAccountPage" Spacing="16" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Name="DeleteAccountWarning" Text="Delete your account permanently?" TextResourceID="Delete your account permanently?"
+             FontSize="24" WordWrap="true" class="chat-ink"/>
+  <TextBlock Text="This deletes your shared Chat and Octopus account and its personal data, including your messages, photos and posts. You will lose access in both apps. This cannot be undone."
+             TextResourceID="This deletes your shared Chat and Octopus account and its personal data, including your messages, photos and posts. You will lose access in both apps. This cannot be undone."
+             FontSize="16" WordWrap="true" class="chat-ink"/>
+  <TextBlock Text="Your account is disabled immediately. Data removal can take an hour or longer and continues after you leave the app. Copies other people saved outside the service cannot be removed."
+             TextResourceID="Your account is disabled immediately. Data removal can take an hour or longer and continues after you leave the app. Copies other people saved outside the service cannot be removed."
+             FontSize="15" WordWrap="true" class="chat-muted"/>
+  <TextBlock Name="DeleteAccountStatus" Visible="false" FontSize="15" WordWrap="true" class="chat-error"/>
+  <Button Name="ConfirmDeleteAccount" Text="delete my account" TextResourceID="delete my account" Height="48" FontSize="18"
+          BorderWidth="0" BackgroundColor="#00000000" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-action chat-error"/>
+  <Button Name="CancelDeleteAccount" Text="cancel" TextResourceID="cancel" Height="48" FontSize="18"
+          BorderWidth="0" BackgroundColor="#00000000" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="chat-action chat-link"/>
+</StackView>

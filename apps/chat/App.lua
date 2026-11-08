@@ -101,6 +101,7 @@ local App = Application:extend {
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.profileStatus, self.pendingIdentity = {}, nil, nil
+        self.safetyTarget = nil
     end,
 
     -- The signed-in account's data scope (Data/Inbox.xml): rooms, contacts,
@@ -141,6 +142,7 @@ local App = Application:extend {
             focusComposer = function() if self.composer then self.composer:setFocus() end end,
             openPhoto = function(attachment) self:openPhoto(attachment) end,
             openMessageActions = function(message) self:openMessageActions(message) end,
+            openSafety = function(user, message, name, back) self:openSafety(user, message, name, back) end,
             attachPhoto = function(scope) self:attachPhoto(scope) end,
             removePhoto = function(scope) self:removePhoto(scope) end,
         }
@@ -259,6 +261,7 @@ local App = Application:extend {
     end,
 
     dispatch = function(self, request)
+        if self.accountDeletionPending then request = "/delete-account" end
         PhotoViewer.close(self)
         -- Every route change ends the open conversation's scope.
         self:closePages()
@@ -465,7 +468,19 @@ local App = Application:extend {
                 }
             end, "chat-error" }
         end
+        if message.values.CanReport then
+            items[#items + 1] = { "ReportMessage", t("report or block"), function()
+                self:openSafety(message.values.SenderId, message.key, message.values.Sender, "/thread")
+            end }
+        end
         show(items)
+    end,
+
+    openSafety = function(self, user, message, name, back)
+        local session = self.client and self.client:getSession()
+        if not session or not user or user == session.user.id then return end
+        self.safetyTarget = { userId = user, messageId = message, name = name, back = back }
+        self:show("/safety", "Forward")
     end,
 
     -- The composer edits a copy of the message; the unsent draft comes back
@@ -591,7 +606,7 @@ local App = Application:extend {
             scope:attach(bar)
         end
         local back = route.back and function() self:goBack(route.back) end
-        local pivot = C.page(route.header or "", page, { Name = route.name, back = back })
+        local pivot = C.page(t(route.header or ""), page, { Name = route.name, back = back })
         if route.headerFrom then
             local record, field = route.headerFrom:match("^(%w+)%.(%w+)$")
             local item = pivot:getFirstChild()
@@ -709,6 +724,36 @@ local App = Application:extend {
     ["/new"] = function(self) return self:newRoom() end,
     ["/contacts"] = function(self) return self:contactsView() end,
     ["/profile"] = function(self) return self:profile() end,
+    ["/delete-account"] = function(self) return require("Chat/views/account_deletion").open(self) end,
+    ["/safety"] = function(self) return require("Chat/views/safety").open(self) end,
+    ["/privacy"] = function(self)
+        local page = assert(filesystem.loadObject("Chat/Pages/Privacy"), "Missing Chat/Pages/Privacy")
+        local policy = assert(filesystem.readTextFile("Chat/assets/privacy.md"), "Missing bundled Chat privacy policy")
+        page:findChild("PrivacyPolicyText", true).Source = policy
+        return self:frame(C.page(t("Privacy policy"), page, {
+            back = function() self:goBack(self.client and self.client:getSession() and "/profile" or "/auth") end,
+        }))
+    end,
+    ["/rules"] = function(self)
+        local page = assert(filesystem.loadObject("Chat/Pages/CommunityRules"), "Missing Chat/Pages/CommunityRules")
+        page:findChild("CommunityRulesText", true).Source = assert(filesystem.readTextFile("Chat/assets/community-rules.md"))
+        local button, status = page:findChild("AcceptCommunityRules", true), page:findChild("CommunityRulesStatus", true)
+        local session, busy = self.client and self.client:getSession(), false
+        button.Visible = session ~= nil
+        button.Click = function()
+            if busy then return end
+            busy = true
+            local result, err = self.client:acceptRules()
+            busy = false
+            if not self.client:getSession() or self.client:getSession().user.id ~= session.user.id then return end
+            status:setTextContent(result and t("Community rules accepted.") or t(err.message))
+            status.Visible, status.StateClasses = true, result and "chat-muted" or "chat-error"
+            if result then button.Visible = false end
+        end
+        return self:frame(C.page(t("Community rules"), page, {
+            back = function() self:goBack(session and "/profile" or "/auth") end,
+        }))
+    end,
     ["/auth"] = function(self) return self:auth() end,
     ["/auth/email"] = function(self) return Identity.auth(self, "email") end,
     ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,

@@ -107,7 +107,7 @@ function Provider.new(context)
                 .. (values.HasPhotos and not values.ShowSender and " photo-top" or "")
                 .. (values.HasPhotos and not values.HasBody and " photo-bottom" or "")
         end,
-        canAct = function(values) return values.CanEdit or values.CanDelete end,
+        canAct = function(values) return values.CanEdit or values.CanDelete or values.CanReport end,
         actionsSize = function(values) return values.HasPhotos and 44 or AUTO end,
         actionsMargin = function(values) return values.HasPhotos and AUTO or 0 end,
         actionsText = function(values) return values.HasPhotos and "…" or "" end,
@@ -157,6 +157,10 @@ function Provider.new(context)
             local contacts, err = models.Contacts:select()
             if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
             return contacts, localizedError(err)
+        end,
+        blockedUsers = function()
+            local rows, err = client:listBlocks()
+            return rows, localizedError(err)
         end,
         -- The portrait wall: people from the latest direct conversations,
         -- then everyone else by name. Derived from loaded records.
@@ -208,7 +212,7 @@ function Provider.new(context)
                 local mayChange = manage and id ~= me and member.role ~= "owner"
                 list[#list + 1] = store:put("ChatMember", { key = params.RoomId .. ":" .. id, user_id = id,
                     display_name = info.display_name, username = info.username, role = member.role or "member" },
-                    { locals = { CanChangeRole = mayChange and owner or false, CanRemove = mayChange or false } })
+                    { locals = { CanChangeRole = mayChange and owner or false, CanRemove = mayChange or false, CanReport = id ~= me } })
             end
             return list
         end,
@@ -353,7 +357,7 @@ function Provider.new(context)
                 updateDecoration(store, record, { Mine = mine, Leading = index == 1, Group = room.kind == "group", Sender = sender,
                     First = not previous or previous.values.SenderId ~= values.SenderId,
                     Last = not following or following.values.SenderId ~= values.SenderId,
-                    CanEdit = own and room.can_post ~= false, CanDelete = own or (room.kind ~= "direct" and staff),
+                    CanEdit = own and room.can_post ~= false, CanDelete = own or (room.kind ~= "direct" and staff), CanReport = not own,
                     AlbumHeight = album and album.height or 0 })
                 local showSender = room.kind == "group" and not mine
                     and (not previous or previous.values.SenderId ~= values.SenderId)
@@ -479,6 +483,14 @@ function Provider.new(context)
         end,
         MessageActions = function(_, params)
             if params.item then context.openMessageActions(params.item) end
+        end,
+        MemberSafety = function(_, params)
+            local item = params.item
+            if item and context.openSafety then context.openSafety(item.values.UserId, nil, item.values.Title, "/details") end
+        end,
+        OpenBlockedPerson = function(_, params)
+            local item = params.item
+            if item and context.openSafety then context.openSafety(item.values.UserId, nil, item.values.Title, "/blocked") end
         end,
         OpenPhoto = function(_, params)
             if params.item then context.openPhoto(params.item.raw) end

@@ -38,7 +38,7 @@ end
 
 function M.new(options)
   local current, pending = nil, {}
-  local currentUser, pushBusy, liveRecord
+  local currentUser, pushBusy, liveRecord, deletingUser
   local encode, store = options.encode, options.sessionStore
   local endpoint = options.endpoint:gsub("/$", "")
   -- Appwrite sends OAuth and emailed sign-in links back to this per-project scheme.
@@ -170,7 +170,31 @@ function M.new(options)
   end
   return function(request, path)
     local body = request.body or {}
-    if request.method == "POST" and path == "/auth/v1/avatar" then
+    if deletingUser and path ~= "/auth/v1/forget-deleted-account" then
+      return { status = 503, body = { code = "session_storage", message = "Retry device cleanup before signing in again." } }
+    end
+    if request.method == "POST" and path == "/auth/v1/prepare-account-deletion" then
+      -- Remove this device's target while its Account credential still works.
+      -- Otherwise a locked local target store after server revocation could
+      -- prevent a different account from signing in after a restart.
+      local removed, err = removePush()
+      if not removed then return err end
+      return { status = 204 }
+    elseif request.method == "POST" and path == "/auth/v1/forget-deleted-account" then
+      if type(body.userId) ~= "string" or (currentUser ~= body.userId and deletingUser ~= body.userId)
+          or currentUser and currentUser ~= body.userId then
+        return { status = 409, body = { code = "session_changed", message = "The active account changed during account deletion." } }
+      end
+      -- Auth targets are revoked by the server job. Do not attempt an Account
+      -- request with the now-disabled login; erase both private local stores.
+      deletingUser = body.userId
+      local _, pushFailure
+      if options.pushStore then _, pushFailure = pushRecord("clear") end
+      local storageFailure = forget()
+      if pushFailure or storageFailure then return pushFailure or storageFailure end
+      deletingUser = nil
+      return { status = 204 }
+    elseif request.method == "POST" and path == "/auth/v1/avatar" then
       local credential = current
       return saveAvatar(body, credential, currentUser, function() return current == credential end)
     elseif request.method == "POST" and path == "/auth/v1/push" then

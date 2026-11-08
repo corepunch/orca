@@ -1,6 +1,7 @@
 import { AppwriteRest, Failure, Repository } from './rest.js';
 import { Auth } from './auth.js';
 import { ChatService } from './service.js';
+import { AccountDeletion, deletionTransport, recoverDeletions } from './account-deletion.js';
 
 export function runtimeIdentity(headers) {
   const jwt = headers?.['x-appwrite-user-jwt'], userId = headers?.['x-appwrite-user-id'];
@@ -25,17 +26,39 @@ export default async ({ req, res, error: reportError = () => {} }) => {
     const envelope = req.bodyJson ?? JSON.parse(req.bodyText || req.bodyRaw || '{}');
     // Only platform-authenticated execution headers supply identity. Request JSON
     // (including legacy session/jwt fields) never selects or impersonates a caller.
-    const identity = runtimeIdentity(req.headers);
+    const worker = ['event', 'schedule'].includes(req.headers['x-appwrite-trigger']);
+    const identity = worker ? null : runtimeIdentity(req.headers);
     const apiKey = req.headers['x-appwrite-key'];
     if (!apiKey) return res.json({ status: 503, body: { code: 'configuration', message: 'The function dynamic API key is unavailable.' } });
-    const rest = new AppwriteRest({ endpoint: process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://fra.cloud.appwrite.io/v1',
+    const transport = new AppwriteRest({ endpoint: process.env.APPWRITE_FUNCTION_API_ENDPOINT || 'https://fra.cloud.appwrite.io/v1',
       projectId: process.env.APPWRITE_FUNCTION_PROJECT_ID || '69f1c06800389dc6a1a0', apiKey });
+    const rest = worker ? deletionTransport(transport) : transport;
     const repository = new Repository(rest, process.env.CHAT_DATABASE_ID || 'octopus-db', process.env.CHAT_BUCKET_ID || 'post-images');
     const auth = new Auth(rest, repository, { otpHmacKey: process.env.CHAT_OTP_HMAC_KEY,
       emailProviderId: process.env.CHAT_EMAIL_PROVIDER_ID });
-    return res.json(await execute(envelope, new ChatService(repository, auth, {
+    const deletions = new AccountDeletion(repository, auth, {
+      appleClientId: process.env.CHAT_APPLE_CLIENT_ID, appleClientSecret: process.env.CHAT_APPLE_CLIENT_SECRET,
+    });
+    if (req.headers['x-appwrite-trigger'] === 'event') {
+      if (envelope.$databaseId !== repository.databaseId || envelope.$collectionId !== 'account-deletions'
+        || typeof envelope.$id !== 'string') return res.json({ processed: false });
+      // Exactly one checkpoint per event prevents self-triggered fan-out. Each
+      // successful checkpoint emits the next update event, while the hourly
+      // recovery interval retries interrupted/failed work.
+      return res.json(await deletions.run(envelope.$id, { maximumSteps: 1 }));
+    }
+    if (req.headers['x-appwrite-trigger'] === 'schedule') {
+      return res.json(await recoverDeletions(repository, deletions, reportError));
+    }
+    let blockedTerms = [];
+    try { if (process.env.CHAT_BLOCKED_TERMS) blockedTerms = JSON.parse(process.env.CHAT_BLOCKED_TERMS); }
+    catch { throw new Failure(503, 'moderation_configuration', 'The content filter needs administrator configuration.'); }
+    const service = new ChatService(repository, auth, {
       pushEnabled: process.env.CHAT_PUSH_ENABLED === 'true', pushError: reportError,
-    }), identity));
+      blockedTerms,
+    });
+    service.deletions = deletions;
+    return res.json(await execute(envelope, service, identity));
   } catch (error) {
     if (error instanceof Failure) return res.json({ status: error.status, body: { code: error.code, message: error.message } });
     return res.json({ status: 400, body: { code: 'invalid_request', message: 'Provide a valid Chat request envelope.' } });

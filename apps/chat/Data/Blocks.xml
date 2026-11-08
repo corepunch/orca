@@ -1,0 +1,4 @@
+<DataScope Name="Blocks" Schema="Chat/Data/Chat.Schema.xml">
+  <Query Name="Blocks" Entity="ChatBlockedUser" Operation="blockedUsers"/>
+  <Handler Name="OpenBlockedPerson"/>
+</DataScope>

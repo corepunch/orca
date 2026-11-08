@@ -1,12 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, mkdtemp, stat, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Auth } from '../src/auth.js';
 import { AppwriteRest, Failure, Repository } from '../src/rest.js';
 import { ChatService } from '../src/service.js';
 import handler, { execute, runtimeIdentity } from '../src/main.js';
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from '../src/photos.js';
+import { moderateReport, RULES_VERSION } from '../src/safety.js';
+import { runModeration, readReportedPhoto } from '../src/moderation.js';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 class MemoryRepository {
@@ -52,7 +56,7 @@ function setup(serviceOptions = {}) {
   const rest = { async request(method, path, options = {}) {
     calls.push({ method, path, options: clone(options) });
     if (path === '/account') {
-      if (method === 'GET' && users.has(options.jwt)) return clone(users.get(options.jwt));
+      if (method === 'GET' && users.has(options.jwt) && users.get(options.jwt).status !== false) return clone(users.get(options.jwt));
       throw new Failure(401, 'unauthenticated', 'Invalid session.');
     }
     if (path.startsWith('/users/') && method === 'GET') {
@@ -63,6 +67,7 @@ function setup(serviceOptions = {}) {
     if (path.startsWith('/users/') && method === 'PATCH') {
       const [, , userId, kind, phone] = path.split('/'), row = users.get(userId);
       if (kind === 'email' || kind === 'phone') { row[kind] = options.body[kind]; row[kind + 'Verification'] = false; }
+      else if (kind === 'status') row.status = options.body.status;
       else if (kind === 'verification') row[phone === 'phone' ? 'phoneVerification' : 'emailVerification'] = true;
       return clone(row);
     }
@@ -710,7 +715,8 @@ test('REST JWT requests omit server key and repository pagination loads every me
 
 test('schema collections deny direct access and manifest uses only required scopes', async () => {
   const schema = JSON.parse(await readFile(new URL('../schema.json', import.meta.url)));
-  assert.equal(schema.collections.length, 7);
+  assert.equal(schema.collections.length, 10);
+  assert.ok(schema.collections.some(collection => collection.id === 'account-deletions'));
   for (const collection of schema.collections) { assert.deepEqual(collection.permissions, []); assert.equal(collection.documentSecurity, false); }
   const config = JSON.parse(await readFile(new URL('../appwrite.config.json', import.meta.url)));
   assert.deepEqual(config.functions[0].execute, ['users']);
@@ -855,4 +861,125 @@ test('message page RPC returns bounded chronological pages while legacy GET keep
   assert.equal(older.body.messages.length, 5); assert.equal(older.body.has_more, false); assert.equal(older.body.next_cursor, null);
   const legacy = await fixture.call('owner', '/rest/v1/chat_messages?room_id=eq.' + conversation.id + '&limit=2&before=message-005', {}, 'GET');
   assert.equal(legacy.status, 200); assert.deepEqual(legacy.body.map(row => row.id), ['message-004', 'message-003']);
+});
+
+test('safety blocks persist privately and stop reciprocal discovery, direct creation, sending and editing', async () => {
+  const f = setup(), direct = await room(f, 'direct');
+  for (const user of ['owner', 'alice']) await f.call(user, '/rest/v1/rpc/update_chat_profile', { values: { username: user } });
+  const posted = (await f.call('alice', '/rest/v1/rpc/post_chat_message', { target_room: direct.id, message_body: 'Before block' })).body[0];
+  assert.equal((await f.call('owner', '/rest/v1/rpc/set_chat_user_block', { target_user: 'alice', blocked: true })).body, true);
+  assert.deepEqual((await f.call('owner', '/rest/v1/rpc/find_chat_people', { query: 'alice' })).body, []);
+  assert.deepEqual((await f.call('alice', '/rest/v1/rpc/find_chat_people', { query: 'owner' })).body, []);
+  for (const user of ['owner', 'alice']) assert.equal((await f.call(user, '/rest/v1/rpc/post_chat_message', { target_room: direct.id, message_body: 'After block' })).status, 403);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/edit_chat_message', { target_message: posted.id, message_body: 'Changed' })).status, 403);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/create_chat_room', { room_name: 'Direct', room_kind: 'direct', member_ids: ['alice'] })).status, 403);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/list_chat_blocks')).body[0].user_id, 'alice');
+  assert.deepEqual((await f.call('alice', '/rest/v1/rpc/list_chat_blocks')).body, []);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/set_chat_user_block', { target_user: 'owner', blocked: false })).status, 200);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/post_chat_message', { target_room: direct.id, message_body: 'Still blocked' })).status, 403);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/set_chat_user_block', { target_user: 'alice', blocked: false })).status, 200);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/post_chat_message', { target_room: direct.id, message_body: 'Unblocked' })).status, 200);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/set_chat_user_block', { target_user: 'owner', blocked: true })).status, 400);
+});
+
+test('safety blocks stop member additions and invitations while shared-group history and messages remain available', async () => {
+  const f = setup(), group = await room(f, 'group', ['alice']), channel = await room(f, 'channel', [], 'public');
+  const invite = (await f.call('owner', '/rest/v1/rpc/create_chat_invite', { target_room: group.id })).body;
+  await f.call('bob', '/rest/v1/rpc/set_chat_user_block', { target_user: 'owner', blocked: true });
+  assert.equal((await f.call('bob', '/rest/v1/rpc/join_chat_invite', { invite_code: invite.code })).status, 403);
+  assert.equal((await f.call('bob', '/rest/v1/rpc/join_public_chat_channel', { target_room: channel.id })).status, 403);
+  assert.deepEqual((await f.call('bob', '/rest/v1/rpc/find_chat_channels', { query: 'Conversation' })).body, []);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/create_chat_room', { room_name: 'New group', member_ids: ['bob'] })).status, 403);
+  await f.call('alice', '/rest/v1/rpc/set_chat_user_block', { target_user: 'owner', blocked: true });
+  assert.equal((await f.call('alice', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: 'Shared group still works' })).status, 200);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/list_chat_messages', { target_room: group.id })).body.messages.length, 1);
+});
+
+test('safety text filter rejects normalized prohibited text at every supported publication entry', async () => {
+  const f = setup({ blockedTerms: ['custom prohibited phrase'] }), group = await room(f);
+  const send = text => f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: text });
+  for (const text of ['ＦＵＣＫ', 'f\u200buck', 'custom PROHIBITED phrase']) {
+    const result = await send(text); assert.equal(result.status, 422); assert.equal(result.body.code, 'objectionable_content');
+  }
+  const clean = (await send('Scunthorpe is a place name.')).body[0];
+  assert.equal((await f.call('owner', '/rest/v1/rpc/edit_chat_message', { target_message: clean.id, message_body: 'kill yourself' })).status, 422);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { display_name: 'fuck' } })).status, 422);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { username: 'fuck' } })).status, 422);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/create_chat_room', { room_name: 'fuck', member_ids: [] })).status, 422);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/update_chat_room', { target_room: group.id, room_name: 'fuck' })).status, 422);
+  assert.equal((await f.repo.get('messages', clean.id)).body, 'Scunthorpe is a place name.');
+  const peer = f.repo.table('profiles').get('owner'); peer.display_name = 'fuck';
+  assert.equal((await f.service.profileById('owner')).display_name, 'Member', 'shared public profile edits cannot bypass displayed-name filtering');
+});
+
+test('safety message reports require authorized context and never expose their private queue to clients', async () => {
+  const f = setup(), group = await room(f);
+  const message = (await f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: 'Review this evidence' })).body[0];
+  const report = { target_user: 'owner', target_message: message.id, reason: 'harassment', details: 'Context', reporter_id: 'eve' };
+  assert.equal((await f.call('eve', '/rest/v1/rpc/report_chat_content', report)).status, 403);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/report_chat_content', { ...report, target_user: 'bob' })).status, 404);
+  const accepted = await f.call('alice', '/rest/v1/rpc/report_chat_content', report);
+  assert.equal(accepted.status, 200); assert.equal(accepted.body.submitted, true);
+  const saved = await f.repo.get('reports', accepted.body.id);
+  assert.equal(saved.reporter_id, 'alice'); assert.equal(saved.target_user, 'owner');
+  assert.equal(saved.evidence.body, 'Review this evidence'); assert.equal(saved.room_id, group.id);
+  assert.equal((await f.call('alice', '/rest/v1/moderation-reports', {}, 'GET')).status, 404);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/moderate_chat_report', { report_id: saved.id, action: 'suspend' })).status, 404);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/report_chat_content', { ...report, reason: 'made_up' })).status, 400);
+  for (let count = 1; count < 10; count++) assert.equal((await f.call('alice', '/rest/v1/rpc/report_chat_content', report)).status, 200);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/report_chat_content', report)).status, 429);
+});
+
+test('safety moderator tool takes down reported photos and supports idempotent decisions and account suspension', async () => {
+  const f = setup(), group = await room(f), { photo } = await upload(f, group.id);
+  const message = (await f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, attachment_ids: [photo.id] })).body[0];
+  const report = (await f.call('alice', '/rest/v1/rpc/report_chat_content', {
+    target_user: 'owner', target_message: message.id, reason: 'sexual_content' })).body;
+  assert.equal((await runModeration(f.service, ['list'])).length, 1);
+  assert.equal((await runModeration(f.service, ['show', report.id])).evidence.attachment_ids[0], photo.id);
+  await assert.rejects(() => runModeration(f.service, ['takedown', report.id]), /Usage/);
+  assert.deepEqual(await runModeration(f.service, ['takedown', report.id, '--confirm', 'Reviewed']), { resolved: true, action: 'takedown' });
+  assert.equal(await f.repo.get('messages', message.id), null); assert.equal(await f.repo.get('attachments', photo.id), null); assert.equal(f.repo.files.size, 0);
+  assert.deepEqual(await moderateReport(f.service, report.id, 'takedown'), { resolved: true, action: 'takedown' });
+  await assert.rejects(() => moderateReport(f.service, report.id, 'dismiss'), error => error.status === 409);
+  const userReport = (await f.call('alice', '/rest/v1/rpc/report_chat_content', { target_user: 'owner', reason: 'harassment' })).body;
+  await runModeration(f.service, ['suspend', userReport.id, '--confirm', 'Reviewed']);
+  assert.equal(f.users.get('owner').status, false);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: 'Rejected' })).status, 401);
+});
+
+test('safety community rules acceptance records the verified account and exact current version', async () => {
+  const f = setup();
+  assert.deepEqual((await f.call('alice', '/rest/v1/rpc/get_chat_rules_state')).body, { version: RULES_VERSION, accepted_version: null });
+  assert.equal((await f.call('alice', '/rest/v1/rpc/accept_chat_rules', { version: 'old' })).status, 400);
+  assert.deepEqual((await f.call('alice', '/rest/v1/rpc/accept_chat_rules', { version: RULES_VERSION, user_id: 'bob' })).body, { accepted: true, version: RULES_VERSION });
+  assert.equal((await f.call('alice', '/rest/v1/rpc/get_chat_rules_state')).body.accepted_version, RULES_VERSION);
+  assert.equal((await f.call('bob', '/rest/v1/rpc/get_chat_rules_state')).body.accepted_version, null);
+});
+
+test('safety moderator can inspect only reported encrypted photos through a private explicit export', async () => {
+  const f = setup(), group = await room(f), { photo, bytes } = await upload(f, group.id);
+  const message = (await f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, attachment_ids: [photo.id] })).body[0];
+  const report = (await f.call('alice', '/rest/v1/rpc/report_chat_content', {
+    target_user: 'owner', target_message: message.id, reason: 'sexual_content' })).body;
+  assert.notDeepEqual(f.repo.files.get(photo.object_key), bytes);
+  assert.deepEqual(await readReportedPhoto(f.service, report.id, photo.id), bytes);
+  const unreported = (await upload(f, group.id)).photo;
+  await assert.rejects(() => readReportedPhoto(f.service, report.id, unreported.id), /not evidence/);
+  const userReport = (await f.call('alice', '/rest/v1/rpc/report_chat_content', { target_user: 'owner', reason: 'harassment' })).body;
+  await assert.rejects(() => readReportedPhoto(f.service, userReport.id, photo.id), /not evidence/);
+  const stored = f.repo.table('attachments').get(photo.id);
+  stored.uploader_id = 'bob';
+  await assert.rejects(() => readReportedPhoto(f.service, report.id, photo.id), /no longer matches/);
+  stored.uploader_id = 'owner';
+  stored.message_id = 'some-other-message';
+  await assert.rejects(() => readReportedPhoto(f.service, report.id, photo.id), /no longer matches/);
+  stored.message_id = message.id;
+  const directory = await mkdtemp(join(tmpdir(), 'chat-moderation-unit-')), output = join(directory, 'reported.jpg');
+  try {
+    assert.deepEqual(await runModeration(f.service, ['photo', report.id, photo.id, output]), { exported: true, path: output });
+    assert.deepEqual(await readFile(output), bytes); assert.equal((await stat(output)).mode & 0o777, 0o600);
+    await assert.rejects(() => runModeration(f.service, ['photo', report.id, photo.id, output]), error => error.code === 'EEXIST');
+    await assert.rejects(() => runModeration(f.service, ['photo', report.id, photo.id, 'relative.jpg']), /absolute/);
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

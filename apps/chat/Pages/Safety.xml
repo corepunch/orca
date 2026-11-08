@@ -1,0 +1,18 @@
+<StackView Name="SafetyPage" Spacing="14" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Name="SafetyPerson" FontSize="24" WordWrap="true" class="chat-ink"/>
+  <TextBlock Text="Blocking stops direct messages, discovery and invitations between you. You may still see each other in shared groups and channels." TextResourceID="Blocking stops direct messages, discovery and invitations between you. You may still see each other in shared groups and channels." FontSize="15" WordWrap="true" class="chat-muted"/>
+  <Button Name="BlockPerson" Text="Loading…" TextResourceID="Loading…" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error"/>
+  <TextBlock Text="report" TextResourceID="report" FontSize="20" class="chat-accent-text"/>
+  <TextBlock Text="Choose a reason. Reports are sent privately to moderators with the selected message, photo references and account details so they can investigate." TextResourceID="Choose a reason. Reports are sent privately to moderators with the selected message, photo references and account details so they can investigate." FontSize="15" WordWrap="true" class="chat-muted"/>
+  <Input Name="ReportDetails" PlaceholderText="Optional details (up to 1000 characters)" Height="44" FontSize="15" Padding="12 0" BorderWidth="2" class="chat-input chat-field"/>
+  <StackView Name="ReportReasons" Spacing="0" JustifyContent="Start">
+    <Button Name="ReportSpam" Text="Spam" TextResourceID="Spam" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+    <Button Name="ReportHarassment" Text="Harassment or bullying" TextResourceID="Harassment or bullying" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+    <Button Name="ReportSexual" Text="Sexual content" TextResourceID="Sexual content" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+    <Button Name="ReportViolence" Text="Violence or threats" TextResourceID="Violence or threats" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+    <Button Name="ReportHate" Text="Hate or discrimination" TextResourceID="Hate or discrimination" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+    <Button Name="ReportOther" Text="Other concern" TextResourceID="Other concern" Height="48" FontSize="18" TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+  </StackView>
+  <TextBlock Name="SafetyStatus" Visible="false" FontSize="15" WordWrap="true" class="chat-muted"/>
+  <TextBlock Text="For private support: igor.chernakov@gmail.com" TextResourceID="For private support: igor.chernakov@gmail.com" FontSize="14" WordWrap="true" class="chat-muted"/>
+</StackView>

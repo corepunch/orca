@@ -7,6 +7,7 @@
 #define PIVOT_HEADER_TOP     2.0f    // gap between title and header strip
 #define PIVOT_HEADER_SIZE    44.0f
 #define PIVOT_HEADER_SPACING 18.0f
+#define PIVOT_WIDE_VIEWPORT  600.0f  // compact headers keep the phone's repeating strip
 #define PIVOT_CONTENT_TOP    8.0f    // gap between header strip and content; the header line already ends below its descenders
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
 #define PIVOT_BACK_ICON      16.0f   // back glyph, centred in its ring
@@ -290,11 +291,13 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   struct Object *headers[PIVOT_MAX_ITEMS], *copies[PIVOT_MAX_ITEMS];
   struct Size sizes[PIVOT_MAX_ITEMS];
   int copyCount = 0;
+  float cycle = 0;
   // Keep metrics local to this pass so text, style and viewport changes still
   // remeasure, while repeated labels reuse their source header's metrics.
   for (int i = 0; i < count; i++) {
     headers[i] = Pivot_HeaderFor(hObject, items[i]);
     sizes[i] = Metro_Measure(headers[i], 4096, 4096);
+    cycle += sizes[i].width + PIVOT_HEADER_SPACING;
   }
   FOR_EACH_OBJECT(child, hObject) {
     struct PivotHeaderItem *header = GetPivotHeaderItem(child);
@@ -331,10 +334,11 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     strip = MAX(strip, size.height);
   }
 
-  // Short strips keep cycling, dimmed, until they reach the right edge. Copies
-  // take the size of the header they repeat, which is already measured.
+  // Wide layouts need no duplicate choices when every unique header fits.
+  // Compact/overflowing strips keep the phone's cyclic motion and copy pool.
+  bool_t repeatHeaders = w <= PIVOT_WIDE_VIEWPORT || cycle - PIVOT_HEADER_SPACING > w - 2 * METRO_INSET;
   int repeats = 0;
-  for (int k = 0; !pPivot->IsLocked && count && hx < x + w && repeats < PIVOT_MAX_ITEMS; k++) {
+  for (int k = 0; !pPivot->IsLocked && repeatHeaders && count && hx < x + w && repeats < PIVOT_MAX_ITEMS; k++) {
     int index = (pPivot->SelectedIndex + k) % count;
     struct Object *item = items[index];
     struct Size size = sizes[index];

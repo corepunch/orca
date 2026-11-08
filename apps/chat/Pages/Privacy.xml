@@ -1,0 +1,5 @@
+<!-- Canonical policy: docs/chat/privacy.md; bundled exact copy: assets/privacy.md. -->
+<StackView Name="PrivacyPage" Spacing="16" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Text="https://corepunch.github.io/orca/chat/privacy/" FontSize="14" WordWrap="true" class="chat-accent-text"/>
+  <MarkdownView Name="PrivacyPolicyText" Spacing="12" class="chat-ink"/>
+</StackView>

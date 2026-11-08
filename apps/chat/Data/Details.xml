@@ -19,5 +19,6 @@
   <Command Name="TogglePin" Operation="togglePin" Sync="true"/>
   <Handler Name="AskLeave"/>
   <Handler Name="CancelLeave"/>
+  <Handler Name="MemberSafety"/>
   <Expose Name="Room" Entity="ChatRoom" Key="RoomId"/>
 </DataScope>
