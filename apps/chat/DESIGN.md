@@ -261,6 +261,8 @@ use distinct blue, orange, purple and green fills with white icons and labels
 in both themes, following the supplied Windows Phone tile reference. Back
 from the editor returns to the chooser. Each type's draft, tags and selected
 photos remain in the shared Compose scope when choosing another type or leaving.
+Tiles and the public composer follow Chat's six-point rounded corners. Their
+screenshots render at 2× backing density, rather than enlarging a 1× capture.
 
 The People Hub is the organization reference: one person's public profile
 connects posts, following and a private Message action. It is distinct from

@@ -62,12 +62,10 @@ for _, inset in ipairs { 0, 318, 352, 0 } do
     layout()
     app.diagnostics:checkLayout()
     assert(app.screen == search, "Showing, resizing or hiding the keyboard during user search must retain the chat screen")
-    local footer = search:findChild("AppBar", true)
     local bottom = math.max(34, inset)
-    assert(math.abs(footer.ActualY - (932 - bottom - 58)) < 1,
-        "Search commands must stay above the keyboard or home indicator")
-    assert(math.abs(footer.ActualY + footer.ActualHeight - 932) < 1,
-        "The frosted search bar must extend to the full viewport bottom")
+    assert(not search:findChild("AppBar", true), "New chat is a focused task without root navigation")
+    assert(math.abs(search:getFirstChild().ActualHeight - (932 - 59 - bottom)) < 1,
+        "The new-chat page must stay above the keyboard or home indicator")
 end
 search.Width, search.Height = 390, 844
 search.SafeAreaTop, search.SafeAreaBottom = 0, 0

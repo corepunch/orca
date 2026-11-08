@@ -331,18 +331,18 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     uint32_t centerIdx = a * (ROUNDED_VERTICES + 1);
     uint32_t cornerStart = centerIdx + 1;
     uint32_t nextCornerStart = b * (ROUNDED_VERTICES + 1);
-    // Create fan triangles for the rounded corner
+    // Match the base rectangle's winding so culling keeps the curved fans.
     for (uint32_t i = 0; i < ROUNDED_VERTICES - 1; i++) {
-      ADD_TRIANGLE(centerIdx, cornerStart + i, cornerStart + i + 1);
+      ADD_TRIANGLE(centerIdx, cornerStart + i + 1, cornerStart + i);
     }
     // Connect last vertex of this corner to first vertex of next corner
-    ADD_TRIANGLE(centerIdx, cornerStart + ROUNDED_VERTICES - 1, nextCornerStart + 1);
+    ADD_TRIANGLE(centerIdx, nextCornerStart + 1, cornerStart + ROUNDED_VERTICES - 1);
     ADD_TRIANGLE(centerIdx, nextCornerStart, nextCornerStart + 1);
   }
 
   // Generate base rectangle
   ADD_TRIANGLE(3 * (ROUNDED_VERTICES + 1), 1 * (ROUNDED_VERTICES + 1), 0 * (ROUNDED_VERTICES + 1));
-  ADD_TRIANGLE(1 * (ROUNDED_VERTICES + 1), 2 * (ROUNDED_VERTICES + 1), 3 * (ROUNDED_VERTICES + 1));
+  ADD_TRIANGLE(1 * (ROUNDED_VERTICES + 1), 3 * (ROUNDED_VERTICES + 1), 2 * (ROUNDED_VERTICES + 1));
 
   DRAWSURFATTR attr[] = {
     VERTEX_SEMANTIC_POSITION, VERTEX_ATTR_DATATYPE_FLOAT32,
@@ -388,9 +388,11 @@ Model_CreateRoundedBorder(struct model** ppModel)
       verts[vidx++] = v;
     }
   }
-  // Generate indices around the rectangle perimeter
-  for (uint32_t i = 0, d = 8 * ROUNDED_VERTICES; i < d; i++) {
-    ADD_TRIANGLE(i, (i + 1) % d, (i + 2) % d);
+  // Inner/outer vertices form a strip. Keep both triangles in every segment
+  // wound like the fill; a sliding triple alternates winding and is culled.
+  for (uint32_t i = 0, d = 8 * ROUNDED_VERTICES; i < d; i += 2) {
+    ADD_TRIANGLE(i, (i + 2) % d, (i + 1) % d);
+    ADD_TRIANGLE((i + 1) % d, (i + 2) % d, (i + 3) % d);
   }
   
   DRAWSURFATTR attr[] = {

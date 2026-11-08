@@ -10,9 +10,11 @@
 .chat-posts .post-markdown .md-quote { border-color: #006ad1; }
 
 /* The creation chooser keeps its tile colours in both app appearances. */
-.post-type { border-radius: 0; }
+.post-type { border-radius: 6; }
 .post-type-text { background-color: #006ad1; }
 .post-type-photo { background-color: #c44518; }
 .post-type-quote { background-color: #7952b3; }
 .post-type-link { background-color: #147a53; }
 .post-type .post-type-ink { color: #ffffff; }
+.chat-posts .octopus-input, .chat-posts .octopus-outline { border-radius: 4; }
+.chat-posts .octopus-primary { border-radius: 6; }
