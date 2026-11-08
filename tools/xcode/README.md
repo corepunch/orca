@@ -99,6 +99,9 @@ includes its implementation sources. Generated Objective-C units appear under Na
 the raw engine, plugin and platform directories are not added to the navigator.
 
 Host code generation uses the macOS SDK, independently of the iOS target SDK.
+The SDK sysroot is part of the host compiler command, including the bundled
+libxml2 compile rules and codegen compile/link rules. Codegen uses the bundled
+libxml2 headers and objects rather than the SDK's libxml2.
 Lua, LZ4 and curl are built as static libraries for every architecture
 in `ARCHS`; curl uses Apple's Secure Transport for HTTPS. Lua and LZ4 compile
 from the `libs/lua` and `libs/lz4` submodules. The curl archive is pinned and

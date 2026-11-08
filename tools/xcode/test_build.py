@@ -3,6 +3,7 @@ import os
 import importlib.util
 from pathlib import Path
 import plistlib
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -11,6 +12,36 @@ from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+class HostCodegenTests(unittest.TestCase):
+    def test_macos_sysroot_reaches_every_host_compiler_rule(self):
+        spec = importlib.util.spec_from_file_location('orca_xcode_build', ROOT / 'tools/xcode/build.py')
+        module = importlib.util.module_from_spec(spec)
+        with patch.object(sys, 'path', [str(ROOT / 'tools/xcode'), *sys.path]):
+            spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory(prefix='orca-xcode-host-') as temporary:
+            root, output = Path(temporary) / 'repository', Path(temporary) / 'Derived Data'
+            definition = root / 'source/core/core.cgen'
+            definition.parent.mkdir(parents=True)
+            definition.write_text('module core\n')
+            sdk = '/Applications/Xcode QA.app/MacOSX.sdk'
+            compiler = '/Applications/Xcode QA.app/Toolchain/clang'
+            with patch.dict(os.environ, SDKROOT='/iPhoneOS.sdk', CPATH='/iPhoneOS/include'), \
+                    patch.object(module.subprocess, 'check_output', side_effect=[sdk, compiler]) as query, \
+                    patch.object(module, 'run') as run:
+                module.generate_api(root, output, {'MODULES': ['core'], 'PLUGINS': []})
+            for call in query.call_args_list:
+                self.assertEqual(call.args[0][:3], ['xcrun', '--sdk', 'macosx'])
+                self.assertNotIn('SDKROOT', call.kwargs['env'])
+                self.assertNotIn('CPATH', call.kwargs['env'])
+            command = run.call_args.args
+            variables = dict(value.split('=', 1) for value in map(str, command) if '=' in value)
+            # Bundled libxml2 and codegen's compile/link rules all invoke CC.
+            self.assertEqual(shlex.split(variables['CC']), [compiler, '-isysroot', sdk])
+            self.assertNotIn('HOST_XML_CFLAGS', variables)
+            self.assertNotIn('HOST_XML_LIBS', variables)
+            self.assertEqual(run.call_args.kwargs['cwd'], output)
 
 
 class ResourceTests(unittest.TestCase):
