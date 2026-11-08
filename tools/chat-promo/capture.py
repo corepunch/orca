@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture staged, offline Chat screens in an isolated iPhone simulator app."""
+"""Capture staged, offline Chat screens in an isolated Apple simulator app."""
 import argparse
 import hashlib
 import json
@@ -31,7 +31,7 @@ def run(*args, **kwargs):
     return subprocess.run(args, check=True, **kwargs)
 
 
-def prepare(bundle, binary):
+def prepare(bundle, binary, family='iphone'):
     # Start from the already-built simulator executable; don't rebuild an engine
     # which may have unrelated work in progress. Package current Lua/resources.
     if bundle.exists():
@@ -57,30 +57,37 @@ def prepare(bundle, binary):
     info_path = bundle / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())
     info.pop('ORCARemoteNotifications', None)
-    info['UIDeviceFamily'] = [1]
+    info['UIDeviceFamily'] = [2] if family == 'ipad' else [1]
     info_path.write_bytes(plistlib.dumps(info))
     run('codesign', '--force', '--deep', '--sign', '-', str(bundle))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--device', required=True, help='Explicit iPhone simulator UDID')
+    parser.add_argument('--device', required=True, help='Explicit booted simulator UDID')
+    parser.add_argument('--family', choices=('iphone', 'ipad'), default='iphone')
+    parser.add_argument('--output-dir', type=Path, default=OUTPUT)
     parser.add_argument('--bundle', type=Path, required=True, help='New temporary .app directory')
     parser.add_argument('--binary', type=Path, default=ROOT / 'build/ios/iphonesimulator-arm64/Orca.app/Orca')
     parser.add_argument('--delay', type=float, default=5)
     parser.add_argument('--only', nargs='+', help='Capture selected stage names for iteration')
     args = parser.parse_args()
+    output = args.output_dir
     records = []
     if args.only:
-        previous = json.loads((OUTPUT / 'manifest.json').read_text())
-        if previous['binary_sha256'] != hashlib.sha256(args.binary.read_bytes()).hexdigest():
-            raise SystemExit('Binary changed; capture the complete set first')
         unknown = set(args.only) - {shot[1] for shot in SHOTS}
         if unknown:
             raise SystemExit('Unknown stage: ' + ', '.join(sorted(unknown)))
-        records = [shot for shot in previous['shots'] if shot['stage'] not in args.only]
-    prepare(args.bundle, args.binary)
-    raw = OUTPUT / 'captures'
+        manifest = output / 'manifest.json'
+        if manifest.exists():
+            previous = json.loads(manifest.read_text())
+            if previous['binary_sha256'] != hashlib.sha256(args.binary.read_bytes()).hexdigest():
+                raise SystemExit('Binary changed; use a new output directory or capture the complete set')
+            if previous.get('family', 'iphone') != args.family or previous['device'] != args.device:
+                raise SystemExit('Device changed; use a new output directory or capture the complete set')
+            records = [shot for shot in previous['shots'] if shot['stage'] not in args.only]
+    prepare(args.bundle, args.binary, args.family)
+    raw = output / 'captures'
     raw.mkdir(parents=True, exist_ok=True)
     run('xcrun', 'simctl', 'install', args.device, str(args.bundle))
     run('xcrun', 'simctl', 'status_bar', args.device, 'override', '--time', '9:41',
@@ -112,15 +119,15 @@ def main():
         if 'ORCA:' in log.read_text() or 'Chat error' in log.read_text():
             raise SystemExit(f'Capture failed; inspect {log}')
         records.append(dict(name=name, stage=stage, appearance=appearance, title=title,
-                            subtitle=subtitle, capture=str(target.relative_to(OUTPUT)),
+                            subtitle=subtitle, capture=str(target.relative_to(output)),
                             auxiliary=stage == 'contacts-all',
                             sha256=hashlib.sha256(target.read_bytes()).hexdigest()))
         captured += 1
     records.sort(key=lambda shot: shot['name'])
-    metadata = dict(device=args.device, bundle_id=IDENTIFIER, offline=True,
+    metadata = dict(device=args.device, family=args.family, bundle_id=IDENTIFIER, offline=True,
                     binary_sha256=hashlib.sha256(args.binary.read_bytes()).hexdigest(), shots=records)
-    (OUTPUT / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
-    print(f'Captured {captured} iPhone screens; manifest contains {len(records)} views in {raw}')
+    (output / 'manifest.json').write_text(json.dumps(metadata, indent=2) + '\n')
+    print(f'Captured {captured} {args.family} screens; manifest contains {len(records)} views in {raw}')
 
 
 if __name__ == '__main__':

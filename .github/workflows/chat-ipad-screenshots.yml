@@ -1,0 +1,89 @@
+name: Chat iPad screenshots
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Offline application scene to capture
+        type: choice
+        options: [inbox, direct, photos]
+        default: inbox
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: macos-26
+    timeout-minutes: 45
+    env:
+      CHAT_CAPTURE_STAGE: ${{ inputs.stage }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build simulator app in the cloud
+        run: make ios-sim
+
+      - name: Capture an actual 13-inch iPad simulator
+        run: |
+          set -euo pipefail
+          xcrun simctl list devices available --json > "$RUNNER_TEMP/devices.json"
+          python3 - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          catalog = json.loads((Path(os.environ['RUNNER_TEMP']) / 'devices.json').read_text())
+          candidates = [(runtime, device) for runtime, devices in catalog['devices'].items()
+                        if '.iOS-' in runtime for device in devices
+                        if device.get('isAvailable') and device['name'].startswith('iPad')
+                        and ('13-inch' in device['name'] or '12.9-inch' in device['name'])]
+          if not candidates:
+              raise SystemExit('No installed 13-inch iPad simulator; refusing a resized phone image')
+          runtime, device = sorted(candidates, key=lambda item: (item[0], 'Pro' in item[1]['name']))[-1]
+          (Path(os.environ['RUNNER_TEMP']) / 'selected-ipad.json').write_text(
+              json.dumps({'runtime': runtime, **device}, indent=2) + '\n')
+          if device['state'] != 'Booted':
+              subprocess.run(['xcrun', 'simctl', 'boot', device['udid']], check=True)
+          print(device['name'], runtime, device['udid'])
+          PY
+          CHAT_CAPTURE_DEVICE=$(python3 -c 'import json,os; print(json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "selected-ipad.json")))["udid"])')
+          xcrun simctl bootstatus "$CHAT_CAPTURE_DEVICE" -b
+          python3 tools/chat-promo/capture.py \
+            --device "$CHAT_CAPTURE_DEVICE" --family ipad \
+            --bundle "$RUNNER_TEMP/Chat-iPad-Promo.app" \
+            --output-dir "$RUNNER_TEMP/chat-ipad-screenshots" \
+            --only "$CHAT_CAPTURE_STAGE"
+
+      - name: Validate native screenshot and record provenance
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, struct, subprocess
+          from pathlib import Path
+          root = Path(os.environ['RUNNER_TEMP']) / 'chat-ipad-screenshots'
+          manifest = json.loads((root / 'manifest.json').read_text())
+          for shot in manifest['shots']:
+              path = root / shot['capture']
+              data = path.read_bytes()
+              if data[:8] != b'\x89PNG\r\n\x1a\n':
+                  raise SystemExit('Capture is not a PNG')
+              width, height, depth, color = struct.unpack('>IIBB', data[16:26])
+              if (width, height) not in {(2048, 2732), (2064, 2752), (2732, 2048), (2752, 2064)}:
+                  raise SystemExit(f'Unexpected native iPad screenshot size: {width}x{height}')
+              if color not in (0, 2, 3):
+                  raise SystemExit(f'Screenshot has an alpha channel (PNG color type {color})')
+              shot.update(width=width, height=height, sha256=hashlib.sha256(data).hexdigest())
+          manifest['source_commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          manifest['xcode'] = subprocess.check_output(['xcodebuild', '-version'], text=True).strip()
+          manifest['simulator'] = json.loads((Path(os.environ['RUNNER_TEMP']) / 'selected-ipad.json').read_text())
+          (root / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+          print(json.dumps(manifest, indent=2))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chat-ipad-screenshots
+          path: ${{ runner.temp }}/chat-ipad-screenshots
+          retention-days: 30
+          if-no-files-found: warn
