@@ -56,6 +56,7 @@ struct style_class_selector
   struct style_class_selector* next;
   shortStr_t value;    // base class name (without pseudo-states or opacity suffix)
   uint32_t flags;      // STYLE_* pseudo-state requirements
+  uint32_t hash;       // fnv1a32(value), compared before the string
   byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
   bool_t state;        // added from StyleController.StateClasses, replaced with it
 };
@@ -70,15 +71,29 @@ typedef enum style_combinator {
   STYLE_COMBINATOR_CHILD,
 } style_combinator_t;
 
+#define MAX_STYLE_PART_CLASSES 8
+
+// One compound selector ("Type.class#name:hover"), split once when the rule
+// is compiled so matching compares flags, hashes and short names only.
 struct style_selector_part
 {
-  fixedString_t selector;
+  fixedString_t selector;      // authored text, kept for diagnostics
   style_combinator_t combinator;
+  uint32_t pseudo;             // STYLE_* this part requires; STYLE_INVALID never matches
+  bool_t body;                 // "body": the root object only
+  bool_t bare;                 // bare token: a type name or a style class
+  shortStr_t type;             // required type name, empty when absent
+  uint32_t typeHash;
+  shortStr_t name;             // required object name (#name), empty when absent
+  byte_t classCount;
+  shortStr_t classes[MAX_STYLE_PART_CLASSES];
+  uint32_t classHashes[MAX_STYLE_PART_CLASSES];
 };
 
 struct style_selector
 {
   byte_t count;
+  uint32_t pseudo;             // union of every part's pseudo flags
   struct style_selector_part parts[MAX_STYLE_SELECTOR_PARTS];
 };
 
@@ -120,6 +135,7 @@ struct game
 {
   longTime_t realtime;
   uint32_t frame;
+  uint32_t dirtySerial; // counts OBJ_SetDirty calls; see Object.serial
   struct Object *focus;
   bool_t keyboardNavigation;
   struct Object *hover;

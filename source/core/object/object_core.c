@@ -103,8 +103,12 @@ void
 OBJ_SetDirty(struct Object *pobj)
 {
   pobj->dirty = core.realtime;
+  // The serial outlives OF_DIRTY, which the screen clears after each paint, so
+  // layout caches can tell a change made after they were taken within a frame.
+  uint32_t serial = ++core.dirtySerial;
   for (struct Object *hParent = pobj; hParent; hParent = hParent->parent) {
     hParent->flags |= OF_DIRTY;
+    hParent->serial = serial;
   }
 }
 

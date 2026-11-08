@@ -437,6 +437,10 @@
         <field name="_shadowRevision" type="int">Shadow cache revision counter</field>
         <field name="_backdrop" type="BackdropCache" pointer="true">Cached backdrop capture and blur targets</field>
         <field name="_safeArea" type="vec2">Top and bottom safe-area insets visible to the children, in this node's frame</field>
+        <field name="_measureKeys" type="Size" fixed-array="3">Available sizes the cached measure results were taken at</field>
+        <field name="_measureSizes" type="Size" fixed-array="3">Measured sizes returned for _measureKeys</field>
+        <field name="_measureCount" type="uint">Valid entries in the measure cache</field>
+        <field name="_measureSerial" type="uint">Object change serial the measure cache was taken at</field>
         <field name="_barInset" type="vec2">Part of _safeArea covered by docked bars rather than by system insets</field>
       </fields>
       <methods>

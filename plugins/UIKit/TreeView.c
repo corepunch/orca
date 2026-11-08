@@ -76,10 +76,11 @@ static void TreeViewItem_SyncState(struct Object *object)
   struct TreeViewItem *item = GetTreeViewItem(object);
   struct HeaderedItemsControl *control = GetHeaderedItemsControl(object);
   if (!item || !control) return;
+  /* Runs on every measure pass, so it only writes what changed: OBJ_SetFlags
+     and PROP_SetValue restyle or invalidate on a change and are no-ops otherwise. */
   if (control->_headerPresenter) {
     uint32_t flags = OBJ_GetFlags(control->_headerPresenter);
     OBJ_SetFlags(control->_headerPresenter, item->IsSelected ? flags | OF_SELECTED : flags & ~OF_SELECTED);
-    _SendMessage(control->_headerPresenter, StyleController, ThemeChanged, .recursive = TRUE);
   }
   if (control->_itemsPresenter)
     PROP_SetValue(OBJ_FindLongProperty(control->_itemsPresenter, ID_Node_Visible), &item->IsExpanded);
@@ -89,9 +90,7 @@ static void TreeViewItem_SyncState(struct Object *object)
     if (chevron) PROP_SetValue(OBJ_FindLongProperty(chevron, ID_Node_Visible), &control->HasItems);
     uint32_t flags = OBJ_GetFlags(item->_expander);
     OBJ_SetFlags(item->_expander, item->IsExpanded ? flags | OF_CHECKED : flags & ~OF_CHECKED);
-    _SendMessage(item->_expander, StyleController, ThemeChanged, .recursive = TRUE);
   }
-  OBJ_SetDirty(object);
 }
 
 static struct Object *TreeView_Part(struct Object *parent, uint32_t type, char const *name, char const *css)
@@ -282,6 +281,7 @@ HANDLER(HeaderedItemsControl, ItemsControl, ItemsChanged)
 {
   HeaderedItemsControl_UpdateHasItems(hObject);
   TreeViewItem_SyncState(hObject);
+  OBJ_SetDirty(hObject);
   struct Object *root = TreeView_Root(hObject);
   if (root) TreeView_SyncSelection(root);
   return TRUE;
@@ -336,7 +336,10 @@ HANDLER(TreeViewItem, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
   uint32_t id = PROP_GetLongIdentifier(pPropertyChanged->Property);
-  if (id == ID_TreeViewItem_IsExpanded || id == ID_TreeViewItem_IsSelected) TreeViewItem_SyncState(hObject);
+  if (id == ID_TreeViewItem_IsExpanded || id == ID_TreeViewItem_IsSelected) {
+    TreeViewItem_SyncState(hObject);
+    OBJ_SetDirty(hObject);
+  }
   struct Object *root = TreeView_Root(hObject);
   struct TreeView *tree = GetTreeView(root);
   if (!tree || tree->_changing || tree->_ensuring) return FALSE;
