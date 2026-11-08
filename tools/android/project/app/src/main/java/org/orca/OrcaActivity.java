@@ -1,6 +1,7 @@
 package org.orca;
 
 import android.app.NativeActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -102,15 +103,21 @@ public class OrcaActivity extends NativeActivity {
         });
     }
 
-    /** Opens a sign-in page in a Custom Tab, or the default browser. */
+    /**
+     * Opens a sign-in page in a Custom Tab, or the default browser. Returns
+     * false when no app can show the page, so the engine reports it instead
+     * of waiting for a callback that cannot come.
+     */
     public boolean openUrl(String url) {
         Uri uri = Uri.parse(url);
         if (!"https".equals(uri.getScheme())) return false;
+        Intent browser = new Intent(Intent.ACTION_VIEW, uri).addCategory(Intent.CATEGORY_BROWSABLE);
+        if (browser.resolveActivity(getPackageManager()) == null) return false;
         runOnUiThread(() -> {
             try {
                 new CustomTabsIntent.Builder().setShowTitle(true).build().launchUrl(this, uri);
-            } catch (RuntimeException unavailable) {
-                startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (RuntimeException noCustomTabs) {
+                try { startActivity(browser); } catch (ActivityNotFoundException removed) { /* browser went away */ }
             }
         });
         return true;

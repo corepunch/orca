@@ -10,6 +10,8 @@
 #include <android_native_app_glue.h>
 #include <jni.h>
 #include <errno.h>
+#include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -266,6 +268,39 @@ unpack_assets(AAssetManager *assets, char const *root)
   return ok;
 }
 
+/* ── stdio ─────────────────────────────────────────────────────────────── */
+
+/* Android discards stdout and stderr; forward their lines (Lua print, error
+ * reports) to logcat under the same tag. */
+static void *
+forward_stdio(void *fd)
+{
+  FILE *in = fdopen((int)(intptr_t)fd, "r");
+  char line[1024];
+  while (in && fgets(line, sizeof(line), in)) {
+    line[strcspn(line, "\n")] = '\0';
+    __android_log_write(ANDROID_LOG_INFO, "orca", line);
+  }
+  return NULL;
+}
+
+static void
+redirect_stdio(void)
+{
+  static int redirected;
+  int fds[2];
+  pthread_t thread;
+  if (redirected || pipe(fds)) return;
+  setvbuf(stdout, NULL, _IOLBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
+  dup2(fds[1], STDOUT_FILENO);
+  dup2(fds[1], STDERR_FILENO);
+  close(fds[1]);
+  if (pthread_create(&thread, NULL, forward_stdio, (void *)(intptr_t)fds[0])) return;
+  pthread_detach(thread);
+  redirected = 1;
+}
+
 /* ── main ──────────────────────────────────────────────────────────────── */
 
 static void
@@ -277,6 +312,7 @@ run(struct android_app *app)
   snprintf(share, sizeof(share), "%s/share", root);
   snprintf(project, sizeof(project), "%s/project", root);
   if (chdir(project)) { LOG("Cannot open the project at %s", project); return; }
+  LOG("Starting %s", project);
   AConfiguration_getLanguage(app->config, language);
   if (language[0] && !getenv("ORCA_LANGUAGE")) setenv("ORCA_LANGUAGE", language, 0);
   lua_State *L = luaL_newstate();
@@ -305,6 +341,7 @@ void
 android_main(struct android_app *app)
 {
   android_app_state = app;
+  redirect_stdio();
   axAndroidSetApp(app);
   run(app);
   // The application returned (or failed to start): close the activity.

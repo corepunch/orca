@@ -31,6 +31,24 @@ submodules. Outputs are cached under `build/android/<abi>/`.
 the launcher activity and one `VIEW` intent filter per `URLSchemes` entry in
 `package.lua`, so sign-in links open the app.
 
+## Smoke test
+
+With an emulator or device attached, `tools/android/smoke-test.sh` installs an
+APK, checks that the app starts and stays up, then opens the project's
+`URLSchemes` link with a declined Google sign-in
+(`...://oauth?provider=google&error=access_denied`). The link must reach Lua
+through the intent filter, JNI and `orca.signin`. Chat logs
+`Chat sign-in failed: provider_failed` without contacting Appwrite.
+
+```sh
+tools/android/smoke-test.sh tools/android/project/app/build/outputs/apk/debug/app-debug.apk \
+    org.orca.chat apps/chat build/android/smoke
+```
+
+Screenshots and `logcat.txt` are written to the output directory. CI's
+`test-android` job runs it on an API 34 x86_64 emulator against the
+`build-android` APK and uploads the results as `orca-chat-android-smoke`.
+
 ## Runtime
 
 - `android_main` (`source/android/android_main.c`) unpacks the bundled files to
@@ -46,7 +64,10 @@ the launcher activity and one `VIEW` intent filter per `URLSchemes` entry in
 - `orca.credentials` stores values AES-GCM encrypted with a non-exportable
   Android Keystore key.
 - `orca.signin.open` shows the page in a Custom Tab; the provider's redirect to
-  the app's scheme, or an emailed link, returns through the intent filter.
+  the app's scheme, or an emailed link, returns through the intent filter. It
+  fails, rather than waiting, when no browser can open the page.
+- stdout and stderr (Lua `print`, Chat error reports) are forwarded to logcat
+  under the `orca` tag: `adb logcat -s orca`.
 
 ## Not yet on Android
 

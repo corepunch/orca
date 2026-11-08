@@ -154,6 +154,45 @@ jobs:
           name: orca-chat-android
           path: tools/android/project/app/build/outputs/apk/debug/app-debug.apk
 
+  # Runs the x86_64 APK on an emulator: launch, then a Google sign-in callback
+  # through the app's URL scheme (offline; no Appwrite request).
+  test-android:
+    needs: build-android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: orca-chat-android
+          path: build/android/apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Smoke test Chat on an emulator (API 34, x86_64)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: sh tools/android/smoke-test.sh build/android/apk/app-debug.apk org.orca.chat apps/chat build/android/smoke
+
+      - name: Upload smoke test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-chat-android-smoke
+          path: build/android/smoke/
+
   build-webgl:
     runs-on: ubuntu-latest
     steps:
