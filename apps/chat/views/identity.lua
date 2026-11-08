@@ -91,11 +91,14 @@ function Identity.auth(self, mode)
     local title, description, form
     if mode == "options" then
         title, description = t("sign-in options"), t("Choose another way to continue.")
+        local function method(name, icon, label, route)
+            return C.command(name, icon, label, function() go(route) end, nil, { wrap = true })
+        end
         form = C.stack({ Name = "OptionsPage", Spacing = 0 }, {
-            C.command("UseEmailCode", "mail", t("Email me a sign-in code"), function() go("/auth") end),
-            C.command("UseMagicLink", "link", t("Email me a sign-in link"), function() go("/auth/magic") end),
-            C.command("UsePassword", "key-round", t("Email and password"), function() go("/auth/email") end),
-            C.command("CreateAccount", "user-round-plus", t("Create an account"), function() go("/auth/signup") end),
+            method("UseEmailCode", "mail", t("Email me a sign-in code"), "/auth"),
+            method("UseMagicLink", "link", t("Email me a sign-in link"), "/auth/magic"),
+            method("UsePassword", "key-round", t("Email and password"), "/auth/email"),
+            method("CreateAccount", "user-round-plus", t("Create an account"), "/auth/signup"),
         })
     elseif mode == "magic" then
         title, description = t("sign in"), t("We'll email you a link. Open it on this device to sign in, or to create your account.")

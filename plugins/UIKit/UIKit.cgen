@@ -1263,7 +1263,8 @@
       <details>Content container hosted by a Pivot. Only the selected item is visible; the Pivot arranges it below the header strip with the standard Windows Phone content margins.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <properties>
-        <property name="Header" type="string">Text shown for this item in the Pivot header strip. Displayed in lowercase, as on Windows Phone.</property>
+        <property name="Header" type="string">Text shown for this item in the Pivot header strip. Displayed in lowercase unless PreserveHeaderCase is true.</property>
+        <property name="PreserveHeaderCase" type="bool">Preserve the Header text casing for user names and other user-provided titles instead of converting it to lowercase.</property>
       </properties>
     </class>
     <class name="PivotHeaderItem" parent="TextBlock">
@@ -1406,7 +1407,7 @@
     </class>
     <class name="ApplicationBar" parent="Node2D">
       <summary>Windows Phone application bar: round icon buttons, an ellipsis and an expandable menu</summary>
-      <details>Hosts up to four ApplicationBarIconButton children and any number of ApplicationBarMenuItem children. Collapsed, it shows outlined round buttons centred in the bar and an ellipsis at the right edge. Tapping the ellipsis expands the bar upwards over the page, revealing button labels and the lowercase menu; tapping outside, a button or a menu item collapses it.</details>
+      <details>Hosts up to four ApplicationBarIconButton children and any number of ApplicationBarMenuItem children. Collapsed, it shows outlined round buttons centred before a separate 44-point overflow target at the right edge. Command slots narrow with the available width while keeping the ellipsis separate. Tapping the ellipsis expands the bar upwards over the page, revealing button labels and the lowercase menu; tapping outside, a button or a menu item collapses it.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>

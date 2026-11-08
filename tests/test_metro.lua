@@ -251,6 +251,32 @@ local function test_pivot_wide_headers()
   print("PASS: test_pivot_wide_headers")
 end
 
+local function test_pivot_preserve_header_case()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot {}
+  local person = pivot + ui.PivotItem { Header = "Alex McDonald", PreserveHeaderCase = true }
+  local settings = pivot + ui.PivotItem { Header = "Settings" }
+  layout(screen)
+  for _, header in ipairs(children(pivot, "PivotHeaderItem")) do header.Width = 80 end
+  layout(screen)
+  local headers = children(pivot, "PivotHeaderItem")
+  test.expect(#headers > 2, "Fixed-width headers create repeated labels")
+  for i, header in ipairs(headers) do
+    test.expect_eq(header.Text, i % 2 == 1 and "Alex McDonald" or "settings",
+      "Original and repeated headers use their item's casing policy")
+  end
+  person.PreserveHeaderCase = false
+  layout(screen)
+  test.expect_eq(headers[1].Text, "alex mcdonald", "Turning preservation off restores the Metro default")
+  test.expect_eq(headers[3].Text, "alex mcdonald", "Repeated headers follow casing changes")
+  person.PreserveHeaderCase, person.Header = true, "Team iOS"
+  layout(screen)
+  test.expect_eq(headers[1].Text, "Team iOS", "Changed user titles keep authored capitalization")
+  test.expect_eq(headers[3].Text, "Team iOS", "Repeated user titles also retain the updated case")
+  test.expect(not settings.PreserveHeaderCase, "Navigation headings remain lowercase by default")
+  print("PASS: test_pivot_preserve_header_case")
+end
+
 local function test_pivot_back()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local events = {}
@@ -362,7 +388,7 @@ local function test_application_bar()
   test.expect(add.ActualX + add.ActualWidth <= off.ActualX + 0.5, "Icon buttons sit side by side")
   local addX = origin(add)
   local offX = origin(off)
-  test.expect(math.abs((addX + offX + off.ActualWidth) / 2 - 195) < 1, "Icon buttons are centred in the bar")
+  test.expect(math.abs((addX + offX + off.ActualWidth) / 2 - 173) < 1, "Icon buttons are centred before the overflow target")
   test.expect(not about.Visible, "Menu items stay hidden while collapsed")
 
   tap(screen, add)
@@ -409,8 +435,52 @@ local function test_application_bar()
   bar.Mode = "Default"
   off.Visible = false
   layout(screen)
-  test.expect(math.abs(origin(add) + add.ActualWidth / 2 - 195) < 1, "Hidden buttons leave the row")
+  test.expect(math.abs(origin(add) + add.ActualWidth / 2 - 173) < 1, "Hidden buttons leave the row")
   print("PASS: test_application_bar")
+end
+
+local function test_application_bar_overflow_target()
+  local screen = ui.Screen { Width = 320, Height = 844, ResizeMode = "NoResize" }
+  local grid = screen + ui.Grid { Rows = "1fr 58px" }
+  grid:addChild(ui.Node2D {})
+  local bar = grid + ui.ApplicationBar {}
+  local clicked, buttons = nil, {}
+  for i = 1, 4 do
+    buttons[i] = bar + ui.ApplicationBarIconButton {
+      Text = tostring(i), Click = function () clicked = i end,
+    }
+  end
+  bar:addChild(ui.ApplicationBarMenuItem { Text = "About" })
+  for _, width in ipairs { 320, 390, 844 } do
+    screen.Width = width
+    layout(screen)
+    for i, button in ipairs(buttons) do
+      test.expect(button.ActualWidth >= 44, "Every command keeps a usable target at supported widths")
+      test.expect(button.ActualX + button.ActualWidth <= width - 44 + 0.5,
+        "Every command target ends before the reserved overflow target")
+      if i > 1 then
+        test.expect(button.ActualX >= buttons[i - 1].ActualX + buttons[i - 1].ActualWidth - 0.5,
+          "Adaptive command targets do not overlap")
+      end
+    end
+    clicked = nil
+    tap(screen, bar, width - 22, 29)
+    layout(screen)
+    test.expect(bar.IsExpanded and clicked == nil, "Tapping overflow expands the bar instead of choosing the last command")
+    -- The expanded ellipsis is above the compact bar; route through its actual visual centre.
+    local ellipsis = bar:getFirstChild()
+    while ellipsis and not (ellipsis.className == "Node2D" and #children(ellipsis, "Node2D") == 3) do
+      ellipsis = ellipsis:getNext()
+    end
+    tap(screen, ellipsis)
+    layout(screen)
+    test.expect(not bar.IsExpanded and clicked == nil, "Expanded overflow collapses without choosing a command")
+    tap(screen, buttons[4], nil, 19)
+    layout(screen)
+    test.expect_eq(clicked, 4, "The adjacent final command retains its own pointer target")
+    test.expect(not bar.IsExpanded, "Choosing a command leaves the bar collapsed")
+  end
+  print("PASS: test_application_bar_overflow_target")
 end
 
 local function test_panorama()
@@ -587,9 +657,11 @@ test_pivot()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_wide_headers()
+test_pivot_preserve_header_case()
 test_pivot_back()
 test_pivot_transitions()
 test_application_bar()
+test_application_bar_overflow_target()
 test_panorama()
 test_panorama_wide_sections()
 test_panorama_wide_center()

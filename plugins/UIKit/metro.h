@@ -44,14 +44,14 @@ Metro_SetFloat(struct Object *o, uint32_t id, float value)
   Metro_SetProperty(o, id, &value);
 }
 
-// Sets a TextBlock's text, transformed to lower or upper case, when it differs.
+// Sets text when it differs; a NULL transform preserves the authored case.
 static inline void
 Metro_SetText(struct Object *o, lpcString_t text, int (*transform)(int))
 {
   char buf[MAX_PROPERTY_STRING] = {0};
   size_t i = 0;
   for (; text && text[i] && i < sizeof(buf) - 1; i++)
-    buf[i] = (char)((unsigned char)text[i] < 128 ? transform((unsigned char)text[i]) : text[i]);
+    buf[i] = (char)(transform && (unsigned char)text[i] < 128 ? transform((unsigned char)text[i]) : text[i]);
   struct TextRun *run = GetTextRun(o);
   if (run && run->Text && !strcmp(run->Text, buf)) return;
   struct Property *p = OBJ_FindLongProperty(o, ID_TextRun_Text);

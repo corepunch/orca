@@ -606,7 +606,8 @@ local App = Application:extend {
             scope:attach(bar)
         end
         local back = route.back and function() self:goBack(route.back) end
-        local pivot = C.page(t(route.header or ""), page, { Name = route.name, back = back })
+        local pivot = C.page(t(route.header or ""), page, { Name = route.name, back = back,
+            PreserveHeaderCase = route.headerFrom ~= nil })
         if route.headerFrom then
             local record, field = route.headerFrom:match("^(%w+)%.(%w+)$")
             local item = pivot:getFirstChild()
@@ -672,6 +673,7 @@ local App = Application:extend {
         local screen = self:frame()
         local kind = room.kind == "group" and t("Messenger · group") or room.kind == "channel" and t("Messenger · channel") or nil
         Footer.layout(screen, C.page(room.name, content, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
+            PreserveHeaderCase = true,
             back = function() keepDraft(); self:goBack() end,
             details = function() keepDraft(); self:show("/details", "Forward") end }), footer,
             { class = "chat-background chat-ink" })

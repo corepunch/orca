@@ -689,6 +689,7 @@ APP_LUA_TESTS += test-chat-stress test-octopus-stress
 APP_LUA_TESTS += test-chat-localization test-octopus-localization
 APP_LUA_TESTS += test-chat-account-deletion
 APP_LUA_TESTS += test-chat-safety
+APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome
 HEADLESS_LUA_TESTS += test-editor-projects
@@ -728,6 +729,7 @@ $(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.
 $(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-default-avatars,tests/test_default_avatars.lua,copyshare))
 $(eval $(call LUA_TEST_RULE,test-chat-avatars,tests/test_chat_avatars.lua,copyshare))
+$(eval $(call LUA_TEST_RULE,test-chat-theme,tests/test_chat_theme.lua,copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))

@@ -7,48 +7,48 @@
 .chat-light .conversation { background-color: #ffffff; }
 .chat-light .chat-ink { color: #000000; }
 .chat-light .chat-muted { color: #555555; }
-.chat-light .chat-dim { color: #7a7a7a; }
-.chat-light .room-preview { color: #7a7a7a; }
+.chat-light .chat-dim { color: #727272; }
+.chat-light .room-preview { color: #727272; }
 .chat-light .unread .room-preview { color: #006ad1; }
 .chat-light .chat-link { color: #006ad1; background-color: #00000000; }
-.chat-light .chat-badge { background-color: #0078e7; color: #ffffff; }
-.chat-light .chat-field { background-color: #d9d9d9; color: #000000; border-color: #d9d9d9; placeholder-color: #6e6e6e; }
+.chat-light .chat-badge { background-color: #006ad1; color: #ffffff; }
+.chat-light .chat-field { background-color: #d9d9d9; color: #000000; border-color: #d9d9d9; placeholder-color: #595959; }
 .chat-light .chat-field-ink { color: #000000; }
 .chat-light .chat-accent-text { color: #006ad1; }
 .chat-light .chat-soft { background-color: #dcebff; }
 .chat-light .chat-chrome { background-color: #dddddd; }
 .chat-light .chat-error { color: #e51400; }
 .chat-light .chat-outline { background-color: #00000000; color: #000000; border-color: #000000; }
-.chat-light .chat-primary { background-color: #0078e7; color: #ffffff; }
-.chat-light .sent .bubble { background-color: #0078e7; }
-.chat-light .sent .bubble-tail { color: #0078e7; }
+.chat-light .chat-primary { background-color: #006ad1; color: #ffffff; }
+.chat-light .sent .bubble { background-color: #006ad1; }
+.chat-light .sent .bubble-tail { color: #006ad1; }
 .chat-light .sent .bubble-ink { color: #ffffff; }
-.chat-light .sent .bubble-meta { color: #d4e9ff; }
+.chat-light .sent .bubble-meta { color: #e6f2ff; }
 .chat-light .received .bubble { background-color: #e6e6e6; }
 .chat-light .received .bubble-tail { color: #e6e6e6; }
 .chat-light .received .bubble-ink { color: #000000; }
-.chat-light .received .bubble-meta { color: #7a7a7a; }
+.chat-light .received .bubble-meta { color: #666666; }
 .chat-dark .chat-background { background-color: #000000; }
 .chat-dark .conversation { background-color: #000000; }
 .chat-dark .chat-ink { color: #ffffff; }
-.chat-dark .chat-muted { color: #a6a6a6; }
+.chat-dark .chat-muted { color: #999999; }
 .chat-dark .chat-dim { color: #999999; }
 .chat-dark .room-preview { color: #999999; }
 .chat-dark .unread .room-preview { color: #41beec; }
 .chat-dark .chat-link { color: #41beec; background-color: #00000000; }
-.chat-dark .chat-badge { background-color: #0084ff; color: #ffffff; }
-.chat-dark .chat-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
+.chat-dark .chat-badge { background-color: #006ad1; color: #ffffff; }
+.chat-dark .chat-field { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #4d4d4d; }
 .chat-dark .chat-field-ink { color: #000000; }
 .chat-dark .chat-accent-text { color: #41beec; }
 .chat-dark .chat-soft { background-color: #0a2a4d; }
 .chat-dark .chat-chrome { background-color: #1f1f1f; }
 .chat-dark .chat-error { color: #ff5c5c; }
 .chat-dark .chat-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
-.chat-dark .chat-primary { background-color: #0084ff; color: #ffffff; }
-.chat-dark .sent .bubble { background-color: #0084ff; }
-.chat-dark .sent .bubble-tail { color: #0084ff; }
+.chat-dark .chat-primary { background-color: #006ad1; color: #ffffff; }
+.chat-dark .sent .bubble { background-color: #006ad1; }
+.chat-dark .sent .bubble-tail { color: #006ad1; }
 .chat-dark .sent .bubble-ink { color: #ffffff; }
-.chat-dark .sent .bubble-meta { color: #cfe6ff; }
+.chat-dark .sent .bubble-meta { color: #e6f2ff; }
 .chat-dark .received .bubble { background-color: #2e2e2e; }
 .chat-dark .received .bubble-tail { color: #2e2e2e; }
 .chat-dark .received .bubble-ink { color: #ffffff; }
@@ -73,8 +73,8 @@
 .chat-checkbox .control-check { width: 28; height: 28; -orca-source: url("Chat/assets/icons/check-bold.svg"); }
 .chat-light .chat-checkbox .control-indicator { background-color: #d9d9d9; color: #000000; }
 .chat-dark .chat-checkbox .control-indicator { background-color: #bfbfbf; color: #000000; }
-.chat-light .chat-checkbox:active .control-indicator { background-color: #0078e7; color: #ffffff; }
-.chat-dark .chat-checkbox:active .control-indicator { background-color: #0084ff; color: #ffffff; }
+.chat-light .chat-checkbox:active .control-indicator { background-color: #006ad1; color: #ffffff; }
+.chat-dark .chat-checkbox:active .control-indicator { background-color: #006ad1; color: #ffffff; }
 /* In a settings list the 28-point indicator is centred in the 52-point icon
    column (12 + 28 + 26 = 52 + 14), so labels line up with command rows. */
 .chat-setting-check { height: 56; font-size: 20; -orca-indicator-spacing: 26; }
@@ -97,6 +97,8 @@
 .tone3 { background-color: #a200ff; }
 .tone4 { background-color: #f09609; }
 .chat-action:hover { opacity: 0.78; }
+/* Keep filled labels opaque while showing hover feedback through the fill. */
+.chat-primary:hover { opacity: 1; background-color: #005fba; }
 .chat-light .chat-action:focus-visible { ring: 0 2 #0078e7; }
 .chat-light .chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
 .chat-light .conversation:hover { background-color: #f2f2f2; }

@@ -59,6 +59,24 @@ local function press(app, name, inner)
     drain(app)
 end
 
+local function tapEdge(app, node)
+    local x, y = node.ActualWidth - 2, node.ActualHeight / 2
+    local current = node
+    while current do
+        local translation = current.RenderTransformTranslation
+        x, y = x + (current.ActualX or 0) + (translation and translation.X or 0),
+            y + (current.ActualY or 0) + (translation and translation.Y or 0)
+        local parent = current:getParent()
+        local offset = parent and parent.ContentOffset
+        if offset then x, y = x + offset.X, y + offset.Y end
+        current = parent
+    end
+    for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do
+        orca.system.dispatchMessage { target = app.screen, message = message, x = x, y = y }
+    end
+    drain(app)
+end
+
 local function mockApp(media, client)
     local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
     -- Keep navigation real while the fixture controls layout and painting.
@@ -116,6 +134,18 @@ local search = home:findChild("Search", true)
 search.Text = "Jules"
 drain(app)
 assert(not home:findChild("Roomalex", true) and home:findChild("Roomjules", true), "Search must filter conversations")
+for index, filter in ipairs { "FilterAll", "FilterUnread", "FilterPinned" } do
+    app.pivot.SelectedIndex = index - 1
+    drain(app)
+    local pane = home:findChild(filter, true)
+    local field, clear = pane:findChild("Search", true), pane:findChild("ClearSearch", true)
+    assert(field and field.Text == "Jules" and clear, "Every filtered pane must disclose the shared query")
+    tapEdge(app, clear)
+    assert(field.Text == "" and search.Text == "" and pane:findChild("Roomalex", true),
+        "Clearing from any pane must restore matching conversations in every view")
+    if index < 3 then search.Text = "Jules"; drain(app) end
+end
+app.pivot.SelectedIndex = 0
 search.Text = ""
 drain(app)
 local lists = {}
@@ -198,6 +228,8 @@ end
 -- After Messenger: no command row under the header. The title line and a
 -- swipe from the left edge go back; the conversation's name opens its info.
 local threadPage = screen:findChild("ThreadPage", true)
+assert(headerOf(threadPage).Text == app.room.name,
+    "Conversation headers must preserve the user's name casing: " .. headerOf(threadPage).Text .. " / " .. app.room.name)
 assert(threadPage.BackIcon:find("arrow-left", 1, true) and not screen:findChild("ThreadCommands", true)
     and not screen:findChild("ThreadOverflow", true), "The thread must not spend a row on its commands")
 local threadRoom = app.room
@@ -206,6 +238,8 @@ drain(app)
 assert(app.screen:findChild("PinConversation", true) and app.screen:findChild("DetailsPage", true).BackIcon ~= ""
     and not app.screen:findChild("BackToThread", true),
     "Tapping the conversation's name must open its info, where pinning lives, with a round back button")
+assert(headerOf(app.screen:findChild("DetailsPage", true)).Text == threadRoom.name,
+    "The bound conversation details header must preserve the same name")
 local pinned = app.pinned[threadRoom.id]
 press(app, "PinConversation")
 assert(app.pinned[threadRoom.id] == (not pinned or nil)
@@ -669,6 +703,17 @@ click(authApp, "OtherOptions")
 local options = authApp.screen
 assert(options:findChild("OptionsPage", true) and options:findChild("UseEmailCode", true), "Options list every way in")
 assert(not options:findChild("UsePhone", true), "Phone numbers are not a way to sign in")
+options.Width = 320
+drain(authApp)
+for _, name in ipairs { "UseEmailCode", "UseMagicLink" } do
+    local command = options:findChild(name, true)
+    local label = command:findChild("CommandLabel", true)
+    assert(label.WordWrap and label.TextOverflow == "Clip" and label.ActualHeight > 30,
+        "Narrow sign-in methods must show the complete code/link label on multiple lines")
+    assert(command.ActualHeight >= label.ActualHeight + 16, "The whole wrapped command must remain tappable")
+end
+options.Width = 390
+drain(authApp)
 click(authApp, "UsePassword")
 assert(authApp.screen ~= phonePage and authApp.screen:findChild("EmailPage", true),
     "Use email must navigate to a separate page")
@@ -954,6 +999,17 @@ assert(photoApp.composer.Text == "A caption worth keeping" and not photoApp.phot
 cancelPick = false
 click(photoApp, "AttachPhoto")
 assert(photoApp.screen:findChild("PhotoDraft", true).Visible, "A selected photo must show pending attachment feedback")
+photoApp.screen.Width = 320
+photoApp:notice("The message could not be sent. Check your connection and try again; your text and photo are still here.", true)
+drain(photoApp)
+local failureStatus = photoApp.screen:findChild("ThreadStatus", true)
+assert(failureStatus.FontSize >= 14 and failureStatus.TextHorizontalAlignment == "Left" and failureStatus.ActualHeight > 28,
+    "Long conversation failures must wrap in readable leading-aligned text")
+assert(photoApp.composer.ActualHeight >= 44 and photoApp.screen:findChild("PhotoDraft", true).Visible,
+    "Failure feedback must preserve the usable composer and photo draft")
+photoApp:notice("")
+photoApp.screen.Width = 390
+drain(photoApp)
 photoApp.composer.Text = string.rep("x", 4001)
 click(photoApp, "SendMessage")
 assert(photoApp.photoDrafts[photoApp.room.id] and photoApp.photoDrafts[photoApp.room.id][1].attachment,
@@ -1035,7 +1091,10 @@ do
     click(photoApp, "AttachPhoto")
     assert(#photos == 9, "A tenth picker action cannot add an image")
     local removed = photos[4]
-    click(photoApp, "RemovePhoto"); click(photoApp, "RemoveDraftPhoto4")
+    local removePhoto = photoApp.screen:findChild("RemovePhoto", true)
+    assert(removePhoto.ActualWidth >= 44 and removePhoto.ActualHeight >= 44,
+        "The photo removal action needs a full touch target")
+    tapEdge(photoApp, removePhoto); click(photoApp, "RemoveDraftPhoto4")
     assert(#photos == 8 and photos[4] ~= removed, "Removing a chosen image preserves the other images and order")
     click(photoApp, "AttachPhoto")
     photoApp:show("/"); photoApp:openRoom(photoRoom); drain(photoApp)
@@ -1105,7 +1164,10 @@ assert(bubble:findChild("MessageBody", true).Text == "Typo here" and meta.Text:m
 press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 click(editApp, "EditMessage")
 editApp.composer.Text = "never saved"
-click(editApp, "CancelEdit")
+local cancelEdit = editApp.screen:findChild("CancelEdit", true)
+assert(cancelEdit.ActualWidth >= 44 and cancelEdit.ActualHeight >= 44,
+    "Cancel edit needs a full touch target")
+tapEdge(editApp, cancelEdit)
 assert(storedBody(typo.id) == "Typo here" and editApp.composer.Text == "unsent draft", "Cancelling an edit discards it")
 press(editApp, "MessageEntry" .. typo.id, "MessageActions")
 click(editApp, "DeleteMessage")
