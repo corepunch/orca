@@ -368,9 +368,8 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
   `panorama-title` and `panorama-header`.
 - `ApplicationBar` with `ApplicationBarIconButton` (`IconUri`, `Text`,
   `IsEnabled`, `Click`) and `ApplicationBarMenuItem` (`Text`, `IsEnabled`,
-  `Click`). Collapsed, it shows outlined round buttons and an ellipsis; the
-  outline is antialiased vector artwork (`appbar-button-ring`), as on Windows
-  Phone, where the bar draws the circle and icons never include it. Tap
+  `Click`). Collapsed, it shows plain 28-point glyph buttons, without the
+  Windows Phone circle, and an ellipsis. Tap
   the bar to expand it upwards with lowercase labels and the menu. Tapping a
   command or anywhere outside collapses it. `Mode="Minimized"` keeps only the
   ellipsis strip. Its `Background` and `Foreground` default to the WP chrome

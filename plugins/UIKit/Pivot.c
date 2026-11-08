@@ -8,7 +8,8 @@
 #define PIVOT_HEADER_SIZE    44.0f
 #define PIVOT_HEADER_SPACING 18.0f
 #define PIVOT_WIDE_VIEWPORT  600.0f  // compact headers keep the phone's repeating strip
-#define PIVOT_CONTENT_TOP    8.0f    // gap between header strip and content; the header line already ends below its descenders
+#define PIVOT_CONTENT_TOP    8.0f    // gap between header strip and the header's bottom edge (hairline); the header line already ends below its descenders
+#define PIVOT_BODY_TOP       20.0f   // gap between the header's bottom edge and the page content: the page's top padding
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
 #define PIVOT_BACK_ICON      16.0f   // back glyph, centred in its ring
 #define PIVOT_BACK_RING      30.0f   // round back button before the title
@@ -269,7 +270,7 @@ HANDLER(Pivot, Node2D, MeasureOverride)
     struct Size size = Metro_Measure(Pivot_HeaderFor(hObject, items[i]), 4096, 4096);
     strip = MAX(strip, size.height);
   }
-  top += strip + PIVOT_CONTENT_TOP;
+  top += strip + PIVOT_CONTENT_TOP + PIVOT_BODY_TOP;
   if (count) {
     struct Size size = Metro_Measure(items[pPivot->SelectedIndex],
       MAX(pMeasureOverride->Width - 2 * METRO_INSET, 0), MAX(pMeasureOverride->Height - top, 0));
@@ -368,14 +369,17 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   }
 
   // A body extending behind the header starts at the top and takes the
-  // header as its top safe area; otherwise the header consumes it.
-  float contentY = stripY + strip + PIVOT_CONTENT_TOP;
+  // header plus the body's top padding as its top safe area; otherwise the
+  // header consumes it. The header alone is the bar inset, so a toolbar
+  // docked to the body's top still meets the header's bottom edge.
+  float contentY = stripY + strip + PIVOT_CONTENT_TOP, bodyTop = contentY + PIVOT_BODY_TOP;
   bool_t extend = pPivot->ExtendBodyBehindHeader;
-  node->_safeArea.x = node->_barInset.x = extend ? contentY : 0;
+  node->_safeArea.x = extend ? bodyTop : 0;
+  node->_barInset.x = extend ? contentY : 0;
   Metro_Measure(pPivot->_bar, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
   Metro_Arrange(pPivot->_bar, 0, 0, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
   if (count) {
-    float bodyY = extend ? y : contentY;
+    float bodyY = extend ? y : bodyTop;
     Metro_Arrange(items[pPivot->SelectedIndex],
       x + METRO_INSET + pPivot->_contentFrom * settle + pPivot->_dragX, bodyY,
       MAX(w - 2 * METRO_INSET, 0), MAX(y + h - bodyY, 0));

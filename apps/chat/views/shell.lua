@@ -9,7 +9,9 @@ local Shell = {}
 Shell.__index = Shell
 
 -- Root pages share one ApplicationBar. The button for the page in view is
--- disabled, which also marks where you are.
+-- selected and drawn in the accent colour, as Windows Phone marks selection;
+-- it stays enabled (a dimmed command reads as unavailable) and tapping it
+-- does nothing.
 local pages = {
     { key = "Chats", route = "/", label = "chats", icon = "message-circle" },
     { key = "Contacts", route = "/contacts", label = "people", icon = "users" },
@@ -48,7 +50,7 @@ function Shell:show(key, content)
     end
     self.content.ActivePage = key
     for value, item in pairs(self.items) do
-        if item.IsEnabled ~= (value ~= key) then item.IsEnabled = value ~= key end
+        if item.selected ~= (value == key) then item.selected = value == key end
     end
     self.active = key
     core.runAllPrograms(self.screen)

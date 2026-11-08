@@ -4,8 +4,8 @@
 // ApplicationBar layout, after the Windows Phone 8 application bar.
 #define APPBAR_HEIGHT        58.0f
 #define APPBAR_MINI_HEIGHT   24.0f
-#define APPBAR_RING          38.0f
-#define APPBAR_ICON          18.0f
+#define APPBAR_BUTTON        38.0f   // height of the glyph row; the whole slot is the target
+#define APPBAR_ICON          28.0f   // plain glyph, drawn without a surrounding circle
 #define APPBAR_SLOT          78.0f
 #define APPBAR_OVERFLOW      44.0f
 #define APPBAR_PAD           10.0f   // above the buttons when expanded
@@ -118,7 +118,7 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
     menu += GetApplicationBarMenuItem(child) != NULL;
   }
   bool_t showMenu = expanded && pApplicationBar->IsMenuEnabled && menu > 0;
-  float rows = APPBAR_PAD + APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT + APPBAR_PAD;
+  float rows = APPBAR_PAD + APPBAR_BUTTON + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT + APPBAR_PAD;
   float panel = expanded ? rows + (showMenu ? menu * APPBAR_MENU_ITEM + APPBAR_PAD : 0) : h;
   float top = expanded ? y + h - panel : y;
 
@@ -132,10 +132,10 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
   Metro_Show(pApplicationBar->_scrim, expanded, 1);
   Metro_Arrange(pApplicationBar->_scrim, x, top - 4096, w, 4096);
 
-  // The ellipsis lines up with the middle of the round buttons.
-  float ringY = expanded ? top + APPBAR_PAD : y + (h - APPBAR_RING) / 2;
+  // The ellipsis lines up with the middle of the button glyphs.
+  float buttonY = expanded ? top + APPBAR_PAD : y + (h - APPBAR_BUTTON) / 2;
   float dotsWidth = APPBAR_DOTS * APPBAR_DOT + (APPBAR_DOTS - 1) * APPBAR_DOT;
-  float dotsX = x + w - METRO_INSET - dotsWidth, dotsY = ringY + (APPBAR_RING - APPBAR_DOT) / 2;
+  float dotsX = x + w - METRO_INSET - dotsWidth, dotsY = buttonY + (APPBAR_BUTTON - APPBAR_DOT) / 2;
   Metro_Arrange(pApplicationBar->_ellipsis, dotsX, dotsY, dotsWidth, APPBAR_DOT);
   int dot = 0;
   FOR_EACH_OBJECT(child, pApplicationBar->_ellipsis) {
@@ -156,7 +156,7 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
       bool_t shown = !minimized || expanded;
       GetNode2D(child)->IgnoreHitTest = !shown;
       Metro_Show(child, TRUE, shown ? (button->IsEnabled ? 1 : METRO_DIM) : 0);
-      Metro_Arrange(child, slotX, ringY, slot, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
+      Metro_Arrange(child, slotX, buttonY, slot, APPBAR_BUTTON + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
       slotX += slot;
     } else if (item) {
       Metro_Show(child, showMenu, item->IsEnabled ? 1 : METRO_DIM);
@@ -178,14 +178,6 @@ HANDLER(ApplicationBar, Node, LeftButtonUp)
 static void
 AppBarButton_Sync(struct Object *hObject, struct ApplicationBarIconButton *pButton)
 {
-  // The outline is antialiased vector artwork tinted like the glyph, as the
-  // Windows Phone template strokes an ellipse; CSS supplies its SVG.
-  if (!pButton->_ring) {
-    pButton->_ring = AppBar_Part(hObject, ID_VectorView);
-    Metro_SetFloat(pButton->_ring, ID_Node_Width, APPBAR_RING);
-    Metro_SetFloat(pButton->_ring, ID_Node_Height, APPBAR_RING);
-    _SendMessage(pButton->_ring, StyleController, AddClass, .ClassName = "appbar-button-ring");
-  }
   if (!pButton->_icon) {
     pButton->_icon = AppBar_Part(hObject, ID_VectorView);
     Metro_SetFloat(pButton->_icon, ID_Node_Width, APPBAR_ICON);
@@ -205,7 +197,6 @@ AppBarButton_Sync(struct Object *hObject, struct ApplicationBarIconButton *pButt
 
 HANDLER(ApplicationBarIconButton, Object, Destroy)
 {
-  OBJ_ReleaseRef(pApplicationBarIconButton->_ring);
   OBJ_ReleaseRef(pApplicationBarIconButton->_icon);
   OBJ_ReleaseRef(pApplicationBarIconButton->_label);
   return FALSE;
@@ -221,9 +212,8 @@ HANDLER(ApplicationBarIconButton, Node2D, MeasureOverride)
 {
   AppBarButton_Sync(hObject, pApplicationBarIconButton);
   Metro_Measure(pApplicationBarIconButton->_label, APPBAR_SLOT, APPBAR_LABEL_HEIGHT);
-  Metro_Measure(pApplicationBarIconButton->_ring, APPBAR_RING, APPBAR_RING);
   Metro_Measure(pApplicationBarIconButton->_icon, APPBAR_ICON, APPBAR_ICON);
-  return Layout_Return(pMeasureOverride, APPBAR_SLOT, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
+  return Layout_Return(pMeasureOverride, APPBAR_SLOT, APPBAR_BUTTON + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
 }
 
 HANDLER(ApplicationBarIconButton, Node2D, ArrangeOverride)
@@ -231,13 +221,11 @@ HANDLER(ApplicationBarIconButton, Node2D, ArrangeOverride)
   struct ApplicationBarIconButton *pButton = pApplicationBarIconButton;
   AppBarButton_Sync(hObject, pButton);
   float x = pArrangeOverride->X, y = pArrangeOverride->Y, w = pArrangeOverride->Width;
-  float ringX = x + (w - APPBAR_RING) / 2;
-  Metro_Arrange(pButton->_ring, ringX, y, APPBAR_RING, APPBAR_RING);
-  Metro_Arrange(pButton->_icon, ringX + (APPBAR_RING - APPBAR_ICON) / 2, y + (APPBAR_RING - APPBAR_ICON) / 2,
+  Metro_Arrange(pButton->_icon, x + (w - APPBAR_ICON) / 2, y + (APPBAR_BUTTON - APPBAR_ICON) / 2,
     APPBAR_ICON, APPBAR_ICON);
   struct ApplicationBar *bar = GetApplicationBar(OBJ_GetParent(hObject));
   Metro_Show(pButton->_label, bar && bar->IsExpanded, 1);
-  Metro_Arrange(pButton->_label, x, y + APPBAR_RING + APPBAR_LABEL_GAP, w, APPBAR_LABEL_HEIGHT);
+  Metro_Arrange(pButton->_label, x, y + APPBAR_BUTTON + APPBAR_LABEL_GAP, w, APPBAR_LABEL_HEIGHT);
   return Layout_Return(pArrangeOverride, w, pArrangeOverride->Height);
 }
 

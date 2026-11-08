@@ -1411,7 +1411,7 @@
     </class>
     <class name="ApplicationBar" parent="Node2D">
       <summary>Windows Phone application bar: round icon buttons, an ellipsis and an expandable menu</summary>
-      <details>Hosts up to four ApplicationBarIconButton children and any number of ApplicationBarMenuItem children. Collapsed, it shows outlined round buttons centred before a separate 44-point overflow target at the right edge. Command slots narrow with the available width while keeping the ellipsis separate. Tapping the ellipsis expands the bar upwards over the page, revealing button labels and the lowercase menu; tapping outside, a button or a menu item collapses it.</details>
+      <details>Hosts up to four ApplicationBarIconButton children and any number of ApplicationBarMenuItem children. Collapsed, it shows plain glyph buttons centred before a separate 44-point overflow target at the right edge. Command slots narrow with the available width while keeping the ellipsis separate. Tapping the ellipsis expands the bar upwards over the page, revealing button labels and the lowercase menu; tapping outside, a button or a menu item collapses it.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
@@ -1433,8 +1433,8 @@
       </fields>
     </class>
     <class name="ApplicationBarIconButton" parent="Node2D">
-      <summary>Round icon button hosted by an ApplicationBar</summary>
-      <details>Shows its IconUri SVG inside an outlined circle; the lowercase Text label appears below when the bar expands. Fires Click when tapped while enabled.</details>
+      <summary>Icon button hosted by an ApplicationBar</summary>
+      <details>Shows its IconUri SVG as a plain glyph; the lowercase Text label appears below when the bar expands. Fires Click when tapped while enabled.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.PropertyChanged"/>
@@ -1444,12 +1444,11 @@
         <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>
-        <property name="IconUri" type="string">Asset path of the SVG glyph drawn inside the circle</property>
+        <property name="IconUri" type="string">Asset path of the SVG glyph drawn as the button</property>
         <property name="Text" type="string">Label revealed under the button when the bar expands</property>
         <property name="IsEnabled" type="bool" default="TRUE">Disabled buttons are dimmed and ignore taps</property>
       </properties>
       <fields>
-        <field name="_ring" type="Object" pointer="true">Generated circle (private)</field>
         <field name="_icon" type="Object" pointer="true">Generated glyph (private)</field>
         <field name="_label" type="Object" pointer="true">Generated label (private)</field>
       </fields>
