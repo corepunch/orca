@@ -63,7 +63,9 @@ claiming historical fidelity.
   new chat `plus` (Add) and settings `settings`, a gear like Windows Phone's
   settings symbol; a framed contact card was too detailed at 18 points. The
   bar draws the ring, never the icon. Search stays the field above the
-  inbox rather than an app bar command. A conversation uses attach, message input
+  inbox rather than an app bar command; every inbox pane shows the shared query
+  and its clear action. The app bar reserves a separate 44-point overflow target
+  and narrows its command slots when needed. A conversation uses attach, message input
   and send in its composer, without another command row below it.
   Both use a 58-point content height; the composer leaves 5 points above and
   below its 48-point controls. System/keyboard insets are added separately.
@@ -110,6 +112,10 @@ claiming historical fidelity.
   Telegram screenshots (`#01a8e6`), lifted a quarter toward white for small
   text on black. Filled buttons keep Messenger blue. Links and
   commands use `accentText`, and filled actions use `accent`, on every screen.
+  Filled actions and sent bubbles use the contrast-adjusted Messenger blue
+  `#006ad1` in both themes: white text has 5.27:1 contrast, and pale `#e6f2ff`
+  message metadata stays above 4.5:1. Primary-button hover uses an opaque,
+  darker fill so its white label keeps that contrast on a white canvas.
 - Sign-in starts with an emailed code: one address signs in or creates the
   account (user decision, 2026-11-03, replacing Telegram's phone-first entry).
   Each auth form has one primary action and one "Other sign-in options" link,
@@ -120,6 +126,8 @@ claiming historical fidelity.
   action. The code step keeps
   resend and change-email. The phone number is an optional settings field with
   the phone keypad and a leading `+` and country code.
+  Sign-in method command labels wrap on narrow screens so code and link remain
+  explicit; other command lists retain their single-line presentation.
 - Corners get small Fluent-style rounding (user decision, 2026-10-30, after
   Microsoft Teams' sign-in; raised by half from 4 points the same day): every
   visible rectangular corner is 6 points, on text fields, outlined and filled
@@ -140,6 +148,10 @@ claiming historical fidelity.
 - Use prominent Pivot titles, avatars, pale text inputs, and the
   black/white palettes with Messenger blue. Keep controls legible and usable
   on the current host platform, including its safe areas and back navigation.
+  Preserve the authored casing of names in conversation and details headers;
+  navigation labels retain the lowercase Metro treatment. Composer edit/photo
+  auxiliary actions use 48-point targets, and actionable thread feedback uses
+  wrapped, leading-aligned 14-point text without a permanent status row.
 - Button rings use `:focus-visible`: keyboard use reveals them, while touch
   and mouse clicks clear them. Text fields retain `:focus` editing feedback.
   WPF separates focus from its keyboard-only

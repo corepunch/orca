@@ -13,18 +13,18 @@ local tiles = {
 local palettes = {
     dark = {
         background = "#000000", surface = "#00000000", raised = "#2e2e2e", chrome = "#1f1f1f",
-        textbox = "#bfbfbf", textboxInk = "#000000", placeholder = "#666666",
-        ink = "#ffffff", muted = "#a6a6a6", dim = "#999999", faint = "#5c5c5c",
-        line = "#3a3a3a", accent = "#0084ff", accentText = "#41beec", onAccent = "#ffffff",
-        soft = "#0a2a4d", sent = "#0084ff", sentText = "#ffffff", sentMeta = "#cfe6ff",
+        textbox = "#bfbfbf", textboxInk = "#000000", placeholder = "#4d4d4d",
+        ink = "#ffffff", muted = "#999999", dim = "#999999", faint = "#5c5c5c",
+        line = "#3a3a3a", accent = "#006ad1", accentText = "#41beec", onAccent = "#ffffff",
+        soft = "#0a2a4d", sent = "#006ad1", sentText = "#ffffff", sentMeta = "#e6f2ff",
         error = "#ff5c5c", avatar = tiles,
     },
     light = {
         background = "#ffffff", surface = "#00000000", raised = "#e6e6e6", chrome = "#dddddd",
-        textbox = "#d9d9d9", textboxInk = "#000000", placeholder = "#6e6e6e",
-        ink = "#000000", muted = "#555555", dim = "#7a7a7a", faint = "#b8b8b8",
-        line = "#cccccc", accent = "#0078e7", accentText = "#006ad1", onAccent = "#ffffff",
-        soft = "#dcebff", sent = "#0078e7", sentText = "#ffffff", sentMeta = "#d4e9ff",
+        textbox = "#d9d9d9", textboxInk = "#000000", placeholder = "#595959",
+        ink = "#000000", muted = "#555555", dim = "#727272", faint = "#b8b8b8",
+        line = "#cccccc", accent = "#006ad1", accentText = "#006ad1", onAccent = "#ffffff",
+        soft = "#dcebff", sent = "#006ad1", sentText = "#ffffff", sentMeta = "#e6f2ff",
         error = "#e51400", avatar = tiles,
     },
 }

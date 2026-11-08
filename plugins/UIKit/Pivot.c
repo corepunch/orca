@@ -115,7 +115,8 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     }
     bool_t selected = i == pPivot->SelectedIndex;
     GetPivotHeaderItem(header)->IsSelected = selected;
-    Metro_SetText(header, GetPivotItem(items[i])->Header, tolower);
+    struct PivotItem *item = GetPivotItem(items[i]);
+    Metro_SetText(header, item->Header, item->PreserveHeaderCase ? NULL : tolower);
     Metro_Show(header, selected || !pPivot->IsLocked, selected ? 1 : METRO_DIM);
     Metro_Show(items[i], selected, 1);
   }
@@ -353,7 +354,8 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     }
     repeats++;
     GetPivotHeaderItem(copy)->_item = item;
-    Metro_SetText(copy, GetPivotItem(item)->Header, tolower);
+    struct PivotItem *pivotItem = GetPivotItem(item);
+    Metro_SetText(copy, pivotItem->Header, pivotItem->PreserveHeaderCase ? NULL : tolower);
     Metro_Show(copy, TRUE, METRO_DIM);
     Metro_Measure(copy, 4096, 4096);
     Metro_Arrange(copy, hx, stripY, size.width, size.height);

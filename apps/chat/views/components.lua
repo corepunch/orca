@@ -102,14 +102,16 @@ end
 -- A command row after Telegram's New Message: an accent outline icon in the
 -- avatar column and an accent label, so commands read apart from people.
 -- `role` recolours both, as chat-error does for sign out.
-function C.command(name, icon, label, action, role)
+function C.command(name, icon, label, action, role, options)
     role = role or "chat-accent-text"
-    local button = C.button("", action, { Name = name, Height = 56, BorderWidth = "0", FontWeight = "Normal",
+    local wrap = options and options.wrap
+    local button = C.button("", action, { Name = name, Height = wrap and auto or 56, MinHeight = 56,
+        PaddingTop = wrap and 8 or 0, PaddingBottom = wrap and 8 or 0, BorderWidth = "0", FontWeight = "Normal",
         Background = colors.surface, class = "chat-row" })
     local grid = ui.Grid { Columns = "52px 1fr", Spacing = 14, IgnoreHitTest = true }
     grid:addChild(C.icon(icon, 26, role))
-    grid:addChild(C.text(label, { FontSize = 20, class = role, TextVerticalAlignment = "Center",
-        TextOverflow = "Ellipsis" }))
+    grid:addChild(C.text(label, { Name = "CommandLabel", FontSize = 20, class = role, TextVerticalAlignment = "Center",
+        WordWrap = wrap or false, TextOverflow = wrap and "Clip" or "Ellipsis" }))
     button:addChild(grid)
     return button
 end
@@ -198,7 +200,7 @@ function C.page(header, content, props)
         ExtendBodyBehindHeader = extend, class = props.class and props.class .. " chat-ink" or "chat-ink",
         BackIcon = props.back and "Chat/assets/icons/arrow-left.svg" or "", BackRequested = props.back,
         HeaderClick = props.details }
-    local item = ui.PivotItem { Header = header }
+    local item = ui.PivotItem { Header = header, PreserveHeaderCase = props.PreserveHeaderCase or false }
     item:addChild(content)
     pivot:addChild(item)
     return pivot

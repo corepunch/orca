@@ -7,6 +7,7 @@
 #define APPBAR_RING          38.0f
 #define APPBAR_ICON          18.0f
 #define APPBAR_SLOT          78.0f
+#define APPBAR_OVERFLOW      44.0f
 #define APPBAR_PAD           10.0f   // above the buttons when expanded
 #define APPBAR_LABEL_SIZE    11.0f
 #define APPBAR_LABEL_GAP     5.0f
@@ -142,7 +143,10 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
     Metro_Arrange(child, dot++ * 2 * APPBAR_DOT, 0, APPBAR_DOT, APPBAR_DOT);
   }
 
-  float slotX = x + (w - buttons * APPBAR_SLOT) / 2, menuY = top + rows;
+  // Keep command hit targets out of the trailing overflow target at every width.
+  float available = MAX(w - APPBAR_OVERFLOW, 0);
+  float slot = buttons ? MIN(APPBAR_SLOT, available / buttons) : APPBAR_SLOT;
+  float slotX = x + (available - buttons * slot) / 2, menuY = top + rows;
   FOR_EACH_OBJECT(child, hObject) {
     struct ApplicationBarIconButton *button = GetApplicationBarIconButton(child);
     struct ApplicationBarMenuItem *item = GetApplicationBarMenuItem(child);
@@ -152,8 +156,8 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
       bool_t shown = !minimized || expanded;
       GetNode2D(child)->IgnoreHitTest = !shown;
       Metro_Show(child, TRUE, shown ? (button->IsEnabled ? 1 : METRO_DIM) : 0);
-      Metro_Arrange(child, slotX, ringY, APPBAR_SLOT, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
-      slotX += APPBAR_SLOT;
+      Metro_Arrange(child, slotX, ringY, slot, APPBAR_RING + APPBAR_LABEL_GAP + APPBAR_LABEL_HEIGHT);
+      slotX += slot;
     } else if (item) {
       Metro_Show(child, showMenu, item->IsEnabled ? 1 : METRO_DIM);
       Metro_Arrange(child, x, menuY, w, APPBAR_MENU_ITEM);
