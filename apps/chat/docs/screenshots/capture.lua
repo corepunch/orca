@@ -7,7 +7,10 @@ local fs = require "orca.filesystem"
 local renderer = require "orca.renderer"
 local system = require "orca.system"
 fs.init("apps/chat")
-renderer.init(390, 844, false)
+-- The X11 fixture allocates physical pixels; paint/layout remain logical.
+local scale = tonumber(os.getenv("ORCA_CAPTURE_SCALE")) or 1
+assert(scale == 1 or scale == 2, "Capture scale must be 1 or 2")
+renderer.init(390 * scale, 844 * scale, false)
 require("orca.core.startup").load_plugins()
 local client = require("api.chat").mock()
 assert(client:signIn("demo@example.invalid", "password123"))
@@ -23,11 +26,18 @@ if route:match("^/posts") then
     if route == "/posts/user" then posts.app.profileId, posts.app.profileName, posts.app.profileReturn = "alex", "Alex Morgan", "/" end
 end
 app:activate_route(route)
+-- Give startup bindings, SVG uploads and the frosted header multiple frames
+-- to settle even when an idle X11 window emits no further exposure events.
+local warmupFrames = 0
 for message in system.getMessage do
     if message:is("Window.Closed") then break end
     if message:is("Window.Paint") then
         app.screen:send("Window.Paint", { WindowWidth = 390, WindowHeight = 844 })
         app:afterPaint()
-    else system.dispatchMessage(app.screen, message) end
+        warmupFrames = warmupFrames + 1
+        if warmupFrames < 20 then app:repaint() end
+    else
+        if system.dispatchMessage(app.screen, message) then app:repaint() end
+    end
     system.translateMessage(message)
 end

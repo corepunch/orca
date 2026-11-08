@@ -84,6 +84,78 @@ test_render_texture_color_space(void)
   glDeleteTextures(1, &reference_color);
 }
 
+static struct Texture *pixel_target;
+
+// The X11 host can supply a larger window instead of the requested offscreen
+// surface. Give pixel tests their own fixed physical buffer on every platform.
+static void begin_pixels(void)
+{
+  R_BeginFrame((struct color){0, 0, 0, 1});
+  R_BindFramebuffer(pixel_target);
+  PIPELINESTATE state;
+  R_GetPipelineState(&state);
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  float density = state.viewport.width > 0 ? viewport[2] / state.viewport.width : 1;
+  state.viewport = state.scissor = (struct rect){0, 0, 64.f / density, 64.f / density};
+  state.cull_mode = CULL_MODE_BACK;
+  R_SetPipelineState(&state);
+  R_ClearScreen((struct color){0, 0, 0, 1}, 1, 0);
+}
+
+// Logical pixel samples use a top-left origin; GL readback is bottom-up.
+static int red_at(float x, float y, int scale)
+{
+  unsigned char pixel[4] = {0};
+  glReadPixels((int)(x * scale), 63 - (int)(y * scale), 1, 1,
+               GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+  return pixel[0];
+}
+
+static void test_rounded_perimeter(int scale)
+{
+  struct ViewDef view = {
+    .viewMatrix = MAT4_Identity(),
+    .projectionMatrix = MAT4_Ortho(0, 64.f / scale, 64.f / scale, 0, -1, 1),
+  };
+  struct ViewEntity entity = {
+    .matrix = MAT4_Identity(),
+    .bbox = {.min = {8, 8, 0}, .max = {24, 24, 0}},
+    .radius = {8, 8, 8, 8},
+    .material = {.textureMatrix = MAT3_Identity(), .color = {1, 0, 0, 1},
+                 .opacity = 0.5f, .blendMode = BLEND_MODE_ALPHA},
+  };
+  begin_pixels();
+  do {
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    // These pixels are inside each circular arc, but outside the straight
+    // diagonal that remains when back-face culling removes the corner fans.
+    EXPECT(red_at(10, 11, scale) > 100);
+    EXPECT(red_at(21, 11, scale) > 100);
+    EXPECT(red_at(21, 20, scale) > 100);
+    EXPECT(red_at(10, 20, scale) > 100);
+    EXPECT(red_at(8, 8, scale) == 0);
+    EXPECT(red_at(16, 16, scale) > 100 && red_at(16, 16, scale) < 140);
+
+    // The three-point stroke lies outside the same logical circle. Its
+    // curved quadrants and straight sides must all be present, exactly once.
+    entity.borderWidth = (struct vec4){3, 3, 3, 3};
+    begin_pixels();
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    float const samples[][2] = {
+      {9, 9}, {22, 9}, {22, 22}, {9, 22},
+      {16, 6}, {25, 16}, {16, 25}, {6, 16},
+    };
+    FOR_LOOP(i, sizeof(samples) / sizeof(*samples)) {
+      int red = red_at(samples[i][0], samples[i][1], scale);
+      EXPECT(red > 100 && red < 140);
+    }
+    EXPECT(red_at(16, 16, scale) == 0);
+    EXPECT(red_at(5, 5, scale) == 0);
+    EXPECT(glGetError() == GL_NO_ERROR);
+  } while (0);
+}
+
 // Draws red and blue halves into a 64x64 target and filters the backdrop of
 // a bar along the top. EXPECT breaks out of the checks; cleanup always runs.
 static void
@@ -182,12 +254,43 @@ int main(void)
   luaopen_orca_renderer(L);
   lua_pop(L, 1);
   renderer_Init(64, 64, TRUE);
+  if (FAILED(RenderTexture_Create(&(CREATERTSTRUCT){.Width = 64, .Height = 64, .Scale = 1}, &pixel_target))) {
+    fputs("FAIL: could not create the pixel-test framebuffer\n", stderr);
+    renderer_Shutdown();
+    lua_close(L);
+    return 1;
+  }
+
+  RUN_TEST("rounded_fills_and_strokes_have_curved_complete_perimeters_1x", test_rounded_perimeter(1););
+  RUN_TEST("rounded_fills_and_strokes_have_curved_complete_perimeters_2x", test_rounded_perimeter(2););
+  RUN_TEST("rounded_fill_preserves_independent_corner_radii", {
+    struct ViewDef view = ((struct ViewDef){
+      .viewMatrix = MAT4_Identity(),
+      .projectionMatrix = MAT4_Ortho(0, 64, 64, 0, -1, 1),
+    });
+    struct ViewEntity entity = ((struct ViewEntity){
+      .matrix = MAT4_Identity(),
+      .bbox = {.min = {8, 8, 0}, .max = {56, 40, 0}},
+      .radius = {0, 12, 4, 8},
+      .material = {.textureMatrix = MAT3_Identity(), .color = {1, 0, 0, 1},
+                   .opacity = 1, .blendMode = BLEND_MODE_ALPHA},
+    });
+    begin_pixels();
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    EXPECT(red_at(8, 8, 1) > 200);  // Square top-left.
+    EXPECT(red_at(55, 8, 1) == 0);
+    EXPECT(red_at(51, 11, 1) > 200); // Twelve-point top-right arc.
+    EXPECT(red_at(55, 39, 1) == 0);
+    EXPECT(red_at(52, 38, 1) > 200); // Four-point bottom-right arc.
+    EXPECT(red_at(8, 39, 1) == 0);
+    EXPECT(red_at(10, 36, 1) > 200); // Eight-point bottom-left arc.
+  });
 
   RUN_TEST("render_texture_matches_window_color_and_composition", test_render_texture_color_space(););
 
   RUN_TEST("solid_image_uses_initialized_white_texture", {
     unsigned char pixel[4] = {0};
-    R_BeginFrame((struct color){0, 0, 0, 1});
+    begin_pixels();
     R_DrawImage(&(DRAWIMAGESTRUCT){
       .rect = {0, 0, 64, 64},
       .uv = {0, 0, 1, 1},
@@ -217,7 +320,7 @@ int main(void)
     unsigned char reference[sizeof(square)];
     GLint square_indices = 0;
     GLint rounded_indices = 0;
-    R_BeginFrame((struct color){0, 0, 0, 1});
+    begin_pixels();
     EXPECT_OK(R_DrawEntity(&view, &entity));
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &square_indices);
     glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, square);
@@ -227,7 +330,7 @@ int main(void)
 
     // An explicit shader preserves the previous rounded-mesh attribute contract.
     entity.shader = BOX_PTR(Shader, SHADER_UI);
-    R_BeginFrame((struct color){0, 0, 0, 1});
+    begin_pixels();
     EXPECT_OK(R_DrawEntity(&view, &entity));
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &rounded_indices);
     glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, reference);
@@ -236,7 +339,7 @@ int main(void)
 
     entity.shader = NULL;
     entity.radius = ((struct vec4){12, 12, 12, 12});
-    R_BeginFrame((struct color){0, 0, 0, 1});
+    begin_pixels();
     EXPECT_OK(R_DrawEntity(&view, &entity));
     glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &rounded_indices);
     glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, reference);
@@ -310,6 +413,9 @@ int main(void)
   glDeleteFramebuffers(1, &scene_fbo);
   glDeleteTextures(1, &scene_color);
   glDeleteRenderbuffers(1, &scene_depth);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  R_BindFramebuffer(NULL);
+  Texture_Release(pixel_target);
   renderer_Shutdown();
   lua_close(L);
   printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);

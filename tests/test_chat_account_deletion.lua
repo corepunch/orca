@@ -45,8 +45,9 @@ local bundled = assert(filesystem.readTextFile("Chat/assets/privacy.md"))
 local master = assert(io.open("docs/chat/privacy.md", "rb"))
 assert(bundled == master:read("*a"), "The bundled privacy policy must match its public source")
 master:close()
-assert(app.screen:findChild("PrivacyPolicyText", true).Source == bundled,
-    "Settings shows the complete bundled policy without requiring the network")
+local publicPosts = assert(filesystem.readTextFile("Chat/assets/public-posts-privacy.md"))
+assert(app.screen:findChild("PrivacyPolicyText", true).Source == bundled .. "\n\n" .. publicPosts,
+    "Settings shows the complete bundled policy and public-post disclosure without the network")
 app:show("/profile")
 click(app, "DeleteAccount")
 local warning = assert(app.screen:findChild("DeleteAccountWarning", true))

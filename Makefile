@@ -628,6 +628,9 @@ $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TE
 $(eval $(call C_TEST_RULE,test-texture-downscale,tests/test_texture_downscale.c,$(TEST_TEXTURE_DOWNSCALE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 
+.PHONY: test-vectorview-density
+$(eval $(call C_TEST_RULE,test-vectorview-density,tests/test_vectorview_density.c,$(BINDIR)/test_vectorview_density,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -llua5.4 -lplatform -lm $(TEST_GL_LIBS) $(if $(filter Darwin,$(UNAME_S)),,-rdynamic)))
+
 # Opt-in desktop test: intentionally excluded from test-headless.
 .PHONY: test-macos-retina
 ifeq ($(UNAME_S),Darwin)
