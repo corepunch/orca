@@ -59,6 +59,25 @@ and requests these dynamic-key scopes:
 | `targets.write` | Create temporary identifier-link challenge targets |
 | `messages.write` | Deliver identifier-link challenges and new-message push through Messaging |
 
+
+When using the Appwrite operator `functions_update` tool, read the current
+Function first and explicitly preserve its existing configuration alongside
+the intended change. Omitted fields can be replaced by tool defaults: an
+events/interval-only update was observed to reset `execute` to `[]`, `scopes`
+to `[]`, and `logging` to `true`. Include the existing runtime, execution
+roles, scopes, logging, timeout, enabled state, entrypoint, build commands and
+build/runtime specifications, then read them back before activating a deployment.
+This update does not require reading or resubmitting secret variable values.
+
+Settings and variable changes may leave `live=false` even after selecting a
+ready deployment built earlier. Rebuild the approved source with the current
+configuration (for example, with `functions_create_duplicate_deployment`),
+wait for `status=ready`, and verify both the active deployment ID and
+`live=true`. Keep the previous deployment and configuration for rollback.
+These administrative checks do not require a Function execution or a live
+integration test. See [Appwrite's Function model](https://appwrite.io/docs/references/cloud/models/function)
+for the meaning of `live`.
+
 Appwrite scopes apply to the project, including its other collections/users;
 they cannot be limited to the shared collection allowlist. The handler constructs all backend
 paths itself and exposes only its fixed Chat route allowlist. It does not issue
