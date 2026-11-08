@@ -71,8 +71,9 @@ This update does not require reading or resubmitting secret variable values.
 
 Settings and variable changes may leave `live=false` even after selecting a
 ready deployment built earlier. Rebuild the approved source with the current
-configuration (for example, with `functions_create_duplicate_deployment`),
-wait for `status=ready`, and verify both the active deployment ID and
+configuration (for example, with `functions_create_duplicate_deployment`).
+That operator tool was observed to return `activate=true`; finish schema and
+configuration review before creating the rebuild. Then wait for `status=ready`, and verify both the active deployment ID and
 `live=true`. Keep the previous deployment and configuration for rollback.
 These administrative checks do not require a Function execution or a live
 integration test. See [Appwrite's Function model](https://appwrite.io/docs/references/cloud/models/function)
