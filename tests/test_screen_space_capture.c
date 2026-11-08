@@ -112,6 +112,14 @@ static int red_at(float x, float y, int scale)
   return pixel[0];
 }
 
+// Half-opacity red over black, read back in the target's encoding: an sRGB
+// target stores linear 0.5 as about 188, a linear target as 128.
+#ifdef R_USE_SRGB
+#define HALF_RED(red) ((red) > 170 && (red) < 205)
+#else
+#define HALF_RED(red) ((red) > 100 && (red) < 140)
+#endif
+
 static void test_rounded_perimeter(int scale)
 {
   struct ViewDef view = {
@@ -135,7 +143,7 @@ static void test_rounded_perimeter(int scale)
     EXPECT(red_at(21, 20, scale) > 100);
     EXPECT(red_at(10, 20, scale) > 100);
     EXPECT(red_at(8, 8, scale) == 0);
-    EXPECT(red_at(16, 16, scale) > 100 && red_at(16, 16, scale) < 140);
+    EXPECT(HALF_RED(red_at(16, 16, scale)));
 
     // The three-point stroke lies outside the same logical circle. Its
     // curved quadrants and straight sides must all be present, exactly once.
@@ -148,7 +156,7 @@ static void test_rounded_perimeter(int scale)
     };
     FOR_LOOP(i, sizeof(samples) / sizeof(*samples)) {
       int red = red_at(samples[i][0], samples[i][1], scale);
-      EXPECT(red > 100 && red < 140);
+      EXPECT(HALF_RED(red));
     }
     EXPECT(red_at(16, 16, scale) == 0);
     EXPECT(red_at(5, 5, scale) == 0);
