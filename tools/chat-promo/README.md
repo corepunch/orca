@@ -12,6 +12,8 @@ For a real iPad screenshot, dispatch **Chat iPad screenshots** in GitHub Actions
 It builds and captures in a cloud macOS runner, uses the installed 13-inch iPad
 simulator and the same offline fixtures, and publishes only PNGs, small logs and
 a manifest with the source commit, simulator, Xcode version and binary hash.
+Fully opaque simulator PNG alpha channels are removed losslessly in the cloud;
+RGB pixels and dimensions must remain identical, and genuine transparency fails.
 It does not contact Appwrite. Intermediate builds and simulator data stay in the
 cloud; the downloadable artifact is retained for 30 days.
 
