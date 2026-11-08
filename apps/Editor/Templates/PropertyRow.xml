@@ -5,7 +5,7 @@
     </Button>
     <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Click="Toggle" class="property-group-title"/>
   </Grid>
-  <Grid Rows="1fr" Columns="16px 104px 1fr 20px" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 0 6 0">
+  <Grid Rows="1fr" Columns="16px 128px 1fr 20px" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 0 6 0">
     <Button Click="Toggle" class="disclosure">
       <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
     </Button>

@@ -26,7 +26,14 @@ _RenderTexture_Create(PCREATERTSTRUCT _in, struct Texture* image)
   image->MagnificationFilter = kTextureFilterLinear;
 
   R_Call(glBindTexture, GL_TEXTURE_2D, image->texnum);
-  R_Call(glTexImage2D,GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+  // Match window encoding for readback; texture sampling decodes back to linear.
+  R_Call(glTexImage2D,GL_TEXTURE_2D,0,
+#ifdef R_USE_SRGB
+         GL_SRGB8_ALPHA8,
+#else
+         GL_RGBA,
+#endif
+         w,h,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
   R_Call(glFramebufferTexture2D,GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,image->texnum,0);
   R_ApplyImageParms(image, GL_TEXTURE_2D, FALSE);
 

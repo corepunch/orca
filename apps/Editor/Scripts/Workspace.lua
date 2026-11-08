@@ -247,13 +247,15 @@ end
 ------------------------------------------------------------------------------
 -- Preview support
 
+-- Renders the open document at its design size (width/height are the fallback
+-- for screens without one); returns the image, its size and node rectangles.
 function Workspace.snapshot(width, height)
 	if not Workspace.document then return nil end
 	local dir = os.getenv("TMPDIR") or "/tmp"
 	Workspace.snapshotCount = Workspace.snapshotCount + 1
 	local file = string.format("%s/orca-editor-preview-%d.png", dir, Workspace.snapshotCount)
 	local root, err = Workspace.request('get', 'snapshot/', Workspace.document, {
-		{ 'width', math.floor(width) }, { 'height', math.floor(height) }, { 'file', file },
+		{ 'width', math.floor(width) }, { 'height', math.floor(height) }, { 'file', file }, { 'design', 1 },
 	})
 	if not root then
 		Workspace.log('warning', "Preview: %s", err)
@@ -261,7 +263,7 @@ function Workspace.snapshot(width, height)
 	end
 	if Workspace.lastSnapshot then os.remove(Workspace.lastSnapshot) end
 	Workspace.lastSnapshot = file
-	return file, Workspace.rects(root)
+	return file, Workspace.rects(root), tonumber(root:get'width') or width, tonumber(root:get'height') or height
 end
 
 -- Screen-space rectangles of the document's nodes, deepest last.

@@ -255,6 +255,13 @@ native project window. On macOS, platform initialization keeps the application
 nonactivating; creating a visible window enables foreground activation. Loading
 the renderer or creating an offscreen surface alone cannot take focus.
 
+Color render textures follow the window's color pipeline: desktop builds use
+`GL_SRGB8_ALPHA8` with framebuffer sRGB conversion, so pixel readback can be
+saved directly as a PNG and sampling the texture decodes it back to linear.
+GLES builds retain RGBA targets, matching their disabled `R_USE_SRGB` pipeline.
+This also keeps the editor Preview's PNG snapshots at the same brightness as
+the standalone application.
+
 ### The `tr.buffer` Sentinel
 
 `tr.buffer` is set by `glGenBuffers` inside `R_InitBuffers()` during `renderer_Init()`. It is `0` until the full init completes. Use this as the canonical check for "is the renderer initialized?":

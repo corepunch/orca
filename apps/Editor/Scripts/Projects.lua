@@ -124,6 +124,62 @@ function Projects.list()
 	return rows
 end
 
+-- Minimal XML project, matching `tools/create-app.py --xml`.
+local PACKAGE = [[Name = "%s"
+StartupScreen = "%s/Screens/App"
+WindowWidth = 1024
+WindowHeight = 768
+ScreenLibrary = { IsExternal = true }
+FontLibrary = { Name = "fonts" }
+SystemMessages = {
+	{ Message = "KeyDown", Key = "q", Command = "return" },
+	{ Message = "WindowClosed", Command = "return" },
+	{ Message = "RequestReload", Command = "window:refresh()" },
+}
+EnginePlugins = {
+	{ Name = "orca.UIKit" },
+}
+]]
+local SCREEN = [[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="App" Width="1024" Height="768" ClearColor="#0B0B12">
+	<StackView Name="Root" Direction="Vertical" Spacing="16" Padding="40" BackgroundColor="#0B0B12" AlignItems="Center" JustifyContent="Center">
+		<TextBlock Name="Title" Text="%s" FontSize="32" ForegroundColor="#8B5CF6"/>
+		<TextBlock Name="Subtitle" Text="Hello World!" FontSize="16" ForegroundColor="#94A3B8"/>
+	</StackView>
+</Screen>
+]]
+
+local function write(path, content)
+	local handle, err = io.open(path, 'wb')
+	if not handle then return nil, err end
+	local ok, writeError = handle:write(content)
+	local closed, closeError = handle:close()
+	if not ok or not closed then return nil, writeError or closeError end
+	return true
+end
+
+-- Creates <parent>/<name> with a startup screen and returns its path.
+function Projects.create(parent, name)
+	parent = normalize(parent)
+	name = type(name) == 'string' and name:match('^%s*(.-)%s*$') or ''
+	if name == '' then return nil, 'Enter a name for the project.' end
+	if not name:match('^[%a][%w_%-]*$') then
+		return nil, 'Use letters, digits, - or _ and start with a letter.'
+	end
+	if not parent or not disk.direxists(parent) then return nil, 'Choose an existing folder for the project.' end
+	local root = parent .. '/' .. name
+	if disk.direxists(root) or disk.getfileinfo(root) then return nil, 'A folder named ' .. name .. ' already exists here.' end
+	local ok, err = pcall(function()
+		for _, dir in ipairs { root, root .. '/Screens', root .. '/fonts' } do disk.mkdir(dir) end
+	end)
+	if not ok then return nil, tostring(err) end
+	local written, writeError = write(root .. '/package.lua', PACKAGE:format(name, name))
+	if written then written, writeError = write(root .. '/Screens/App.xml', SCREEN:format(name)) end
+	if not written then return nil, writeError end
+	return root
+end
+
 -- Folder browsing for the launcher's in-app chooser. Hidden folders remain
 -- accessible through its path field; the native iterator omits dot entries.
 function Projects.directories(path)

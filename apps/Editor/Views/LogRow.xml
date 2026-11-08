@@ -1,6 +1,7 @@
-<Grid Columns="70px 68px 1fr" Height="20" Padding="10 0" Spacing="10"
+<!-- The level is a coloured dot, so the message starts close to the left edge. -->
+<Grid Columns="54px 6px 1fr" Height="20" Padding="10 0" Spacing="8"
       StateClasses="{Binding DataContext/State}" class="log-row">
-  <TextBlock Text="{Binding DataContext/Time}" class="editor-muted"/>
-  <TextBlock Text="{Binding DataContext/Detail}" class="log-level"/>
-  <TextBlock Text="{Binding DataContext/Label}" TextWrapping="NoWrap"/>
+  <TextBlock Text="{Binding DataContext/Time}" class="editor-muted log-time"/>
+  <Node2D Width="6" Height="6" VerticalAlignment="Center" class="log-dot" IgnoreHitTest="true"/>
+  <TextBlock Text="{Binding DataContext/Label}" TextWrapping="NoWrap" TextOverflow="Ellipsis" OverflowX="Hidden"/>
 </Grid>

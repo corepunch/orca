@@ -38,8 +38,7 @@ the item templates bind straight to them. Hierarchy and Project use nested
 ## Running
 
 ```bash
-make unite                        # first build after native data-source/API changes
-make editor                       # shows the project welcome screen
+make editor                       # builds ORCA and shows the project welcome screen
 make editor PROJECT=apps/Weather  # preselects a project in the welcome screen
 cd apps/Editor && make run PROJECT=../Example
 ```

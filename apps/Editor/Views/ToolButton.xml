@@ -1,1 +1,3 @@
-<Button class="toolbar-button" Text="{Binding DataContext/Label}" Click="Invoke"/>
+<Button Width="24" Height="22" Click="Invoke" class="icon-button panel-tool">
+  <VectorView Source="{Binding DataContext/Icon}" class="tool-icon" IgnoreHitTest="true"/>
+</Button>

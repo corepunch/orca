@@ -300,8 +300,8 @@ run:
 example:
 	$(TARGET) apps/Example
 
-# Live project editor (apps/Editor). PROJECT=apps/Weather edits another project.
-editor: copyshare
+# Build and launch the live project editor. PROJECT=apps/Weather preselects a project.
+editor: unite
 	$(if $(PROJECT),ORCA_EDITOR_PROJECT=$(abspath $(PROJECT))) $(TARGET) apps/Editor
 
 # Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.

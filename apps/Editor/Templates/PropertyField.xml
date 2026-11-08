@@ -1,8 +1,12 @@
-<Grid Rows="1fr" Columns="auto 1fr" Spacing="2" RightButtonUp="Context" StateClasses="{Binding DataContext/State}" class="property-field">
-  <TextBlock Name="ComponentLabel" Text="{Binding DataContext/ShortLabel}" TextWrapping="NoWrap" class="property-field-label" IgnoreHitTest="true"/>
-  <Grid Rows="1fr" Columns="1fr">
-    <Input Name="ComponentValue" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Submit="Value" KillFocus="Commit" KeyDown="FieldKey"
-           Visible="{Binding DataContext/IsText}" class="property-component-input"/>
-    <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" class="property-readonly"/>
+<Grid Rows="1fr" Columns="1fr" RightButtonUp="Context" StateClasses="{Binding DataContext/State}" class="property-field">
+  <!-- One filled box: the label (L/T/R/B or a word such as Blur) reads as a
+       prefix inside the field, and the input itself stays borderless. -->
+  <Grid Rows="1fr" Columns="auto 1fr" Spacing="2" class="property-field-box">
+    <TextBlock Name="ComponentLabel" Text="{Binding DataContext/ShortLabel}" TextWrapping="NoWrap" class="property-field-label" IgnoreHitTest="true"/>
+    <Grid Rows="1fr" Columns="1fr">
+      <Input Name="ComponentValue" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Submit="Value" KillFocus="Commit" KeyDown="FieldKey"
+             Visible="{Binding DataContext/IsText}" class="property-component-input"/>
+      <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" class="property-readonly"/>
+    </Grid>
   </Grid>
 </Grid>

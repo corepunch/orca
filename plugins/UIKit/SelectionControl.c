@@ -10,6 +10,7 @@ SelectionControl_CreatePart(struct Object *parent, uint32_t type, char const *na
   struct Object *part = OBJ_Create(type);
   if (!part) return NULL;
   OBJ_SetName(part, name);
+  OBJ_SetFlags(part, OBJ_GetFlags(part) | OF_NATIVE_PART);
   GetNode2D(part)->IgnoreHitTest = TRUE;
   _SendMessage(part, StyleController, AddClass, .ClassName = css);
   OBJ_AddChild(parent, part);

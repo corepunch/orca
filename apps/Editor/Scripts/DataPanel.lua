@@ -72,6 +72,34 @@ function Controller.toggleTreeItem(panel, record, sender)
 	return true
 end
 
+-- Opens the first levels of a freshly loaded tree so it never starts as a
+-- single collapsed root. Child containers materialize after their parent
+-- expands, so the walk repeats for a few frames; the user's own expand and
+-- collapse choices are kept afterwards.
+function Controller.expandLevels(panel, levels)
+	panel.expandFrames, panel.expandDepth = 4, levels
+end
+
+function Controller.autoExpand(panel)
+	if not panel or not panel.expandFrames or panel.expandFrames <= 0 then return end
+	panel.expandFrames = panel.expandFrames - 1
+	local function walk(node, depth)
+		local child = node:getFirstChild()
+		while child do
+			if child:getClassName() == 'TreeViewItem' then
+				if depth < panel.expandDepth then
+					if not child.IsExpanded then child:send('TreeViewItem.ToggleExpanded') end
+					walk(child, depth + 1)
+				end
+			else
+				walk(child, depth)
+			end
+			child = child:getNext()
+		end
+	end
+	walk(panel.list, 0)
+end
+
 function Controller.findRecord(source, field, value)
 	if not source then return end
 	for record in source.children do

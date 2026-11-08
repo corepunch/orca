@@ -9,8 +9,12 @@ function StatusBar:init()
 end
 function StatusBar:invalidate()
 	self.view:findChild('Selection',true).Text=Workspace.selection or Workspace.document or 'No document open'
-	self.view:findChild('History',true).Text=string.format('Undo %d   Redo %d',#Workspace.undoStack,#Workspace.redoStack)
-	self.view:findChild('State',true).Text=Workspace.dirty and 'Modified' or 'Saved'
+	-- Undo depth is noise here; the bar keeps to the selection and save state.
+	local history=self.view:findChild('History',true)
+	history.Text,history.Visible='',false
+	local state=self.view:findChild('State',true)
+	state.Text=Workspace.dirty and '● Unsaved changes' or 'All changes saved'
+	state.StateClasses=Workspace.dirty and 'status-dirty' or ''
 end
 function StatusBar:checkResize() end
 function StatusBar:focus() self.view:setFocus() end

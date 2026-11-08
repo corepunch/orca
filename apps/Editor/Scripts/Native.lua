@@ -78,11 +78,12 @@ function Native.records(rows)
 		<Column Name="Tail" Type="string"/><Column Name="Disabled" Type="bool"/>
 		<Column Name="Separator" Type="bool"/><Column Name="IsItem" Type="bool"/>
 		<Column Name="State" Type="string"/><Column Name="Time" Type="string"/>
+		<Column Name="Icon" Type="string"/><Column Name="Monogram" Type="string"/>
 	</Entity></Schema>]]
 	local xml = {'<Items>'}
 	for i, row in ipairs(rows) do
 		xml[#xml+1] = '<EditorChromeRow name="Row' .. i .. '" Index="' .. i .. '"'
-		for _, key in ipairs {'Label','Detail','Mark','Tail','Disabled','Separator','IsItem','State','Time'} do
+		for _, key in ipairs {'Label','Detail','Mark','Tail','Disabled','Separator','IsItem','State','Time','Icon','Monogram'} do
 			if row[key] ~= nil then xml[#xml+1] = ' ' .. key .. '="' .. Native.escape(row[key]) .. '"' end
 		end
 		xml[#xml+1] = '/>'
