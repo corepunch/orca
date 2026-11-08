@@ -2,6 +2,12 @@
      through Source; Local columns are client state a refresh keeps;
      Computed columns are small functions in providers/chat.lua. -->
 <Schema>
+  <Entity Name="ChatBlockedUser" Key="UserId" Description="An account the current user can unblock.">
+    <Column Name="UserId" Type="string" Source="user_id"/>
+    <Column Name="DisplayName" Type="string" Source="display_name" Nullable="true"/>
+    <Column Name="Username" Type="string" Source="username" Nullable="true"/>
+    <Column Name="Title" Type="string" Computed="publicName" DependsOn="DisplayName Username"/>
+  </Entity>
   <Entity Name="ChatRoom" Key="Id" Description="A conversation the reader belongs to.">
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="Title" Type="string" Source="name"/>
@@ -50,6 +56,7 @@
     <Column Name="Role" Type="string" Source="role" Default="member"/>
     <Column Name="CanChangeRole" Type="bool" Local="true" Description="The reader owns the room and this member is not the owner."/>
     <Column Name="CanRemove" Type="bool" Local="true"/>
+    <Column Name="CanReport" Type="bool" Local="true"/>
     <Column Name="AvatarPath" Type="string" Local="true"/>
     <Column Name="Title" Type="string" Computed="publicName" DependsOn="DisplayName Username"/>
     <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
@@ -89,6 +96,7 @@
     <Column Name="Group" Type="bool" Local="true"/>
     <Column Name="Sender" Type="string" Local="true"/>
     <Column Name="CanEdit" Type="bool" Local="true"/>
+    <Column Name="CanReport" Type="bool" Local="true"/>
     <Column Name="CanDelete" Type="bool" Local="true"/>
     <Column Name="AlbumHeight" Type="float" Local="true"/>
     <Column Name="HasPhotos" Type="bool" Computed="hasPhotos"/>
@@ -109,7 +117,7 @@
     <Column Name="PhotoInset" Type="float" Computed="photoInset"/>
     <Column Name="PhotoVerticalInset" Type="float" Computed="photoVerticalInset"/>
     <Column Name="Tone" Type="string" Computed="bubbleTone" Description="sent or received, with photo-top and photo-bottom for the photo corners the bubble rounds."/>
-    <Column Name="CanAct" Type="bool" Computed="canAct" DependsOn="CanEdit CanDelete"/>
+    <Column Name="CanAct" Type="bool" Computed="canAct" DependsOn="CanEdit CanDelete CanReport"/>
     <Column Name="ActionsWidth" Type="float" Computed="actionsSize" Description="A corner button over photos; the whole bubble otherwise."/>
     <Column Name="ActionsMargin" Type="float" Computed="actionsMargin"/>
     <Column Name="ActionsText" Type="string" Computed="actionsText"/>

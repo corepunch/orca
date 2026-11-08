@@ -1,0 +1,6 @@
+<StackView Name="CommunityRulesPage" Spacing="16" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <MarkdownView Name="CommunityRulesText" Spacing="12" class="chat-ink"/>
+  <TextBlock Name="CommunityRulesStatus" Visible="false" FontSize="15" WordWrap="true" class="chat-muted"/>
+  <Button Name="AcceptCommunityRules" Text="I agree to the community rules" TextResourceID="I agree to the community rules"
+          Height="48" FontSize="16" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link"/>
+</StackView>

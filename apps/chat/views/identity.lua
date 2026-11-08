@@ -190,6 +190,10 @@ function Identity.auth(self, mode)
             C.text(description, { FontSize = 15, class = "chat-muted", WordWrap = true }),
         }), form,
     })
+    body:addChild(C.button(t("Privacy policy"), function() remember(); self:show("/privacy") end,
+        { Name = "AuthPrivacyPolicy", FontSize = 14 }))
+    body:addChild(C.button(t("Community rules"), function() remember(); self:show("/rules") end,
+        { Name = "AuthCommunityRules", FontSize = 14 }))
     if not self.remote then
         body:addChild(C.text(t("Offline demo · code 123456\nEmail: demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
@@ -337,13 +341,21 @@ local function profileBody(self, profile)
         settingsStatus,
         C.eyebrow(t("privacy")),
         rows(phoneToggle and { phoneToggle, emailToggle } or { emailToggle }),
+        C.button(t("blocked people"), function() self:show("/blocked", "Forward") end,
+            { Name = "BlockedPeople", FontSize = 18, TextHorizontalAlignment = "Left" }),
         C.eyebrow(t("notifications")),
         rows { previewToggle },
         C.eyebrow(t("about")),
         -- Twemoji's CC-BY license requires visible credit; see THIRD_PARTY_NOTICES.md.
         C.text(t("Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."),
             { Name = "Credits", FontSize = 14, class = "chat-muted", WordWrap = true }),
+        C.button(t("Privacy policy"), function() self:show("/privacy", "Forward") end,
+            { Name = "PrivacyPolicy", FontSize = 18 }),
+        C.button(t("Community rules"), function() self:show("/rules", "Forward") end,
+            { Name = "CommunityRules", FontSize = 18 }),
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
+        C.button(t("delete account"), function() self:show("/delete-account", "Forward") end,
+            { Name = "DeleteAccount", FontSize = 18, class = "chat-error" }),
     })
 end
 

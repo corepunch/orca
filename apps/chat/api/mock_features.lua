@@ -6,6 +6,10 @@ return function(state, env)
     local now, find, issue, auth = env.clock, env.find, env.issue, env.authenticate
     local unique, timestamp = env.uniqueId, env.timestamp
     local P = {}
+    state.blocks, state.reports, state.rulesAccepted = {}, {}, {}
+    function P.blocked(a, b)
+        return state.blocks[a] and state.blocks[a][b] or state.blocks[b] and state.blocks[b][a] or false
+    end
     state.profiles, state.roles = state.profiles or {}, state.roles or {}
     state.challenges, state.lookups, state.invites = {}, {}, {}
     state.attachments, state.objects = {}, {}
@@ -31,6 +35,9 @@ return function(state, env)
     local function role(roomId, id) return member(roomId, id) and (state.roles[roomId] or {})[id] end
     function P.canPost(roomId, id)
         local r, value = find(state.rooms, roomId), role(roomId, id)
+        if r and r.kind == "direct" then
+            for peer in pairs(state.members[roomId] or {}) do if peer ~= id and P.blocked(id, peer) then return false end end
+        end
         return r and (value == "owner" or value == "admin" or (r.kind ~= "channel" and value == "member")) or false
     end
     function P.canSee(roomId, actor, target)
@@ -41,6 +48,7 @@ return function(state, env)
     end
     function P.contactVisible(actor, target)
         if actor == target then return false end
+        if P.blocked(actor, target) then return false end
         if state.contacts and state.contacts[actor] and state.contacts[actor][target] then return true end
         for roomId in pairs(state.members) do if P.canSee(roomId, actor, target) then return true end end
         return false
@@ -194,6 +202,7 @@ return function(state, env)
             return fail(400, "validation", "Invalid conversation name, type or members.")
         end
         if kind == "direct" and (#ids ~= 1 or ids[1] == user.id or visibility ~= "private") then return fail(400, "validation", "Choose exactly one other person for a private direct chat.") end
+        for _, id in ipairs(ids) do if P.blocked(user.id, id) then return fail(403, "user_blocked", "This person cannot be contacted.") end end
         local pair
         if kind == "direct" then
             pair = user.id < ids[1] and (user.id .. ":" .. ids[1]) or (ids[1] .. ":" .. user.id)
@@ -213,7 +222,90 @@ return function(state, env)
         return response(200, { P.roomRow(room, user.id) })
     end
     local function rpc(name, body, user)
-        if name == "list_chat_messages" then
+        if name == "list_chat_blocks" then
+            local rows = {}
+            for id in pairs(state.blocks[user.id] or {}) do
+                local profile = state.profiles[id] or {}
+                rows[#rows + 1] = { user_id = id, display_name = profile.display_name, username = profile.username }
+            end
+            return response(200, rows)
+        elseif name == "set_chat_user_block" then
+            if body.target_user == user.id or not find(state.users, body.target_user) or type(body.blocked) ~= "boolean" then
+                return fail(400, "validation", "Choose another person to block or unblock.")
+            end
+            state.blocks[user.id] = state.blocks[user.id] or {}
+            state.blocks[user.id][body.target_user] = body.blocked or nil
+            return response(200, true)
+        elseif name == "report_chat_content" then
+            local reasons = { spam=1,harassment=1,sexual_content=1,violence=1,hate=1,other=1 }
+            if not find(state.users, body.target_user) or body.target_user == user.id or not reasons[body.reason] then
+                return fail(400, "validation", "Choose a report reason and keep details under 1000 characters.")
+            end
+            local authorized, reportedMessage
+            for roomId, members in pairs(state.members) do if members[user.id] then
+                if members[body.target_user] then authorized = true end
+                for _, message in ipairs(state.messages[roomId] or {}) do
+                    if message.id == body.target_message and message.sender_id == body.target_user then reportedMessage = message end
+                end
+            end end
+            if not authorized or body.target_message and not reportedMessage then return fail(403, "forbidden", "You cannot report this content.") end
+            local id = "mock-report-" .. (#state.reports + 1)
+            state.reports[#state.reports + 1] = { id = id, reporter_id = user.id, target_user = body.target_user,
+                reason = body.reason, details = body.details, target_message = body.target_message, message = copy(reportedMessage), status = "open" }
+            return response(200, { id = id, submitted = true })
+        elseif name == "get_chat_rules_state" then
+            return response(200, { version = "2026-11-08", accepted_version = state.rulesAccepted[user.id] })
+        elseif name == "accept_chat_rules" then
+            if body.version ~= "2026-11-08" then return fail(400, "validation", "Read the current community rules first.") end
+            state.rulesAccepted[user.id] = body.version
+            return response(200, { accepted = true, version = body.version })
+        elseif name == "delete_chat_account" then
+            if body.confirmation ~= "DELETE" then return fail(400, "validation", "Confirm account deletion first.") end
+            for _, room in ipairs(state.rooms) do
+                local members, roles = state.members[room.id] or {}, state.roles[room.id] or {}
+                members[user.id], roles[user.id] = nil, nil
+                if room.owner_id == user.id then
+                    local successors = {}
+                    for id in pairs(members) do successors[#successors + 1] = id end
+                    table.sort(successors, function(a, b)
+                        if (roles[a] == "admin") ~= (roles[b] == "admin") then return roles[a] == "admin" end
+                        return a < b
+                    end)
+                    room.owner_id = successors[1]
+                    if room.owner_id then roles[room.owner_id] = "owner" end
+                end
+                local messages = state.messages[room.id] or {}
+                for i = #messages, 1, -1 do if messages[i].sender_id == user.id then table.remove(messages, i) end end
+            end
+            for i = #state.rooms, 1, -1 do
+                local room = state.rooms[i]
+                if not next(state.members[room.id] or {}) then
+                    state.messages[room.id], state.members[room.id], state.roles[room.id] = nil, nil, nil
+                    table.remove(state.rooms, i)
+                end
+            end
+            for id, photo in pairs(state.attachments) do
+                if photo.uploader_id == user.id then
+                    state.objects[photo.object_key], state.objects[photo.thumbnail_key] = nil, nil
+                    state.attachments[id] = nil
+                end
+            end
+            for id, invite in pairs(state.invites) do if invite.created_by == user.id then state.invites[id] = nil end end
+            for key, challenge in pairs(state.challenges) do
+                if challenge.owner_id == user.id or challenge.value == user.email or challenge.value == user.phone then state.challenges[key] = nil end
+            end
+            for id, session in pairs(state.sessions) do if session.user_id == user.id then
+                state.accessTokens[session.access_token], state.refreshTokens[session.refresh_token], state.sessions[id] = nil, nil, nil
+            end end
+            for i = #state.users, 1, -1 do if state.users[i].id == user.id then table.remove(state.users, i) end end
+            local avatar = state.profilePhotos[user.id]
+            if avatar then state.photoFiles[avatar] = nil end
+            state.profilePhotos[user.id], state.profiles[user.id] = nil, nil
+            state.blocks[user.id], state.rulesAccepted[user.id] = nil, nil
+            for _, blocked in pairs(state.blocks) do blocked[user.id] = nil end
+            for _, contacts in pairs(state.contacts or {}) do contacts[user.id] = nil end
+            return response(200, { accepted = true, deleted = true })
+        elseif name == "list_chat_messages" then
             if not member(body.target_room, user.id) then return fail(403, "forbidden", "Join this conversation first.") end
             local limit = tonumber(body.limit) or 30
             limit = math.max(1, math.min(100, math.floor(limit)))
@@ -281,7 +373,7 @@ return function(state, env)
             if #query < 3 or #query > 254 then return response(200, rows) end
             for _, account in ipairs(state.users) do
                 local p = state.profiles[account.id]
-                if account.id ~= user.id and (p.username == query:gsub("^@", "") or
+                if account.id ~= user.id and not P.blocked(user.id, account.id) and (p.username == query:gsub("^@", "") or
                     (p.discoverable_email and account.email_confirmed_at and account.email == query) or
                     (p.discoverable_phone and account.phone_confirmed_at and account.phone == query)) then
                     rows[#rows + 1] = { id = p.id, display_name = p.display_name, username = p.username }
@@ -341,13 +433,14 @@ return function(state, env)
             end
             state.sequence.invite = state.sequence.invite + 1
             local invite = { code = "mock-invite-" .. state.sequence.invite, room_id = r.id, expires_at = os.date("!%Y-%m-%dT%H:%M:%SZ", now() + 86400),
-                expires_epoch = now() + 86400, max_uses = 10, uses = 0, revoked = false }
+                expires_epoch = now() + 86400, max_uses = 10, uses = 0, revoked = false, created_by = user.id }
             state.invites[invite.code] = invite
             return response(200, invite)
         elseif name == "join_chat_invite" then
             local invite = state.invites[body.invite_code]
             if not invite or invite.revoked or invite.expires_epoch <= now() or invite.uses >= invite.max_uses then return fail(400, "invite_unavailable", "Invitation is unavailable or expired.") end
             local room = find(state.rooms, invite.room_id)
+            if invite.created_by and P.blocked(user.id, invite.created_by) then return fail(403, "user_blocked", "This invitation is unavailable.") end
             if not member(room.id, user.id) then addMember(room, user); invite.uses = invite.uses + 1 end
             return response(200, P.roomRow(room, user.id))
         elseif name == "find_chat_channels" then
@@ -453,7 +546,8 @@ return function(state, env)
             if method == "GET" then return response(200, { id = user.id, phone = user.phone, email = user.email, user_metadata = copy(user.user_metadata) }) end
         end
         local name = path:match("^/rest/v1/rpc/(.+)$")
-        local known = name and ({ list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
+        local known = name and ({ list_chat_blocks=1,set_chat_user_block=1,report_chat_content=1,get_chat_rules_state=1,accept_chat_rules=1,
+            delete_chat_account=1,list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
             set_chat_member_role=1,remove_chat_member=1,leave_chat_room=1,update_chat_room=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
             find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
             reserve_chat_photo=1,discard_chat_photo=1 })[name]

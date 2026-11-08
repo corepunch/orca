@@ -24,6 +24,55 @@ return function(Client, helpers)
     function Client:_rpc(name, body)
         return self:_request("POST", "/rest/v1/rpc/" .. name, body, true)
     end
+    function Client:listBlocks()
+        local rows, err = self:_rpc("list_chat_blocks", {})
+        if not rows then return nil, err end
+        if type(rows) ~= "table" then return failure("invalid_response", "The chat service returned invalid safety settings.") end
+        for _, row in ipairs(rows) do
+            if type(row) ~= "table" or not validId(row.user_id) then
+                return failure("invalid_response", "The chat service returned invalid safety settings.")
+            end
+        end
+        return rows
+    end
+    function Client:setUserBlocked(userId, blocked)
+        if not validId(userId) or type(blocked) ~= "boolean" or self.session and self.session.user.id == userId then
+            return failure("validation", "Choose another person to block or unblock.")
+        end
+        return self:_rpc("set_chat_user_block", { target_user = userId, blocked = blocked })
+    end
+    function Client:reportContent(userId, reason, details, messageId)
+        local reasons = { spam=1,harassment=1,sexual_content=1,violence=1,hate=1,other=1 }
+        if not validId(userId) or not reasons[reason] or messageId ~= nil and not validId(messageId)
+            or details ~= nil and (type(details) ~= "string" or #details > 1000) then
+            return failure("validation", "Choose a report reason and keep details under 1000 characters.")
+        end
+        local result, err = self:_rpc("report_chat_content", {
+            target_user = userId, reason = reason, details = details or "", target_message = messageId,
+        })
+        if not result then return nil, err end
+        if type(result) ~= "table" or not validId(result.id) or result.submitted ~= true then
+            return failure("invalid_response", "The chat service did not confirm your report.")
+        end
+        return result
+    end
+    function Client:getRulesState()
+        local result, err = self:_rpc("get_chat_rules_state", {})
+        if not result then return nil, err end
+        if type(result) ~= "table" or result.version ~= "2026-11-08"
+            or result.accepted_version ~= nil and type(result.accepted_version) ~= "string" then
+            return failure("invalid_response", "The chat service returned invalid safety settings.")
+        end
+        return result
+    end
+    function Client:acceptRules()
+        local result, err = self:_rpc("accept_chat_rules", { version = "2026-11-08" })
+        if not result then return nil, err end
+        if type(result) ~= "table" or result.accepted ~= true or result.version ~= "2026-11-08" then
+            return failure("invalid_response", "The chat service returned invalid safety settings.")
+        end
+        return result
+    end
     function Client:requestCode(value)
         local field, normalized = email(value)
         if not field then return failure("validation", "Enter a valid email address.") end

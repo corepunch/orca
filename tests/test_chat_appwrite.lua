@@ -28,10 +28,10 @@ local function signedIn(tail)
   for _, response in ipairs(tail or {}) do responses[#responses + 1] = response end
   return responses
 end
-local function backend(responses, sessionStore)
+local function backend(responses, sessionStore, pushStore)
   local requests, envelopes = {}, {}
   local options = { endpoint = endpoint, projectId = "69f1c06800389dc6a1a0", functionId = "orca-chat-api",
-    clock = function() return 1000 end, encode = json.encode, decode = json.decode, sessionStore = sessionStore,
+    clock = function() return 1000 end, encode = json.encode, decode = json.decode, sessionStore = sessionStore, pushStore = pushStore,
     transport = function(request)
       requests[#requests + 1] = request
       if request.url:find("/functions/", 1, true) then
@@ -479,4 +479,53 @@ value, err = Chat.appwrite { endpoint = "http://evil.test/v1", projectId = optio
 check(not value and err.code == "configuration", "Remote Appwrite endpoints require HTTPS")
 value, err = Chat.appwrite { endpoint = endpoint, projectId = "bad/project", functionId = options.functionId }
 check(not value and err.code == "configuration", "Invalid project IDs must fail before native module loading")
+-- Account deletion goes through the authenticated Function before any local
+-- erasure. A failed Keychain clear retries locally after Auth is disabled.
+local clears, saved = 0, nil
+local deletionStore = {
+  save = function(value) saved = value; return true end,
+  clear = function() clears = clears + 1; if clears == 1 then return nil, "locked" end; saved = nil; return true end,
+}
+client, requests, envelopes = backend(signedIn { execution(200, { accepted = true, deleted = false }) }, deletionStore)
+assert(client:signIn("you@example.test", "password123"))
+value, err = client:deleteAccount()
+check(not value and err.code == "validation" and #requests == 3, "Deletion requires explicit confirmation before HTTP")
+value, err = client:deleteAccount("DELETE")
+check(not value and err.code == "session_storage" and not client:getSession() and client.accountDeletion and saved,
+  "Accepted deletion clears memory and preserves a local erasure retry when Keychain is locked")
+value, err = client:signIn("another@example.test", "password123")
+check(not value and err.code == "session_storage" and #requests == 4,
+  "Another account cannot replace credentials while confirmed deletion's local erasure is pending")
+check(#envelopes == 1 and envelopes[1].path == "/rest/v1/rpc/delete_chat_account"
+  and envelopes[1].body.confirmation == "DELETE" and requests[4].headers["X-Appwrite-JWT"] == "jwt-one",
+  "Deletion authenticates through the existing Function without private credentials")
+local accepted = assert(client:deleteAccount("DELETE"))
+check(accepted.accepted and not accepted.deleted and not saved and not client.accountDeletion and #requests == 4,
+  "Local erasure retry does not repeat server deletion or use revoked Account credentials")
+client, requests = backend(signedIn { execution(503, { code = "service_unavailable", message = "Try later" }) })
+assert(client:signIn("you@example.test", "password123"))
+value, err = client:deleteAccount("DELETE")
+check(not value and err.code == "service_unavailable" and client:getSession() and not client.accountDeletion,
+  "Unaccepted deletion keeps credentials available for a safe retry")
+local target = { id = "existing-target", userId = "user.with_underscore" }
+client, requests = backend(signedIn { { status = 204 }, execution(200, { accepted = true, deleted = false }) }, nil, {
+  load = function() return target end,
+  save = function(value) target = value; return true end,
+  clear = function() target = nil; return true end,
+})
+assert(client:signIn("you@example.test", "password123"))
+assert(client:deleteAccount("DELETE"))
+check(not target and #requests == 5 and requests[4].method == "DELETE"
+  and requests[4].url:find("/account/targets/existing-target/push", 1, true),
+  "Deletion removes this device's push target before server revocation, then erases local metadata")
+target = { id = "existing-target", userId = "user.with_underscore" }
+client, requests, envelopes = backend(signedIn { { status = 503, body = { type = "network", message = "Offline" } } }, nil, {
+  load = function() return target end,
+  save = function(value) target = value; return true end,
+  clear = function() target = nil; return true end,
+})
+assert(client:signIn("you@example.test", "password123"))
+value, err = client:deleteAccount("DELETE")
+check(not value and err.code == "push_cleanup" and client:getSession() and target and #envelopes == 0,
+  "Failed notification cleanup stops deletion before disabling the account or erasing credentials")
 print("PASS: chat Appwrite (" .. checks .. " checks)")

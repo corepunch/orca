@@ -137,6 +137,40 @@ function Client:signOut()
   return result, err
 end
 
+-- The server first accepts a durable deletion job and revokes the shared
+-- account. Retry local erasure without repeating that irreversible request.
+function Client:deleteAccount(confirmation)
+  if confirmation ~= "DELETE" then return failure("validation", "Confirm account deletion first.") end
+  local result, err = self.accountDeletion
+  if not result then
+    if not self.session then return failure("unauthenticated", "Sign in to continue.") end
+    local user = self.session.user.id
+    if self.mode == "appwrite" then
+      local prepared
+      prepared, err = self:_request("POST", "/auth/v1/prepare-account-deletion")
+      if not prepared then return nil, err end
+    end
+    result, err = self:_request("POST", "/rest/v1/rpc/delete_chat_account", { confirmation = confirmation }, true)
+    if not result then return nil, err end
+    if type(result) ~= "table" or (result.accepted ~= true and result.deleted ~= true) then
+      return failure("invalid_response", "The chat service did not confirm account deletion.")
+    end
+    if not self.session or self.session.user.id ~= user then
+      return failure("session_changed", "The active account changed during account deletion.")
+    end
+    self.accountDeletion = { accepted = result.accepted == true, deleted = result.deleted == true, userId = user }
+    result = self.accountDeletion
+    self.session, self.avatarIds, self.messagePageRetryAt = nil, {}, nil
+  end
+  if self.mode == "appwrite" then
+    local erased
+    erased, err = self:_request("POST", "/auth/v1/forget-deleted-account", { userId = result.userId })
+    if not erased then return nil, err end
+  end
+  self.accountDeletion = nil
+  return { accepted = result.accepted, deleted = result.deleted }
+end
+
 function Client:listRooms()
   local data, err = self:_request("GET", "/rest/v1/chat_rooms?select=*,role,can_post&order=created_at.desc", nil, true)
   if not data then return nil, err end

@@ -19,4 +19,6 @@
           class="chat-action chat-outline"/>
   <Button Name="Remove" Visible="{Binding DataContext/CanRemove, Mode=OneTime}" Click="RemoveMember" Height="48" FontSize="15"
           TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-error" TextResourceID="Remove">Remove</Button>
+  <Button Name="MemberSafety" Visible="{Binding DataContext/CanReport, Mode=OneTime}" Click="MemberSafety" Height="48" FontSize="15"
+          TextHorizontalAlignment="Left" TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link" TextResourceID="report or block">report or block</Button>
 </StackView>

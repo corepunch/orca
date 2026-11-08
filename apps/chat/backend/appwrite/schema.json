@@ -22,12 +22,21 @@
       "indexes": [{"key":"by_room","type":"key","attributes":["room_id"]},{"key":"room_history","type":"key","attributes":["room_id","created_at"],"orders":["ASC","DESC"]}] },
     { "id": "attachments", "name": "Encrypted photo metadata", "permissions": [], "documentSecurity": false,
       "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"room_id","type":"string","size":36,"required":true},{"key":"uploader_id","type":"string","size":36,"required":true},{"key":"object_key","type":"string","size":128,"required":true},{"key":"thumbnail_key","type":"string","size":128,"required":true}],
-      "indexes": [{"key":"by_uploader","type":"key","attributes":["uploader_id"]},{"key":"photo_unique","type":"unique","attributes":["object_key"]},{"key":"thumbnail_unique","type":"unique","attributes":["thumbnail_key"]}] },
+      "indexes": [{"key":"by_uploader","type":"key","attributes":["uploader_id"]},{"key":"by_room","type":"key","attributes":["room_id"]},{"key":"photo_unique","type":"unique","attributes":["object_key"]},{"key":"thumbnail_unique","type":"unique","attributes":["thumbnail_key"]}] },
     { "id": "invitations", "name": "Invitations", "permissions": [], "documentSecurity": false,
       "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"room_id","type":"string","size":36,"required":true}],
       "indexes": [{"key":"by_room","type":"key","attributes":["room_id"]}] },
     { "id": "service-state", "name": "Private locks, challenges and limits", "permissions": [], "documentSecurity": false,
       "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"kind","type":"string","size":32,"required":true}],
-      "indexes": [{"key":"by_kind","type":"key","attributes":["kind"]}] }
+      "indexes": [{"key":"by_kind","type":"key","attributes":["kind"]}] },
+    { "id": "account-deletions", "name": "Private durable account deletion jobs", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"kind","type":"string","size":32,"required":true}],
+      "indexes": [{"key":"by_kind","type":"key","attributes":["kind"]}] },
+    { "id": "user-blocks", "name": "Private user blocking", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":4096,"required":true},{"key":"blocker_id","type":"string","size":36,"required":true},{"key":"blocked_id","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"block_pair","type":"unique","attributes":["blocker_id","blocked_id"]},{"key":"by_blocked","type":"key","attributes":["blocked_id"]}] },
+    { "id": "moderation-reports", "name": "Private moderation reports and decisions", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"status","type":"string","size":32,"required":true},{"key":"reporter_id","type":"string","size":36,"required":true},{"key":"target_user","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"by_status","type":"key","attributes":["status"]},{"key":"by_reporter","type":"key","attributes":["reporter_id"]},{"key":"by_target","type":"key","attributes":["target_user"]}] }
   ]
 }

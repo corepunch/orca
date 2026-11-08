@@ -18,7 +18,13 @@ the shared Octopus account and profile service.
   timestamps, and the identifiers needed to associate this content with your
   account and conversations.
 - **Preferences:** settings such as whether people can find you by a verified
-  identifier and whether notification alerts include message previews.
+  identifier and whether notification alerts include message previews, plus the
+  version of the community rules you accepted and the acceptance time.
+- **Safety information:** accounts you block and abuse reports you submit.
+  Reports can include your account identifier, the reported account,
+  conversation and message identifiers, a reason, your explanation, a copy of
+  the reported message text, and references to attached photos. Service review
+  can add a decision, notes and a resolution time.
 - **Notification and connection information:** if you enable notifications,
   a device push token is associated with your account for delivery. Requests to
   the service also involve your IP address and authentication/session information.
@@ -29,7 +35,7 @@ the shared Octopus account and profile service.
 
 This information is used to authenticate you, deliver and display messages and
 photos, manage conversations, find people according to their discovery settings,
-deliver notifications, and operate and protect the service. The app does not
+deliver notifications, investigate abuse reports, and operate and protect the service. The app does not
 use advertising or cross-app tracking.
 
 ## What other people can see
@@ -39,7 +45,7 @@ Chat contacts come from conversations and authorized relationships; the app does
 not upload your device's address book.
 
 Exact username lookup is supported. Email discovery requires a verified address
-and your opt-in setting. A phone number entered in Profile is private and does
+and your opt-in setting. A phone number entered in Settings is private and does
 not make you searchable. Older accounts may have a verified login phone; only
 a verified identifier with discovery enabled can be used for discovery. Your
 email address and phone number are not returned in other users' public profiles.
@@ -59,7 +65,7 @@ to provide these services. See [Appwrite's privacy policy](https://appwrite.io/p
 
 On Apple devices, push notifications pass through Apple's push notification
 service. Alerts can include a sender name and a short message preview or photo
-label. Turn off **Message previews** in Profile and save the setting to request
+label. Turn off **Message previews** in Settings to request
 generic new-message alerts instead. You can also control notification permission
 and lock-screen previews in iOS Settings.
 
@@ -74,9 +80,31 @@ Keychain to restore your session. The app also keeps working data and temporary
 photo previews locally. Signing out clears its local credentials and temporary
 photo previews; it does not delete your server account or conversations.
 
+## Safety reports and blocking
+
+Abuse reports are private service records available for review by service
+administrators. They are not published to the conversation or included in
+public profiles. The report can retain the message text as it was when
+reported, so a later edit does not change that review context. Administrators
+can review reports, remove reported messages and their conversation photos,
+or suspend an abusive account. Suspending the shared Appwrite account also
+affects access through Octopus and its website.
+
+Server-side text checks reject certain objectionable words or phrases in
+messages and public names. These checks have limited coverage. Photos and
+other reported content can be reviewed by people; the service does not use
+an automated image classifier to assess photo content.
+
+Blocking prevents direct contact and some discovery and invitation paths
+between the two accounts. It does not erase existing direct-chat history or
+hide messages in groups you already share. Other participants' messages and
+copies they have saved remain available to them. See the
+[community rules](https://corepunch.github.io/orca/chat/community-rules/) for
+conduct requirements and the private reporting contact.
+
 ## Managing and deleting information
 
-Profile lets you change your display name, public username, optional phone
+Settings lets you change your display name, public username, optional phone
 number, discovery preferences and notification-preview preference. You can
 change your profile picture and use the supported email-verification flow to
 change a linked email address.
@@ -89,8 +117,23 @@ service cannot remove copies another person has already saved independently.
 
 Account, profile and conversation records remain stored so the service can
 provide account access and message history. Signing out or leaving a
-conversation does not erase those records. For requests concerning access,
-correction or deletion of account information, use the private contact below.
+conversation does not erase those records.
+
+Use **delete account** in Settings to request deletion of your shared account
+and its associated Chat and Octopus data. The account is disabled first and
+deletion is queued for background processing; service failures can delay
+completion and require retries. This affects sign-in to Chat, Octopus and
+the website, rather than only this device.
+
+Deletion removes your account and profile records, your Chat messages and
+attachments, your Octopus content, owned media uploads, and service report
+and block records involving your account. Messages written by other people
+remain. Ownership of shared conversations can be transferred to another
+member so their conversations can continue. Deletion from the service cannot
+erase content another person has saved independently.
+
+For requests concerning access, correction or deletion of account information,
+you can also use the private contact below.
 
 ## Contact and policy updates
 

@@ -3,6 +3,8 @@ import { eq, key, order, reject } from './rest.js';
 import { identifier } from './auth.js';
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from './photos.js';
 import { resolveRoute } from './routes.js';
+import { AccountDeletion } from './account-deletion.js';
+import { Safety } from './safety.js';
 
 const staff = member => member && ['owner', 'admin'].includes(member.role);
 const posting = (room, member) => member && (room.kind !== 'channel' || staff(member));
@@ -37,9 +39,11 @@ async function mapConcurrent(items, action, width = 8) {
 }
 
 export class ChatService {
-  constructor(repo, auth, { now = Date.now, pushEnabled = false, pushError = () => {}, pushTimeoutMs = 3000 } = {}) {
+  constructor(repo, auth, { now = Date.now, pushEnabled = false, pushError = () => {}, pushTimeoutMs = 3000, blockedTerms = [] } = {}) {
     this.repo = repo; this.auth = auth; this.now = now;
     this.pushEnabled = pushEnabled; this.pushError = pushError; this.pushTimeoutMs = pushTimeoutMs;
+    this.deletions = new AccountDeletion(repo, auth, { now });
+    this.safety = new Safety(this, { now, blockedTerms });
   }
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {
@@ -48,7 +52,7 @@ export class ChatService {
     // verified login phone seeds it, and only that verified number stays discoverable.
     const values = previous => {
       const phone = previous ? previous.phone || null : verifiedPhone;
-      return { display_name: previous?.display_name || user.name || '', username: previous?.username || null,
+      return { display_name: this.safety.displayName(previous?.display_name || user.name || ''), username: previous?.username || null,
         avatar_id: previous?.avatar_id || null,
         notification_previews: previous?.notification_previews !== false,
         email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
@@ -67,7 +71,7 @@ export class ChatService {
   }
   async profileById(userId) {
     const previous = await this.repo.get('profiles', userId);
-    if (previous) return previous;
+    if (previous) return { ...previous, display_name: this.safety.displayName(previous.display_name) };
     return this.profile(await this.auth.rest.request('GET', '/users/' + encodeURIComponent(id(userId))));
   }
   async updateProfile(user, values) {
@@ -81,11 +85,13 @@ export class ChatService {
       if ('notification_previews' in values) row.notification_previews = values.notification_previews;
       if ('display_name' in values) {
         if (typeof values.display_name !== 'string' || !values.display_name.trim() || [...values.display_name].length > 128) reject(400, 'validation', 'Use a display name of 1–128 characters.');
+        this.safety.validate(values.display_name);
         row.display_name = values.display_name.trim();
       }
       if ('username' in values) {
         if (typeof values.username !== 'string' || values.username && !/^[a-z0-9][a-z0-9._-]{0,35}$/.test(values.username))
           reject(400, 'validation', 'Use a lowercase account name of 1–36 letters, digits, dots, underscores or hyphens.');
+        this.safety.validate(values.username);
         if (row.username === user.$id && values.username !== row.username)
           reject(400, 'stable_account_name', 'Your account name is also your account ID and cannot be changed.');
         if (values.username && values.username !== row.username) {
@@ -122,11 +128,12 @@ export class ChatService {
     const matches = await this.repo.list('profiles', [eq(field, value)]), result = [];
     for (const profile of matches) {
       if (profile.id === user.$id || field !== 'username' && !profile['discoverable_' + field]) continue;
+      if (await this.safety.blocked(user.$id, profile.id)) continue;
       if (field !== 'username') {
         const account = await this.auth.rest.request('GET', '/users/' + encodeURIComponent(profile.id));
         if (!account[field + 'Verification'] || account[field]?.toLowerCase() !== value) continue;
       }
-      result.push(publicProfile(profile));
+      result.push(publicProfile({ ...profile, display_name: this.safety.displayName(profile.display_name) }));
     }
     return result;
   }
@@ -167,6 +174,8 @@ export class ChatService {
       || members.some(value => !validId(value)) || !['direct', 'group', 'channel'].includes(kind)
       || !['public', 'private'].includes(visibility) || visibility === 'public' && kind !== 'channel') reject(400, 'validation', 'Choose a valid conversation name, type and members.');
     const userIds = [...new Set(members)].filter(value => value !== user.$id);
+    this.safety.validate(name);
+    for (const userId of userIds) await this.safety.assertInteraction(user.$id, userId);
     if (kind === 'direct' && (userIds.length !== 1 || members.length !== 1 || visibility !== 'private')) reject(400, 'validation', 'Choose exactly one other person for a private direct chat.');
     const directKey = kind === 'direct' ? createHash('sha256').update([user.$id, userIds[0]].sort().join('\0')).digest('hex') : null;
     return this.repo.lock('create:' + (directKey || randomUUID()), async () => {
@@ -240,6 +249,7 @@ export class ChatService {
     if (Object.keys(body).some(field => !['target_room', 'room_name'].includes(field))) reject(400, 'validation', 'Only the conversation name can be changed.');
     const name = body.room_name;
     if (typeof name !== 'string' || !name.trim() || [...name].length > 80) reject(400, 'validation', 'Use a conversation name of 1–80 characters.');
+    this.safety.validate(name);
     return this.repo.lock('room:' + roomId, async () => {
       const { room, member } = await this.access(roomId, user.$id);
       if (room.kind === 'direct' || member.role !== 'owner') reject(403, 'forbidden', 'Only the owner can rename a group or channel.');
@@ -262,6 +272,8 @@ export class ChatService {
     return this.repo.lock('room:' + initial.room_id, async () => {
       const invite = await this.repo.get('invites', inviteId), room = await this.repo.get('rooms', initial.room_id);
       if (!room || !invite || invite.revoked || Date.parse(invite.expires_at) <= this.now()) reject(404, 'invalid_invite', 'The invitation is invalid or expired.');
+      await this.safety.assertInteraction(user.$id, invite.created_by);
+      if (room.created_by) await this.safety.assertInteraction(user.$id, room.created_by);
       const old = await this.membership(room.id, user.$id);
       if (old) return this.roomView(room, old);
       if (invite.uses >= invite.max_uses) reject(400, 'invite_exhausted', 'The invitation has reached its usage limit.');
@@ -281,16 +293,21 @@ export class ChatService {
       await this.repo.update('invites', invite.id, { ...invite, revoked: true }); return true;
     });
   }
-  async findChannels(query) {
+  async findChannels(query, user) {
     if (typeof query !== 'string' || query.length > 80) reject(400, 'validation', 'Use a channel name of at most 80 characters.');
     if (query.trim().length < 2) return [];
     const rooms = await this.repo.list('rooms', [eq('kind', 'channel'), eq('visibility', 'public')]);
-    return rooms.filter(room => room.name.toLowerCase().includes(query.trim().toLowerCase())).map(room => ({ id: room.id, name: room.name, kind: room.kind, visibility: room.visibility, created_at: room.created_at }));
+    const result = [];
+    for (const room of rooms) if (room.name.toLowerCase().includes(query.trim().toLowerCase())
+      && (!user || !room.created_by || !await this.safety.blocked(user.$id, room.created_by)))
+      result.push({ id: room.id, name: room.name, kind: room.kind, visibility: room.visibility, created_at: room.created_at });
+    return result;
   }
   async joinPublic(user, roomId) {
     return this.repo.lock('room:' + id(roomId), async () => {
       const room = await this.repo.get('rooms', roomId);
       if (!room || room.kind !== 'channel' || room.visibility !== 'public') reject(404, 'not_found', 'Public channel not found.');
+      if (room.created_by) await this.safety.assertInteraction(user.$id, room.created_by);
       let member = await this.membership(roomId, user.$id);
       if (!member) member = await this.repo.create('members', { room_id: roomId, user_id: user.$id, role: 'subscriber', created_at: this.timestamp() }, memberId(roomId, user.$id));
       return this.roomView(room, member);
@@ -346,8 +363,10 @@ export class ChatService {
     const roomId = id(body.target_room), text = body.message_body ?? '', attachmentIds = body.attachment_ids ?? [];
     if (typeof text !== 'string' || Buffer.byteLength(text) > 4000 || !Array.isArray(attachmentIds) || attachmentIds.length > 9
       || new Set(attachmentIds).size !== attachmentIds.length || attachmentIds.some(value => !validId(value)) || !text.trim() && !attachmentIds.length) reject(400, 'validation', 'Write a message or attach up to nine photos (maximum 4000 text bytes).');
+    this.safety.validate(text);
     return this.repo.lock('room:' + roomId, async () => {
       const { room } = await this.access(roomId, user.$id, true);
+      return this.safety.directAction(user, room, async () => {
       const attachments = [];
       for (const attachmentId of attachmentIds) {
         const photo = await this.repo.get('attachments', attachmentId);
@@ -362,6 +381,7 @@ export class ChatService {
       const message = await this.repo.create('messages', { room_id: roomId, sender_id: user.$id, body: text, created_at: this.timestamp(), attachment_ids: attachmentIds }, messageId);
       await this.notifyMessage(message);
       return [await this.messageView(message, room)];
+      });
     });
   }
   // Called only after publication, under the room lock: recipients remain
@@ -423,13 +443,16 @@ export class ChatService {
   async editMessage(user, body) {
     const text = body.message_body;
     if (typeof text !== 'string' || Buffer.byteLength(text) > 4000) reject(400, 'validation', 'Write a message of at most 4000 text bytes.');
+    this.safety.validate(text);
     return this.messageAction(user, body.target_message, async (message, { room, member }) => {
+      return this.safety.directAction(user, room, async () => {
       // Only the author edits, and only while they may still post here.
       if (message.sender_id !== user.$id || !posting(room, member)) reject(403, 'forbidden', 'You can edit only your own messages.');
       if (!text.trim() && !message.attachment_ids?.length) reject(400, 'validation', 'A message without photos needs text.');
       if (text === message.body) return [await this.messageView(message, room)];
       const edited = await this.repo.update('messages', message.id, { ...message, body: text, edited_at: this.timestamp() });
       return [await this.messageView(edited, room)];
+      });
     });
   }
   async deleteMessage(user, body) {

@@ -58,7 +58,7 @@ mock data. JSON escaping and empty array arguments survive both envelope layers.
 
 The [Appwrite backend](backend/appwrite/README.md) owns authorization, role and
 invite checks, verification challenges, rate limits, and encrypted photo storage.
-Its seven private collections and indexes are provisioned in Octopus's existing
+Its ten private collections and indexes are provisioned in Octopus's existing
 `octopus-db`. The Function is deployed with execution restricted to signed-in users. Email
 identity linking also requires a delivery provider; missing providers produce an
 explicit error. Session refresh revalidates the native Account session and issues
@@ -83,8 +83,46 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `restoreSession()` | Validates the saved Appwrite credential and obtains a fresh JWT; called explicitly on app launch |
 | `refreshSession()` | Rotated session; also runs near expiry or once after an authenticated HTTP 401 |
 | `signOut()` | Clears local credentials and requests local-session revocation, including on network failure |
+| `deleteAccount("DELETE")` | Authenticated deletion of the shared Chat/Octopus account; returns `{accepted=true,deleted=false}` when durable background cleanup has started, or `deleted=true` when complete |
 | `signIn(email,password)` | Existing email/password login; returns a session |
 | `signUp(email,password,displayName)` | Existing password signup; session or `{confirmationRequired=true}` |
+
+Account deletion requires explicit confirmation in Settings. It affects the
+shared Octopus account as well as Chat. The server first records a durable job
+and disables the account; an event-driven worker with hourly recovery then removes
+personal content and the Auth account. Acceptance signs the client out and
+erases its saved Keychain credential, notification-target record, cached photos
+and drafts. A local storage failure offers **Retry device cleanup** without
+repeating the server request. A failed request before acceptance retains the
+login so deletion can be retried. Deploy the deletion schema and scheduled
+worker before shipping the client; see the backend setup guide. This feature
+does not remove copies saved by other people outside the service.
+
+The full privacy policy is available from Settings without a network request.
+Its canonical source is `docs/chat/privacy.md`; after updating it, run
+`cp docs/chat/privacy.md apps/chat/assets/privacy.md` to update the bundled
+copy. The focused account-deletion UI test checks that the copies match.
+
+## Safety and community rules
+
+| Method | Result |
+| --- | --- |
+| `listBlocks()` | Current account's saved `{user_id,display_name,username}` block list |
+| `setUserBlocked(userId,blocked)` | Boolean after blocking or unblocking another account |
+| `reportContent(userId,reason,details,messageId)` | Private moderator report `{id,submitted=true}`; the optional message must be visible and authored by that user |
+| `getRulesState()` | Current rules version and this account's accepted version |
+| `acceptRules()` | Explicit acceptance of bundled rules version `2026-11-08` |
+
+Report reasons are `spam`, `harassment`, `sexual_content`, `violence`, `hate`
+or `other`; details are optional and limited to 1000 characters. Reports are
+available through **report or block** on incoming messages and other conversation
+members. Blocks apply to direct messaging, discovery and invitations in both
+directions. They do not erase direct history or hide people in shared groups.
+Reports are private to moderators and can include authorized message context
+and photo references. Community rules are bundled from
+`docs/chat/community-rules.md` as `assets/community-rules.md` and are readable
+from sign-in and Settings. Rules acceptance is explicit and persisted; older
+clients are not retroactively gated on the new endpoint.
 
 Sign-in and linking take an email, which the client lowercases. A phone number
 begins with `+` (or `00`); the client removes spaces, dots, parentheses and

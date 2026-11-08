@@ -354,6 +354,15 @@ test-chat-appwrite: $(LUA_BIN)
 	$(LUA) tests/test_chat_appwrite.lua
 	$(LUA) tests/test_chat_push.lua
 
+.PHONY: test-chat-account-deletion
+test-chat-account-deletion: copyshare
+	$(TARGET) -test=tests/test_chat_account_deletion.lua
+
+.PHONY: test-chat-safety
+test-chat-safety: copyshare $(LUA_BIN)
+	$(LUA) tests/test_chat_safety.lua
+	$(TARGET) -test=tests/test_chat_safety_ui.lua
+
 # Explicitly opted in: real native HTTP and secure session storage against
 # Appwrite. Never make this a dependency of test/test-headless/test-chat.
 .PHONY: test-chat-live
@@ -678,6 +687,8 @@ HEADLESS_LUA_TESTS += $(XML_LUA_TESTS)
 APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
 APP_LUA_TESTS += test-chat-stress test-octopus-stress
 APP_LUA_TESTS += test-chat-localization test-octopus-localization
+APP_LUA_TESTS += test-chat-account-deletion
+APP_LUA_TESTS += test-chat-safety
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome
 HEADLESS_LUA_TESTS += test-editor-projects

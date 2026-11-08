@@ -197,6 +197,15 @@ value, err = client:editMessage(draft.id, "Gone"); denied(value, err, "not_found
 value, err = newcomer:deleteMessage("a2"); denied(value, err)
 check(err.status == 403, "Non-members cannot delete messages")
 
+local deleting = Chat.demo { clock = clock }
+local ownMessage = assert(deleting:sendMessage("alex", "Remove my personal content"))
+value, err = deleting:deleteAccount("no")
+denied(value, err, "validation")
+check(deleting:getSession() ~= nil, "Declining deletion keeps the account")
+local deleted = assert(deleting:deleteAccount("DELETE"))
+check(deleted.deleted and not deleting:getSession(), "The mock deletes the confirmed account and ends its session")
+value, err = deleting:signIn("demo@example.invalid", "password123")
+denied(value, err)
 check(networkLoads == 0, "Offline operations must never import the network transport")
 for _, name in ipairs(guarded) do
     check(package.loaded[name] == nil, "Offline operations must not load " .. name)
