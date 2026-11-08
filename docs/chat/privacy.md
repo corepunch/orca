@@ -21,8 +21,11 @@ the shared Octopus account and profile service.
   identifier and whether notification alerts include message previews.
 - **Notification and connection information:** if you enable notifications,
   a device push token is associated with your account for delivery. Requests to
-  the service also involve technical information such as your IP address and
-  authentication/session information.
+  the service also involve your IP address and authentication/session information.
+  Appwrite retains session records containing the sign-in IP address, a country
+  inferred from that address, and device, operating-system and client information.
+  These records support authentication and account security. This does not
+  involve access to your device's precise location or GPS.
 
 This information is used to authenticate you, deliver and display messages and
 photos, manage conversations, find people according to their discovery settings,
