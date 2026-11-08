@@ -343,8 +343,12 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
 
 - `Pivot` with `PivotItem` children: a small-caps `Title`, then large
   lowercase headers. The selected header leads, the others follow dimmed and
-  wrap around; a short strip keeps repeating them until it reaches the right
-  edge. Tap a header or swipe the content; `SelectedIndex` and
+  wrap around; on compact viewports (up to 600 logical points), a short strip
+  keeps repeating them until it reaches the right edge. As an ORCA adaptation
+  for wider screens, a strip whose unique headers fit within the page insets
+  shows one cycle rather than duplicate choices. The selected header still
+  leads, swipes still wrap, and repeat nodes are retained for compact resizing.
+  Tap a header or swipe the content; `SelectedIndex` and
   `SelectionChanged` report the item. `IsLocked` hides the other headers and
   disables swiping. Generated parts carry the `pivot-title` and
   `pivot-header` (`PivotHeaderItem`) CSS classes.

@@ -187,6 +187,70 @@ local function test_pivot_header_metrics()
   print("PASS: test_pivot_header_metrics")
 end
 
+local function test_pivot_wide_headers()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot { Title = "Messenger" }
+  for _, name in ipairs { "All", "Unread", "Pinned" } do
+    local item = pivot + ui.PivotItem { Name = name, Header = name }
+    local _ = item + ui.Button { Height = 60 }
+  end
+  layout(screen)
+  local headers = children(pivot, "PivotHeaderItem")
+  for _, header in ipairs(headers) do header.Width = 80 end
+  layout(screen)
+  headers = children(pivot, "PivotHeaderItem")
+  local poolCount, repeatNode = #headers, headers[4]
+  test.expect(poolCount > 3 and repeatNode.Visible, "Compact Pivot keeps its repeating phone strip")
+
+  local function visibleHeaders()
+    local count = 0
+    for _, header in ipairs(children(pivot, "PivotHeaderItem")) do
+      if header.Visible then count = count + 1 end
+    end
+    return count
+  end
+  screen.Width = 1032
+  layout(screen)
+  test.expect_eq(visibleHeaders(), 3, "Wide Pivot shows each fitting header only once")
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), poolCount, "Wide layout retains its compact copy pool")
+  test.expect(not repeatNode.Visible, "Wide layout hides spare repeat nodes")
+  headers[3]:send("Node.LeftButtonUp")
+  pump(screen)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 2, "Wide header taps still select their page")
+  test.expect(headers[3].ActualX < headers[1].ActualX and headers[1].ActualX < headers[2].ActualX,
+    "Wide headers still follow the selected item in cyclic order")
+  test.expect_eq(visibleHeaders(), 3, "Wide selection does not introduce duplicate headers")
+  swipe(screen, 200, 400, -120)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 0, "Wide content swipes wrap to the first item")
+  test.expect_eq(visibleHeaders(), 3, "Wide swipes retain one unique header sequence")
+
+  screen.Width = 600
+  layout(screen)
+  test.expect(visibleHeaders() > 3, "Compact breakpoint preserves phone-style repetition")
+  local expandedPool = #children(pivot, "PivotHeaderItem")
+  screen.Width = 601
+  layout(screen)
+  test.expect_eq(visibleHeaders(), 3, "Above the compact breakpoint fitting headers do not repeat")
+  screen.Width = 1032
+  for i = 1, 3 do headers[i].Width = 350 end
+  layout(screen)
+  -- Move the overflowing header strip left to expose its trailing continuation.
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = 700, y = 400 }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDragged", x = 100, y = 400 }
+  layout(screen)
+  test.expect(visibleHeaders() > 3, "Overflowing wide strips retain a cyclic continuation while dragging")
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 100, y = 400 }
+  pump(screen)
+  for i = 1, 3 do headers[i].Width = 80 end
+  screen.Width = 390
+  layout(screen)
+  test.expect(repeatNode.Visible, "Returning to compact layout reuses the original repeat node")
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), expandedPool, "Resize and drag do not grow an existing sufficient pool")
+  print("PASS: test_pivot_wide_headers")
+end
+
 local function test_pivot_back()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local events = {}
@@ -522,6 +586,7 @@ end
 test_pivot()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
+test_pivot_wide_headers()
 test_pivot_back()
 test_pivot_transitions()
 test_application_bar()
