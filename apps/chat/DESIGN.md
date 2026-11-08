@@ -244,3 +244,33 @@ measurements or claims about unseen states.
   and [original article credited by Commons](http://www.tuexpertoapps.com/2014/11/25/telegram-nueva-version-para-windows-phone-con-mas-privacidad/).
 
 This asset is documentation reference material, not a bundled application asset.
+
+## Public posts inside Chat
+
+Decision recorded 2026-11-08. The root destinations are **chats**, **people**,
+**posts** and **me**. New chat is an inbox action; Settings is a focused page
+from Me. Both retain their form state when left. Posts reuses Octopus's XML
+feeds, composer, public profiles, reactions and replies, with Chat's palette.
+Its related views are **following**, **discover** and **activity**. New post
+and search are contextual tasks, with Back rather than another root tab.
+
+The People Hub is the organization reference: one person's public profile
+connects posts, following and a private Message action. It is distinct from
+Mango's transport-unified message threads: public posts do not become private
+messages just because both are in one app. Sharing creates a canonical post
+link and title in an existing conversation draft. The reader still presses
+Send; publishing a post is labelled **Publish publicly**. Activity does not
+contribute to private-message unread counts.
+
+The existing Octopus app and website continue to use the same data. Chat's
+short-lived Appwrite identity authorizes the public client through a constrained
+transport, without another login or exported Account cookie. Public-post scopes
+and drafts are disposed with Chat's session. Guest reading is available from
+sign-in, and protected actions return to their previous public context after
+sign-in.
+
+References: [Microsoft's People Hub demonstration](https://news.microsoft.com/speeches/scott-guthrie-and-joe-belfiore-mix10/),
+[Mango communication features](https://news.microsoft.com/source/2011/05/24/microsoft-previews-next-release-of-windows-phone/),
+and [Phone 8 Pivot guidelines](https://learn.microsoft.com/en-us/previous-versions/windows/apps/hh202919(v=vs.105)).
+These support the direction; the four destinations and command placement are
+Orca product decisions. Native screenshots are in [screenshots](docs/screenshots/README.md).

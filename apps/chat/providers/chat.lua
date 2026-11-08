@@ -20,6 +20,7 @@ end
 -- attachPhoto(scope), removePhoto(scope).
 local Provider = {}
 local PhotoLayout = require "orca.UIKit.PhotoLayout"
+local PublicPost = require "Chat/public_post"
 
 local function initials(name)
     return I18n:initials(name)
@@ -85,6 +86,12 @@ function Provider.new(context)
         -- unless it has text; runs of one sender share decoration.
         hasPhotos = function(_, record) return #(record.children.Attachments or {}) > 0 end,
         hasBody = function(values) return (values.Body or "") ~= "" end,
+        sharedPostId = function(values) return PublicPost.parse(values.Body) or "" end,
+        hasSharedPost = function(values) return (values.SharedPostId or "") ~= "" end,
+        sharedPostTitle = function(values)
+            local _, title = PublicPost.parse(values.Body)
+            return title or t("Public post")
+        end,
         showCaption = function(values) return values.HasBody or not values.HasPhotos end,
         timestamp = function(values) return (values.EditedAt and t("edited ") or "") .. clock(values.CreatedAt) end,
         showSender = function(values) return values.Group and values.First and not values.Mine end,
@@ -183,12 +190,22 @@ function Provider.new(context)
         -- navigate over their newer choice.
         openContact = function(params)
             local person, navigation = params.item, context.navigation()
+            if context.openPerson then
+                context.openPerson(person.key, person.values.Title)
+                return true
+            end
             local room, err = models.Rooms:create { name = person.values.Title, member_ids = { person.key },
                 kind = "direct", visibility = "private" }
             if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
             if not room then return nil, localizedError(err) or { message = t("Could not open this conversation. Try again.") } end
             if context.navigation() == navigation then context.openRoom(room) end
             return room
+        end,
+        shareToRoom = function(params)
+            if params.item and params.item.values.CanPost and context.shareToRoom then
+                return context.shareToRoom(params.item.raw)
+            end
+            return false
         end,
         openRoom = function(params)
             context.read[params.item.key] = true
@@ -413,6 +430,7 @@ function Provider.new(context)
         end,
     }
     local filters = {
+        shareable = function(record) return record.values.CanPost ~= false end,
         search = function(record, params)
             local query = (params.Search or ""):lower()
             return query == "" or record.values.SearchText:find(query, 1, true) ~= nil
@@ -476,6 +494,13 @@ function Provider.new(context)
         -- The control above the messages: older history, or back to the newest page.
         RefreshContacts = function(scope) scope:member("Contacts"):refresh() end,
         FindSomeone = function() context.show("/new") end,
+        NewChat = function() context.show("/new") end,
+        OpenSharedPost = function(_, params)
+            local item = params.item
+            if item and context.openSharedPost and PublicPost.validId(item.values.SharedPostId) then
+                context.openSharedPost(item.values.SharedPostId)
+            end
+        end,
         LoadHistory = function(scope)
             local messages = scope:member("Messages")
             local more = messages.moreError

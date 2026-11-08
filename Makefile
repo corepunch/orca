@@ -353,6 +353,11 @@ LUA ?= $(LUA_BIN)
 test-chat-appwrite: $(LUA_BIN)
 	$(LUA) tests/test_chat_appwrite.lua
 	$(LUA) tests/test_chat_push.lua
+	$(LUA) tests/test_chat_posts_session.lua
+
+.PHONY: test-chat-social
+test-chat-social: copyshare
+	$(TARGET) -test=tests/test_chat_social.lua
 
 .PHONY: test-chat-account-deletion
 test-chat-account-deletion: copyshare
@@ -690,6 +695,7 @@ APP_LUA_TESTS += test-chat-localization test-octopus-localization
 APP_LUA_TESTS += test-chat-account-deletion
 APP_LUA_TESTS += test-chat-safety
 APP_LUA_TESTS += test-chat-theme
+APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome
 HEADLESS_LUA_TESTS += test-editor-projects

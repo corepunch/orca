@@ -25,12 +25,16 @@
           <ActivityIndicator Name="InboxLoadingAll" Visible="{Binding DataContext/AllRooms/ShowLoading}" class="chat-muted"/>
         </Node2D>
         <Node2D Name="SearchBar" SafeAreaEdge="Top" class="frosted bar-bottom" MarginLeft="-12" MarginRight="-12" Padding="12 0 12 12">
-          <Grid Columns="1fr 44px" Height="48">
+          <Grid Columns="1fr 44px 48px" Height="48">
             <Input Name="Search" PlaceholderText="search" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
                    class="chat-input chat-field joined-left" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
             <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field joined-right">
               <VectorView Source="Chat/assets/icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
                           MarginTop="auto" MarginBottom="auto" class="chat-field-ink" IgnoreHitTest="true"/>
+            </Button>
+            <Button Name="NewChat" Click="NewChat" Width="48" Height="48" BorderWidth="0" class="chat-action chat-link">
+              <VectorView Source="Chat/assets/icons/plus.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
+                          MarginTop="auto" MarginBottom="auto" class="chat-link" IgnoreHitTest="true"/>
             </Button>
           </Grid>
         </Node2D>
@@ -58,12 +62,16 @@
           <ActivityIndicator Name="InboxLoadingUnread" Visible="{Binding DataContext/UnreadRooms/ShowLoading}" class="chat-muted"/>
         </Node2D>
         <Node2D Name="SearchBar" SafeAreaEdge="Top" class="frosted bar-bottom" MarginLeft="-12" MarginRight="-12" Padding="12 0 12 12">
-          <Grid Columns="1fr 44px" Height="48">
+          <Grid Columns="1fr 44px 48px" Height="48">
             <Input Name="Search" PlaceholderText="search" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
                    class="chat-input chat-field joined-left" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
             <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field joined-right">
               <VectorView Source="Chat/assets/icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
                           MarginTop="auto" MarginBottom="auto" class="chat-field-ink" IgnoreHitTest="true"/>
+            </Button>
+            <Button Name="NewChat" Click="NewChat" Width="48" Height="48" BorderWidth="0" class="chat-action chat-link">
+              <VectorView Source="Chat/assets/icons/plus.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
+                          MarginTop="auto" MarginBottom="auto" class="chat-link" IgnoreHitTest="true"/>
             </Button>
           </Grid>
         </Node2D>
@@ -91,12 +99,16 @@
           <ActivityIndicator Name="InboxLoadingPinned" Visible="{Binding DataContext/PinnedRooms/ShowLoading}" class="chat-muted"/>
         </Node2D>
         <Node2D Name="SearchBar" SafeAreaEdge="Top" class="frosted bar-bottom" MarginLeft="-12" MarginRight="-12" Padding="12 0 12 12">
-          <Grid Columns="1fr 44px" Height="48">
+          <Grid Columns="1fr 44px 48px" Height="48">
             <Input Name="Search" PlaceholderText="search" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
                    class="chat-input chat-field joined-left" Text="{Binding DataContext/Matching/Params/Search, Mode=TwoWay}"/>
             <Button Name="ClearSearch" Click="ClearSearch" Width="44" Height="48" BorderWidth="0" class="chat-action chat-field joined-right">
               <VectorView Source="Chat/assets/icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
                           MarginTop="auto" MarginBottom="auto" class="chat-field-ink" IgnoreHitTest="true"/>
+            </Button>
+            <Button Name="NewChat" Click="NewChat" Width="48" Height="48" BorderWidth="0" class="chat-action chat-link">
+              <VectorView Source="Chat/assets/icons/plus.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto"
+                          MarginTop="auto" MarginBottom="auto" class="chat-link" IgnoreHitTest="true"/>
             </Button>
           </Grid>
         </Node2D>

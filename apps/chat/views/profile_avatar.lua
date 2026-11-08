@@ -42,6 +42,7 @@ function Avatar.controls(app, tile, status)
             if not sameAccount() then return end
             if ok and result then
                 app.avatars:invalidate(userId)
+                if app.postsFeature then app.postsFeature:avatarChanged(userId) end
                 local path = app.media:storePreview(photo.jpeg or photo.bytes, "avatar-" .. result.avatar_id)
                 if path then
                     app.avatarPaths[userId] = path

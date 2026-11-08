@@ -131,8 +131,11 @@ function M.new(options)
     end
     if path:find("[\r\n\\]") or pathname:find("[\r\n\\]") or traversal
         or not (path:match("^/auth/v1/") or path:match("^/rest/v1/")
-          or path:match("^/storage/v1/") or path:match("^/functions/v1/")) then
+          or path:match("^/storage/v1/") or path:match("^/functions/v1/") or path == "/posts/v1/request") then
       error("Unsupported Chat API path", 0)
+    end
+    if path == "/posts/v1/request" then
+      return M.publicPosts(request, options, endpoint, transport, encode)
     end
     local photoResponse = publicPhotos(request, path, options, endpoint, transport, encode)
     if photoResponse then return photoResponse end
@@ -195,6 +198,62 @@ function M.new(options)
     end
     return result
   end
+end
+
+-- Only the existing public Octopus resources may receive the active user JWT.
+-- Ignore supplied auth/project headers and reject encoded paths or traversal;
+-- the destination is always this client's configured Appwrite project.
+function M.publicPosts(request, options, endpoint, transport, encode)
+  local source = request.body
+  local function refused()
+    return { status = 400, body = { code = "validation", message = "Unsupported public posts request." } }
+  end
+  if request.method ~= "POST" or type(source) ~= "table" or type(source.path) ~= "string" then return refused() end
+  local path, method = source.path, source.method
+  local pathname = path:match("^[^?]*")
+  if path:find("[\r\n\\#]") or pathname:find("%%") or pathname:find("//", 1, true) then return refused() end
+  for segment in pathname:gmatch("[^/]+") do
+    if segment == "." or segment == ".." then return refused() end
+  end
+  local collection, tail = pathname:match("^/databases/octopus%-db/collections/([%w%-_]+)/documents(.*)$")
+  local publicCollections = { posts = true, profiles = true, follows = true, likes = true,
+    reposts = true, comments = true, ["post-feed"] = true }
+  local file, fileTail = pathname:match("^/storage/buckets/post%-images/files/([%w%._%-]+)(.*)$")
+  local database = collection and publicCollections[collection] and (tail == "" or tail:match("^/[%w%._%-]+$"))
+    and (method == "GET" or collection ~= "post-feed" and (method == "POST" or method == "PATCH" or method == "DELETE"))
+  local storage = pathname == "/storage/buckets/post-images/files" and method == "POST"
+    or file and ((method == "GET" and (fileTail == "" or fileTail == "/view" or fileTail == "/preview"))
+      or method == "DELETE" and fileTail == "")
+  local account = pathname == "/account/name" and method == "PATCH"
+  local execution = pathname == "/functions/" .. options.functionId .. "/executions" and method == "POST"
+  if not database and not storage and not account and not execution then return refused() end
+  local jwt = (request.headers or {}).Authorization
+  jwt = jwt and jwt:match("^Bearer (.+)$")
+  if method ~= "GET" and not jwt then
+    return { status = 401, body = { code = "unauthenticated", message = "Sign in to continue." } }
+  end
+  local params = {}
+  for i, query in ipairs(source.query or {}) do
+    params[#params + 1] = "queries[" .. (i - 1) .. "]=" .. urlEncode(encode(query))
+  end
+  for key, value in pairs(source.params or {}) do
+    if key ~= "total" and key ~= "ttl" then return refused() end
+    params[#params + 1] = key .. "=" .. urlEncode(value)
+  end
+  if #params > 0 then path = path .. (path:find("?", 1, true) and "&" or "?") .. table.concat(params, "&") end
+  local headers = { ["X-Appwrite-Project"] = options.projectId, ["Content-Type"] = "application/json", ["X-Appwrite-JWT"] = jwt }
+  for name, value in pairs(source.headers or {}) do
+    if type(name) == "string" and name:lower() == "content-type" then
+      if type(value) ~= "string" or value:find("[\r\n]") then return refused() end
+      headers["Content-Type"] = value
+    end
+  end
+  local response = transport { method = method, url = endpoint .. path, headers = headers,
+    body = type(source.body) == "table" and encode(source.body) or source.body,
+    responseType = source.binary and "binary" or nil }
+  if type(response) ~= "table" or type(response.status) ~= "number" then return invalid("Appwrite returned an invalid public posts response.") end
+  -- The public client needs data and status only, never Set-Cookie headers.
+  return { status = 200, body = { status = response.status, body = response.body } }
 end
 
 return M

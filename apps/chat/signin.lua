@@ -61,8 +61,10 @@ function SignIn:complete(url)
         return
     end
     app.authDraft = nil
+    local resume = app.publicAuthResume
+    app.publicAuthResume = nil
     app:resetSessionViews()
-    app:show()
+    if resume then resume(app) else app:show() end
 end
 
 function SignIn:poll()

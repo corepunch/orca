@@ -36,6 +36,13 @@
               Text="{Binding DataContext/ActionsText, Mode=OneTime}" FontSize="22" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
               BorderWidth="0" StateClasses="{Binding DataContext/ActionsStyle, Mode=OneTime}" class="message-actions"/>
     </Grid>
+    <Button Name="SharedPostPreview" Visible="{Binding DataContext/HasSharedPost, Mode=OneTime}" Click="OpenSharedPost"
+            Width="260" BorderWidth="0" Padding="12 10" MarginTop="6" class="chat-action chat-soft">
+      <StackView Spacing="4" JustifyContent="Start" IgnoreHitTest="true">
+        <TextBlock TextResourceID="public post · open" FontSize="13" class="chat-link" IgnoreHitTest="true">public post · open</TextBlock>
+        <TextBlock Text="{Binding DataContext/SharedPostTitle, Mode=OneTime}" FontSize="18" TextWrapping="Wrap" class="chat-ink" IgnoreHitTest="true"/>
+      </StackView>
+    </Button>
     <VectorView Name="OutgoingTail" Source="Chat/assets/bubble-tail-down.svg" Visible="{Binding DataContext/OutgoingTail, Mode=OneTime}"
                 Width="14" Height="12" MarginLeft="auto" MarginRight="16" class="bubble-tail" IgnoreHitTest="true"/>
   </StackView>

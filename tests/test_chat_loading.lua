@@ -64,7 +64,7 @@ end
 app:show("/")
 local shell = app.screen
 programs(shell)
-assert(shell:findChild("Search", true) and shell:findChild("AppBarNew", true), "Inbox chrome must mount before requests")
+assert(shell:findChild("Search", true) and shell:findChild("NewChat", true), "Inbox chrome must mount before requests")
 assert(shell:findChild("InboxLoadingAll", true).Visible and not shell:findChild("Roomalex", true))
 shell:UpdateLayout(390, 844)
 local indicator = shell:findChild("InboxLoadingAll", true)
@@ -79,7 +79,7 @@ shell:findChild("Search", true).Text = "Alex"
 flushQueue()
 assert(app.scope:member("Matching"):get("Search") == "Alex", "Search remains editable while inbox loads")
 app:show("/new")
-assert(app.screen == shell and app.shell.active == "New" and shell:findChild("CreateConversation", true),
+assert(app.screen ~= shell and app.screen == app.newScreen and app.screen:findChild("CreateConversation", true),
     "Navigation and new conversation controls must work while the inbox request is suspended")
 settle()
 resume(inbox)
@@ -89,8 +89,8 @@ assert(coroutine.status(contactsRequest) == "suspended" and shell:findChild("Roo
 assert(not shell:findChild("Roomweekend", true), "The search typed while loading applies to the late rows")
 resume(contactsRequest)
 programs(shell)
-assert(app.shell.active == "New" and not shell:findChild("InboxLoadingAll", true).Visible and app.contactsById.alex,
-    "A late inbox response must update its retained list without changing the active tab")
+assert(app.currentRoute == "/new" and app.screen == app.newScreen and not shell:findChild("InboxLoadingAll", true).Visible and app.contactsById.alex,
+    "A late inbox response must update its retained list without changing the current task")
 shell:findChild("Search", true).Text = ""
 flushQueue()
 app.models.Rooms.select, app.models.Contacts.select = roomsSelect, contactsSelect
@@ -98,14 +98,15 @@ app.models.Rooms.select, app.models.Contacts.select = roomsSelect, contactsSelec
 local getProfile = client.getProfile
 client.getProfile = function(self) coroutine.yield("profile"); return getProfile(self) end
 app:show("/profile")
-assert(shell:findChild("ContentLoading", true) and not shell:findChild("ProfileHeader", true))
+local settings = app.screen
+assert(settings ~= shell and settings:findChild("ContentLoading", true) and not settings:findChild("ProfileHeader", true))
 local profile = nextRequest()
 app:show("/new")
 local status = app.status
 resume(profile)
 settle()
-assert(app.shell.active == "New" and app.status == status and shell:findChild("ProfileHeader", true),
-    "Profile completion must retain the user's current tab and status")
+assert(app.currentRoute == "/new" and app.screen == app.newScreen and app.status == status and settings:findChild("ProfileHeader", true),
+    "Profile completion must retain the user's current task and status")
 client.getProfile = getProfile
 
 local room = app.scope.store:get("ChatRoom", "alex").raw

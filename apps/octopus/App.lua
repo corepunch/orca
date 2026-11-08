@@ -88,6 +88,7 @@ local App = Application:extend {
             requireSession = function(reason) return self:requireSession(reason) end,
             notice = function(text, isError) self:notice(text, isError) end,
             selectFeed = function(name) Home.select(self, name) end,
+            feedOrder = function() return self.feedOrder end,
             signIn = function(route) self.authReturn = route; self:show("/auth") end,
             signUp = function(route) self.authReturn = route; self:show("/auth/signup") end,
             invalidateFeeds = function(names) self:invalidateFeeds(names) end,

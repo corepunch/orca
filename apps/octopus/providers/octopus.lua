@@ -687,7 +687,7 @@ function Provider.new(context)
     }
     local handlers = {
         SelectFeed = function(_, params)
-            local feeds = { "home", "connect", "discover" }
+            local feeds = context.feedOrder and context.feedOrder() or { "home", "connect", "discover" }
             context.selectFeed(feeds[(params.sender.SelectedIndex or 0) + 1])
         end,
         SignIn = function() context.signIn("/") end,

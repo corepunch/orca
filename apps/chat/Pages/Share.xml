@@ -1,0 +1,17 @@
+<!-- Sharing chooses a destination; Send is still an explicit action in the
+     conversation. The list contains only rooms where this reader can post. -->
+<StackView Name="SharePostContent" Spacing="16" Overflow="hidden scroll" JustifyContent="Start">
+  <StackView Spacing="6" JustifyContent="Start">
+    <TextBlock Name="SharedPostTitle" FontSize="22" class="chat-ink" WordWrap="true" IgnoreHitTest="true"/>
+    <TextBlock TextResourceID="Choose a chat. Review the message before sending." FontSize="14" class="chat-muted" WordWrap="true" IgnoreHitTest="true">Choose a chat. Review the message before sending.</TextBlock>
+  </StackView>
+  <ItemsStack Name="ShareRooms" Spacing="4" ItemsSource="{Binding DataContext/ShareableRooms/Items}" ItemTemplate="Chat/Templates/ShareRoom" ItemNamePrefix="ShareRoom"/>
+  <Node2D Height="64" Visible="{Binding DataContext/Rooms/ShowLoading}">
+    <ActivityIndicator class="chat-muted"/>
+  </Node2D>
+  <StackView Visible="{Binding DataContext/Rooms/ShowError}" Spacing="12">
+    <TextBlock Text="{Binding DataContext/Rooms/ErrorMessage}" FontSize="14" WordWrap="true" class="chat-error" IgnoreHitTest="true"/>
+    <Button Name="RetryShareRooms" TextResourceID="Retry" Click="Rooms.Retry" Height="48" FontSize="15" class="chat-action chat-link">Retry</Button>
+  </StackView>
+  <TextBlock Name="NoShareRooms" Visible="{Binding DataContext/ShareableRooms/ShowEmpty}" TextResourceID="No conversations available. Start a chat first." FontSize="16" class="chat-muted" WordWrap="true" IgnoreHitTest="true">No conversations available. Start a chat first.</TextBlock>
+</StackView>

@@ -85,6 +85,9 @@
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="RoomId" Type="string" Source="room_id" Nullable="true"/>
     <Column Name="Body" Type="string" Source="body" Nullable="true"/>
+    <Column Name="SharedPostId" Type="string" Computed="sharedPostId" DependsOn="Body"/>
+    <Column Name="HasSharedPost" Type="bool" Computed="hasSharedPost" DependsOn="SharedPostId"/>
+    <Column Name="SharedPostTitle" Type="string" Computed="sharedPostTitle" DependsOn="Body"/>
     <Column Name="SenderId" Type="string" Source="sender_id" Nullable="true"/>
     <Column Name="CreatedAt" Type="string" Source="created_at" Nullable="true"/>
     <Column Name="UpdatedAt" Type="string" Source="updated_at" Nullable="true"/>

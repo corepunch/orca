@@ -12,6 +12,29 @@ Make and the Xcode command-line tools without an Xcode project.
 
 [New conversation](new-preview.png) · [Profile](profile-preview.png) · [Sign in](auth-preview.png)
 
+## Public posts and people
+
+Chat includes Octopus's public posts alongside private conversations. The root
+bar opens **chats**, **people**, **posts** and **me**. Use the inbox's + action
+for a new chat, Posts for following/discover/activity and public writing, and
+Me for your public profile and account settings. People open a public profile
+with a separate Message action. Sharing a post chooses a conversation and
+prepares a draft; Send remains explicit. Public publishing says **Publish publicly**.
+Guests can browse public posts from sign-in.
+
+Posts reuses the standalone Octopus app's pages and provider through
+`posts.lua`; the website and standalone app remain compatible. Chat supplies
+its current Appwrite JWT through an allowlisted public-resource transport.
+No second login, session cookie export or backend deployment is needed. The
+public client targets the existing `octopus-db`, `post-feed` and `post-images`
+resources; custom deployments must adjust the transport allowlist together
+with the Octopus configuration.
+
+See [design decisions](DESIGN.md#public-posts-inside-chat) and
+[native screenshots](docs/screenshots/README.md). Run `make test-chat-social`
+for the focused offline app checks, and `make test-chat-appwrite` for the
+adapter checks. No live service verification is included in those commands.
+
 ## Design
 
 Windows Phone / Metro is the current visual direction, with Facebook Messenger
@@ -26,7 +49,7 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   title metrics. Contacts uses a People/Pictures-style `Panorama`; branded
   authentication forms and the immersive photo viewer have their own shells.
 - Commands live in an `ApplicationBar`. On the root pages its round buttons
-  switch between chats, contacts, new chat and settings, and its menu holds
+  switch between chats, people, posts and me, and its menu holds
   refresh and sign out. A conversation has no command row, after Windows Phone
   Messenger: its title line, a round back button before MESSENGER, goes back,
   as does a swipe in from the left edge, and tapping its name opens the
@@ -75,8 +98,8 @@ override it. On Linux, ORCA reports dark mode when `GTK_THEME` contains
 `dark`. `Styles/app.css` adds hover and focus states with `:dark` variants.
 Icons are stroke-based Lucide SVGs with inherited tint.
 
-`views/shell.lua` owns one persistent `ApplicationBar` for Chats, New chat, and
-Profile. It sets `PageHost.ActivePage` and disables the button for the page in
+`views/shell.lua` owns one persistent `ApplicationBar` for Chats, People, Posts, and
+Me. It sets `PageHost.ActivePage` and disables the button for the page in
 view. Root pages keep their instances and form drafts when you switch pages.
 Conversation and sign-in screens are separate flows, and returning to the root
 reuses the same shell.

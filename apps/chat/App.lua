@@ -24,6 +24,7 @@ local Scroll = require "orca.data.scroll"
 local Routes = require "orca.data.routes"
 local filesystem = require "orca.filesystem"
 local ChatProvider = require "Chat/providers/chat"
+local Social = require "Chat/views/social"
 local colors = C.colors
 local auto = 0/0
 
@@ -41,6 +42,7 @@ local App = Application:extend {
         Application.__init(self)
         self.diagnostics = Diagnostics.new(self)
         options = options or {}
+        self.postsOptions = options.posts
         I18n:setLanguage(options.language)
         self.localization = I18n
         local config = require "Chat/config"
@@ -75,6 +77,7 @@ local App = Application:extend {
     end,
 
     resetSessionViews = function(self)
+        if self.postsFeature then self.postsFeature:dispose(); self.postsFeature = nil end
         ProfileAvatar.close(self)
         PhotoViewer.close(self)
         -- Records belong to one account: the next session gets a new store.
@@ -102,6 +105,8 @@ local App = Application:extend {
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.profileStatus, self.pendingIdentity = {}, nil, nil
         self.safetyTarget = nil
+        self.newScreen, self.settingsScreen, self.pendingPostShare = nil, nil, nil
+        self.publicAuthResume, self.meContent, self.meStatus = nil, nil, nil
     end,
 
     -- The signed-in account's data scope (Data/Inbox.xml): rooms, contacts,
@@ -116,6 +121,9 @@ local App = Application:extend {
             client = self.client, models = self.models, media = self.media, avatarPaths = self.avatarPaths,
             read = self.readRooms, pinned = self.pinned, remote = self.remote,
             openRoom = function(room) self:openRoom(room) end,
+            openPerson = function(id, name) self:openPerson(id, name) end,
+            openSharedPost = function(id) self:posts():openPostId(id) end,
+            shareToRoom = function(room) Social.selectShareRoom(self, room) end,
             show = function(route) self:show(route) end,
             navigation = function() return self.navigationEpoch end,
             sessionLost = function()
@@ -203,12 +211,12 @@ local App = Application:extend {
         end)
     end,
 
-    loadingPage = function(self, title, tab, request, render, page)
+    loadingPage = function(self, title, tab, request, render, page, retained)
         local host = ui.Node2D { Name = "LoadingContent" }
         local screen = self:frame(C.page(title, host, page), tab)
         local epoch, navigation, route = self.sessionEpoch, self.navigationEpoch, self.currentRoute
         local function current()
-            return self.sessionEpoch == epoch and (tab ~= nil or self.navigationEpoch == navigation)
+            return self.sessionEpoch == epoch and (tab ~= nil or retained or self.navigationEpoch == navigation)
         end
         local function load()
             while host:getFirstChild() do host:getFirstChild():removeFromParent() end
@@ -222,7 +230,7 @@ local App = Application:extend {
                 if value then
                     local status = self.status
                     host:addChild(render(value))
-                    if tab and self.currentRoute ~= route then self.status = status end
+                    if (tab or retained) and self.currentRoute ~= route then self.status = status end
                 else
                     host:addChild(C.stack({ Spacing = 16, JustifyContent = "Center" }, {
                         C.text(err and t(err.message) or t("Could not load this page."), { WordWrap = true, class = "chat-error" }),
@@ -240,6 +248,7 @@ local App = Application:extend {
     end,
 
     afterPaint = function(self)
+        if self.postsFeature then self.postsFeature:afterPaint() end
         if self.visibility then self.visibility:update() end
         if self.avatars then self.avatars:loadVisible() end
     end,
@@ -277,7 +286,10 @@ local App = Application:extend {
         if tab then
             if not self.shell then
                 self.shell = Shell.new(self:frame(), function(route) self:show(route) end, {
-                    { "AppBarRefresh", t("refresh"), function() self:show(self.shell.routes[self.shell.active]) end },
+                    { "AppBarRefresh", t("refresh"), function()
+                        if self.postsFeature and self.currentRoute:match("^/posts") then self.postsFeature:refresh()
+                        else self:show(self.shell.routes[self.shell.active]) end
+                    end },
                     { "AppBarSignOut", t("sign out"), function() self:signOut() end },
                 })
             end
@@ -288,7 +300,7 @@ local App = Application:extend {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             -- The palette class is a StateClass so updateAppearance can replace it.
             ClearColor = colors.background,
-            StyleSheet = "Chat/Styles/app.css", StateClasses = "chat-" .. colors.appearance,
+            StyleSheet = "Chat/Styles/posts.css", StateClasses = "chat-" .. colors.appearance,
         }
         if content then I18n:apply(content); screen:addChild(content) end
         return screen
@@ -309,6 +321,7 @@ local App = Application:extend {
     end,
 
     navigate = function(self, route, direction)
+        if self.postsFeature then self.postsFeature:leave() end
         -- Polling follows the visible page: home() reactivates the inbox and
         -- each visit to a conversation starts its own scope.
         self:closePages()
@@ -690,6 +703,13 @@ local App = Application:extend {
     end,
 
     newRoom = Conversations.newRoom,
+    posts = function(self)
+        if not self.postsFeature then self.postsFeature = require("Chat/posts").new(self, self.postsOptions) end
+        return self.postsFeature
+    end,
+    openPerson = function(self, id, name) return self:posts():openProfile(id, name) end,
+    messagePerson = Social.messagePerson,
+    sharePost = Social.sharePost,
     -- Contacts (Pages/Contacts.xml) shares the session's Inbox scope; like the
     -- inbox, the page is retained while the shell lives.
     contactsView = function(self)
@@ -726,12 +746,21 @@ local App = Application:extend {
     ["/new"] = function(self) return self:newRoom() end,
     ["/contacts"] = function(self) return self:contactsView() end,
     ["/profile"] = function(self) return self:profile() end,
+    ["/me"] = function(self) return Social.me(self) end,
+    ["/share-post"] = function(self) return Social.sharePage(self) end,
+    ["/posts"] = function(self) return self:posts():page("/posts") end,
+    ["/posts/search"] = function(self) return self:posts():page("/posts/search") end,
+    ["/posts/write"] = function(self) return self:posts():page("/posts/write") end,
+    ["/posts/post"] = function(self) return self:posts():page("/posts/post") end,
+    ["/posts/user"] = function(self) return self:posts():page("/posts/user") end,
+    ["/posts/me"] = function(self) return self:posts():page("/posts/me") end,
     ["/delete-account"] = function(self) return require("Chat/views/account_deletion").open(self) end,
     ["/safety"] = function(self) return require("Chat/views/safety").open(self) end,
     ["/privacy"] = function(self)
         local page = assert(filesystem.loadObject("Chat/Pages/Privacy"), "Missing Chat/Pages/Privacy")
         local policy = assert(filesystem.readTextFile("Chat/assets/privacy.md"), "Missing bundled Chat privacy policy")
-        page:findChild("PrivacyPolicyText", true).Source = policy
+        local publicPosts = assert(filesystem.readTextFile("Chat/assets/public-posts-privacy.md"), "Missing public-post disclosure")
+        page:findChild("PrivacyPolicyText", true).Source = policy .. "\n\n" .. publicPosts
         return self:frame(C.page(t("Privacy policy"), page, {
             back = function() self:goBack(self.client and self.client:getSession() and "/profile" or "/auth") end,
         }))
@@ -769,10 +798,11 @@ local App = Application:extend {
     -- view, retained tabs included, without rebuilding pages or losing drafts.
     updateAppearance = function(self)
         if not colors.refresh() then return false end
-        for _, screen in ipairs { self.screen, self.shell and self.shell.screen } do
+        for _, screen in pairs { self.screen, self.shell and self.shell.screen, self.newScreen, self.settingsScreen } do
             screen.StateClasses = "chat-" .. colors.appearance
             if screen ~= self.brandScreen then screen.ClearColor = colors.background end
         end
+        if self.postsFeature then self.postsFeature:updateAppearance() end
         return true
     end,
 
