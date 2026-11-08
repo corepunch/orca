@@ -73,6 +73,10 @@ function Thread.page(self)
             end)
         end } or nil,
     }, { class = "post-actions", SafeAreaEdge = "None", ContentInsetAdjustment = "Never" })
+    if self.sharePost then
+        bar:addChild(require("orca.UIKit").ApplicationBarMenuItem { Name = "SharePost", Text = self.i18n:t("share in chat"),
+            Click = function() self:sharePost(view.post) end })
+    end
     -- Reactions on the bar follow the post record, as cards do.
     scope:present(bar, "Post")
     bar:findChild("LikePost"):attachPropertyProgram("ApplicationBarIconButton.Text", "{DataContext/LikeText}", "OneWay", true)

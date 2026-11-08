@@ -16,6 +16,7 @@
   </Edit>
   <Handler Name="LoadHistory"/>
   <Handler Name="MessageActions"/>
+  <Handler Name="OpenSharedPost"/>
   <Handler Name="OpenPhoto"/>
   <Handler Name="AttachPhoto"/>
   <Handler Name="RemovePhoto"/>

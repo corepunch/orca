@@ -32,6 +32,38 @@ function Client:getSession()
   return copy(self.session)
 end
 
+-- Octopus's public data uses the same Appwrite identity. Keep its transport
+-- separate from Chat RPCs and its Account cookie private to the auth adapter.
+-- The result is a raw HTTP response, matching the Octopus transport contract.
+function Client:publicPostsRequest(request)
+  if self.mode ~= "appwrite" then return failure("unsupported", "Public posts require the Appwrite adapter.") end
+  if type(request) ~= "table" or type(request.path) ~= "string" then
+    return failure("validation", "Choose a public posts request.")
+  end
+  if self.session and self.session.expires_at <= self.clock() + 30 then
+    local session, err = self:refreshSession()
+    if not session then return nil, err end
+  end
+  local session = self.session
+  -- JWT credentials cannot mint another JWT. Share the current short-lived
+  -- token with the public client's existing profile-RPC flow instead.
+  if request.method == "POST" and request.path == "/account/jwts" then
+    if not session then return failure("unauthenticated", "Sign in to continue.") end
+    return { status = 201, body = { jwt = session.access_token } }
+  end
+  local response, err = self:_request("POST", "/posts/v1/request", request, session ~= nil)
+  if self.session ~= session then return failure("session_changed", "The active account changed while loading posts.") end
+  if response and response.status == 401 and session then
+    local refreshed
+    refreshed, err = self:refreshSession()
+    if not refreshed then return nil, err end
+    session = self.session
+    response, err = self:_request("POST", "/posts/v1/request", request, true)
+    if self.session ~= session then return failure("session_changed", "The active account changed while loading posts.") end
+  end
+  return response, err
+end
+
 function Client:_request(method, path, body, authenticated, retried, options)
   options = options or {}
   if authenticated then

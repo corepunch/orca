@@ -2,7 +2,7 @@
      the session's Inbox scope (People, ContactList, Recent, OpenContact).
      Feedback sits outside the panorama so it stays visible while panning. -->
 <Grid Name="ContactsPage" Rows="1fr auto" ContentInsetAdjustment="Always">
-  <Panorama Name="ContactsPanorama" Title="contacts" ContentInsetAdjustment="Always" class="chat-ink">
+  <Panorama Name="ContactsPanorama" Title="people" ContentInsetAdjustment="Always" class="chat-ink">
     <PanoramaItem Name="ContactsRecent" Header="recent" Orientation="Horizontal">
       <!-- More than 16 people widen the wall to eight columns. -->
       <StackView Name="ContactsRecentBody" Spacing="18" Overflow="hidden scroll">

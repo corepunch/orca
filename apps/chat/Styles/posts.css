@@ -1,0 +1,10 @@
+/* One native stylesheet for the shared shell and the existing public-post views. */
+@import "../../octopus/Styles/app.css";
+@import "app.css";
+
+.chat-dark .chat-posts .octopus-accent-text, .chat-dark .chat-posts .octopus-link,
+.chat-dark .chat-posts .activity-icon { color: #41beec; }
+.chat-light .chat-posts .octopus-accent-text, .chat-light .chat-posts .octopus-link,
+.chat-light .chat-posts .activity-icon { color: #006ad1; }
+.chat-posts .octopus-primary, .chat-posts .octopus-accent-fill, .chat-posts .kind-on { background-color: #006ad1; }
+.chat-posts .post-markdown .md-quote { border-color: #006ad1; }

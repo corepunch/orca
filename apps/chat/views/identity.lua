@@ -38,8 +38,10 @@ function Identity.auth(self, mode)
     local function finish(session, err)
         if not session then self:notice(err and err.message or t("Please try again."), true); return end
         if not self.client:getSession() then self:notice(t("Check your email to confirm your account.")); return end
+        local resume = self.publicAuthResume
+        self.publicAuthResume = nil
         self:resetSessionViews()
-        self:show()
+        if resume then resume(self) else self:show() end
     end
     -- `secondary` draws the action as a left-aligned link beside a primary one.
     local function action(label, name, pending, operation, secondary)
@@ -197,6 +199,7 @@ function Identity.auth(self, mode)
         { Name = "AuthPrivacyPolicy", FontSize = 14 }))
     body:addChild(C.button(t("Community rules"), function() remember(); self:show("/rules") end,
         { Name = "AuthCommunityRules", FontSize = 14 }))
+    body:addChild(link(t("Browse public posts"), "BrowsePublicPosts", "/posts"))
     if not self.remote then
         body:addChild(C.text(t("Offline demo · code 123456\nEmail: demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
@@ -364,9 +367,11 @@ end
 
 function Identity.profile(self)
     if not self.client or not self.client:getSession() then return self:home() end
-    if self.shell and self.shell:has("Profile") then self.status = self.profileStatus; return self.shell:show("Profile") end
-    return self:loadingPage(t("settings"), "Profile", function() return self.client:getProfile() end,
-        function(profile) return profileBody(self, profile) end)
+    if self.settingsScreen then self.status = self.profileStatus; return self.settingsScreen end
+    self.settingsScreen = self:loadingPage(t("settings"), nil, function() return self.client:getProfile() end,
+        function(profile) return profileBody(self, profile) end,
+        { back = function() self:goBack("/me") end }, true)
+    return self.settingsScreen
 end
 
 return Identity

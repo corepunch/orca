@@ -1,0 +1,6 @@
+<DataScope Name="SharePost" Schema="Chat/Data/Chat.Schema.xml">
+  <Query Name="Rooms" Entity="ChatRoom" Operation="rooms"/>
+  <View Name="ShareableRooms" Source="Rooms" Filter="shareable"/>
+  <Command Name="ShareToRoom" Operation="shareToRoom" Parameter="Item" Sync="true"/>
+  <Include Path="Chat/Data/Avatars.xml"/>
+</DataScope>

@@ -16,6 +16,7 @@
            Description="Creates or reuses a private direct conversation and opens it."/>
   <Handler Name="RefreshContacts"/>
   <Handler Name="FindSomeone"/>
+  <Handler Name="NewChat"/>
   <View Name="Matching" Source="Rooms" Filter="search"
         Description="Local search over loaded rooms; the service returns every room at once.">
     <Param Name="Search" Type="string"/>

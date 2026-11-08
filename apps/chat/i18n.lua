@@ -10,7 +10,7 @@ local strings = Localization.new {
 local chrome = {
     InboxContent = { Inbox = { Title = "Messenger" }, FilterAll = { Header = "All" },
         FilterUnread = { Header = "Unread" }, FilterPinned = { Header = "Pinned" } },
-    ContactsPage = { ContactsPanorama = { Title = "contacts" }, ContactsRecent = { Header = "recent" },
+    ContactsPage = { ContactsPanorama = { Title = "people" }, ContactsRecent = { Header = "recent" },
         ContactsAll = { Header = "all" } },
     AvatarPicker = { AvatarPicker = { Title = "Messenger" } },
 }

@@ -34,7 +34,7 @@ end
 
 function Conversations.newRoom(self)
     if not self.client or not self.client:getSession() then return self:home() end
-    if self.shell and self.shell:has("New") then self.status = self.newStatus; return self.shell:show("New") end
+    if self.newScreen then self.status = self.newStatus; return self.newScreen end
     local epoch = self.sessionEpoch
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
@@ -53,8 +53,7 @@ function Conversations.newRoom(self)
         status.StateClasses = isError and "chat-error" or "chat-muted"
     end
     local function active()
-        return self.sessionEpoch == epoch and (not self.shell or
-            self.screen == self.shell.screen and self.shell.active == "New")
+        return self.sessionEpoch == epoch and self.currentRoute == "/new"
     end
     local actions = C.stack({ Name = "NewChatActions", Spacing = 0 })
     local results = C.stack({ Name = "DiscoveryResults", Spacing = 0 })
@@ -117,7 +116,7 @@ function Conversations.newRoom(self)
         if page then page:getFirstChild().Header = value end
     end
     local function showBack(visible)
-        if page then page.BackIcon = visible and "Chat/assets/icons/arrow-left.svg" or "" end
+        if page then page.BackIcon = "Chat/assets/icons/arrow-left.svg" end
     end
     local function changeMode(value)
         if busy then return end
@@ -148,6 +147,7 @@ function Conversations.newRoom(self)
             clearResults(); notice("")
             setup.Visible, people.Visible, searchBar.Visible, results.Visible = false, true, true, true
             selected.Visible, findPeople.Visible, nextButton.Visible = true, true, true
+        elseif mode == "direct" then self:goBack("/")
         else changeMode("direct") end
     end
     for _, item in ipairs {
@@ -246,17 +246,17 @@ function Conversations.newRoom(self)
     page = C.page(t("new message"), body, { Name = "NewMessagePage", class = "toolbar-page",
         ExtendBodyBehindHeader = true, back = goBack })
     changeMode("direct")
-    local screen = self:frame(page, "New")
-    local shell = self.shell
+    local screen = self:frame(page)
+    self.newScreen = screen
     local pending = ui.Node2D { Height = 80 }
     pending:addChild(ui.ActivityIndicator { Name = "ContactsLoading", class = "chat-muted" })
     people:addChild(pending)
     local function loadContacts()
         pending.Visible = true
         self:load(function()
-            if self.sessionEpoch ~= epoch or self.shell ~= shell then return end
+            if self.sessionEpoch ~= epoch or self.newScreen ~= screen then return end
             local contacts, err = self.client:listContacts()
-            if self.sessionEpoch ~= epoch or self.shell ~= shell then return end
+            if self.sessionEpoch ~= epoch or self.newScreen ~= screen then return end
             if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
             pending.Visible = false
             if err then

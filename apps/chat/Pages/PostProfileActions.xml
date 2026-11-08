@@ -1,0 +1,2 @@
+<Button Name="MessageProfile" Height="48" FontSize="17" TextHorizontalAlignment="Left"
+        TextVerticalAlignment="Center" BorderWidth="0" class="chat-action chat-link" TextResourceID="message">message</Button>

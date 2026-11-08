@@ -92,6 +92,7 @@ end
 function M.new(options)
     options = options or {}
     local clock = options.clock or os.time
+    local fixtures = options.fixtures or fixtures
     local projectId = options.projectId or "octopus-mock"
     local state = { users = {}, sessions = {}, collections = {}, files = {}, directory = {}, jwts = {}, sequence = 0 }
     for name in pairs(COLLECTIONS) do state.collections[name] = {} end

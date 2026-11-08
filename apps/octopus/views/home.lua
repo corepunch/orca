@@ -19,7 +19,7 @@ function Home.select(self, name)
     self.feed = name
     if self.pivot then
         local index
-        for i, feed in ipairs(Home.feeds) do if feed == name then index = i - 1 end end
+        for i, feed in ipairs(self.feedOrder or Home.feeds) do if feed == name then index = i - 1 end end
         if self.pivot.SelectedIndex ~= index then self.pivot.SelectedIndex = index end
     end
     local scope = self:feedsScope()
@@ -39,11 +39,18 @@ function Home.page(self)
     local scope = self:feedsScope()
     local page = assert(filesystem.loadObject("Octopus/Pages/Home"), "Missing Octopus/Pages/Home")
     self.i18n:apply(page)
+    if self.feedOrder then
+        local pivot = page:findChild("Timeline", true)
+        for _, name in ipairs(self.feedOrder) do
+            local item = page:findChild("Feed" .. name, true)
+            item:removeFromParent(); pivot:addChild(item)
+        end
+    end
     scope:attach(page)
     self.status, self.statusBar = page:findChild("HomeStatus", true), page:findChild("HomeStatusBar", true)
     self.homeStatus, self.homeStatusBar = self.status, self.statusBar
     self.pivot = page:findChild("Timeline", true)
-    for _, name in ipairs(Home.feeds) do page:findChild("Feed" .. name, true).Header = self.i18n:t(name) end
+    for _, name in ipairs(self.feedOrder or Home.feeds) do page:findChild("Feed" .. name, true).Header = self.i18n:t(name) end
     self.visibility:watch(page, scope)
     local screen = self:frame(page, "Home")
     Home.select(self, self.feed)

@@ -6,6 +6,7 @@ WindowHeight = 844
 ProjectReferences = {
     { Name = "api", Path = "api" },
     { Name = "assets", Path = "assets" },
+    { Name = "Octopus", Path = "../octopus" },
 }
 EnginePlugins = { { Name = "orca.UIKit" } }
 SystemMessages = {

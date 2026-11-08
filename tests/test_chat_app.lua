@@ -500,12 +500,13 @@ drain(app)
 assert(not app.newSelection.alex, "Selecting a member again removes it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
-assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
+assert(profile:getFirstChild().BackIcon ~= "" and not profile:findChild("AppBar", true),
+    "Settings is a focused page with header Back to Me and no root navigation bar")
 -- As on Windows Phone, the bar draws each button's circle: antialiased vector artwork, not a bordered box.
-local ring = profile:findChild("AppBarChats", true):getFirstChild()
+local ring = home:findChild("AppBarChats", true):getFirstChild()
 assert(ring.className == "VectorView" and tostring(ring.Source):match("/orca/UIKit/appbar%-ring%.svg$"),
     "App bar buttons draw their circle from the shared vector ring: " .. tostring(ring.Source))
--- The keyboard lifts a focused field it would cover above itself and the app bar.
+-- The keyboard lifts a focused settings field above itself on the focused page.
 drain(app)
 -- Tapping the Mobile row opens the number field in place, as in Telegram.
 assert(not profile:findChild("PhoneEditor", true).Visible, "The number editor stays closed until its row is tapped")
@@ -522,12 +523,12 @@ local function bottomOnScreen(node)
     return y
 end
 profile:UpdateLayout(390, 844)
-assert(bottomOnScreen(identifier) > 844 - 336 - 58, "The fixture's field must start under the keyboard")
+assert(bottomOnScreen(identifier) > 844 - 336, "The fixture's field must start under the keyboard")
 identifier:setFocus()
 profile:UpdateLayout(390, 844)
 profile.KeyboardInsetBottom = 336
 profile:UpdateLayout(390, 844)
-assert(math.abs(bottomOnScreen(identifier) - (844 - 336 - 58 - 16)) <= 2,
+assert(math.abs(bottomOnScreen(identifier) - (844 - 336 - 16)) <= 2,
     "A focused profile field must scroll above the keyboard: " .. bottomOnScreen(identifier))
 profile.KeyboardInsetBottom = 0
 
@@ -537,8 +538,9 @@ local shell = tabApp.screen
 local bar = assert(shell:findChild("AppBar", true), "Root screens need one shared application bar")
 local tabs = {
     { name = "AppBarChats", value = "Chats" },
-    { name = "AppBarNew", value = "New" },
-    { name = "AppBarProfile", value = "Profile" },
+    { name = "AppBarContacts", value = "Contacts" },
+    { name = "AppBarPosts", value = "Posts" },
+    { name = "AppBarMe", value = "Me" },
 }
 for _, tab in ipairs(tabs) do tab.view = assert(bar:findChild(tab.name, true), "Missing button " .. tab.name) end
 
@@ -620,18 +622,27 @@ shell.SafeAreaLeft, shell.SafeAreaRight = 0, 0
 assertTabs("Chats")
 assert(math.abs(bar.ActualHeight - 58) < 1 and math.abs(bar.ActualY + bar.ActualHeight - 844) < 1,
     "Application bar safe-area insets must update without leaving a bottom gap")
-selectTab(2)
-local roomName = assert(shell:findChild("RoomName", true))
-local finder = assert(shell:findChild("FindPerson", true))
+-- Creation is a focused task, opened from the inbox; its draft is retained
+-- independently of the four root destinations.
+press(tabApp, "NewChat")
+local creation = tabApp.screen
+assert(creation ~= shell and creation == tabApp.newScreen and not creation:findChild("AppBar", true),
+    "New chat leaves the root shell for a focused task")
+local roomName = assert(creation:findChild("RoomName", true))
+local finder = assert(creation:findChild("FindPerson", true))
 roomName.Text, finder.Text = "Keep our conversation draft", "@alex"
-for _, index in ipairs({ 3, 1, 2, 3, 2, 1, 1, 3, 2 }) do selectTab(index) end
+tabApp:show("/")
+for _, index in ipairs({ 2, 3, 4, 1, 2, 4, 3, 1, 1, 4, 2 }) do selectTab(index) end
 for _, tab in ipairs(tabs) do
     assert(shell:findChild("TabContent", true):findChild(tab.value), "Every visited page must remain retained")
 end
-assert(shell:findChild("RoomName", true) == roomName and shell:findChild("FindPerson", true) == finder,
-    "Switching pages must retain the new-conversation form")
+tabApp:show("/new")
+assert(tabApp.screen == creation and creation:findChild("RoomName", true) == roomName
+    and creation:findChild("FindPerson", true) == finder, "Returning to creation retains the new-conversation form")
 assert(roomName.Text == "Keep our conversation draft" and finder.Text == "@alex",
     "Switching pages must preserve unsent new-conversation fields")
+tabApp:show("/")
+assertTabs("Chats")
 for _, width in ipairs({ 320, 834 }) do
     shell.Width = width
     core.advanceFrame()
@@ -648,7 +659,7 @@ end
 shell.Width = 390
 core.advanceFrame()
 core.runAllPrograms(shell)
-assertTabs("New")
+assertTabs("Chats")
 app.screen = profile
 local credits = profile:findChild("Credits", true)
 credits = credits and credits:getTextContent() or ""
@@ -1217,9 +1228,9 @@ local raceShell = raceApp.screen
 interruptProfile = true
 raceApp:show("/profile")
 assert(not interruptProfile, "The race fixture must interleave at the real profile endpoint")
-assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp.shell.content.ActivePage == "New",
-    "A late profile response must not replace a newer tab selection")
-assert(raceApp.shell:has("Profile"), "A completed profile load may populate its retained tab without selecting it")
+assert(raceApp.screen ~= raceShell and raceApp.screen == raceApp.newScreen and raceApp.currentRoute == "/new",
+    "A late settings response must not replace a newer task")
+assert(raceApp.settingsScreen:findChild("ProfileHeader", true), "A completed settings load may populate its retained screen without selecting it")
 
 -- Profile photos replace initials where a tile stands for one person.
 local Fixtures = require "api.mock_fixtures"
@@ -1307,7 +1318,7 @@ local colors, getenv = require "Chat/theme", os.getenv
 local themeApp = mockApp()
 themeApp:show("/new")
 drain(themeApp)
-local newGroup, inboxSearch = themeApp.screen:findChild("KindGroup", true), themeApp.screen:findChild("Search", true)
+local newGroup, inboxSearch = themeApp.screen:findChild("KindGroup", true), themeApp.shell.screen:findChild("Search", true)
 local label = newGroup:getFirstChild():getFirstChild():getNext()
 for _, selected in ipairs { colors.appearance == "dark" and "light" or "dark", colors.appearance == "dark" and "dark" or "light" } do
     os.getenv = function(key) if key == "CHAT_APPEARANCE" then return selected end; return getenv(key) end
@@ -1316,7 +1327,7 @@ for _, selected in ipairs { colors.appearance == "dark" and "light" or "dark", c
     local dark = selected == "dark"
     assert(math.abs(label.ForegroundColor.R - (dark and 0x41 or 0x00) / 255) < 0.01, selected .. " restyles Lua-built text")
     assert(math.abs(inboxSearch.BackgroundColor.R - (dark and 0xbf or 0xd9) / 255) < 0.01, selected .. " restyles retained XML tabs")
-    assert(math.abs(themeApp.screen:findChild("AppBar", true).BackgroundColor.R - (dark and 0x16 or 0xf7) / 255) < 0.01,
+    assert(math.abs(themeApp.shell.screen:findChild("AppBar", true).BackgroundColor.R - (dark and 0x16 or 0xf7) / 255) < 0.01,
         selected .. " bars follow the app palette")
 end
 os.getenv = getenv

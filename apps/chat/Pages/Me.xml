@@ -1,0 +1,19 @@
+<!-- Public identity and account tools have one starting point. Account and
+     notification settings remain a separate focused page. -->
+<StackView Name="MeContent" Spacing="20" Overflow="hidden scroll" JustifyContent="Start">
+  <Grid Columns="96px 1fr" Spacing="16" AlignItems="Center">
+    <Grid Name="MeAvatarHost" Width="96" Height="96"/>
+    <StackView Spacing="4" JustifyContent="Center">
+      <TextBlock Name="MeName" FontSize="28" class="chat-ink" TextWrapping="Wrap" IgnoreHitTest="true"/>
+      <TextBlock Name="MeHandle" FontSize="15" class="chat-muted" TextOverflow="Ellipsis" IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+  <StackView Spacing="0" JustifyContent="Start">
+    <Button Name="MyPublicProfile" Height="56" BorderWidth="0" class="chat-action chat-link" TextHorizontalAlignment="Left" FontSize="20" TextResourceID="Public profile">Public profile</Button>
+    <Button Name="MyPosts" Height="56" BorderWidth="0" class="chat-action chat-link" TextHorizontalAlignment="Left" FontSize="20" TextResourceID="My posts">My posts</Button>
+  </StackView>
+  <TextBlock FontSize="14" WordWrap="true" class="chat-muted" TextResourceID="Your posts and bio are public. Your conversations stay private." IgnoreHitTest="true">Your posts and bio are public. Your conversations stay private.</TextBlock>
+  <Button Name="MeSettings" Height="56" BorderWidth="0" class="chat-action chat-background chat-ink" TextHorizontalAlignment="Left" FontSize="20" TextResourceID="settings">settings</Button>
+  <Button Name="MeSignOut" Height="56" BorderWidth="0" class="chat-action chat-background chat-error" TextHorizontalAlignment="Left" FontSize="20" TextResourceID="sign out">sign out</Button>
+  <TextBlock Name="MeStatus" FontSize="14" class="chat-error" WordWrap="true" Visible="false" IgnoreHitTest="true"/>
+</StackView>

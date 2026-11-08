@@ -48,8 +48,8 @@ end
 app:show("/contacts")
 drain()
 assert(app.shell.active == "Contacts" and node("AppBarContacts").IsEnabled == false)
-assert(node("AppBarNew") and node("AppBarProfile") and node("AppBarChats"))
-assert(node("ContactsPanorama").Title == "contacts")
+assert(node("AppBarPosts") and node("AppBarMe") and node("AppBarChats"))
+assert(node("ContactsPanorama").Title == "people")
 assert(node("ContactsRecent").Orientation == "Horizontal")
 assert(node("ContactsMosaic").ActualWidth == 720 and node("ContactsMosaic").ActualHeight == 360)
 assert(node("ContactsTilealex").ActualWidth > 70 and node("ContactsTilealex").ActualHeight > 70)
@@ -72,24 +72,27 @@ drain()
 assert(node("ContactsRowalex") == listRow and not node("ContactsEmpty").Visible)
 node("ContactsSearch").Text = "unlikely name"
 drain()
-assert(node("ContactsEmpty").Visible and node("ContactsEmpty").Text == "No matching contacts.", node("ContactsEmpty").Text)
+assert(node("ContactsEmpty").Visible and node("ContactsEmpty").TextResourceID == "No matching contacts."
+    and app.localization:t(node("ContactsEmpty").TextResourceID) == "No matching contacts.",
+    "An unmatched people query must show the localized empty-state label")
 node("ContactsSearch").Text = ""
 app:show("/new"); drain()
-assert(app.shell.active == "New" and node("KindGroup") and node("KindChannel"))
+assert(app.currentRoute == "/new" and app.screen == app.newScreen and node("KindGroup") and node("KindChannel"))
 app:show("/contacts"); drain()
 assert(node("ContactsPage") == contactsPage and app.contactsPanorama == panorama and app.contactsPanorama.SelectedIndex == 1)
 assert(node("ContactsTilealex") == portrait, "Refreshing a retained Contacts page must preserve native tiles")
 node("ContactsRowalex"):send("Node.LeftButtonUp")
 drain()
+assert(app.currentRoute == "/posts/user" and node("MessageProfile"), "People opens the shared public profile")
+node("MessageProfile"):send("Node.LeftButtonUp"); drain()
 assert(app.room and app.room.peer_id == "alex" and app.currentRoute == "/thread", "Contacts open real model-backed direct conversations")
 app:show("/contacts"); drain()
 local create = app.models.Rooms.create
 app.models.Rooms.create = function() return nil, { message = "Try opening again" } end
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
-assert(node("ContactsStatus").Text == "Try opening again" and node("ContactsStatus").Visible)
-assert(not node("ContactsOpening"):getParent().Visible)
-assert(node("ContactsStatus"):getParent() == node("ContactsFeedback"), "Feedback must stay outside horizontally moving sections")
-assert(node("ContactsFeedback").ActualHeight > 0 and node("ContactsFeedback").ActualWidth <= 390)
+node("MessageProfile"):send("Node.LeftButtonUp"); drain()
+assert(app.currentRoute == "/posts/user" and app.status:getTextContent() == "Try opening again",
+    "A failed private conversation must stay on the profile with actionable feedback")
 app.models.Rooms.create = function(self, values)
     app:show("/new")
     return create(self, values)
@@ -97,7 +100,8 @@ end
 local before = app.room
 app:show("/contacts"); drain()
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
-assert(app.shell.active == "New" and app.room == before, "A delayed create must not navigate away from a newer tab")
+node("MessageProfile"):send("Node.LeftButtonUp"); drain()
+assert(app.currentRoute == "/new" and app.screen == app.newScreen and app.room == before, "A delayed create must not navigate away from a newer task")
 app.models.Rooms.create = create
 
 -- Delayed initial data mounts searchable UI first; finishing offscreen only
@@ -129,7 +133,7 @@ app:show("/new")
 local status = app.status
 assert(coroutine.resume(request))
 runPending()
-assert(coroutine.status(request) == "dead" and app.shell.active == "New" and app.status == status)
+assert(coroutine.status(request) == "dead" and app.currentRoute == "/new" and app.screen == app.newScreen and app.status == status)
 assert(app.scope:member("Recent").items:find("alex"), "A late load may populate a retained inactive page")
 client.listContacts = originalContacts
 orca.async = function(fn, ...) return fn(...) end
@@ -159,6 +163,7 @@ app.models.Rooms.create = function()
     return nil, { code = "unauthenticated", message = "Sign in to continue." }
 end
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
+node("MessageProfile"):send("Node.LeftButtonUp"); drain()
 assert(not app.client:getSession() and not app.contactsPanorama and not app.shell,
     "Session expiry during contact activation must clear retained authenticated records")
 assert(app.screen:findChild("RequestCode", true), "Expired contact activation must return to authentication")
