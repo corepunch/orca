@@ -1,9 +1,5 @@
-<Grid Name="ProjectPanel" Rows="32px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
+<Grid Name="ProjectPanel" Rows="1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
   <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
-  <Grid Columns="1fr 22px" Spacing="4" Padding="10 4 6 4" class="panel-toolbar">
-    <TextBlock Text="Project assets" class="editor-muted" TextVerticalAlignment="Center"/>
-    <Button Click="Refresh" class="icon-button"><VectorView Source="Editor/Icons/refresh.svg" class="tool-icon" IgnoreHitTest="true"/></Button>
-  </Grid>
   <TreeView Name="Items" ItemsSource="{Binding ../Source/Items}" ItemTemplate="Editor/Templates/ProjectRow"
            ItemNamePrefix="ProjectFile" ValueProperty="Path" OverflowY="Scroll" class="editor-list editor-tree"/>
   <TextBlock Name="DataSourceError" Text="{Binding ../Source/ErrorMessage}" Visible="{Binding ../Source/HasError}" class="editor-error" Padding="8" TextWrapping="Wrap"/>

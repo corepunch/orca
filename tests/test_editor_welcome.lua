@@ -46,6 +46,7 @@ assert(#welcome.filtered > 0 and welcome.list:getFirstChild(), 'Bundled project 
 assert(welcome:selected(), 'The first project can be opened immediately')
 local first = welcome.list:getFirstChild()
 assert(first.ActualHeight == 64 and first.ActualWidth > 400, 'Project cards use their intended native layout')
+assert(first.DataContext.Monogram == welcome.filtered[1].title:match('%w'):upper(), 'Project rows carry their monogram')
 local second = first:getNext()
 if second then
 	click(second)
@@ -93,5 +94,27 @@ settle(720,620)
 assert(not welcome:node('Artwork').Visible and welcome.view.Columns == '1fr', 'Small windows dedicate space to usable project controls')
 local _,openY = Native.origin(welcome:node('OpenSelected'))
 assert(openY + welcome:node('OpenSelected').ActualHeight <= 620, 'The launch action remains reachable in a smaller window')
+-- New Project reuses the folder browser to pick a parent, then scaffolds and opens it.
+local disk = require 'orca.filesystem.native'
+local parent = os.tmpname()
+os.remove(parent)
+disk.mkdir(parent)
+settle(1040, 680)
+click(welcome:node('NewProject'))
+assert(welcome.creating and welcome:node('ProjectName').Visible and welcome:node('OpenFolder').Text == 'Create project',
+	'New Project shows a name field and a create action')
+welcome:folder(parent)
+welcome:node('ProjectName').Text = '1 bad name'
+click(welcome:node('OpenFolder'))
+assert(starts == 1 and welcome:node('FolderError').Visible, 'Invalid project names are rejected before writing')
+welcome:node('ProjectName').Text = 'Demo'
+click(welcome:node('OpenFolder'))
+local created = parent .. '/Demo'
+assert(starts == 2 and opened == created and Projects.validate(created), 'A created project opens immediately')
+assert(disk.getfileinfo(created .. '/Screens/App.xml'), 'The new project has a startup screen')
+assert(not Projects.create(parent, 'Demo'), 'Creating never overwrites an existing folder')
+for _, path in ipairs { created .. '/Screens/App.xml', created .. '/package.lua', created .. '/Screens', created .. '/fonts', created, parent } do
+	os.remove(path)
+end
 Projects.remember, Workspace.start = originalRemember, originalStart
 print('All editor welcome tests passed.')

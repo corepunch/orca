@@ -1,6 +1,8 @@
 <Node2D class="editor-preview" OverflowX="Hidden" OverflowY="Hidden">
-  <Node2D Name="Canvas" Width="0" Height="0" IgnoreHitTest="true" HorizontalAlignment="Left" VerticalAlignment="Top">
-    <ImageView Name="Image" Stretch="None" IgnoreHitTest="true" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+  <!-- The artboard is the document's design size scaled to fit; Preview.lua
+       positions it and maps outlines and clicks through the same scale. -->
+  <Node2D Name="Canvas" Width="0" Height="0" IgnoreHitTest="true" HorizontalAlignment="Left" VerticalAlignment="Top" class="preview-artboard">
+    <ImageView Name="Image" Stretch="None" IgnoreHitTest="true" HorizontalAlignment="Left" VerticalAlignment="Top" class="preview-image"/>
     <Node2D Name="Hover" BorderWidth="1" BorderColor="#8db7ff80" IgnoreHitTest="true" Visible="false" HorizontalAlignment="Left" VerticalAlignment="Top"/>
     <Node2D Name="Selection" BorderWidth="1" BorderColor="#fcef8d" IgnoreHitTest="true" Visible="false" HorizontalAlignment="Left" VerticalAlignment="Top"/>
   </Node2D>

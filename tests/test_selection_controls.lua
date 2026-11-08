@@ -229,9 +229,31 @@ local function default_touch_rows()
   screen:clear()
 end
 
+-- Templates are cloned through serialization; a control's own parts must not be
+-- serialized, or the clone ends up with a second, unlaid-out indicator.
+local function template_clone_parts()
+  local template = ui.Grid { Name = "Row" }
+  template:addChild(ui.CheckBox { Name = "Box", IsChecked = true })
+  template:addChild(ui.ToggleSwitch { Name = "Switch" })
+  template:addChild(ui.RadioButton { Name = "Radio" })
+  local copy = template:instantiate()
+  for _, name in ipairs { "Box", "Switch", "Radio" } do
+    local control = assert(copy:findChild(name, true), name)
+    local parts = {}
+    local child = control:getFirstChild()
+    while child do
+      parts[child.Name] = (parts[child.Name] or 0) + 1
+      child = child:getNext()
+    end
+    test.expect_eq(parts.Indicator, 1, name .. " clone has exactly one indicator")
+    test.expect_eq(parts.Label, 1, name .. " clone has exactly one label")
+  end
+end
+
 checkbox()
 toggle()
 radio()
 css_parts()
 default_touch_rows()
+template_clone_parts()
 print("PASS: CSS selection control behavior")

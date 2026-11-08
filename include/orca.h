@@ -369,6 +369,9 @@ typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lPar
 #define OF_CHECKED (1 << 15)
 #define OF_INDETERMINATE (1 << 16)
 #define OF_DISABLED (1 << 17)
+/* Built by its owning control (for example a CheckBox indicator). Serializers
+   skip it, so a cloned template gets fresh parts instead of a second copy. */
+#define OF_NATIVE_PART (1 << 18)
 
 struct PropertyShorthandTarget
 {

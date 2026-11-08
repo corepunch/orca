@@ -5,7 +5,9 @@
       <ProcessArgument Value="apps/Example"/>
     </ProcessConnection.Arguments>
   </ProcessConnection>
-  <Grid Name="EditorRoot" Rows="28px 1fr 22px" Columns="1fr">
+  <!-- Every 1px gap reveals editor-frame, so panels, menu and status bar share
+       one continuous hairline grid instead of exposing the window clear colour. -->
+  <Grid Name="EditorRoot" Rows="28px 1fr 22px" Columns="1fr" Spacing="1" class="editor-frame">
     <Grid Name="MenuSlot" Rows="1fr" Columns="1fr"/>
     <Grid Rows="1fr" Columns="260px 1fr 416px" Spacing="1">
       <Grid Name="LeftPanels" Rows="1fr 1fr" Columns="1fr" Spacing="1">

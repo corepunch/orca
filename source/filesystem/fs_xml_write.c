@@ -224,6 +224,7 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
   }
 
   FOR_EACH_OBJECT(child, (struct Object *)object) {
+    if (OBJ_GetFlags(child) & OF_NATIVE_PART) continue;
     serialize_object_impl(child, node);
   }
 }

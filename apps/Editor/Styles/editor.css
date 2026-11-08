@@ -19,12 +19,20 @@
 .panel-toolbar:dark { background-color: var(--editor-surface-dark); }
 .editor-error { color: var(--editor-error); }
 .editor-error:dark { color: var(--editor-error-dark); }
+.editor-frame { background-color: var(--editor-frame); }
+.editor-frame:dark { background-color: var(--editor-frame-dark); }
 .editor-preview { background-color: var(--editor-inset); }
 .editor-preview:dark { background-color: var(--editor-inset-dark); }
+/* ImageView multiplies its texture by the inherited text colour; the preview
+   must show the rendered pixels unchanged. */
+.preview-image, .preview-image:dark { color: #ffffff; }
+.preview-artboard { border: 1 solid #00000026; }
+.preview-artboard:dark { border-color: #ffffff1f; }
 
 /* Buttons: icon and toolbar variants of the default Button */
 .toolbar-button { height: 22; padding: 0 10; margin: 3 4 3 0; }
 .icon-button { padding: 0; background-color: #00000000; }
+.panel-tool { margin: 3 6 3 0; border-radius: 4; }
 .icon-button:hover { background-color: var(--editor-hover); }
 .icon-button:dark:hover { background-color: var(--editor-hover-dark); }
 .icon-button:active { background-color: var(--ui-control-active); }
@@ -36,13 +44,15 @@
 .primary-button:hover { background-color: var(--ui-accent-hover); }
 .primary-button:active { background-color: var(--ui-accent-active); }
 .editor-input, .search-input { padding: 3 8; }
-.search-input { border-radius: 11; padding: 3 10; }
+.search-input { border-radius: 4; padding: 3 8; background-color: var(--editor-field); border-color: #00000000; }
+.search-input:dark { background-color: var(--editor-field-dark); border-color: #00000000; }
+.search-input:focus, .search-input:dark:focus { border-color: var(--ui-accent); }
 
 /* A TreeViewItem owns its Header row and nested ItemsPresenter. Only the
    Header chrome highlights; descendants keep their own independent state. */
+/* List rows never tint on hover; only selection changes a row's fill. */
 .editor-tree .treeview-header { background-color: #00000000; }
-.editor-tree .treeview-header:hover { background-color: var(--editor-hover); }
-.editor-tree:dark .treeview-header:hover { background-color: var(--editor-hover-dark); }
+.editor-tree .treeview-header:hover, .editor-tree:dark .treeview-header:hover { background-color: #00000000; }
 .editor-tree .treeview-header:selected { background-color: var(--editor-selected); }
 .editor-tree:dark .treeview-header:selected { background-color: var(--editor-selected-dark); }
 .editor-tree .treeview-expander { color: var(--ui-control-muted); }
@@ -51,8 +61,8 @@
 .editor-tree:dark .treeview-expander:hover { background-color: var(--editor-hover-dark); }
 .row-label { color: var(--ui-control-foreground); text-vertical-align: center; }
 .row-label:dark { color: var(--ui-control-foreground-dark); }
-.row-icon { width: 14; height: 14; margin: auto; color: var(--editor-link); }
-.row-icon:dark { color: var(--editor-link-dark); }
+.row-icon { width: 14; height: 14; margin: auto; color: var(--editor-secondary); }
+.row-icon:dark { color: var(--editor-secondary-dark); }
 .disclosure { padding: 0; background-color: #00000000; border-radius: 3; }
 .disclosure:hover { background-color: var(--editor-hover); }
 .disclosure:dark:hover { background-color: var(--editor-hover-dark); }
@@ -62,8 +72,6 @@
 /* Inspector: one shared label column, compact compound fields and distinct
    controls for editable text, choices, resource references and colours. */
 .property-row { background-color: #00000000; }
-.property-row:hover { background-color: var(--editor-hover); }
-.property-row:dark:hover { background-color: var(--editor-hover-dark); }
 .property-row:selected { background-color: var(--editor-selected); }
 .property-row:dark:selected { background-color: var(--editor-selected-dark); }
 .property-group { background-color: var(--editor-raised); }
@@ -73,14 +81,21 @@
 .property-group-title:hover { background-color: #00000000; }
 .property-label { color: var(--editor-secondary); text-vertical-align: center; }
 .property-label:dark { color: var(--editor-secondary-dark); }
-.property-input, .property-component-input { padding: 1 6; margin: 3 0; border-radius: 3; }
-.property-component-input { min-width: 28; padding: 1 4; }
+/* Fields rest as quiet fills; the outline appears only on hover and focus. */
+.property-input, .property-component-input { padding: 1 6; margin: 3 0; border-radius: 4; background-color: var(--editor-field); border-color: #00000000; }
+.property-input:dark, .property-component-input:dark { background-color: var(--editor-field-dark); border-color: #00000000; }
+.property-input:hover, .property-component-input:hover { border-color: var(--ui-input-border); }
+.property-input:dark:hover, .property-component-input:dark:hover { border-color: var(--ui-input-border-dark); }
+.property-input:focus, .property-component-input:focus, .property-input:dark:focus, .property-component-input:dark:focus { border-color: var(--ui-accent); }
+.property-field-box { margin: 3 0; border-radius: 4; background-color: var(--editor-field); }
+.property-field-box:dark { background-color: var(--editor-field-dark); }
+.editor .property-component-input, .editor .property-component-input:dark { min-width: 28; padding: 1 4 1 0; margin: 0; background-color: #00000000; }
 .property-compound-fields { gap: 4; }
-.property-field-label { color: var(--ui-control-muted); text-vertical-align: center; text-align: center; }
+.property-field-label { color: var(--ui-control-muted); text-vertical-align: center; text-align: left; margin: 0 0 0 6; }
 .property-field-label:dark { color: var(--ui-control-muted-dark); }
 .editor .property-field-label { font-size: 10; }
-.property-enum { padding: 0 6; margin: 3 0; text-align: left; border-radius: 3; border: 1 solid #c5cdd8; border-color: var(--ui-input-border); }
-.property-enum:dark { border-color: var(--ui-input-border-dark); }
+.property-enum { padding: 0 6; margin: 3 0; text-align: left; border-radius: 4; border: 1 solid #00000000; }
+.property-enum:dark { border-color: #00000000; }
 .property-enum:hover { border-color: var(--ui-input-border-hover); }
 .property-enum:dark:hover { border-color: var(--ui-input-border-hover-dark); }
 .property-choice-icon, .property-resource-icon { width: 12; height: 12; margin: auto; }
@@ -90,6 +105,11 @@
 .property-reference:dark { border-color: var(--editor-resource-border-dark); background-color: var(--editor-resource-dark); color: var(--editor-resource-text-dark); }
 .property-reference:hover { border-color: var(--ui-accent); background-color: var(--editor-selected); }
 .property-reference:dark:hover { background-color: var(--editor-selected-dark); }
+/* An unset reference is a quiet placeholder; only real references get the chip. */
+.property-empty .property-reference { background-color: #00000000; border-color: #00000000; color: var(--ui-control-muted); }
+.property-empty:dark .property-reference { background-color: #00000000; border-color: #00000000; color: var(--ui-control-muted-dark); }
+.property-empty .property-reference:hover { border-color: var(--ui-input-border); }
+.property-empty:dark .property-reference:hover { border-color: var(--ui-input-border-dark); }
 .property-resource-label { text-vertical-align: center; text-wrap: nowrap; text-overflow: ellipsis; }
 .property-summary { padding: 0 6; margin: 3 0; text-align: left; background-color: #00000000; color: var(--editor-secondary); border-radius: 3; }
 .property-summary:dark { color: var(--editor-secondary-dark); }
@@ -106,8 +126,10 @@
 .bind-button { padding: 0; margin: 3 0; background-color: #00000000; border-radius: 3; }
 .bind-button:hover { background-color: var(--editor-hover); }
 .bind-button:dark:hover { background-color: var(--editor-hover-dark); }
-.bind-icon { width: 12; height: 12; margin: auto; color: var(--editor-disabled); }
-.bind-icon:dark { color: var(--editor-disabled-dark); }
+/* Binding markers stay hidden until the row is hovered; bound ones always show. */
+.bind-icon { width: 12; height: 12; margin: auto; color: #00000000; }
+.property-row:hover .bind-icon { color: var(--editor-disabled); }
+.property-row:dark:hover .bind-icon { color: var(--editor-disabled-dark); }
 .property-bound .bind-icon { color: var(--ui-accent); }
 .property-bound:dark .bind-icon { color: var(--ui-accent); }
 
@@ -136,11 +158,13 @@
 .menu-title:dark { color: var(--ui-control-foreground-dark); }
 .menu-title:hover { background-color: var(--editor-hover); }
 .menu-title:dark:hover { background-color: var(--editor-hover-dark); }
-.menu-status { color: var(--ui-control-muted); padding: 0 12; text-vertical-align: center; }
+.menu-status { color: var(--ui-control-muted); text-vertical-align: center; }
 .menu-status:dark { color: var(--ui-control-muted-dark); }
 .status-bar { background-color: var(--editor-chrome); color: var(--editor-secondary); font-size: 11; }
 .status-bar:dark { background-color: var(--editor-chrome-dark); color: var(--editor-secondary-dark); }
 .status-bar TextBlock { font-size: 11; text-vertical-align: center; }
+.status-dirty { color: var(--ui-control-foreground); }
+.status-dirty:dark { color: var(--ui-control-foreground-dark); }
 .editor-popup, .editor-menu, .editor-dialog { background-color: var(--editor-raised); color: var(--ui-control-foreground); border: 1 solid #c5cdd8; border-color: var(--ui-input-border); border-radius: 6; }
 .editor-popup:dark, .editor-menu:dark, .editor-dialog:dark { background-color: var(--editor-raised-dark); color: var(--ui-control-foreground-dark); border-color: var(--ui-input-border-dark); }
 .editor-menu { padding: 4 0; overflow-y: scroll; }
@@ -162,8 +186,6 @@
 /* Console */
 .log-row { background-color: #00000000; }
 .log-row TextBlock { text-vertical-align: center; }
-.log-row:hover { background-color: var(--editor-hover); }
-.log-row:dark:hover { background-color: var(--editor-hover-dark); }
 .log-level { color: var(--editor-link); }
 .log-level:dark { color: var(--editor-link-dark); }
 .log-error .log-level { color: var(--editor-error); }
@@ -172,6 +194,14 @@
 .log-warning:dark .log-level { color: var(--editor-warning-dark); }
 .log-ok .log-level { color: var(--editor-success); }
 .log-ok:dark .log-level { color: var(--editor-success-dark); }
+.log-dot { border-radius: 3; background-color: var(--editor-link); }
+.log-dot:dark { background-color: var(--editor-link-dark); }
+.log-error .log-dot { background-color: var(--editor-error); }
+.log-error:dark .log-dot { background-color: var(--editor-error-dark); }
+.log-warning .log-dot { background-color: var(--editor-warning); }
+.log-warning:dark .log-dot { background-color: var(--editor-warning-dark); }
+.log-ok .log-dot { background-color: var(--editor-success); }
+.log-ok:dark .log-dot { background-color: var(--editor-success-dark); }
 
 /* Binding editor. The legacy charset palette is intentionally a dark code
    inset in either appearance; the surrounding dialog follows the system. */

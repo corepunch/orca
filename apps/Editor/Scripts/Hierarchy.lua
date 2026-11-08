@@ -28,6 +28,10 @@ function Hierarchy:reload()
     self.subtitle = Workspace.leaf(Workspace.document)
     if Workspace.document then
         DataPanel.reload(self, 'get/data-scene/' .. Workspace.encode(Workspace.document, true) .. DataPanel.treeQuery(self.filter))
+        if self.expandedDocument ~= Workspace.document then
+            self.expandedDocument = Workspace.document
+            DataPanel.expandLevels(self, 3)
+        end
         if self.filter and self.filter ~= '' then self.list:post('TreeView.ExpandAll', { IsExpanded = true }) end
     end
     if self.header then self.header:invalidate() end

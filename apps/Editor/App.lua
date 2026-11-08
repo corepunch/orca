@@ -8,6 +8,7 @@ local Native = require "Editor.Scripts.Native"
 local Workspace = require "Editor.Scripts.Workspace"
 local Popups = require "Editor.Scripts.Popups"
 local Panel = require "Editor.Scripts.Panel"
+local DataPanel = require "Editor.Scripts.DataPanel"
 local MenuBar = require "Editor.Scripts.MenuBar"
 local Hierarchy = require "Editor.Scripts.Hierarchy"
 local ProjectView = require "Editor.Scripts.ProjectView"
@@ -53,6 +54,8 @@ local App = Application:extend {
 			Workspace.open()
 		end
 		self.preview:update()
+		DataPanel.autoExpand(self.hierarchy)
+		DataPanel.autoExpand(self.project)
 		local popup = Popups.top()
 		if popup and popup.checkResize then popup:checkResize() end
 	end,
@@ -234,7 +237,7 @@ function App:build()
 	self.console = Console()
 	self.statusbar = StatusBar()
 	self.menubar = MenuBar(self:menus(), function()
-		return 'ORCA Editor  ' .. (Workspace.project and Workspace.leaf(Workspace.project) or '')
+		return Workspace.project and Workspace.leaf(Workspace.project) or ''
 	end)
 
 	local hotkey = function(chord) return app:hotkey(chord) end

@@ -1,0 +1,50 @@
+{
+  "device": "9F9B4A17-4195-40F0-8B46-728F6A6AA8EB",
+  "family": "ipad",
+  "bundle_id": "org.orca.chat.promoshots",
+  "offline": true,
+  "binary_sha256": "3c2a3fe2c1a10cdf5c4f21cf10fc2bf03a2de8213385884f5c16b0559e89e9e2",
+  "shots": [
+    {
+      "name": "03-inbox",
+      "stage": "inbox",
+      "appearance": "dark",
+      "title": "every chat.\none place.",
+      "subtitle": "Friends, plans, and the everyday in between.",
+      "capture": "captures/03-inbox.png",
+      "auxiliary": false,
+      "sha256": "9f548f3777453a0d2d28c723febfe9cad11c5c2af21af73fbfc64939ad0e7897",
+      "raw_sha256": "eba61cf3dae5b3884799c35b5263e91069b530dbcf3af43147407272b2cd94bb",
+      "width": 2064,
+      "height": 2752
+    },
+    {
+      "name": "08-light",
+      "stage": "inbox",
+      "appearance": "light",
+      "title": "a brighter\nkind of day.",
+      "subtitle": "A familiar place, in light or dark.",
+      "capture": "captures/08-light.png",
+      "auxiliary": false,
+      "sha256": "571d5d23afd60fea71cea84c15dd796194c73d725e8e60896b1824c01c0c7fb2",
+      "raw_sha256": "d04d217d9517900d47390ebbd332f0ba7f76a5272f365c806dd6b78089821b54",
+      "width": 2064,
+      "height": 2752
+    }
+  ],
+  "source_commit": "c800f153d27d9c2abbbf68ed9b88f10f8c7bd910",
+  "xcode": "Xcode 26.6\nBuild version 17F113",
+  "format_conversion": "Lossless RGB PNG; fully opaque alpha removed, pixels and dimensions unchanged",
+  "pillow_version": "12.3.0",
+  "simulator": {
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+    "dataPath": "/Users/runner/Library/Developer/CoreSimulator/Devices/9F9B4A17-4195-40F0-8B46-728F6A6AA8EB/data",
+    "dataPathSize": 18337792,
+    "logPath": "/Users/runner/Library/Logs/CoreSimulator/9F9B4A17-4195-40F0-8B46-728F6A6AA8EB",
+    "udid": "9F9B4A17-4195-40F0-8B46-728F6A6AA8EB",
+    "isAvailable": true,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+    "state": "Shutdown",
+    "name": "iPad Pro 13-inch (M5)"
+  }
+}

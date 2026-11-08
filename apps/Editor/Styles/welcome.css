@@ -30,17 +30,19 @@
 .welcome-list { background-color: transparent; }
 .welcome-project { border: 1 solid #dfe4eb; border-radius: 8; background-color: #ffffff; }
 .welcome-project:dark { background-color: #282b31; border-color: #3a4049; }
-.welcome-project:hover { background-color: #f0f4fa; border-color: #c0ccde; }
-.welcome-project:dark:hover { background-color: #323842; border-color: #59677b; }
-.welcome-project:selected { background-color: #eaf1fe; border-color: #648fd1; }
-.welcome-project:dark:selected { background-color: #2d3c53; border-color: #7198d1; }
-.welcome-project-icon { border-radius: 8; background-color: #edf2f8; color: #57759b; }
-.welcome-project-icon:dark { background-color: #3b4554; color: #aec8ec; }
+/* Hover stays neutral; only selection uses the accent, so the two never blur. */
+.welcome-project:hover { background-color: #f4f5f7; border-color: #d3d9e1; }
+.welcome-project:dark:hover { background-color: #2e3137; border-color: #474e59; }
+.welcome-project:selected, .welcome-project:selected:hover { background-color: #eaf1fe; border-color: #397ce5; }
+.welcome-project:dark:selected, .welcome-project:dark:selected:hover { background-color: #26354c; border-color: #6d98d8; }
+.welcome-monogram { font-size: 20; font-weight: Bold; color: #57759b; text-align: center; text-vertical-align: center; }
+.welcome-monogram:dark { color: #aec8ec; }
 .welcome-project-title { font-size: 14; font-weight: Bold; }
-.welcome-path { font-size: 11; color: #747e8c; }
+.welcome-path { font-size: 12; color: #747e8c; }
 .welcome-path:dark { color: #a4adba; }
-.welcome-badge { padding: 5 8; border-radius: 4; font-size: 10; background-color: #eef1f5; color: #697584; }
-.welcome-badge:dark { background-color: #343b45; color: #b7c1ce; }
+/* Plain secondary text: a filled chip disappears into the selected row tint. */
+.welcome-badge { padding: 0; font-size: 12; background-color: transparent; color: #697584; }
+.welcome-badge:dark { color: #a4adba; }
 .welcome-launch { border-top-width: 1; border-color: #dfe4eb; padding-top: 16; }
 .welcome-launch:dark { border-color: #3a4049; }
 .welcome-selected-title { font-size: 13; font-weight: Bold; }
@@ -50,7 +52,7 @@
 .welcome-primary-unavailable { opacity: 0.45; }
 .welcome Button:focus-visible, .welcome-project:focus-visible { ring: 0 2 #397ce5; }
 .welcome-footer { padding-top: 8; }
-.welcome-footer-text { font-size: 10; color: #858e9b; text-vertical-align: center; }
+.welcome-footer-text { font-size: 11; color: #858e9b; text-vertical-align: center; }
 .welcome-text-button { padding: 0; color: #3970bd; background-color: transparent; }
 .welcome-text-button:dark { color: #9bbcf0; }
 .welcome-text-button:hover { color: #21549e; }

@@ -9,7 +9,7 @@ function Panel.wrap(body, bodyView)
 		view:findChild('Subtitle',true).Text=body.subtitle or ''
 		self.entries=body.tools and body:tools() or {}
 		local rows={}
-		for _,tool in ipairs(self.entries) do rows[#rows+1]={Label=tool.label} end
+		for _,tool in ipairs(self.entries) do rows[#rows+1]={Label=tool.label,Icon=tool.icon or ''} end
 		tools.ItemsSource=Native.records(rows)
 		self.view.StateClasses=body.active and 'panel-active' or ''
 	end

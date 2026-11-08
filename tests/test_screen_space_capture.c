@@ -16,6 +16,74 @@ extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_renderer(lua_State *L);
 
+static void
+test_render_texture_color_space(void)
+{
+  struct Texture *target = NULL;
+  GLuint reference_fbo = 0, reference_color = 0;
+  GLint previous_fbo;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo);
+  glGenFramebuffers(1, &reference_fbo);
+  glGenTextures(1, &reference_color);
+  glBindTexture(GL_TEXTURE_2D, reference_color);
+  glTexImage2D(GL_TEXTURE_2D, 0,
+#ifdef R_USE_SRGB
+              GL_SRGB8_ALPHA8,
+#else
+              GL_RGBA,
+#endif
+              64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindFramebuffer(GL_FRAMEBUFFER, reference_fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, reference_color, 0);
+
+  do {
+    EXPECT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    EXPECT_OK(RenderTexture_Create(&(CREATERTSTRUCT){.Width = 64, .Height = 64}, &target));
+    EXPECT(target != NULL);
+    struct ViewDef view = {
+      .viewMatrix = MAT4_Identity(),
+      .projectionMatrix = MAT4_Ortho(0, 64, 64, 0, -1, 1),
+    };
+    struct ViewEntity entity = {
+      .matrix = MAT4_Identity(),
+      .bbox = {.min = {0, 0, 0}, .max = {64, 64, 0}},
+      .material = {.textureMatrix = MAT3_Identity(), .color = {0.25, 0.5, 0.75, 1},
+                   .opacity = 1, .blendMode = BLEND_MODE_OPAQUE},
+    };
+    unsigned char reference[4], composed[4], pixels[64 * 64 * 4];
+    R_BeginFrame((struct color){0, 0, 0, 1});
+    glBindFramebuffer(GL_FRAMEBUFFER, reference_fbo);
+    R_ClearScreen((struct color){0, 0, 0, 1}, 1, 0);
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    glReadPixels(32, 32, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, reference);
+    EXPECT(reference[0] > 50 && reference[1] > 110 && reference[2] > 175);
+
+    // PNG readback must contain the same display-encoded bytes as the window.
+    R_BindFramebuffer(target);
+    R_ClearScreen((struct color){0, 0, 0, 1}, 1, 0);
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    EXPECT_OK(RenderTexture_ReadPixels(target, pixels));
+    unsigned char *pixel = pixels + 4 * (32 * 64 + 32);
+    FOR_LOOP(i, 4) EXPECT(abs(pixel[i] - reference[i]) <= 1);
+
+    // Sampling the target for composition must decode those bytes once.
+    R_BindFramebuffer(NULL);
+    glBindFramebuffer(GL_FRAMEBUFFER, reference_fbo);
+    R_ClearScreen((struct color){0, 0, 0, 1}, 1, 0);
+    entity.material.texture = target;
+    entity.material.color = (struct color){1, 1, 1, 1};
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    glReadPixels(32, 32, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, composed);
+    FOR_LOOP(i, 4) EXPECT(abs(composed[i] - reference[i]) <= 1);
+    EXPECT(glGetError() == GL_NO_ERROR);
+  } while (0);
+  R_BindFramebuffer(NULL);
+  glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo);
+  target && Texture_Release(target);
+  glDeleteFramebuffers(1, &reference_fbo);
+  glDeleteTextures(1, &reference_color);
+}
+
 // Draws red and blue halves into a 64x64 target and filters the backdrop of
 // a bar along the top. EXPECT breaks out of the checks; cleanup always runs.
 static void
@@ -114,6 +182,8 @@ int main(void)
   luaopen_orca_renderer(L);
   lua_pop(L, 1);
   renderer_Init(64, 64, TRUE);
+
+  RUN_TEST("render_texture_matches_window_color_and_composition", test_render_texture_color_space(););
 
   RUN_TEST("solid_image_uses_initialized_white_texture", {
     unsigned char pixel[4] = {0};

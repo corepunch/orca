@@ -1,4 +1,5 @@
 <Grid Height="28" Columns="auto 1fr" class="menu-bar" Controller="Editor/Scripts/ChromeController">
   <ItemsStack Name="Menus" Direction="Horizontal" ItemTemplate="Editor/Views/MenuTitle"/>
-  <TextBlock Name="Status" TextHorizontalAlignment="Right" class="menu-status"/>
+  <!-- Margin, not text padding: right-aligned text padding pushed the end past the window edge. -->
+  <TextBlock Name="Status" TextHorizontalAlignment="Right" TextWrapping="NoWrap" TextOverflow="Ellipsis" OverflowX="Hidden" Margin="12 0 12 0" class="menu-status"/>
 </Grid>

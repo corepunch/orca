@@ -11,9 +11,15 @@ function ProjectView:init()
     DataPanel.load(self, "Project")
     Workspace.on('document', function() self:invalidate() end)
 end
-function ProjectView:tools() return {} end
+function ProjectView:tools()
+    return { { label = 'Refresh', icon = 'Editor/Icons/refresh.svg', action = function() self:reload() end } }
+end
 function ProjectView:reload()
     DataPanel.reload(self, 'get/data-project' .. DataPanel.treeQuery())
+    if self.expandedProject ~= Workspace.project then
+        self.expandedProject = Workspace.project
+        DataPanel.expandLevels(self, 1)
+    end
     self.subtitle = Workspace.leaf(Workspace.project)
     if self.header then self.header:invalidate() end
 end

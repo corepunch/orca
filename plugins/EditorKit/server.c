@@ -2,6 +2,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <zlib.h>
+#include <ctype.h>
+#include <math.h>
 #include <errno.h>
 #include <limits.h>
 
@@ -1153,7 +1155,10 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
   data_flag(row, "IsBindable", !readonly && (!compound || structure) && !xmlHasProp(prop, XMLSTR("data-unbindable")));
   data_flag(row, "BoolValue", value && (!xmlStrcasecmp(value, XMLSTR("true")) || !xmlStrcmp(value, XMLSTR("1"))));
   data_flag(row, "HasBinding", binding);
-  _xmlSetProp(row, "State", binding ? "property-bound" : readonly ? "property-readonly" : "");
+  /* An unset reference reads as a quiet placeholder, not a filled chip. */
+  bool_t empty_reference = reference && !(value && *value);
+  _xmlSetPropFormat(row, "State", "%s%s", binding ? "property-bound" : readonly ? "property-readonly" : "",
+                    empty_reference ? " property-empty" : "");
   xmlSetIntProp(row, XMLSTR("Indent"), depth * 12);
   if (reference) {
     xmlChar *type = xmlGetProp(prop, XMLSTR("data-content"));
@@ -1191,6 +1196,23 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
   xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked); xmlFree(short_label);
 }
 
+/* Group headers name what a section edits, not the C class behind it:
+   a few classes get task names, the rest split PascalCase into words. */
+static lpcString_t group_title(lpcString_t name, char *out, size_t size) {
+  static lpcString_t const names[][2] = {
+    { "StyleController", "Style" }, { "PrefabTemplate", "Prefab" },
+  };
+  FOR_LOOP(i, sizeof(names) / sizeof(*names))
+    if (!strcmp(name, names[i][0])) return snprintf(out, size, "%s", names[i][1]), out;
+  size_t n = 0;
+  for (lpcString_t c = name; *c && n + 2 < size; c++) {
+    if (c != name && isupper((unsigned char)*c) && islower((unsigned char)c[-1])) out[n++] = ' ';
+    out[n++] = *c;
+  }
+  out[n] = 0;
+  return out;
+}
+
 static SV_CMD(GET, data_properties) {
   REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
   xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("properties"));
@@ -1200,10 +1222,10 @@ static SV_CMD(GET, data_properties) {
     xmlChar *label = xmlGetProp(group, XMLSTR("name"));
     xmlChar *locked = xmlGetProp(group, XMLSTR("data-readonly"));
     if (!label || !group->children) { xmlFree(label); xmlFree(locked); continue; }
-    char id[64];
+    char id[64], title[128];
     snprintf(id, sizeof(id), "group-%u-%08x", uid, fnv1a32((char *)label));
     xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
-                                  "Label", (char *)label, "GroupName", (char *)label);
+                                  "Label", group_title((char *)label, title, sizeof(title)), "GroupName", (char *)label);
     data_flag(row, "IsGroup", TRUE);
     data_flag(row, "IsProperty", FALSE);
     data_flag(row, "ReadOnly", TRUE);
@@ -1460,13 +1482,16 @@ static void png_chunk(FILE *f, char const *type, byte_t const *data, uint32_t le
   fwrite(c, 1, 4, f);
 }
 
-static bool_t write_png(lpcString_t path, byte_t const *rgba, uint32_t w, uint32_t h) {
+static bool_t write_png(lpcString_t path, byte_t *rgba, uint32_t w, uint32_t h, bool_t opaque) {
   size_t stride = w * 4, rawlen = (stride + 1) * h;
   byte_t *raw = malloc(rawlen);
   uLongf zlen = compressBound(rawlen);
   byte_t *z = malloc(zlen);
   FILE *f = raw && z ? fopen(path, "wb") : NULL;
   if (!f) return free(raw), free(z), FALSE;
+  /* Blending text into the target also blends its alpha, which leaves glyph
+     edges translucent; an opaque screen must stay opaque in the image. */
+  if (opaque) FOR_LOOP(i, w * h) rgba[i * 4 + 3] = 255;
   /* GL rows start at the bottom; PNG rows start at the top. */
   FOR_LOOP(y, h) {
     raw[y * (stride + 1)] = 0;
@@ -1484,16 +1509,23 @@ static bool_t write_png(lpcString_t path, byte_t const *rgba, uint32_t w, uint32
   return TRUE;
 }
 
-/* get/snapshot/<screen>?width=&height=&file=: render the screen offscreen at
-   the requested size and save it as PNG. Works without IOSurface sharing, so
-   the editor preview is available on every platform. */
+/* get/snapshot/<screen>?width=&height=&file=[&design=1]: render the screen
+   offscreen and save it as PNG. Works without IOSurface sharing, so the editor
+   preview is available on every platform. With design=1 the screen renders at
+   its own Width/Height (the artboard), and width/height are only a fallback.
+   A snapshot never changes the document: a resizable screen gets its declared
+   size back afterwards. */
 SV_CMD(GET, snapshot)
 {
   REQUIRE(struct Object *, screen, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
   REQUIRE(lpcString_t, file, SV_ARG("file"), "Missing `file` argument");
   if (!GetScreen(screen)) return "Object is not a screen";
-  uint32_t w = SV_ARG("width") ? atoi(SV_ARG("width")) : 1024;
-  uint32_t h = SV_ARG("height") ? atoi(SV_ARG("height")) : 768;
+  struct Screen *pScreen = GetScreen(screen);
+  float const designWidth = pScreen->Width, designHeight = pScreen->Height;
+  bool_t const design = SV_ARG("design") && !isnan(designWidth) && !isnan(designHeight)
+                     && designWidth >= 1 && designHeight >= 1;
+  uint32_t w = design ? (uint32_t)designWidth : SV_ARG("width") ? atoi(SV_ARG("width")) : 1024;
+  uint32_t h = design ? (uint32_t)designHeight : SV_ARG("height") ? atoi(SV_ARG("height")) : 768;
   if (!w || !h || w > 4096 || h > 4096) return "Invalid snapshot size";
   struct Texture *rt = NULL;
   if (FAILED(RenderTexture_Create(&(CREATERTSTRUCT){ .Width = w, .Height = h }, &rt))) {
@@ -1511,11 +1543,14 @@ SV_CMD(GET, snapshot)
   R_BindFramebuffer(NULL);
   _SendMessage(screen, Screen, RenderScreen, .width = w, .height = h, .target = rt);
   byte_t *pixels = malloc(w * h * 4);
-  bool_t ok = pixels && SUCCEEDED(RenderTexture_ReadPixels(rt, pixels)) && write_png(file, pixels, w, h);
+  bool_t ok = pixels && SUCCEEDED(RenderTexture_ReadPixels(rt, pixels))
+           && write_png(file, pixels, w, h, pScreen->ClearColor.a >= 1);
   free(pixels);
   Texture_Release(rt);
   /* Rectangles from this same layout pass, so outlines match the image. */
   layout_rects(screen, response, endpoint);
+  pScreen->Width = designWidth;
+  pScreen->Height = designHeight;
   _xmlSetProp(response, "file", file);
   _xmlSetPropFormat(response, "width", "%u", w);
   _xmlSetPropFormat(response, "height", "%u", h);

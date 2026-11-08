@@ -36,7 +36,8 @@ function Welcome:filter()
 		if matches and (self.mode == 'all' or project.kind == 'recent') then
 			self.filtered[#self.filtered + 1] = project
 			rows[#rows + 1] = { Label = project.title, Detail = Projects.displayPath(project.path),
-				Tail = project.kind == 'sample' and 'EXAMPLE' or project.kind == 'configured' and 'CONFIGURED' or 'RECENT' }
+				Monogram = (project.title:match('%w') or '?'):upper(),
+				Tail = project.kind == 'sample' and 'Example' or project.kind == 'configured' and 'Configured' or 'Recent' }
 		end
 	end
 	self.list.ItemsSource = Native.records(rows)
@@ -79,16 +80,30 @@ end
 function Welcome:openSelected()
 	local project = self:selected()
 	if project then return self:launch(project.path) end
-	self:error('Select a project or choose Open project to browse for one.')
+	self:error('Select a project, or choose Open Folder… to browse for one.')
 	return false
 end
 
-function Welcome:browse()
+-- The folder browser serves both opening and creating: creating picks the
+-- parent folder and adds a name field.
+local BROWSER = {
+	open = { 'OPEN A PROJECT', 'Find your next project', 'Choose a folder containing an ORCA package.lua file.' },
+	create = { 'NEW PROJECT', 'Create a project', 'Choose where to create it, then give it a name.' },
+}
+
+function Welcome:browse(creating)
+	self.creating = creating == true
+	local text = BROWSER[self.creating and 'create' or 'open']
+	self:node('BrowserEyebrow').Text, self:node('BrowserTitle').Text, self:node('BrowserDetail').Text = text[1], text[2], text[3]
+	self:node('ProjectName').Visible = self.creating
 	self:node('ProjectChooser').Visible = false
 	self:node('FolderBrowser').Visible = true
 	local project = self:selected()
-	self:folder(self.folderPath or (project and project.path) or (DATADIR or 'apps/Editor') .. '/..')
-	self:node('FolderPath'):setFocus()
+	local start = project and project.path
+	if self.creating and start then start = start .. '/..' end
+	self:folder(self.folderPath or start or (DATADIR or 'apps/Editor') .. '/..')
+	if self.creating then self:node('ProjectName').Text = '' self:node('ProjectName'):setFocus()
+	else self:node('FolderPath'):setFocus() end
 end
 
 function Welcome:folder(path)
@@ -106,9 +121,16 @@ function Welcome:folder(path)
 	self:node('Folders'):send('ItemsControl.Refresh')
 	self:node('NoFolders').Visible = #rows == 0
 	local project = Projects.validate(normalized)
-	self:node('OpenFolder').Text = project and 'Open ' .. (normalized:match('([^/]+)$') or normalized) or 'Open this project'
+	self:node('OpenFolder').Text = self.creating and 'Create project'
+		or project and 'Open ' .. (normalized:match('([^/]+)$') or normalized) or 'Open this project'
 	self:error(nil, true)
 	return true
+end
+
+function Welcome:create()
+	local path, err = Projects.create(self.folderPath or self:node('FolderPath').Text or '', self:node('ProjectName').Text)
+	if not path then self:error(err, true) return false end
+	return self:launch(path, true)
 end
 
 function Welcome:cancelBrowse()
@@ -143,7 +165,14 @@ local function action(method)
 		if owner then return owner[method](owner, args, sender) end
 	end
 end
-Welcome.Browse = action('browse')
+Welcome.Browse = function(_, _, sender)
+	local self = Native.owner(sender)
+	if self then return self:browse(false) end
+end
+Welcome.New = function(_, _, sender)
+	local self = Native.owner(sender)
+	if self then return self:browse(true) end
+end
 Welcome.CancelBrowse = action('cancelBrowse')
 Welcome.Select = action('selection')
 Welcome.Open = action('openSelected')
@@ -177,6 +206,7 @@ Welcome.EnterFolder = function(_, _, sender)
 end
 Welcome.OpenFolder = function(_, _, sender)
 	local self = Native.owner(sender)
+	if self.creating then return self:create() end
 	return self:launch(self:node('FolderPath').Text or '', true)
 end
 Welcome.Return = function(_, _, sender)
@@ -187,7 +217,8 @@ Welcome.Key = function(_, args, sender)
 	local self = Native.owner(sender)
 	if not self then return false end
 	local chord = Native.chord(args)
-	if chord == 'ctrl+o' then self:browse() return true end
+	if chord == 'ctrl+o' then self:browse(false) return true end
+	if chord == 'ctrl+n' then self:browse(true) return true end
 	if chord == 'escape' then
 		if self:node('FolderBrowser').Visible then self:cancelBrowse()
 		elseif self.options.cancel then self.options.cancel() end

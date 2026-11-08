@@ -53,6 +53,7 @@ the engine, XML fixture and application tests.
 
 - `make modules` — regenerate code from every `.cgen` file.
 - `make unite` — build the core library, plugins, and app without running tests.
+- `make editor` — build and launch the editor; add `PROJECT=apps/Weather` to preselect a project.
 - `make test-headless` — run the C test binaries plus the headless Lua suite.
 - `xvfb-run make test` — run the full suite when display-backed tests matter.
 
