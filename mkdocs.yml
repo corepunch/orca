@@ -5,6 +5,8 @@ site_dir: site
 nav:
   - Welcome: index.md
   - Quickstart: quickstart.md
+  - Orca Messenger:
+    - Privacy Policy: chat/privacy.md
   - Architecture:
     - Overview: architecture/index.md
     - Object + Component System: architecture/object-component-system.md
