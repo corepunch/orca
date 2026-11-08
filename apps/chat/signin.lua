@@ -54,7 +54,12 @@ function SignIn:complete(url)
     self.busy = true
     local session, err = app.client:completeSignInLink(url)
     self.busy = false
-    if not session then app:notice(t(err and err.message or "Please try again."), true); return end
+    if not session then
+        -- The code only: the link itself carries the secret.
+        io.stderr:write("Chat sign-in failed: " .. tostring(err and err.code or "unknown") .. "\n")
+        app:notice(t(err and err.message or "Please try again."), true)
+        return
+    end
     app.authDraft = nil
     app:resetSessionViews()
     app:show()

@@ -18,6 +18,11 @@ MANIFEST = '''<?xml version="1.0" encoding="utf-8"?>
   <uses-permission android:name="android.permission.INTERNET" />
   <queries>
     <intent><action android:name="android.support.customtabs.action.CustomTabsService" /></intent>
+    <intent>
+      <action android:name="android.intent.action.VIEW" />
+      <category android:name="android.intent.category.BROWSABLE" />
+      <data android:scheme="https" />
+    </intent>
   </queries>
   <application android:label={label} android:hasCode="true" android:allowBackup="false"
       android:theme="@android:style/Theme.Material.NoActionBar">
