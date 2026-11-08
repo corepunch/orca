@@ -17,6 +17,9 @@ local route = os.getenv("ORCA_CAPTURE_ROUTE") or "/"
 if route:match("^/posts") then
     local posts = app:posts()
     posts.app.feed = "discover"
+    if route == "/posts/compose" then
+        require("Octopus/views/compose").scope(posts.app)
+    end
     if route == "/posts/user" then posts.app.profileId, posts.app.profileName, posts.app.profileReturn = "alex", "Alex Morgan", "/" end
 end
 app:activate_route(route)

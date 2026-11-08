@@ -22,6 +22,10 @@ with a separate Message action. Sharing a post chooses a conversation and
 prepares a draft; Send remains explicit. Public publishing says **Publish publicly**.
 Guests can browse public posts from sign-in.
 
+New post opens a coloured square-tile chooser for Text, Photo, Quote or Link,
+then a separate editor. Back returns to the chooser and retains each type's
+draft, tags and selected photos.
+
 Posts reuses the standalone Octopus app's pages and provider through
 `posts.lua`; the website and standalone app remain compatible. Chat supplies
 its current Appwrite JWT through an allowlisted public-resource transport.

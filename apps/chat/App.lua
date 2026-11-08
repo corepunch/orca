@@ -751,6 +751,7 @@ local App = Application:extend {
     ["/posts"] = function(self) return self:posts():page("/posts") end,
     ["/posts/search"] = function(self) return self:posts():page("/posts/search") end,
     ["/posts/write"] = function(self) return self:posts():page("/posts/write") end,
+    ["/posts/compose"] = function(self) return self:posts():page("/posts/compose") end,
     ["/posts/post"] = function(self) return self:posts():page("/posts/post") end,
     ["/posts/user"] = function(self) return self:posts():page("/posts/user") end,
     ["/posts/me"] = function(self) return self:posts():page("/posts/me") end,

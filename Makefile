@@ -358,6 +358,7 @@ test-chat-appwrite: $(LUA_BIN)
 .PHONY: test-chat-social
 test-chat-social: copyshare
 	$(TARGET) -test=tests/test_chat_social.lua
+	$(TARGET) -test=tests/test_chat_post_types.lua
 
 .PHONY: test-chat-account-deletion
 test-chat-account-deletion: copyshare

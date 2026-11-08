@@ -14,9 +14,10 @@ function Compose.scope(self)
     return scope
 end
 
-function Compose.page(self)
+function Compose.page(self, options)
     local scope = Compose.scope(self)
     local page = assert(filesystem.loadObject("Octopus/Pages/Write"), "Missing Octopus/Pages/Write")
+    if options and options.hideTypes then page:findChild("PostKinds", true):removeFromParent() end
     self.i18n:apply(page)
     scope:attach(page)
     self.status, self.statusBar = page:findChild("WriteStatus", true), nil

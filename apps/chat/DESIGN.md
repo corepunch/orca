@@ -254,6 +254,14 @@ feeds, composer, public profiles, reactions and replies, with Chat's palette.
 Its related views are **following**, **discover** and **activity**. New post
 and search are contextual tasks, with Back rather than another root tab.
 
+New post has two steps, following the supplied Tumblr chooser reference:
+`/posts/write` presents a two-column grid of square Text, Photo, Quote and
+Link tiles; `/posts/compose` presents only the selected type's editor. Tiles
+use distinct blue, orange, purple and green fills with white icons and labels
+in both themes, following the supplied Windows Phone tile reference. Back
+from the editor returns to the chooser. Each type's draft, tags and selected
+photos remain in the shared Compose scope when choosing another type or leaving.
+
 The People Hub is the organization reference: one person's public profile
 connects posts, following and a private Message action. It is distinct from
 Mango's transport-unified message threads: public posts do not become private

@@ -8,3 +8,11 @@
 .chat-light .chat-posts .activity-icon { color: #006ad1; }
 .chat-posts .octopus-primary, .chat-posts .octopus-accent-fill, .chat-posts .kind-on { background-color: #006ad1; }
 .chat-posts .post-markdown .md-quote { border-color: #006ad1; }
+
+/* The creation chooser keeps its tile colours in both app appearances. */
+.post-type { border-radius: 0; }
+.post-type-text { background-color: #006ad1; }
+.post-type-photo { background-color: #c44518; }
+.post-type-quote { background-color: #7952b3; }
+.post-type-link { background-color: #147a53; }
+.post-type .post-type-ink { color: #ffffff; }
