@@ -17,6 +17,10 @@ fail() {
     log | tail -n 200 >&2 || true
     echo "--- process ---" >&2
     adb shell "ps -A | grep $id; dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity'" >&2 || true
+    pid=$(adb shell pidof "$id" | tr -d '\r')
+    if [ -n "$pid" ]; then
+        adb shell timeout 15 debuggerd -b "$pid" > "$out/native-backtrace.txt" 2>&1 || true
+    fi
     exit 1
 }
 log() { adb logcat -d -s orca:V AndroidRuntime:E DEBUG:V libc:F; }
@@ -46,8 +50,9 @@ adb logcat -c
 echo "Launching $id"
 adb shell am start -W -n "$id/org.orca.OrcaActivity"
 wait_for "Starting " 120
-# First launch unpacks the bundle and builds the sign-in screen.
-sleep 15
+# A live process and initialized renderer do not prove Chat reached its event
+# loop. Wait for the controller and sign-in polling timer before sending a link.
+wait_for "Application module initialized" 120
 alive || fail "$id is not running after launch"
 crashed && fail "$id reported an error after launch"
 screenshot launch
