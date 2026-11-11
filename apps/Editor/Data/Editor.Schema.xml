@@ -15,7 +15,10 @@
     <Column Name="Label" Type="string"/>
     <Column Name="Kind" Type="string"/>
     <Column Name="SourcePath" Type="string"/>
+    <Column Name="Detail" Type="string"/>
     <Column Name="HasChildren" Type="bool"/>
+    <Column Name="IsLibrary" Type="bool"/>
+    <Column Name="Declared" Type="bool"/>
     <Column Name="Icon" Type="string"/>
   </Entity>
   <Entity Name="EditorProperty" Key="Id" ObjectName="Id">

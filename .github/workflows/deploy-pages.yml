@@ -9,10 +9,6 @@ on:
   # Allow manual workflow dispatch
   workflow_dispatch:
 
-  # Validate the complete site and demo before merging workflow changes.
-  pull_request:
-    paths:
-      - '.github/workflows/deploy-pages.yml'
 
 # Sets permissions of the GITHUB_TOKEN
 permissions:

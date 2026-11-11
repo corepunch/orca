@@ -1,5 +1,6 @@
--- ORCA Editor: menu bar, Hierarchy/Project on the left, live Preview and
--- Console in the middle, Inspector on the right, status bar at the bottom.
+-- ORCA Editor: menu bar, Hierarchy/Library on the left, document tabs above
+-- the live Preview and Console in the middle, Inspector on the right, status
+-- bar at the bottom.
 -- The edited project runs in a separate `orca -server=true` process
 -- (plugins/EditorKit/server.c); set ORCA_EDITOR_PROJECT to choose it.
 local Application = require "orca.core.application"
@@ -19,10 +20,15 @@ local StatusBar = require "Editor.Scripts.StatusBar"
 local BindingEditor = require "Editor.Scripts.BindingEditor"
 local Dialog = require "Editor.Scripts.Dialog"
 local Welcome = require "Editor.Scripts.Welcome"
+local DocumentTabs = require "Editor.Scripts.DocumentTabs"
 
 local SHORTCUTS = {
 	{ 'Ctrl+O', 'Choose project' },
 	{ 'Ctrl+S', 'Save document' },
+	{ 'Ctrl+Shift+S', 'Save all documents' },
+	{ 'Ctrl+W', 'Close document tab' },
+	{ 'Ctrl+Tab', 'Next tab (Ctrl+Shift+Tab: previous)' },
+	{ 'Ctrl+P', 'Find resource in the Library' },
 	{ 'Ctrl+Z', 'Undo' },
 	{ 'Ctrl+Shift+Z', 'Redo (also Ctrl+Y)' },
 	{ 'Ctrl+B', 'Edit binding of the selected property' },
@@ -31,7 +37,7 @@ local SHORTCUTS = {
 	{ 'Delete', 'Delete selected node (Hierarchy)' },
 	{ 'Ctrl+F', 'Find in Hierarchy (or just type)' },
 	{ 'F5', 'Refresh preview' },
-	{ 'Ctrl+1..4', 'Focus Hierarchy, Project, Inspector, Console' },
+	{ 'Ctrl+1..4', 'Focus Hierarchy, Library, Inspector, Console' },
 	{ 'Alt+F/E/C/V/H', 'Open a menu' },
 	{},
 	{ 'Binding editor' },
@@ -97,16 +103,21 @@ function App:menus()
 		if #items == 0 then items[1] = { label = 'No documents', disabled = true } end
 		return items
 	end
+	local function noTab() return not Workspace.document end
 	return {
 		{ title = 'File', items = function() return {
 			{ label = 'Choose Project…', shortcut = 'Ctrl+O', action = function() app:showWelcome() end },
 			{ separator = true },
 			{ label = 'Open Document', items = documents() },
-			{ label = 'Save', shortcut = 'Ctrl+S', disabled = not Workspace.document, action = Workspace.save },
+			{ label = 'Close Tab', shortcut = 'Ctrl+W', disabled = noTab(), action = function() app:closeDocument() end },
+			{ label = 'Close All Tabs', disabled = noTab(), action = function() app:closeAll() end },
+			{ separator = true },
+			{ label = 'Save', shortcut = 'Ctrl+S', disabled = noTab(), action = function() Workspace.save() end },
+			{ label = 'Save All', shortcut = 'Ctrl+Shift+S', disabled = noTab(), action = Workspace.saveAll },
 			{ separator = true },
 			{ label = 'Reload Project', action = function() app:restartServer() end },
 			{ separator = true },
-			{ label = 'Quit', shortcut = 'Ctrl+Q', action = function() os.exit(0) end },
+			{ label = 'Quit', shortcut = 'Ctrl+Q', action = function() app:quit() end },
 		} end },
 		{ title = 'Edit', items = function() return {
 			{ label = 'Undo', shortcut = 'Ctrl+Z', disabled = #Workspace.undoStack == 0, action = Workspace.undo },
@@ -130,7 +141,13 @@ function App:menus()
 		{ title = 'View', items = function() return {
 			{ label = 'Refresh Preview', shortcut = 'F5', action = function() app.preview:refresh() end },
 			{ separator = true },
-			{ label = 'Project Panel', checked = app.showProject, action = function() app:toggle('showProject') end },
+			{ label = 'Next Tab', shortcut = 'Ctrl+Tab', disabled = #Workspace.documents < 2, action = function() Workspace.cycle(1) end },
+			{ label = 'Previous Tab', shortcut = 'Ctrl+Shift+Tab', disabled = #Workspace.documents < 2, action = function() Workspace.cycle(-1) end },
+			{ separator = true },
+			{ label = 'Library Panel', checked = app.showProject, action = function() app:toggle('showProject') end },
+			{ label = 'Group by Library', checked = app.project.mode == 'libraries', action = function()
+				app.project:setMode(app.project.mode == 'libraries' and 'files' or 'libraries')
+			end },
 			{ label = 'Console Panel', checked = app.showConsole, action = function() app:toggle('showConsole') end },
 			{ separator = true },
 			{ label = 'Expand All', action = function() app.hierarchy:expandAll(true) end },
@@ -153,23 +170,71 @@ end
 function App:toggle(key)
 	self[key] = not self[key]
 	self.left.Rows = self.showProject and "1fr 1fr" or "1fr 0px"
-	self.center.Rows = self.showConsole and "1fr 190px" or "1fr 0px"
+	self.center.Rows = self.showConsole and "30px 1fr 190px" or "30px 1fr 0px"
 	self.preview.stale = true
 end
 
-function App:restartServer()
-	Workspace.start(Workspace.project)
-	BindingEditor.functions = nil
-	self.project:reload()
-	Workspace.open()
+-- Asks before an action that would lose unsaved edits in any tab.
+function App:whenSaved(title, verb, action)
+	if not Workspace.anyDirty() then return action() end
+	Dialog.confirm(title, 'Some open documents have unsaved changes. Save them before you ' .. verb .. '?', {
+		primary = { label = 'Save All', action = function()
+			Workspace.saveAll()
+			if Workspace.anyDirty() then
+				Workspace.log('warning', "Some changes could not be saved; see the Console")
+			else
+				action()
+			end
+		end },
+		secondary = { label = "Don't Save", action = action },
+	})
+	return false
 end
 
-function App:showWelcome()
-	if Workspace.dirty then
-		Dialog.show('Save before switching projects', {
-			{ 'Save your current document before opening another project.' },
-			{ 'Choose File > Save, then Choose Project again.' },
-		})
+-- Restarts the runtime and reopens the same tabs from disk.
+function App:restartServer()
+	return self:whenSaved('Reload project', 'reload', function()
+		local paths, active = {}, Workspace.document
+		for _, doc in ipairs(Workspace.documents) do paths[#paths + 1] = doc.path end
+		Workspace.reset()
+		Workspace.start(Workspace.project)
+		BindingEditor.functions = nil
+		self.project:reload()
+		if #paths == 0 then Workspace.open() end
+		for _, path in ipairs(paths) do Workspace.open(path) end
+		if active then Workspace.activate(active) end
+	end)
+end
+
+-- Closes a tab, asking first when the document has unsaved changes.
+function App:closeDocument(path)
+	path = path or Workspace.document
+	if not path then return false end
+	if not Workspace.isDirty(path) then return Workspace.close(path) end
+	Dialog.confirm('Save changes?', 'Save the changes to ' .. Workspace.leaf(path) .. ' before closing it?', {
+		primary = { label = 'Save', action = function()
+			if Workspace.save(path) then Workspace.close(path)
+			else Workspace.log('warning', "%s still has changes that could not be saved", Workspace.leaf(path)) end
+		end },
+		secondary = { label = "Don't Save", action = function() Workspace.close(path, true) end },
+	})
+	return false
+end
+
+function App:closeAll()
+	return self:whenSaved('Close all tabs', 'close them', function()
+		for i = #Workspace.documents, 1, -1 do Workspace.close(Workspace.documents[i].path, true) end
+	end)
+end
+
+function App:quit()
+	return self:whenSaved('Quit ORCA Editor', 'quit', function() os.exit(0) end)
+end
+
+-- discard skips the unsaved-changes question (it was already answered).
+function App:showWelcome(discard)
+	if not discard and Workspace.anyDirty() then
+		self:whenSaved('Choose another project', 'switch projects', function() self:showWelcome(true) end)
 		return false
 	end
 	Popups.closeAll()
@@ -179,8 +244,7 @@ function App:showWelcome()
 end
 
 function App:openProject(path)
-	Workspace.document, Workspace.selection, Workspace.dirty = nil, nil, false
-	Workspace.undoStack, Workspace.redoStack = {}, {}
+	Workspace.reset()
 	Workspace.start(path, self.runtime)
 	BindingEditor.functions = nil
 	self.preview.image.Src = ''
@@ -197,7 +261,14 @@ function App:hotkey(chord)
 	if not chord then return false end
 	local actions = {
 		['ctrl+o'] = function() self:showWelcome() end,
-		['ctrl+s'] = Workspace.save,
+		['ctrl+s'] = function() Workspace.save() end,
+		['ctrl+shift+s'] = Workspace.saveAll,
+		['ctrl+w'] = function() self:closeDocument() end,
+		['ctrl+tab'] = function() Workspace.cycle(1) end,
+		['ctrl+shift+tab'] = function() Workspace.cycle(-1) end,
+		['ctrl+pagedown'] = function() Workspace.cycle(1) end,
+		['ctrl+pageup'] = function() Workspace.cycle(-1) end,
+		['ctrl+p'] = function() self:activate(self.project) self.project:startSearch('') end,
 		['ctrl+z'] = Workspace.undo,
 		['ctrl+shift+z'] = Workspace.redo,
 		['ctrl+y'] = Workspace.redo,
@@ -209,7 +280,7 @@ function App:hotkey(chord)
 		['f5'] = function() self.preview:refresh() end,
 		['f1'] = function() Dialog.show('Keyboard Shortcuts', SHORTCUTS) end,
 		['ctrl+f'] = function() self:activate(self.hierarchy) self.hierarchy:startSearch('') end,
-		['ctrl+q'] = function() os.exit(0) end,
+		['ctrl+q'] = function() self:quit() end,
 		['ctrl+1'] = function() self:activate(self.hierarchy) end,
 		['ctrl+2'] = function() self:activate(self.project) end,
 		['ctrl+3'] = function() self:activate(self.inspector) end,
@@ -236,13 +307,14 @@ function App:build()
 	self.preview = Preview()
 	self.console = Console()
 	self.statusbar = StatusBar()
+	self.tabs = DocumentTabs(function(path) app:closeDocument(path) end)
 	self.menubar = MenuBar(self:menus(), function()
 		return Workspace.project and Workspace.leaf(Workspace.project) or ''
 	end)
 
 	local hotkey = function(chord) return app:hotkey(chord) end
 	Native.onActivate = function(panel) if panel.header then app:focusPanel(panel) end end
-	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.menubar, self.statusbar } do
+	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.menubar, self.statusbar, self.tabs } do
 		p.hotkey = hotkey
 	end
 	self.left = screen:findChild('LeftPanels', true)
@@ -251,6 +323,7 @@ function App:build()
 	mount('MenuSlot', self.menubar.view)
 	mount('HierarchySlot', Panel.wrap(self.hierarchy))
 	mount('ProjectSlot', Panel.wrap(self.project))
+	mount('TabsSlot', self.tabs.view)
 	mount('PreviewSlot', Panel.wrap(self.preview))
 	mount('ConsoleSlot', Panel.wrap(self.console))
 	mount('InspectorSlot', Panel.wrap(self.inspector))
@@ -266,7 +339,7 @@ function App:build()
 	end)
 	Popups.restoreFocus = function() if app.activePanel then app.activePanel:focus() end end
 
-	for _, event in ipairs { 'document', 'select', 'changed', 'structure', 'saved' } do
+	for _, event in ipairs { 'document', 'select', 'changed', 'structure', 'saved', 'tabs' } do
 		Workspace.on(event, function()
 			app.statusbar:invalidate()
 			app.menubar:invalidate()

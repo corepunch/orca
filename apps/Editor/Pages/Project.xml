@@ -1,5 +1,9 @@
-<Grid Name="ProjectPanel" Rows="1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
+<Grid Name="ProjectPanel" Rows="32px 1fr auto" Columns="1fr" class="editor-panel" Controller="Editor/Scripts/DataPanel" KeyDown="Key">
   <XmlDataSource Name="Source" ConnectionPath="Runtime" Schema="Editor/Data/Editor.Schema.xml" AutoLoad="false"/>
+  <Grid Columns="1fr 22px" Spacing="4" Padding="6 4" class="panel-toolbar">
+    <Input Name="Search" PlaceholderText="Find resource" Submit="Search" class="search-input"/>
+    <Button Click="ClearSearch" class="icon-button"><VectorView Source="Editor/Icons/x.svg" class="tool-icon" IgnoreHitTest="true"/></Button>
+  </Grid>
   <TreeView Name="Items" ItemsSource="{Binding ../Source/Items}" ItemTemplate="Editor/Templates/ProjectRow"
            ItemNamePrefix="ProjectFile" ValueProperty="Path" OverflowY="Scroll" class="editor-list editor-tree"/>
   <TextBlock Name="DataSourceError" Text="{Binding ../Source/ErrorMessage}" Visible="{Binding ../Source/HasError}" class="editor-error" Padding="8" TextWrapping="Wrap"/>

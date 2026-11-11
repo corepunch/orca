@@ -70,14 +70,16 @@ bool_t OBJ_IsPrefabView(struct Object const *object);
 /* Screens and prefabs are loaded from disk rather than attached to the
    workspace tree, so resolve "Project/Screens/Main/Child" by finding the
    longest prefix that names a scene file, loading (or reusing) that document
-   and descending into it. The startup screen is the live object on display. */
+   and descending into it. The startup screen is the live object on display
+   until its edits are reverted; a reverted document is reloaded from disk. */
 static char const editor_documents_lua[] =
   "local fs = require 'orca.filesystem'\n"
-  "local docs = {}\n"
-  "return function(doc, startup)\n"
+  "local docs, reverted = {}, {}\n"
+  "return function(doc, startup, drop)\n"
+  "  if drop then docs[doc], reverted[doc] = nil, true return nil end\n"
   "  local o = docs[doc]\n"
   "  if o then return o end\n"
-  "  if doc == startup then\n"
+  "  if doc == startup and not reverted[doc] then\n"
   "    local A = package.loaded['orca.core.application']\n"
   "    o = A and A.app and A.app.screen\n"
   "  end\n"
@@ -96,17 +98,34 @@ static bool_t is_document(lpcString_t path) {
   return access(file, R_OK) == 0;
 }
 
+static bool_t editor_documents(lua_State *L) {
+  if (editor_documents_ref != LUA_NOREF) return TRUE;
+  if (luaL_dostring(L, editor_documents_lua) != LUA_OK) {
+    Con_Error("%s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return FALSE;
+  }
+  editor_documents_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  return TRUE;
+}
+
+/* Forget the cached document so the next request reloads it from disk. */
+static void drop_document(lua_State *L, lpcString_t doc) {
+  if (!editor_documents(L)) return;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, editor_documents_ref);
+  lua_pushstring(L, doc);
+  lua_pushstring(L, "");
+  lua_pushboolean(L, 1);
+  if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+    Con_Error("%s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+  }
+}
+
 static struct Object *find_object(lua_State *L, lpcString_t path) {
   struct Object *o = OBJ_FindByPath(FS_GetWorkspace(), path);
   if (o || !path) return o;
-  if (editor_documents_ref == LUA_NOREF) {
-    if (luaL_dostring(L, editor_documents_lua) != LUA_OK) {
-      Con_Error("%s", lua_tostring(L, -1));
-      lua_pop(L, 1);
-      return NULL;
-    }
-    editor_documents_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  }
+  if (!editor_documents(L)) return NULL;
   struct Object *project = OBJ_GetFirstChild(FS_GetWorkspace());
   lpcString_t startup = project && GetProject(project) ? GetProject(project)->StartupScreen : NULL;
   path_t doc = {0};
@@ -1076,6 +1095,224 @@ static SV_CMD(GET, data_project) {
   return error;
 }
 
+/* Library view of the project, after Kanzi Studio's Library panel: resources
+   are grouped by what they are rather than where they sit on disk. XML files
+   are classified by the class of their root element; a <Library> file
+   contributes each named child. package.lua declarations (ScreenLibrary,
+   ImageLibrary, inline DataSourceLibrary objects, ThemeLibrary values) keep
+   their library visible even when it is still empty. */
+enum library_id {
+  LIB_SCREENS, LIB_PREFABS, LIB_SCENES, LIB_ANIMATIONS, LIB_MATERIALS, LIB_SHADERS,
+  LIB_MESHES, LIB_TEXTURES, LIB_IMAGES, LIB_FONTS, LIB_STYLES, LIB_DATA,
+  LIB_THEMES, LIB_SCRIPTS, LIB_RESOURCES, LIB_COUNT
+};
+
+#define NOT_DECLARED ((size_t)-1)
+
+static struct library_desc {
+  lpcString_t id, label, icon, kind;
+  size_t declared; /* offset of the struct Project library pointer */
+  bool_t documents; /* items open as editable documents */
+} const library_descs[LIB_COUNT] = {
+  [LIB_SCREENS]    = { "screens", "Screens", "screen", "document", offsetof(struct Project, ScreenLibrary), TRUE },
+  [LIB_PREFABS]    = { "prefabs", "Prefabs", "page", "document", offsetof(struct Project, PrefabLibrary), TRUE },
+  [LIB_SCENES]     = { "scenes", "Scenes", "box", "document", offsetof(struct Project, SceneLibrary), TRUE },
+  [LIB_ANIMATIONS] = { "animations", "Animations", "film", "animation", offsetof(struct Project, AnimationClipLibrary), FALSE },
+  [LIB_MATERIALS]  = { "materials", "Materials", "layers", "material", offsetof(struct Project, MaterialLibrary), FALSE },
+  [LIB_SHADERS]    = { "shaders", "Material Types", "shader", "shader", offsetof(struct Project, MaterialTypeLibrary), FALSE },
+  [LIB_MESHES]     = { "meshes", "Mesh Data", "box", "mesh", offsetof(struct Project, MeshLibrary), FALSE },
+  [LIB_TEXTURES]   = { "textures", "Textures", "image", "texture", offsetof(struct Project, TextureLibrary), FALSE },
+  [LIB_IMAGES]     = { "images", "Images", "image", "image", offsetof(struct Project, ImageLibrary), FALSE },
+  [LIB_FONTS]      = { "fonts", "Fonts", "type", "font", offsetof(struct Project, FontLibrary), FALSE },
+  [LIB_STYLES]     = { "styles", "Styles", "style", "style", offsetof(struct Project, StyleLibrary), FALSE },
+  [LIB_DATA]       = { "data", "Data Sources", "data", "data", offsetof(struct Project, DataSourceLibrary), FALSE },
+  [LIB_THEMES]     = { "themes", "Themes", "palette", "theme", NOT_DECLARED, FALSE },
+  [LIB_SCRIPTS]    = { "scripts", "Scripts", "script", "script", NOT_DECLARED, FALSE },
+  [LIB_RESOURCES]  = { "resources", "Resource Files", "folder", "file", NOT_DECLARED, FALSE },
+};
+
+/* Root classes in match order: the first ancestor found decides. */
+static struct { lpcString_t class_name; enum library_id lib; } const library_classes[] = {
+  { "Screen", LIB_SCREENS }, { "Scene", LIB_SCENES }, { "Node3D", LIB_SCENES },
+  { "AnimationClip", LIB_ANIMATIONS }, { "SpriteAnimation", LIB_ANIMATIONS }, { "Timeline", LIB_ANIMATIONS },
+  { "Material", LIB_MATERIALS }, { "Shader", LIB_SHADERS }, { "Mesh", LIB_MESHES },
+  { "Image", LIB_IMAGES }, { "Texture", LIB_TEXTURES }, { "FontFamily", LIB_FONTS },
+  { "StyleSheet", LIB_STYLES }, { "DataSource", LIB_DATA }, { "Node", LIB_PREFABS },
+};
+
+struct library_scan {
+  xmlNodePtr items[LIB_COUNT];
+  int counts[LIB_COUNT];
+  lpcString_t project, filter, icons;
+};
+
+static bool_t
+class_is(struct ClassDesc const *cd, uint32_t id, int depth)
+{
+  if (!cd || depth > 16) return FALSE;
+  if (cd->ClassID == id) return TRUE;
+  for (int i = 0; i < 16 && cd->ParentClasses[i]; i++)
+    if (class_is(OBJ_FindClassW(cd->ParentClasses[i]), id, depth + 1)) return TRUE;
+  return FALSE;
+}
+
+static enum library_id
+library_of_class(lpcString_t class_name)
+{
+  if (!strcmp(class_name, "Schema")) return LIB_DATA;
+  struct ClassDesc const *cd = OBJ_FindClass(class_name);
+  FOR_LOOP(i, (int)(sizeof(library_classes) / sizeof(*library_classes)))
+    if (class_is(cd, fnv1a32(library_classes[i].class_name), 0)) return library_classes[i].lib;
+  return LIB_RESOURCES;
+}
+
+static enum library_id
+library_of_extension(lpcString_t name)
+{
+  lpcString_t ext = strrchr(name, '.');
+  if (!ext) return LIB_RESOURCES;
+  static struct { lpcString_t ext; enum library_id lib; } const map[] = {
+    { ".png", LIB_IMAGES }, { ".jpg", LIB_IMAGES }, { ".jpeg", LIB_IMAGES }, { ".svg", LIB_IMAGES },
+    { ".css", LIB_STYLES }, { ".lua", LIB_SCRIPTS }, { ".moon", LIB_SCRIPTS },
+    { ".glsl", LIB_SHADERS }, { ".vert", LIB_SHADERS }, { ".frag", LIB_SHADERS },
+    { ".ttf", LIB_FONTS }, { ".otf", LIB_FONTS },
+  };
+  FOR_LOOP(i, (int)(sizeof(map) / sizeof(*map)))
+    if (!strcasecmp(ext, map[i].ext)) return map[i].lib;
+  return LIB_RESOURCES;
+}
+
+static void
+library_item(struct library_scan *scan, enum library_id lib, lpcString_t id, lpcString_t label,
+             lpcString_t detail, lpcString_t source)
+{
+  if (!data_matches(label, scan->filter) && !data_matches(detail, scan->filter)) return;
+  struct library_desc const *desc = &library_descs[lib];
+  path_t path = {0};
+  snprintf(path, sizeof(path), "@%s/%s", desc->id, id);
+  xmlNodePtr row = _xmlNewChild(scan->items[lib], "EditorFile", "name", path, "Id", path, "Path", path,
+                                "Label", label, "Detail", detail ? detail : "", "Kind", desc->kind,
+                                "SourcePath", desc->documents && source ? source : "");
+  xmlNewChild(row, NULL, XMLSTR("Children"), NULL);
+  data_flag(row, "HasChildren", FALSE);
+  data_flag(row, "IsLibrary", FALSE);
+  data_icon(row, "Icon", scan->icons, desc->documents ? "document" : desc->icon);
+  scan->counts[lib]++;
+}
+
+/* rel is "Screens/Main.xml"; the logical document path is "<Project>/Screens/Main". */
+static void
+library_xml(struct library_scan *scan, lpcString_t file, lpcString_t rel, lpcString_t folder)
+{
+  path_t stem = {0}, logical = {0};
+  lpcString_t base = strrchr(rel, '/') ? strrchr(rel, '/') + 1 : rel;
+  snprintf(stem, sizeof(stem), "%.*s", (int)(strlen(base) - strlen(FS_GetSceneExtension())), base);
+  snprintf(logical, sizeof(logical), "%s/%.*s", scan->project,
+           (int)(strlen(rel) - strlen(FS_GetSceneExtension())), rel);
+  xmlDocPtr doc = xmlReadFile(file, NULL, XML_PARSE_NONET | XML_PARSE_NOERROR | XML_PARSE_NOWARNING);
+  xmlNodePtr root = doc ? xmlDocGetRootElement(doc) : NULL;
+  if (!root) {
+    library_item(scan, LIB_RESOURCES, rel, base, folder, NULL);
+  } else if (!xmlStrcmp(root->name, XMLSTR("Library"))) {
+    xmlForEach(child, root) {
+      if (child->type != XML_ELEMENT_NODE) continue;
+      xmlChar *name = xmlGetProp(child, XMLSTR("Name"));
+      if (name && *name) {
+        path_t id = {0}, source = {0};
+        snprintf(id, sizeof(id), "%s#%s", rel, (char *)name);
+        snprintf(source, sizeof(source), "%s/%s", logical, (char *)name);
+        library_item(scan, library_of_class((char const *)child->name), id, (char *)name, stem, source);
+      }
+      xmlFree(name);
+    }
+  } else {
+    library_item(scan, library_of_class((char const *)root->name), rel, stem, folder, logical);
+  }
+  if (doc) xmlFreeDoc(doc);
+}
+
+static bool_t
+library_skips(lpcString_t name)
+{
+  static lpcString_t const skipped[] = { "node_modules", "build", "generated", "DerivedData" };
+  lpcString_t ext = strrchr(name, '.');
+  if (ext && (!strcmp(ext, ".xcodeproj") || !strcmp(ext, ".xcassets") || !strcmp(ext, ".lproj"))) return TRUE;
+  FOR_LOOP(i, (int)(sizeof(skipped) / sizeof(*skipped))) if (!strcmp(name, skipped[i])) return TRUE;
+  return FALSE;
+}
+
+static void
+library_scan_dir(struct library_scan *scan, lpcString_t dir, lpcString_t rel,
+                 struct asset_ancestor const *ancestors, int depth)
+{
+  struct stat directory;
+  if (depth > 12 || stat(dir, &directory)) return;
+  for (struct asset_ancestor const *a = ancestors; a; a = a->parent)
+    if (a->device == directory.st_dev && a->inode == directory.st_ino) return;
+  struct asset_ancestor here = { directory.st_dev, directory.st_ino, ancestors };
+  char **names = NULL;
+  int n = list_dir(dir, &names);
+  FOR_LOOP(i, n) {
+    path_t file = {0}, path = {0};
+    struct stat st;
+    snprintf(file, sizeof(file), "%s/%s", dir, names[i]);
+    snprintf(path, sizeof(path), "%s%s%s", rel, *rel ? "/" : "", names[i]);
+    if (!stat(file, &st) && S_ISDIR(st.st_mode)) {
+      if (!library_skips(names[i])) library_scan_dir(scan, file, path, &here, depth + 1);
+    } else if (!stat(file, &st) && !(depth == 0 && !strcmp(names[i], "package.lua"))) {
+      lpcString_t ext = strrchr(names[i], '.');
+      if (ext && !strcasecmp(ext, FS_GetSceneExtension())) library_xml(scan, file, path, rel);
+      else library_item(scan, library_of_extension(names[i]), path, names[i], rel, NULL);
+    }
+    free(names[i]);
+  }
+  free(names);
+}
+
+static SV_CMD(GET, data_libraries) {
+  struct Object *object = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Project *project = object ? GetProject(object) : NULL;
+  if (!project) return "No project opened";
+  struct library_scan scan = { .project = OBJ_GetName(object), .filter = SV_ARG("filter"), .icons = SV_ARG("icons") };
+  xmlNodePtr rows[LIB_COUNT];
+  FOR_LOOP(i, LIB_COUNT) {
+    struct library_desc const *desc = &library_descs[i];
+    path_t path = {0};
+    snprintf(path, sizeof(path), "@%s", desc->id);
+    rows[i] = _xmlNewChild(response, "EditorFile", "name", path, "Id", path, "Path", path,
+                           "Label", desc->label, "Kind", "library", "SourcePath", "");
+    scan.items[i] = xmlNewChild(rows[i], NULL, XMLSTR("Children"), NULL);
+  }
+  library_scan_dir(&scan, ".", "", NULL, 0);
+  if (project->DataSourceLibrary) {
+    FOR_EACH_OBJECT(child, CMP_GetObject(project->DataSourceLibrary)) {
+      lpcString_t name = OBJ_GetName(child);
+      if (name && *name) library_item(&scan, LIB_DATA, name, name, OBJ_GetClassName(child), NULL);
+    }
+  }
+  FOR_LOOP(i, project->NumThemeLibrary) {
+    struct ThemeValue const *value = &project->ThemeLibrary[i];
+    if (value->Key) library_item(&scan, LIB_THEMES, value->Key, value->Key, value->Value, NULL);
+  }
+  bool_t filtering = scan.filter && *scan.filter;
+  FOR_LOOP(i, LIB_COUNT) {
+    struct library_desc const *desc = &library_descs[i];
+    bool_t declared = desc->declared != NOT_DECLARED && *(void **)((char *)project + desc->declared);
+    if (i == LIB_THEMES) declared = project->NumThemeLibrary > 0;
+    if (!scan.counts[i] && (filtering || !declared)) {
+      xmlUnlinkNode(rows[i]);
+      xmlFreeNode(rows[i]);
+      continue;
+    }
+    _xmlSetPropFormat(rows[i], "Detail", "%d", scan.counts[i]);
+    data_flag(rows[i], "HasChildren", scan.counts[i] > 0);
+    data_flag(rows[i], "IsLibrary", TRUE);
+    data_flag(rows[i], "Declared", declared);
+    data_icon(rows[i], "Icon", scan.icons, desc->icon);
+  }
+  return NULL;
+}
+
 static bool_t
 property_matches(xmlNodePtr property, lpcString_t group, lpcString_t filter)
 {
@@ -1722,6 +1959,31 @@ SV_CMD(POST, save)
   return written < 0 ? "Can't write file" : NULL;
 }
 
+/* post/revert/<document>: discard this session's unsaved edits under
+   <document>. The cached object is dropped so the next request reloads the
+   document from its source file. */
+SV_CMD(POST, revert)
+{
+  if (!strchr(endpoint, '/')) return "Not a document path";
+  size_t prefix = strlen(endpoint);
+  int discarded = 0;
+  for (struct edit **it = &edits; *it;) {
+    struct edit *e = *it;
+    if (!strncmp(e->path, endpoint, prefix) && (!e->path[prefix] || e->path[prefix] == '/')) {
+      *it = e->next;
+      free_edit(e);
+      discarded++;
+    } else {
+      it = &e->next;
+    }
+  }
+  edits_tail = &edits;
+  while (*edits_tail) edits_tail = &(*edits_tail)->next;
+  drop_document(L, endpoint);
+  _xmlSetPropFormat(response, "discarded", "%d", discarded);
+  return NULL;
+}
+
 static void output_class(struct ClassDesc const *desc, void *param) {
   _xmlNewChild(param, "menu-item", "header", desc->ClassName, "name", desc->ClassName);
 }
@@ -1772,6 +2034,7 @@ struct {
 } routes[] = {
   { "data-scene/", ROUTE(GET, data_scene) },
   { "data-project", ROUTE(GET, data_project) },
+  { "data-libraries", ROUTE(GET, data_libraries) },
   { "data-properties/", ROUTE(GET, data_properties) },
   { "data-resources/", ROUTE(GET, data_resources) },
   { "data-functions", ROUTE(GET, data_functions) },
@@ -1789,6 +2052,7 @@ struct {
   { "property-types/", ROUTE(POST, property_types) },
   { "save-project", ROUTE(POST, save_project) },
   { "save/", ROUTE(POST, save) },
+  { "revert/", ROUTE(POST, revert) },
   { "binding/", ROUTE(PUT, binding) },
   { "binding-functions", ROUTE(GET, binding_functions) },
   { "duplicate/", ROUTE(POST, duplicate) },

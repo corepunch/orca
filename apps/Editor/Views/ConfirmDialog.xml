@@ -1,0 +1,9 @@
+<Grid Width="440" Height="176" Rows="48px 1fr 52px" class="editor-dialog">
+  <TextBlock Name="Title" class="dialog-title"/>
+  <TextBlock Name="Message" Padding="0 16" TextWrapping="Wrap"/>
+  <StackView Direction="Horizontal" Spacing="8" Padding="16 8" JustifyContent="End">
+    <Button Name="Secondary" class="editor-button" Width="104"/>
+    <Button Name="Cancel" Text="Cancel" class="editor-button" Width="88"/>
+    <Button Name="Primary" class="editor-button primary-button" Width="88"/>
+  </StackView>
+</Grid>

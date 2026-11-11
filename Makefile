@@ -701,7 +701,7 @@ APP_LUA_TESTS += test-chat-safety
 APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
-APP_LUA_TESTS += test-editor-welcome
+APP_LUA_TESTS += test-editor-welcome test-editor-tabs
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -831,6 +831,7 @@ $(eval $(call LUA_TEST_RULE,test-editor-palette,tests/test_editor_palette.lua,un
 $(eval $(call LUA_TEST_RULE,test-editor-runtime,tests/test_editor_runtime.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-chrome,tests/test_editor_chrome.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-welcome,tests/test_editor_welcome.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-editor-tabs,tests/test_editor_tabs.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-projects,tests/test_editor_projects.lua,unite copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)

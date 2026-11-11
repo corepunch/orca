@@ -23,6 +23,7 @@ function Inspector:show(path)
     if self.header then self.header:invalidate() end
 end
 function Inspector:reload()
+    self.list.Visible = self.path ~= nil
     if not self.path then return end
     DataPanel.reload(self, 'get/data-properties/' .. Workspace.encode(self.path, true) .. DataPanel.query(self.collapsed, self.filter, self.expanded))
 end

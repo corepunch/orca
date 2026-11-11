@@ -20,13 +20,26 @@ function Preview:init()
 	self.view.LeftButtonDown = function(_, args) preview:pick(args) return true end
 	self.view.MouseMoved = function(_, args) preview:hoverAt(args) return true end
 	local function stale() self.stale = true end
-	Workspace.on('document', stale)
+	Workspace.on('document', function(path)
+		self.stale = true
+		if not path then self:clear() end
+	end)
 	Workspace.on('changed', stale)
 	Workspace.on('structure', stale)
 	Workspace.on('select', function() self:placeOutline(self.selection, Workspace.selection) end)
 end
 
 function Preview:focus() self.view:setFocus() end
+
+-- Empties the artboard when the last tab closes.
+function Preview:clear()
+	self.image.Src = ''
+	self.rects, self.artboard, self.scale, self.fitted = {}, nil, nil, nil
+	self.canvas.Width, self.canvas.Height = 0, 0
+	self.selection.Visible, self.hover.Visible = false, false
+	self.subtitle = ''
+	if self.header then self.header:invalidate() end
+end
 
 function Preview:tools()
 	return { { label = 'Refresh (F5)', icon = 'Editor/Icons/refresh.svg', action = function() self:refresh() end } }

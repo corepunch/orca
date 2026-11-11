@@ -1,8 +1,10 @@
 <TreeViewItem ItemsSource="{Binding DataContext/Children}" ItemNamePrefix="ProjectFile" HeaderHeight="22" Indent="16">
   <TreeViewItem.Header>
-    <Grid Name="FileHeader" Columns="16px 1fr" Height="22" Spacing="4" LeftDoubleClick="Open" RightButtonUp="Context" class="project-row">
+    <!-- Detail is the item count of a library, or an item's folder, class or theme value. -->
+    <Grid Name="FileHeader" Columns="16px 1fr auto" Height="22" Spacing="4" Padding="0 8 0 0" LeftDoubleClick="Open" RightButtonUp="Context" class="project-row">
       <VectorView Source="{Binding DataContext/Icon}" class="row-icon" IgnoreHitTest="true"/>
       <TextBlock Text="{Binding DataContext/Label}" class="row-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/Detail}" class="row-detail" TextWrapping="NoWrap" IgnoreHitTest="true"/>
     </Grid>
   </TreeViewItem.Header>
 </TreeViewItem>
