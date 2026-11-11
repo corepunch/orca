@@ -1,8 +1,8 @@
 # ORCA Editor
 
 A live editor for ORCA projects, laid out like Kanzi Studio and Unity:
-Hierarchy and Project on the left, a rendered Preview with a Console below
-it, and the Inspector on the right. The edited project runs in a separate
+Hierarchy and Library on the left, document tabs above a rendered Preview
+with a Console below it, and the Inspector on the right. The edited project runs in a separate
 `orca -server=true` process; every change is applied to that running scene
 and the preview is re-rendered from it. Panels, menus and dialogs use native
 UIKit controls authored in XML. Buttons, inputs and checkboxes use the
@@ -16,7 +16,8 @@ Open project, double-click a row, or press Enter. Open project… (Ctrl+O)
 opens an in-app folder browser; paste a folder or `package.lua` path, or
 navigate through folders. The project runtime starts only after a selection.
 File > Choose Project returns here; Back to editor keeps the current
-workspace. Save pending edits before switching projects. Small windows hide
+workspace. Switching projects with unsaved tabs offers Save All, Don't Save
+or Cancel. Small windows hide
 the artwork to preserve space for project controls.
 
 Recents are stored as literal paths in `~/.orca-editor-recent-projects`;
@@ -27,6 +28,8 @@ export is 832 × 1360, exactly twice the 416 × 680 panel, with explicit linear
 texture filtering and mipmaps. The original ImageGen master is retained.
 
 ![Project welcome screen](docs/welcome.png)
+
+![Editor with document tabs and the Library panel](docs/editor.png)
 
 Panels never build rows themselves. The runtime answers each panel's
 `XmlDataSource` with typed records, including the icon path for every node
@@ -51,7 +54,11 @@ cd apps/Editor && make run PROJECT=../Example
 | Task | How |
 |---|---|
 | Open another project | File > Choose Project (Ctrl+O), then select or browse to a folder |
-| Open a screen or prefab | Double-click it in Project, or File > Open Document |
+| Open a screen or prefab | Double-click it in the Library (it opens in a new tab), or File > Open Document |
+| Switch documents | Click a tab, or Ctrl+Tab / Ctrl+Shift+Tab (also Ctrl+PageDown / PageUp) |
+| Close a document | Ctrl+W, the tab's × button, or the tab's context menu (Close, Close Others). Unsaved tabs ask Save / Don't Save / Cancel. |
+| Find a resource | Ctrl+P focuses the Library search field; Enter applies the filter |
+| Browse folders instead of libraries | The folder button in the Library header, or View > Group by Library |
 | Select a node | Click it in Hierarchy or in the Preview (hover shows the node under the pointer) |
 | Find a node | Ctrl+F focuses the Hierarchy search field; Enter applies the filter |
 | Create a child | Create menu, Hierarchy + button, or right-click > Create Child (common classes first, the rest under More) |
@@ -62,11 +69,47 @@ cd apps/Editor && make run PROJECT=../Example
 | Choose an object/resource | Click the resource chip to browse compatible objects. The picker shows canonical paths, supports filtering and includes None. |
 | Bind a property | Click the binding button beside a property, press Ctrl+B, or use its context menu |
 | Undo / redo | Ctrl+Z / Ctrl+Shift+Z (also Ctrl+Y) |
-| Save | Ctrl+S writes the open document back to its XML file |
+| Save | Ctrl+S writes the active document back to its XML file; Ctrl+Shift+S saves every unsaved tab |
 
 Help > Keyboard Shortcuts (F1) lists every shortcut. Menus open from the menu
 bar, with Alt+letter, or by right-clicking; they support submenus, check marks,
 disabled items, shortcuts, arrow-key navigation and first-letter jumps.
+
+## Library
+
+The Library panel groups the project's resources by what they are, after
+Kanzi Studio's Library, instead of by folder: Screens, Prefabs, Scenes,
+Animations, Materials, Material Types, Mesh Data, Textures, Images, Fonts,
+Styles, Data Sources, Themes, Scripts and Resource Files. Each library shows
+its item count, and each item shows the folder (or library file) it lives in.
+
+- XML files are classified by the class of their root element, so a page
+  under `Pages/` and a template under `Templates/` are both Prefabs.
+- A `<Library>` file contributes each named child as its own item; a mesh
+  library file lists its meshes, and an item opens in place
+  (`Project/Widgets/Card`).
+- `package.lua` declarations keep a library visible while it is empty
+  (`ScreenLibrary`, `PrefabLibrary`, `ImageLibrary`, …). Inline
+  `DataSourceLibrary` objects and `ThemeLibrary` values are listed too.
+- Screens, prefabs and scenes open as documents; other resources are listed
+  for reference. The folder button switches to the on-disk Files view.
+
+## Document tabs
+
+Every opened screen, prefab or scene gets a tab above the Preview. Each tab
+keeps its own selection, undo/redo history and unsaved state, so Ctrl+Z
+never reaches into another document. The tab title gains `*` while it has
+unsaved edits, and the status bar counts unsaved documents.
+
+All tabs share the one project runtime rather than starting a process per
+tab. Documents in a project depend on each other (screens instantiate
+prefabs, and all of them read the same themes, fonts, plugins and data
+sources), so a process per document would duplicate that state, render
+stale prefabs after an edit in another tab, and multiply startup time and
+memory. The runtime already caches each opened document by path, so
+switching tabs is a lookup plus a preview render. Don't Save on close asks
+the runtime to forget the document's pending edits (`post/revert`); it is
+reloaded from disk the next time it opens.
 
 ## Binding editor
 
@@ -103,8 +146,9 @@ completion viewports are clipped and scroll without covering the dialog footer.
 | `Views/*.xml`, `Styles/editor.css` | Native menus, headers, logs, inputs, dialogs and editor layout styling |
 | `package.lua` `ThemeLibrary`, `Icons/*.svg` | Semantic light/dark palettes for the engine default stylesheet; Lucide icons named by runtime records |
 | `Data/Editor.Schema.xml` | Typed runtime node, file and property records |
-| `Scripts/Workspace.lua` | Selection, edit/save commands, undo/redo and events |
-| `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panel actions and source request parameters |
+| `Scripts/Workspace.lua` | Open documents (tabs) with per-document selection, undo/redo and unsaved state; edit/save commands and events |
+| `Scripts/DocumentTabs.lua`, `Views/DocumentTab*.xml` | Tab strip above the Preview; close and context menu |
+| `Scripts/Hierarchy.lua`, `ProjectView.lua`, `Inspector.lua` | Panel actions and source request parameters; ProjectView switches Library and Files views |
 | `Scripts/Native.lua`, `ChromeController.lua`, `DataPanel.lua` | XML event dispatch and local chrome records |
 | `Scripts/Preview.lua` | Snapshot image, selection and hover outlines, click-to-select |
 | `Scripts/BindingEditor.lua`, `CodeInput.lua`, `Syntax.lua` | Syntax-colored code input, native completion and validation |
@@ -160,7 +204,8 @@ reply is an XML `<response status="success|error">` document.
 
 | Route | Purpose |
 |---|---|
-| `get/data-project` | Nested native file records for Project, including each record's `Children` |
+| `get/data-libraries?filter=...` | Library records grouped by resource type, each owning its items in `Children` |
+| `get/data-project` | Nested native file records for the Files view, including each record's `Children` |
 | `get/data-scene/<doc>?filter=...` | Nested native node records, retaining ancestors of filter matches |
 | `get/data-properties/<path>` | Typed property records and enum options for the Inspector |
 | `get/data-resources/<path>?property=<qualified>&filter=...` | Compatible typed resource records for the native picker |
@@ -174,6 +219,7 @@ reply is an XML `<response status="success|error">` document.
 | `get/snapshot/<doc>?width=&height=&file=` | Render offscreen to PNG, plus each node's rectangle |
 | `get/binding-functions`, `get/class/<base>` | Completion data |
 | `post/save/<doc>` | Replay this session's edits onto the source XML |
+| `post/revert/<doc>` | Forget unsaved edits and reload the document from disk on next use |
 
 Inspector compounds come from generated shorthand/struct metadata; explicit
 `inspector-group` and `inspector-label` metadata covers independently declared

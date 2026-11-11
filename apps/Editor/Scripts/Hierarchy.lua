@@ -26,6 +26,7 @@ function Hierarchy:tools() return {} end
 
 function Hierarchy:reload()
     self.subtitle = Workspace.leaf(Workspace.document)
+    self.list.Visible = Workspace.document ~= nil
     if Workspace.document then
         DataPanel.reload(self, 'get/data-scene/' .. Workspace.encode(Workspace.document, true) .. DataPanel.treeQuery(self.filter))
         if self.expandedDocument ~= Workspace.document then

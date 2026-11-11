@@ -20,7 +20,13 @@ StartupScreen='EditorFixture/Main'
 WindowWidth=640
 WindowHeight=480
 EnginePlugins={{Name='orca.UIKit'}}
+ScreenLibrary={IsExternal=true}
+ThemeLibrary={{Key='fixture-accent',Value='#123456'}}
 ]])
+write('Widgets.xml', [[<Library>
+  <StackView Name="Card"><TextBlock Name="Caption" Text="Card"/></StackView>
+  <TextBlock Name="Badge" Text="New"/>
+</Library>]])
 assert(fs.makeDirectory(fixture .. '/Styles'))
 write('Styles/base.css', 'TextBlock { color: #123456; }')
 write('Styles/alternate.css', 'TextBlock { color: #654321; }')
@@ -301,10 +307,69 @@ local ok, err = xpcall(function()
     assert(source.Items == project_items and source.Items:getFirstChild() == last_project,
         'A runtime error preserves the last successful hierarchical source')
     assert(Workspace.configureSource(source, 'get/data-project') and not source.HasError)
+
+    -- Library view: resources grouped by type rather than by folder.
+    local libraries = fs.XmlDataSource { Schema='Editor/Data/Editor.Schema.xml', AutoLoad=false }
+    local function library(id)
+        for row in libraries.Items.children do if row.Path == '@' .. id then return row end end
+    end
+    local function entries(row)
+        local list = {}
+        for item in row:findChild('Children', false).children do list[#list + 1] = item end
+        return list
+    end
+    assert(Workspace.configureSource(libraries, 'get/data-libraries?icons=Editor/Icons'), libraries.ErrorMessage)
+    local screens = assert(library('screens'), 'Screens library is listed')
+    assert(screens.IsLibrary and screens.Declared and screens.Detail == '1' and screens.Icon == 'Editor/Icons/screen.svg',
+        'A library record carries its item count, declaration and icon')
+    local main = entries(screens)[1]
+    assert(main.Label == 'Main' and main.SourcePath == 'EditorFixture/Main' and main.Kind == 'document',
+        'Screens are classified by their root element and open as documents')
+    local prefabs = assert(library('prefabs'), 'Library files contribute their named children')
+    local names = {}
+    for _, item in ipairs(entries(prefabs)) do names[item.Label] = item end
+    assert(names.Card and names.Badge and names.Card.Detail == 'Widgets'
+        and names.Card.SourcePath == 'EditorFixture/Widgets/Card',
+        'Each named child of a <Library> file is a library item that opens in place')
+    local styles = assert(library('styles'))
+    assert(#entries(styles) == 2 and entries(styles)[1].Detail == 'Styles', 'Style sheets are listed with their folder')
+    assert(library('scripts') and #entries(library('scripts')) == 1, 'Lua sources form the Scripts library')
+    local themes = assert(library('themes'))
+    assert(entries(themes)[1].Label == 'fixture-accent' and entries(themes)[1].Detail == '#123456',
+        'ThemeLibrary values are listed with their values')
+    assert(not library('materials'), 'Undeclared empty libraries are omitted')
+    assert(Workspace.configureSource(libraries, 'get/data-libraries?filter=alternate'))
+    assert(library('styles') and #entries(library('styles')) == 1 and not library('screens'),
+        'Filtering keeps only libraries with matching items')
+
+    -- Tabs: each document keeps its own history; closing can discard edits.
+    Workspace.reset()
+    Workspace.open('EditorFixture/Main')
+    Workspace.open('EditorFixture/Widgets/Card')
+    assert(#Workspace.documents == 2 and Workspace.document == 'EditorFixture/Widgets/Card')
+    assert(Workspace.configureSource(source, 'get/data-scene/EditorFixture/Widgets/Card'), source.ErrorMessage)
+    assert(find('Path', 'EditorFixture/Widgets/Card/Caption'), 'A library item opens as a document')
+    assert(Workspace.activate('EditorFixture/Main'))
+    assert(Workspace.setValue('EditorFixture/Main/Root/Renamed', 'TextRun.Text', 'Unsaved'))
+    assert(Workspace.dirty and #Workspace.undoStack == 1 and not Workspace.isDirty('EditorFixture/Widgets/Card'),
+        'Edits mark only their own document as unsaved')
+    Workspace.activate('EditorFixture/Widgets/Card')
+    assert(not Workspace.dirty and #Workspace.undoStack == 0, 'Each tab has its own undo history')
+    local closed, reason = Workspace.close('EditorFixture/Main')
+    assert(not closed and reason == 'dirty' and Workspace.findDocument('EditorFixture/Main'),
+        'An unsaved tab is not closed without a decision')
+    assert(Workspace.close('EditorFixture/Main', true) and not Workspace.findDocument('EditorFixture/Main'))
+    assert(Workspace.configureSource(source, 'get/data-properties/EditorFixture/Main/Root/Renamed'))
+    local text = assert(find('PropertyName', 'TextRun.Text'))
+    assert(text.Value == 'Saved', 'Discarding reloads the document from its source file: ' .. tostring(text.Value))
+    Workspace.open('EditorFixture/Main')
+    local saved = Workspace.save('EditorFixture/Main')
+    assert(saved, 'Discarded edits are no longer pending for the document')
     core.flushQueue()
 end, debug.traceback)
 connection:close()
 os.remove(fixture .. '/Main.xml')
+os.remove(fixture .. '/Widgets.xml')
 os.remove(fixture .. '/package.lua')
 os.remove(fixture .. '/Styles/base.css')
 os.remove(fixture .. '/Styles/alternate.css')

@@ -1,0 +1,6 @@
+<!-- Open documents, one tab each, above the Preview (Kanzi Studio style).
+     DocumentTabs.lua supplies the records; Invoke activates, Close closes. -->
+<Grid Name="DocumentTabs" Rows="1fr" Columns="auto 1fr" class="document-tabs" Controller="Editor/Scripts/ChromeController">
+  <ItemsStack Name="Tabs" Direction="Horizontal" ItemTemplate="Editor/Views/DocumentTab" OverflowX="Hidden"/>
+  <TextBlock Name="Hint" Text="Double-click a screen or prefab in the Library to open it" Margin="12 0" TextWrapping="NoWrap" OverflowX="Hidden" TextOverflow="Ellipsis" class="editor-muted"/>
+</Grid>

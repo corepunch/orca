@@ -1,5 +1,11 @@
--- Editor model: the project server process, the open document, selection,
--- undo/redo and a small event bus that panels subscribe to.
+-- Editor model: the project server process, the open documents (tabs), and a
+-- small event bus that panels subscribe to.
+--
+-- Every open document keeps its own selection, undo/redo history and unsaved
+-- state. Workspace.document, .selection, .undoStack, .redoStack and .dirty
+-- always describe the active tab, so panels never need to know about tabs.
+-- All tabs share one project runtime: documents reference each other's
+-- prefabs, themes and data sources, which separate processes could not see.
 local Xml = require "Editor.Scripts.Xml"
 local config = require "Editor.Scripts.config"
 
@@ -9,10 +15,15 @@ local Workspace = {
 	redoStack = {},
 	selection = nil,
 	document = nil,
+	dirty = false,
+	documents = {},
 	snapshotCount = 0,
 }
 
--- Events: log(level, text), document(path), select(path), changed(path)
+local TAB_FIELDS = { 'selection', 'undoStack', 'redoStack', 'dirty' }
+
+-- Events: log(level, text), document(path), select(path), changed(path),
+-- structure(parent), saved(), tabs()
 function Workspace.on(event, fn)
 	local list = Workspace.listeners[event] or {}
 	Workspace.listeners[event] = list
@@ -93,6 +104,30 @@ function Workspace.get(route, path, args) return Workspace.request('get', route,
 ------------------------------------------------------------------------------
 -- Documents and selection
 
+function Workspace.findDocument(path)
+	for i, doc in ipairs(Workspace.documents) do
+		if doc.path == path then return doc, i end
+	end
+end
+
+-- Copies the active tab's state out of the mirrored fields, or back in.
+local function stash()
+	local doc = Workspace.findDocument(Workspace.document)
+	if doc then for _, key in ipairs(TAB_FIELDS) do doc[key] = Workspace[key] end end
+	return doc
+end
+
+local function restore(doc)
+	Workspace.document = doc and doc.path
+	for _, key in ipairs(TAB_FIELDS) do
+		if doc then Workspace[key] = doc[key] end
+	end
+	if not doc then
+		Workspace.selection, Workspace.undoStack, Workspace.redoStack, Workspace.dirty = nil, {}, {}, false
+	end
+end
+
+-- Opens a document in a new tab after the active one, or shows its tab.
 function Workspace.open(path)
 	if not path then
 		local root = Workspace.get('startup-screen')
@@ -102,11 +137,87 @@ function Workspace.open(path)
 		Workspace.log('error', "No document to open")
 		return
 	end
-	Workspace.document = path
-	Workspace.selection = nil
+	if Workspace.findDocument(path) then return Workspace.activate(path) end
+	local _, index = Workspace.findDocument(Workspace.document)
+	stash()
+	local doc = { path = path, undoStack = {}, redoStack = {}, dirty = false }
+	table.insert(Workspace.documents, (index or #Workspace.documents) + 1, doc)
+	restore(doc)
 	Workspace.log('info', "Opened %s", path)
+	Workspace.emit('tabs')
 	Workspace.emit('document', path)
 	Workspace.select(path)
+	return true
+end
+
+function Workspace.activate(path)
+	local doc = Workspace.findDocument(path)
+	if not doc then return false end
+	if path == Workspace.document then return true end
+	stash()
+	restore(doc)
+	Workspace.emit('tabs')
+	Workspace.emit('document', path)
+	Workspace.emit('select', Workspace.selection)
+	return true
+end
+
+-- Moves to the next (1) or previous (-1) tab, wrapping around.
+function Workspace.cycle(delta)
+	local n = #Workspace.documents
+	local _, index = Workspace.findDocument(Workspace.document)
+	if n < 2 or not index then return false end
+	return Workspace.activate(Workspace.documents[(index - 1 + delta) % n + 1].path)
+end
+
+function Workspace.isDirty(path)
+	if not path or path == Workspace.document then return Workspace.dirty end
+	local doc = Workspace.findDocument(path)
+	return doc and doc.dirty or false
+end
+
+function Workspace.anyDirty()
+	stash()
+	if Workspace.dirty then return true end
+	for _, doc in ipairs(Workspace.documents) do if doc.dirty then return true end end
+	return false
+end
+
+-- Closes a tab. Unsaved edits are kept unless discard is set, in which case
+-- the runtime forgets them and reloads the document from disk when reopened.
+function Workspace.close(path, discard)
+	path = path or Workspace.document
+	local doc, index = Workspace.findDocument(path)
+	if not doc then return false end
+	if Workspace.isDirty(path) and not discard then return false, 'dirty' end
+	if Workspace.isDirty(path) then
+		local root, err = Workspace.request('post', 'revert/', path)
+		if not root then
+			Workspace.log('error', "Can't discard %s: %s", Workspace.leaf(path), err)
+			return false, err
+		end
+		Workspace.log('warning', "Discarded unsaved changes to %s", Workspace.leaf(path))
+	end
+	local active = path == Workspace.document
+	if not active then stash() end
+	table.remove(Workspace.documents, index)
+	if active then
+		local next = Workspace.documents[math.min(index, #Workspace.documents)]
+		restore(next)
+		Workspace.emit('tabs')
+		Workspace.emit('document', Workspace.document)
+		Workspace.emit('select', Workspace.selection)
+	else
+		Workspace.emit('tabs')
+	end
+	return true
+end
+
+-- Forgets every tab, e.g. when another project is opened.
+function Workspace.reset()
+	Workspace.documents = {}
+	restore(nil)
+	Workspace.emit('tabs')
 end
 
 function Workspace.select(path)
@@ -124,6 +235,28 @@ end
 
 ------------------------------------------------------------------------------
 -- Edits with undo
+
+-- The open document containing a node path (the longest matching tab).
+function Workspace.owner(path)
+	local best
+	for _, doc in ipairs(Workspace.documents) do
+		if path and (path == doc.path or path:sub(1, #doc.path + 1) == doc.path .. '/')
+			and (not best or #doc.path > #best.path) then best = doc end
+	end
+	return best
+end
+
+-- Marks the document that owns path (the active one by default) unsaved.
+function Workspace.markDirty(path)
+	local doc = path and Workspace.owner(path)
+	if doc and doc.path ~= Workspace.document then
+		if not doc.dirty then doc.dirty = true Workspace.emit('tabs') end
+		return
+	end
+	local changed = not Workspace.dirty
+	Workspace.dirty = true
+	if changed then Workspace.emit('tabs') end
+end
 
 local function push(stack, entry)
 	stack[#stack + 1] = entry
@@ -151,9 +284,16 @@ local function commit(entry)
 	else
 		entry.old = root:get'previous'
 	end
-	push(Workspace.undoStack, entry)
-	Workspace.redoStack = {}
-	Workspace.dirty = true
+	-- History belongs to the edited document, even when it is not active.
+	local doc = Workspace.owner(entry.path)
+	if doc and doc.path ~= Workspace.document then
+		push(doc.undoStack, entry)
+		doc.redoStack = {}
+	else
+		push(Workspace.undoStack, entry)
+		Workspace.redoStack = {}
+	end
+	Workspace.markDirty(entry.path)
 	Workspace.emit('changed', entry.path)
 	return true
 end
@@ -185,6 +325,7 @@ local function replay(from, to, field)
 		return false
 	end
 	push(to, entry)
+	Workspace.markDirty(entry.path)
 	Workspace.emit('changed', entry.path)
 	return true
 end
@@ -198,7 +339,7 @@ function Workspace.redo() return replay(Workspace.redoStack, Workspace.undoStack
 function Workspace.create(parent, class, name)
 	local root, err = Workspace.request('post', 'node/', parent, { { 'class', class }, { 'name', name } })
 	if not root then return Workspace.log('error', "Create %s: %s", class, err) end
-	Workspace.dirty = true
+	Workspace.markDirty(parent)
 	Workspace.log('info', "Created %s %s", class, name)
 	Workspace.emit('structure', parent)
 	Workspace.select(parent .. "/" .. name)
@@ -208,7 +349,7 @@ end
 function Workspace.remove(path)
 	local root, err = Workspace.request('delete', 'node/', path)
 	if not root then return Workspace.log('error', "Delete: %s", err) end
-	Workspace.dirty = true
+	Workspace.markDirty(path)
 	Workspace.log('info', "Deleted %s", Workspace.leaf(path))
 	Workspace.emit('structure', Workspace.parentPath(path))
 	Workspace.select(Workspace.parentPath(path))
@@ -218,7 +359,7 @@ end
 function Workspace.duplicate(path)
 	local root, err = Workspace.request('post', 'duplicate/', path)
 	if not root then return Workspace.log('error', "Duplicate: %s", err) end
-	Workspace.dirty = true
+	Workspace.markDirty(path)
 	Workspace.log('info', "Duplicated %s", Workspace.leaf(path))
 	Workspace.emit('structure', Workspace.parentPath(path))
 	Workspace.select(Workspace.parentPath(path) .. "/" .. root:get'name')
@@ -231,17 +372,39 @@ function Workspace.rename(path, name)
 	Workspace.select(Workspace.parentPath(path) .. "/" .. name)
 end
 
-function Workspace.save()
-	if not Workspace.document then return end
-	local root, err = Workspace.request('post', 'save/', Workspace.document)
+-- Saves one document (the active one by default); returns true when nothing
+-- is left pending for it.
+function Workspace.save(path)
+	path = type(path) == 'string' and path or Workspace.document
+	if not path then return end
+	local root, err = Workspace.request('post', 'save/', path)
 	if not root then return Workspace.log('error', "Save failed: %s", err) end
 	local skipped = tonumber(root:get'skipped') or 0
-	Workspace.dirty = skipped > 0
+	if path == Workspace.document then Workspace.dirty = skipped > 0
+	else
+		local doc = Workspace.findDocument(path)
+		if doc then doc.dirty = skipped > 0 end
+	end
 	Workspace.log('ok', "Saved %s (%s changes)", root:get'file', root:get'applied')
 	for n in root:each() do
 		Workspace.log('warning', "Not saved: %s is not a named element in the source", n:get'path')
 	end
+	Workspace.emit('tabs')
 	Workspace.emit('saved')
+	return skipped == 0
+end
+
+function Workspace.saveAll()
+	stash()
+	local saved = 0
+	for _, doc in ipairs(Workspace.documents) do
+		if doc.dirty then
+			Workspace.save(doc.path)
+			saved = saved + 1
+		end
+	end
+	if saved == 0 then Workspace.log('info', "Nothing to save") end
+	return saved
 end
 
 ------------------------------------------------------------------------------
