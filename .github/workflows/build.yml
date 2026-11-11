@@ -1,5 +1,7 @@
 name: Build
 
+# Pull requests and main run two Linux checks: the engine build and the test
+# suites. Per-platform engine packages are built on release (release.yml).
 on:
   push:
     branches:
@@ -9,12 +11,32 @@ on:
       - main
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
   contents: read
 
 jobs:
-  build-linux:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            zlib1g-dev \
+            libcurl4-openssl-dev \
+            libwayland-dev \
+            libegl1-mesa-dev \
+            libgles2-mesa-dev
+
+      - name: Build
+        run: make
+
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,235 +66,8 @@ jobs:
           echo "LUA_PATH=$ROCKS_TREE/share/lua/5.4/?.lua;$ROCKS_TREE/share/lua/5.4/?/init.lua;;" >> "$GITHUB_ENV"
           echo "LUA_CPATH=$ROCKS_TREE/lib/lua/5.4/?.so;;" >> "$GITHUB_ENV"
 
-      - name: Build
-        run: make
-
       - name: Test (headless layout)
         run: make test-headless
 
       - name: Test (display required)
         run: xvfb-run make test
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-linux
-          path: |
-            build/bin/orca
-            build/lib/liborca.*
-            build/lib/liblua5.4.*
-            build/lib/libplatform.*
-            build/lib/liborca/
-            build/share/
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      # The engine needs nothing from Homebrew; these only serve MoonScript's rocks.
-      - name: Install MoonScript toolchain
-        run: brew install lua@5.4 luarocks
-
-      - name: Configure MoonScript toolchain
-        run: |
-          LUA_DIR="$(brew --prefix lua@5.4)"
-          ROCKS_TREE="$HOME/.luarocks"
-          echo "LUA_DIR=$LUA_DIR" >> "$GITHUB_ENV"
-          echo "ROCKS_TREE=$ROCKS_TREE" >> "$GITHUB_ENV"
-          echo "LUA_PATH=$ROCKS_TREE/share/lua/5.4/?.lua;$ROCKS_TREE/share/lua/5.4/?/init.lua;$LUA_DIR/share/lua/5.4/?.lua;$LUA_DIR/share/lua/5.4/?/init.lua;;" >> "$GITHUB_ENV"
-          echo "LUA_CPATH=$ROCKS_TREE/lib/lua/5.4/?.so;$LUA_DIR/lib/lua/5.4/?.so;;" >> "$GITHUB_ENV"
-
-      - name: Install MoonScript
-        run: |
-          luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" --tree="$ROCKS_TREE" install argparse
-          luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" --tree="$ROCKS_TREE" install moonscript
-
-      - name: Build
-        run: make
-
-      - name: Build iOS Simulator
-        run: make -f tools/ios/Makefile SDK=iphonesimulator ARCH=$(uname -m) app
-
-      - name: Test (headless layout)
-        run: make test-headless
-
-      - name: Test
-        run: make test
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-macos
-          path: |
-            build/bin/orca
-            build/lib/liborca.*
-            build/lib/liblua5.4.*
-            build/lib/libplatform.*
-            build/lib/liborca/
-            build/share/
-
-  build-android:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      # Host code generation only; the NDK builds the engine and its dependencies.
-      - name: Install codegen dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y pkg-config zlib1g-dev cmake
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.11.1'
-
-      - name: Generate engine API
-        run: make modules
-
-      - name: Build Chat APK (arm64-v8a, x86_64)
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
-        run: make chat-android ABIS="arm64-v8a x86_64"
-
-      - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-chat-android
-          path: tools/android/project/app/build/outputs/apk/debug/app-debug.apk
-
-  # Runs the x86_64 APK on an emulator: launch, then a Google sign-in callback
-  # through the app's URL scheme (offline; no Appwrite request).
-  test-android:
-    needs: build-android
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download Android artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: orca-chat-android
-          path: build/android/apk
-
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Smoke test Chat on an emulator (API 34, x86_64)
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 34
-          arch: x86_64
-          target: google_apis
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: sh tools/android/smoke-test.sh build/android/apk/app-debug.apk org.orca.chat apps/chat build/android/smoke
-
-      - name: Upload smoke test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-chat-android-smoke
-          path: build/android/smoke/
-
-  build-webgl:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install codegen dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y pkg-config
-
-      - name: Install Emscripten
-        uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: 3.1.74
-          actions-cache-folder: emsdk-cache
-
-      - name: Build WASM dependencies (lua5.4, liblz4, libpng, libjpeg)
-        # Builds into build/wasm-deps/ (WASM_DEPS_DIR default in Makefile.webgl).
-        run: emmake make wasm-deps
-
-      - name: Build platform library for WebGL
-        run: |
-          mkdir -p build/lib
-          emmake make -C libs/platform OUTDIR=../../build/lib
-
-      - name: Build Orca for WebGL
-        run: |
-          COMMIT_TITLE=$(git log -1 --format=%s)
-          emmake make webgl WEBGL_EMCC=emcc WEBGL_VERSION="${COMMIT_TITLE}"
-
-      - name: Upload WebGL artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-webgl
-          path: build/webgl/
-
-  release:
-    needs: [build-linux, build-macos]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: write
-    steps:
-      - name: Download Linux artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: orca-linux
-          path: artifacts/linux
-
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: orca-macos
-          path: artifacts/macos
-
-      - name: Package artifacts
-        run: |
-          tar czf orca-linux.tar.gz -C artifacts/linux .
-          tar czf orca-macos.tar.gz -C artifacts/macos .
-
-      - name: Create or update rolling "latest" release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: "Latest Build"
-          body: |
-            Automated build from the `main` branch (commit ${{ github.sha }}).
-
-            These are pre-built binaries for Linux and macOS. For versioned releases, see the tagged releases.
-
-            **Install via LuaRocks (from source):**
-            ```
-            luarocks install --dev orca
-            ```
-          files: |
-            orca-linux.tar.gz
-            orca-macos.tar.gz
-          prerelease: true
-          make_latest: false

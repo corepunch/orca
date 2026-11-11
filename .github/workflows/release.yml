@@ -1,0 +1,159 @@
+name: Release
+
+# Engine-only packages for every platform, attached to a published release.
+# Applications are Lua/XML projects run by these engines, so none is bundled.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to build and attach packages to (e.g. v2.6)'
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y zlib1g-dev libcurl4-openssl-dev libwayland-dev libegl1-mesa-dev libgles2-mesa-dev
+      - name: Build engine
+        run: make
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar czf "dist/orca-$TAG-linux-x86_64.tar.gz" build/bin/orca build/lib/liborca.* \
+            build/lib/liblua5.4.* build/lib/libplatform.* build/lib/liborca/ build/share/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-linux
+          path: dist/
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+      - name: Build engine
+        run: make
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar czf "dist/orca-$TAG-macos-$(uname -m).tar.gz" build/bin/orca build/lib/liborca.* \
+            build/lib/liblua5.4.* build/lib/libplatform.* build/lib/liborca/ build/share/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-macos
+          path: dist/
+
+  # The engine executable for device and simulator, without an app bundle.
+  ios:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        sdk: [iphoneos, iphonesimulator]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+      - name: Build engine
+        run: make -f tools/ios/Makefile SDK=${{ matrix.sdk }} ARCH=arm64 "$PWD/build/ios/${{ matrix.sdk }}-arm64/Orca"
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar czf "dist/orca-$TAG-${{ matrix.sdk }}-arm64.tar.gz" -C build/ios/${{ matrix.sdk }}-arm64 Orca
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-${{ matrix.sdk }}
+          path: dist/
+
+  # libmain.so per ABI: the NativeActivity engine library, without an APK.
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+      - name: Install codegen dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config zlib1g-dev cmake
+      - name: Generate engine API
+        run: make modules
+      - name: Build engine
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+        run: |
+          for abi in arm64-v8a x86_64; do make -f tools/android/Makefile ABI=$abi library; done
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar czf "dist/orca-$TAG-android.tar.gz" -C build/android/gradle jniLibs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-android
+          path: dist/
+
+  webgl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+          submodules: recursive
+      - name: Install codegen dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.74
+          actions-cache-folder: emsdk-cache
+      - name: Build WASM dependencies
+        run: emmake make wasm-deps
+      - name: Build platform library
+        run: |
+          mkdir -p build/lib
+          emmake make -C libs/platform OUTDIR=../../build/lib
+      - name: Build engine
+        run: emmake make webgl WEBGL_EMCC=emcc WEBGL_VERSION="$TAG"
+      - name: Package
+        run: |
+          mkdir -p dist
+          tar czf "dist/orca-$TAG-webgl.tar.gz" -C build/webgl .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-webgl
+          path: dist/
+
+  publish:
+    needs: [linux, macos, ios, android, webgl]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Attach packages to the release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: dist/*

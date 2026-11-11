@@ -1,14 +1,8 @@
 name: "Copilot Setup Steps"
 
-# Run whenever this file changes so the setup can be validated easily.
+# Copilot runs this job by name; validate changes manually.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
-  pull_request:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
   # Job name MUST be `copilot-setup-steps` — Copilot picks it up by name.
