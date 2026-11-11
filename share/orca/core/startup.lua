@@ -49,12 +49,15 @@ function Startup.load_plugin_config(name)
 end
 
 function Startup.load_plugins()
+  io.stderr:write("Enumerating startup plugins\n")
   for path in system.list_dir(SHAREDIR .. "/plugins") do
     if path:match("%.lua$") then
       local plugin_name = path:match("^(.+)%.lua$")
+      io.stderr:write(string.format("Loading plugin %s\n", path))
       if plugin_name ~= "tailwind" then
         Startup.load_plugin_config(plugin_name)
       end
+      io.stderr:write(string.format("Executing plugin %s\n", path))
       if xpcall(dofile, print, SHAREDIR .. "/plugins/" .. path) then
         io.stderr:write(string.format("Loaded plugin %s\n", path))
       else
@@ -71,8 +74,10 @@ function Startup.open(Application, path)
 
   local project = filesystem.init(path or DATADIR)
   renderer.init(project.WindowWidth, project.WindowHeight, SERVER == true)
+  io.stderr:write("Startup renderer ready\n")
 
   Startup.load_plugins()
+  io.stderr:write("Startup plugins ready\n")
 
   -- Server mode backs the Editor app: EditorKit answers its requests on stdin.
   if SERVER then require "orca.EditorKit" end

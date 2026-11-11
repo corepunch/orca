@@ -263,8 +263,11 @@ local function test_pivot_body_extends_behind_header()
     test.expect_near(bar.ActualY, 0, 0.01, "the Pivot bar extends under the status bar")
     test.expect_near(item.ActualY, 0, 0.01, "the body starts at the top of the Pivot")
     local first = content:findChild("Row1")
-    -- Pivot pads page content PIVOT_BODY_TOP (20) below the header's edge.
-    test.expect_near(first.ActualY, bar.ActualHeight + 20, 1, "content rests below the Pivot header and its page padding")
+    -- Pivot owns a 20-point page margin beyond the header background.
+    test.expect_near(first.ActualY, bar.ActualHeight + 20, 1,
+        "content rests one page padding below the Pivot header")
+    test.expect_near(content.AdjustedContentInsetTop, bar.ActualHeight + 20, 1,
+        "the scrolling inset includes both the header and page padding")
     test.expect(bar.ActualHeight > 59 + 44, "the header keeps clear of the status bar")
     test.expect_near(footer.ActualY + footer.ActualHeight, H, 0.01, "the footer reaches the bottom")
     local last = content:findChild("Row40")

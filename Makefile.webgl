@@ -93,8 +93,6 @@ WEBGL_LDFLAGS += -sSTACK_SIZE=262144
 #   emmake make wasm-deps WASM_DEPS_DIR=/path/to/prefix
 # ──────────────────────────────────────────────────────────────────────────
 WASM_DEPS_DIR  ?= build/wasm-deps
-LUA_VERSION     = 5.4.7
-LZ4_VERSION     = 1.10.0
 
 # Add WASM dep headers / libraries to the WebGL compiler and linker flags.
 WEBGL_CFLAGS  += -I$(WASM_DEPS_DIR)/include -I$(WASM_DEPS_DIR)/include/lua5.4 $(WEBGL_XML2_CFLAGS) -Ilibs/freetype/include
@@ -257,37 +255,32 @@ wasm-deps: wasm-lua wasm-lz4 wasm-image-deps
 
 wasm-lua: $(WASM_DEPS_DIR)/lib/liblua5.4.a
 
-$(WASM_DEPS_DIR)/lib/liblua5.4.a:
-	mkdir -p $(WASM_DEPS_DIR)/include/lua5.4 $(WASM_DEPS_DIR)/lib
-	wget -qO /tmp/lua-$(LUA_VERSION).tar.gz \
-	    https://www.lua.org/ftp/lua-$(LUA_VERSION).tar.gz
-	rm -rf /tmp/wasm-lua && mkdir -p /tmp/wasm-lua
-	tar xzf /tmp/lua-$(LUA_VERSION).tar.gz -C /tmp/wasm-lua --strip-components=1
-	cd /tmp/wasm-lua/src && emcc -O2 -DLUA_USE_POSIX -I. -c \
-	    lapi.c lcode.c lctype.c ldebug.c ldo.c ldump.c lfunc.c lgc.c \
-	    llex.c lmem.c lobject.c lopcodes.c lparser.c lstate.c lstring.c \
-	    ltable.c ltm.c lundump.c lvm.c lzio.c lauxlib.c lbaselib.c \
-	    lcorolib.c ldblib.c liolib.c lmathlib.c loadlib.c loslib.c \
-	    lstrlib.c ltablib.c lutf8lib.c linit.c
-	cd /tmp/wasm-lua/src && emar rcs liblua5.4.a *.o
-	cp /tmp/wasm-lua/src/lua.h /tmp/wasm-lua/src/luaconf.h \
-	   /tmp/wasm-lua/src/lauxlib.h /tmp/wasm-lua/src/lualib.h \
-	   $(WASM_DEPS_DIR)/include/lua5.4/
-	cp /tmp/wasm-lua/src/liblua5.4.a $(WASM_DEPS_DIR)/lib/
+# Reuse the pinned submodules, just as native/Android builds do. Dependency
+# builds must not depend on lua.org availability or share mutable /tmp trees.
+WASM_LUA_OBJS = $(patsubst $(LUA_SRCDIR)/%.c,$(WEBGL_DIR)/lua/%.o,$(LUA_SOURCES))
+
+$(WEBGL_DIR)/lua/%.o: $(LUA_SRCDIR)/%.c $(LUA_SRCDIR)/lua.h
+	mkdir -p $(dir $@)
+	$(WEBGL_EMCC) -O2 -DLUA_USE_POSIX -I$(LUA_SRCDIR) -c $< -o $@
+
+$(WASM_DEPS_DIR)/lib/liblua5.4.a: $(WASM_LUA_OBJS)
+	mkdir -p $(WASM_DEPS_DIR)/include/lua5.4 $(dir $@)
+	emar rcs $@ $^
+	cp $(addprefix $(LUA_SRCDIR)/,lua.h luaconf.h lauxlib.h lualib.h) $(WASM_DEPS_DIR)/include/lua5.4/
 
 wasm-lz4: $(WASM_DEPS_DIR)/lib/liblz4.a
 
-$(WASM_DEPS_DIR)/lib/liblz4.a:
-	mkdir -p $(WASM_DEPS_DIR)/include $(WASM_DEPS_DIR)/lib
-	wget -qO /tmp/lz4-$(LZ4_VERSION).tar.gz \
-	    https://github.com/lz4/lz4/archive/refs/tags/v$(LZ4_VERSION).tar.gz
-	rm -rf /tmp/wasm-lz4 && mkdir -p /tmp/wasm-lz4
-	tar xzf /tmp/lz4-$(LZ4_VERSION).tar.gz -C /tmp/wasm-lz4 --strip-components=1
-	cd /tmp/wasm-lz4/lib && emcc -O2 -c lz4.c lz4hc.c lz4frame.c xxhash.c
-	cd /tmp/wasm-lz4/lib && emar rcs liblz4.a lz4.o lz4hc.o lz4frame.o xxhash.o
-	cp /tmp/wasm-lz4/lib/lz4.h /tmp/wasm-lz4/lib/lz4hc.h \
-	   /tmp/wasm-lz4/lib/lz4frame.h $(WASM_DEPS_DIR)/include/
-	cp /tmp/wasm-lz4/lib/liblz4.a $(WASM_DEPS_DIR)/lib/
+WASM_LZ4_SRCS = lz4.c lz4hc.c lz4frame.c xxhash.c
+WASM_LZ4_OBJS = $(addprefix $(WEBGL_DIR)/lz4/,$(WASM_LZ4_SRCS:.c=.o))
+
+$(WEBGL_DIR)/lz4/%.o: libs/lz4/lib/%.c libs/lz4/lib/lz4.h
+	mkdir -p $(dir $@)
+	$(WEBGL_EMCC) -O2 -Ilibs/lz4/lib -c $< -o $@
+
+$(WASM_DEPS_DIR)/lib/liblz4.a: $(WASM_LZ4_OBJS)
+	mkdir -p $(WASM_DEPS_DIR)/include $(dir $@)
+	emar rcs $@ $^
+	cp $(addprefix libs/lz4/lib/,lz4.h lz4hc.h lz4frame.h) $(WASM_DEPS_DIR)/include/
 
 # Apply preprocessor flags after all ordinary flags, including command-line overrides.
 override WEBGL_CFLAGS += $(CPPFLAGS)
