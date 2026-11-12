@@ -1,0 +1,1 @@
+<Input Name="PropertyText" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Visible="{Binding DataContext/IsText}" Submit="Value" KillFocus="Commit" KeyDown="FieldKey" class="property-input" />

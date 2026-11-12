@@ -9,6 +9,9 @@ orca.init()
 fs.init('apps/Editor')
 require('orca.core.startup').load_plugins()
 
+local editorScreen = assert(fs.loadObject('Editor/Screens/Editor'))
+test.expect_eq(editorScreen.Appearance, 'Dark', 'Editor screen explicitly selects dark appearance')
+
 local function luminance(color)
     local function linear(channel)
         return channel <= 0.04045 and channel / 12.92 or ((channel + 0.055) / 1.055) ^ 2.4

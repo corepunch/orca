@@ -55,6 +55,17 @@ local resourceXML = [[<response status="success">
   <EditorResource name="picture" Id="picture" Label="Picture" Value="Example/Images/Picture" Path="Example/Images/Picture" Kind="Image" Icon="Editor/Icons/image.svg"/>
   <EditorResource name="other" Id="other" Label="Other" Value="Example/Images/Other" Path="Example/Images/Other" Kind="Image" Icon="Editor/Icons/image.svg"/>
 </response>]]
+propertyXML = propertyXML:gsub('<EditorProperty[^>]*>', function(tag)
+    local names = { {'IsReference', 'Reference'}, {'IsColor', 'Color'}, {'IsNumericCompound', 'Compound'},
+        {'IsSummary', 'Summary'}, {'ValueReadOnly', 'Readonly'}, {'IsBool', 'Boolean'},
+        {'IsEnum', 'Enum'}, {'IsText', 'Text'} }
+    for _, pair in ipairs(names) do
+        if tag:find(pair[1] .. '="true"', 1, true) then
+            return tag:gsub('^<EditorProperty', '<EditorProperty ValueTemplate="Editor/Templates/PropertyValue' .. pair[2] .. '"', 1)
+        end
+    end
+    return tag
+end)
 propertyXML = propertyXML:gsub('(<EditorProperty[^>]- Value="([^"]*)")', function(tag, value)
     return tag .. ' DraftValue="' .. value .. '"'
 end)
@@ -143,6 +154,21 @@ assert(label.ActualX + label.ActualWidth <= label.parent.ActualWidth, 'Long node
 hierarchy.list:send('TreeView.SelectItem', { Value = 'Example/Screens/Test/Title' })
 settle()
 assert(Workspace.selection == 'Example/Screens/Test/Title', 'TreeView descendant selection selects the runtime path')
+local Preview = require 'Editor.Scripts.Preview'
+local preview = {
+    scale = 1, canvas = { x = 0, y = 0 },
+    rects = {
+        { path = Workspace.document, x = 0, y = 0, w = 100, h = 100 },
+        { path = Workspace.selection, x = 10, y = 10, w = 20, h = 20 },
+    },
+    origin = function() return 0, 0 end,
+    hitTest = Preview.hitTest,
+}
+assert(preview:hitTest { x = 15, y = 15 }.path == Workspace.selection,
+    'Preview picks the deepest overlapping node')
+local requestsBeforePick = #requests
+Preview.pick(preview, { x = 15, y = 15 })
+assert(#requests == requestsBeforePick, 'Picking the current selection does not reload the inspector')
 local function sceneRequestCount()
     local count = 0
     for _, request in ipairs(requests) do if request:find('data-scene/', 1, true) then count = count + 1 end end
@@ -272,7 +298,7 @@ local referenceRow = inspector.view:findChild('Propertyreference', true)
 local resourceButton = referenceRow:findChild('PropertyReference', true)
 assert(resourceButton.Visible and referenceRow:findChild('ReferenceLabel', true).Text == 'Picture',
     'A resource has a labelled object selector instead of an empty text input')
-assert(not referenceRow:findChild('PropertyText', true).Visible, 'Resource links are visually distinct from editable strings')
+assert(not referenceRow:findChild('PropertyText', true), 'Resource links do not construct an editable string field')
 local paddingRow = assert(inspector.view:findChild('Propertypadding', true))
 local fields = assert(paddingRow:findChild('CompoundFields', true))
 local left = assert(fields:findChild('Fieldleft', true)):findChild('ComponentValue', true)
@@ -372,6 +398,33 @@ assert(not errorLabel.Visible and not hierarchy.source.HasError and hierarchy.so
     'Clearing search recovers the existing tree after a failed refresh')
 assert(hierarchy.view:findChild('SceneNodenode-202', true) == nestedItem and rootItem.IsExpanded,
     'Successful recovery preserves the retained nested containers and local state')
+-- Common inspector rows remain attached as selection changes, but must show
+-- the new object's values and discard an unfinished draft.
+local retainedProperty = assert(inspector.view:findChild('Propertytext', true))
+local retainedInput = assert(retainedProperty:findChild('PropertyText', true))
+retainedInput.Text = 'unfinished draft'
+local priorEdits = #edits
+propertyXML = propertyXML:gsub('Value="Hello" DraftValue="Hello"', 'Value="New value" DraftValue="New value"', 1)
+Workspace.select('Example/Screens/Test/Node3')
+settle()
+assert(inspector.view:findChild('Propertytext', true) == retainedProperty,
+    'Selecting another object retains a common property row')
+assert(retainedInput.Text == 'New value', 'Retained input shows the newly selected object value')
+assert(#edits == priorEdits, 'Changing selection does not commit an old draft to the new object')
+propertyXML = propertyXML:gsub('<EditorProperty[^>]-name="text"[^>]*>', function(tag)
+    return (tag:gsub('PropertyValueText', 'PropertyValueBoolean')
+        :gsub('IsText="true"', 'IsText="false" IsBool="true" BoolValue="true"'))
+end, 1)
+Workspace.select('Example/Screens/Test/Node4')
+settle()
+local changedProperty = assert(inspector.view:findChild('Propertytext', true))
+assert(changedProperty == retainedProperty and not changedProperty:findChild('PropertyText', true),
+    'Changing the value type replaces the previous editor within the retained row')
+local changedCheckbox = assert(changedProperty:findChild('PropertyBoolean', true))
+changedCheckbox:send('Node.LeftButtonUp')
+settle()
+assert(#edits == priorEdits + 1 and edits[#edits][1] == 'Example/Screens/Test/Node4',
+    'The replacement editor dispatches to the newly selected object')
 -- Exercise the real app configuration: Widget's class lookup can fall through
 -- a false class default, so ordinary q must reach the editor's focused input.
 local previousDataDir = DATADIR

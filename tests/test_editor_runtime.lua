@@ -129,8 +129,20 @@ local ok, err = xpcall(function()
 
     local screen_path = 'EditorFixture/Main'
     assert(Workspace.configureSource(source, 'get/data-properties/' .. screen_path))
+    assert(Workspace.configureSource(source, 'get/data-properties/EditorFixture/Main/Root'))
+    local shared_padding = assert(find('PropertyName', 'Node.Padding'))
+    local left = assert(shared_padding:findChild('Fields', false)):getFirstChild()
+    assert(left.Value == '8')
+    assert(Workspace.configureSource(source, 'get/data-properties/EditorFixture/Main/Root/Renamed'))
+    assert(find('PropertyName', 'Node.Padding') == shared_padding and left.Value == '0',
+        'Common property records survive selection and receive the new value')
+    assert(Workspace.configureSource(source, 'get/data-properties/EditorFixture/Main/Root'))
+    assert(find('PropertyName', 'Node.Padding') == shared_padding and left.Value == '8',
+        'Returning to the first object refreshes retained property values')
+    assert(Workspace.configureSource(source, 'get/data-properties/' .. screen_path))
     local safe = assert(find('PropertyName', 'Screen.SafeArea'))
-    assert(safe.IsNumericCompound and safe.IsCompound and not safe.IsText and not safe.IsBindable)
+    assert(safe.IsNumericCompound and safe.IsCompound and not safe.IsText and not safe.IsBindable
+        and safe.ValueTemplate == 'Editor/Templates/PropertyValueCompound')
     assert(not find('PropertyName', 'Screen.SafeAreaRight'), 'Collapsed groups do not emit duplicate leaf rows')
     local fields = assert(safe:findChild('Fields', false))
     local labels, leaves = {}, {}
@@ -151,12 +163,15 @@ local ok, err = xpcall(function()
     assert(Workspace.undo())
     assert(Workspace.configureSource(source, 'get/data-properties/' .. screen_path))
     local resize = assert(find('PropertyName', 'Screen.ResizeMode'))
-    assert(resize.IsEnum and not resize.IsText and resize:findChild('Options', false), 'Enums expose native choices')
+    assert(resize.IsEnum and not resize.IsText and resize:findChild('Options', false)
+        and resize.ValueTemplate == 'Editor/Templates/PropertyValueEnum', 'Enums expose native choices')
     local color = assert(find('PropertyName', 'Screen.ClearColor'))
-    assert(color.IsColor and not color.IsText and color.Value == '#123456')
+    assert(color.IsColor and not color.IsText and color.Value == '#123456'
+        and color.ValueTemplate == 'Editor/Templates/PropertyValueColor')
     assert(color.DraftValue == color.Value, 'Color editors receive their own native draft value')
     local sheet = assert(find('PropertyName', 'StyleController.StyleSheet'))
-    assert(sheet.IsReference and not sheet.ValueReadOnly and sheet.ReferenceType == 'StyleSheet')
+    assert(sheet.IsReference and not sheet.ValueReadOnly and sheet.ReferenceType == 'StyleSheet'
+        and sheet.ValueTemplate == 'Editor/Templates/PropertyValueReference')
     assert(sheet.ReferencePath == 'EditorFixture/Styles/base.css' and sheet.ReferenceLabel == 'base.css',
         'File resources retain their canonical loadable source path')
     assert(Workspace.configureSource(source, 'get/data-resources/' .. screen_path .. '?property=StyleController.StyleSheet&icons=Editor/Icons'))
@@ -211,12 +226,14 @@ local ok, err = xpcall(function()
     local path = 'EditorFixture/Main/Root/Renamed'
     assert(Workspace.configureSource(source, 'get/data-properties/' .. path))
     local font = assert(find('PropertyName', 'TextRun.Font'))
-    assert(font.IsSummary and not font.IsText and not font.IsNumericCompound)
+    assert(font.IsSummary and not font.IsText and not font.IsNumericCompound
+        and font.ValueTemplate == 'Editor/Templates/PropertyValueSummary')
     assert(not find('PropertyName', 'TextRun.FontSize'), 'Mixed font shorthand starts as a compact summary')
     assert(Workspace.configureSource(source, 'get/data-properties/' .. path .. '?expand=TextRun.Font'))
     assert(find('PropertyName', 'TextRun.FontSize').Value == '14' and find('PropertyName', 'TextRun.FontWeight').IsEnum)
     local text = assert(find('PropertyName', 'TextRun.Text'))
-    assert(text.Value == 'Hello' and text.IsProperty and text.IsText and not text.ReadOnly and not text.ValueReadOnly,
+    assert(text.Value == 'Hello' and text.IsProperty and text.IsText and not text.ReadOnly and not text.ValueReadOnly
+        and text.ValueTemplate == 'Editor/Templates/PropertyValueText',
         ('Text record: value=%s kind=%s text=%s readonly=%s'):format(tostring(text.Value), tostring(text.Kind), tostring(text.IsText), tostring(text.ReadOnly)))
     assert(Workspace.setValue(path, 'TextRun.Text', 'Changed & escaped'))
     assert(Workspace.configureSource(source, 'get/data-properties/' .. path))

@@ -18,6 +18,7 @@
 
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_geometry(lua_State *L);
+extern int luaopen_orca_filesystem(lua_State *L);
 
 static void
 ensure_class_registry(void)
@@ -33,8 +34,35 @@ ensure_class_registry(void)
     lua_pop(L, 1);
     luaL_requiref(L, "orca.core", luaopen_orca_core, 1);
     lua_pop(L, 1);
+    luaL_requiref(L, "orca.filesystem", luaopen_orca_filesystem, 1);
+    lua_pop(L, 1);
     lua_close(L);
     initialized = 1;
+}
+
+static void test_datasource_unchanged_order(void)
+{
+    RUN_TEST("datasource_unchanged_order_does_not_notify", {
+        ensure_class_registry();
+        struct Object *object = OBJ_Create(ID_XmlDataSource);
+        struct XmlDataSource *source = GetXmlDataSource(object);
+        PROP_SetStringValue(OBJ_FindLongProperty(object, ID_XmlDataSource_Content),
+            "<response><row name='a'/><row name='b'/><row name='c'/></response>");
+        EXPECT(XmlDataSource_ReloadData(source));
+        struct Object *items = CMP_GetObject(source->Items);
+        struct Object *a = OBJ_GetFirstChild(items);
+        struct Object *b = OBJ_GetNext(a);
+        struct Object *c = OBJ_GetNext(b);
+        uint32_t version = GetDataObject(items)->_collectionVersion;
+        EXPECT(XmlDataSource_ReloadData(source));
+        EXPECT(GetDataObject(items)->_collectionVersion == version);
+        EXPECT(OBJ_GetFirstChild(items) == a && OBJ_GetNext(a) == b && OBJ_GetNext(b) == c);
+        PROP_SetStringValue(OBJ_FindLongProperty(object, ID_XmlDataSource_Content),
+            "<response><row name='c'/><row name='b'/><row name='a'/></response>");
+        EXPECT(OBJ_GetFirstChild(items) == c && OBJ_GetNext(c) == b && OBJ_GetNext(b) == a);
+        EXPECT(GetDataObject(items)->_collectionVersion > version);
+        OBJ_ReleaseRef(object);
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -77,6 +105,7 @@ int main(void)
 {
     test_scene_tree();
     test_scene_rejects_malformed_input();
+    test_datasource_unchanged_order();
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;

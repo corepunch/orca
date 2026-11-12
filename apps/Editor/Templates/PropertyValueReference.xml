@@ -1,0 +1,7 @@
+<Button Name="PropertyReference" Visible="{Binding DataContext/IsReference}" Click="Reference" class="property-reference">
+  <Grid Rows="1fr" Columns="14px 1fr 14px" Spacing="6" IgnoreHitTest="true">
+    <VectorView Source="Editor/Icons/object.svg" class="property-resource-icon" />
+    <TextBlock Name="ReferenceLabel" Text="{Binding DataContext/ReferenceLabel}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" class="property-resource-label" />
+    <VectorView Source="Editor/Icons/search.svg" class="property-resource-icon" />
+  </Grid>
+</Button>

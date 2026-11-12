@@ -451,7 +451,10 @@ xml_source_merge(struct Object *target, struct Object *incoming)
     for (size_t j = 0; j < count; j++) if (ordered[j] == child) { keep = TRUE; break; }
     if (!keep) OBJ_RemoveFromParent(child);
   }
-  for (size_t j = 0; j < count; j++) OBJ_MoveBefore(ordered[j], NULL);
+  /* Walking backwards avoids moving every already ordered child to the end,
+   * which invalidates binding paths and marks the collection as changed. */
+  for (size_t j = count; j > 0; j--)
+    OBJ_MoveBefore(ordered[j - 1], j < count ? ordered[j] : NULL);
   OBJ_EndUpdate(target);
   free(ordered);
 }

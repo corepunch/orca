@@ -1,0 +1,1 @@
+<TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" class="property-readonly" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" />

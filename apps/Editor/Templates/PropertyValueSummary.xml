@@ -1,0 +1,1 @@
+<Button Name="PropertySummary" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsSummary}" Click="Toggle" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" class="property-summary" />

@@ -713,6 +713,9 @@ _EnumSheetRules(struct Object *sheetObj, struct Object *target,
       if (!sr->selector) continue;
       bool_t selectorState = sr->flags || sr->selector->pseudo;
       if ((!statePass && selectorState) || (statePass && !selectorState && !stateClasses)) continue;
+      // Hover rules must still match to discover hoverable objects.
+      if ((objFlags & sr->flags) != sr->flags &&
+          !((sr->flags | sr->selector->pseudo) & STYLE_HOVER)) continue;
       struct style_class_selector* cls = NULL;
       if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls, chain)) continue;
       if (sr->flags & STYLE_HOVER)
@@ -826,6 +829,13 @@ HANDLER(StyleController, Object, PropertyChanged)
     return FALSE;
   }
   if (property != ID_StyleController_StateClasses) return FALSE;
+  /* An empty binding does not change authored classes or descendants. */
+  if (!pStyleController->StateClasses || !*pStyleController->StateClasses) {
+    bool_t hasStateClasses = FALSE;
+    FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes)
+      if (cls->state) { hasStateClasses = TRUE; break; }
+    if (!hasStateClasses) return FALSE;
+  }
   struct style_class_selector **link = &pStyleController->classes;
   while (*link) {
     struct style_class_selector *cls = *link;

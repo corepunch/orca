@@ -1,0 +1,1 @@
+<CheckBox Name="PropertyBoolean" IsChecked="{Binding DataContext/BoolValue}" Visible="{Binding DataContext/IsBool}" CheckedChanged="Boolean" class="property-check" />

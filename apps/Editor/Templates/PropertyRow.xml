@@ -1,50 +1,18 @@
 <Grid Height="28" Rows="1fr" Columns="1fr" RightButtonUp="Context" StateClasses="{Binding DataContext/State}" class="property-row">
   <Grid Rows="1fr" Columns="16px 1fr" Visible="{Binding DataContext/IsGroup}" class="property-group">
     <Button Click="Toggle" class="disclosure">
-      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
+      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true" />
     </Button>
-    <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Click="Toggle" class="property-group-title"/>
+    <Button Name="PropertyGroup" Text="{Binding DataContext/Label}" Click="Toggle" class="property-group-title" />
   </Grid>
   <Grid Rows="1fr" Columns="16px 128px 1fr 20px" Visible="{Binding DataContext/IsProperty}" Spacing="4" Padding="4 0 6 0">
     <Button Click="Toggle" class="disclosure">
-      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true"/>
+      <VectorView Source="{Binding DataContext/DisclosureIcon}" class="disclosure-icon" IgnoreHitTest="true" />
     </Button>
-    <TextBlock Text="{Binding DataContext/Label}" Node.PaddingLeft="{Binding DataContext/Indent}" class="property-label"
-               OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-    <Grid Rows="1fr" Columns="1fr">
-      <Input Name="PropertyText" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Visible="{Binding DataContext/IsText}"
-             Submit="Value" KillFocus="Commit" KeyDown="FieldKey" class="property-input"/>
-      <CheckBox Name="PropertyBoolean" IsChecked="{Binding DataContext/BoolValue}" Visible="{Binding DataContext/IsBool}" CheckedChanged="Boolean" class="property-check"/>
-      <Button Name="PropertyEnum" Visible="{Binding DataContext/IsEnum}" Click="Enum" class="property-enum">
-        <Grid Rows="1fr" Columns="1fr 12px" Spacing="4" IgnoreHitTest="true">
-          <TextBlock Text="{Binding DataContext/Value}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
-          <VectorView Source="Editor/Icons/chevron-down.svg" class="property-choice-icon"/>
-        </Grid>
-      </Button>
-      <Button Name="PropertyReference" Visible="{Binding DataContext/IsReference}" Click="Reference" class="property-reference">
-        <Grid Rows="1fr" Columns="14px 1fr 14px" Spacing="6" IgnoreHitTest="true">
-          <VectorView Source="Editor/Icons/object.svg" class="property-resource-icon"/>
-          <TextBlock Name="ReferenceLabel" Text="{Binding DataContext/ReferenceLabel}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" class="property-resource-label"/>
-          <VectorView Source="Editor/Icons/search.svg" class="property-resource-icon"/>
-        </Grid>
-      </Button>
-      <Button Name="PropertySummary" Text="{Binding DataContext/Value}" Visible="{Binding DataContext/IsSummary}" Click="Toggle"
-              OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" class="property-summary"/>
-      <GridBox Name="CompoundFields" Rows="1fr" Columns="{Binding DataContext/FieldColumns}" Visible="{Binding DataContext/IsNumericCompound}" Spacing="4" class="property-compound-fields"
-               ItemsSource="{Binding DataContext/Fields}" ItemTemplate="Editor/Templates/PropertyField" ItemNamePrefix="Field"/>
-      <Grid Name="PropertyColor" Columns="20px 1fr" Spacing="6" Visible="{Binding DataContext/IsColor}">
-        <Node2D Name="ColorSwatch" BackgroundColor="{Binding DataContext/Value}" class="property-color-swatch"/>
-        <Grid Rows="1fr" Columns="1fr">
-          <Input Name="ColorValue" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Visible="{Binding DataContext/IsBindable}"
-                 Submit="Value" KillFocus="Commit" KeyDown="FieldKey" class="property-input"/>
-          <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ReadOnly}" class="property-readonly"/>
-        </Grid>
-      </Grid>
-      <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ValueReadOnly}" class="property-readonly"
-                 OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap"/>
-    </Grid>
+    <TextBlock Text="{Binding DataContext/Label}" Node.PaddingLeft="{Binding DataContext/Indent}" class="property-label" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true" />
+    <PrefabView2D Prefab="{Binding DataContext/ValueTemplate}" />
     <Button Name="BindProperty" Click="Bind" Visible="{Binding DataContext/IsBindable}" class="bind-button">
-      <VectorView Source="Editor/Icons/link.svg" class="bind-icon" IgnoreHitTest="true"/>
+      <VectorView Source="Editor/Icons/link.svg" class="bind-icon" IgnoreHitTest="true" />
     </Button>
   </Grid>
 </Grid>

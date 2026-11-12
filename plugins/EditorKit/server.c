@@ -1329,7 +1329,7 @@ property_matches(xmlNodePtr property, lpcString_t group, lpcString_t filter)
 }
 
 static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t group,
-                          uint32_t uid, bool_t readonly, int depth,
+                          bool_t readonly, int depth,
                           lpcString_t parent_key, lpcString_t filter, lpcString_t expand,
                           lpcString_t icons) {
   if (!property_matches(prop, group, filter)) return;
@@ -1343,8 +1343,9 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
   lpcString_t property = qualified ? (char *)qualified : (char *)label;
   path_t key = {0};
   snprintf(key, sizeof(key), "%s/%s", parent_key, property ? property : "");
+  /* Identity is scoped to the inspector source so common rows survive selection. */
   char id[64];
-  snprintf(id, sizeof(id), "property-%u-%08x", uid, fnv1a32(key));
+  snprintf(id, sizeof(id), "property-%08x", fnv1a32(key));
   xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
                                 "PropertyName", property ? property : "", "Label", (char *)label,
                                 "ShortLabel", short_label ? (char *)short_label : (char *)label,
@@ -1389,6 +1390,10 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
   data_flag(row, "IsText", (!compound || (structure && !numeric)) && !color && !boolean && !enumeration && !reference && !readonly);
   data_flag(row, "IsReference", reference);
   data_flag(row, "IsColor", color);
+  lpcString_t value_template = reference ? "Reference" : color ? "Color" :
+    (compound && numeric) ? "Compound" : (compound && !numeric && !structure) ? "Summary" :
+    readonly ? "Readonly" : boolean ? "Boolean" : enumeration ? "Enum" : "Text";
+  _xmlSetPropFormat(row, "ValueTemplate", "Editor/Templates/PropertyValue%s", value_template);
   data_flag(row, "IsBindable", !readonly && (!compound || structure) && !xmlHasProp(prop, XMLSTR("data-unbindable")));
   data_flag(row, "BoolValue", value && (!xmlStrcasecmp(value, XMLSTR("true")) || !xmlStrcmp(value, XMLSTR("1"))));
   data_flag(row, "HasBinding", binding);
@@ -1422,13 +1427,13 @@ static void data_property(xmlNodePtr prop, xmlNodePtr response, lpcString_t grou
     if (numeric) {
       xmlNodePtr fields = xmlNewChild(row, NULL, XMLSTR("Fields"), NULL);
       xmlForEach(field, prop)
-        if (field->type == XML_ELEMENT_NODE) data_property(field, fields, group, uid, readonly, 0, key, NULL, expand, icons);
+        if (field->type == XML_ELEMENT_NODE) data_property(field, fields, group, readonly, 0, key, NULL, expand, icons);
     }
     if (open) xmlForEach(field, prop)
-      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, readonly, depth + 1, key, NULL, expand, icons);
+      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, readonly, depth + 1, key, NULL, expand, icons);
   } else {
     xmlForEach(field, prop)
-      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, uid, TRUE, depth + 1, key, filter, expand, icons);
+      if (field->type == XML_ELEMENT_NODE) data_property(field, response, group, TRUE, depth + 1, key, filter, expand, icons);
   }
   xmlFree(label); xmlFree(value); xmlFree(qualified); xmlFree(expression); xmlFree(locked); xmlFree(short_label);
 }
@@ -1452,15 +1457,15 @@ static lpcString_t group_title(lpcString_t name, char *out, size_t size) {
 
 static SV_CMD(GET, data_properties) {
   REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
+  (void)object;
   xmlNodePtr tree = xmlNewNode(NULL, XMLSTR("properties"));
   lpcString_t error = GET_node(L, tree, endpoint, rargs, nargs);
-  uint32_t uid = OBJ_GetUniqueID(object);
   xmlForEach(group, tree) {
     xmlChar *label = xmlGetProp(group, XMLSTR("name"));
     xmlChar *locked = xmlGetProp(group, XMLSTR("data-readonly"));
     if (!label || !group->children) { xmlFree(label); xmlFree(locked); continue; }
     char id[64], title[128];
-    snprintf(id, sizeof(id), "group-%u-%08x", uid, fnv1a32((char *)label));
+    snprintf(id, sizeof(id), "group-%08x", fnv1a32((char *)label));
     xmlNodePtr row = _xmlNewChild(response, "EditorProperty", "name", id, "Id", id,
                                   "Label", group_title((char *)label, title, sizeof(title)), "GroupName", (char *)label);
     data_flag(row, "IsGroup", TRUE);
@@ -1472,7 +1477,7 @@ static SV_CMD(GET, data_properties) {
     if (open) {
       xmlForEach(prop, group)
         if (prop->type == XML_ELEMENT_NODE)
-          data_property(prop, response, (char *)label, uid, locked != NULL, 0, (char *)label,
+          data_property(prop, response, (char *)label, locked != NULL, 0, (char *)label,
                         SV_ARG("filter"), SV_ARG("expand"), SV_ARG("icons"));
     }
     if (SV_ARG("filter") && *SV_ARG("filter") && response->last == row) {

@@ -1,0 +1,7 @@
+<Grid Name="PropertyColor" Columns="20px 1fr" Spacing="6" Visible="{Binding DataContext/IsColor}">
+  <Node2D Name="ColorSwatch" BackgroundColor="{Binding DataContext/Value}" class="property-color-swatch" />
+  <Grid Rows="1fr" Columns="1fr">
+    <Input Name="ColorValue" Text="{Binding DataContext/DraftValue, Mode=TwoWay}" Visible="{Binding DataContext/IsBindable}" Submit="Value" KillFocus="Commit" KeyDown="FieldKey" class="property-input" />
+    <TextBlock Text="{Binding DataContext/Value}" Visible="{Binding DataContext/ReadOnly}" class="property-readonly" />
+  </Grid>
+</Grid>

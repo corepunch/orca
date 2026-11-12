@@ -1,0 +1,6 @@
+<Button Name="PropertyEnum" Visible="{Binding DataContext/IsEnum}" Click="Enum" class="property-enum">
+  <Grid Rows="1fr" Columns="1fr 12px" Spacing="4" IgnoreHitTest="true">
+    <TextBlock Text="{Binding DataContext/Value}" OverflowX="Hidden" TextOverflow="Ellipsis" TextWrapping="NoWrap" />
+    <VectorView Source="Editor/Icons/chevron-down.svg" class="property-choice-icon" />
+  </Grid>
+</Button>

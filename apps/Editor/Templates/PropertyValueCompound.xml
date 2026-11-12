@@ -1,0 +1,1 @@
+<GridBox Name="CompoundFields" Rows="1fr" Columns="{Binding DataContext/FieldColumns}" Visible="{Binding DataContext/IsNumericCompound}" Spacing="4" class="property-compound-fields" ItemsSource="{Binding DataContext/Fields}" ItemTemplate="Editor/Templates/PropertyField" ItemNamePrefix="Field" />

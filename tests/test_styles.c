@@ -32,6 +32,8 @@ struct vm_register
 
 extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register *);
 extern bool_t PROP_SetBinding(struct Property *, char const *, unsigned int, bool_t);
+/* Exercise cache invalidation on the private detach path. */
+extern void CMP_Detach(void *userdata);
 /* Private global sheet seam: exercise global/default vs application cascade. */
 extern struct Object *static_stylesheet;
 
@@ -48,10 +50,14 @@ struct TestStyledComp {
     float Width;
 };
 
+static bool_t track_restyles;
+static int restyle_count;
+
 static LRESULT TestStyledCompProc(struct Object* o, void* c,
                                    uint32_t msg, wParam_t wp, lParam_t lp)
 {
-    (void)o; (void)c; (void)msg; (void)wp; (void)lp;
+    (void)o; (void)c; (void)wp; (void)lp;
+    if (track_restyles && msg == ID_StyleController_ThemeChanged) restyle_count++;
     return FALSE;
 }
 
@@ -93,11 +99,14 @@ static struct ClassDesc s_testStyledClass = {
     .ParentClasses   = { ID_StyleController, 0 },
 };
 
+static struct ClassDesc s_cache_owner = { .ClassName = "StyleCacheOwner", .ClassID = 0xaabb1133u };
+
 static void register_styled_class(void) {
     OBJ_RegisterClass(&_StyleSheet);
     OBJ_RegisterClass(&_StyleRule);
     OBJ_RegisterClass(&_StyleController);
     OBJ_RegisterClass(&s_testStyledClass);
+    OBJ_RegisterClass(&s_cache_owner);
 }
 
 /* ------------------------------------------------------------------ */
@@ -169,6 +178,48 @@ static void test_stylecontroller_attached(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         EXPECT(GetStyleController(obj) != NULL);
     }
+}
+
+/* Cached lookups retain the first component and follow detach/reattach. */
+static void test_style_component_lookup_after_detach(void) {
+    WITH(struct Object, obj, OBJ_Create(s_cache_owner.ClassID), destroy_object) {
+        EXPECT(GetStyleController(obj) == NULL);
+        void *first = CMP_GetUserData(OBJ_AddComponent(obj, ID_StyleController));
+        void *second = CMP_GetUserData(OBJ_AddComponent(obj, ID_StyleController));
+        EXPECT(first && second && GetStyleController(obj) == first);
+        EXPECT(GetStyleController(obj) == first);
+        CMP_Detach(first);
+        EXPECT(GetStyleController(obj) == second);
+        CMP_Detach(second);
+        EXPECT(GetStyleController(obj) == NULL);
+        void *third = CMP_GetUserData(OBJ_AddComponent(obj, ID_StyleController));
+        EXPECT(third && GetStyleController(obj) == third);
+        CMP_Detach(third);
+    }
+}
+
+/* Empty state classes must not restyle unchanged descendants, but clearing
+ * a real state must still update both the node and its descendants. */
+static void test_empty_state_classes_skip_restyle(void) {
+    WITH(struct Object, parent, make_styled_object(), destroy_object) {
+        WITH(struct Object, child, make_styled_object(), destroy_object) {
+            OBJ_AddChild(parent, child);
+            struct Property *state = OBJ_FindLongProperty(parent, ID_StyleController_StateClasses);
+            EXPECT(state != NULL);
+            PROP_SetStringValue(state, "");
+            restyle_count = 0;
+            track_restyles = TRUE;
+            _SendMessage(parent, Object, PropertyChanged, .Property = state);
+            EXPECT(restyle_count == 0);
+            track_restyles = FALSE;
+            PROP_SetStringValue(state, "selected");
+            restyle_count = 0;
+            track_restyles = TRUE;
+            PROP_SetStringValue(state, "");
+            EXPECT(restyle_count >= 2);
+        }
+    }
+    track_restyles = FALSE;
 }
 
 /* Parsing a simple class name stores it (verified via OF_HOVERABLE flag) */
@@ -593,6 +644,8 @@ int main(void) {
         DECL_TEST(test_disabled_inheritance_and_unknown_pseudo),
         DECL_TEST(test_application_base_overrides_global_state),
         DECL_TEST(test_stylecontroller_attached),
+        DECL_TEST(test_style_component_lookup_after_detach),
+        DECL_TEST(test_empty_state_classes_skip_restyle),
         DECL_TEST(test_parse_class_hover_flag),
         DECL_TEST(test_parse_multiple_classes),
         DECL_TEST(test_parse_class_no_hover),

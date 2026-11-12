@@ -41,6 +41,7 @@ struct Object
   LPSTR TextContent;
 
   struct component* components;
+  struct component* style_component; // frequent lookup; cleared when detached
   struct Property* properties;
 
   uint32_t alias;

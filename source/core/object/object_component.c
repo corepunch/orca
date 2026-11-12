@@ -83,6 +83,7 @@ OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
   comp->pobj = pobj;
   
   ADD_TO_LIST_END(struct component, comp, pobj->components);
+  if (class_id == ID_StyleController && !pobj->style_component) pobj->style_component = comp;
 
   for (uint32_t const* p = cls->ParentClasses; *p; OBJ_AddComponent(pobj, *(p++)));
 
@@ -587,9 +588,11 @@ CMP_GetUserData(struct component* component)
 void*
 OBJ_GetComponent(struct Object *pobj, uint32_t id)
 {
+  if (id == ID_StyleController && pobj->style_component) return pobj->style_component->pUserData;
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
     if (cmp->pcls->ClassID == id) {
+      if (id == ID_StyleController) pobj->style_component = cmp;
       return cmp->pUserData;
     }
   }
@@ -599,6 +602,7 @@ OBJ_GetComponent(struct Object *pobj, uint32_t id)
 void
 OBJ_ReleaseComponents(struct Object *pobj)
 {
+  pobj->style_component = NULL;
   PROP_InvalidateBindingPaths();
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
@@ -616,6 +620,7 @@ CMP_Detach(void* userdata)
   // Subtract its offset to recover the containing struct component pointer.
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
   struct Object *pobj = self->pobj;
+  if (pobj->style_component == self) pobj->style_component = NULL;
   REMOVE_FROM_LIST(struct component, self, pobj->components);
   AnimationDispatch_Forget(self);
   free(self);

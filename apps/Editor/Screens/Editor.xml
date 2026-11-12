@@ -1,4 +1,4 @@
-<Screen Name="EditorScreen" StyleSheet="Editor/Styles/editor.css" class="editor">
+<Screen Name="EditorScreen" Appearance="Dark" StyleSheet="Editor/Styles/editor.css" class="editor">
   <ProcessConnection Name="Runtime">
     <ProcessConnection.Arguments>
       <ProcessArgument Value="-server=true"/>

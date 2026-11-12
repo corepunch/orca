@@ -29,6 +29,7 @@
     <Column Name="Value" Type="string"/>
     <Column Name="DraftValue" Type="string"/>
     <Column Name="Kind" Type="string"/>
+    <Column Name="ValueTemplate" Type="string"/>
     <Column Name="GroupName" Type="string"/>
     <Column Name="Expression" Type="string"/>
     <Column Name="IsGroup" Type="bool"/>

@@ -6,9 +6,8 @@ with a Console below it, and the Inspector on the right. The edited project runs
 `orca -server=true` process; every change is applied to that running scene
 and the preview is re-rendered from it. Panels, menus and dialogs use native
 UIKit controls authored in XML. Buttons, inputs and checkboxes use the
-engine's default stylesheet with semantic light/dark palettes from
-`package.lua`. Appearance follows the operating system and updates retained
-controls immediately, preserving focus, selection and unfinished text.
+engine's default stylesheet with semantic palettes from `package.lua`. The
+editor uses its dark appearance regardless of the operating system setting.
 
 The editor starts in a compact 1040 × 680 window with original 3D splash artwork, a
 searchable project list, and recent projects. Select a project and choose

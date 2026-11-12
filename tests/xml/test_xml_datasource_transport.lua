@@ -38,6 +38,14 @@ assert(source.Items == items and items:getFirstChild() == b and b:getNext() == a
 assert(a.Title == 'Retained' and b.Title == 'Changed' and a.Count == 9)
 assert(list:getFirstChild():getNext() == firstView, 'Refresh retains generated controls')
 
+local c = a:getNext()
+source.Content = [[<response status="success"><TransportRow name="c" Id="c" Title="Third"/>
+<TransportRow name="b" Id="b" Title="Changed"/><TransportRow name="a" Id="a" Title="Retained"/></response>]]
+assert(source:reload() and items:getFirstChild() == c and c:getNext() == b and b:getNext() == a,
+    'Reverse ordering retains every record')
+assert(source:reload() and items:getFirstChild() == c and c:getNext() == b and b:getNext() == a,
+    'An unchanged ordering remains stable on repeated refresh')
+
 source.Content = '<response status="success"><TransportRow name="a" Id="a"/></response>'
 assert(source:reload() and source.Items:getFirstChild() == a)
 assert((a.Title == nil or a.Title == '') and a.Count == 0 and a.Enabled == false,

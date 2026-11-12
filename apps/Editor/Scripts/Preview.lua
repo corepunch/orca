@@ -104,8 +104,8 @@ function Preview:rectOf(path)
 	for _, r in ipairs(self.rects) do if r.path == path then return r end end
 end
 
-function Preview:placeOutline(node, path)
-	local r = path and self:rectOf(path)
+function Preview:placeOutline(node, path, rect)
+	local r = rect or (path and self:rectOf(path))
 	if not r or r.w <= 0 or r.h <= 0 or not self.scale then node.Visible = false return end
 	-- Document coordinates, scaled to the artboard and clipped to it.
 	local k, w, h = self.scale, self.canvas.Width or 0, self.canvas.Height or 0
@@ -122,24 +122,24 @@ function Preview:hitTest(args)
 	local ox, oy = self:origin()
 	local px = (args.x - ox - (self.canvas.x or 0)) / self.scale
 	local py = (args.y - oy - (self.canvas.y or 0)) / self.scale
-	local best
-	for _, r in ipairs(self.rects) do
+	for i = #self.rects, 1, -1 do
+		local r = self.rects[i]
 		if px >= r.x and py >= r.y and px < r.x + r.w and py < r.y + r.h and r.w > 0 and r.h > 0 then
-			best = r -- later rects are deeper in the tree
+			return r -- later rects are deeper in the tree
 		end
 	end
-	return best
 end
 
 function Preview:pick(args)
 	if Native.onActivate then Native.onActivate(self) end
 	local r = self:hitTest(args)
-	Workspace.select(r and r.path or Workspace.document)
+	local path = r and r.path or Workspace.document
+	if path ~= Workspace.selection then Workspace.select(path) end
 end
 
 function Preview:hoverAt(args)
 	local r = self:hitTest(args)
-	self:placeOutline(self.hover, r and r.path)
+	self:placeOutline(self.hover, nil, r)
 end
 
 return Preview
