@@ -1,0 +1,6 @@
+<Grid Columns="auto 20px" Rows="1fr" Padding="0 6 0 0" StateClasses="{Binding DataContext/State}" RightButtonUp="Context" class="document-tab">
+  <Button Name="TabTitle" Text="{Binding DataContext/Label}" Click="Invoke" class="tab-title"/>
+  <Button Name="TabClose" Click="Close" Width="18" Height="18" VerticalAlignment="Center" class="icon-button tab-close">
+    <VectorView Source="Editor/Icons/x.svg" class="tab-close-icon" IgnoreHitTest="true"/>
+  </Button>
+</Grid>

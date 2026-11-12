@@ -63,6 +63,8 @@
 .row-label:dark { color: var(--ui-control-foreground-dark); }
 .row-icon { width: 14; height: 14; margin: auto; color: var(--editor-secondary); }
 .row-icon:dark { color: var(--editor-secondary-dark); }
+.row-detail { color: var(--ui-control-muted); text-vertical-align: center; font-size: 11; }
+.row-detail:dark { color: var(--ui-control-muted-dark); }
 .disclosure { padding: 0; background-color: #00000000; border-radius: 3; }
 .disclosure:hover { background-color: var(--editor-hover); }
 .disclosure:dark:hover { background-color: var(--editor-hover-dark); }
@@ -218,3 +220,21 @@
 .completion-selected:dark { background-color: var(--ui-accent); color: #ffffff; }
 
 @import "welcome.css";
+
+/* Document tabs: inactive tabs sit on the chrome; the active tab takes the
+   panel surface so it reads as the top of the Preview below it. */
+.document-tabs { background-color: var(--editor-chrome); }
+.document-tabs:dark { background-color: var(--editor-chrome-dark); }
+.document-tab { background-color: #00000000; }
+.document-tab:hover { background-color: var(--editor-hover); }
+.document-tab:dark:hover { background-color: var(--editor-hover-dark); }
+.tab-active, .tab-active:hover { background-color: var(--editor-surface); }
+.tab-active:dark, .tab-active:dark:hover { background-color: var(--editor-surface-dark); }
+.tab-title { background-color: #00000000; color: var(--ui-control-muted); padding: 0 4 0 12; border-radius: 0; text-vertical-align: center; }
+.tab-title:dark { color: var(--ui-control-muted-dark); }
+.tab-title:hover, .tab-title:active { background-color: #00000000; }
+.tab-active .tab-title { color: var(--ui-control-foreground); }
+.tab-active:dark .tab-title { color: var(--ui-control-foreground-dark); }
+.tab-close { border-radius: 3; }
+.tab-close-icon { width: 10; height: 10; margin: auto; color: var(--ui-control-muted); }
+.tab-close-icon:dark { color: var(--ui-control-muted-dark); }

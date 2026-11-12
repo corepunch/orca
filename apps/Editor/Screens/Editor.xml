@@ -14,7 +14,8 @@
         <Grid Name="HierarchySlot" Rows="1fr" Columns="1fr"/>
         <Grid Name="ProjectSlot" Rows="1fr" Columns="1fr"/>
       </Grid>
-      <Grid Name="CenterPanels" Rows="1fr 190px" Columns="1fr" Spacing="1">
+      <Grid Name="CenterPanels" Rows="30px 1fr 190px" Columns="1fr" Spacing="1">
+        <Grid Name="TabsSlot" Rows="1fr" Columns="1fr"/>
         <Grid Name="PreviewSlot" Rows="1fr" Columns="1fr"/>
         <Grid Name="ConsoleSlot" Rows="1fr" Columns="1fr"/>
       </Grid>

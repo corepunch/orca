@@ -13,8 +13,11 @@ function StatusBar:invalidate()
 	local history=self.view:findChild('History',true)
 	history.Text,history.Visible='',false
 	local state=self.view:findChild('State',true)
-	state.Text=Workspace.dirty and '● Unsaved changes' or 'All changes saved'
-	state.StateClasses=Workspace.dirty and 'status-dirty' or ''
+	local unsaved=0
+	for _,doc in ipairs(Workspace.documents) do if Workspace.isDirty(doc.path) then unsaved=unsaved+1 end end
+	if Workspace.dirty and unsaved<1 then unsaved=1 end
+	state.Text=unsaved>1 and ('● '..unsaved..' unsaved documents') or unsaved==1 and (Workspace.dirty and '● Unsaved changes' or '● 1 unsaved document') or 'All changes saved'
+	state.StateClasses=unsaved>0 and 'status-dirty' or ''
 end
 function StatusBar:checkResize() end
 function StatusBar:focus() self.view:setFocus() end
