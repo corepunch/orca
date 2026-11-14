@@ -29,6 +29,7 @@ class MemoryRepository {
   async list(name, queries = [], limit) {
     let rows = [...this.table(name).values()].map(clone);
     for (const query of queries) if (query.method === 'equal') rows = rows.filter(row => query.values.includes(row[query.attribute]));
+    for (const query of queries) if (query.method === 'greaterThan') rows = rows.filter(row => row[query.attribute] > query.values[0]);
     for (const query of [...queries].reverse()) if (query.method.startsWith('order')) rows.sort((a, b) => {
       const field = query.attribute === '$createdAt' ? 'created_at' : query.attribute === '$id' ? 'id' : query.attribute;
       return String(a[field]).localeCompare(String(b[field])) * (query.method === 'orderDesc' ? -1 : 1);
@@ -121,6 +122,44 @@ test('notification previews default on, validate booleans, persist privately and
   const contacts = await fixture.call('owner', '/rest/v1/chat_profiles', {}, 'GET');
   assert.equal(contacts.body[0].notification_previews, undefined);
   assert.equal((await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { notification_previews: true } })).body.notification_previews, true);
+});
+
+test('unread counts, read marks and the push badge follow what each member has read', async () => {
+  const fixture = setup({ pushEnabled: true });
+  fixture.clock.now = Date.parse('2026-11-16T00:00:00Z');
+  const group = await room(fixture, 'group', ['alice']), direct = await room(fixture, 'direct', ['alice']);
+  const post = async (user, roomId, text) => {
+    fixture.clock.now += 1000;
+    const response = await fixture.call(user, '/rest/v1/rpc/post_chat_message', { target_room: roomId, message_body: text });
+    assert.equal(response.status, 200); return response.body[0];
+  };
+  const unread = async user => Object.fromEntries((await fixture.call(user, '/rest/v1/chat_rooms', {}, 'GET')).body.map(row => [row.id, row.unread]));
+  await post('owner', group.id, 'one'); await post('owner', group.id, 'two'); await post('owner', direct.id, 'hi');
+  assert.deepEqual(await unread('alice'), { [group.id]: 2, [direct.id]: 1 });
+  assert.deepEqual(await unread('owner'), { [group.id]: 0, [direct.id]: 0 }, 'your own messages are never unread');
+  const badges = pushCalls(fixture).map(call => call.options.body.badge);
+  assert.deepEqual(badges, [1, 2, 3], 'each push carries the recipient total');
+  assert.equal(pushCalls(fixture).at(-1).options.body.tag, direct.id, 'notifications group by conversation');
+
+  // Older pages and plain reads leave the mark alone; the open thread marks it.
+  await fixture.call('alice', '/rest/v1/rpc/list_chat_messages', { target_room: group.id });
+  assert.equal((await unread('alice'))[group.id], 2, 'listing without mark_read changes nothing');
+  await fixture.call('alice', '/rest/v1/rpc/list_chat_messages', { target_room: group.id, mark_read: true });
+  assert.deepEqual(await unread('alice'), { [group.id]: 0, [direct.id]: 1 });
+  await post('owner', group.id, 'three');
+  assert.equal(pushCalls(fixture).at(-1).options.body.badge, 2, 'the badge counts only what is still unread');
+  assert.equal((await unread('alice'))[group.id], 1, 'a newer message is unread again');
+  await post('alice', direct.id, 'reply');
+  assert.equal((await unread('alice'))[direct.id], 0, 'replying reads the conversation');
+  assert.equal((await fixture.call('bob', '/rest/v1/rpc/list_chat_messages', { target_room: group.id, mark_read: true })).status, 403,
+    'only members can move a read mark');
+});
+
+test('history before read tracking started never counts as unread', async () => {
+  const fixture = setup(), group = await room(fixture, 'group', ['alice']);
+  await fixture.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: 'old' });
+  const rooms = (await fixture.call('alice', '/rest/v1/chat_rooms', {}, 'GET')).body;
+  assert.equal(rooms.find(row => row.id === group.id).unread, 0);
 });
 
 test('push previews use saved sender and room labels, sanitized text and legacy recipient defaults', async () => {

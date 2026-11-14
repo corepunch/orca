@@ -16,6 +16,8 @@ void Notifications_AppleRequestAuthorization(void);
 void Notifications_AppleToken(void *data);
 void Notifications_AppleError(void *error);
 void Notifications_AppleOpen(void *response);
+void Notifications_AppleSetBadge(long count);
+void Notifications_AppleSetActiveConversation(char const *conversationId);
 #endif
 
 #endif

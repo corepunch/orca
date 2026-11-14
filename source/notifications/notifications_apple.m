@@ -19,6 +19,8 @@
 
 static OrcaNotificationDelegate *notificationDelegate;
 static struct NotificationsEvent latestToken;
+/* The conversation on screen; read by the delegate on the main thread. */
+static NSString *activeConversation;
 
 static void notification_error(char const *code, char const *message) {
   struct NotificationsEvent event = { .type = "error" };
@@ -127,6 +129,43 @@ void Notifications_AppleRequestAuthorization(void) {
   });
 }
 
+void Notifications_AppleSetBadge(long count) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+#if TARGET_OS_IOS
+    if (@available(iOS 16.0, *)) {
+      [[UNUserNotificationCenter currentNotificationCenter] setBadgeCount:count withCompletionHandler:nil];
+    } else {
+      [UIApplication sharedApplication].applicationIconBadgeNumber = count;
+    }
+#else
+    NSApp.dockTile.badgeLabel = count > 0 ? [NSString stringWithFormat:@"%ld", count] : nil;
+#endif
+  });
+}
+
+void Notifications_AppleSetActiveConversation(char const *conversationId) {
+  NSString *value = conversationId ? [NSString stringWithUTF8String:conversationId] : nil;
+  dispatch_async(dispatch_get_main_queue(), ^{
+#if !__has_feature(objc_arc)
+    [activeConversation release];
+#endif
+    activeConversation = [value copy];
+    if (!value) return;
+    // Opening a conversation clears its delivered notifications.
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center getDeliveredNotificationsWithCompletionHandler:^(NSArray<UNNotification *> *delivered) {
+      NSMutableArray<NSString *> *ids = [NSMutableArray array];
+      for (UNNotification *item in delivered) {
+        NSDictionary *info = item.request.content.userInfo;
+        id nested = info[@"data"];
+        NSDictionary *data = [nested isKindOfClass:[NSDictionary class]] ? nested : info;
+        if ([data[@"conversationId"] isEqual:value]) [ids addObject:item.request.identifier];
+      }
+      if (ids.count) [center removeDeliveredNotificationsWithIdentifiers:ids];
+    }];
+  });
+}
+
 @implementation OrcaNotificationDelegate
 #if !TARGET_OS_IOS
 + (void)load {
@@ -151,9 +190,21 @@ void Notifications_AppleRequestAuthorization(void) {
       willPresentNotification:(UNNotification *)notification
         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
   (void)center;
-  notification_payload(notification.request.content.userInfo, "received");
-  // The active application refreshes its conversation without showing a second alert.
-  completionHandler(UNNotificationPresentationOptionNone);
+  NSDictionary *userInfo = notification.request.content.userInfo;
+  notification_payload(userInfo, "received");
+  // The open conversation refreshes itself silently; any other conversation
+  // shows a banner with sound, like other messengers.
+  id nested = [userInfo isKindOfClass:[NSDictionary class]] ? userInfo[@"data"] : nil;
+  NSDictionary *data = [nested isKindOfClass:[NSDictionary class]] ? nested : userInfo;
+  id conversation = [data isKindOfClass:[NSDictionary class]] ? data[@"conversationId"] : nil;
+  if ([conversation isKindOfClass:[NSString class]] && [conversation isEqual:activeConversation]) {
+    completionHandler(UNNotificationPresentationOptionNone);
+    return;
+  }
+  UNNotificationPresentationOptions options = UNNotificationPresentationOptionSound | UNNotificationPresentationOptionBadge;
+  if (@available(iOS 14.0, macOS 11.0, *)) options |= UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionList;
+  else options |= UNNotificationPresentationOptionAlert;
+  completionHandler(options);
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center

@@ -105,12 +105,14 @@ client, requests = backend {
   { status = 200, body = { messages = { { id = "x" } }, has_more = true, next_cursor = "wrong" } },
 }
 assert(client:signIn("a@b.test", "password"))
-page = assert(client:listMessagePage("room-1"))
+page = assert(client:listMessagePage("room-1", { markRead = true }))
 check(requests[2].method == "POST" and requests[2].url:match("/rpc/list_chat_messages$")
     and requests[2].body.target_room == "room-1" and requests[2].body.limit == 30 and requests[2].body.before == nil,
     "Latest loading uses one bounded authenticated RPC")
-assert(client:listMessagePage("room-1", { before = page.next_cursor, limit = 100 }))
+check(requests[2].body.mark_read == true, "The open thread's newest page marks the conversation read")
+assert(client:listMessagePage("room-1", { before = page.next_cursor, limit = 100, markRead = true }))
 check(requests[3].body.before == "m1" and requests[3].body.limit == 100, "Older RPC carries an opaque cursor and allows the explicit maximum")
+check(requests[3].body.mark_read == nil, "Older pages never move the read mark")
 page, err = client:listMessagePage("room-1")
 check(not page and err.code == "invalid_response", "Repeated response IDs must not corrupt the timeline")
 page, err = client:listMessagePage("room-1")
