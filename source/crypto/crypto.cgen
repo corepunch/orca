@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
+<module name="crypto" namespace="orca" prefix="crypto_">
+  <includes>
+    <include file="include/api.h"/>
+  </includes>
+  <functions>
+    <function name="Random" lua="true">
+      <summary>Returns cryptographically secure random bytes from the operating system.</summary>
+      <details>Sizes range from 1 to 65536 bytes. Fails closed: when the platform has no secure source, returns nil and a table with code unsupported. Invalid sizes return code invalid_size.</details>
+      <arg name="size" type="int">Number of random bytes.</arg>
+      <returns type="nresults">A byte string, or nil and an error.</returns>
+    </function>
+    <function name="BoxKeypair" lua="true">
+      <summary>Generates an X25519 key pair for key agreement.</summary>
+      <details>Returns the 32-byte secret key and the 32-byte public key. Store the secret only in secure storage such as orca.credentials.</details>
+      <returns type="nresults">Secret key and public key, or nil and an error.</returns>
+    </function>
+    <function name="BoxPublicKey" lua="true">
+      <summary>Derives the X25519 public key of a 32-byte secret key.</summary>
+      <details>Invalid key lengths return nil and code invalid_key.</details>
+      <arg name="secret" type="string">X25519 secret key.</arg>
+      <returns type="nresults">The 32-byte public key, or nil and an error.</returns>
+    </function>
+    <function name="SharedKey" lua="true">
+      <summary>Derives a 32-byte symmetric key shared by two X25519 key pairs.</summary>
+      <details>Computes BLAKE2b-256 over the X25519 shared secret, both public keys in byte order, and the context. Both parties derive the same key. Contexts are at most 1024 bytes. A peer key that yields an all-zero shared secret is rejected with code invalid_key.</details>
+      <arg name="secret" type="string">This party's X25519 secret key.</arg>
+      <arg name="peer" type="string">The other party's X25519 public key.</arg>
+      <arg name="context" type="string">Application-defined domain separation bytes.</arg>
+      <returns type="nresults">The 32-byte key, or nil and an error.</returns>
+    </function>
+    <function name="Seal" lua="true">
+      <summary>Encrypts and authenticates bytes with XChaCha20-Poly1305.</summary>
+      <details>Uses a fresh random 24-byte nonce. The result is nonce, ciphertext and 16-byte tag, 40 bytes longer than the plaintext. The associated data is authenticated but not encrypted. Plaintexts are limited to 16 MiB; associated data to 64 KiB.</details>
+      <arg name="key" type="string">32-byte symmetric key.</arg>
+      <arg name="plaintext" type="string">Bytes to encrypt, including embedded NUL bytes.</arg>
+      <arg name="ad" type="string">Associated data that must match when opening.</arg>
+      <returns type="nresults">The sealed bytes, or nil and an error.</returns>
+    </function>
+    <function name="Open" lua="true">
+      <summary>Verifies and decrypts bytes produced by seal.</summary>
+      <details>Any change to the sealed bytes, key or associated data returns nil and code authentication_failed. No partial plaintext is ever returned.</details>
+      <arg name="key" type="string">32-byte symmetric key.</arg>
+      <arg name="sealed" type="string">Output of seal.</arg>
+      <arg name="ad" type="string">Associated data given to seal.</arg>
+      <returns type="nresults">The plaintext, or nil and an error.</returns>
+    </function>
+    <function name="SignKeypair" lua="true">
+      <summary>Generates an Ed25519 signing key pair.</summary>
+      <details>Returns the 64-byte secret key (seed followed by public key) and the 32-byte public key. Signatures are standard RFC 8032 Ed25519.</details>
+      <returns type="nresults">Secret key and public key, or nil and an error.</returns>
+    </function>
+    <function name="Sign" lua="true">
+      <summary>Signs a message with an Ed25519 secret key.</summary>
+      <details>Messages are limited to 16 MiB.</details>
+      <arg name="secret" type="string">64-byte Ed25519 secret key.</arg>
+      <arg name="message" type="string">Bytes to sign.</arg>
+      <returns type="nresults">The 64-byte signature, or nil and an error.</returns>
+    </function>
+    <function name="Verify" lua="true">
+      <summary>Checks an Ed25519 signature.</summary>
+      <details>Returns false for a wrong signature, message or key, including keys or signatures of the wrong length.</details>
+      <arg name="public" type="string">32-byte Ed25519 public key.</arg>
+      <arg name="message" type="string">Signed bytes.</arg>
+      <arg name="signature" type="string">64-byte signature.</arg>
+      <returns type="nresults">A boolean.</returns>
+    </function>
+    <function name="Hash" lua="true">
+      <summary>Computes a BLAKE2b hash.</summary>
+      <details>Sizes range from 1 to 64 bytes; the default is 32. Inputs are limited to 16 MiB.</details>
+      <arg name="data" type="string">Bytes to hash.</arg>
+      <returns type="nresults">The hash bytes, or nil and an error.</returns>
+    </function>
+    <function name="Equal" lua="true">
+      <summary>Compares two byte strings in constant time for their length.</summary>
+      <details>Different lengths return false immediately; lengths are not secret.</details>
+      <arg name="a" type="string">First byte string.</arg>
+      <arg name="b" type="string">Second byte string.</arg>
+      <returns type="nresults">A boolean.</returns>
+    </function>
+  </functions>
+</module>

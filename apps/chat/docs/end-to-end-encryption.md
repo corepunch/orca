@@ -1,6 +1,8 @@
 # End-to-end encryption: design note
 
-Status: proposal, 2026-11-14. Nothing here is implemented. The current state
+Status: proposal, 2026-11-14. Slice 1 is implemented: Monocypher is vendored
+and `orca.crypto` is available (tests in `tests/test_crypto.lua`). Nothing else
+is implemented yet. The current state
 is described in [API.md](../API.md#private-photos): photos are encrypted by the
 server (AES-256-GCM, keys in private Chat records), and message text is stored
 as plaintext in the private `messages` collection. Octopus administrators and
@@ -82,10 +84,12 @@ crypto.boxKeypair()                           -- x25519 secret, public
 crypto.signKeypair()                          -- ed25519 secret, public
 crypto.sharedKey(secret, peerPublic, context) -- BLAKE2b(X25519 || both publics || context)
 crypto.seal(key, plaintext, ad)               -- nonce(24) || ciphertext || mac(16)
-crypto.open(key, sealed, ad)                  -- plaintext, or nil on any failure
-crypto.sign(secret, msg) / crypto.verify(public, msg, sig)
-crypto.fingerprint(bytes)                     -- BLAKE2b-256
-crypto.wipe(str)                              -- best-effort only; Lua strings are immutable
+crypto.open(key, sealed, ad)                  -- plaintext, or nil and an error
+crypto.sign(secret, msg)                      -- 64-byte Ed25519 signature
+crypto.verify(public, msg, sig)               -- boolean
+crypto.boxPublicKey(secret)                   -- derive the x25519 public key
+crypto.hash(bytes [, size])                   -- BLAKE2b, 32 bytes by default
+crypto.equal(a, b)                            -- constant-time comparison
 ```
 
 Secret keys do not stay in Lua longer than needed. Device secret keys live in

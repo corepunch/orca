@@ -46,7 +46,7 @@ CFLAGS += $(SANITIZER_FLAGS)
 LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications signin
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials crypto notifications signin
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -69,6 +69,11 @@ LUA_CFLAGS = $(VENDOR_CFLAGS) -DLUA_COMPAT_5_3
 LZ4_SRCDIR = libs/lz4/lib
 UNITEOBJECTS += lz4.o
 CFLAGS += -I$(LUA_SRCDIR) -I$(LZ4_SRCDIR)
+# Monocypher comes from the libs/monocypher submodule; each file is its own
+# translation unit because both define the same private helper macros.
+MONOCYPHER_SRCDIR = libs/monocypher/src
+CFLAGS += -I$(MONOCYPHER_SRCDIR)
+UNITEOBJECTS += monocypher.o monocypher-ed25519.o
 # zlib and libxml2 are built from their submodules; libxml2 by tools/libxml2/libxml2.mk.
 LDFLAGS += -llua5.4 $(ZLIB_LIB) -lm
 LIBXML2_ROOT =
@@ -174,6 +179,11 @@ $(JPEG_LIB): | directories
 buildunite: $(OBJECTDIR)/lz4.o $(FREETYPE_OBJS) $(PNG_LIB) $(JPEG_LIB) $(ZLIB_LIB) $(LIBXML2_OBJS)
 $(OBJECTDIR)/lz4.o: $(LZ4_SRCDIR)/lz4.c | directories
 	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
+buildunite: $(OBJECTDIR)/monocypher.o $(OBJECTDIR)/monocypher-ed25519.o
+$(OBJECTDIR)/monocypher.o: $(MONOCYPHER_SRCDIR)/monocypher.c $(MONOCYPHER_SRCDIR)/monocypher.h | directories
+	$(Q)$(CC) $(VENDOR_CFLAGS) -c $< -o $@
+$(OBJECTDIR)/monocypher-ed25519.o: $(MONOCYPHER_SRCDIR)/optional/monocypher-ed25519.c $(MONOCYPHER_SRCDIR)/monocypher.h | directories
+	$(Q)$(CC) $(VENDOR_CFLAGS) -I$(MONOCYPHER_SRCDIR) -c $< -o $@
 
 $(OBJECTDIR)/lua/%.o: $(LUA_SRCDIR)/%.c $(LUA_SRCDIR)/lua.h | directories
 	$(Q)mkdir -p $(dir $@)
@@ -673,6 +683,7 @@ HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-t
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
 
 HEADLESS_LUA_TESTS += test-credentials
+HEADLESS_LUA_TESTS += test-crypto
 HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
@@ -766,6 +777,7 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_loading.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-crypto,tests/test_crypto.lua,unite))
 .PHONY: test-notifications
 $(eval $(call LUA_TEST_RULE,test-notifications,tests/test_notifications.lua,unite))
 .PHONY: test-signin
