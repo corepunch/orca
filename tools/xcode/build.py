@@ -155,7 +155,9 @@ def resources(root, output):
             target.unlink()
         elif target.exists():
             shutil.rmtree(target)
-        shutil.copytree(source, target, ignore=bundle.resource_filter)
+    shutil.copytree(copies[0][0], copies[0][1], ignore=bundle.resource_filter)
+    # Referenced projects, such as Chat's ../octopus, land beside project/.
+    bundle.copy_project(project, copies[1][1])
 
 
 def main():
