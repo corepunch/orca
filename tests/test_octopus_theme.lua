@@ -39,7 +39,7 @@ local modules = {
     ["orca.data.visibility"] = { new = function() return { watch = function() end, update = function() end } end },
 }
 for _, name in ipairs { "Octopus/api/octopus", "Octopus/views/shell", "Octopus/views/home", "Octopus/views/thread",
-    "Octopus/views/people", "Octopus/views/compose", "Octopus/views/identity", "orca.UIKit.AvatarLoader",
+    "Octopus/views/people", "Octopus/views/compose", "Octopus/views/identity", "Octopus/views/safety", "orca.UIKit.AvatarLoader",
     "orca.data", "Octopus/providers/octopus" } do
     modules[name] = {}
 end

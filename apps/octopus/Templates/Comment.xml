@@ -27,6 +27,9 @@
       </Button>
       <Button Name="Reply" Click="Reply" Height="30" Width="48" FontSize="13" TextHorizontalAlignment="Left"
               TextVerticalAlignment="Center" BackgroundColor="#00000000" class="octopus-action octopus-link">reply</Button>
+      <Button Name="Report" Click="ReportComment" Visible="{Binding DataContext/CanReport, Mode=OneTime}" Height="30" Width="56" FontSize="13"
+              Text="report" TextResourceID="report" TextHorizontalAlignment="Left" TextVerticalAlignment="Center"
+              BackgroundColor="#00000000" class="octopus-action octopus-link"/>
     </StackView>
   </StackView>
 </Grid>

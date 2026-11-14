@@ -1,0 +1,6 @@
+<!-- A bundled document: the community rules (assets/community-rules.md) or
+     the privacy policy (assets/privacy.md, an exact copy of docs/chat/privacy.md). -->
+<StackView Name="DocumentPage" Spacing="16" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Name="DocumentLink" FontSize="14" WordWrap="true" class="octopus-accent-text" IgnoreHitTest="true"/>
+  <MarkdownView Name="DocumentText" Spacing="12" class="octopus-ink"/>
+</StackView>

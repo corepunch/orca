@@ -1,0 +1,11 @@
+<!-- Permanent account deletion, confirmed with a second tap (views/safety.lua). -->
+<StackView Name="DeleteAccountPage" Spacing="14" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Text="This permanently deletes your account." TextResourceID="This permanently deletes your account."
+             FontSize="20" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+  <TextBlock Text="Your posts, photos, comments, likes, reposts, follows and profile are removed from Octopus and its website. The same account signs you in to Orca Messenger, so your messages and conversations there are deleted too. This cannot be undone."
+             TextResourceID="Your posts, photos, comments, likes, reposts, follows and profile are removed from Octopus and its website. The same account signs you in to Orca Messenger, so your messages and conversations there are deleted too. This cannot be undone."
+             FontSize="15" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+  <Button Name="ConfirmDeleteAccount" Text="Delete my account" TextResourceID="Delete my account" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" MarginTop="8" class="octopus-action octopus-danger"/>
+  <Button Name="KeepAccount" Text="Keep my account" TextResourceID="Keep my account" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <TextBlock Name="DeleteAccountStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+</StackView>

@@ -294,9 +294,10 @@ function Client:signUp(name, email, password, confirm, handle)
             or "Your account was created, but account-name setup could not finish. Sign in with your email and retry account-name setup." }
 end
 
--- Protected profile operations use the existing authenticated shared backend.
+-- Protected operations use the existing authenticated shared backend.
 -- JWTs remain inside the session and never enter public DTOs or disk snapshots.
-function Client:_profileRpc(name, values)
+-- Returns the operation's JSON result, which may be `true`.
+function Client:_rpc(name, values)
     local session, err = self:_requireSession()
     if not session then return nil, err end
     if not session.jwt or self.clock() >= (session.jwtExpires or 0) then
@@ -321,17 +322,32 @@ function Client:_profileRpc(name, values)
     end
     local ok, result = pcall(json.decode, execution.responseBody)
     if not ok or type(result) ~= "table" or type(result.status) ~= "number" or result.status % 1 ~= 0
-        or result.status < 100 or result.status > 599 or result.encoding ~= nil
-        or type(result.body) ~= "table" then
+        or result.status < 100 or result.status > 599 or result.encoding ~= nil or result.body == nil then
         return failure("invalid_response", "The shared account service returned an invalid response.")
     end
     if result.status < 200 or result.status >= 300 then
+        if type(result.body) ~= "table" then
+            return failure("invalid_response", "The shared account service returned an invalid response.")
+        end
         if result.status == 401 then session.jwt, session.jwtExpires = nil, nil end
         return failure(result.body.code or result.body.type or "http_error",
             result.body.message or "The shared account service could not complete the request.", result.status)
     end
     if execution.responseStatusCode < 200 or execution.responseStatusCode >= 300 then
         return failure("invalid_response", "The shared account service failed.")
+    end
+    if self.session ~= session then
+        return failure("session_changed", "The active account changed during the request.")
+    end
+    return result.body
+end
+
+function Client:_profileRpc(name, values)
+    local body, err = self:_rpc(name, values)
+    if body == nil then return nil, err end
+    local session, result = self.session, { body = body }
+    if type(body) ~= "table" then
+        return failure("invalid_response", "The shared account service returned an invalid response.")
     end
     if result.body.id ~= session.user.id then
         return failure("invalid_response", "The shared account service returned a different account.")
@@ -357,6 +373,104 @@ function Client:claimHandle(handle)
     handle = canonicalHandle(handle)
     if not handle then return handleValidation() end
     return self:_profileRpc("update_chat_profile", { values = { username = handle } })
+end
+
+-- Safety ---------------------------------------------------------------------
+
+Client.reportReasons = { "spam", "harassment", "sexual_content", "violence", "hate", "other" }
+
+-- A private report to the service's moderators about a person, or about one
+-- of their posts or comments. The server copies the reported text as evidence.
+function Client:reportContent(target)
+    target = type(target) == "table" and target or {}
+    local known = false
+    for _, reason in ipairs(Client.reportReasons) do known = known or reason == target.reason end
+    local details = target.details or ""
+    if not validId(target.userId) or not known or type(details) ~= "string" or #details > 1000
+        or target.postId ~= nil and not validId(target.postId)
+        or target.commentId ~= nil and not validId(target.commentId)
+        or target.postId ~= nil and target.commentId ~= nil then
+        return failure("validation", "Choose a report reason and keep details under 1000 characters.")
+    end
+    if target.userId == self:currentUserId() then return failure("validation", "You cannot report yourself.") end
+    local result, err = self:_rpc("report_chat_content", { target_user = target.userId, reason = target.reason,
+        details = details, target_post = target.postId, target_comment = target.commentId })
+    if result == nil then return nil, err end
+    if type(result) ~= "table" or not validId(result.id) or result.submitted ~= true then
+        return failure("invalid_response", "The service did not confirm your report.")
+    end
+    return result
+end
+
+-- People the reader blocked: { userId, name, handle }. Blocks are shared
+-- with Chat.
+function Client:listBlocks()
+    local session = self.session
+    local rows, err = self:_rpc("list_chat_blocks", {})
+    if rows == nil then return nil, err end
+    if type(rows) ~= "table" then return failure("invalid_response", "The service returned invalid safety settings.") end
+    local people, ids = {}, {}
+    for _, row in ipairs(rows) do
+        if type(row) ~= "table" or not validId(row.user_id) then
+            return failure("invalid_response", "The service returned invalid safety settings.")
+        end
+        ids[row.user_id] = true
+        people[#people + 1] = { userId = row.user_id, name = text(row.display_name) and row.display_name or "Someone",
+            handle = type(row.username) == "string" and row.username or nil }
+    end
+    session.blocked = ids
+    return people
+end
+
+function Client:setUserBlocked(userId, blocked)
+    if not validId(userId) or type(blocked) ~= "boolean" or userId == self:currentUserId() then
+        return failure("validation", "Choose another person to block or unblock.")
+    end
+    local session = self.session
+    local result, err = self:_rpc("set_chat_user_block", { target_user = userId, blocked = blocked })
+    if result == nil then return nil, err end
+    if session.blocked then session.blocked[userId] = blocked or nil end
+    return true
+end
+
+-- The blocked set for hiding their content; guests have none. A failed load
+-- hides nothing and is retried on the next request.
+function Client:_blocked()
+    local session = self.session
+    if not session then return {} end
+    if not session.blocked then self:listBlocks() end
+    return session.blocked or {}
+end
+
+-- From the loaded block list only: safe to call while building a page.
+function Client:isBlocked(userId)
+    local blocked = self.session and self.session.blocked
+    return blocked ~= nil and blocked[userId] == true
+end
+
+-- Drops entries whose author (entry[field]) the reader blocked.
+function Client:_visible(items, field)
+    local blocked = self:_blocked()
+    if next(blocked) == nil then return items end
+    local kept = {}
+    for _, item in ipairs(items) do
+        if not blocked[item[field]] then kept[#kept + 1] = item end
+    end
+    return kept
+end
+
+-- Deletes the shared Chat and Octopus account with its posts, comments and
+-- photos. The server accepts a durable deletion job and revokes sign-in.
+function Client:deleteAccount(confirmation)
+    if confirmation ~= "DELETE" then return failure("validation", "Confirm account deletion first.") end
+    local result, err = self:_rpc("delete_chat_account", { confirmation = confirmation })
+    if result == nil then return nil, err end
+    if type(result) ~= "table" or (result.accepted ~= true and result.deleted ~= true) then
+        return failure("invalid_response", "The service did not confirm account deletion.")
+    end
+    -- The account's sessions are revoked; only local state is left to forget.
+    self.session = nil
+    return { accepted = result.accepted == true, deleted = result.deleted == true }
 end
 
 function Client:signOut()
@@ -472,7 +586,8 @@ function Client:listPosts(options)
     if not data then return nil, err end
     local posts = {}
     for _, doc in ipairs(data.documents) do posts[#posts + 1] = post(doc) end
-    return posts
+    -- Paging callers count the unfiltered batch and skip blocked authors themselves.
+    return options.includeBlocked and posts or self:_visible(posts, "authorId")
 end
 
 function Client:getPost(id)
@@ -548,6 +663,7 @@ function Client:timeline(authorIds, reposterIds, options)
     options = options or {}
     local limit = tonumber(options.limit) or 20
     if limit % 1 ~= 0 or limit < 1 or limit > 100 then return failure("validation", "Choose between 1 and 100 posts.") end
+    local blocked = self:_blocked()
     local previous, boundary = options.before, nil
     if type(previous) == "string" then boundary, previous = previous, nil
     elseif previous ~= nil and (type(previous) ~= "table" or previous.version ~= 1) then
@@ -632,7 +748,8 @@ function Client:timeline(authorIds, reposterIds, options)
         chosen.after, chosen.index = doc["$id"], chosen.index + 1
         -- Deleted originals still consume their repost event and cannot stall paging.
         local value = chosen.name == "posts" and post(doc) or originals[doc.postId]
-        if value and not seen[value.id] then
+        if value and not seen[value.id] and not blocked[value.authorId]
+            and not (chosen.name == "reposts" and blocked[doc.userId]) then
             seen[value.id] = true
             result[#result + 1] = { post = value, at = at,
                 repostedBy = chosen.name == "reposts" and { id = doc.userId, name = reposters[doc.userId] } or nil }
@@ -671,9 +788,10 @@ function Client:discoverTimeline(options)
         skip[me] = true
         for _, id in ipairs(ids) do skip[id] = true end
     end
+    for id in pairs(self:_blocked()) do skip[id] = true end
     local kept, counts, cursor = {}, {}, options.cursor
     for _ = 1, 4 do
-        local batch, err = self:listPosts { limit = DISCOVER_BATCH, cursor = cursor }
+        local batch, err = self:listPosts { limit = DISCOVER_BATCH, cursor = cursor, includeBlocked = true }
         if not batch then return nil, err end
         for _, p in ipairs(batch) do
             cursor = p.id
@@ -698,6 +816,7 @@ function Client:suggestPeople(limit)
     local following, err = self:listFollowingIds(me)
     if not following then return nil, err end
     local skip, score, order = { [me] = true }, {}, {}
+    for id in pairs(self:_blocked()) do skip[id] = true end
     for _, id in ipairs(following) do skip[id] = true end
     local function add(id, weight)
         if not validId(id) or skip[id] then return end
@@ -751,13 +870,13 @@ function Client:activity(options)
     if not mine then return nil, err end
     local posts, ids = {}, {}
     for _, doc in ipairs(mine.documents) do posts[doc["$id"]] = post(doc); ids[#ids + 1] = doc["$id"] end
-    local items = {}
+    local items, blocked = {}, self:_blocked()
     local function add(name, query, build)
         local data, listError = self:_list(name, query)
         if not data then return listError end
         for _, doc in ipairs(data.documents) do
             local item = build(doc)
-            if item and item.userId ~= me then item.at = doc["$createdAt"]; items[#items + 1] = item end
+            if item and item.userId ~= me and not blocked[item.userId] then item.at = doc["$createdAt"]; items[#items + 1] = item end
         end
     end
     local recent = { Q.orderDesc("$createdAt"), Q.limit(limit) }
@@ -995,7 +1114,7 @@ function Client:listComments(postId)
     if not data then return nil, err end
     local comments = {}
     for _, doc in ipairs(data.documents) do comments[#comments + 1] = comment(doc) end
-    return comments
+    return self:_visible(comments, "authorId")
 end
 
 function Client:addComment(postId, body, parentId)
@@ -1092,7 +1211,7 @@ function Client:searchPeople(query)
         people[#people + 1] = profile(doc)
         self.avatarIds[doc.userId] = people[#people].avatarId or false
     end
-    return people
+    return self:_visible(people, "userId")
 end
 
 -- Returns the follow document ID, or false.

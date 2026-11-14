@@ -7,6 +7,7 @@ local C = require "Octopus/views/components"
 local colors = C.colors
 local Thread = {}
 local OctopusProvider = require "Octopus/providers/octopus"
+local Safety = require "Octopus/views/safety"
 
 -- Reloads the post, its counts and comments in place.
 function Thread.load(self, view)
@@ -57,22 +58,36 @@ function Thread.page(self)
     end
     local mine = record.values.IsMine
     local bar
+    local menu = {
+        { "ViewAuthor", self.i18n:t("view %{name}", { name = record.values.AuthorName or "author" }), run("OpenAuthor") },
+        { "RefreshPost", self.i18n:t("refresh"), function() Thread.load(self, view) end },
+    }
+    if mine then
+        menu[#menu + 1] = { "DeletePost", self.i18n:t("delete post"), function()
+            scope:member("DeletePost"):execute({}, function()
+                local command = scope:member("DeletePost")
+                if command.confirming and not scope.disposed then bar:findChild("DeletePost").Text = self.i18n:t("tap again to delete") end
+            end)
+        end }
+    else
+        -- Other people's posts can be reported privately or their author blocked.
+        menu[#menu + 1] = { "ReportPost", self.i18n:t("report post"), function()
+            Safety.open(self, { userId = post.authorId, name = record.values.AuthorName, postId = post.id })
+        end }
+        menu[#menu + 1] = { "BlockAuthor", self.i18n:t("block %{name}", { name = record.values.AuthorName or "author" }), function()
+            Safety.setBlocked(self, post.authorId, record.values.AuthorName, true, function()
+                self.post = nil
+                self:goBack(self.postReturn and self.postReturn ~= "/post" and self.postReturn or "/")
+            end)
+        end }
+    end
     bar = C.appBar({
         { "LikePost", "heart", self.i18n:t("like"), run("Like") },
         { "RepostPost", "repeat-2", self.i18n:t("repost"), run("Repost") },
         { "CommentOnPost", "message-circle", self.i18n:t("comment"), function()
             if self:requireSession(self.i18n:t("Sign in to comment.")) then view.input:setFocus() end
         end },
-    }, {
-        { "ViewAuthor", self.i18n:t("view %{name}", { name = record.values.AuthorName or "author" }), run("OpenAuthor") },
-        { "RefreshPost", self.i18n:t("refresh"), function() Thread.load(self, view) end },
-        mine and { "DeletePost", self.i18n:t("delete post"), function()
-            scope:member("DeletePost"):execute({}, function()
-                local command = scope:member("DeletePost")
-                if command.confirming and not scope.disposed then bar:findChild("DeletePost").Text = self.i18n:t("tap again to delete") end
-            end)
-        end } or nil,
-    }, { class = "post-actions", SafeAreaEdge = "None", ContentInsetAdjustment = "Never" })
+    }, menu, { class = "post-actions", SafeAreaEdge = "None", ContentInsetAdjustment = "Never" })
     if self.sharePost then
         bar:addChild(require("orca.UIKit").ApplicationBarMenuItem { Name = "SharePost", Text = self.i18n:t("share in chat"),
             Click = function() self:sharePost(view.post) end })

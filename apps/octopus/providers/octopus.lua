@@ -163,6 +163,7 @@ function Provider.new(context)
         isGuest = function(v) return not v.SignedIn end,
         isMine = function(v) return context.readerId ~= nil and v.AuthorId == context.readerId() end,
         commentIndent = function(v) return v.Nested and 48 or 0 end,
+        notMine = function(v) return v.AuthorId ~= nil and v.AuthorId ~= context.readerId() end,
         composeHeading = function(v) return t("new " .. (v.Kind == "text" and "post" or v.Kind)) end,
         composeText = function(v) return v.Kind == "text" end,
         composePhoto = function(v) return v.Kind == "photo" end,
@@ -505,6 +506,11 @@ function Provider.new(context)
         if context.focusComment then context.focusComment() end
         return true
     end
+    operations.reportComment = function(params)
+        local comment = params.item
+        context.report { userId = comment.values.AuthorId, name = comment.values.AuthorName, commentId = comment.key }
+        return true
+    end
     operations.sendComment = function(params, _, command)
         local post = command.scope:exposedRecord("Post")
         local draft = params.draft
@@ -761,6 +767,10 @@ function Provider.new(context)
         SignInToFollow = function() context.signIn("/user") end,
         SignInToComment = function() context.signIn("/post") end,
         SignOut = function() context.signOut() end,
+        OpenRules = function() context.open("/rules") end,
+        OpenPrivacy = function() context.open("/privacy") end,
+        OpenBlocked = function() context.open("/blocked") end,
+        OpenDeleteAccount = function() context.open("/delete-account") end,
         FinishPicture = function() if context.finishPicture then context.finishPicture() end end,
         ToggleAvatarPicker = function(scope, params)
             local button = params.sender

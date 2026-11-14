@@ -1,6 +1,7 @@
 local ui = require "orca.UIKit"
 local C = require "Octopus/views/components"
 local People = require "Octopus/views/people"
+local Safety = require "Octopus/views/safety"
 local colors = C.colors
 local Identity = {}
 
@@ -82,8 +83,22 @@ function Identity.auth(self, mode)
             self:show(returnRoute)
         end)
     end, { Name = signup and "SignUp" or "SignIn", Height = 52, FontSize = 16 })
+    if signup then
+        -- Agreement to the rules is a condition of creating an account.
+        form:addChild(C.text(self.i18n:t("By creating an account you agree to the community rules. Objectionable content and abusive behaviour are not tolerated."), {
+            Name = "RulesAgreement", FontSize = 13, Foreground = colors.muted, WordWrap = true }))
+    end
     form:addChild(submit)
     form:addChild(self.status)
+    local function document(route)
+        return function()
+            if busy then return end
+            remember()
+            Safety.openDocument(self, route)
+        end
+    end
+    form:addChild(C.button(self.i18n:t("Community rules"), document("/rules"), { Name = "AuthRules", Height = 36 }))
+    form:addChild(C.button(self.i18n:t("Privacy policy"), document("/privacy"), { Name = "AuthPrivacy", Height = 36 }))
     if signup then
         fields.AccountName.Submit = function() fields.DisplayName:setFocus() end
         fields.DisplayName.Submit = function() email:setFocus() end

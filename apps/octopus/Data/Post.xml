@@ -13,6 +13,7 @@
   </Query>
   <Command Name="LikeComment" Operation="likeComment" Parameter="Item" Concurrency="parallel"/>
   <Command Name="Reply" Operation="reply" Parameter="Item" Sync="true"/>
+  <Command Name="ReportComment" Operation="reportComment" Parameter="Item" Sync="true"/>
   <Command Name="SendComment" Operation="sendComment" Invalidates="Comments Detail"
            Description="Posts the comment bar; the draft stays when it fails."/>
   <Command Name="DeletePost" Operation="deletePost" Description="Deletes the post after a second tap."/>

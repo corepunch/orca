@@ -9,6 +9,7 @@ local Home = require "Octopus/views/home"
 local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
+local Safety = require "Octopus/views/safety"
 local ChatColors = require "Chat/theme"
 local PostColors = require "Octopus/theme"
 local I18n = require "Chat/i18n"
@@ -16,7 +17,9 @@ local Posts = {}
 Posts.__index = Posts
 
 local ROUTES = { ["/"] = "/posts", ["/search"] = "/posts/search", ["/choose"] = "/posts/write", ["/write"] = "/posts/compose",
-    ["/post"] = "/posts/post", ["/user"] = "/posts/user", ["/me"] = "/posts/me" }
+    ["/post"] = "/posts/post", ["/user"] = "/posts/user", ["/me"] = "/posts/me",
+    -- Octopus's report and block pages; rules, privacy and deletion are Chat's own routes.
+    ["/report"] = "/posts/report", ["/blocked"] = "/posts/blocked" }
 local INTERNAL = {}
 for path, route in pairs(ROUTES) do INTERNAL[route] = path end
 
@@ -260,12 +263,14 @@ function Posts:page(route)
     elseif path == "/write" then result = Compose.page(app, { hideTypes = true })
     elseif path == "/post" then result = Thread.page(app)
     elseif path == "/user" then result = People.profile(app)
-    elseif path == "/me" then result = People.me(app) end
+    elseif path == "/me" then result = People.me(app)
+    elseif path == "/report" then result = Safety.report(app)
+    elseif path == "/blocked" then result = Safety.blocked(app) end
     if result then self:decorate(result) end
     self.chat.status = app.status
     local scope = path == "/" and app.scope or path == "/write" and app.composeScope
         or path == "/search" and app.searchScope or path == "/me" and app.meScope or app.transientScope
-    if scope then scope:activate() end
+    if scope and path ~= "/report" and path ~= "/blocked" then scope:activate() end
     return result
 end
 

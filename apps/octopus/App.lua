@@ -11,6 +11,7 @@ local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
+local Safety = require "Octopus/views/safety"
 local PageTransition = require "orca.UIKit.PageTransition"
 local data = require "orca.data"
 local Visibility = require "orca.data.visibility"
@@ -122,6 +123,11 @@ local App = Application:extend {
             end,
             avatarChanged = function(userId) self:avatarChanged(userId) end,
             signOut = function() self:signOut() end,
+            report = function(target) Safety.open(self, target) end,
+            open = function(route)
+                if route == "/rules" or route == "/privacy" then return Safety.openDocument(self, route) end
+                self:show(route, "Forward")
+            end,
             finishPicture = function()
                 local route = self.pictureReturn or "/"
                 self.pictureReturn = nil
@@ -382,6 +388,11 @@ local App = Application:extend {
     ["/me"] = function(self) self.currentRoute = "/me"; return People.me(self) end,
     ["/search"] = function(self) self.currentRoute = "/search"; return People.search(self) end,
     ["/write"] = function(self) self.currentRoute = "/write"; return Compose.page(self) end,
+    ["/report"] = function(self) self.currentRoute = "/report"; return Safety.report(self) end,
+    ["/blocked"] = function(self) self.currentRoute = "/blocked"; return Safety.blocked(self) end,
+    ["/rules"] = function(self) self.currentRoute = "/rules"; return Safety.rules(self) end,
+    ["/privacy"] = function(self) self.currentRoute = "/privacy"; return Safety.privacy(self) end,
+    ["/delete-account"] = function(self) self.currentRoute = "/delete-account"; return Safety.deleteAccount(self) end,
     ["/auth"] = function(self) self.currentRoute = "/auth"; return Identity.auth(self, "signin") end,
     ["/auth/signup"] = function(self) self.currentRoute = "/auth/signup"; return Identity.auth(self, "signup") end,
     ["/auth/picture"] = function(self) self.currentRoute = "/auth/picture"; return People.picture(self) end,

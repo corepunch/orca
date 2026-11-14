@@ -1,0 +1,21 @@
+<!-- A private report about a person, a post or a comment (views/safety.lua).
+     Choosing a reason sends it; details are optional. -->
+<StackView Name="ReportPage" Spacing="12" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Name="ReportSubject" FontSize="20" WordWrap="true" class="octopus-ink" IgnoreHitTest="true"/>
+  <TextBlock Text="Reports are private and go to the people who run Octopus. They are reviewed within 24 hours." TextResourceID="Reports are private and go to the people who run Octopus. They are reviewed within 24 hours."
+             FontSize="14" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+  <TextBlock Text="details (optional)" TextResourceID="details (optional)" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
+  <Input Name="ReportDetails" PlaceholderText="What should we know?" Multiline="true" Height="92" FontSize="15" Padding="12 10"
+         BorderWidth="2" class="octopus-input octopus-field"/>
+  <TextBlock Text="choose a reason to send" TextResourceID="choose a reason to send" FontSize="20" MarginTop="8"
+             class="octopus-accent-text" IgnoreHitTest="true"/>
+  <Button Name="ReasonSpam" Text="Spam" TextResourceID="Spam" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="ReasonHarassment" Text="Harassment or bullying" TextResourceID="Harassment or bullying" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="ReasonSexualContent" Text="Sexual content" TextResourceID="Sexual content" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="ReasonViolence" Text="Violence or threats" TextResourceID="Violence or threats" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="ReasonHate" Text="Hate" TextResourceID="Hate" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="ReasonOther" Text="Something else" TextResourceID="Something else" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <TextBlock Name="ReportStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+  <Button Name="BlockReported" Text="Block this person" TextResourceID="Block this person" Visible="false" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-danger"/>
+  <Button Name="ReportDone" Text="Done" TextResourceID="Done" Visible="false" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary"/>
+</StackView>

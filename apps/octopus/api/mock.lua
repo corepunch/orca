@@ -312,6 +312,63 @@ function M.new(options)
         return problem(405, "general_not_implemented", "Not supported by the mock.")
     end
 
+    -- The shared safety service: blocks, private reports and account deletion.
+    state.blocks, state.reports = state.blocks or {}, state.reports or {}
+    local reasons = { spam = true, harassment = true, sexual_content = true, violence = true, hate = true, other = true }
+    local function find(name, id)
+        for _, doc in ipairs(state.collections[name] or {}) do if doc["$id"] == id then return doc end end
+    end
+    local safety = {
+        ["/rest/v1/rpc/set_chat_user_block"] = function(actor, body)
+            if type(body.target_user) ~= "string" or body.target_user == actor.id or type(body.blocked) ~= "boolean" then
+                return 400, { code = "validation", message = "Choose another person and whether to block them." }
+            end
+            state.blocks[actor.id] = state.blocks[actor.id] or {}
+            state.blocks[actor.id][body.target_user] = body.blocked or nil
+            return 200, true
+        end,
+        ["/rest/v1/rpc/list_chat_blocks"] = function(actor)
+            local rows = {}
+            for id in pairs(state.blocks[actor.id] or {}) do
+                local doc = find("profiles", id)
+                rows[#rows + 1] = { user_id = id, display_name = doc and doc.username or "Deleted account" }
+            end
+            table.sort(rows, function(a, b) return a.user_id < b.user_id end)
+            return 200, rows
+        end,
+        ["/rest/v1/rpc/report_chat_content"] = function(actor, body)
+            if type(body.target_user) ~= "string" or body.target_user == actor.id or not reasons[body.reason]
+                or body.target_post and body.target_comment then
+                return 400, { code = "validation", message = "Choose a report reason and details of at most 2000 text bytes." }
+            end
+            local kind = body.target_post and "post" or body.target_comment and "comment"
+            if kind then
+                local doc = find(kind .. "s", body.target_post or body.target_comment)
+                if not doc or doc.authorId ~= body.target_user then
+                    return 404, { code = "not_found", message = "The reported " .. kind .. " was not found." }
+                end
+            end
+            local id = "report-" .. (#state.reports + 1)
+            state.reports[#state.reports + 1] = { id = id, reporter = actor.id, target_user = body.target_user,
+                reason = body.reason, details = body.details or "", post = body.target_post, comment = body.target_comment }
+            return 200, { id = id, submitted = true }
+        end,
+        ["/rest/v1/rpc/delete_chat_account"] = function(actor, body)
+            if body.confirmation ~= "DELETE" then
+                return 400, { code = "validation", message = "Confirm account deletion first." }
+            end
+            for _, name in ipairs { "posts", "comments" } do
+                local docs = state.collections[name] or {}
+                for i = #docs, 1, -1 do if docs[i].authorId == actor.id then table.remove(docs, i) end end
+            end
+            local profiles = state.collections.profiles
+            for i = #profiles, 1, -1 do if profiles[i]["$id"] == actor.id then table.remove(profiles, i) end end
+            state.deleted = state.deleted or {}
+            state.deleted[actor.id] = true
+            return 200, { accepted = true }
+        end,
+    }
+
     local function executeProfile(request)
         local json = require "Octopus/api/json"
         local actor = state.users[state.jwts[request.headers and request.headers["X-Appwrite-JWT"]]]
@@ -344,6 +401,9 @@ function M.new(options)
             end
             trusted.handle = handle
             state.directory[actor.id] = trusted
+        elseif envelope.method == "POST" and safety[envelope.path] then
+            local status, result = safety[envelope.path](actor, type(envelope.body) == "table" and envelope.body or {})
+            return execution(status, result)
         elseif envelope.path ~= "/rest/v1/rpc/get_chat_profile" or envelope.method ~= "POST" then
             return execution(404, { code = "not_found", message = "Unknown profile operation." })
         end

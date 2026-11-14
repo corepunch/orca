@@ -1,0 +1,7 @@
+<!-- People the reader blocked; rows are added by views/safety.lua. -->
+<StackView Name="BlockedPage" Spacing="12" PaddingBottom="24" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Text="Blocked people's posts, reposts and comments are hidden from you here and they cannot contact you in Orca Messenger." TextResourceID="Blocked people's posts, reposts and comments are hidden from you here and they cannot contact you in Orca Messenger."
+             FontSize="14" WordWrap="true" class="octopus-muted" IgnoreHitTest="true"/>
+  <StackView Name="BlockedPeople" Spacing="8" JustifyContent="Start"/>
+  <TextBlock Name="BlockedStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+</StackView>

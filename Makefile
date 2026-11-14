@@ -387,8 +387,15 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_composer.lua
 	$(TARGET) -test=tests/test_octopus_alignment.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
+	$(TARGET) -test=tests/test_octopus_safety.lua
+	$(TARGET) -test=tests/test_octopus_safety_ui.lua
 
 NODE ?= node
+.PHONY: test-octopus-safety
+test-octopus-safety: copyshare
+	$(TARGET) -test=tests/test_octopus_safety.lua
+	$(TARGET) -test=tests/test_octopus_safety_ui.lua
+
 test-octopus-theme: $(LUA_BIN)
 	$(LUA) tests/test_octopus_theme.lua
 
@@ -694,6 +701,7 @@ APP_LUA_TESTS += test-chat-stress test-octopus-stress
 APP_LUA_TESTS += test-chat-localization test-octopus-localization
 APP_LUA_TESTS += test-chat-account-deletion
 APP_LUA_TESTS += test-chat-safety
+APP_LUA_TESTS += test-octopus-safety
 APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette

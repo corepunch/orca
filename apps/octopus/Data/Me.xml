@@ -15,4 +15,8 @@
   <Handler Name="FinishPicture"/>
   <Handler Name="ToggleAvatarPicker"/>
   <Handler Name="SignOut"/>
+  <Handler Name="OpenRules"/>
+  <Handler Name="OpenPrivacy"/>
+  <Handler Name="OpenBlocked"/>
+  <Handler Name="OpenDeleteAccount"/>
 </DataScope>

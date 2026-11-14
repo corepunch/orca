@@ -56,6 +56,20 @@ blocks with [Chat](../chat/README.md):
   by its visible glyphs, and link badges share the portrait's 44-point square.
 - A post's page shows its full time and large like, repost and comment
   counts between hairlines, then the threaded replies.
+- Safety follows the App Store's rules for public posts. A post's menu has
+  **report post** and **block**, each comment by someone else has **report**,
+  and a profile's menu has **report** and **block** or **unblock**. A report
+  page takes optional details and sends on the choice of a reason; it then
+  offers to block the person. Blocked people's posts, reposts, comments and
+  activity are filtered out by the client, and they leave search and
+  suggestions. The **me** page links the community rules, the privacy policy,
+  **blocked people** and **delete account** (a second tap confirms). Sign-up
+  states that creating an account means accepting the rules, and both
+  documents open without an account. Reports, blocks and deletion go to the
+  shared Appwrite Function that Chat uses (`report_chat_content`,
+  `set_chat_user_block`, `list_chat_blocks`, `delete_chat_account`), so a
+  block or a deleted account applies to both apps. `views/safety.lua` owns
+  these pages; Chat's embedded posts reuse the report and blocked pages.
 - Text boxes are pale with dark text in both themes; primary commands are
   filled with the reef teal from the website, secondary ones are 2-pixel
   outlines and links are plain accent text. Icons are Lucide SVGs and the

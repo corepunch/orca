@@ -9,6 +9,7 @@ local C = require "Octopus/views/components"
 local OctopusProvider = require "Octopus/providers/octopus"
 local colors = C.colors
 local Avatars = require "orca.avatars"
+local Safety = require "Octopus/views/safety"
 local People = {}
 
 -- The profile content for `userId`: header, counts, follow and posts.
@@ -59,8 +60,23 @@ function People.profile(self)
         local route = self.profileReturn
         self:goBack(route and route ~= "/user" and route or "/")
     end
-    local bar = C.appBar({
+    -- The label follows the block list loaded with the timelines.
+    local name, bar = self.profileName, nil
+    local function blockLabel()
+        return self.i18n:t(self.client:isBlocked(userId) and "unblock %{name}" or "block %{name}", { name = name or "person" })
+    end
+    bar = C.appBar({
         { "RefreshProfile", "refresh-cw", self.i18n:t("refresh"), function() refreshProfile(scope) end },
+    }, {
+        { "ReportPerson", self.i18n:t("report"), function() Safety.open(self, { userId = userId, name = name }) end },
+        { "BlockPerson", blockLabel(), function()
+            local blocking = not self.client:isBlocked(userId)
+            Safety.setBlocked(self, userId, name, blocking, function()
+                if blocking then return back() end
+                self:notice(self.i18n:t("%{name} is unblocked.", { name = name or "This person" }))
+                if not scope.disposed then bar:findChild("BlockPerson").Text = blockLabel(); refreshProfile(scope) end
+            end)
+        end },
     })
     local screen = self:frame()
     Footer.layout(screen, C.page((self.profileName or self.i18n:t("profile")):lower(), body,

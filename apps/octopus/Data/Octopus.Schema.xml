@@ -137,6 +137,7 @@
     <Column Name="Busy" Type="bool" Local="true"/>
     <Column Name="AvatarPath" Type="string" Local="true"/>
     <Column Name="Indent" Type="float" Computed="commentIndent" DependsOn="Nested"/>
+    <Column Name="CanReport" Type="bool" Computed="notMine" DependsOn="AuthorId" Description="Other people's comments can be reported."/>
     <Column Name="Age" Type="string" Computed="age" DependsOn="CreatedAt"/>
     <Column Name="LikesLabel" Type="string" Computed="commentLikes" DependsOn="Likes"/>
     <Column Name="Liked" Type="bool" Computed="liked" DependsOn="LikeId"/>
