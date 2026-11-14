@@ -173,7 +173,7 @@ return function(Client, helpers)
         return data, err
     end
     function Client:findPeople(query)
-        if type(query) ~= "string" or not query:match("%S") or #query > 254 then return failure("validation", "Enter a username, email or phone number.") end
+        if type(query) ~= "string" or not query:match("%S") or #query > 254 then return failure("validation", "Enter a name, username, email or phone number.") end
         local field, normalized = identifier(query)
         return self:_rpc("find_chat_people", { query = normalized or query:lower() })
     end

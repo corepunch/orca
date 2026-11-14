@@ -119,7 +119,10 @@ local result = assert(owner:findPeople("new@example.invalid"))[1]
 check(result.id == newId and result.email == nil and result.phone == nil and result.notification_previews == nil,
     "Discovery returns public profile fields only")
 check(assert(owner:findPeople("@new_reader"))[1].id == newId, "Exact username discovery")
-check(#assert(owner:findPeople("reader")) == 0, "No partial username directory")
+check(assert(owner:findPeople("New Reader"))[1].id == newId, "A spoken display name finds the person")
+check(assert(owner:findPeople("new_rea"))[1].id == newId, "A username prefix finds the person")
+check(#assert(owner:findPeople("n")) == 0, "A single letter only matches an exact username")
+check(#assert(owner:findPeople("new@")) == 0, "A partial email never widens into a name search")
 check(#assert(owner:findPeople("+49 151 1000 0002")) == 0, "An unverified number never makes its owner discoverable")
 check(assert(guest:updateProfile { phone = "" }).phone == nil, "An empty number removes it")
 assert(guest:updateProfile { discoverable_email = false })

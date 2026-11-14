@@ -1,6 +1,8 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { eq, key, order, reject } from './rest.js';
 import { identifier } from './auth.js';
+
+const PEOPLE_RESULTS = 20;
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from './photos.js';
 import { resolveRoute } from './routes.js';
 import { AccountDeletion } from './account-deletion.js';
@@ -121,11 +123,23 @@ export class ChatService {
     });
   }
   async findPeople(user, query) {
-    if (typeof query !== 'string' || !query.trim() || query.length > 254) reject(400, 'validation', 'Enter an exact username, email or phone number.');
+    if (typeof query !== 'string' || !query.trim() || query.length > 254) reject(400, 'validation', 'Enter a name, username, email or phone number.');
     await this.auth.limit('discovery:' + user.$id, 20, 60);
-    let field = 'username', value = query.trim().toLowerCase().replace(/^@/, '');
-    try { const parsed = identifier(query); field = parsed.field; value = parsed.value; } catch { /* An exact username is also allowed. */ }
-    const matches = await this.repo.list('profiles', [eq(field, value)]), result = [];
+    let field = 'username', value = query.trim().toLowerCase().replace(/^@/, ''), matches;
+    try { const parsed = identifier(query); field = parsed.field; value = parsed.value; } catch { /* Otherwise a name or username. */ }
+    if (field !== 'username') matches = await this.repo.list('profiles', [eq(field, value)]);
+    else {
+      // Like other messengers: a spoken name ("Core Punch") finds the username
+      // corepunch or that display name. Email and phone stay exact and opt-in.
+      const name = query.trim().replace(/^@/, '').replace(/\s+/g, ' '), handle = value.replace(/[^a-z0-9._-]/g, '');
+      // A partial email or phone number never widens into a name search.
+      matches = /.@|^\s*\+/.test(query) ? []
+        : name.length < 2 ? await this.repo.list('profiles', [eq('username', handle)])
+        : await this.repo.searchPeople(handle, name, PEOPLE_RESULTS);
+      const rank = profile => profile.username === handle ? 0 : handle && profile.username?.startsWith(handle) ? 1 : 2;
+      matches.sort((a, b) => rank(a) - rank(b));
+    }
+    const result = [];
     for (const profile of matches) {
       if (profile.id === user.$id || field !== 'username' && !profile['discoverable_' + field]) continue;
       if (await this.safety.blocked(user.$id, profile.id)) continue;

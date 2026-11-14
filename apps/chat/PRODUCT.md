@@ -1,7 +1,7 @@
 # Messenger: identity, discovery, conversations, and media
 
 Implementation status, 2026-10-28. The app now implements email OTP,
-verified linking, usernames and opt-in exact discovery, direct/group/channel
+verified linking, usernames, name search and opt-in identifier discovery, direct/group/channel
 conversations, roles/invitations/public channel subscriptions, JPEG photo
 messages, editing and deleting messages, owner renaming and non-owner leaving
 groups/channels through the shared client and

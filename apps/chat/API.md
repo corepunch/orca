@@ -77,7 +77,7 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `verifyIdentityLink(identifier,code)` | Verified self profile once the requested identifier is confirmed |
 | `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; `email` is verified, `phone` is the private typed number; message previews default on |
 | `updateProfile(values)` | Self profile after changing public name, username, the private `phone` (E.164, `""` removes it), discovery flags or the private boolean `notification_previews` preference |
-| `findPeople(query)` | Public `{id,display_name,username}` matches for an exact username or opted-in identifier |
+| `findPeople(query)` | Public `{id,display_name,username}` matches for a name, username prefix or opted-in identifier |
 | `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
 | `getSession()` | Defensive session copy or nil; no request |
 | `restoreSession()` | Validates the saved Appwrite credential and obtains a fresh JWT; called explicitly on app launch |
@@ -132,8 +132,12 @@ unique lowercase strings of 3–32 letters, numbers or underscores, beginning
 with a letter. An empty username clears it. Profiles cannot edit Auth identifiers.
 
 Discovery flags default to false and require the corresponding verified
-identifier. Search uses exact matches, with optional `@` for usernames, and
-allows 20 lookups per minute per account. A known username does not grant room
+identifier. Email and phone searches are exact. Any other query is a name:
+it matches a username prefix (optional `@`; spaces are ignored, so "Core Punch"
+finds `corepunch`) or the words of a public display name, exact username first,
+at most 20 results. A single character matches only an exact username, and a
+partial email or phone number never widens into a name search. Searches are
+limited to 20 lookups per minute per account. A known username does not grant room
 membership. Contacts come from authorized relationships; channel subscribers
 can see themselves and staff in the member list, without a peer subscriber
 directory. Owners and admins can see the full membership.
