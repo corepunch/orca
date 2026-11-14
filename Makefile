@@ -386,6 +386,7 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_templates.lua
 	$(TARGET) -test=tests/test_octopus_composer.lua
 	$(TARGET) -test=tests/test_octopus_alignment.lua
+	$(TARGET) -test=tests/test_octopus_row_style.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 	$(TARGET) -test=tests/test_octopus_safety.lua
 	$(TARGET) -test=tests/test_octopus_safety_ui.lua
