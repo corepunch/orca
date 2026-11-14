@@ -267,6 +267,27 @@ class BundleTests(unittest.TestCase):
                 self.assertTrue((self.bundle / 'share/orca/startup.lua').is_file())
                 self.assertFalse((self.bundle / 'project/.git').exists())
 
+    def test_external_project_references_are_bundled_beside_the_project(self):
+        # Chat loads Octopus through `../octopus`; the bundle must resolve it the same way.
+        (self.project / 'package.lua').write_text(
+            'Name = "Chat"\nProjectReferences = {\n  { Name = "api", Path = "api" },\n'
+            '  { Name = "Octopus", Path = "../octopus" },\n}\n')
+        (self.project / 'api').mkdir()
+        (self.project / 'api/chat.lua').write_text('return {}')
+        octopus = self.root / 'apps/octopus'
+        (octopus / 'api').mkdir(parents=True)
+        (octopus / 'package.lua').write_text('Name = "Octopus"\n')
+        (octopus / 'api/octopus.lua').write_text('return {}')
+        (octopus / 'node_modules').mkdir()
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.bundle / 'project/api/chat.lua').is_file())
+        self.assertTrue((self.bundle / 'octopus/api/octopus.lua').is_file())
+        self.assertFalse((self.bundle / 'octopus/node_modules').exists())
+        (self.project / 'package.lua').write_text('Name = "Chat"\nProjectReferences = { { Name = "X", Path = "../../x" } }\n')
+        (self.root / 'x').mkdir()
+        self.assertNotEqual(self.package().returncode, 0)
+
     def test_catalog_languages_are_declared_and_bundled(self):
         catalogs = self.project / 'Locales'
         catalogs.mkdir()

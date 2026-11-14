@@ -2,6 +2,7 @@
 """Package an ORCA project as a standalone universal iPhone/iPad application."""
 import argparse
 import fnmatch
+import os
 from pathlib import Path
 import plistlib
 import re
@@ -21,6 +22,53 @@ def resource_filter(directory, names):
     if 'backend' in names and (backend / 'appwrite/package.json').is_file():
         ignored.append('backend')
     return ignored
+
+
+def references_block(text):
+    """The body of a literal `ProjectReferences = { ... }` table in package.lua."""
+    match = re.search(r'^ProjectReferences\s*=\s*\{', text, re.MULTILINE)
+    if not match:
+        return ''
+    depth, start = 1, match.end()
+    for index in range(start, len(text)):
+        depth += {'{': 1, '}': -1}.get(text[index], 0)
+        if depth == 0:
+            return text[start:index]
+    return ''
+
+
+def external_references(project):
+    """(source, relative target) for ProjectReferences outside the project, such as
+    Chat's `../octopus`. The bundle keeps the project under `project/`, so each
+    one is copied where its relative Path resolves from there. Followed
+    recursively; references inside a project are already copied with it."""
+    project, found, pending = Path(project).resolve(), {}, [Path(project).resolve()]
+    while pending:
+        current = pending.pop()
+        package = current / 'package.lua'
+        text = package.read_text() if package.is_file() else ''
+        for path in re.findall(r'Path\s*=\s*"([^"]*)"', references_block(text)):
+            source = (current / path).resolve()
+            if source == project or project in source.parents or source in found:
+                continue
+            relative = Path(os.path.relpath(source, project))
+            # Keep the copy beside project/ inside the bundle: one level up at most.
+            if relative.parts[:1] != ('..',) or '..' in relative.parts[1:] or not source.is_dir():
+                raise ValueError('Unsupported project reference: ' + path)
+            found[source] = relative
+            pending.append(source)
+    return sorted(found.items())
+
+
+def copy_project(project, target):
+    """Copy a project to <target> and its external references beside it."""
+    project = Path(project).resolve()
+    shutil.copytree(project, target, ignore=resource_filter)
+    for source, relative in external_references(project):
+        destination = Path(os.path.normpath(Path(target) / relative))
+        if destination.exists():
+            shutil.rmtree(destination)
+        shutil.copytree(source, destination, ignore=resource_filter)
 
 
 # Kept identical to tools/xcode/common.py, which the Xcode generator imports.
@@ -82,9 +130,8 @@ def main():
         shutil.rmtree(bundle)
     bundle.mkdir(parents=True, exist_ok=True)
     shutil.copy2(binary, bundle / 'Orca')
-    for name, source in (('share', share), ('project', project)):
-        target = bundle / name
-        shutil.copytree(source, target, ignore=resource_filter)
+    shutil.copytree(share, bundle / 'share', ignore=resource_filter)
+    copy_project(project, bundle / 'project')
     if (project / 'PrivacyInfo.xcprivacy').is_file():
         shutil.copy2(project / 'PrivacyInfo.xcprivacy', bundle / 'PrivacyInfo.xcprivacy')
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
