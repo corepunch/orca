@@ -35,8 +35,8 @@ Current production deployment: `6af832a329a5af00aaeb` (2026-11-14), source
 archive SHA-256 `20d0cec4e6a6fc1ecbdff6b99f34fc51e5c39a51999387f6b3386476d91280d0`
 from commit `58357ac0`, which removed the end-to-end encryption device-key
 routes again. Function settings, scopes and variables were unchanged; no live
-suite was run. The empty `device-keys` collection created for those routes is
-not in `schema.json` and is unused. Node `fetch` may need
+suite was run. The empty `device-keys` collection created for those routes was
+deleted the same day. Node `fetch` may need
 `--dns-result-order=ipv4first` on networks where IPv6 connections to Appwrite
 time out.
 
