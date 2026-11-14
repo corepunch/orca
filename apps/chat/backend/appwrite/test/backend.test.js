@@ -37,6 +37,12 @@ class MemoryRepository {
     if (cursor) rows = rows.slice(rows.findIndex(row => row.id === cursor) + 1);
     return limit ? rows.slice(0, limit) : rows;
   }
+  async searchPeople(handle, name, limit) {
+    const words = name.toLowerCase().split(' ');
+    return [...this.table('profiles').values()].filter(row => handle && row.username?.startsWith(handle)
+      || words.every(word => (row.display_name || '').toLowerCase().split(/\s+/).some(part => part.startsWith(word))))
+      .slice(0, limit).map(clone);
+  }
   async lock(name, action) {
     if (this.locks.has(name)) throw new Failure(409, 'busy', 'Retry.'); this.locks.add(name);
     try { return await action(); } finally { this.locks.delete(name); }
@@ -553,6 +559,46 @@ test('verified opt-in exact discovery and rate limits never reveal identifiers i
   assert.deepEqual((await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: 'alice@example.invalid' })).body, []);
   for (let index = 0; index < 16; index++) assert.equal((await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: '@alice_name' })).status, 200);
   assert.equal((await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: '@alice_name' })).status, 429);
+});
+
+test('people are found by spoken name or username prefix, like other messengers', async () => {
+  const fixture = setup();
+  await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { username: 'corepunch', display_name: 'Core Punch' } });
+  await fixture.call('bob', '/rest/v1/rpc/update_chat_profile', { values: { username: 'bob', display_name: 'Robert Coreman' } });
+  const find = async query => (await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query })).body.map(row => row.id);
+  for (const query of ['CorePunch', 'Core Punch', '@corepunch', 'corep', 'punch', '  core   PUNCH '])
+    assert.deepEqual(await find(query), ['alice'], query);
+  assert.deepEqual(await find('core'), ['alice', 'bob'], 'username prefix ranks before display-name matches');
+  assert.deepEqual(await find('c'), [], 'a single letter only matches an exact username');
+  for (const query of ['corepunch@', 'core@punch', '+4915'])
+    assert.deepEqual(await find(query), [], 'partial identifiers never widen into a name search: ' + query);
+  const own = (await fixture.call('alice', '/rest/v1/rpc/find_chat_people', { query: 'Core Punch' })).body;
+  assert.deepEqual(own, [], 'you do not find yourself');
+  const result = (await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: 'Core Punch' })).body[0];
+  assert.equal(result.email, undefined); assert.equal(result.phone, undefined);
+});
+
+test('people search queries the directory by prefix and display names by fulltext', async () => {
+  const requests = [];
+  const docs = { 'account-directory': [{ $id: 'alice', payload: JSON.stringify({ handle: 'corepunch' }), handle: 'corepunch' }],
+    profiles: [{ $id: 'p-bob', userId: 'bob', username: 'Robert Core' }] };
+  let fulltext = true;
+  const repo = new Repository({ async request(method, path) {
+    const url = new URL(path, 'https://appwrite.invalid'), collection = url.pathname.split('/')[4], id = url.pathname.split('/')[6];
+    const queries = url.searchParams.getAll('queries[]').map(JSON.parse);
+    requests.push({ collection, id, queries });
+    if (queries.some(query => query.method === 'search') && !fulltext) throw new Failure(400, 'index_not_found', 'No fulltext index.');
+    if (id) { const doc = docs[collection]?.find(row => row.$id === id || row.userId === id); if (!doc) throw new Failure(404, 'not_found', 'Absent.'); return doc; }
+    return { documents: docs[collection] || [] };
+  } }, 'db', 'bucket');
+  const found = await repo.searchPeople('core', 'Core', 20);
+  assert.deepEqual(found.map(row => row.id).sort(), ['alice', 'bob']);
+  const lists = requests.filter(request => !request.id);
+  assert.deepEqual(lists.map(request => request.queries[0]), [
+    { method: 'startsWith', attribute: 'handle', values: ['core'] },
+    { method: 'search', attribute: 'username', values: ['Core'] }]);
+  fulltext = false;
+  assert.deepEqual((await repo.searchPeople('core', 'Core', 20)).map(row => row.id), ['alice'], 'usernames still match without the index');
 });
 
 test('invites count only new memberships, expire, revoke, and never exceed allowance', async () => {

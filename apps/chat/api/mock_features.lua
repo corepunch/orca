@@ -368,17 +368,38 @@ return function(state, env)
             if not limit or limit.start + 60 <= now() then limit = { start = now(), hits = 0 }; state.lookups[user.id] = limit end
             limit.hits = limit.hits + 1
             if limit.hits > 20 then return fail(429, "rate_limit", "Too many lookups. Wait a minute.") end
+            -- Mirrors the Function: email and phone stay exact and opt-in; anything
+            -- else is a spoken name or username ("Core Punch" finds corepunch).
             local query = type(body.query) == "string" and body.query:lower():match("^%s*(.-)%s*$") or ""
             local rows = {}
-            if #query < 3 or #query > 254 then return response(200, rows) end
+            if query == "" or #query > 254 then return response(200, rows) end
+            local identifier = query:find(".@") or query:find("^%+")
+            local name = query:gsub("^@", ""):gsub("%s+", " ")
+            local handle = name:gsub("[^a-z0-9._-]", "")
+            local function named(p)
+                if #name < 2 then return false end
+                if handle ~= "" and (p.username or ""):sub(1, #handle) == handle then return true end
+                local parts = {}
+                for part in (p.display_name or ""):lower():gmatch("%S+") do parts[#parts + 1] = part end
+                for word in name:gmatch("%S+") do
+                    local found = false
+                    for _, part in ipairs(parts) do if part:sub(1, #word) == word then found = true; break end end
+                    if not found then return false end
+                end
+                return true
+            end
             for _, account in ipairs(state.users) do
                 local p = state.profiles[account.id]
-                if account.id ~= user.id and not P.blocked(user.id, account.id) and (p.username == query:gsub("^@", "") or
-                    (p.discoverable_email and account.email_confirmed_at and account.email == query) or
-                    (p.discoverable_phone and account.phone_confirmed_at and account.phone == query)) then
-                    rows[#rows + 1] = { id = p.id, display_name = p.display_name, username = p.username }
+                local match = identifier and (p.discoverable_email and account.email_confirmed_at and account.email == query
+                        or p.discoverable_phone and account.phone_confirmed_at and account.phone == query)
+                    or not identifier and (p.username == handle or named(p))
+                if account.id ~= user.id and not P.blocked(user.id, account.id) and match then
+                    rows[#rows + 1] = { id = p.id, display_name = p.display_name, username = p.username,
+                        rank = p.username == handle and 0 or handle ~= "" and (p.username or ""):sub(1, #handle) == handle and 1 or 2 }
                 end
             end
+            table.sort(rows, function(a, b) return a.rank < b.rank end)
+            for _, row in ipairs(rows) do row.rank = nil end
             return response(200, rows)
         elseif name == "create_chat_room" then return createRoom(user, body)
         elseif name == "list_chat_members" then

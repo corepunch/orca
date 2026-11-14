@@ -39,7 +39,7 @@ function Conversations.newRoom(self)
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
     self.newSelection = {}
-    local query = C.input("FindPerson", t("Search username or email"), { class = "joined-left" })
+    local query = C.input("FindPerson", t("Search name, username or email"), { class = "joined-left" })
     -- One pale field: the search command shares the input's fill, as in the inbox.
     local searchRow = ui.Grid { Columns = "1fr auto auto", Height = 48 }
     local searchBar = C.toolbar("Top", { searchRow }, { Name = "PeopleSearch", Padding = "20 0 20 12" })
@@ -136,7 +136,7 @@ function Conversations.newRoom(self)
         setup.Visible, invitation.Visible = mode == "channel", mode == "invite"
         selected.Visible, nextButton.Visible = mode == "group", mode == "group"
         name.PlaceholderText = mode == "channel" and t("Channel name") or t("Group name")
-        query.PlaceholderText = mode == "channels" and t("Search public channels") or t("Search username or email")
+        query.PlaceholderText = mode == "channels" and t("Search public channels") or t("Search name, username or email")
         visibilityButton.Visible = mode == "channel"
         visibilityButton:setTextContent(t("Private channel · invitation required"))
         createButton:setTextContent(mode == "channel" and t("Create channel") or t("Create group"))
@@ -265,7 +265,7 @@ function Conversations.newRoom(self)
                 retry = C.button(t("Retry contacts"), function() retry:removeFromParent(); loadContacts() end, { Name = "RetryContacts" })
                 people:addChild(retry)
             elseif #contacts == 0 then
-                people:addChild(C.text(t("No contacts yet. Search for someone by their exact username to start a chat."), {
+                people:addChild(C.text(t("No contacts yet. Search for someone by name or username to start a chat."), {
                     FontSize = 14, WordWrap = true, class = "chat-dim" }))
             else
                 table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)

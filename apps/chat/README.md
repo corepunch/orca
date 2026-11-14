@@ -173,7 +173,7 @@ search, New Group, New Channel, and contacts. Tap a person to open a direct chat
 Groups select members before the name step; Back preserves that selection and
 name draft. Channels start with a name and private/public visibility, and people
 join separately. Channel browsing and invitation entry have separate views.
-No contact is required for discovery: exact public usernames are searchable;
+No contact is required for discovery: people are found by name or username, like in other messengers;
 email requires a verified address and that person's discovery opt-in in
 Profile. A phone number typed in settings is private and never searchable. Display names are separate from public usernames.
 
@@ -288,7 +288,7 @@ server route handlers and domain services each have a separate owner.
 Sign in with an email code, an emailed sign-in link, Apple or Google (iOS,
 macOS and Android) or email and password. See [Android](../../docs/ANDROID.md)
 for `make chat-android`. On New chat, choose a
-known contact or find an exact username or discoverable email.
+known contact or find someone by name, username or discoverable email.
 Choose Direct, Group, or Channel; group/channel creators become owners and can
 manage members and invitations. Public channels support search and subscription.
 Open a second client with another account to exchange messages. **Refresh**

@@ -137,6 +137,18 @@ export class Repository {
     }
     return (await this.listDocuments(collection, queries, limit, options)).map(unpack);
   }
+  // People by username prefix (private directory) or display-name words (the
+  // public profiles' fulltext index Octopus search already uses).
+  async searchPeople(handle, name, limit) {
+    const ids = new Set();
+    if (handle) for (const doc of await this.listDocuments('directory', [{ method: 'startsWith', attribute: 'handle', values: [handle] }], limit))
+      ids.add(doc.$id);
+    try {
+      for (const doc of await this.listDocuments('profiles', [{ method: 'search', attribute: 'username', values: [name] }], limit))
+        ids.add(doc.userId || doc.$id);
+    } catch (error) { if (error.status !== 400) throw error; /* No fulltext index: usernames still match. */ }
+    return (await Promise.all([...ids].slice(0, limit).map(id => this.get('profiles', id)))).filter(Boolean);
+  }
   async listDocuments(collection, queries = [], limit, options = {}) {
     const rows = []; let cursor = queries.find(query => query.method === 'cursorAfter')?.values?.[0];
     queries = queries.filter(query => query.method !== 'cursorAfter');
