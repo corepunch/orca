@@ -735,6 +735,8 @@ local App = Application:extend {
         local scope = self:dataScope()
         local function refresh()
             local contacts, recent = scope:member("Contacts"), scope:member("Recent")
+            -- A failure from an earlier visit does not linger on a fresh one.
+            scope:member("OpenContact"):clearError()
             scope:member("Rooms"):refresh { quiet = true }
             contacts:refresh { quiet = contacts.loaded }
             recent:refresh { quiet = recent.loaded }
