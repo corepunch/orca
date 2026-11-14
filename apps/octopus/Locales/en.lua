@@ -249,4 +249,10 @@ return {
     ["%{count}k"] = "%{count}k",
     ["about"] = "about",
     ["Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."] = "Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0).",
+    ["Take photo"] = "Take photo",
+    ["your picture"] = "your picture",
+    ["Continue"] = "Continue",
+    ["Upload a photo"] = "Upload a photo",
+    ["We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later on your profile."] = "We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later on your profile.",
+    ["Taking photos needs ORCA's native camera support on iPhone or iPad."] = "Taking photos needs ORCA's native camera support on iPhone or iPad.",
 }

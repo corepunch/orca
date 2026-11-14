@@ -122,6 +122,11 @@ local App = Application:extend {
             end,
             avatarChanged = function(userId) self:avatarChanged(userId) end,
             signOut = function() self:signOut() end,
+            finishPicture = function()
+                local route = self.pictureReturn or "/"
+                self.pictureReturn = nil
+                self:show(route)
+            end,
             copyLink = function(url)
                 system.set_clipboard(url)
                 self:notice(self.i18n:t("Link copied: %{url}", { url = url }))
@@ -378,6 +383,7 @@ local App = Application:extend {
     ["/write"] = function(self) self.currentRoute = "/write"; return Compose.page(self) end,
     ["/auth"] = function(self) self.currentRoute = "/auth"; return Identity.auth(self, "signin") end,
     ["/auth/signup"] = function(self) self.currentRoute = "/auth/signup"; return Identity.auth(self, "signup") end,
+    ["/auth/picture"] = function(self) self.currentRoute = "/auth/picture"; return People.picture(self) end,
 
     updateAppearance = function(self)
         -- Keep active forms and in-flight submissions intact. Chrome is

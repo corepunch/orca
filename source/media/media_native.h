@@ -29,8 +29,11 @@ char const *Media_FilterId(int index);
 int Media_FindFilter(char const *id);
 void Media_FilterPixels(int index, unsigned char *rgba, size_t w, size_t h, size_t stride);
 
+int Media_CanTakePhoto(void);
+
 #if defined(ORCA_IOS)
 void *Media_BeginPickPhoto(struct MediaError *error);
+void *Media_BeginTakePhoto(struct MediaError *error);
 int Media_PollPickedPhoto(void *request, struct MediaPhoto *photo, struct MediaError *error);
 void Media_ReleasePhotoPicker(void *request);
 #endif

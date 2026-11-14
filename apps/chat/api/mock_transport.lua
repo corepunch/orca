@@ -67,7 +67,9 @@ function Mock.new(options)
     -- Fixture people use the demo portraits bundled with the app, when present.
     state.profilePhotos, state.photoFiles = state.profilePhotos or {}, state.photoFiles or {}
     for userId, name in pairs(state.avatars or {}) do
-        local file = state.profilePhotos[userId] == nil and io.open("Chat/assets/avatars/" .. name .. ".jpg", "rb")
+        -- The bundle path, or the source tree when run from the repository root.
+        local file = state.profilePhotos[userId] == nil and (io.open("Chat/assets/avatars/" .. name .. ".jpg", "rb")
+            or io.open("apps/chat/assets/avatars/" .. name .. ".jpg", "rb"))
         if file then
             local id = "avatar-" .. name
             state.photoFiles[id] = file:read("*a")

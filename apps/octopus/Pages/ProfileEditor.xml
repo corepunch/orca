@@ -16,6 +16,12 @@
           class="octopus-action octopus-outline">
     <BindingExpression Target="TextResourceID">IF({DataContext/ChangePhoto/IsExecuting}, "Uploading photo…", "Change photo")</BindingExpression>
   </Button>
+  <!-- Shown by views/people.lua where the device has a camera. -->
+  <Button Name="TakePhoto" Click="TakePhoto" Visible="false" IgnoreHitTest="{Binding DataContext/TakePhoto/IsExecuting}" Height="44"
+          BorderWidth="2" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+          class="octopus-action octopus-outline">
+    <BindingExpression Target="TextResourceID">IF({DataContext/TakePhoto/IsExecuting}, "Uploading photo…", "Take photo")</BindingExpression>
+  </Button>
   <TextBlock Text="name" TextResourceID="name" FontSize="14" class="octopus-muted" IgnoreHitTest="true"/>
   <Input Name="EditName" PlaceholderText="Your name" Height="44" FontSize="15" Padding="12 0" BorderWidth="2"
          Text="{Binding DataContext/ProfileForm/DisplayName, Mode=TwoWay}" class="octopus-input octopus-field"/>

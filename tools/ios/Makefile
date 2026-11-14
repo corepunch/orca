@@ -42,7 +42,7 @@ OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(RO
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_animation.o ios_scroll.o)
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules

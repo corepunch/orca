@@ -459,4 +459,8 @@ return {
     ["This conversation is no longer available."] = "This conversation is no longer available.",
     ["Read the current community rules first."] = "Read the current community rules first.",
     ["Choose another person and whether to block them."] = "Choose another person and whether to block them.",
+    ["take photo"] = "take photo",
+    ["your picture"] = "your picture",
+    ["Continue"] = "Continue",
+    ["We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later in settings."] = "We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later in settings.",
 }

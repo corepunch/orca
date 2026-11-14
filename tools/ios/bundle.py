@@ -101,6 +101,7 @@ def main():
         'UILaunchScreen': {}, 'UISupportedInterfaceOrientations': orientations,
         'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown'],
         'ORCAProject': 'project', 'ITSAppUsesNonExemptEncryption': False,
+        'NSCameraUsageDescription': 'Your camera takes a profile photo or a photo to share, only when you choose to.',
         'UIApplicationSceneManifest': {
             'UIApplicationSupportsMultipleScenes': False,
             'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{

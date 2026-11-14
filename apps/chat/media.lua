@@ -16,6 +16,20 @@ function Media:pick()
     return native.pickPhoto()
 end
 
+-- The camera exists only on iOS devices; offer it only when this is true.
+function Media:canTake()
+    local ok, native = pcall(require, "orca.media")
+    return ok and type(native.canTakePhoto) == "function" and native.canTakePhoto() == true
+end
+
+function Media:take()
+    local ok, native = pcall(require, "orca.media")
+    if not ok or type(native.takePhoto) ~= "function" then
+        return failure("unsupported", "Taking photos needs ORCA's native camera support on iPhone or iPad.")
+    end
+    return native.takePhoto()
+end
+
 function Media:storePreview(bytes, key)
     if type(bytes) ~= "string" or #bytes < 4 or #bytes > 1000000
         or bytes:sub(1, 2) ~= "\255\216" or bytes:sub(-2) ~= "\255\217" then

@@ -1,5 +1,6 @@
 local ui = require "orca.UIKit"
 local C = require "Octopus/views/components"
+local People = require "Octopus/views/people"
 local colors = C.colors
 local Identity = {}
 
@@ -73,6 +74,11 @@ function Identity.auth(self, mode)
             end
             self.authDraft, self.authReturn = nil, nil
             self:resetSessionViews()
+            -- A new account (no picture yet) gets a random character first.
+            if People.assignRandom(self) then
+                self.pictureReturn = returnRoute
+                return self:show("/auth/picture")
+            end
             self:show(returnRoute)
         end)
     end, { Name = signup and "SignUp" or "SignIn", Height = 52, FontSize = 16 })

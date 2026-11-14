@@ -12,13 +12,17 @@
 #if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 #import <PhotosUI/PhotosUI.h>
+#import <AVFoundation/AVFoundation.h>
 
-@interface OrcaPhotoPicker : NSObject <PHPickerViewControllerDelegate, UIAdaptivePresentationControllerDelegate> {
+// One request presents either the photo library or the camera, then yields
+// to Lua until done. Both results go through Media_ProcessPhoto.
+@interface OrcaPhotoPicker : NSObject <PHPickerViewControllerDelegate, UIImagePickerControllerDelegate,
+    UINavigationControllerDelegate, UIAdaptivePresentationControllerDelegate> {
 @public
   BOOL done, cancelled;
   struct MediaPhoto photo;
   struct MediaError error;
-  PHPickerViewController *picker;
+  UIViewController *picker;
 }
 - (void)dismiss;
 @end
@@ -27,7 +31,7 @@ static OrcaPhotoPicker *activePicker;
 
 @implementation OrcaPhotoPicker
 - (void)dismiss {
-  picker.delegate = nil;
+  [(id)picker setDelegate:nil];
   picker.presentationController.delegate = nil;
   if (picker.presentingViewController) [picker dismissViewControllerAnimated:YES completion:nil];
   [picker release];
@@ -68,17 +72,57 @@ static OrcaPhotoPicker *activePicker;
         if (bytes) Media_ProcessPhoto(bytes.bytes, bytes.length, &prepared, &failure);
       }
     }
-    dispatch_async(dispatch_get_main_queue(), ^{
-      if (cancelled) {
-        free(prepared.jpeg);
-        free(prepared.thumbnail);
-      } else {
-        photo = prepared;
-        error = failure;
-        done = YES;
-      }
-    });
+    dispatch_async(dispatch_get_main_queue(), ^{ [self finishWith:prepared failure:failure]; });
   }];
+}
+
+- (void)finishWith:(struct MediaPhoto)prepared failure:(struct MediaError)failure {
+  if (cancelled) {
+    free(prepared.jpeg);
+    free(prepared.thumbnail);
+  } else {
+    photo = prepared;
+    error = failure;
+    done = YES;
+  }
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)controller {
+  [self dismiss];
+  error = (struct MediaError){ "cancelled", "Taking a photo was cancelled." };
+  done = YES;
+}
+
+- (void)imagePickerController:(UIImagePickerController *)controller didFinishPickingMediaWithInfo:(NSDictionary *)info {
+  UIImage *image = [info[UIImagePickerControllerOriginalImage] retain];
+  [self dismiss];
+  if (!image) {
+    error = (struct MediaError){ "read", "The camera did not return a photo." };
+    done = YES;
+    return;
+  }
+  // Redraw upright at the upload bound, then share the library path's JPEG,
+  // metadata removal and size policy.
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+    struct MediaPhoto prepared = {0};
+    struct MediaError failure = { "read", "The photo could not be prepared." };
+    @autoreleasepool {
+      CGSize size = image.size;
+      double scale = fmin(1, fmin(MEDIA_PHOTO_EDGE / fmax(size.width, size.height),
+          sqrt(MEDIA_PHOTO_PIXELS / (size.width * size.height))));
+      CGSize target = CGSizeMake(fmax(1, floor(size.width * scale)), fmax(1, floor(size.height * scale)));
+      UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat preferredFormat];
+      format.scale = 1;
+      format.opaque = YES;
+      UIGraphicsImageRenderer *renderer = [[[UIGraphicsImageRenderer alloc] initWithSize:target format:format] autorelease];
+      NSData *bytes = [renderer JPEGDataWithCompressionQuality:.95 actions:^(UIGraphicsImageRendererContext *context) {
+        [image drawInRect:CGRectMake(0, 0, target.width, target.height)];
+      }];
+      if (bytes) Media_ProcessPhoto(bytes.bytes, bytes.length, &prepared, &failure);
+    }
+    [image release];
+    dispatch_async(dispatch_get_main_queue(), ^{ [self finishWith:prepared failure:failure]; });
+  });
 }
 
 - (void)dealloc {
@@ -90,14 +134,14 @@ static OrcaPhotoPicker *activePicker;
 }
 @end
 
-void *Media_BeginPickPhoto(struct MediaError *error) {
+static UIViewController *Media_Presenter(struct MediaError *error) {
   if (![NSThread isMainThread]) {
     *error = (struct MediaError){ "thread", "Photo selection must start on the main thread." };
-    return NULL;
+    return nil;
   }
   if (activePicker) {
     *error = (struct MediaError){ "busy", "Finish choosing the current photo first." };
-    return NULL;
+    return nil;
   }
   UIViewController *presenter = nil;
   for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
@@ -109,18 +153,57 @@ void *Media_BeginPickPhoto(struct MediaError *error) {
   }
   if (!presenter || presenter.presentedViewController) {
     *error = (struct MediaError){ "busy", "Photo selection needs an active app window without another dialog." };
-    return NULL;
+    return nil;
   }
-  OrcaPhotoPicker *request = [[OrcaPhotoPicker alloc] init];
-  PHPickerConfiguration *config = [[[PHPickerConfiguration alloc] init] autorelease];
-  config.filter = PHPickerFilter.imagesFilter;
-  config.selectionLimit = 1;
-  request->picker = [[PHPickerViewController alloc] initWithConfiguration:config];
-  request->picker.delegate = request;
+  return presenter;
+}
+
+static void *Media_Present(UIViewController *presenter, OrcaPhotoPicker *request) {
   activePicker = request;
   [presenter presentViewController:request->picker animated:YES completion:nil];
   request->picker.presentationController.delegate = request;
   return request;
+}
+
+void *Media_BeginPickPhoto(struct MediaError *error) {
+  UIViewController *presenter = Media_Presenter(error);
+  if (!presenter) return NULL;
+  OrcaPhotoPicker *request = [[OrcaPhotoPicker alloc] init];
+  PHPickerConfiguration *config = [[[PHPickerConfiguration alloc] init] autorelease];
+  config.filter = PHPickerFilter.imagesFilter;
+  config.selectionLimit = 1;
+  PHPickerViewController *library = [[PHPickerViewController alloc] initWithConfiguration:config];
+  library.delegate = request;
+  request->picker = library;
+  return Media_Present(presenter, request);
+}
+
+int Media_CanTakePhoto(void) {
+  if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) return 0;
+  AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+  return status != AVAuthorizationStatusDenied && status != AVAuthorizationStatusRestricted;
+}
+
+void *Media_BeginTakePhoto(struct MediaError *error) {
+  if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+    *error = (struct MediaError){ "unsupported", "This device has no camera." };
+    return NULL;
+  }
+  AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+  if (status == AVAuthorizationStatusDenied || status == AVAuthorizationStatusRestricted) {
+    *error = (struct MediaError){ "permission", "Allow camera access in Settings to take a photo." };
+    return NULL;
+  }
+  UIViewController *presenter = Media_Presenter(error);
+  if (!presenter) return NULL;
+  OrcaPhotoPicker *request = [[OrcaPhotoPicker alloc] init];
+  UIImagePickerController *camera = [[UIImagePickerController alloc] init];
+  camera.sourceType = UIImagePickerControllerSourceTypeCamera;
+  camera.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
+  camera.mediaTypes = @[ @"public.image" ];
+  camera.delegate = request;
+  request->picker = camera;
+  return Media_Present(presenter, request);
 }
 
 int Media_PollPickedPhoto(void *state, struct MediaPhoto *photo, struct MediaError *error) {
@@ -291,6 +374,10 @@ int Media_FilterPhoto(void const *bytes, size_t size, int filter, struct MediaPh
     return 1;
   }
 }
+
+#if !TARGET_OS_IOS
+int Media_CanTakePhoto(void) { return 0; }
+#endif
 
 int Media_PickPhoto(struct MediaPhoto *photo, struct MediaError *error) {
 #if TARGET_OS_OSX

@@ -86,29 +86,50 @@ static int media_picker_resume(lua_State *L, int status, lua_KContext context) {
 }
 #endif
 
-int media_PickPhoto(lua_State *L) {
 #if defined(ORCA_IOS)
+// Presents a system picker and yields until it finishes. The suspended C call
+// retains the request userdata; GC cancels abandoned requests.
+static int media_present(lua_State *L, void *(*begin)(struct MediaError *)) {
   struct MediaError error = {0};
   if (!lua_isyieldable(L)) {
     error = (struct MediaError){ "not_yieldable", "Photo selection must run in an application coroutine." };
     return media_push_error(L, &error);
   }
-  // The suspended C call retains this userdata; GC cancels abandoned requests.
   void **request = lua_newuserdatauv(L, sizeof(*request), 0);
   *request = NULL;
   if (luaL_newmetatable(L, "orca.media.PhotoPicker")) {
     lua_pushcfunction(L, media_picker_gc); lua_setfield(L, -2, "__gc");
   }
   lua_setmetatable(L, -2);
-  *request = Media_BeginPickPhoto(&error);
+  *request = begin(&error);
   if (!*request) return media_push_error(L, &error);
   return lua_yieldk(L, 0, (lua_KContext)request, media_picker_resume);
+}
+#endif
+
+int media_PickPhoto(lua_State *L) {
+#if defined(ORCA_IOS)
+  return media_present(L, Media_BeginPickPhoto);
 #else
   struct MediaPhoto photo = {0};
   struct MediaError error = {0};
   if (!Media_PickPhoto(&photo, &error)) return media_push_error(L, &error);
   return media_push_photo(L, &photo);
 #endif
+}
+
+int media_TakePhoto(lua_State *L) {
+#if defined(ORCA_IOS)
+  return media_present(L, Media_BeginTakePhoto);
+#else
+  struct MediaError error = { "unsupported", "Taking photos is available on iPhone and iPad." };
+  return media_push_error(L, &error);
+#endif
+}
+
+int media_CanTakePhoto(lua_State *L) {
+  lua_pushboolean(L, Media_CanTakePhoto());
+  return 1;
 }
 
 #if !defined(__APPLE__)
@@ -129,6 +150,8 @@ int Media_PickPhoto(struct MediaPhoto *photo, struct MediaError *error) {
   *error = (struct MediaError){ "unsupported", "Photo picking is available on macOS." };
   return 0;
 }
+
+int Media_CanTakePhoto(void) { return 0; }
 #endif
 
 #include <media/media_export.c>

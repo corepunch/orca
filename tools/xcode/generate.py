@@ -92,6 +92,10 @@ def scheme(path, project_name, name, target, product):
     write(path, '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='unicode') + '\n')
 
 
+# orca.media.takePhoto opens the camera only from an explicit user action.
+CAMERA_USAGE = 'Your camera takes a profile photo or a photo to share, only when you choose to.'
+
+
 def info_plist(display_name, launch_storyboard=None):
     orientations = ['UIInterfaceOrientation' + name for name in ('Portrait', 'LandscapeLeft', 'LandscapeRight')]
     return dict(CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)',
@@ -103,7 +107,8 @@ def info_plist(display_name, launch_storyboard=None):
                 **({'UILaunchStoryboardName': launch_storyboard} if launch_storyboard else {'UILaunchScreen': {}}),
                 UISupportedInterfaceOrientations=orientations,
                 **{'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown']},
-                ORCAProject='project', ITSAppUsesNonExemptEncryption=False, UIApplicationSceneManifest={
+                ORCAProject='project', ITSAppUsesNonExemptEncryption=False,
+                NSCameraUsageDescription=CAMERA_USAGE, UIApplicationSceneManifest={
                     'UIApplicationSupportsMultipleScenes': False,
                     'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{
                         'UISceneConfigurationName': 'ORCA', 'UISceneDelegateClassName': 'OrcaSceneDelegate',
@@ -158,7 +163,7 @@ def generate(args, app):
     root_configs = project.configurations('project', common, overrides)
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
-                  'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
+                  'ImageIO', 'PhotosUI', 'AVFoundation', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
                   'UserNotifications', 'AuthenticationServices')
     linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:

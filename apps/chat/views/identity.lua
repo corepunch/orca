@@ -40,8 +40,7 @@ function Identity.auth(self, mode)
         if not self.client:getSession() then self:notice(t("Check your email to confirm your account.")); return end
         local resume = self.publicAuthResume
         self.publicAuthResume = nil
-        self:resetSessionViews()
-        if resume then resume(self) else self:show() end
+        self:signedIn(resume)
     end
     -- `secondary` draws the action as a left-aligned link beside a primary one.
     local function action(label, name, pending, operation, secondary)

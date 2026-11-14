@@ -402,12 +402,14 @@ function Provider.new(context)
         end
         return rows
     end
-    operations.changePhoto = function(params, _, command)
+    -- A character (`params.item`), a library photo, or with `take` the camera.
+    local function changePhoto(params, command, take)
         local scope, token = command.scope, command.scope:token()
         local person = scope:exposedRecord("Profile")
         local choice = params.item and params.item.values.ChoiceId
         local picked, err
         if choice then picked, err = Avatars.load(choice)
+        elseif take then picked, err = context.media:take()
         else picked, err = context.media:pick() end
         if not scope:valid(token) then return nil, { code = "stale" } end
         if not picked then
@@ -424,6 +426,8 @@ function Provider.new(context)
         context.notice(t("Photo updated. It shows on the website and in Chat too."))
         return true
     end
+    operations.changePhoto = function(params, _, command) return changePhoto(params, command, false) end
+    operations.takePhoto = function(params, _, command) return changePhoto(params, command, true) end
 
     -- Post page ------------------------------------------------------------
 
@@ -757,6 +761,7 @@ function Provider.new(context)
         SignInToFollow = function() context.signIn("/user") end,
         SignInToComment = function() context.signIn("/post") end,
         SignOut = function() context.signOut() end,
+        FinishPicture = function() if context.finishPicture then context.finishPicture() end end,
         ToggleAvatarPicker = function(scope, params)
             local button = params.sender
             local picker = button:getParent():findChild("DefaultAvatarPicker")

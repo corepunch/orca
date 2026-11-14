@@ -8,6 +8,7 @@ local filesystem = require "orca.filesystem"
 local C = require "Octopus/views/components"
 local OctopusProvider = require "Octopus/providers/octopus"
 local colors = C.colors
+local Avatars = require "orca.avatars"
 local People = {}
 
 -- The profile content for `userId`: header, counts, follow and posts.
@@ -105,9 +106,48 @@ function People.me(self)
     self.i18n:apply(editor)
     scope:attach(editor)
     content:findChild("ProfileActions", true):addChild(editor)
+    editor:findChild("TakePhoto", true).Visible = People.canTakePhoto(self)
     self.status = editor:findChild("MeStatus", true)
     self.status:setTextContent("")
     return self:tab("Me", C.page(self.i18n:t("me"), content))
+end
+
+function People.canTakePhoto(self)
+    local media = self.media
+    return media ~= nil and media.canTake ~= nil and media:canTake() == true
+end
+
+-- Every account starts with a picture, as on Discord: one without a photo
+-- gets a random character. True when it had none (a new account).
+function People.assignRandom(self)
+    local session = self.client:getSession()
+    if not session then return false end
+    local userId = session.user.id
+    local avatars = self.client:avatars { userId }
+    if not avatars or avatars[userId] ~= false then return false end
+    local photo = Avatars.load(Avatars.random(self.randomRoll).id)
+    if photo and self.client:setAvatar(photo) then self:avatarChanged(userId) end
+    return true
+end
+
+-- The step after creating an account (Pages/PictureStep.xml over Data/Me.xml).
+function People.picture(self)
+    local session = self.client:getSession()
+    if not session then return self:show("/") end
+    if self.meScope then self.meScope:dispose(); self.meScope = nil end
+    local scope = self:pageScope("Octopus/Data/Me.xml")
+    local person = scope.store:put("OctopusProfile", { userId = session.user.id, username = session.user.name },
+        { partial = true, locals = { Own = true } })
+    scope:expose("Profile", person)
+    local page = assert(filesystem.loadObject("Octopus/Pages/PictureStep"), "Missing Octopus/Pages/PictureStep")
+    self.i18n:apply(page)
+    scope:attach(page)
+    self.visibility:watch(page, scope)
+    page:findChild("TakePhoto", true).Visible = People.canTakePhoto(self)
+    scope:member("Person"):set("UserId", session.user.id)
+    self.status = page:findChild("PictureStatus", true)
+    self.statusBar = nil
+    return self:frame(C.page(self.i18n:t("your picture"), page))
 end
 
 -- Search -----------------------------------------------------------------------

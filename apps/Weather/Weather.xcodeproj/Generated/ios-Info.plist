@@ -26,6 +26,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Your camera takes a profile photo or a photo to share, only when you choose to.</string>
 	<key>ORCAProject</key>
 	<string>project</string>
 	<key>UIApplicationSceneManifest</key>

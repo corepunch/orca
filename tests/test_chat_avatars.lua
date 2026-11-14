@@ -186,6 +186,37 @@ session, app.sessionEpoch = { user = { id = "other" } }, 2
 Avatar.close(app)
 step()
 assert(invalidated == 4, "A late save from another account never updates this account's portraits")
+
+-- Taking a photo is offered only where the device has a camera, and saves the
+-- same way as an upload.
+session, app.sessionEpoch = { user = { id = "me" } }, 3
+assert(not app.screen:findChild("TakeAvatarPhoto", true), "No camera, no take-photo command")
+local took = 0
+function app.media:canTake() return true end
+function app.media:take() took = took + 1; return photo end
+local camera = Avatar.controls(app, tile, status)
+app.screen:addChild(camera)
+flush()
+click("TakeAvatarPhoto")
+step(); step()
+assert(took == 1 and selected == photo and status:getTextContent() == "Picture updated.", "A taken photo becomes the picture")
+camera:removeFromParent()
+
+-- A new account (no picture yet) starts with a random character.
+local saved, rolled
+local fresh = { avatars = {}, avatarPaths = {}, client = {}, media = {}, randomRoll = function(n) rolled = n; return 5 end }
+function fresh.client:getSession() return { user = { id = "new" } } end
+function fresh.client:getAvatars(ids) assert(ids[1] == "new"); return { new = saved and "a1" or false } end
+function fresh.client:setAvatar(value) saved = value; return { avatar_id = "a1", user_id = "new" } end
+function fresh.avatars:invalidate(id) assert(id == "new") end
+function fresh.media:storePreview(bytes, key) return media:storePreview(bytes, key) end
+Avatars.load = savedLoad
+assert(Avatar.assignRandom(fresh) and rolled == 16, "An account without a picture gets one")
+assert(saved and saved.jpeg == assert(savedLoad(Avatars.entries[5].id)).jpeg and fresh.avatarPaths.new,
+    "The rolled character is saved and shown at once")
+assert(not Avatar.assignRandom(fresh), "An account with a picture keeps it")
+assert(Avatars.random(function() return 1 end).id == "orca" and Avatars.random(), "Random choices come from the catalog")
+
 Avatars.load, orca.async = savedLoad, savedAsync
 media:clear()
 print("Chat default avatar picker tests passed")

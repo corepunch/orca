@@ -58,6 +58,9 @@ local App = Application:extend {
             if not self.configurationError then
                 self.client, self.configurationError = Chat.appwrite(settings)
                 self.restorePending = self.client ~= nil and settings.sessionStore ~= nil
+                -- End-to-end encryption keys for this device; nil without native crypto.
+                self.deviceSync = self.client and require("Chat/device_sync").new(self, config) or nil
+                if self.deviceSync then self.client:setDeviceKeys(self.deviceSync.store) end
             end
         elseif backend == "mock" then self.client = Chat.mock()
         else self.configurationError = { message = t("Choose CHAT_BACKEND=appwrite or mock.") } end
@@ -107,6 +110,7 @@ local App = Application:extend {
         self.safetyTarget = nil
         self.newScreen, self.settingsScreen, self.pendingPostShare = nil, nil, nil
         self.publicAuthResume, self.meContent, self.meStatus = nil, nil, nil
+        self.pictureResume = nil
     end,
 
     -- The signed-in account's data scope (Data/Inbox.xml): rooms, contacts,
@@ -257,6 +261,7 @@ local App = Application:extend {
         self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
         if self.push then self.push:activate() end
+        if self.deviceSync then self.deviceSync:activate() end
         if self.signin then self.signin:activate() end
         return result
     end,
@@ -430,6 +435,7 @@ local App = Application:extend {
     signOut = function(self)
         self:closePages()
         if self.push then self.push:suspend() end
+        if self.deviceSync then self.deviceSync:suspend() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
         self.restorePending = false
@@ -741,11 +747,23 @@ local App = Application:extend {
     profile = Identity.profile,
     auth = Identity.auth,
 
+    -- An interactive sign-in finished. A new account (one without a picture)
+    -- gets a random character and the picture step before carrying on.
+    signedIn = function(self, resume)
+        self:resetSessionViews()
+        if ProfileAvatar.assignRandom(self) then
+            self.pictureResume = resume
+            return self:show("/welcome-picture")
+        end
+        if resume then resume(self) else self:show() end
+    end,
+
     ["/"] = function(self) return self:home() end,
     ["/thread"] = function(self) return self:thread() end,
     ["/new"] = function(self) return self:newRoom() end,
     ["/contacts"] = function(self) return self:contactsView() end,
     ["/profile"] = function(self) return self:profile() end,
+    ["/welcome-picture"] = function(self) return ProfileAvatar.welcome(self) end,
     ["/me"] = function(self) return Social.me(self) end,
     ["/share-post"] = function(self) return Social.sharePage(self) end,
     ["/posts"] = function(self) return self:posts():page("/posts") end,

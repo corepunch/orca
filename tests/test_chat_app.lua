@@ -97,6 +97,9 @@ local function mockApp(media, client)
     login:findChild("Password", true).Text = "password123"
     login:findChild("SignIn", true):send("Node.LeftButtonUp")
     drain(app)
+    -- An account without a picture gets a random character, then carries on.
+    local continue = app.screen:findChild("WelcomePictureContinue", true)
+    if continue then continue:send("Node.LeftButtonUp"); drain(app) end
     assert(app.client:getSession() and app.screen:findChild("Roomalex", true),
         "Mock login must reach API-backed conversations: " .. tostring(app.client:getSession()) .. " / " .. app.status:getTextContent())
     return app
@@ -774,8 +777,17 @@ assert(emailPage:findChild("Email", true).Text == "demo@example.invalid")
 click(authApp, "OtherOptions"); click(authApp, "CreateAccount")
 authApp.screen:findChild("Email", true).Text = "signup_ui@example.invalid"
 authApp.screen:findChild("Password", true).Text = "password123"
+authApp.randomRoll = function(count) assert(count == 16); return 2 end
 click(authApp, "SignUp")
-assert(authApp.client:getSession() and authApp.screen:findChild("ConversationListAll", true), "Signup must reach the real mock service: " .. authApp.status:getTextContent())
+assert(authApp.client:getSession() and authApp.screen:findChild("WelcomePicture", true), "Signup must reach the real mock service and the picture step")
+-- A new account starts with a random character, already saved, and may change it.
+local newUserId = authApp.client:getSession().user.id
+assert(authApp.client.avatarIds[newUserId], "The random character is saved as the profile photo")
+assert(authApp.avatarPaths[newUserId] and authApp.screen:findChild("WelcomeAvatar", true):findChild("AvatarPhoto", true),
+    "The picture step shows the saved character")
+assert(authApp.screen:findChild("ChooseAvatar", true) and authApp.screen:findChild("UploadAvatar", true))
+click(authApp, "WelcomePictureContinue")
+assert(authApp.screen:findChild("ConversationListAll", true), "Continue carries on into the app")
 assert(authApp.authDraft == nil, "Successful authentication must clear form drafts")
 assert(not authApp.screen:findChild("ContinueApple", true), "Provider buttons need native browser sign-in")
 
@@ -820,7 +832,9 @@ do
     events[1] = { type = "url", url = state.lastSignInLink }
     linkApp.signin:poll(); drain(linkApp)
     assert(linkApp.client:getSession().user.email == "link_reader@example.invalid"
-        and linkApp.screen:findChild("ConversationListAll", true), "Opening the emailed link signs in to the inbox")
+        and linkApp.screen:findChild("WelcomePicture", true), "An emailed link for a new account opens the picture step")
+    linkApp.screen:findChild("WelcomePictureContinue", true):send("Node.LeftButtonUp"); drain(linkApp)
+    assert(linkApp.screen:findChild("ConversationListAll", true), "Opening the emailed link signs in to the inbox")
 end
 
 otpApp.screen:findChild("Email", true).Text = "demo@example.invalid"
@@ -1258,19 +1272,20 @@ photoApp.room = photoApp.client:listRooms()[1]
 photoApp.screen = photoApp:dispatch("/details").view
 drain(photoApp) -- visible member photos load after paint
 drain(photoApp)
-assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
-    "Conversation members show their photos")
+assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and avatarPhoto(photoApp.screen:findChild("Memberme", true)),
+    "Conversation members show their photos, including the character a new account starts with")
 
 -- Choosing your own photo replaces your initials on the profile and in member lists.
 photoApp.media.pick = function() return { jpeg = jpeg } end
 photoApp.screen = photoApp:dispatch("/profile").view
 drain(photoApp)
 local profileTile = photoApp.screen:findChild("ProfileHeader", true)
-assert(not avatarPhoto(profileTile), "Without a photo the profile shows initials")
+local character = photoApp.client:getAvatars { "me" }.me
+assert(character and avatarPhoto(profileTile), "Signing in without a photo assigns a random character")
 click(photoApp, "UploadAvatar")
 drain(photoApp); drain(photoApp)
 local mine = photoApp.client:getAvatars { "me" }.me
-assert(mine and photoApp.client:getAvatar(mine) == jpeg, "The chosen photo becomes the account's profile photo")
+assert(mine and mine ~= character and photoApp.client:getAvatar(mine) == jpeg, "The chosen photo becomes the account's profile photo")
 assert(avatarPhoto(profileTile), "The profile shows the new photo at once: " .. photoApp.status:getTextContent())
 photoApp.screen = photoApp:dispatch("/details").view
 drain(photoApp); drain(photoApp)

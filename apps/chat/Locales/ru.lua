@@ -459,4 +459,8 @@ return {
     ["This conversation is no longer available."] = "Этот чат больше недоступен.",
     ["Read the current community rules first."] = "Сначала прочитайте действующие правила сообщества.",
     ["Choose another person and whether to block them."] = "Выберите другого человека и действие блокировки.",
+    ["take photo"] = "сделать фото",
+    ["your picture"] = "ваше фото",
+    ["Continue"] = "Продолжить",
+    ["We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later in settings."] = "Мы выбрали вам морского жителя. Оставьте его, выберите другого или добавьте своё фото. Изменить можно позже в настройках.",
 }

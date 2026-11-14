@@ -454,6 +454,18 @@ assert(avatarAfterChoice ~= avatarBeforeFailure and adaPhoto
 assert(find(app, "EditBio").Text == "An unsaved profile edit", "Choosing a character keeps pending form edits")
 click(app, "ChooseAvatar")
 assert(not isShown(find(app, "DefaultAvatarPicker")), "The character picker can be dismissed")
+
+-- Taking a photo appears where the device has a camera and saves like an upload.
+assert(not isShown(find(app, "TakePhoto")), "Without a camera the editor offers no Take photo")
+app.media.canTake = function() return true end
+app.media.take = function() return { jpeg = photoBytes } end
+app:show("/me"); drain(app); app:afterPaint(); drain(app)
+local beforeTake = app.client:getProfile("u-ada").avatarId
+click(app, "TakePhoto")
+local takenId = app.client:getProfile("u-ada").avatarId
+assert(takenId ~= beforeTake, "A taken photo becomes the profile photo")
+adaPhoto = app.media:path("avatar:" .. takenId)
+app.media.canTake, app.media.take = nil, nil
 Avatars.load = loadAvatar
 
 -- Deleting needs a second tap.
@@ -482,7 +494,17 @@ find(fresh, "ConfirmPassword").Text = "password124"
 click(fresh, "SignUp")
 assert(not fresh.client:getSession() and text(find(fresh, "AuthStatus")) == "Passwords do not match.")
 find(fresh, "ConfirmPassword").Text = "password123"
+fresh.randomRoll = function(count) assert(count == 16); return 3 end
 click(fresh, "SignUp")
+-- A new account starts with a random character, already saved, then may change it.
+assert(fresh.client:getSession() and fresh.currentRoute == "/auth/picture", "Sign-up opens the picture step")
+local freshId = fresh.client:getSession().user.id
+assert(fresh.client:avatars({ freshId })[freshId], "The random character is the account's profile photo")
+assert(isShown(find(fresh, "PictureAvatar"):findChild("AvatarPhoto", true)), "The step shows the character")
+assert(find(fresh, "ChangePhoto") and not isShown(find(fresh, "TakePhoto")), "Without a camera only upload is offered")
+click(fresh, "ChooseAvatar")
+assert(isShown(find(fresh, "DefaultAvatarPicker")), "Other characters are a tap away")
+click(fresh, "PictureContinue")
 assert(fresh.client:getSession() and fresh.currentRoute == "/me", "Sign-up returns to the profile")
 assert(text(find(fresh, "ProfileName")) == "Pat Example" and text(find(fresh, "Countposts")) == "0")
 

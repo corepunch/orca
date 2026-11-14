@@ -18,6 +18,13 @@ for _, choice in ipairs(choices) do
     Avatars.entries[#Avatars.entries + 1], byId[entry.id] = entry, entry
 end
 
+-- A new account starts with a random character, so nobody begins as a blank
+-- placeholder. `roll` (1..n) is injectable for deterministic tests.
+function Avatars.random(roll)
+    local index = roll and roll(#Avatars.entries) or math.random(#Avatars.entries)
+    return Avatars.entries[index]
+end
+
 function Avatars.load(id)
     local entry = byId[id]
     if not entry then

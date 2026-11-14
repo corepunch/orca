@@ -249,4 +249,10 @@ return {
     ["%{count}k"] = "%{count} тыс.",
     ["about"] = "о приложении",
     ["Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."] = "Графика эмодзи — Twemoji, лицензия CC-BY 4.0. Шрифты Noto — Google, лицензия SIL Open Font License. Растеризация шрифтов — FreeType (лицензия FreeType). Декодирование PNG — libpng (лицензия libpng), JPEG — libjpeg (лицензия IJG). Сжатие LZ4 — Ян Колле, лицензия BSD 2-Clause. Lua — Lua.org, PUC-Rio, лицензия MIT. Сеть — curl (Даниэль Стенберг, лицензия curl), разбор XML — libxml2 (лицензия MIT), TLS — Mbed TLS (лицензия Apache 2.0).",
+    ["Take photo"] = "Сделать фото",
+    ["your picture"] = "ваше фото",
+    ["Continue"] = "Продолжить",
+    ["Upload a photo"] = "Загрузить фото",
+    ["We picked a sea creature for you. Keep it, choose another, or add a photo of yourself. You can change it later on your profile."] = "Мы выбрали вам морского жителя. Оставьте его, выберите другого или добавьте своё фото. Изменить можно позже в профиле.",
+    ["Taking photos needs ORCA's native camera support on iPhone or iPad."] = "Для съёмки нужна встроенная поддержка камеры ORCA на iPhone или iPad.",
 }
