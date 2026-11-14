@@ -1,12 +1,10 @@
 # End-to-end encryption: design note
 
-Status: proposal, 2026-11-14. Slice 1 is implemented: Monocypher is vendored
-and `orca.crypto` is available (tests in `tests/test_crypto.lua`). Nothing else
-is implemented yet. The current state
-is described in [API.md](../API.md#private-photos): photos are encrypted by the
-server (AES-256-GCM, keys in private Chat records), and message text is stored
-as plaintext in the private `messages` collection. Octopus administrators and
-the Chat Function can read both.
+Status: proposal, 2026-11-14. Slices 1 and 2 are implemented: `orca.crypto`
+(tests in `tests/test_crypto.lua`) and device keys (the `device-keys`
+collection, its Function routes and `api.device_keys`; see
+[API.md](../API.md#end-to-end-encryption-device-keys)). The app does not
+publish keys yet, and messages are not encrypted yet.
 
 ## Goal and threat model
 
@@ -95,8 +93,10 @@ crypto.equal(a, b)                            -- constant-time comparison
 Secret keys do not stay in Lua longer than needed. Device secret keys live in
 the Keychain through `source/credentials/credentials.c`, under their own
 service key (`chat-device:<endpoint>:<project>:<userId>`), with
-`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly` so they are never synced
-to iCloud or restored to another device.
+`kSecAttrAccessibleWhenUnlockedThisDeviceOnly` (the current `orca.credentials`
+setting) so they are never synced to iCloud or restored to another device.
+That is enough while push notifications carry no text; decrypting in a
+Notification Service Extension would need `AfterFirstUnlock`.
 
 ## Keys
 
@@ -116,15 +116,15 @@ A new private collection, `device-keys`, holds one row per device:
 | `user_id` | Owner (the Auth user, set by the Function, never by the client) |
 | `device_id` | Random 16-byte id, base64url |
 | `box_public`, `sign_public` | Public keys |
-| `self_signature` | `sign_public` signs `box_public` |
+| `self_signature` | `sign_public` signs `"orca-chat/device/v1" NUL user_id NUL device_id box_public`, binding the key to its owner |
 | `created_at`, `revoked_at` | Lifecycle |
 
 New Function routes:
 
 | Route | Rule |
 | --- | --- |
-| `publishDeviceKey(device)` | Caller publishes only for themselves; at most 10 active devices |
-| `listDeviceKeys(userIds)` | Only for people the caller shares a room with or can message; up to 50 ids |
+| `publishDeviceKey(device)` | Caller publishes only for themselves, with a valid self-signature; at most 10 active devices and 50 records |
+| `listDeviceKeys(userIds)` | Yourself and people you share a direct chat or group with; others are omitted. Up to 50 ids. Revoked devices stay listed |
 | `revokeDevice(deviceId)` | Owner only; sign-out and account deletion revoke automatically |
 
 Signing out deletes the device's secret keys from the Keychain and revokes

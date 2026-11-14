@@ -3,7 +3,7 @@ import { eq, key, order, reject } from './rest.js';
 const enc = encodeURIComponent;
 export const deletionId = userId => key('delete-account:' + userId);
 const PHASES = ['disable', 'apple', 'messages', 'attachments', 'invites', 'members', 'rooms',
-  'posts', 'comments', 'likes', 'reposts', 'following', 'followers', 'feed', 'files', 'blocks', 'blocked', 'reports', 'state', 'profile', 'account'];
+  'posts', 'comments', 'likes', 'reposts', 'following', 'followers', 'feed', 'files', 'blocks', 'blocked', 'devices', 'reports', 'state', 'profile', 'account'];
 const pending = () => ({ accepted: true, deleted: false });
 
 export function deletionTransport(rest, { now = Date.now, milliseconds = 35000 } = {}) {
@@ -216,6 +216,12 @@ export class AccountDeletion {
         const rows = await this.repo.list('blocks', [eq(job.phase === 'blocks' ? 'blocker_id' : 'blocked_id', userId)], 25);
         if (!rows.length) return this.advance(job);
         for (const row of rows) await this.repo.remove('blocks', row.id);
+        return this.save(job, {});
+      }
+      case 'devices': {
+        const rows = await this.repo.list('devices', [eq('user_id', userId)], 25);
+        if (!rows.length) return this.advance(job);
+        for (const row of rows) await this.repo.remove('devices', row.id);
         return this.save(job, {});
       }
       case 'reports': return this.scan(job, 'reports', row => row.reporter_id === userId || row.target_user === userId,

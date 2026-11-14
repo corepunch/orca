@@ -374,6 +374,10 @@ test-chat-social: copyshare
 test-chat-account-deletion: copyshare
 	$(TARGET) -test=tests/test_chat_account_deletion.lua
 
+.PHONY: test-chat-device-keys
+test-chat-device-keys: copyshare
+	$(TARGET) -test=tests/test_chat_device_keys.lua
+
 .PHONY: test-chat-safety
 test-chat-safety: copyshare $(LUA_BIN)
 	$(LUA) tests/test_chat_safety.lua

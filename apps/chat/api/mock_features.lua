@@ -7,6 +7,7 @@ return function(state, env)
     local unique, timestamp = env.uniqueId, env.timestamp
     local P = {}
     state.blocks, state.reports, state.rulesAccepted = {}, {}, {}
+    state.devices = {}
     function P.blocked(a, b)
         return state.blocks[a] and state.blocks[a][b] or state.blocks[b] and state.blocks[b][a] or false
     end
@@ -221,8 +222,68 @@ return function(state, env)
         for _, id in ipairs(ids) do addMember(room, find(state.users, id)) end
         return response(200, { P.roomRow(room, user.id) })
     end
+    -- Device keys mirror the Function's rules except signature verification,
+    -- which needs native crypto; api.device_keys verifies rows on the client.
+    local function key64(value, length)
+        return type(value) == "string" and #value == length and value:match("^[%w_%-]+$") ~= nil
+    end
+    local function sharesEncryptedRoom(a, b)
+        for _, room in ipairs(state.rooms) do
+            local members = state.members[room.id] or {}
+            if room.kind ~= "channel" and members[a] and members[b] then return true end
+        end
+        return false
+    end
+    local function deviceRpc(name, body, user)
+        local devices = state.devices[user.id] or {}
+        state.devices[user.id] = devices
+        if name == "publish_chat_device_key" then
+            if not key64(body.device_id, 22) or not key64(body.box_public, 43) or not key64(body.sign_public, 43)
+                or not key64(body.self_signature, 86) then
+                return fail(400, "validation", "Provide a device ID and its public encryption and signing keys.")
+            end
+            local active = 0
+            for _, row in ipairs(devices) do
+                if row.device_id == body.device_id then
+                    if row.box_public ~= body.box_public or row.sign_public ~= body.sign_public then
+                        return fail(409, "device_conflict", "This device ID already has different keys. Create a new device.")
+                    end
+                    if row.revoked_at then return fail(409, "device_revoked", "This device was signed out. Create a new device.") end
+                    return response(200, copy(row))
+                end
+                if not row.revoked_at then active = active + 1 end
+            end
+            if active >= 10 or #devices >= 50 then return fail(409, "device_limit", "Sign out of another device before adding this one.") end
+            local row = { user_id = user.id, device_id = body.device_id, box_public = body.box_public,
+                sign_public = body.sign_public, self_signature = body.self_signature, created_at = timestamp() }
+            devices[#devices + 1] = row
+            return response(200, copy(row))
+        elseif name == "revoke_chat_device" then
+            if not key64(body.device_id, 22) then return fail(400, "validation", "Choose a valid device.") end
+            for _, row in ipairs(devices) do
+                if row.device_id == body.device_id then
+                    row.revoked_at = row.revoked_at or timestamp()
+                    return response(200, true)
+                end
+            end
+            return response(200, false)
+        end
+        local ids, seen = body.user_ids, {}
+        if type(ids) ~= "table" or #ids < 1 or #ids > 50 then return fail(400, "validation", "Choose between 1 and 50 different people.") end
+        local rows = {}
+        for _, id in ipairs(ids) do
+            if type(id) ~= "string" or seen[id] then return fail(400, "validation", "Choose between 1 and 50 different people.") end
+            seen[id] = true
+            if id == user.id or sharesEncryptedRoom(user.id, id) then
+                for _, row in ipairs(state.devices[id] or {}) do rows[#rows + 1] = copy(row) end
+            end
+        end
+        return response(200, rows)
+    end
     local function rpc(name, body, user)
-        if name == "list_chat_blocks" then
+        if name == "publish_chat_device_key" or name == "list_chat_device_keys" or name == "revoke_chat_device" then
+            return deviceRpc(name, body, user)
+        elseif name == "list_chat_blocks" then
             local rows = {}
             for id in pairs(state.blocks[user.id] or {}) do
                 local profile = state.profiles[id] or {}
@@ -550,7 +611,8 @@ return function(state, env)
             delete_chat_account=1,list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
             set_chat_member_role=1,remove_chat_member=1,leave_chat_room=1,update_chat_room=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
             find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
-            reserve_chat_photo=1,discard_chat_photo=1 })[name]
+            reserve_chat_photo=1,discard_chat_photo=1,
+            publish_chat_device_key=1,list_chat_device_keys=1,revoke_chat_device=1 })[name]
         local storageKey = path:match("^/storage/v1/object/chat%-photos/(.+)$")
         local downloadKey = path:match("^/storage/v1/object/authenticated/chat%-photos/(.+)$")
         if not known and not storageKey and not downloadKey and path ~= "/storage/v1/object/chat-photos"

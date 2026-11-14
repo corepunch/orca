@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
+import { generateKeyPairSync, randomBytes, randomUUID, sign } from 'node:crypto';
 import { readFile, mkdtemp, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,6 +10,7 @@ import { ChatService } from '../src/service.js';
 import handler, { execute, runtimeIdentity } from '../src/main.js';
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from '../src/photos.js';
 import { moderateReport, RULES_VERSION } from '../src/safety.js';
+import { deviceSignatureMessage, MAX_ACTIVE_DEVICES } from '../src/devices.js';
 import { runModeration, readReportedPhoto } from '../src/moderation.js';
 
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -715,8 +716,9 @@ test('REST JWT requests omit server key and repository pagination loads every me
 
 test('schema collections deny direct access and manifest uses only required scopes', async () => {
   const schema = JSON.parse(await readFile(new URL('../schema.json', import.meta.url)));
-  assert.equal(schema.collections.length, 10);
+  assert.equal(schema.collections.length, 11);
   assert.ok(schema.collections.some(collection => collection.id === 'account-deletions'));
+  assert.ok(schema.collections.some(collection => collection.id === 'device-keys'));
   for (const collection of schema.collections) { assert.deepEqual(collection.permissions, []); assert.equal(collection.documentSecurity, false); }
   const config = JSON.parse(await readFile(new URL('../appwrite.config.json', import.meta.url)));
   assert.deepEqual(config.functions[0].execute, ['users']);
@@ -982,4 +984,75 @@ test('safety moderator can inspect only reported encrypted photos through a priv
     await assert.rejects(() => runModeration(f.service, ['photo', report.id, photo.id, output]), error => error.code === 'EEXIST');
     await assert.rejects(() => runModeration(f.service, ['photo', report.id, photo.id, 'relative.jpg']), /absolute/);
   } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+function deviceKey(owner, overrides = {}, deviceId = randomBytes(16)) {
+  const { publicKey, privateKey } = generateKeyPairSync('ed25519');
+  const boxPublic = randomBytes(32);
+  const signPublic = publicKey.export({ format: 'der', type: 'spki' }).subarray(12);
+  const signature = sign(null, deviceSignatureMessage(owner, deviceId, boxPublic), privateKey);
+  return { device_id: deviceId.toString('base64url'), box_public: boxPublic.toString('base64url'),
+    sign_public: signPublic.toString('base64url'), self_signature: signature.toString('base64url'), ...overrides };
+}
+
+test('device keys publish only with a valid self-signature bound to the caller and are idempotent', async () => {
+  const f = setup(), device = deviceKey('alice');
+  const published = await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', device);
+  assert.equal(published.status, 200);
+  assert.equal(published.body.user_id, 'alice'); assert.equal(published.body.revoked_at, null);
+  assert.equal((await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', device)).status, 200, 'republishing the same keys succeeds');
+  const conflict = await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', deviceKey('alice', {}, Buffer.from(device.device_id, 'base64url')));
+  assert.equal(conflict.status, 409); assert.equal(conflict.body.code, 'device_conflict', 'a device ID cannot be rebound to other keys');
+  const stolen = await f.call('bob', '/rest/v1/rpc/publish_chat_device_key', deviceKey('alice'));
+  assert.equal(stolen.status, 400); assert.equal(stolen.body.code, 'invalid_signature', 'the signature binds the owner');
+  const tampered = deviceKey('bob'); tampered.box_public = randomBytes(32).toString('base64url');
+  assert.equal((await f.call('bob', '/rest/v1/rpc/publish_chat_device_key', tampered)).body.code, 'invalid_signature');
+  for (const bad of [{ device_id: 'short' }, { box_public: 'A'.repeat(44) }, { sign_public: '' }, { self_signature: 'x'.repeat(86) + '=' }])
+    assert.equal((await f.call('bob', '/rest/v1/rpc/publish_chat_device_key', deviceKey('bob', bad))).body.code, 'validation');
+  const row = (await f.repo.list('devices'))[0];
+  assert.equal(row.user_id, 'alice'); assert.equal('box_secret' in row, false);
+});
+
+test('device keys are listed only for yourself and people in a shared direct chat or group', async () => {
+  const f = setup();
+  for (const name of ['owner', 'alice', 'bob', 'eve']) assert.equal((await f.call(name, '/rest/v1/rpc/publish_chat_device_key', deviceKey(name))).status, 200);
+  await room(f, 'direct', ['alice']);
+  await room(f, 'channel', ['eve'], 'private');
+  const listed = await f.call('owner', '/rest/v1/rpc/list_chat_device_keys', { user_ids: ['owner', 'alice', 'bob', 'eve'] });
+  assert.equal(listed.status, 200);
+  assert.deepEqual(listed.body.map(row => row.user_id), ['owner', 'alice'], 'strangers and channel subscribers are omitted, not refused');
+  assert.deepEqual(Object.keys(listed.body[0]).sort(), ['box_public', 'created_at', 'device_id', 'revoked_at', 'self_signature', 'sign_public', 'user_id']);
+  assert.deepEqual((await f.call('bob', '/rest/v1/rpc/list_chat_device_keys', { user_ids: ['alice'] })).body, []);
+  for (const user_ids of [[], ['alice', 'alice'], Array.from({ length: 51 }, (_, n) => 'u' + n), ['bad id'], 'alice'])
+    assert.equal((await f.call('owner', '/rest/v1/rpc/list_chat_device_keys', { user_ids })).body.code, 'validation');
+});
+
+test('device revocation is owner-only, keeps the public record and frees an active slot', async () => {
+  const f = setup(), devices = [];
+  for (let n = 0; n < MAX_ACTIVE_DEVICES; n++) {
+    const device = deviceKey('alice'); devices.push(device);
+    assert.equal((await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', device)).status, 200);
+  }
+  const extra = deviceKey('alice'), limited = await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', extra);
+  assert.equal(limited.status, 409); assert.equal(limited.body.code, 'device_limit');
+  assert.equal((await f.call('bob', '/rest/v1/rpc/revoke_chat_device', { device_id: devices[0].device_id })).body, false, 'another account cannot revoke');
+  assert.equal((await f.call('alice', '/rest/v1/rpc/revoke_chat_device', { device_id: devices[0].device_id })).body, true);
+  f.clock.now += 1000;
+  assert.equal((await f.call('alice', '/rest/v1/rpc/revoke_chat_device', { device_id: devices[0].device_id })).body, true, 'revocation is idempotent');
+  assert.equal((await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', devices[0])).body.code, 'device_revoked');
+  assert.equal((await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', extra)).status, 200, 'revoking frees a slot');
+  const own = (await f.call('alice', '/rest/v1/rpc/list_chat_device_keys', { user_ids: ['alice'] })).body;
+  assert.equal(own.length, MAX_ACTIVE_DEVICES + 1, 'revoked keys stay listed so old signatures can be checked');
+  assert.equal(own.filter(row => row.revoked_at).length, 1);
+  assert.equal(own.find(row => row.device_id === devices[0].device_id).revoked_at, new Date(1700000000000).toISOString());
+  assert.equal((await f.call('alice', '/rest/v1/rpc/revoke_chat_device', { device_id: 'nope' })).body.code, 'validation');
+});
+
+test('device signatures match the Lua client vector (RFC 8032 test 1 key)', async () => {
+  // Same vector as tests/test_chat_device_keys.lua: alice, device 0x01*16, box key 0x02*32.
+  const f = setup(), signPublic = Buffer.from('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a', 'hex');
+  const published = await f.call('alice', '/rest/v1/rpc/publish_chat_device_key', { device_id: Buffer.alloc(16, 1).toString('base64url'),
+    box_public: Buffer.alloc(32, 2).toString('base64url'), sign_public: signPublic.toString('base64url'),
+    self_signature: 'Q2RrcM-yDLiaEJQtV8gHJzVcA-aw_WPDcCNLUHqQLIhkEIRGXnX39pqdKx4LBquNYdlqsAzGzYQRdksUBt6cAQ' });
+  assert.equal(published.status, 200, JSON.stringify(published.body));
 });

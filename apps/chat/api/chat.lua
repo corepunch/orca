@@ -158,8 +158,15 @@ function Client:refreshSession()
   return self:_setSession(data)
 end
 
+-- Attaches an api.device_keys store; sign-out then revokes this device.
+function Client:setDeviceKeys(store)
+  self.deviceKeys = store
+end
+
 function Client:signOut()
   if not self.session and self.mode ~= "appwrite" then return true end
+  -- Revocation needs the session, so it runs first; failures never block sign-out.
+  if self.deviceKeys and self.session then self.deviceKeys:forget(self) end
   -- Appwrite revocation uses the private cookie; an expired JWT must not stop
   -- local erasure or cause a refresh before logout.
   local result, err = self:_request("POST", "/auth/v1/logout?scope=local", nil, self.mode ~= "appwrite")

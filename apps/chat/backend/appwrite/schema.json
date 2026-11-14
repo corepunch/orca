@@ -37,6 +37,9 @@
       "indexes": [{"key":"block_pair","type":"unique","attributes":["blocker_id","blocked_id"]},{"key":"by_blocked","type":"key","attributes":["blocked_id"]}] },
     { "id": "moderation-reports", "name": "Private moderation reports and decisions", "permissions": [], "documentSecurity": false,
       "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"status","type":"string","size":32,"required":true},{"key":"reporter_id","type":"string","size":36,"required":true},{"key":"target_user","type":"string","size":36,"required":true}],
-      "indexes": [{"key":"by_status","type":"key","attributes":["status"]},{"key":"by_reporter","type":"key","attributes":["reporter_id"]},{"key":"by_target","type":"key","attributes":["target_user"]}] }
+      "indexes": [{"key":"by_status","type":"key","attributes":["status"]},{"key":"by_reporter","type":"key","attributes":["reporter_id"]},{"key":"by_target","type":"key","attributes":["target_user"]}] },
+    { "id": "device-keys", "name": "Public end-to-end encryption device keys", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":4096,"required":true},{"key":"user_id","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"by_user","type":"key","attributes":["user_id"]}] }
   ]
 }
