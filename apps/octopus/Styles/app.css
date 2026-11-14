@@ -7,6 +7,7 @@
 .octopus-light .octopus-accent-text { color: #0a7068; }
 .octopus-light .octopus-error { color: #e51400; }
 .octopus-light .octopus-link { color: #0a7068; background-color: #00000000; }
+.octopus-light .octopus-row { background-color: #00000000; }
 .octopus-light .octopus-primary { background-color: #0e8f86; color: #ffffff; }
 .octopus-light .octopus-outline { background-color: #00000000; color: #000000; border-color: #000000; }
 .octopus-light .octopus-danger { background-color: #00000000; color: #e51400; border-color: #e51400; }
@@ -39,6 +40,8 @@
 .octopus-dark .octopus-accent-text { color: #2cc5b8; }
 .octopus-dark .octopus-error { color: #ff5c5c; }
 .octopus-dark .octopus-link { color: #2cc5b8; background-color: #00000000; }
+/* Tappable rows and overlays stay clear; UIKit's Button:dark fill would otherwise win. */
+.octopus-dark .octopus-row { background-color: #00000000; }
 .octopus-dark .octopus-primary { background-color: #0e8f86; color: #ffffff; }
 .octopus-dark .octopus-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
 .octopus-dark .octopus-danger { background-color: #00000000; color: #ff5c5c; border-color: #ff5c5c; }

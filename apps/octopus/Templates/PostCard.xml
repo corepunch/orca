@@ -14,12 +14,12 @@
   <StackView Spacing="4">
     <Button Name="RepostedBy" Visible="{Binding DataContext/IsRepost, Mode=OneTime}" Height="20" Click="OpenReposter"
             BackgroundColor="#00000000" class="octopus-row">
-      <StackView Direction="Horizontal" AlignItems="Center" Spacing="4" IgnoreHitTest="true">
+      <Grid Columns="14px 1fr" Spacing="4" IgnoreHitTest="true">
         <VectorView Source="Octopus/assets/icons/repeat-2.svg" Width="14" Height="14" MarginTop="auto" MarginBottom="auto"
                     class="octopus-dim" IgnoreHitTest="true"/>
         <TextBlock Text="{Binding DataContext/RepostedText, Mode=OneTime}" FontSize="13" class="octopus-dim"
                    TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
-      </StackView>
+      </Grid>
     </Button>
     <Button Name="Author" Height="24" Click="OpenAuthor" BackgroundColor="#00000000" class="octopus-row">
       <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
