@@ -89,8 +89,8 @@ therefore reuse its grid directly, then step it down.
 | Width | Left margin | Section width | Section gap | Page title |
 | --- | --- | --- | --- | --- |
 | < 600 (compact) | 12 (today) | viewport | — | today's Pivot 15/44, Panorama 110 |
-| 600–1023 (iPad portrait, wide Split View) | 40 | 360 | 40 | 15 app title; section headers 36 |
-| ≥ 1024 (iPad landscape) | 120 | 400 (feeds 440) | 80 | as above; hub title 72 light |
+| 600–1099 (iPad portrait, wide Split View) | 40 | 400 (feeds 440) | 40 | Pivot title 15, headers 44 |
+| ≥ 1100 (iPad landscape) | 120 | 400 (feeds 440) | 80 | as above |
 
 - The grid is 20 points. The top of the hub title aligns at 60 (portrait) or
   80 (landscape) below the safe-area top.

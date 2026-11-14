@@ -32,6 +32,23 @@ function Home.select(self, name)
     if name == "home" and not suggestions.loaded then suggestions:refresh() end
 end
 
+-- On a wide screen the Pivot unfolds into a hub with every feed in view, so
+-- each one loads, not only the selected one. Cheap enough to run per paint.
+function Home.loadVisible(self)
+    local pivot = self.pivot
+    if not pivot or self.currentRoute ~= "/" or pivot.IsLocked or (pivot.SectionWidth or 0) <= 0
+        or (pivot.ActualWidth or 0) <= 600 then return end
+    local scope = self:feedsScope()
+    local signedIn = self.client:getSession() ~= nil
+    for name, member in pairs(QUERIES) do
+        local query = scope:member(member)
+        -- Idle only: a feed that is loading or failed is left to its own retry.
+        if (signedIn or name == "discover") and not query.loaded and query.mode == nil and query.error == nil then
+            query:refresh()
+        end
+    end
+end
+
 function Home.page(self)
     if self.shell and self.shell:has("Home") then
         self.status, self.statusBar = self.homeStatus, self.homeStatusBar

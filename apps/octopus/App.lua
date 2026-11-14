@@ -230,6 +230,7 @@ local App = Application:extend {
 
     afterPaint = function(self)
         if self.visibility then self.visibility:update() end
+        Home.loadVisible(self)
     end,
 
     frame = function(self, content, tab)
