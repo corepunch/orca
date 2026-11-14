@@ -1,0 +1,196 @@
+{
+  "device": "BBBA2F88-DB0B-43C7-A746-635516D4FEDA",
+  "bundle_id": "org.orca.octopus.promoshots",
+  "offline": true,
+  "binary_sha256": "90ff244da4d22c4bfe5677dd2387f9da27589be4f9cc2d7fb7d85a57dc57942a",
+  "shots": [
+    {
+      "name": "01-home",
+      "stage": "home",
+      "appearance": "dark",
+      "capture": "captures/01-home.png",
+      "sha256": "66b6e4f2bf22615a640f315486fec80a39113f1f0889c84f15c9706bb7a55bd9"
+    },
+    {
+      "name": "02-connect",
+      "stage": "connect",
+      "appearance": "dark",
+      "capture": "captures/02-connect.png",
+      "sha256": "7c264742946bbbfb10fab44a745e3c3245470d82c48cb2aa27068568efef3079"
+    },
+    {
+      "name": "03-discover",
+      "stage": "discover",
+      "appearance": "dark",
+      "capture": "captures/03-discover.png",
+      "sha256": "c4e2130b6745ab692a74d4261acf437afe5272612126c6519d24ce989ed14cb5"
+    },
+    {
+      "name": "04-post",
+      "stage": "post",
+      "appearance": "dark",
+      "capture": "captures/04-post.png",
+      "sha256": "7ac5eb340daffa99efd23894024a3131dd86ff2e09a0760e6b05e1f48c8c0d96"
+    },
+    {
+      "name": "05-profile",
+      "stage": "profile",
+      "appearance": "dark",
+      "capture": "captures/05-profile.png",
+      "sha256": "adcbd506af7d776dcccee9740b67a16b6b41bde6b62902146a1f3fdd20c758b6"
+    },
+    {
+      "name": "06-write",
+      "stage": "write",
+      "appearance": "dark",
+      "capture": "captures/06-write.png",
+      "sha256": "cd1a46f4e9b99ac25e66e6c266e844fb792a072aaaf8513c6f86b0095992d37d"
+    },
+    {
+      "name": "07-album",
+      "stage": "album",
+      "appearance": "dark",
+      "capture": "captures/07-album.png",
+      "sha256": "36d2a3b189de8ec88a9cc3292e13cae43121ba8a2efa38a43cdc1227b816b196"
+    },
+    {
+      "name": "08-light",
+      "stage": "light",
+      "appearance": "light",
+      "capture": "captures/08-light.png",
+      "sha256": "68a6715aec6a8ab17b9a5cf08543c977e5a980f7f5dd2395d1eadec897693a5d"
+    }
+  ],
+  "exports": [
+    {
+      "path": "en-GB/iphone-1320x2868/01-home.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "fe5c14af1ccabbf3b233219e5d164ed154237955378c13741a9945d35541c2d5"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/01-home.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "87e14bfce7485dc42d5b51596867ab378e087a529570d9ea705a9cc027c7d75d"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/02-connect.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "380412e42af81b228b1e6991668947872e277691998bc735402dd0efa104f114"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/02-connect.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "f6b40c6777b9ed1d042d3be8b58c6a573f1a30611a37e4c6bf9e2e8f6c3b69d0"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/03-discover.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "2400183b1c8a855f63d5a3f7e05938690490769db76ebd79c9c6e14c1db63d99"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/03-discover.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "2788983ebe7d666ab2e7c67601eadcddc1960fc0843368be8a5454ac3e60c77e"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/04-post.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "37171926730e25e48ed126850b6dd6c35590b321d1fe14af3dfd938a6fc925cf"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/04-post.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "c103507c9ecc76cd250c83260d55f1798398ae283c3a066a4c25eb0ba7e190f3"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/05-profile.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "3e347dda9889ddd45d0c5b99b6357079db6a3c69190add89bb52b1ebb6743cb0"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/05-profile.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "b72c712568106b42d23e4775a570cdeb3a7d0a0a4d5f5583a07948c873f35b6e"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/06-write.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "6f8aa6f0586ae5c8abb092af605e9054f5f984551a5ab15ed11eb5b14bafc607"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/06-write.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "a612cc4ed1e6f37cf8428c0efca52700c69eb3d31b373b3a06765b24bbaf2802"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/07-album.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "3c7f86dcd5a30b5fadc44779cff424b516fbad3dd854a5b55b6db1dcefb0aa2f"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/07-album.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "3976f2f1cc06b5e6b27ccb5c4a18a2d08c56de6af8894cdfec02c7c88e5ef7b6"
+    },
+    {
+      "path": "en-GB/iphone-1320x2868/08-light.png",
+      "width": 1320,
+      "height": 2868,
+      "sha256": "f2bc8e5d107fe391397f03e4d7ef25cadfe87092dcaa4a9db948d0da6303be35"
+    },
+    {
+      "path": "en-GB/iphone-1206x2622/08-light.png",
+      "width": 1206,
+      "height": 2622,
+      "sha256": "4c4afc7568a680ae2795393ed0e0fb94b316cc0d100e6fd32e33e5eec339ecf5"
+    }
+  ],
+  "captions": {
+    "home": {
+      "title": "home, connect,\ndiscover.",
+      "subtitle": "Swipe sideways through everything that matters to you."
+    },
+    "connect": {
+      "title": "see who's\nlistening.",
+      "subtitle": "Follows, likes, reposts and replies in one place."
+    },
+    "discover": {
+      "title": "find someone\nnew.",
+      "subtitle": "Fresh voices from people you don't follow yet."
+    },
+    "post": {
+      "title": "every post,\na conversation.",
+      "subtitle": "Threaded replies under every post."
+    },
+    "profile": {
+      "title": "get to know\nthe author.",
+      "subtitle": "Profiles gather posts and reposts together."
+    },
+    "write": {
+      "title": "four ways\nto post.",
+      "subtitle": "Text, photos, quotes and links, with tags."
+    },
+    "album": {
+      "title": "share up to\nnine photos.",
+      "subtitle": "Albums arrange themselves in balanced rows."
+    },
+    "light": {
+      "title": "light or dark,\nit's yours.",
+      "subtitle": "Bold type and calm colour in either appearance."
+    }
+  }
+}
