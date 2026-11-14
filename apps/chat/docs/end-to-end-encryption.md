@@ -1,10 +1,11 @@
 # End-to-end encryption: design note
 
-Status: proposal, 2026-11-14. Slices 1 and 2 are implemented: `orca.crypto`
-(tests in `tests/test_crypto.lua`) and device keys (the `device-keys`
-collection, its Function routes and `api.device_keys`; see
-[API.md](../API.md#end-to-end-encryption-device-keys)). The app publishes
-this device's keys after sign-in. Messages are not encrypted yet.
+Status: **paused** (decision, 2026-11-14). Orca Messenger is a small app, so it
+keeps server-side storage and says plainly in its privacy policy that messages
+are not end-to-end encrypted. Slices 1 and 2 shipped in 1.1 (77): `orca.crypto`
+and device keys, which the app publishes after sign-in but nothing uses yet.
+Resume from slice 3 if privacy becomes a selling point. Until then, never
+describe the app as end-to-end encrypted or as secure messaging.
 
 ## Goal and threat model
 

@@ -1,6 +1,6 @@
 # Orca Messenger Privacy Policy
 
-Last updated: November 8, 2026
+Last updated: November 14, 2026
 
 Orca Messenger is a messaging app provided by Igor Chernakov. This policy
 explains the information used by the app and its online service, including
@@ -75,8 +75,17 @@ check. This is **server-side encryption, not end-to-end encryption**: the servic
 can process conversation content. Public profile photos do not receive the
 private-conversation-photo protection.
 
+Messages are **not end-to-end encrypted**. Message text is stored in private
+server records that other users cannot access, and the service operator can
+technically access it. The operator does not read conversations, and accesses
+content only to handle abuse reports or legal requests, or to keep the service
+working.
+
 On iOS and macOS, the app stores its private sign-in session credential in Apple
-Keychain to restore your session. The app also keeps working data and temporary
+Keychain to restore your session. It also creates a key pair for this device,
+for possible future encryption features, and keeps the private key in Keychain.
+Only the public keys are sent to the service, where people you share a
+conversation with can see them. The app also keeps working data and temporary
 photo previews locally. Signing out clears its local credentials and temporary
 photo previews; it does not delete your server account or conversations.
 
