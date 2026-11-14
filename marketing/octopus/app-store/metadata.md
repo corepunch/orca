@@ -1,6 +1,6 @@
 # Octopus Social — draft App Store text (en-GB)
 
-Draft only; not yet pushed to App Store Connect.
+Pushed to Octopus Social 1.0 (en-GB) on 2026-11-14 with the 6.9-inch iPhone set.
 
 **Subtitle** (≤30): Posts, photos and people
 

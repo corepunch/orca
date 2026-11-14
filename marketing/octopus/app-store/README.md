@@ -38,7 +38,8 @@ neighbouring screens visible at the edges. Each slot's footer reads
 - `captures/`: the raw simulator screenshots; `manifest.json` records their
   hashes, the binary hash and the exports.
 
-Nothing has been uploaded to App Store Connect yet. Octopus targets iPhone and
+The 1320 × 2868 set and the store text were uploaded to Octopus Social 1.0
+(en-GB) on 2026-11-14. Octopus targets iPhone and
 iPad, so a 13-inch iPad set is still needed before submission.
 
 ## Data
