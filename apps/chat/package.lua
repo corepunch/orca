@@ -15,3 +15,5 @@ SystemMessages = {
 -- Appwrite returns sign-in links (OAuth and emailed links) to this scheme. Keep it
 -- in step with config.lua's projectId; packaging adds it to the bundle's Info.plist.
 URLSchemes = { "appwrite-callback-69f1c06800389dc6a1a0" }
+-- End-to-end encryption (Monocypher) is not exempt from export compliance.
+NonExemptEncryption = true

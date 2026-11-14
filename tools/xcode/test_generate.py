@@ -138,7 +138,7 @@ class GenerateProjectTests(unittest.TestCase):
             info = self.read_info(bundle, settings)
             self.assertEqual(info['CFBundleDisplayName'], 'QA Chat')
             self.assertEqual(info['UIDeviceFamily'], [1, 2])
-            self.assertIs(info['ITSAppUsesNonExemptEncryption'], False)
+            self.assertIs(info['ITSAppUsesNonExemptEncryption'], True)  # Chat declares NonExemptEncryption
             scene = info['UIApplicationSceneManifest']['UISceneConfigurations']
             delegates = scene['UIWindowSceneSessionRoleApplication']
             self.assertTrue(any(item['UISceneDelegateClassName'] == 'OrcaSceneDelegate' for item in delegates))
@@ -171,6 +171,14 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertEqual(types[0]['CFBundleURLSchemes'], ['appwrite-callback-69f1c06800389dc6a1a0'])
         self.assertNotIn('CFBundleURLTypes', self.read_info(self.generate('octopus'),
             next(iter(self.effective_configurations(self.read_project(self.generate('octopus'))).values()))))
+
+    def test_package_non_exempt_encryption_sets_export_compliance(self):
+        def declared(app):
+            bundle = self.generate(app)
+            settings = next(iter(self.effective_configurations(self.read_project(bundle)).values()))
+            return self.read_info(bundle, settings)['ITSAppUsesNonExemptEncryption']
+        self.assertIs(declared('chat'), True)
+        self.assertIs(declared('octopus'), False)
 
     def test_engine_navigator_contains_only_generated_unity_sources(self):
         project = self.read_project(self.generate())

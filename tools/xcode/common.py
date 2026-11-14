@@ -24,6 +24,13 @@ def configuration(root=ROOT):
     return values
 
 
+def non_exempt_encryption(project):
+    """True when package.lua declares `NonExemptEncryption = true` (export compliance)."""
+    package = Path(project) / 'package.lua'
+    text = package.read_text() if package.is_file() else ''
+    return re.search(r'^NonExemptEncryption\s*=\s*true\s*$', text, re.MULTILINE) is not None
+
+
 def url_schemes(project):
     """Lowercase schemes from a literal `URLSchemes = { "a", "b" }` list in package.lua."""
     package = Path(project) / 'package.lua'
