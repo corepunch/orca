@@ -136,6 +136,37 @@ local function test_input_native_text_with_ancestor_shortcuts()
 	input:removeFromParent()
 end
 
+-- A phone has no arrow keys: a tap or drag moves the caret under the finger.
+local function test_input_tap_places_caret()
+	pump_messages(screen)
+	local input = screen + ui.Input { Width = 300, Height = 40, Text = "me@gmailc.com" }
+	screen:UpdateLayout(screen.Width, screen.Height)
+	local function point(message, x)
+		orca.system.dispatchMessage { target = screen, message = message, x = x, y = 20 }
+		pump_messages(screen)
+	end
+	local function typed(text)
+		orca.system.dispatchMessage { target = screen, message = "Char", text = text }
+		pump_messages(screen)
+		screen:UpdateLayout(screen.Width, screen.Height)
+	end
+	point("LeftButtonDown", 1); point("LeftButtonUp", 1)
+	test.expect(input:isFocused(), "A tap focuses the input")
+	typed("[")
+	test.expect_eq(input.Text, "[me@gmailc.com", "A tap at the left edge puts the caret before the text")
+	point("LeftButtonDown", 299); point("LeftButtonUp", 299)
+	typed("]")
+	test.expect_eq(input.Text, "[me@gmailc.com]", "A tap past the text puts the caret at the end")
+	local width = input.ActualWidth
+	point("LeftButtonDown", 40); point("LeftButtonUp", 40)
+	local before = input.Cursor
+	test.expect(before > 0 and before < #input.Text, "A tap inside the text lands between its characters")
+	point("LeftButtonDown", 40); point("LeftButtonDragged", 1); point("LeftButtonUp", 1)
+	test.expect_eq(input.Cursor, 0, "Dragging a focused input slides the caret with the finger")
+	test.expect(width > 0, "Layout measured the input")
+	input:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Input (Checkbox): Checked property can be set and cleared
 -- ---------------------------------------------------------------------------
@@ -392,6 +423,7 @@ test_input_unicode("Password")
 test_input_native_event_routing()
 test_input_preserves_platform_translation()
 test_input_native_text_with_ancestor_shortcuts()
+test_input_tap_places_caret()
 test_input_checkbox()
 test_form_populate_inputs()
 test_radio_group_interaction()
