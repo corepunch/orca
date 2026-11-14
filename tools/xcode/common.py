@@ -48,9 +48,6 @@ def unity_sources(root=ROOT):
         for name in names:
             units['u_' + name + '.c'] = sorted((root / folder / name).rglob('*.c'))
     units['u_platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
-    # Separate units: both Monocypher files define the same private macros.
-    units['u_monocypher.c'] = [root / 'libs/monocypher/src/monocypher.c']
-    units['u_monocypher_ed25519.c'] = [root / 'libs/monocypher/src/optional/monocypher-ed25519.c']
     units['ios_runtime.m'] = [root / 'source/ios.m', root / 'source/ios_animation.m',
                               root / 'source/ios_scroll.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
     units['native_modules.m'] = [path for name in config['MODULES']

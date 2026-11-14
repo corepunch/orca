@@ -32,7 +32,6 @@ int luaopen_orca_geometry(lua_State*);
 int luaopen_orca_network(lua_State*);
 int luaopen_orca_media(lua_State*);
 int luaopen_orca_credentials(lua_State*);
-int luaopen_orca_crypto(lua_State*);
 int luaopen_orca_notifications(lua_State*);
 int luaopen_orca_signin(lua_State*);
 int luaopen_orca_parsers_css(lua_State*);
@@ -81,7 +80,6 @@ static luaL_Reg const orca_modules[] = {
   { "orca.network", luaopen_orca_network },
   { "orca.media", luaopen_orca_media },
   { "orca.credentials", luaopen_orca_credentials },
-  { "orca.crypto", luaopen_orca_crypto },
   { "orca.notifications", luaopen_orca_notifications },
   { "orca.signin", luaopen_orca_signin },
   { "orca.parsers.json", luaopen_orca_parsers_json },

@@ -58,9 +58,6 @@ local App = Application:extend {
             if not self.configurationError then
                 self.client, self.configurationError = Chat.appwrite(settings)
                 self.restorePending = self.client ~= nil and settings.sessionStore ~= nil
-                -- End-to-end encryption keys for this device; nil without native crypto.
-                self.deviceSync = self.client and require("Chat/device_sync").new(self, config) or nil
-                if self.deviceSync then self.client:setDeviceKeys(self.deviceSync.store) end
             end
         elseif backend == "mock" then self.client = Chat.mock()
         else self.configurationError = { message = t("Choose CHAT_BACKEND=appwrite or mock.") } end
@@ -261,7 +258,6 @@ local App = Application:extend {
         self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
         if self.push then self.push:activate() end
-        if self.deviceSync then self.deviceSync:activate() end
         if self.signin then self.signin:activate() end
         return result
     end,
@@ -435,7 +431,6 @@ local App = Application:extend {
     signOut = function(self)
         self:closePages()
         if self.push then self.push:suspend() end
-        if self.deviceSync then self.deviceSync:suspend() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
         self.restorePending = false

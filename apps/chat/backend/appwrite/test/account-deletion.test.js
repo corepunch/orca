@@ -116,8 +116,6 @@ test('account deletion removes own Chat and Octopus data and preserves peers and
   await f.seed('blocks', 'outgoing-block', { blocker_id: 'alice', blocked_id: 'bob' });
   await f.seed('blocks', 'incoming-block', { blocker_id: 'bob', blocked_id: 'alice' });
   await f.seed('blocks', 'unrelated-block', { blocker_id: 'bob', blocked_id: 'carol' });
-  await f.seed('devices', 'own-device', { user_id: 'alice', device_id: 'a' });
-  await f.seed('devices', 'peer-device', { user_id: 'bob', device_id: 'b' });
   await f.seed('reports', 'own-report', { reporter_id: 'alice', target_user: 'bob', status: 'open' });
   await f.seed('reports', 'target-report', { reporter_id: 'bob', target_user: 'alice', status: 'open' });
   await f.seed('reports', 'unrelated-report', { reporter_id: 'bob', target_user: 'carol', status: 'open' });
@@ -156,7 +154,6 @@ test('account deletion removes own Chat and Octopus data and preserves peers and
   assert.deepEqual([...f.table('service-state').keys()], ['peer-state']);
   assert.deepEqual([...f.table('user-blocks').keys()], ['unrelated-block']);
   assert.deepEqual([...f.table('moderation-reports').keys()], ['unrelated-report']);
-  assert.deepEqual([...f.table('device-keys').keys()], ['peer-device']);
   const authDelete = f.calls.findIndex(call => call.method === 'DELETE' && call.path === '/users/alice');
   assert.ok(authDelete > 0);
   assert.deepEqual(f.calls.slice(authDelete + 1).filter(call => call.method !== 'GET' && !call.path.includes('/service-state/')).map(call => call.path),

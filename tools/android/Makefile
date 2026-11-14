@@ -29,7 +29,7 @@ include tools/mobile/third_party.mk
 VENDOR_FLAGS := -fPIC -O2 -g -MMD -MP
 FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
 CFLAGS := $(FLAGS) -Igenerated
-MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials crypto notifications signin
+MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials notifications signin
 PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS)))
 LUA_SOURCES := $(filter-out $(addprefix libs/lua/,lua.c luac.c onelua.c ltests.c),$(wildcard libs/lua/*.c))

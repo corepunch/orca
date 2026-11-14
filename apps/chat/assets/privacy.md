@@ -82,10 +82,7 @@ content only to handle abuse reports or legal requests, or to keep the service
 working.
 
 On iOS and macOS, the app stores its private sign-in session credential in Apple
-Keychain to restore your session. It also creates a key pair for this device,
-for possible future encryption features, and keeps the private key in Keychain.
-Only the public keys are sent to the service, where people you share a
-conversation with can see them. The app also keeps working data and temporary
+Keychain to restore your session. The app also keeps working data and temporary
 photo previews locally. Signing out clears its local credentials and temporary
 photo previews; it does not delete your server account or conversations.
 

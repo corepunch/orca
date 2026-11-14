@@ -5,7 +5,6 @@ import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from './photos.j
 import { resolveRoute } from './routes.js';
 import { AccountDeletion } from './account-deletion.js';
 import { Safety } from './safety.js';
-import { Devices } from './devices.js';
 
 const staff = member => member && ['owner', 'admin'].includes(member.role);
 const posting = (room, member) => member && (room.kind !== 'channel' || staff(member));
@@ -45,7 +44,6 @@ export class ChatService {
     this.pushEnabled = pushEnabled; this.pushError = pushError; this.pushTimeoutMs = pushTimeoutMs;
     this.deletions = new AccountDeletion(repo, auth, { now });
     this.safety = new Safety(this, { now, blockedTerms });
-    this.devices = new Devices(this, { now });
   }
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {

@@ -22,6 +22,3 @@
 [submodule "libs/libxml2"]
 	path = libs/libxml2
 	url = https://gitlab.gnome.org/GNOME/libxml2.git
-[submodule "libs/monocypher"]
-	path = libs/monocypher
-	url = https://github.com/LoupVaillant/Monocypher.git

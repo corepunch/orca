@@ -44,7 +44,6 @@ function attributes(collection, row) {
     case 'state': return { kind: row.kind };
     case 'deletions': return { kind: row.kind };
     case 'blocks': return { blocker_id: row.blocker_id, blocked_id: row.blocked_id };
-    case 'devices': return { user_id: row.user_id };
     case 'reports': return { status: row.status, reporter_id: row.reporter_id, target_user: row.target_user };
     default: throw new Error('Unknown collection');
   }
@@ -57,7 +56,7 @@ const unpack = doc => ({ ...JSON.parse(doc.payload), id: doc.$id });
 export const COLLECTIONS = Object.freeze({ profiles: 'profiles', directory: 'account-directory',
   rooms: 'conversations', members: 'conversation-members', messages: 'messages',
   attachments: 'attachments', invites: 'invitations', state: 'service-state', deletions: 'account-deletions',
-  blocks: 'user-blocks', reports: 'moderation-reports', devices: 'device-keys' });
+  blocks: 'user-blocks', reports: 'moderation-reports' });
 export const privateIdentity = row => ({ email: row.email || null, phone: row.phone || null,
   discoverable_email: !!row.discoverable_email, discoverable_phone: !!row.discoverable_phone,
   notification_previews: row.notification_previews !== false });

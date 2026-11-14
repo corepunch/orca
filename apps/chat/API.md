@@ -151,36 +151,6 @@ attempts per challenge. Configure real Auth delivery, OTP lengths, expiry and
 rate limits as described in [backend setup](backend/README.md); the request
 result's timing fields are UI hints, not a replacement for server enforcement.
 
-## End-to-end encryption device keys
-
-| Method | Result |
-| --- | --- |
-| `publishDeviceKey(device)` | Published `{user_id,device_id,box_public,sign_public,self_signature,created_at,revoked_at}` |
-| `listDeviceKeys(userIds)` | Rows for yourself and people you share a direct chat or group with, including revoked devices |
-| `revokeDevice(deviceId)` | `true`, or `false` for an unknown device; owner only |
-| `setDeviceKeys(store)` | Attaches an `api.device_keys` store; `signOut` then revokes and erases this device |
-
-Keys are unpadded base64url: a 16-byte device ID, 32-byte X25519 and Ed25519
-public keys, and a 64-byte Ed25519 `self_signature` over
-`"orca-chat/device/v1" NUL user_id NUL device_id box_public` (raw bytes). The
-Function verifies the signature, so a key cannot be published under another
-account. Accounts have at most 10 active devices and 50 device records.
-Republishing identical keys is idempotent; a revoked or rebound device ID is
-refused (`device_revoked`, `device_conflict`). Revoked rows remain listed so
-signatures on older messages can still be checked. People outside a shared
-direct chat or group, including channel subscribers, are omitted rather than
-refused. Account deletion removes all of the account's device records.
-
-`api.device_keys` creates the device (secrets saved to secure storage before
-publishing), verifies listed rows' signatures on the client, replaces a device
-the server reports as revoked, and erases local secrets on sign-out even when
-revocation cannot reach the server. Secrets are stored with `orca.credentials`
-under `chat-device:<scope>:<userId>`. With the Appwrite backend, `device_sync.lua`
-publishes the device in the background after sign-in and retries with
-backoff (up to 15 minutes), so a backend without these routes never blocks
-the app. Sign-out revokes the device; account deletion erases its secrets. See
-the [design note](docs/end-to-end-encryption.md).
-
 ## Conversations, roles and invitations
 
 | Method | Result |

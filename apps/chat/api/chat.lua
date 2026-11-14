@@ -158,15 +158,8 @@ function Client:refreshSession()
   return self:_setSession(data)
 end
 
--- Attaches an api.device_keys store; sign-out then revokes this device.
-function Client:setDeviceKeys(store)
-  self.deviceKeys = store
-end
-
 function Client:signOut()
   if not self.session and self.mode ~= "appwrite" then return true end
-  -- Revocation needs the session, so it runs first; failures never block sign-out.
-  if self.deviceKeys and self.session then self.deviceKeys:forget(self) end
   -- Appwrite revocation uses the private cookie; an expired JWT must not stop
   -- local erasure or cause a refresh before logout.
   local result, err = self:_request("POST", "/auth/v1/logout?scope=local", nil, self.mode ~= "appwrite")
@@ -198,8 +191,6 @@ function Client:deleteAccount(confirmation)
       return failure("session_changed", "The active account changed during account deletion.")
     end
     self.accountDeletion = { accepted = result.accepted == true, deleted = result.deleted == true, userId = user }
-    -- The server removes the device records; this device's secrets go too.
-    if self.deviceKeys then self.deviceKeys:erase(user) end
     result = self.accountDeletion
     self.session, self.avatarIds, self.messagePageRetryAt = nil, {}, nil
   end

@@ -60,7 +60,7 @@ separately:
 | Blocking/reporting, contact naming and prefix/name search | Privacy/abuse policy, personal contact storage and discovery changes |
 | Files, voice messages and non-JPEG media | Upload validation, playback/recording, storage limits and native adapters |
 | Realtime subscriptions | Authorized subscriptions; polling remains supported. Apple push has native token/notification handling and Appwrite delivery, pending provider and signing setup |
-| End-to-end encryption | Device keys, encrypted envelopes and photos; see the [design note](docs/end-to-end-encryption.md) |
+| End-to-end encryption | Dropped (2026-11-14); see the [decision record](docs/end-to-end-encryption.md) |
 | OTP delivery and identity linking verification | Readable test inbox/SMS provider and delivery configuration; admin-marked email fixtures test discovery only |
 
 Group/channel rename and leave require no schema changes and are included in
