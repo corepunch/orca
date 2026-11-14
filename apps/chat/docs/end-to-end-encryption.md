@@ -250,9 +250,15 @@ current 50-member limit.
 
 ## Rollout and compatibility
 
-- Rooms get a `e2e` boolean, fixed at creation. Direct chats and private
-  groups are created with `e2e=true` once every participant has at least one
-  published device key; otherwise the client asks the other person to update.
+- **Decision (2026-11-14): encryption is on by default, with no per-chat
+  switch.** Every new direct chat and private group of up to 20 members is
+  end-to-end encrypted. Public channels are never encrypted. Larger groups
+  stay plaintext until sender keys land. An opt-in mode was rejected because
+  most chats would stay readable, and opting in would mark the sensitive ones.
+- Rooms get an `e2e` boolean, fixed at creation and set by these rules, not
+  by the user. If a participant has no published device key yet, the chat is
+  still created as E2E, and the client asks that person to update before
+  they can read or post.
 - Existing rooms and their plaintext history are not converted. An existing
   direct chat can be upgraded by both participants; the timeline marks the
   point where encryption started.
@@ -293,8 +299,6 @@ checks only on request, as for the rest of Chat.
 
 ## Open questions
 
-- Should E2E be the default for every new direct chat, or a per-chat choice
-  at first?
 - How many devices per account should v1 allow?
 - Are room names for private groups sensitive enough to encrypt too? They are
   currently used by owners in renaming and could be moved into an encrypted
