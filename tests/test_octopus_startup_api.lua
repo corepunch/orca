@@ -200,7 +200,9 @@ for _, bytes in ipairs { "", "not a photo", "\255\216\255", png(0, 800), png(655
     assert(not Octopus.imageDimensions(bytes), "Malformed, truncated and oversized image metadata is ignored")
 end
 for _, collection in ipairs { "posts", "feed" } do
-    local document = { ["$id"] = "photo-post", authorId = "alice", imageWidth = 1200, imageHeight = 800 }
+    -- Sizes describe an image, so the document names one (albums made this explicit).
+    local document = { ["$id"] = "photo-post", authorId = "alice", postType = "photo", imageId = "photo-file",
+        imageWidth = 1200, imageHeight = 800 }
     if collection == "feed" then document.sourceCreatedAt = "2026-10-28T09:00:00Z" end
     local service = client(function() return reply { documents = { document } } end,
         collection == "feed" and { feedCollectionId = "feed" } or nil)
