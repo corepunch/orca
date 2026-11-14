@@ -5,6 +5,9 @@ it is not the default visual style for every ORCA app. For Chat, also read
 [its product decisions](../apps/chat/DESIGN.md) and the
 [screen review](../apps/chat/docs/ui-review-2026-11-02.md).
 
+For tablets, see [Metro on iPad](metro-ipad-design.md): the proposed wide
+layouts follow Windows 8's Hub rather than stretching phone screens.
+
 ## Choose the reference generation first
 
 | Reference | Use it for | Keep separate |
