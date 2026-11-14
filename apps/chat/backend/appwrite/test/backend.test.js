@@ -5,7 +5,7 @@ import { readFile, mkdtemp, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Auth } from '../src/auth.js';
-import { AppwriteRest, Failure, Repository } from '../src/rest.js';
+import { AppwriteRest, Failure, Repository, nameMatches } from '../src/rest.js';
 import { ChatService } from '../src/service.js';
 import handler, { execute, runtimeIdentity } from '../src/main.js';
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from '../src/photos.js';
@@ -38,10 +38,8 @@ class MemoryRepository {
     return limit ? rows.slice(0, limit) : rows;
   }
   async searchPeople(handle, name, limit) {
-    const words = name.toLowerCase().split(' ');
     return [...this.table('profiles').values()].filter(row => handle && row.username?.startsWith(handle)
-      || words.every(word => (row.display_name || '').toLowerCase().split(/\s+/).some(part => part.startsWith(word))))
-      .slice(0, limit).map(clone);
+      || nameMatches(row.display_name, name)).slice(0, limit).map(clone);
   }
   async lock(name, action) {
     if (this.locks.has(name)) throw new Failure(409, 'busy', 'Retry.'); this.locks.add(name);
@@ -568,37 +566,48 @@ test('people are found by spoken name or username prefix, like other messengers'
   const find = async query => (await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query })).body.map(row => row.id);
   for (const query of ['CorePunch', 'Core Punch', '@corepunch', 'corep', 'punch', '  core   PUNCH '])
     assert.deepEqual(await find(query), ['alice'], query);
+  // Eve, below, has no username: only her display name can find her.
   assert.deepEqual(await find('core'), ['alice', 'bob'], 'username prefix ranks before display-name matches');
+  await fixture.call('eve', '/rest/v1/rpc/update_chat_profile', { values: { display_name: 'CorePunch' } });
+  assert.deepEqual(await find('Core Punch'), ['alice', 'eve'], 'a name typed with spaces finds a name without them; an exact username ranks first');
+  assert.deepEqual(await find('corepunch'), ['alice', 'eve'], 'a name with no username is still found by the spoken form');
   assert.deepEqual(await find('c'), [], 'a single letter only matches an exact username');
   for (const query of ['corepunch@', 'core@punch', '+4915'])
     assert.deepEqual(await find(query), [], 'partial identifiers never widen into a name search: ' + query);
   const own = (await fixture.call('alice', '/rest/v1/rpc/find_chat_people', { query: 'Core Punch' })).body;
-  assert.deepEqual(own, [], 'you do not find yourself');
+  assert.ok(!own.some(row => row.id === 'alice'), 'you do not find yourself');
   const result = (await fixture.call('owner', '/rest/v1/rpc/find_chat_people', { query: 'Core Punch' })).body[0];
   assert.equal(result.email, undefined); assert.equal(result.phone, undefined);
 });
 
-test('people search queries the directory by prefix and display names by fulltext', async () => {
+test('people search finds a display name typed with or without spaces, in any script', async () => {
   const requests = [];
-  const docs = { 'account-directory': [{ $id: 'alice', payload: JSON.stringify({ handle: 'corepunch' }), handle: 'corepunch' }],
-    profiles: [{ $id: 'p-bob', userId: 'bob', username: 'Robert Core' }] };
+  const docs = { 'account-directory': [{ $id: 'igor', payload: '{}', handle: null }, { $id: 'carol', payload: JSON.stringify({ handle: 'carol' }), handle: 'carol' }],
+    profiles: [{ $id: 'igor', userId: 'igor', username: 'CorePunch' }, { $id: 'carol', userId: 'carol', username: 'Core Punch' },
+      { $id: 'olga', userId: 'olga', username: 'Ольга Кор' }, { $id: 'eve', userId: 'eve', username: 'Corey Smith' }] };
   let fulltext = true;
+  // Appwrite fulltext: each word matches by prefix, and any word may match.
+  const search = (value, term) => term.toLowerCase().split(/\s+/).filter(Boolean)
+    .some(word => value.toLowerCase().split(/\s+/).some(part => part.startsWith(word)));
   const repo = new Repository({ async request(method, path) {
     const url = new URL(path, 'https://appwrite.invalid'), collection = url.pathname.split('/')[4], id = url.pathname.split('/')[6];
-    const queries = url.searchParams.getAll('queries[]').map(JSON.parse);
-    requests.push({ collection, id, queries });
-    if (queries.some(query => query.method === 'search') && !fulltext) throw new Failure(400, 'index_not_found', 'No fulltext index.');
-    if (id) { const doc = docs[collection]?.find(row => row.$id === id || row.userId === id); if (!doc) throw new Failure(404, 'not_found', 'Absent.'); return doc; }
-    return { documents: docs[collection] || [] };
+    const queries = url.searchParams.getAll('queries[]').map(JSON.parse), query = queries[0];
+    requests.push({ collection, id, query });
+    if (id) { const doc = docs[collection]?.find(row => row.$id === id); if (!doc) throw new Failure(404, 'not_found', 'Absent.'); return doc; }
+    let rows = docs[collection] || [];
+    if (query?.method === 'search') { if (!fulltext) throw new Failure(400, 'index_not_found', 'No fulltext index.'); rows = rows.filter(row => search(row.username, query.values[0])); }
+    if (query?.method === 'startsWith') rows = rows.filter(row => row[query.attribute]?.startsWith(query.values[0]));
+    return { documents: rows };
   } }, 'db', 'bucket');
-  const found = await repo.searchPeople('core', 'Core', 20);
-  assert.deepEqual(found.map(row => row.id).sort(), ['alice', 'bob']);
-  const lists = requests.filter(request => !request.id);
-  assert.deepEqual(lists.map(request => request.queries[0]), [
-    { method: 'startsWith', attribute: 'handle', values: ['core'] },
-    { method: 'search', attribute: 'username', values: ['Core'] }]);
+  const names = async (handle, name) => (await repo.searchPeople(handle, name, 20)).map(row => row.display_name).sort();
+  assert.deepEqual(await names('corepunch', 'CorePunch'), ['Core Punch', 'CorePunch'], 'no spaces finds both spellings');
+  assert.deepEqual(await names('corepunch', 'Core Punch'), ['Core Punch', 'CorePunch'], 'spaces find both spellings');
+  assert.deepEqual(await names('punch', 'punch'), ['Core Punch'], 'a later word of a spaced name');
+  assert.deepEqual(await names('', 'ольга'), ['Ольга Кор'], 'Cyrillic names match case-insensitively');
+  assert.deepEqual(await names('core', 'core'), ['Core Punch', 'CorePunch', 'Corey Smith']);
+  assert.ok(requests.some(request => request.query?.method === 'startsWith' && request.query.attribute === 'handle'));
   fulltext = false;
-  assert.deepEqual((await repo.searchPeople('core', 'Core', 20)).map(row => row.id), ['alice'], 'usernames still match without the index');
+  assert.deepEqual(await names('carol', 'carol'), ['Core Punch'], 'usernames still match without the index');
 });
 
 test('invites count only new memberships, expire, revoke, and never exceed allowance', async () => {

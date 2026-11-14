@@ -9,6 +9,16 @@ export const eq = (attribute, value) => ({ method: 'equal', attribute, values: [
 export const order = (attribute, descending = false) => ({ method: descending ? 'orderDesc' : 'orderAsc', attribute });
 const enc = encodeURIComponent;
 
+// Display names compare by letters and digits in any script, so spaces, case
+// and punctuation do not decide whether a spoken name is found.
+export const compactName = value => String(value || '').normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+const nameWords = value => String(value || '').normalize('NFKC').toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+export function nameMatches(displayName, query) {
+  const target = compactName(displayName), wanted = compactName(query), words = nameWords(displayName);
+  if (wanted.length < 2) return false;
+  return target.startsWith(wanted) || nameWords(query).every(word => words.some(part => part.startsWith(word)));
+}
+
 export class AppwriteRest {
   constructor({ endpoint, projectId, apiKey, fetch: fetcher = fetch }) {
     this.endpoint = endpoint.replace(/\/$/, ''); this.projectId = projectId; this.apiKey = apiKey; this.fetch = fetcher;
@@ -137,16 +147,20 @@ export class Repository {
     }
     return (await this.listDocuments(collection, queries, limit, options)).map(unpack);
   }
-  // People by username prefix (private directory) or display-name words (the
-  // public profiles' fulltext index Octopus search already uses).
+  // People by username prefix (private directory) or public display name. The
+  // fulltext index Octopus search uses matches each word by prefix; a second
+  // lookup on the first letters of the space-free query lets "CorePunch" find
+  // "Core Punch", and nameMatches keeps only real matches.
   async searchPeople(handle, name, limit) {
     const ids = new Set();
     if (handle) for (const doc of await this.listDocuments('directory', [{ method: 'startsWith', attribute: 'handle', values: [handle] }], limit))
       ids.add(doc.$id);
-    try {
-      for (const doc of await this.listDocuments('profiles', [{ method: 'search', attribute: 'username', values: [name] }], limit))
-        ids.add(doc.userId || doc.$id);
-    } catch (error) { if (error.status !== 400) throw error; /* No fulltext index: usernames still match. */ }
+    for (const term of new Set([name, compactName(name).slice(0, 4)].filter(term => term.length >= 2))) {
+      let docs = [];
+      try { docs = await this.listDocuments('profiles', [{ method: 'search', attribute: 'username', values: [term] }], 100); }
+      catch (error) { if (error.status !== 400) throw error; /* No fulltext index: usernames still match. */ }
+      for (const doc of docs) if (nameMatches(doc.username, name)) ids.add(doc.userId || doc.$id);
+    }
     return (await Promise.all([...ids].slice(0, limit).map(id => this.get('profiles', id)))).filter(Boolean);
   }
   async listDocuments(collection, queries = [], limit, options = {}) {

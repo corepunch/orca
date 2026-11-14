@@ -134,7 +134,8 @@ with a letter. An empty username clears it. Profiles cannot edit Auth identifier
 Discovery flags default to false and require the corresponding verified
 identifier. Email and phone searches are exact. Any other query is a name:
 it matches a username prefix (optional `@`; spaces are ignored, so "Core Punch"
-finds `corepunch`) or the words of a public display name, exact username first,
+finds `corepunch`) or a public display name, compared by letters and digits in
+any script so "CorePunch" and "Core Punch" find each other; exact username first,
 at most 20 results. A single character matches only an exact username, and a
 partial email or phone number never widens into a name search. Searches are
 limited to 20 lookups per minute per account. A known username does not grant room

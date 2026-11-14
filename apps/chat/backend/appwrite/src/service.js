@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { eq, key, order, reject } from './rest.js';
+import { compactName, eq, key, order, reject } from './rest.js';
 import { identifier } from './auth.js';
 
 const PEOPLE_RESULTS = 20;
@@ -136,7 +136,8 @@ export class ChatService {
       matches = /.@|^\s*\+/.test(query) ? []
         : name.length < 2 ? await this.repo.list('profiles', [eq('username', handle)])
         : await this.repo.searchPeople(handle, name, PEOPLE_RESULTS);
-      const rank = profile => profile.username === handle ? 0 : handle && profile.username?.startsWith(handle) ? 1 : 2;
+      const spoken = compactName(name), rank = profile => profile.username === handle ? 0
+        : compactName(profile.display_name) === spoken ? 1 : handle && profile.username?.startsWith(handle) ? 2 : 3;
       matches.sort((a, b) => rank(a) - rank(b));
     }
     const result = [];
