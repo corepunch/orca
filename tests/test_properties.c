@@ -1767,9 +1767,9 @@ static void test_color_bind_channel_to_channel(void) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Project-defined (dynamic) property type tests                       */
-/* These simulate property types registered from package.xml via       */
-/* OBJ_RegisterPropertyType, as _InitPropertyTypes() does.             */
+/* Attached (dynamic) property type tests                              */
+/* These register property types as an owner's declaration does, via   */
+/* OBJ_RegisterPropertyType (see OBJ_DeclarePropertyType).             */
 /* ------------------------------------------------------------------ */
 
 /*

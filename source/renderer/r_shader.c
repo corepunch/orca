@@ -836,10 +836,57 @@ static lpcString_t _PBRPointLight =
 "  return att * intensity * (diffuse + specular);\n"
 "}\n";
 
+// A Shader with only a FragmentShader is a UI material: it takes the built-in
+// UI vertex stage (rounded corners, borders, texture transform) with its
+// attributes, varyings and engine uniforms, so the fragment code can read
+// u_texture, u_opacity, v_texcoord0, v_boxCoord and v_boxSize directly.
+bool_t
+Shader_UseUIVertexStage(struct shader_desc *desc, uint32_t numUniforms)
+{
+  desc->VertexShader = shader_ui.VertexShader;
+  desc->Version = MAX(desc->Version, shader_ui.Version);
+  memcpy(desc->Attributes, shader_ui.Attributes, sizeof(desc->Attributes));
+  memcpy(desc->Shared, shader_ui.Shared, sizeof(desc->Shared));
+  for (uint32_t i = 0; i < MAX_SHADER_UNIFORMS && shader_ui.Uniforms[i].Name[0]; i++) {
+    if (numUniforms >= MAX_SHADER_UNIFORMS) {
+      return Con_Error("%s: too many uniforms for the UI vertex stage", desc->Name), FALSE;
+    }
+    desc->Uniforms[numUniforms++] = shader_ui.Uniforms[i];
+  }
+  return TRUE;
+}
+
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+
+// A shader owns its uniforms: each Uniforms entry becomes the attached
+// property `{ShaderName}.{Name}`, which materials and nodes then set, and the
+// shader itself holds DefaultValue for it.
+static void
+_DeclareUniforms(struct Object *hObject, struct Shader *pShader)
+{
+  lpcString_t owner = OBJ_GetName(hObject);
+  FOR_LOOP(i, pShader->NumUniforms) {
+    struct PropertyType const *decl = &pShader->Uniforms[i];
+    char value[MAX_PROPERTY_STRING] = {0};
+    fixedString_t full = {0};
+    if (!OBJ_DeclarePropertyType(decl, owner)) continue;
+    snprintf(full, sizeof(full), "%s.%s", owner, decl->Name);
+    struct Property *p = OBJ_FindLongProperty(hObject, fnv1a32(full));
+    if (!p || !decl->DefaultValue || !*decl->DefaultValue) continue;
+    if (!parse_property(decl->DefaultValue, PROP_GetDesc(p), value)) {
+      Con_Error("%s: could not convert default '%s'", full, decl->DefaultValue);
+      continue;
+    }
+    PROP_SetValue(p, value);
+    if (decl->DataType == kDataTypeString) free(*(char**)value);
+  }
+}
+
 // Shader_Start
 HANDLER(Shader, Object, Start) {
   uint32_t NumUniforms = 0;
   struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
+  _DeclareUniforms(hObject, pShader);
   for (struct Property *p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
     struct uniform_def ud = {0};
     lpcString_t local = PROP_GetName(p);
@@ -914,7 +961,8 @@ HANDLER(Shader, Object, Start) {
       desc.Version = MAX(desc.Version, fs->Version);
     }
   }
-  GLuint prognum = _CreateGLProgram(&desc);
+  GLuint prognum = desc.VertexShader || Shader_UseUIVertexStage(&desc, NumUniforms)
+                  ? _CreateGLProgram(&desc) : 0;
   if (prognum != 0) {
     Shader_Create(prognum, &desc, &pShader->shader);
     memcpy(&pShader->shader->target,

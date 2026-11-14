@@ -41,6 +41,3 @@ DataSourceLibrary = {
 EnginePlugins = {
 	{ Name = "orca.UIKit" },
 }
-PropertyTypes = {
-	{ Name = "Title", Category = "NavigationBar", DataType = "String" },
-}

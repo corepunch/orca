@@ -98,6 +98,45 @@ OBJ_RegisterPropertyType(struct PropertyType const *pt)
   return FALSE;
 }
 
+/* Declares the attached property type `{owner}.{decl->Name}`: fills in its
+ * identifiers and storage size and registers it. `owner` is whatever defines
+ * the property (a Shader for its uniforms, a prefab for its inputs); NULL
+ * keeps decl->Category. The registry keeps its own copy of the strings, so
+ * the declaring object may be destroyed. FALSE if the name is empty, the
+ * registry is full, or the name is already declared with another data type. */
+bool_t
+OBJ_DeclarePropertyType(struct PropertyType const *decl, lpcString_t owner)
+{
+  if (!decl->Name || !*decl->Name)
+    return Con_Error("Property type without a name (owner %s)", owner ? owner : "?"), FALSE;
+  struct PropertyType type = *decl;
+  if (owner) type.Category = owner;
+  fixedString_t full = {0};
+  if (type.Category && *type.Category) snprintf(full, sizeof(full), "%s.%s", type.Category, type.Name);
+  else strncpy(full, type.Name, sizeof(full) - 1);
+  lpcString_t dot = strrchr(type.Name, '.');
+  type.ShortIdentifier = fnv1a32(dot ? dot + 1 : type.Name);
+  type.FullIdentifier = fnv1a32(full);
+  switch (type.DataType) {
+    case kDataTypeString:
+    case kDataTypeEvent:
+    case kDataTypeObject: type.DataSize = sizeof(void*); break;
+    case kDataTypeFloat:  type.DataSize = sizeof(float); break;
+    case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
+    default:              type.DataSize = sizeof(int); break;
+  }
+  struct PropertyType const *known = core_FindPropertyType(type.FullIdentifier);
+  if (known) {
+    if (known->DataType == type.DataType) return TRUE;
+    return Con_Error("Property type %s is already declared with another data type", full), FALSE;
+  }
+  type.Name = strdup(type.Name);
+  type.Category = type.Category ? strdup(type.Category) : NULL;
+  type.TypeString = type.TypeString ? strdup(type.TypeString) : NULL;
+  type.DefaultValue = type.DefaultValue ? strdup(type.DefaultValue) : NULL;
+  return OBJ_RegisterPropertyType(&type);
+}
+
 bool_t
 OBJ_RegisterPropertyShorthand(struct PropertyShorthand const *sh)
 {
@@ -516,30 +555,8 @@ int f_registerPropertyType(lua_State *L) {
   luaX_parsefield(lpcString_t, Name, 1, luaL_checkstring);
   luaX_parsefield(lpcString_t, Category, 1, luaL_optstring, "");
   luaX_parsefield(enum DataType, DataType, 1, luaX_checkDataType);
-  fixedString_t tmp={0};
-  if (*Category) {
-    snprintf(tmp, sizeof(tmp), "%s.%s", Category, Name);
-  } else {
-    strncpy(tmp, Name, sizeof(tmp));
-  }
-  lpcString_t dot = strrchr(Name, '.');
-  struct PropertyType type = {
-    .ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(Name),
-    //    .ShortIdentifier = fnv1a32(type->Name),
-    .FullIdentifier = fnv1a32(tmp),
-    .DataType = DataType,
-    .Name = Name,
-    .Category =  Category,
-  };
-  switch (DataType) {
-    case kDataTypeString: type.DataSize = sizeof(char*); break;
-    case kDataTypeEvent:  type.DataSize = sizeof(void*); break;
-    case kDataTypeObject: type.DataSize = sizeof(void*); break;
-    case kDataTypeFloat:  type.DataSize = sizeof(float); break;
-    case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
-    default:              type.DataSize = sizeof(int);   break;
-  }
-  OBJ_RegisterPropertyType(&type);
+  struct PropertyType type = { .Name = Name, .Category = Category, .DataType = DataType };
+  OBJ_DeclarePropertyType(&type, NULL);
   return 0;
 }
 

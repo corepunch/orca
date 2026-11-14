@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="NeonLightTitle" Shader="Octopus/Shaders/Gradient" BlendMode="Alpha" Gradient.Color0="#1f3cff" Gradient.Color1="#3a7bff" Gradient.Color2="#8a3dff" Gradient.Angle="0"/>

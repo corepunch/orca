@@ -34,6 +34,10 @@ function colors.refresh()
     if colors.appearance == appearance then return false end
     for key, value in pairs(palettes[appearance]) do colors[key] = value end
     colors.appearance = appearance
+    -- Gradient look concept (Octopus/Styles/looks.css): ORCA_LOOK=neon adds look-neon
+    -- and look-neon-<appearance> beside the palette class. Unset keeps the plain look.
+    local look = os.getenv("ORCA_LOOK")
+    colors.lookClass = (look and look ~= "") and (" look-" .. look .. " look-" .. look .. "-" .. appearance) or ""
     return true
 end
 colors.refresh()

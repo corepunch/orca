@@ -301,7 +301,7 @@ local App = Application:extend {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             -- The palette class is a StateClass so updateAppearance can replace it.
             ClearColor = colors.background,
-            StyleSheet = "Chat/Styles/posts.css", StateClasses = "chat-" .. colors.appearance,
+            StyleSheet = "Chat/Styles/posts.css", StateClasses = "chat-" .. colors.appearance .. colors.lookClass,
         }
         if content then I18n:apply(content); screen:addChild(content) end
         return screen
@@ -813,7 +813,7 @@ local App = Application:extend {
     updateAppearance = function(self)
         if not colors.refresh() then return false end
         for _, screen in pairs { self.screen, self.shell and self.shell.screen, self.newScreen, self.settingsScreen } do
-            screen.StateClasses = "chat-" .. colors.appearance
+            screen.StateClasses = "chat-" .. colors.appearance .. colors.lookClass
             if screen ~= self.brandScreen then screen.ClearColor = colors.background end
         end
         if self.postsFeature then self.postsFeature:updateAppearance() end

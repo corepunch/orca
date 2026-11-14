@@ -18,3 +18,5 @@
 .post-type .post-type-ink { color: #ffffff; }
 .chat-posts .octopus-input, .chat-posts .octopus-outline { border-radius: 4; }
 .chat-posts .octopus-primary { border-radius: 6; }
+/* The gradient looks are not released yet: restore this import to enable them. */
+/* @import "../../octopus/Styles/looks.css"; */

@@ -161,6 +161,54 @@ Viewport3D_Node2D_ForegroundContent (Viewport3D.c)
 
 ---
 
+## UI Materials
+
+A `Node2D` brush with a `Material` (`Background.Material`, `Foreground.Material`,
+or CSS `-orca-background-material` / `-orca-foreground-material`) draws through
+that material's shader instead of `SHADER_UI`. `Node2D_GetViewEntity` keeps the
+entity's texture: a `TextBlock`'s alpha8 glyph mask, a `VectorView`'s SVG mask,
+or, for a background, none, which binds the white texture. Emoji stay a separate,
+untinted layer.
+
+A `Shader` resource with only a `FragmentShader` is a UI material:
+`Shader_UseUIVertexStage` gives it `shader_ui`'s vertex stage, attributes,
+varyings and engine uniforms, appended after its own `Uniform.*` values. The
+geometry, corner radius and border therefore match a plain UI box, and the
+fragment code can use, without declaring them:
+
+- `u_texture`, `v_texcoord0`: the mask (white for fills); use its `.a`.
+- `u_opacity`: the node's opacity, including Metro dimming.
+- `v_boxCoord`: position in the box, 0..1, y down; `v_boxSize`: box size in points.
+
+### Shader-owned uniforms
+
+A shader declares the uniforms it owns:
+
+```xml
+<Shader Name="Gradient">
+  <Shader.Uniforms>
+    <PropertyType Name="Color0" DataType="Color" DefaultValue="#ffffff"/>
+    <PropertyType Name="Angle" DataType="Float" DefaultValue="0"/>
+  </Shader.Uniforms>
+  <FragmentShader Out="FragColor">...</FragmentShader>
+</Shader>
+```
+
+When the shader starts, each entry is registered as the attached property
+`{ShaderName}.{Name}` (`OBJ_DeclarePropertyType`) and the shader keeps
+`DefaultValue`. Materials and nodes set it by that name, for example
+`<Material Shader="Octopus/Shaders/Gradient" Gradient.Angle="90"/>`; the XML
+loader applies an `Owner.Property` attribute after the sibling attribute that
+loads its owner, so attribute order does not matter. In GLSL the uniform is the
+part after the dot (`Angle`), declared by the engine. Nothing is declared in
+`package.lua`. Two shaders may each declare a
+uniform of the same name, but a node that sets both sends both under that one
+GLSL name. Redeclaring a name with another data type is an error.
+
+`apps/octopus/Shaders/Gradient.xml` is an example: one three-stop gradient used
+both for gradient text and for gradient fills. A Shader that supplies its own
+`VertexShader` declares its inputs itself, as the SceneKit shaders do.
+
 ## Backdrop Filter
 
 `R_FilterBackdrop` (`source/renderer/r_backdrop.c`) implements CSS

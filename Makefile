@@ -304,10 +304,6 @@ example:
 editor: unite
 	$(if $(PROJECT),ORCA_EDITOR_PROJECT=$(abspath $(PROJECT))) $(TARGET) apps/Editor
 
-# Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.
-cluster: unite
-	CLUSTER_DEMO_START=$(START) $(TARGET) apps/cluster-demo
-
 weather: copyshare
 	@if [ ! -x $(TARGET) ]; then \
 		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
@@ -726,7 +722,7 @@ bench-bindings: unite
 
 test-scene-format: unite
 	$(Q)$(TARGET) -test=tests/test_scene_format.lua
-HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader
+HEADLESS_LUA_TESTS += test-footer test-safe-area test-css-materials test-shader-owned-uniforms test-viewport-observer test-avatar-loader
 HEADLESS_LUA_TESTS += test-default-avatars
 HEADLESS_LUA_TESTS += test-data-visibility test-viewport-observer-stress
 .PHONY: test-data-visibility test-viewport-observer-stress
@@ -743,6 +739,8 @@ $(eval $(call LUA_TEST_RULE,test-chat-theme,tests/test_chat_theme.lua,copyshare)
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-css-materials,tests/test_css_materials.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-shader-owned-uniforms,tests/test_shader_owned_uniforms.lua,unite))
 
 
 $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))

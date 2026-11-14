@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="NeonHeader" Shader="Octopus/Shaders/Gradient" BlendMode="Alpha" Gradient.Color0="#6fe9ff" Gradient.Color1="#7f95ff" Gradient.Color2="#b06bff" Gradient.Angle="0"/>

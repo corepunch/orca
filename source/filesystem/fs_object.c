@@ -502,6 +502,18 @@ binding_node(struct Object *o, struct _xmlNode* x)
   return TRUE;
 }
 
+/* An `Owner.Property` attribute whose type is not declared yet. Its owner may
+   be loaded by a sibling attribute: a Material's Shader declares the uniforms
+   that the same element sets. node() applies such attributes last. */
+static bool_t
+undeclared_attr(struct Object *o, xmlAttrPtr a)
+{
+  fixedString_t norm = {0};
+  lpcString_t raw = (lpcString_t)a->name;
+  return strchr(raw, '.') && !propdesc(o, raw) && !propdesc(o, canonical_attr_name(raw, norm))
+    && !OBJ_FindExplicitShorthand(o, raw);
+}
+
 static void
 visit_attr(struct Object *o, xmlAttrPtr a)
 {
@@ -685,8 +697,16 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   // Controller loading precedes named handlers regardless of attribute order.
   FOR_EACH_LIST(xmlAttr, a, x->properties)
     if (!strcasecmp((char const *)a->name, "Controller")) visit_attr(o, a);
-  FOR_EACH_LIST(xmlAttr, a, x->properties)
-    if (strcasecmp((char const *)a->name, "Controller")) visit_attr(o, a);
+  // Attributes whose owner is not loaded yet wait for the ones that load it.
+  enum { MAX_DEFERRED_ATTRS = 64 };
+  xmlAttrPtr deferred[MAX_DEFERRED_ATTRS];
+  int numDeferred = 0;
+  FOR_EACH_LIST(xmlAttr, a, x->properties) {
+    if (!strcasecmp((char const *)a->name, "Controller")) continue;
+    if (numDeferred < MAX_DEFERRED_ATTRS && undeclared_attr(o, a)) deferred[numDeferred++] = a;
+    else visit_attr(o, a);
+  }
+  FOR_LOOP(i, numDeferred) visit_attr(o, deferred[i]);
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if ((t->type == XML_TEXT_NODE || t->type == XML_CDATA_SECTION_NODE) && xmlStrlen(t->content) > 0) {

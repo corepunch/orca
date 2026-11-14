@@ -251,8 +251,8 @@ local App = Application:extend {
         end
         local screen = ui.Screen {
             Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
-            ClearColor = colors.background, StyleSheet = "Octopus/Styles/app.css",
-            class = "octopus-" .. colors.appearance,
+            ClearColor = colors.background, StyleSheet = "Octopus/Styles/octopus.css",
+            class = "octopus-" .. colors.appearance .. colors.lookClass,
         }
         if content then screen:addChild(content); self.i18n:apply(screen) end
         return screen

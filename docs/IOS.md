@@ -8,8 +8,7 @@ build follows `orion-ui/packaging/ipad/build.mk` and `lua-objc/scripts/ipad/`.
 ## Native Xcode projects and Xcode Cloud
 
 Open `apps/chat/chat.xcodeproj` and choose the shared `chat-ios` scheme,
-`apps/octopus/octopus.xcodeproj` with `octopus-ios`, or
-`apps/cluster-demo/cluster-demo.xcodeproj` with `cluster-demo-ios`. Each scheme
+or `apps/octopus/octopus.xcodeproj` with `octopus-ios`. Each scheme
 supports iPhone, iPad and Simulator, including Run and Archive actions.
 
 ```sh
@@ -68,7 +67,7 @@ Run these commands from the repository root:
 
 ```sh
 make chat-ios                        # Build, sign, install and launch on a connected device
-make cluster-demo-ios                # Same workflow for any apps/<name>/package.lua project
+make octopus-ios                     # Same workflow for any apps/<name>/package.lua project
 make chat-ios DEVICE=<identifier>     # Select a device when several are available
 make ios-sim                         # Build the simulator .app
 make ios-run                         # Install and launch an iPhone simulator

@@ -106,6 +106,10 @@ struct shader_desc shader_ui = {
       { "v_position", UT_FLOAT_VEC4 },
       { "v_normal", UT_FLOAT_VEC3 },
       { "v_texcoord0", UT_FLOAT_VEC2 },
+      // Unit position inside the box and the box size in points, for
+      // fragment-only UI materials (Shader_UseUIVertexStage).
+      { "v_boxCoord", UT_FLOAT_VEC2 },
+      { "v_boxSize", UT_FLOAT_VEC2 },
     },
     .VertexShader =
   "#define r u_radius\n"
@@ -128,6 +132,8 @@ struct shader_desc shader_ui = {
   "#endif\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  v_boxCoord = pos / rectSize;\n"
+  "  v_boxSize = rectSize;\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
   "}\n",
     .FragmentShader =

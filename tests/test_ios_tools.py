@@ -178,7 +178,7 @@ class BuildConfigurationTests(unittest.TestCase):
         return result, invocations
 
     def test_named_ios_targets_route_each_app_to_the_device_installer(self):
-        for app in ('chat', 'cluster-demo'):
+        for app in ('chat', 'octopus'):
             with self.subTest(app=app):
                 result, invocations = self.invoke_app_target(app + '-ios')
                 self.assertEqual(result.returncode, 0, result.stderr)
