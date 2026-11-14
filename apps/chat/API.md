@@ -160,7 +160,7 @@ result's timing fields are UI hints, not a replacement for server enforcement.
 
 | Method | Result |
 | --- | --- |
-| `listRooms()` | Member-visible rooms, including `kind`, `visibility`, `role`, `can_post` |
+| `listRooms()` | Member-visible rooms, including `kind`, `visibility`, `role`, `can_post` and `unread` (messages from others after your read mark, at most 100) |
 | `createRoom(name,memberIds,options)` | Room; options are `{kind="group",visibility="private"}` by default |
 | `listMembers(roomId)` | Authorized `{user_id,display_name,username,role}` rows |
 | `setMemberRole(roomId,userId,role)` | Owner-managed role change |
@@ -232,6 +232,16 @@ The backend must also enable `CHAT_PUSH_ENABLED=true`. Push payloads contain
 notification body. Opening a notification requires the matching signed-in
 account and loads the conversation through the normal authorized API. Push
 delivery is best-effort; foreground polling remains the source of fresh history.
+
+Each push also carries `badge`, the recipient's unread total, and `tag`, the
+conversation, so the app icon and notification center stay current while the
+app is closed. Members have a read mark: `listMessagePage(room, { markRead = true })`
+(the open thread's newest page) moves it to the newest message, and sending a
+message reads the conversation. Older pages never move it. History from before
+read tracking began does not count as unread. In the foreground, the app sets
+the icon badge from the inbox (`notifications.setBadgeCount`), and
+`notifications.setActiveConversation` keeps the open conversation silent while
+other conversations show a banner with sound.
 
 ## Private photos
 

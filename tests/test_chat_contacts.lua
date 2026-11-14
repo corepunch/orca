@@ -87,6 +87,21 @@ assert(app.currentRoute == "/posts/user" and node("MessageProfile"), "People ope
 node("MessageProfile"):send("Node.LeftButtonUp"); drain()
 assert(app.room and app.room.peer_id == "alex" and app.currentRoute == "/thread", "Contacts open real model-backed direct conversations")
 app:show("/contacts"); drain()
+-- If the public profile cannot open, People still reaches the person: their direct chat.
+local posts, profileFailures = app.posts, 0
+app.posts = function() profileFailures = profileFailures + 1; error("public posts are unavailable") end
+local stderr = io.stderr
+io.stderr = { write = function() end }
+node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()
+io.stderr = stderr
+app.posts = posts
+assert(profileFailures == 1 and app.currentRoute == "/thread" and app.room and app.room.peer_id == "alex",
+    "A profile failure opens the direct chat instead of a generic error")
+app:show("/contacts"); drain()
+app:dataScope():member("OpenContact").error = { code = "error", message = "An earlier failure" }
+app:show("/contacts"); drain()
+assert(not app:dataScope():member("OpenContact").error and not node("ContactsStatus").Visible,
+    "A failure from an earlier visit does not linger on the People page")
 local create = app.models.Rooms.create
 app.models.Rooms.create = function() return nil, { message = "Try opening again" } end
 node("ContactsRowalex"):send("Node.LeftButtonUp"); drain()

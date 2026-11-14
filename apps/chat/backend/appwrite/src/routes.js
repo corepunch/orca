@@ -23,7 +23,7 @@ route('GET', '/rest/v1/chat_attachments', async (s, c) => {
 route('POST', '/functions/v1/finalize-chat-photo', (s, c) => s.finalizePhoto(c.user, c.body.attachment_id));
 route('DELETE', '/storage/v1/object/chat-photos', (s, c) => s.removeObjects(c.user, c.body.prefixes));
 
-rpc('list_chat_messages', (s, c) => s.pageMessages(c.user, c.body.target_room, c.body.limit, c.body.before));
+rpc('list_chat_messages', (s, c) => s.pageMessages(c.user, c.body.target_room, c.body.limit, c.body.before, c.body.mark_read));
 rpc('get_chat_profile', (s, c) => c.profile);
 rpc('delete_chat_account', (s, c) => s.deletions.request(c.user, c.body));
 rpc('set_chat_user_block', (s, c) => s.safety.setBlock(c.user, c.body));

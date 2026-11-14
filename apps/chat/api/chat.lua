@@ -284,6 +284,7 @@ function Client:listMessagePage(roomId, options)
   if not self.messagePageRetryAt or self.clock() >= self.messagePageRetryAt then
     page, err = self:_request("POST", "/rest/v1/rpc/list_chat_messages", {
       target_room = roomId, limit = limit, before = options.before,
+      mark_read = options.markRead == true and options.before == nil or nil,
     }, true)
     if not page and err.status == 404 then self.messagePageRetryAt = self.clock() + 60
     elseif page then self.messagePageRetryAt = nil end

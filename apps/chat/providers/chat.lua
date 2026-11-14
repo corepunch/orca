@@ -62,8 +62,20 @@ end
 
 function Provider.new(context)
     local client, models = context.client, context.models
+    -- Effective unread per room, for the app icon badge.
+    local unreadByRoom = {}
+    local function updateBadge()
+        if not context.badge then return end
+        local total = 0
+        for _, count in pairs(unreadByRoom) do total = total + count end
+        context.badge(total)
+    end
     local computed = {
-        read = function(values) return context.read[values.Id] == true end,
+        -- Opened here at or after its latest update; the server count covers the rest.
+        read = function(values)
+            local seen = context.read[values.Id]
+            return seen == true or type(seen) == "string" and (values.UpdatedAt or values.CreatedAt or "") <= seen
+        end,
         pinned = function(values) return context.pinned[values.Id] == true end,
         unreadCount = function(values) return values.IsRead and 0 or (values.Unread or 0) end,
         hasUnread = function(values) return (values.UnreadCount or 0) > 0 end,
@@ -158,6 +170,12 @@ function Provider.new(context)
             local rooms, err = models.Rooms:select()
             if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
             if not rooms then return nil, localizedError(err) end
+            unreadByRoom = {}
+            for _, room in ipairs(rooms) do
+                unreadByRoom[room.id] = computed.read { Id = room.id, UpdatedAt = room.updated_at, CreatedAt = room.created_at }
+                    and 0 or (room.unread or 0)
+            end
+            updateBadge()
             return rooms
         end,
         contacts = function()
@@ -191,8 +209,12 @@ function Provider.new(context)
         openContact = function(params)
             local person, navigation = params.item, context.navigation()
             if context.openPerson then
-                context.openPerson(person.key, person.values.Title)
-                return true
+                -- The profile comes from the public posts feature. If it cannot
+                -- open, the person is still one tap away: open the direct chat.
+                local opened, failure = xpcall(context.openPerson, debug.traceback, person.key, person.values.Title)
+                if opened then return true end
+                io.stderr:write("Chat: could not open a profile; opening the direct chat. " .. tostring(failure) .. "\n")
+                navigation = context.navigation()
             end
             local room, err = models.Rooms:create { name = person.values.Title, member_ids = { person.key },
                 kind = "direct", visibility = "private" }
@@ -208,7 +230,9 @@ function Provider.new(context)
             return false
         end,
         openRoom = function(params)
-            context.read[params.item.key] = true
+            context.read[params.item.key] = params.item.values.UpdatedAt or params.item.values.CreatedAt or true
+            unreadByRoom[params.item.key] = 0
+            updateBadge()
             params.item.store:refresh(params.item)
             context.openRoom(params.item.raw)
             return true
@@ -286,10 +310,11 @@ function Provider.new(context)
             room.store:refresh(room)
             return true
         end,
-        -- The newest page first; `page.cursor` reads the page before it.
+        -- The newest page first; `page.cursor` reads the page before it. The
+        -- open thread loading its newest page marks the conversation read.
         messages = function(params, page)
             local result, err = models.Messages:page { room_id = params.RoomId, limit = page.size,
-                before = page.cursor }
+                before = page.cursor, markRead = page.cursor == nil }
             if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
             if not result then return nil, localizedError(err) end
             return { items = result.messages, cursor = result.next_cursor, hasMore = result.has_more }

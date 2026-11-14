@@ -20,7 +20,7 @@
     <Column Name="UpdatedAt" Type="string" Source="updated_at" Nullable="true"/>
     <Column Name="CreatedAt" Type="string" Source="created_at" Nullable="true"/>
     <Column Name="AvatarPath" Type="string" Local="true"/>
-    <Column Name="IsRead" Type="bool" Computed="read" Description="Opened on this device since the last unread count."/>
+    <Column Name="IsRead" Type="bool" Computed="read" DependsOn="UpdatedAt CreatedAt" Description="Opened on this device since the room's latest update."/>
     <Column Name="IsPinned" Type="bool" Computed="pinned"/>
     <Column Name="UnreadCount" Type="int" Computed="unreadCount" DependsOn="Unread IsRead"/>
     <Column Name="HasUnread" Type="bool" Computed="hasUnread" DependsOn="UnreadCount"/>

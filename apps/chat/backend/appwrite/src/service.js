@@ -3,6 +3,9 @@ import { compactName, eq, key, order, reject } from './rest.js';
 import { identifier } from './auth.js';
 
 const PEOPLE_RESULTS = 20;
+// Read state starts with this release: older history never counts as unread,
+// so existing members do not open the app to "99+" everywhere.
+const UNREAD_SINCE = '2026-11-15T00:00:00.000Z', UNREAD_LIMIT = 100;
 import { decryptPhoto, encryptPhoto, inspectJpeg, newPhotoKey } from './photos.js';
 import { resolveRoute } from './routes.js';
 import { AccountDeletion } from './account-deletion.js';
@@ -174,11 +177,26 @@ export class ChatService {
     if (!latest) return view;
     return { ...view, subtitle: latest.body?.trim() ? latest.body : 'Photo', updated_at: latest.created_at };
   }
+  // Messages from others after the member's read mark, up to UNREAD_LIMIT.
+  async unreadCount(member, options = {}) {
+    const joined = member.created_at > UNREAD_SINCE ? member.created_at : UNREAD_SINCE;
+    const since = member.read_at && member.read_at > joined ? member.read_at : joined;
+    const rows = await this.repo.list('messages', [eq('room_id', member.room_id),
+      { method: 'greaterThan', attribute: 'created_at', values: [since] }], UNREAD_LIMIT, options);
+    return rows.filter(message => message.sender_id !== member.user_id).length;
+  }
+  // The read mark only moves forward, so a late or repeated call is harmless.
+  async markRead(member, createdAt) {
+    if (!createdAt || member.read_at && member.read_at >= createdAt) return;
+    await this.repo.update('members', member.id, { ...member, read_at: createdAt });
+  }
   async listRooms(user) {
     const memberships = await this.repo.list('members', [eq('user_id', user.$id)]), rooms = [];
     await mapConcurrent(memberships, async member => {
       const room = await this.repo.get('rooms', member.room_id);
-      if (room) rooms.push(await this.withLatest(await this.withPeer(this.roomView(room, member), user.$id)));
+      if (!room) return;
+      const view = await this.withLatest(await this.withPeer(this.roomView(room, member), user.$id));
+      rooms.push({ ...view, unread: await this.unreadCount(member) });
     });
     const activity = room => room.updated_at || room.created_at;
     return rooms.sort((a, b) => activity(b).localeCompare(activity(a)));
@@ -342,8 +360,8 @@ export class ChatService {
     }
     return result;
   }
-  async pageMessages(user, roomId, limit, before) {
-    const { room } = await this.access(roomId, user.$id);
+  async pageMessages(user, roomId, limit, before, markRead = false) {
+    const { room, member } = await this.access(roomId, user.$id);
     if (limit === undefined) limit = 30;
     else if (typeof limit !== 'number' && (typeof limit !== 'string' || !/^-?\d+$/.test(limit)))
       reject(400, 'validation', 'Message limit must be a whole number.');
@@ -365,6 +383,9 @@ export class ChatService {
       throw error;
     }
     const hasMore = rows.length > limit, selected = rows.slice(0, limit);
+    // The open conversation reads its newest page: everything up to it is read.
+    if (markRead === true && !queries.some(query => query.method === 'cursorAfter') && selected[0])
+      await this.markRead(member, selected[0].created_at);
     const cursor = hasMore ? selected.at(-1).id : null;
     return { messages: await mapConcurrent(selected.reverse(), row => this.messageView(row, room)),
       next_cursor: cursor, has_more: hasMore };
@@ -394,10 +415,22 @@ export class ChatService {
       // The single immutable message document is the commit marker. Attachment rows
       // referencing an absent message remain private and may be retried or discarded.
       const message = await this.repo.create('messages', { room_id: roomId, sender_id: user.$id, body: text, created_at: this.timestamp(), attachment_ids: attachmentIds }, messageId);
+      // Replying reads the conversation.
+      await this.markRead(await this.membership(roomId, user.$id), message.created_at);
       await this.notifyMessage(message);
       return [await this.messageView(message, room)];
       });
     });
+  }
+  // The app icon badge: unread messages across the recipient's conversations.
+  // A failed count leaves the badge out rather than showing a wrong number.
+  async unreadTotal(userId, signal) {
+    try {
+      const memberships = await this.repo.list('members', [eq('user_id', userId)], 200, { signal });
+      let total = 0;
+      await mapConcurrent(memberships, async member => { const count = await this.unreadCount(member, { signal }); total += count; });
+      return total;
+    } catch { return null; }
   }
   // Called only after publication, under the room lock: recipients remain
   // members until their notifications have been queued. Appwrite owns delivery.
@@ -432,9 +465,12 @@ export class ChatService {
           const recipient = preview ? await lookup('profiles', userId) : null;
           if (signal.aborted) return;
           const alert = recipient && recipient.notification_previews !== false ? preview : { title: 'ORCA Chat', body: 'New message' };
+          const badge = await this.unreadTotal(userId, signal);
+          if (signal.aborted) return;
           await this.auth.rest.request('POST', '/messaging/messages/push', { signal, body: {
             messageId: key('push:' + message.id + ':' + userId), users: [userId],
-            ...alert, sound: 'default', draft: false,
+            ...alert, sound: 'default', draft: false, tag: message.room_id,
+            ...(badge === null ? {} : { badge }),
             data: { conversationId: message.room_id, messageId: message.id, userId },
           } });
         } catch (error) {
