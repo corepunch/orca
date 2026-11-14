@@ -251,6 +251,87 @@ local function test_pivot_wide_headers()
   print("PASS: test_pivot_wide_headers")
 end
 
+-- A Pivot with a SectionWidth unfolds into a Windows 8 style hub on wide
+-- screens and folds back into the phone Pivot below 600 points.
+local function test_pivot_hub()
+  local screen = ui.Screen { Width = 1366, Height = 1024, ResizeMode = "NoResize" }
+  local changes = {}
+  local pivot = screen + ui.Pivot {
+    Title = "Octopus", SectionWidth = 400,
+    SelectionChanged = function (self, e) changes[#changes + 1] = { e.SelectedIndex, e.OldIndex } end,
+  }
+  local items = {}
+  for i, name in ipairs { "home", "connect", "discover" } do
+    items[i] = pivot + ui.PivotItem { Name = name, Header = name }
+    local _ = items[i] + ui.Button { Height = 60 }
+  end
+  items[1].SectionWidth = 440
+  layout(screen)
+  local function x(node) return math.floor(node.ActualX + 0.5) end
+  local function visible(class)
+    local n = 0
+    for _, node in ipairs(children(pivot, class)) do if node.Visible then n = n + 1 end end
+    return n
+  end
+  test.expect_eq(visible("PivotItem"), 3, "A hub shows every section")
+  test.expect_eq(visible("PivotHeaderItem"), 3, "A hub shows one header per section, without repeats")
+  test.expect_eq(x(items[1]), 120, "Landscape hubs start at the 120-point margin")
+  test.expect_eq(x(items[2]), 120 + 440 + 80, "A section's own width and the 80-point gap place the next")
+  test.expect_eq(x(items[3]), 120 + 440 + 80 + 400 + 80, "Sections continue along one canvas")
+  test.expect_eq(math.floor(items[2].ActualWidth), 400, "Sections take the Pivot's SectionWidth")
+  local headers = children(pivot, "PivotHeaderItem")
+  test.expect_eq(x(headers[2]), x(items[2]), "Each header sits above its own section")
+  test.expect(headers[1].Opacity > headers[2].Opacity, "The selected section's header is the only opaque one")
+
+  headers[3]:send("Node.LeftButtonUp")
+  pump(screen)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 2, "Tapping a header selects its section")
+  test.expect_eq(changes[#changes][1], 2, "Hub selection fires SelectionChanged")
+  -- Discover cannot reach the margin: the canvas stops where it ends at the
+  -- right margin, so nothing is left blank.
+  local total = 440 + 80 + 400 + 80 + 400
+  test.expect_eq(x(items[3]) + 400, 1366 - 120, "Panning stops when the last section meets the right margin")
+  test.expect_eq(x(items[1]), 120 - (total - (1366 - 240)), "Earlier sections move off to the left")
+
+  swipe(screen, 700, 600, -200)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 2, "A hub does not wrap past its last section")
+  -- Connect and discover share the end of the canvas, so a long swipe right
+  -- settles on the nearest distinct position: home at the margin.
+  swipe(screen, 700, 600, 200)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 0, "Swiping right settles on the nearest section position")
+  test.expect_eq(x(items[1]), 120, "Home returns to the margin")
+  swipe(screen, 700, 600, -60)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 1, "A swipe left moves on by one section")
+  swipe(screen, 700, 600, 20)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 1, "A short drag settles on the same section")
+
+  screen.Width = 834
+  layout(screen)
+  pivot.SelectedIndex = 0
+  pump(screen)
+  layout(screen)
+  test.expect_eq(x(items[1]), 40, "Portrait hubs use the 40-point margin")
+  test.expect_eq(x(items[2]), 40 + 440 + 40, "Portrait hubs use 40 points between sections")
+
+  for _, header in ipairs(children(pivot, "PivotHeaderItem")) do header.Width = 80 end
+  screen.Width = 390
+  layout(screen)
+  test.expect_eq(visible("PivotItem"), 1, "Below 600 points the hub folds back into a phone Pivot")
+  test.expect(visible("PivotHeaderItem") > 3, "The phone Pivot repeats its headers again")
+  test.expect_eq(x(items[1]), 12, "The phone Pivot uses the Metro inset")
+
+  screen.Width = 1366
+  pivot.IsLocked = true
+  layout(screen)
+  test.expect_eq(visible("PivotItem"), 1, "A locked Pivot never unfolds")
+  print("PASS: test_pivot_hub")
+end
+
 local function test_pivot_preserve_header_case()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local pivot = screen + ui.Pivot {}
@@ -698,6 +779,7 @@ test_pivot_content_padding()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_wide_headers()
+test_pivot_hub()
 test_pivot_preserve_header_case()
 test_pivot_back()
 test_pivot_transitions()
