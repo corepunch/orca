@@ -121,6 +121,7 @@ local App = Application:extend {
         local provider = ChatProvider.new {
             client = self.client, models = self.models, media = self.media, avatarPaths = self.avatarPaths,
             read = self.readRooms, pinned = self.pinned, remote = self.remote,
+            badge = function(total) if self.push and self.sessionEpoch == epoch then self.push:setBadge(total) end end,
             openRoom = function(room) self:openRoom(room) end,
             openPerson = function(id, name) self:openPerson(id, name) end,
             openSharedPost = function(id) self:posts():openPostId(id) end,
@@ -279,6 +280,9 @@ local App = Application:extend {
         self.currentRoute = type(request) == "string" and request
             or type(request) == "table" and request.path or "/"
         local ok, controller = xpcall(Application.dispatch, Diagnostics.traceback, self, request)
+        if self.push then
+            self.push:setActiveConversation(self.currentRoute == "/thread" and self.room and self.room.id or nil)
+        end
         if ok then return controller end
         return self.diagnostics:controller(controller, "Opening screen")
     end,
@@ -349,12 +353,15 @@ local App = Application:extend {
     end,
 
     openRoom = function(self, room)
-        self.room, self.readRooms[room.id] = room, true
+        -- Read up to this update: a newer message makes the room unread again.
+        self.room, self.readRooms[room.id] = room, room.updated_at or room.created_at or true
         self:show("/thread", "Forward")
     end,
 
     unread = function(self, room)
-        return not self.readRooms[room.id] and (room.unread or 0) or 0
+        local seen = self.readRooms[room.id]
+        local read = seen == true or type(seen) == "string" and (room.updated_at or room.created_at or "") <= seen
+        return not read and (room.unread or 0) or 0
     end,
 
     roomTime = function(self, room)
@@ -430,7 +437,10 @@ local App = Application:extend {
 
     signOut = function(self)
         self:closePages()
-        if self.push then self.push:suspend() end
+        if self.push then
+            self.push:setBadge(0); self.push:setActiveConversation(nil)
+            self.push:suspend()
+        end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
         self.restorePending = false

@@ -225,4 +225,17 @@ check(permissions == failedRequests, "Transient native failure waits before regi
 now = now + 2
 assert(tick())
 check(permissions == failedRequests + 1, "Transient native registration retries after backoff")
+
+-- The app icon badge and the conversation on screen reach the native layer once per change.
+local badges, actives = {}, {}
+native.setBadgeCount = function(count) badges[#badges + 1] = count; return true end
+native.setActiveConversation = function(id) actives[#actives + 1] = id or false; return true end
+push:setBadge(3); push:setBadge(3); push:setBadge(-2); push:setBadge(4.7)
+check(#badges == 3 and badges[1] == 3 and badges[2] == 0 and badges[3] == 4,
+    "Badge counts are whole, never negative, and unchanged values are not re-sent")
+push:setActiveConversation("room"); push:setActiveConversation("room"); push:setActiveConversation(nil)
+check(#actives == 2 and actives[1] == "room" and actives[2] == false, "The open conversation is reported once and cleared")
+native.setBadgeCount, native.setActiveConversation = nil, nil
+push:setBadge(9); push:setActiveConversation("other")
+check(#badges == 3 and #actives == 2, "An engine without badge support is left alone")
 print("Chat push: " .. checks .. " checks passed")

@@ -86,4 +86,30 @@ int notifications_Poll(lua_State *L) {
   return 1;
 }
 
+int notifications_SetBadgeCount(lua_State *L) {
+  lua_Integer count = luaL_checkinteger(L, 1);
+  luaL_argcheck(L, count >= 0, 1, "badge count must not be negative");
+#if defined(__APPLE__)
+  if (Notifications_AppleSupported()) {
+    Notifications_AppleSetBadge((long)count);
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+#endif
+  lua_pushnil(L);
+  lua_pushliteral(L, "The application icon badge requires an Apple application bundle.");
+  return 2;
+}
+
+int notifications_SetActiveConversation(lua_State *L) {
+  char const *conversationId = luaL_optstring(L, 1, NULL);
+  luaL_argcheck(L, !conversationId || strlen(conversationId) < sizeof(((struct NotificationsEvent *)0)->conversationId), 1,
+                "conversation identifier is too long");
+#if defined(__APPLE__)
+  if (Notifications_AppleSupported()) Notifications_AppleSetActiveConversation(conversationId);
+#endif
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
 #include <notifications/notifications_export.c>

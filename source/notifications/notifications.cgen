@@ -13,6 +13,16 @@
       <details>Returns true when queued, or nil and an error string when unsupported. Poll for a token or error after completion. Call on each launch and account restoration; APNs may rotate the token. Repeated requests replay the latest token while refreshing registration. Permission is requested only by this explicit call.</details>
       <returns type="nresults">True when queued, or nil and an error string.</returns>
     </function>
+    <function name="SetBadgeCount" lua="true">
+      <summary>Shows a number on the application icon; zero clears it.</summary>
+      <details>Takes a non-negative integer, typically the unread total. Returns true when applied, or nil and an error string where the platform has no application icon badge. Requires the badge permission granted by RequestAuthorization; without it the system ignores the number.</details>
+      <returns type="nresults">True, or nil and an error string.</returns>
+    </function>
+    <function name="SetActiveConversation" lua="true">
+      <summary>Names the conversation on screen, or clears it with nil.</summary>
+      <details>While the application is in the foreground, a notification for another conversation shows as a banner with sound; one for the active conversation stays silent because the open thread refreshes itself. Opening a conversation also removes its delivered notifications from the notification center.</details>
+      <returns type="nresults">True.</returns>
+    </function>
     <function name="Poll" lua="true">
       <summary>Dequeues one native notification event on the Lua thread.</summary>
       <details>Returns nil when empty. Events have type token (token), received or open (conversationId, messageId, userId), or error (code, message). Error codes include permission_denied, authorization_failed, registration_failed, invalid_token and unsupported. Notification payload identifiers are untrusted routing hints and must be authorized by the application. Open events survive startup before Lua initialization. Platform callbacks never access Lua.</details>

@@ -33,7 +33,7 @@ local function host()
 end
 
 local function fixture(user)
-    local f = { reads = 0, contactReads = 0, rows = {}, directory = {}, opened = {}, read = {}, pinned = {},
+    local f = { reads = 0, contactReads = 0, rows = {}, directory = {}, opened = {}, read = {}, pinned = {}, badges = {},
         session = { user = { id = user or "me" } } }
     f.client = { getSession = function() return f.session end,
         getAvatars = function() return {} end, getAvatar = function() end }
@@ -52,6 +52,7 @@ local function fixture(user)
     f.scope = data.scope("Chat/Data/Inbox.xml", {
         provider = Provider.new { client = f.client, models = f.models, read = f.read, pinned = f.pinned,
             avatarPaths = {}, openRoom = function(room) f.opened[#f.opened + 1] = room.id end,
+            badge = function(total) f.badges[#f.badges + 1] = total end,
             sessionLost = function() f.lost = true end },
         host = f.host, identity = "chat:" .. (user or "me"),
         valid = function() return f.session ~= nil and f.session.user.id == (user or "me") end })
@@ -118,6 +119,14 @@ local open = f.scope:member("OpenRoom")
 open:execute { item = alex }
 check(f.opened[1] == "alex" and f.read.alex and alex.values.UnreadCount == 0 and unread.state.Count == 0
     and all.state:findChild("Items"):findChild("alex") == row, "Opening a room marks it read in place")
+check(f.badges[#f.badges] == 0, "Opening the only unread room clears the app badge")
+-- A newer message after opening makes the room unread again, badge included.
+for _, value in ipairs(f.rows) do
+    if value.id == "alex" then value.updated_at, value.unread = "2099-01-01T00:00:00Z", 1 end
+end
+f.scope:member("Rooms"):refresh()
+check(alex.values.UnreadCount == 1 and unread.state.Count == 1 and f.badges[#f.badges] == 1,
+    "A message newer than the last opening is unread again")
 
 -- Manual refresh and polling share one in-flight request across yields.
 f.yieldRooms = true

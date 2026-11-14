@@ -126,6 +126,21 @@ function Push:suspend()
     self.scheduler:stop()
 end
 
+-- The app icon shows the unread total; repeated values are not re-sent.
+function Push:setBadge(count)
+    count = math.max(0, math.floor(tonumber(count) or 0))
+    if self.badge == count or not self.native.setBadgeCount then return end
+    self.badge = count
+    self.native.setBadgeCount(count)
+end
+
+-- Notifications for the conversation on screen stay silent; others show a banner.
+function Push:setActiveConversation(id)
+    if self.active == id or not self.native.setActiveConversation then return end
+    self.active = id
+    self.native.setActiveConversation(id)
+end
+
 function Push:setForeground(active)
     if active and self.nativeError == "permission_denied" then self.requested = false end
     self.scheduler:setForeground(active)
