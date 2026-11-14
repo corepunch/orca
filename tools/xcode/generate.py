@@ -9,7 +9,7 @@ import plistlib
 import re
 import xml.etree.ElementTree as ET
 
-from common import ROOT, configuration, non_exempt_encryption, unity_sources, url_types, write
+from common import ROOT, configuration, unity_sources, url_types, write
 from pbxproj import load
 
 
@@ -251,8 +251,6 @@ def generate(args, app):
     display_name = args.display_name or 'ORCA ' + name.replace('-', ' ').title()
     info = info_plist(display_name, launch_screen.stem if launch_screen.is_file() else None)
     info.update(url_types(app_dir))
-    if non_exempt_encryption(app_dir):
-        info['ITSAppUsesNonExemptEncryption'] = True
     if languages:
         info['CFBundleLocalizations'] = languages
     write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info).decode())

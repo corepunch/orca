@@ -45,6 +45,17 @@ the project administrator can still read everything. The only way to keep
 administrators out is to encrypt on the device, with keys that never reach
 Appwrite. Appwrite then only stores and routes ciphertext.
 
+## Export compliance
+
+Orca Messenger is not sold in France (removed 2026-11-14), so its Info.plist
+keeps `ITSAppUsesNonExemptEncryption=false`. Monocypher is third-party,
+standard cryptography. App Store Connect accepts an encryption declaration
+only for proprietary cryptography, or for third-party cryptography sold in
+France, and rejects uploads that set the key to `true` without an approved
+declaration's `ITSEncryptionExportComplianceCode` (error 90592). Returning
+to France requires a French encryption declaration document, an approved App
+Store Connect declaration, and both Info.plist keys.
+
 ## Library: Monocypher
 
 Vendor [Monocypher](https://monocypher.org) 4.x as `libs/monocypher`
