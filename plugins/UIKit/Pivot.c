@@ -18,6 +18,13 @@
 #define PIVOT_EDGE           24.0f   // width of the strip a back swipe starts in
 #define PIVOT_BACK_SWIPE     96.0f   // distance that commits a back swipe
 #define PIVOT_MAX_ITEMS      32
+// Hub layout, after the Windows 8 Hub's 20-point grid: content starts 6 units
+// (120) in from the left on a landscape tablet, 2 units in portrait.
+#define PIVOT_HUB_WIDE       1100.0f  // landscape tablets; a 13-inch iPad is 1024 in portrait
+#define PIVOT_HUB_MARGIN     40.0f
+#define PIVOT_HUB_MARGIN_L   120.0f
+#define PIVOT_HUB_GAP        40.0f
+#define PIVOT_HUB_GAP_L      80.0f
 
 HANDLER(Node2D, Node, UpdateMatrix);
 HANDLER(Node2D, Node, HitTest);
@@ -48,12 +55,53 @@ Pivot_Width(struct Object *o)
   return (Metro_Measure(o, 4096, 4096)).width;
 }
 
+// A hub lays every item out side by side; narrower, locked or single-item
+// pivots keep the phone layout.
+static bool_t
+Pivot_IsHub(struct Pivot *pPivot, int count, float width)
+{
+  return pPivot->SectionWidth > 0 && !pPivot->IsLocked && count > 1 && width > PIVOT_WIDE_VIEWPORT;
+}
+
+static float
+Pivot_SectionWidth(struct Pivot *pPivot, struct Object *item)
+{
+  float width = GetPivotItem(item)->SectionWidth;
+  return width > 0 ? width : pPivot->SectionWidth;
+}
+
+static float Pivot_HubMargin(float width) { return width >= PIVOT_HUB_WIDE ? PIVOT_HUB_MARGIN_L : PIVOT_HUB_MARGIN; }
+static float Pivot_HubGap(float width) { return width >= PIVOT_HUB_WIDE ? PIVOT_HUB_GAP_L : PIVOT_HUB_GAP; }
+
+// Each section's offset along the canvas; returns how far the canvas can pan
+// so that the last section ends at the right margin.
+static float
+Pivot_HubOffsets(struct Pivot *pPivot, struct Object **items, int count, float width, float *offsets)
+{
+  float x = 0, gap = Pivot_HubGap(width);
+  for (int i = 0; i < count; i++) {
+    offsets[i] = x;
+    x += Pivot_SectionWidth(pPivot, items[i]) + gap;
+  }
+  return MAX(x - gap - (width - 2 * Pivot_HubMargin(width)), 0);
+}
+
+// The pan that brings section `index` to the left margin, as far as it goes.
+static float
+Pivot_HubScroll(struct Pivot *pPivot, struct Object **items, int count, float width, int index)
+{
+  float offsets[PIVOT_MAX_ITEMS];
+  float limit = Pivot_HubOffsets(pPivot, items, count, width, offsets);
+  return MIN(offsets[index], limit);
+}
+
 // Creates the title and one header per PivotItem, drops stale headers and
 // reflects the selection on headers and items.
 static int
-Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
+Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items, float width)
 {
   int count = Pivot_Items(hObject, items);
+  bool_t hub = Pivot_IsHub(pPivot, count, width);
   // The bar precedes the title so that it draws over the items and under the
   // title and headers.
   if (!pPivot->_bar) {
@@ -119,7 +167,7 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     struct PivotItem *item = GetPivotItem(items[i]);
     Metro_SetText(header, item->Header, item->PreserveHeaderCase ? NULL : tolower);
     Metro_Show(header, selected || !pPivot->IsLocked, selected ? 1 : METRO_DIM);
-    Metro_Show(items[i], selected, 1);
+    Metro_Show(items[i], selected || hub, 1);
   }
   return count;
 }
@@ -141,6 +189,17 @@ Pivot_Transition(struct Object *hObject, struct Pivot *pPivot, int old)
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(hObject, items), sel = pPivot->SelectedIndex;
   if (old < 0 || old >= count || old == sel) return;
+  if (pPivot->_hubWidth > 0 && count > 1) {
+    // The canvas pans from the old section's position to the new one.
+    pPivot->_headerFrom = 0;
+    pPivot->_contentFrom = Pivot_HubScroll(pPivot, items, count, pPivot->_hubWidth, sel) -
+                           Pivot_HubScroll(pPivot, items, count, pPivot->_hubWidth, old);
+    Pivot_StartAnimation(hObject, pPivot);
+    axPostMessageDataW(hObject, ID_Pivot_SelectionChanged, 0, &(struct Pivot_SelectionChangedEventArgs) {
+      .SelectedIndex = sel, .OldIndex = old,
+    }, sizeof(struct Pivot_SelectionChangedEventArgs));
+    return;
+  }
   int forward = (sel - old + count) % count;
   if (forward <= count / 2) {
     float shift = 0;
@@ -210,7 +269,8 @@ HANDLER(Pivot, Object, PropertyChanged)
     if (pPivot->TransitionMode != kTransitionModeNone) OBJ_RequestAnimate(hObject);
   }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
-      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon || id == ID_Pivot_TransitionMode) {
+      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon || id == ID_Pivot_TransitionMode ||
+      id == ID_Pivot_SectionWidth) {
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -263,7 +323,7 @@ HANDLER(Pivot, Node, HitTest)
 HANDLER(Pivot, Node2D, MeasureOverride)
 {
   struct Object *items[PIVOT_MAX_ITEMS];
-  int count = Pivot_Sync(hObject, pPivot, items);
+  int count = Pivot_Sync(hObject, pPivot, items, pMeasureOverride->Width);
   struct Size title = Metro_Measure(pPivot->_title, pMeasureOverride->Width, pMeasureOverride->Height);
   float top = PIVOT_TITLE_TOP + title.height + PIVOT_HEADER_TOP, strip = 0, width = 0, height = 0;
   for (int i = 0; i < count; i++) {
@@ -271,6 +331,14 @@ HANDLER(Pivot, Node2D, MeasureOverride)
     strip = MAX(strip, size.height);
   }
   top += strip + PIVOT_CONTENT_TOP + PIVOT_BODY_TOP;
+  if (Pivot_IsHub(pPivot, count, pMeasureOverride->Width)) {
+    for (int i = 0; i < count; i++) {
+      struct Size size = Metro_Measure(items[i], Pivot_SectionWidth(pPivot, items[i]),
+        MAX(pMeasureOverride->Height - top, 0));
+      height = MAX(height, size.height);
+    }
+    return Layout_Return(pMeasureOverride, pMeasureOverride->Width, top + height);
+  }
   if (count) {
     struct Size size = Metro_Measure(items[pPivot->SelectedIndex],
       MAX(pMeasureOverride->Width - 2 * METRO_INSET, 0), MAX(pMeasureOverride->Height - top, 0));
@@ -283,7 +351,7 @@ HANDLER(Pivot, Node2D, MeasureOverride)
 HANDLER(Pivot, Node2D, ArrangeOverride)
 {
   struct Object *items[PIVOT_MAX_ITEMS];
-  int count = Pivot_Sync(hObject, pPivot, items);
+  int count = Pivot_Sync(hObject, pPivot, items, pArrangeOverride->Width);
   float x = pArrangeOverride->X, y = pArrangeOverride->Y;
   float w = pArrangeOverride->Width, h = pArrangeOverride->Height;
   float settle = 1 - Metro_Ease(pPivot->_progress);
@@ -324,6 +392,35 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     Metro_Measure(pPivot->_backIcon, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
     Metro_Arrange(pPivot->_backIcon, ringX + (PIVOT_BACK_RING - PIVOT_BACK_ICON) / 2,
       ringY + (PIVOT_BACK_RING - PIVOT_BACK_ICON) / 2, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
+  }
+
+  bool_t hub = Pivot_IsHub(pPivot, count, w);
+  pPivot->_hubWidth = hub ? w : 0;
+  if (hub) {
+    // Every section sits on one canvas under its own header, panned so the
+    // selected one reaches the left margin; headers travel with them.
+    float offsets[PIVOT_MAX_ITEMS], margin = Pivot_HubMargin(w);
+    float limit = Pivot_HubOffsets(pPivot, items, count, w, offsets);
+    float pan = -MIN(offsets[pPivot->SelectedIndex], limit) + pPivot->_contentFrom * settle + pPivot->_dragX;
+    for (int i = 0; i < count; i++) strip = MAX(strip, sizes[i].height);
+    float contentY = stripY + strip + PIVOT_CONTENT_TOP, bodyTop = contentY + PIVOT_BODY_TOP;
+    bool_t extend = pPivot->ExtendBodyBehindHeader;
+    float bodyY = extend ? y : bodyTop;
+    node->_safeArea.x = extend ? bodyTop : 0;
+    node->_barInset.x = extend ? contentY : 0;
+    Metro_Arrange(pPivot->_title, x + margin + (back ? PIVOT_BACK_RING + PIVOT_BACK_GAP : 0),
+      top + PIVOT_TITLE_TOP, title.width, title.height);
+    for (int i = 0; i < count; i++) {
+      float sx = x + margin + offsets[i] + pan, sw = Pivot_SectionWidth(pPivot, items[i]);
+      Metro_Show(headers[i], TRUE, i == pPivot->SelectedIndex ? 1 : METRO_DIM);
+      Metro_Arrange(headers[i], sx, stripY, MIN(sizes[i].width, sw), sizes[i].height);
+      Metro_Show(items[i], TRUE, 1);
+      Metro_Arrange(items[i], sx, bodyY, sw, MAX(y + h - bodyY, 0));
+    }
+    for (int i = 0; i < copyCount; i++) Metro_Show(copies[i], FALSE, METRO_DIM);
+    Metro_Measure(pPivot->_bar, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
+    Metro_Arrange(pPivot->_bar, 0, 0, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
+    return Layout_Return(pArrangeOverride, w, h);
   }
 
   // The selected header leads; the others follow in order and wrap around.
@@ -430,7 +527,7 @@ HANDLER(Pivot, Node, LeftButtonDragged)
     pPivot->_backPressed = FALSE;
     pPivot->_progress = 1;
     // Hide the content from hit testing so releasing the swipe is not a tap.
-    GetNode2D(items[pPivot->SelectedIndex])->IgnoreHitTest = TRUE;
+    for (int i = 0; i < count; i++) GetNode2D(items[i])->IgnoreHitTest = TRUE;
   }
   pPivot->_dragX = edge ? MAX(dx, 0) : dx;
   OBJ_SetDirty(hObject);
@@ -454,7 +551,29 @@ HANDLER(Pivot, Node, LeftButtonUp)
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(hObject, items);
   if (!count) return TRUE;
-  GetNode2D(items[pPivot->SelectedIndex])->IgnoreHitTest = FALSE;
+  for (int i = 0; i < count; i++) GetNode2D(items[i])->IgnoreHitTest = FALSE;
+  if (pPivot->_hubWidth > 0 && !edge) {
+    // Settle on the section nearest to where the canvas was let go; a swipe
+    // moves at least one section, and the ends do not wrap around.
+    float width = pPivot->_hubWidth;
+    int sel = pPivot->SelectedIndex, target = sel;
+    float at = Pivot_HubScroll(pPivot, items, count, width, sel) - dx;
+    for (int i = 0; i < count; i++) {
+      float d = fabsf(Pivot_HubScroll(pPivot, items, count, width, i) - at);
+      if (d < fabsf(Pivot_HubScroll(pPivot, items, count, width, target) - at)) target = i;
+    }
+    if (target == sel && fabsf(dx) >= METRO_SWIPE)
+      target = MAX(0, MIN(count - 1, sel + (dx < 0 ? 1 : -1)));
+    if (target != sel) {
+      Pivot_Select(hObject, target);
+      pPivot->_contentFrom += dx;  // continue from where the finger left it
+      return TRUE;
+    }
+    pPivot->_headerFrom = 0;
+    pPivot->_contentFrom = dx;
+    Pivot_StartAnimation(hObject, pPivot);
+    return TRUE;
+  }
   if (edge && dx >= PIVOT_BACK_SWIPE) {
     axPostMessageW(hObject, ID_Pivot_BackRequested, 0, 0);
   } else if (!edge && fabsf(dx) >= METRO_SWIPE) {
