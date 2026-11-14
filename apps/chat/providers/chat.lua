@@ -209,8 +209,12 @@ function Provider.new(context)
         openContact = function(params)
             local person, navigation = params.item, context.navigation()
             if context.openPerson then
-                context.openPerson(person.key, person.values.Title)
-                return true
+                -- The profile comes from the public posts feature. If it cannot
+                -- open, the person is still one tap away: open the direct chat.
+                local opened, failure = xpcall(context.openPerson, debug.traceback, person.key, person.values.Title)
+                if opened then return true end
+                io.stderr:write("Chat: could not open a profile; opening the direct chat. " .. tostring(failure) .. "\n")
+                navigation = context.navigation()
             end
             local room, err = models.Rooms:create { name = person.values.Title, member_ids = { person.key },
                 kind = "direct", visibility = "private" }
