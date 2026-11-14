@@ -24,6 +24,7 @@ for i, key in ipairs { "same", "same", "third", "fourth", "fifth", "sixth", "bad
 end
 local client = {
     listPosts = function() return posts end,
+    discoverTimeline = function() return posts end,
     stats = function() return {} end,
     avatars = function() return {} end,
     getImage = function(_, key)

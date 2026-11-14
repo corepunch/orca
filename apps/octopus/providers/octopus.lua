@@ -22,6 +22,8 @@ local ACTIVITY = {
     follow = { icon = "user-round", text = " followed you" },
 }
 local PAGE_SIZE = 20
+-- Home suggests this many people while the reader follows fewer than SUGGEST_UNTIL.
+local SUGGESTIONS, SUGGEST_UNTIL = 5, 5
 
 local function number(value, i18n)
     if value == nil then return "–" end
@@ -238,9 +240,21 @@ function Provider.new(context)
             return { items = entries(query, items), cursor = cursor }
         end,
         discover = function(_, page, _, query)
-            local posts, err = client:listPosts { limit = PAGE_SIZE, cursor = page.cursor }
-            if not posts then return nil, err end
-            return { items = entries(query, wrap(posts)), cursor = #posts == PAGE_SIZE and posts[#posts].id or nil }
+            local posts, cursor = client:discoverTimeline { limit = PAGE_SIZE, cursor = page.cursor }
+            if not posts then return nil, cursor end
+            return { items = entries(query, wrap(posts)), cursor = cursor }
+        end,
+        -- Who to follow, while the reader follows only a few people.
+        suggestions = function(_, _, _, query)
+            if not client:getSession() then return {} end
+            local people, following = client:suggestPeople(SUGGESTIONS)
+            if not people then return nil, following end
+            if following >= SUGGEST_UNTIL then return {} end
+            local rows = {}
+            for index, person in ipairs(people) do
+                rows[index] = query.scope.store:put("OctopusProfile", person, { partial = true })
+            end
+            return rows
         end,
         profilePosts = function(params, _, _, query)
             local items, err = client:userTimeline(params.AuthorId, { limit = 30 })
@@ -333,7 +347,7 @@ function Provider.new(context)
             store:put("OctopusProfile", { userId = person.key,
                 followers = person.values.Followers + (now and 1 or 0) - (following and 1 or 0) }, { partial = true })
         end
-        context.invalidateFeeds { "Home" }
+        context.invalidateFeeds { "Home", "Discover", "Suggestions" }
         context.notice(now and t("You'll see their posts in your following timeline.") or t("Unfollowed."))
         return true
     end

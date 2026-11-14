@@ -327,4 +327,45 @@ assert(mine.avatarId and photos:getImage(mine.avatarId) == image, "The photo is 
 assert(photos:avatars({ "u-ada" })["u-ada"] == mine.avatarId and photos:getProfile("u-ada").avatarId == mine.avatarId)
 assert(photos:searchPeople("ada")[1].avatarId == mine.avatarId, "Search results carry photos")
 
-print("Octopus API: guest reads, home and profile timelines with reposts, connect activity, sessions, posts of every type, likes, reposts, comments, follows, profiles, profile photos, photos and HTTP queries passed")
+-- Discover leaves out the reader and who they follow; home suggests people.
+local reader = Octopus.mock { clock = clock }
+local guestDiscover, guestCursor = assert(reader:discoverTimeline { limit = 20 })
+assert(#guestDiscover == 8 and guestCursor == nil, "Guests discover every recent post")
+assert(reader:signIn("demo@example.invalid", "password123"))
+local discovered = assert(reader:discoverTimeline { limit = 20 })
+local ids = {}
+for i, p in ipairs(discovered) do ids[i] = p.id end
+assert(table.concat(ids, ",") == "p-small,p-arms,p-quote",
+    "Discover skips your own posts and those of people you follow: " .. table.concat(ids, ","))
+local suggested, following = assert(reader:suggestPeople(5))
+assert(following == 2 and #suggested == 2 and suggested[1].userId == "u-jules" and suggested[2].userId == "u-noor"
+    and suggested[1].bio ~= nil, "Suggestions rank recent posters you don't follow, with their profiles")
+assert(reader:follow("u-jules"))
+local after = assert(reader:suggestPeople(5))
+assert(#after == 1 and after[1].userId == "u-noor", "Following someone removes them from suggestions")
+-- Noor follows Sam, so Sam's follows rank above recent posters for Noor.
+local noor = Octopus.mock { clock = clock }
+assert(noor:signIn("noor@example.invalid", "password123"))
+assert(noor:follow("u-maya"))
+local fof = assert(noor:suggestPeople(5))
+assert(fof[1].userId == "u-ada", "People followed by those you follow come first")
+
+-- At most two posts per author per page; the cursor resumes after the last scanned post.
+local busy = Octopus.mock { clock = clock }
+local scans = {}
+busy.listPosts = function(_, options)
+    scans[#scans + 1] = options.cursor or ""
+    local first, posts = tonumber(options.cursor) or 0, {}
+    for i = first + 1, math.min(first + options.limit, 130) do
+        posts[#posts + 1] = { id = tostring(i), authorId = i <= 100 and "u-loud" or ("u-" .. i) }
+    end
+    return posts
+end
+local page, cursor = assert(busy:discoverTimeline { limit = 5 })
+assert(#page == 5 and page[1].id == "1" and page[2].id == "2" and page[3].id == "101" and cursor == "103",
+    "A prolific author shows twice, then others fill the page")
+assert(#scans == 3 and scans[3] == "100", "Discover scans further batches to fill a page")
+local rest, done = assert(busy:discoverTimeline { limit = 50, cursor = cursor })
+assert(#rest == 27 and rest[1].id == "104" and done == nil, "The last page ends the timeline")
+
+print("Octopus API: guest reads, home and profile timelines with reposts, connect activity, sessions, posts of every type, likes, reposts, comments, follows, profiles, profile photos, photos, discover filtering, suggestions and HTTP queries passed")

@@ -20,7 +20,15 @@ blocks with [Chat](../chat/README.md):
   **discover** items. Home is your timeline: your posts, the posts of people
   you follow, and what they reposted, each marked "Maya Chen reposted".
   Connect lists who liked, reposted or replied to your posts and who followed
-  you. Discover is everyone's latest posts. Signed-in readers start on home and
+  you. Discover is the newest posts from people you don't follow yet (your
+  own and your follows' posts are on home), at most two per author in each
+  page so one busy poster can't fill it. While you follow fewer than five
+  people, home opens with **people to follow**: those followed by the people
+  you follow come first, then recent posters. Following someone refreshes
+  home, discover and the suggestions. This follows Bluesky, X and Tumblr:
+  a chronological following feed plus a separate place to find strangers.
+  Ranking by likes and reposts belongs in the shared Appwrite Function, so
+  the website would show the same list. Signed-in readers start on home and
   guests on discover; swipe or tap a header to switch.
 - Every other page is a locked one-item `Pivot`, so its title and page name
   share the timeline metrics: **post**, **quote**, **link** or **photo** for a

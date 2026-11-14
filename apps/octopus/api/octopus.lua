@@ -657,6 +657,83 @@ function Client:homeTimeline(options)
     return self:timeline(authors, ids, options)
 end
 
+-- Discover: everyone's newest posts except the reader's own and those of
+-- people they follow (home already has them), with at most two posts per
+-- author in each page so one busy poster can't fill it. Scans at most four
+-- batches of 50 per page. Returns posts and the cursor to continue from.
+local DISCOVER_PER_AUTHOR, DISCOVER_BATCH = 2, 50
+function Client:discoverTimeline(options)
+    options = options or {}
+    local limit, skip, me = tonumber(options.limit) or 20, {}, self:currentUserId()
+    if me then
+        local ids, err = self:listFollowingIds(me)
+        if not ids then return nil, err end
+        skip[me] = true
+        for _, id in ipairs(ids) do skip[id] = true end
+    end
+    local kept, counts, cursor = {}, {}, options.cursor
+    for _ = 1, 4 do
+        local batch, err = self:listPosts { limit = DISCOVER_BATCH, cursor = cursor }
+        if not batch then return nil, err end
+        for _, p in ipairs(batch) do
+            cursor = p.id
+            local author = p.authorId or ""
+            if not skip[author] and (counts[author] or 0) < DISCOVER_PER_AUTHOR then
+                counts[author], kept[#kept + 1] = (counts[author] or 0) + 1, p
+                if #kept == limit then return kept, cursor end
+            end
+        end
+        if #batch < DISCOVER_BATCH then return kept, nil end
+    end
+    return kept, cursor
+end
+
+-- People to follow: first those followed by the people the reader follows
+-- (the more of them, the higher), then recent posters; never the reader or
+-- anyone they follow. Returns profiles and how many people the reader follows.
+function Client:suggestPeople(limit)
+    limit = limit or 5
+    local me = self:currentUserId()
+    if not me then return {}, 0 end
+    local following, err = self:listFollowingIds(me)
+    if not following then return nil, err end
+    local skip, score, order = { [me] = true }, {}, {}
+    for _, id in ipairs(following) do skip[id] = true end
+    local function add(id, weight)
+        if not validId(id) or skip[id] then return end
+        if not score[id] then order[#order + 1], score[id] = id, 0 end
+        score[id] = score[id] + weight
+    end
+    if #following > 0 then
+        local docs
+        docs, err = self:_listAll("follows", { Q.equal("followerId", { table.unpack(following, 1, math.min(#following, 100)) }),
+            Q.select { "$id", "followingId" } }, 1)
+        if not docs then return nil, err end
+        for _, doc in ipairs(docs) do add(doc.followingId, 100) end
+    end
+    local recent
+    recent, err = self:listPosts { limit = 50 }
+    if not recent then return nil, err end
+    for _, p in ipairs(recent) do add(p.authorId, 1) end
+    local rank = {}
+    for index, id in ipairs(order) do rank[id] = index end
+    table.sort(order, function(a, b) return score[a] > score[b] or (score[a] == score[b] and rank[a] < rank[b]) end)
+    for i = #order, limit + 1, -1 do order[i] = nil end
+    if #order == 0 then return {}, #following end
+    local data
+    data, err = self:_list("profiles", { Q.equal("userId", order), Q.limit(#order) })
+    if not data then return nil, err end
+    local found, people = {}, {}
+    for _, doc in ipairs(data.documents) do found[doc.userId] = profile(doc) end
+    for _, id in ipairs(order) do
+        if found[id] then
+            people[#people + 1] = found[id]
+            self.avatarIds[id] = found[id].avatarId or false
+        end
+    end
+    return people, #following
+end
+
 -- A profile's posts with the posts they reposted.
 function Client:userTimeline(userId, options)
     if not validId(userId) then return failure("validation", "Choose a person.") end

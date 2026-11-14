@@ -369,6 +369,11 @@ assert(app.currentRoute == "/post" and app.post.id == "p-hello", "Activity opens
 back(app)
 app:selectFeed("home")
 
+-- Readers who follow few people get suggestions above home.
+local suggestions = find(app, "Suggestionshome")
+assert(suggestions.Visible and find(app, "Suggestedu-jules") and find(app, "Suggestedu-noor")
+    and not app.shell.screen:findChild("Suggestedu-maya", true), "Home suggests people you don't follow yet")
+
 -- Following adds people to the home timeline.
 clickIn(app, "Postp-small", "Author")
 assert(text(find(app, "Countfollowers")) == "0")
@@ -378,6 +383,8 @@ assert(app.shell.screen:findChild("Timelinehome", true):findChild("Postp-quote",
     "Following reloads the home timeline")
 back(app)
 assert(find(app, "Timelinehome"):findChild("Postp-quote", true), "Home includes people you just followed")
+assert(not app.shell.screen:findChild("Suggestedu-jules", true) and find(app, "Suggestedu-noor"), "Following updates the suggestions")
+assert(not find(app, "Timelinediscover"):findChild("Postp-quote", true), "Discover leaves out people you follow")
 
 -- Your own profile: edit and sign out.
 click(app, "AppBarMe")

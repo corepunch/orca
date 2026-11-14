@@ -197,7 +197,7 @@ local App = Application:extend {
     -- loaded; others load fresh on their next visit.
     invalidateFeeds = function(self, names)
         self:eachScope(function(scope)
-            for _, name in ipairs(names or { "Home", "Discover", "Connect", "ProfilePosts", "SearchPosts" }) do
+            for _, name in ipairs(names or { "Home", "Discover", "Connect", "Suggestions", "ProfilePosts", "SearchPosts" }) do
                 local query = scope:member(name)
                 if query and query.loaded then query:invalidate() end
             end

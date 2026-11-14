@@ -17,6 +17,12 @@ function client:listPosts(options)
     for i = first + 1, first + options.limit do posts[#posts + 1] = { id = tostring(i), userId = "u", title = "" } end
     return posts
 end
+-- Discover filtering is covered against the mock in test_octopus_api.lua.
+function client:discoverTimeline(options)
+    local posts, err = self:listPosts(options)
+    if not posts then return nil, err end
+    return posts, #posts == options.limit and posts[#posts].id or nil
+end
 function client:stats() return {} end
 local provider = OctopusProvider.new { client = client, media = {}, now = function() return 0 end }
 local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"), scope = "octopus:test",

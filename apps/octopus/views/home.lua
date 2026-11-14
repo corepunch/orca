@@ -13,6 +13,7 @@ function Home.load(self, name)
     local scope = self:feedsScope()
     if (name == "home" or name == "connect") and not self.client:getSession() then return end
     scope:member(QUERIES[name]):refresh()
+    if name == "home" then scope:member("Suggestions"):refresh() end
 end
 
 function Home.select(self, name)
@@ -27,6 +28,8 @@ function Home.select(self, name)
     if (name == "home" or name == "connect") and not self.client:getSession() then return end
     -- Connect is always fresh; timelines keep their place until refreshed.
     if name == "connect" or not query.loaded then query:refresh() end
+    local suggestions = scope:member("Suggestions")
+    if name == "home" and not suggestions.loaded then suggestions:refresh() end
 end
 
 function Home.page(self)

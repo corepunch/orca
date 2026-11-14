@@ -24,6 +24,11 @@ function client:listPosts(options)
     end
     return posts
 end
+-- Feed-size stress, not Discover's author filtering (test_octopus_api.lua).
+function client:discoverTimeline(options)
+    local posts = self:listPosts(options)
+    return posts, #posts == options.limit and posts[#posts].id or nil
+end
 function client:stats(ids)
     assert(#ids <= 20, "Enrichment must stay page-sized as history grows")
     enriched = enriched + #ids
