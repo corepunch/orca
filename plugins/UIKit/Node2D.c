@@ -190,7 +190,7 @@ _ExitStencilClip(struct Node2D *pNode2D,
 
 // Finds the point on the node's plane (z = 0) that projects to (x, y). This
 // stays exact when the matrix carries perspective, as during a turnstile.
-static struct vec3 _Node2DToLocalPoint(struct Node2D *pNode2D, float x, float y) {
+struct vec3 Node2D_ToLocalPoint(struct Node2D *pNode2D, float x, float y) {
   float const *m = pNode2D->Matrix.v;
   float a = m[0] - x * m[3], b = m[4] - x * m[7], e = x * m[15] - m[12];
   float c = m[1] - y * m[3], d = m[5] - y * m[7], f = y * m[15] - m[13];
@@ -202,14 +202,14 @@ static struct vec3 _Node2DToLocalPoint(struct Node2D *pNode2D, float x, float y)
 static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  struct vec3 out = _Node2DToLocalPoint(pNode2D, x, y);
+  struct vec3 out = Node2D_ToLocalPoint(pNode2D, x, y);
   return RECT_Contains(&(struct rect){0,0,w,h}, (struct vec2 const*)&out);
 }
 
 static bool_t
 _Node2DShouldClipPointByOverflow(struct Node2D *pNode2D, float x, float y)
 {
-  struct vec3 local = _Node2DToLocalPoint(pNode2D, x, y);
+  struct vec3 local = Node2D_ToLocalPoint(pNode2D, x, y);
   float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float const h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   if (pNode2D->Overflow.x != kOverflowVisible &&

@@ -7,6 +7,10 @@
 #include <math.h>
 #include <UIKit/UIKit.h>
 
+/* Pointer messages carry screen coordinates; this maps one onto the node's
+ * own plane, exactly as hit testing does. */
+struct vec3 Node2D_ToLocalPoint(struct Node2D *pNode2D, float x, float y);
+
 static inline LRESULT
 Layout_Result(float *resultWidth, float *resultHeight, float width, float height)
 {
