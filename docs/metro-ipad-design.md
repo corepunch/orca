@@ -1,6 +1,7 @@
 # Metro on iPad: design for Chat and Octopus
 
-Status: proposal, 14 November 2026. Nothing here is implemented yet. It
+Status: proposal, 14 November 2026. Implemented so far: the Pivot hub mode
+(`Pivot.SectionWidth`), used by Octopus home. Everything else is still open. It
 extends the [Windows Phone UI cheatsheet](windows-phone-ui-cheatsheet.md),
 whose labels apply: **Historical** is sourced period practice, **ORCA** is
 current engine behaviour, **Recommendation** is our design judgement.
@@ -129,10 +130,10 @@ panorama from the iPhone set carries over directly.
 
 ## Engine work (ORCA)
 
-None of these layouts exist yet. The phone controls today assume one viewport
-per item:
+The phone controls assume one viewport per item. Status of each piece:
 
-- **Pivot wide mode**: lay out `PivotItem`s side by side at a set section
+- **Pivot wide mode** (done, `Pivot.SectionWidth` and
+  `PivotItem.SectionWidth`, covered by `test_pivot_hub`): lay out `PivotItem`s side by side at a set section
   width when the Pivot is at least 600 points wide. Turn the header strip
   into per-section headers that are tapped to scroll. Selection then means
   "scrolled into view". Each section keeps its own vertical scroll.
