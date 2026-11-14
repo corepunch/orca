@@ -10,7 +10,8 @@ Runs inside Blender and writes an ORCA project's 3D assets from the open file:
                text block (GLSL fragment body); "<group>.vert" overrides the
                default vertex stage
   Materials/   one <Material> per material built on such a group. Uniform
-               values are the group node's inputs; "orca_blend" on the
+               values are the group node's inputs, set as "<group>.<input>";
+               "orca_blend" on the
                material is opaque | alpha | additive
                "orca_environment_map" on a shader group adds a CubeMapTexture
                EnvironmentMap uniform referring to an existing texture asset
@@ -34,8 +35,9 @@ or, from a running Blender (e.g. through the Blender MCP):
   runpy.run_path("tools/blender-export.py")["export"]("<project-dir>")
 
 Engine behaviour this exporter relies on (see the comments where it does):
-  * custom uniforms have to be registered project property types
-  * a shader's own properties declare its uniforms; colour ones are sRGB
+  * a shader owns its uniforms: Shader.Uniforms declares them as the attached
+    properties "<shader>.<name>", which materials and nodes set; colour ones
+    are sRGB
   * 3D nodes draw in tree order with depth writes on
 """
 import argparse
@@ -59,7 +61,6 @@ ORCA_FBX = os.path.join(REPO, "build", "bin", "orca-fbx")
 TO_ORCA = Matrix(((1, 0, 0, 0), (0, 0, 1, 0), (0, -1, 0, 0), (0, 0, 0, 1)))
 FROM_ORCA = TO_ORCA.inverted()
 
-UNIFORM_CATEGORY = "Uniform"     # custom uniforms are attached properties "Uniform.<Name>"
 BLEND = {"opaque": "Opaque", "alpha": "Alpha", "additive": "Additive"}
 
 DEFAULT_VERTEX = """
@@ -184,18 +185,21 @@ def group_uniforms(group):
 
 
 def export_shader(group, path):
-    # A shader's own properties are its uniform declarations: ORCA emits the GLSL
-    # "uniform" lines from them and treats the colour ones as sRGB. The text
+    # Shader.Uniforms declares the shader's uniforms as "<group>.<name>": ORCA emits
+    # the GLSL "uniform" lines from them and treats the colour ones as sRGB. The text
     # block's hand-written declarations of the same names would clash, so drop them.
     declared = group_uniforms(group)
-    attrs = {"Name": group.name}
-    for name, _kind, value in declared:
-        attrs["{}.{}".format(UNIFORM_CATEGORY, name)] = value
     names = "|".join(re.escape(n) for n, _k, _v in declared)
     frag = bpy.data.texts[group.name + ".frag"].as_string()
     if names:
         frag = re.sub(r"^\s*uniform\s+\w+\s+(?:{})\s*;[^\n]*\n".format(names), "", frag, flags=re.MULTILINE)
-    root = ET.Element("Shader", attrs)
+    root = ET.Element("Shader", {"Name": group.name})
+    if declared:
+        owned = ET.SubElement(root, "Shader.Uniforms")
+        for name, kind, value in declared:
+            data_type = ({"DataType": "Object", "TypeString": kind} if kind == "CubeMapTexture"
+                         else {"DataType": kind})
+            ET.SubElement(owned, "PropertyType", {"Name": name, **data_type, "DefaultValue": value})
     vert = bpy.data.texts.get(group.name + ".vert")
     ET.SubElement(root, "VertexShader").text = vert.as_string() if vert else DEFAULT_VERTEX
     ET.SubElement(root, "FragmentShader", {"Out": "FragColor"}).text = "\n" + frag
@@ -217,7 +221,7 @@ def export_material(mat, node, project, out_dir):
     attrs = {"Name": mat.name, "Shader": "{}/Shaders/{}".format(project, node.node_tree.name),
              "BlendMode": BLEND[mat.get("orca_blend", "opaque")]}
     for name, _kind, value in uniforms(node):
-        attrs["{}.{}".format(UNIFORM_CATEGORY, name)] = value
+        attrs["{}.{}".format(node.node_tree.name, name)] = value
     images = [n.image for n in mat.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image]
     if images:
         attrs["Texture"] = "{}/Images/{}".format(project, export_image(images[0], os.path.join(out_dir, "Images")))
@@ -451,7 +455,7 @@ def export_scene(objects, project, screen, out_dir, clips):
             # instance, and node values take precedence over the material's.
             values = {n: v for n, _k, v in uniforms(node)}
             for name in animated_uniforms.get(ob.name, []):
-                attrs["{}.{}".format(UNIFORM_CATEGORY, name)] = values[name]
+                attrs["{}.{}".format(node.node_tree.name, name)] = values[name]
             el = ET.Element("Model3D", attrs)
         else:
             el = ET.Element("Node3D", attrs)
@@ -501,27 +505,11 @@ def node_paths(objects):
 # ---------------------------------------------------------------- project
 
 
-def property_types(materials):
-    """Uniforms have to exist as project property types before a material can set them."""
-    types = {}
-    for _mat, node in materials:
-        for name, kind, _value in uniforms(node):
-            if types.setdefault(name, kind) != kind:
-                raise RuntimeError("uniform {} has conflicting types".format(name))
-    return ["\t{{ Name = \"{}\", Category = \"{}\", {} }},".format(n, UNIFORM_CATEGORY,
-            'DataType = "Object", TypeString = "CubeMapTexture"' if k == "CubeMapTexture"
-            else 'DataType = "{}"'.format(k))
-            for n, k in sorted(types.items())]
-
-
-def write_package(out_dir, project, screen, materials):
+def write_package(out_dir, project, screen):
     scene = bpy.context.scene
     path = os.path.join(out_dir, "package.lua")
-    types = property_types(materials)
     if os.path.exists(path):
-        text = open(path, encoding="utf-8").read()
-        declared = set(re.findall(r'Name\s*=\s*"([^"]+)"', text))
-        return [t.strip() for t in types if t.split('"')[1] not in declared]
+        return
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join([
             'Name = "{}"'.format(project),
@@ -537,10 +525,7 @@ def write_package(out_dir, project, screen, materials):
             "EnginePlugins = {",
             '\t{ Name="orca.UIKit" },',
             '\t{ Name="orca.SceneKit" },',
-            "}",
-            "-- Shader uniforms. tools/blender-export.py reports any that are missing here.",
-            "PropertyTypes = {"] + types + ["}", ""]))
-    return []
+            "}", ""]))
 
 
 def export(out_dir, project=None, collection=None, screen="Cluster", orca_fbx=ORCA_FBX):
@@ -569,13 +554,12 @@ def export(out_dir, project=None, collection=None, screen="Cluster", orca_fbx=OR
     if clips:
         write_animation_index(clips, project, screen, out_dir)
     camera = export_scene(objects, project, screen, out_dir, clips)
-    missing = write_package(out_dir, project, screen, list(materials.values()))
+    write_package(out_dir, project, screen)
     return {
         "project": project, "out_dir": out_dir, "meshes": len(meshes), "shaders": sorted(groups),
         "materials": len(materials), "clips": {a.name: round(d, 4) for a, d, _u in clips},
         "camera": camera,
         "skipped_meshes_without_exportable_material": skipped,
-        "property_types_missing_from_package_lua": missing,
     }
 
 

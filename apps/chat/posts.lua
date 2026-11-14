@@ -134,7 +134,7 @@ function Posts.new(chat, options)
         if tab then return feature:tab(tab, content) end
         local screen = chat:frame()
         screen.StyleSheet = "Chat/Styles/posts.css"
-        screen.StateClasses = "chat-" .. ChatColors.appearance .. " octopus-" .. ChatColors.appearance .. " chat-posts"
+        screen.StateClasses = "chat-" .. ChatColors.appearance .. " octopus-" .. ChatColors.appearance .. " chat-posts" .. ChatColors.lookClass
         app.screen = screen
         return screen
     end
@@ -199,7 +199,7 @@ end
 function Posts:decorate(content)
     content.StyleSheet = "Chat/Styles/posts.css"
     content.StateClasses = (content.className == "Screen" and "chat-" .. ChatColors.appearance .. " " or "")
-        .. "chat-posts octopus-" .. ChatColors.appearance
+        .. "chat-posts octopus-" .. ChatColors.appearance .. ChatColors.lookClass
     visit(content, function(node)
         if node.className == "Pivot" then node.Title = "Messenger" end
     end)

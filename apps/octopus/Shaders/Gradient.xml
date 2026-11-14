@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A three-stop gradient for UI materials. As a Foreground material it colors
+     the glyph mask of text or the SVG mask of a VectorView; as a Background
+     material it fills the box (u_texture is then white). Angle is in degrees:
+     0 runs left to right, 90 top to bottom, measured in points so the slope is
+     true on wide boxes. There is no VertexShader, so the engine's UI vertex
+     stage supplies rounded corners, v_texcoord0, v_boxCoord and v_boxSize. -->
+<Shader Name="Gradient">
+  <!-- The shader owns its uniforms: materials set them as Gradient.Color0 etc. -->
+  <Shader.Uniforms>
+    <PropertyType Name="Color0" DataType="Color" DefaultValue="#ffffff"/>
+    <PropertyType Name="Color1" DataType="Color" DefaultValue="#5ee7ff"/>
+    <PropertyType Name="Color2" DataType="Color" DefaultValue="#9b5cff"/>
+    <PropertyType Name="Angle" DataType="Float" DefaultValue="0"/>
+  </Shader.Uniforms>
+  <FragmentShader Out="FragColor"><![CDATA[
+void main() {
+  float a = radians(Angle);
+  vec2 d = vec2(cos(a), sin(a));
+  vec2 p = (v_boxCoord - 0.5) * v_boxSize;
+  float extent = dot(abs(d), v_boxSize) * 0.5;
+  float t = clamp(dot(p, d) / max(extent, 1.0) * 0.5 + 0.5, 0.0, 1.0);
+  vec3 c = t < 0.5 ? mix(Color0.rgb, Color1.rgb, t * 2.0) : mix(Color1.rgb, Color2.rgb, t * 2.0 - 1.0);
+  FragColor = vec4(c, texture(u_texture, v_texcoord0).a * u_opacity);
+}
+]]></FragmentShader>
+</Shader>

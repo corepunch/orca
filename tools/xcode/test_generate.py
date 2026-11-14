@@ -222,7 +222,7 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertIn('UserNotifications', settings['OTHER_LDFLAGS'])
         with (ROOT / 'apps/chat/Push.entitlements').open('rb') as stream:
             self.assertEqual(plistlib.load(stream)['aps-environment'], '$(ORCA_APNS_ENVIRONMENT)')
-        other = self.generate('cluster-demo')
+        other = self.generate('octopus')
         for settings in self.effective_configurations(self.read_project(other)).values():
             self.assertNotIn('CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]', settings)
 
@@ -409,13 +409,23 @@ class GenerateProjectTests(unittest.TestCase):
         self.assertEqual((original / 'project.pbxproj').read_bytes(), original_bytes)
 
     def test_hyphenated_application_gets_its_own_native_target(self):
-        bundle = self.generate('cluster-demo')
+        # No bundled app has a hyphenated name, so generate one in a copied repository.
+        fixture = Path(self.temporary.name) / 'hyphenated'
+        shutil.copytree(ROOT / 'tools/xcode', fixture / 'tools/xcode',
+                        ignore=shutil.ignore_patterns('__pycache__'))
+        (fixture / 'tools/ios').mkdir()
+        shutil.copy2(ROOT / 'tools/ios/Makefile', fixture / 'tools/ios/Makefile')
+        app_dir = fixture / 'apps/two-words'
+        app_dir.mkdir(parents=True)
+        shutil.copy2(ROOT / 'apps/Example/package.lua', app_dir / 'package.lua')
+        self.run_generator('two-words', generator=fixture / 'tools/xcode/generate.py')
+        bundle = app_dir / 'two-words.xcodeproj'
         project = self.read_project(bundle)
         _, target = self.application(project)
-        self.assertEqual(target['name'], 'cluster-demo-ios')
+        self.assertEqual(target['name'], 'two-words-ios')
         product = project['objects'][target['productReference']]
-        self.assertEqual(product['path'], 'cluster-demo.app')
-        self.assertTrue((bundle / 'xcshareddata/xcschemes/cluster-demo-ios.xcscheme').is_file())
+        self.assertEqual(product['path'], 'two-words.app')
+        self.assertTrue((bundle / 'xcshareddata/xcschemes/two-words-ios.xcscheme').is_file())
 
     def test_all_generates_projects_beside_each_application_and_ignores_non_apps(self):
         fixture = Path(self.temporary.name) / 'repository'
@@ -423,7 +433,7 @@ class GenerateProjectTests(unittest.TestCase):
                         ignore=shutil.ignore_patterns('__pycache__'))
         (fixture / 'tools/ios').mkdir()
         shutil.copy2(ROOT / 'tools/ios/Makefile', fixture / 'tools/ios/Makefile')
-        for app in ('chat', 'cluster-demo'):
+        for app in ('chat', 'octopus'):
             app_dir = fixture / 'apps' / app
             app_dir.mkdir(parents=True)
             shutil.copy2(ROOT / 'apps' / app / 'package.lua', app_dir / 'package.lua')
@@ -431,7 +441,7 @@ class GenerateProjectTests(unittest.TestCase):
         self.run_generator('--all', generator=fixture / 'tools/xcode/generate.py')
         projects = {path.relative_to(fixture / 'apps').as_posix()
                     for path in (fixture / 'apps').glob('*/*.xcodeproj')}
-        self.assertEqual(projects, {'chat/chat.xcodeproj', 'cluster-demo/cluster-demo.xcodeproj'})
+        self.assertEqual(projects, {'chat/chat.xcodeproj', 'octopus/octopus.xcodeproj'})
         self.assertFalse((fixture / 'apps/not-an-application/not-an-application.xcodeproj').exists())
 
     def test_all_rejects_a_shared_output_or_bundle_identifier(self):

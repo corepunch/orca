@@ -636,8 +636,6 @@
 	DefaultMaterial CDATA #IMPLIED
 	WindowWidth CDATA #IMPLIED
 	WindowHeight CDATA #IMPLIED
-	PropertyTypes CDATA #IMPLIED
-	NumPropertyTypes CDATA #IMPLIED
 	ProjectReferences CDATA #IMPLIED
 	NumProjectReferences CDATA #IMPLIED
 	SystemMessages CDATA #IMPLIED

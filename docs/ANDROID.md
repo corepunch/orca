@@ -18,7 +18,7 @@ statically like the iOS app, plus a small Java activity
 make modules
 make chat-android                          # arm64-v8a debug APK
 make chat-android ABIS="arm64-v8a x86_64"   # device and emulator
-make cluster-demo-android APPLICATION_ID=org.example.cluster
+make octopus-android APPLICATION_ID=org.example.octopus
 adb install -r tools/android/project/app/build/outputs/apk/debug/app-debug.apk
 ```
 

@@ -251,10 +251,6 @@ end
 local function test_xml_loading_struct_arrays()
 	local xml = [[
 <Project Name="struct-array-project">
-  <Project.PropertyTypes>
-    <PropertyType Name="URL" Category="Card" DataType="String" />
-    <PropertyType Name="CardWidth" Category="Card" DataType="Int" />
-  </Project.PropertyTypes>
   <Project.ProjectReferences>
     <ProjectReference Name="Example" Path="apps/Example" />
   </Project.ProjectReferences>
@@ -268,7 +264,6 @@ local function test_xml_loading_struct_arrays()
 	local project = filesystem.loadObjectFromXmlString(xml)
 	test.expect(project ~= nil, "struct-array XML should load")
 	test.expect_eq(project.Name, "struct-array-project", "Project name from XML")
-	test.expect_eq(project.NumPropertyTypes, 2, "Project.PropertyTypes should contain two entries")
 	test.expect_eq(project.NumProjectReferences, 1, "Project.ProjectReferences should contain one entry")
 	test.expect_eq(project.NumThemeLibrary, 2, "Project.ThemeLibrary should contain two entries")
 

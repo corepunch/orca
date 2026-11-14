@@ -126,11 +126,13 @@ for native visual verification.
 | `visibility` | `Node.Visible` | bool; `visible` maps to `true`, `hidden` and `collapse` map to `false` |
 | `background` | `Node2D.Background` | BrushShorthand |
 | `background-image` | `Node2D.BackgroundImage` | Texture |
+| `-orca-background-material` | `Node2D.BackgroundMaterial` | Material path, `url()` accepted |
 | `border-image-source` | `Node2D.BorderImageSource` | Texture |
 | `border-image-slice` | `Node2D.BorderImageSlice` | Thickness: left top right bottom pixels |
 | `border-image-repeat` | `Node2D.BorderImageRepeat` | enum: BorderImageRepeat |
 | `foreground` | `Node2D.Foreground` | BrushShorthand |
 | `foreground-color` | `Node2D.ForegroundColor` | color |
+| `-orca-foreground-material` | `Node2D.ForegroundMaterial` | Material path, `url()` accepted |
 | `box-shadow` | `Node2D.BoxShadow` | ShadowShorthand |
 | `box-shadow-color` | `Node2D.BoxShadowColor` | color |
 | `box-shadow-blur` | `Node2D.BoxShadowBlurRadius` | float |
@@ -191,6 +193,7 @@ for native visual verification.
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
 - `box-shadow` uses `x-offset y-offset blur-radius spread-radius color` with bare numeric values, for example `box-shadow: 2 2 0 0 black`. On `TextBlock`, the offset and color are rendered through the text glyph mask; blur and spread are parsed but are not yet rendered.
 - `backdrop-filter` accepts `none` or a list of `blur(<length>)` and `saturate(<number or percentage>)`, for example `backdrop-filter: blur(20) saturate(180%)`. The blur radius is a standard deviation, as in CSS. Other filter functions make the declaration invalid. The backdrop is blurred within the element's background box with mirrored edges, and a translucent `background-color` tints it.
+- `-orca-background-material` and `-orca-foreground-material` are ORCA extensions that draw a box, text or `VectorView` mask through a shader Material, for example `-orca-foreground-material: url("Octopus/Materials/NeonTitle")`. A material takes precedence over the brush's color or image, so a later `background-color` on the same node (a `:hover` state, say) has no visible effect while the material is set. See [UI Materials](renderer-internals.md#ui-materials).
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
 - `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space unless that axis has an auto margin.
 - `margin-* : auto` normalizes to `NaN` and is used for alignment.

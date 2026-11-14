@@ -7,8 +7,9 @@ description: Build 3D display content (instrument clusters, HMI scenes, dashboar
 
 The pipeline is: Blender scene -> `tools/blender-export.py` (inside Blender)
 -> FBX + `orca-fbx` for meshes, XML for everything else -> `build/bin/orca`.
-`apps/cluster-demo/` is the reference: `blender/build_cluster.py` builds the
-whole scene procedurally and documents every convention below in code.
+The cluster demo that served as the reference project (with its procedural
+`build_cluster.py` scene) was removed from the repository; the conventions
+below are what it documented.
 
 Read `$orca-3d-scene` for the engine side (project layout, XML, binding,
 running). This skill is about what the Blender file must look like.
@@ -85,10 +86,9 @@ Rules the exporter depends on:
   image is copied to `Images/` and set as the material `Texture` (untested
   path).
 
-The six groups in the cluster (`IC_Flat`, `IC_Gradient`, `IC_Sweep`,
+The six groups the cluster demo used (`IC_Flat`, `IC_Gradient`, `IC_Sweep`,
 `IC_Segments`, `IC_SpunMetal`, `IC_RadialGlow`) cover flat colour, ramps and
-glows, gauge fills, segmented bars, fake brushed metal and soft blobs; start
-from them.
+glows, gauge fills, segmented bars, fake brushed metal and soft blobs.
 
 ## Animations are value-driven clips
 
@@ -106,7 +106,8 @@ time == normalised value.
 - Supported channels: object `location`, `rotation_euler`, `scale` and shader
   input `default_value`. Non-linear keys are baked per frame.
 - Animated shader inputs are exported per node (each Model3D gets its own
-  `Uniform.<Name>`), because every node loads its own material instance.
+  `<Group>.<Name>`, the shader group owning the uniform), because every node
+  loads its own material instance.
 
 ## Export
 
@@ -144,9 +145,9 @@ Save the `.blend` and the build script under `apps/<project>/blender/`.
   depth drawn in the wrong order.
 - Mirrored or sideways scene: FBX exported with other axis settings than the
   exporter uses (`-Z` forward, `Y` up, bake space transform).
-- A uniform renders black/zero: its name is missing from `PropertyTypes` in
-  `package.lua` (the export result lists these), or it collides with an
-  engine property name.
+- A uniform renders black/zero: the material or node sets it under another
+  shader's name (it must be `<Group>.<Name>` for the group the material uses),
+  or it collides with an engine property name.
 - Gauge pose does not change: the clip's curve `Path` does not resolve; paths
   are relative to the player object (`../../<node path>` from
   `Animations/<clip>`), and `Keyframe` fields are `Time`, `Value`,

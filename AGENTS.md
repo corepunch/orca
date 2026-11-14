@@ -101,7 +101,7 @@ After `.cgen` changes, run `make modules`.
 | Lua API | generated Lua reference, then `docs/LUA_API.md` |
 | UI / layout / XML / style | `docs/UI_SYSTEM.md`, `docs/app/styling.md` |
 | Text rendering / fonts / glyphs | `docs/renderer-internals.md` → *Text Rendering Pipeline* |
-| 3D scene / Blender export | `apps/cluster-demo/` (reference project), `docs/animations.md` |
+| 3D scene / Blender export | `docs/animations.md`, `docs/renderer-internals.md` → *UI Materials* for shader-owned uniforms |
 | C style | `docs/CODING_STYLE.md` |
 
 ## Working rules

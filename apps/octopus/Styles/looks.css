@@ -1,0 +1,30 @@
+/* Gradient look concept for Chat and Octopus: gradient display type and
+   accents on the plain black or white canvas. ORCA_LOOK=neon puts look-neon and
+   look-neon-dark or look-neon-light on the Screen beside the palette class
+   (theme.lua). Materials are Octopus/Materials/Neon*, all on the
+   fragment-only Octopus/Shaders/Gradient. Imported last, so the look overrides
+   the palette rule of the same specificity. */
+
+/* Shared shape: pill buttons. A material hides the palette's hover fill,
+   so hover dims the gradient instead. */
+.look-neon .chat-primary, .look-neon .octopus-primary { border-radius: 24; }
+.look-neon .chat-primary:hover, .look-neon .octopus-primary:hover { opacity: 0.85; }
+
+/* Dark: white-to-cyan-to-violet type, cyan-to-violet fills. */
+.look-neon-dark .pivot-title { -orca-foreground-material: url("Octopus/Materials/NeonTitle"); }
+.look-neon-dark .pivot-header, .look-neon-dark .appbar-command:selected {
+  -orca-foreground-material: url("Octopus/Materials/NeonHeader"); }
+.look-neon-dark .chat-badge, .look-neon-dark .chat-primary, .look-neon-dark .octopus-primary,
+.look-neon-dark .octopus-accent-fill, .look-neon-dark .kind-on, .look-neon-dark .filter-on .filter-label,
+.look-neon-dark .sent .bubble { -orca-background-material: url("Octopus/Materials/NeonFill"); }
+.look-neon-dark .sent .bubble-tail { color: #9150ff; }
+
+/* Light: deep blue-to-violet type and fills, which keep contrast on white. */
+.look-neon-light .pivot-title, .look-neon-light .pivot-header, .look-neon-light .appbar-command:selected {
+  -orca-foreground-material: url("Octopus/Materials/NeonLightTitle"); }
+.look-neon-light .chat-badge, .look-neon-light .chat-primary, .look-neon-light .octopus-primary,
+.look-neon-light .octopus-accent-fill, .look-neon-light .kind-on, .look-neon-light .filter-on .filter-label,
+.look-neon-light .sent .bubble { -orca-background-material: url("Octopus/Materials/NeonLightFill"); }
+.look-neon-light .sent .bubble-tail { color: #8a3dff; }
+.look-neon-light .chat-link, .look-neon-light .chat-accent-text, .look-neon-light .unread .room-preview,
+.look-neon-light .octopus-accent-text, .look-neon-light .octopus-link { color: #4a3dff; }

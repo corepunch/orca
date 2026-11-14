@@ -275,6 +275,12 @@ extern struct shader_desc shader_blur_h;
 extern struct shader_desc shader_blur_v;
 extern struct shader_desc shader_backdrop_blur;
 
+// Gives a fragment-only Shader the built-in UI vertex stage (shader_ui): its
+// source, attributes, varyings and engine uniforms after the first
+// `numUniforms` material uniforms. FALSE if the uniforms don't all fit.
+bool_t
+Shader_UseUIVertexStage(struct shader_desc *desc, uint32_t numUniforms);
+
 // font
 struct fontface*
 Font_Load(lpcString_t, struct FontFamily *);

@@ -5,8 +5,8 @@ description: Set up, drive and debug an ORCA project that renders a 3D scene (Sc
 
 # ORCA 3D Scene
 
-`apps/cluster-demo/` is the worked example of everything here. Generated
-assets come from `$orca-blender-pipeline`; this skill covers what the engine
+The cluster demo that used to be the worked example was removed; the snippets
+below use a placeholder project named `MyApp`. Generated assets come from `$orca-blender-pipeline`; this skill covers what the engine
 expects and how to run it. Facts below were verified against the source in
 `plugins/SceneKit/`, `source/renderer/` and `source/core/components/`.
 
@@ -20,7 +20,7 @@ apps/<project>/
   Meshes/<M>.mesh      binary mesh data (committed)
   Meshes.xml           <Library> of <Mesh Name="<M>" Source="<Project>/Meshes/<M>.mesh"/>
   Shaders/<G>.xml      <Shader> with VertexShader / FragmentShader text
-  Materials/<Mat>.xml  <Material Shader=... BlendMode=... Uniform.X=.../>
+  Materials/<Mat>.xml  <Material Shader=... BlendMode=... <Shader>.X=.../>
   Animations.xml       <Library> of <AnimationClip>, + Animations.lua index
 ```
 
@@ -28,16 +28,15 @@ apps/<project>/
 the entry `Name="<M>"` of the XML library `Meshes.xml`; the same holds for
 any directory.
 
-`package.lua` essentials (see `apps/cluster-demo/package.lua`):
+`package.lua` essentials:
 
 ```lua
-Name = "ClusterDemo"                       -- asset path prefix
-StartupScreen = "ClusterDemo/Screens/Cluster"
+Name = "MyApp"                             -- asset path prefix
+StartupScreen = "MyApp/Screens/Cluster"
 WindowWidth, WindowHeight = 1920, 720
 ScreenLibrary = { IsExternal = true }
 SystemMessages = { { Message = "KeyDown", Key = "q", Command = "return" }, ... }  -- field is Message, not Name
 EnginePlugins = { { Name = "orca.UIKit" }, { Name = "orca.SceneKit" } }         -- SceneKit must be listed
-PropertyTypes = { { Name = "Level", Category = "Uniform", DataType = "Float" }, ... }
 ```
 
 Asset paths are `<Name>/<relative path>` without extension; `.xml` is tried
@@ -51,7 +50,7 @@ by the loader. Run with `build/bin/orca apps/<project>`.
     <Scene Name="Scene" Camera="DisplayCamera">
       <Camera Name="DisplayCamera" Fov="12.19" FovType="Yfov" ZNear="1" ZFar="20"
               LayoutTransform="0 0 7.2  0 0 0  1 1 1"/>
-      <PrefabView3D Name="ClusterView" Prefab="ClusterDemo/Scenes/Cluster"/>
+      <PrefabView3D Name="ClusterView" Prefab="MyApp/Scenes/Cluster"/>
     </Scene>
   </Viewport3D>
 </Screen>
@@ -74,7 +73,11 @@ by the loader. Run with `build/bin/orca apps/<project>`.
 ## Shaders and materials
 
 ```xml
-<Shader Name="IC_Flat" Uniform.Tint="#FFFFFF" Uniform.Intensity="1">
+<Shader Name="IC_Flat">
+  <Shader.Uniforms>
+    <PropertyType Name="Tint" DataType="Color" DefaultValue="#FFFFFF"/>
+    <PropertyType Name="Intensity" DataType="Float" DefaultValue="1"/>
+  </Shader.Uniforms>
   <VertexShader>
 in vec3 a_position; in vec2 a_texcoord0; out vec2 v_texcoord0;
 uniform mat4 u_modelViewProjectionTransform;
@@ -85,25 +88,27 @@ in vec2 v_texcoord0;
 void main() { FragColor = vec4(Tint.rgb, Intensity); }
   </FragmentShader>
 </Shader>
-<Material Name="IC_White" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#F2F4F7" Uniform.Intensity="1"/>
+<Material Name="IC_White" Shader="MyApp/Shaders/IC_Flat" BlendMode="Opaque" IC_Flat.Tint="#F2F4F7" IC_Flat.Intensity="1"/>
 ```
 
 - The engine prepends `#version 330 core` (`300 es` on QNX/WebGL), declares
   `out lowp vec4 <Out>;`, and emits `uniform <type> <name>;` for **every
-  property set on the Shader element**. Declare custom uniforms there
-  (`Uniform.Name="default"`) so colours get the sRGB->linear conversion; do not
-  redeclare them in GLSL. Text may be plain or CDATA; escape `<` as `&lt;`
+  uniform the Shader declares**. Declare custom uniforms in `<Shader.Uniforms>`
+  so colours get the sRGB->linear conversion; do not redeclare them in GLSL. Text may be plain or CDATA; escape `<` as `&lt;`
   in plain text.
 - Attributes: `a_position`, `a_normal`, `a_tangent`, `a_binormal`, `a_color`,
   `a_texcoord0..4`. Builtins: `u_modelViewProjectionTransform`,
   `u_modelTransform`, `u_viewTransform`, `u_projectionTransform`,
   `u_normalTransform`, `u_opacity`, `u_time`, `u_viewport`,
   `u_cameraPosition`, `u_texture`, `u_color`.
-- Custom uniforms are attached properties `Category.Name`; the uniform name
-  is the part after the dot. Each name needs a `PropertyTypes` entry in
-  `package.lua` (`DataType` `Float` or `Color`; vectors also work now but
-  keep to these two). Values set on the `Model3D` override the material's,
-  which is how per-node animation works.
+- A shader owns its uniforms. Each `<PropertyType Name= DataType=
+  DefaultValue=/>` in `<Shader.Uniforms>` becomes the attached property
+  `<ShaderName>.<Name>`; the GLSL name is the part after the dot. `DataType`
+  is `Float` or `Color` (`Object` with `TypeString="CubeMapTexture"` for an
+  environment map). Materials and nodes set it by that name, with no
+  `package.lua` entry. Values set on the `Model3D` override the material's,
+  which is how per-node animation works. A fragment-only example is
+  `apps/octopus/Shaders/Gradient.xml`.
 - Built-in material colours (`Diffuse`, `Emissive`, ...) are also available
   as uniforms by name. `BlendIntensity` is forced to the node opacity.
 - `BlendMode` on the Material: `Opaque`, `Alpha`, `Additive`
@@ -128,7 +133,7 @@ void main() { FragColor = vec4(Tint.rgb, Intensity); }
 </AnimationClip>
 ...
 <Node3D Name="Animations">
-  <AnimationPlayer Name="Gauge_Rev" Clip="ClusterDemo/Animations/Gauge_Rev"/>
+  <AnimationPlayer Name="Gauge_Rev" Clip="MyApp/Animations/Gauge_Rev"/>
 </Node3D>
 ```
 
@@ -138,13 +143,12 @@ void main() { FragColor = vec4(Tint.rgb, Intensity); }
   `OutSlope`, `InWeight`, `OutWeight`).
 - `Property` is the short name of any property on the target: transform
   atoms, `Opacity`, or a uniform such as `Level` if the node declares it
-  (`Uniform.Level="0.5"` on the Model3D).
+  (`IC_Sweep.Level="0.5"` on the Model3D, for a shader named `IC_Sweep`).
 - **Scrubbing:** setting `CurrentTime` on a player that is not playing
   applies the clip at that time. Bind an input to a gauge with
   `player.CurrentTime = Duration * (value - Min) / (Max - Min)` using the
   entries in `Animations.lua`. Another clip can do it too: curves with
-  `Property="CurrentTime"` targeting the players
-  (`apps/cluster-demo/Demo/FillAll.xml`).
+  `Property="CurrentTime"` targeting the players.
 - Playback: `AutoplayEnabled="true"`, `Mode="Loop|PingPong"` on the clip,
   `Speed`, `Play/Stop/Pause/Resume` messages. Time advances once per painted
   frame.

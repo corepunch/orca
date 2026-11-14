@@ -805,40 +805,6 @@ FS_FreeFile(struct file* pFile)
 //}
 
 static void
-_InitPropertyTypes(struct Project *project)
-{
-  FOR_LOOP(i, project->NumPropertyTypes) {
-    struct PropertyType *type = &project->PropertyTypes[i];
-    if (!type->Name || !*type->Name) {
-      Con_Error("PropertyType[%d]: Name is NULL or empty", i);
-      continue;
-    }
-    if (!type->Category) {
-      Con_Error("PropertyType[%s]: Category is NULL, defaulting to empty", type->Name);
-    }
-    fixedString_t tmp={0};
-    if (type->Category && *type->Category) {
-      snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
-    } else {
-      strncpy(tmp, type->Name, sizeof(tmp));
-    }
-    lpcString_t dot = strrchr(type->Name, '.');
-    type->ShortIdentifier = dot ? fnv1a32(dot + 1) : fnv1a32(type->Name);
-    // type->ShortIdentifier = fnv1a32(type->Name);
-    type->FullIdentifier = fnv1a32(tmp);
-    switch (type->DataType) {
-      case kDataTypeString: type->DataSize = sizeof(char*); break;
-      case kDataTypeEvent:  type->DataSize = sizeof(void*); break;
-      case kDataTypeObject: type->DataSize = sizeof(void*); break;
-      case kDataTypeFloat:  type->DataSize = sizeof(float); break;
-      case kDataTypeColor:  type->DataSize = sizeof(struct color); break;
-      default:              type->DataSize = sizeof(int);   break;
-    }
-    OBJ_RegisterPropertyType(type);
-  }
-}
-
-static void
 _InitProjectRefences(lua_State *L, struct Project *project, lpcString_t szDirname)
 {
   FOR_LOOP(i, project->NumProjectReferences) {
@@ -1075,7 +1041,6 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
   _InitTheme(L, project, is_primary_project);
   _InitEnginePlugins(L, project);
-  _InitPropertyTypes(project);
   _RegisterProjectFonts(project, szDirname);
   _InitProjectRefences(L, project, szDirname);
 

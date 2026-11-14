@@ -6,7 +6,7 @@ Generate a project beside an application's sources with the offline launcher:
 sh tools/xcode/generate.sh chat
 open apps/chat/chat.xcodeproj
 
-sh tools/xcode/generate.sh cluster-demo
+sh tools/xcode/generate.sh octopus
 sh tools/xcode/generate.sh --all
 ```
 

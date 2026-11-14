@@ -533,6 +533,11 @@ OBJ_FindClassW(uint32_t);
 ORCA_API bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt);
 
+// Declares the attached property type `{owner}.{decl->Name}` on behalf of the
+// object that defines it; a NULL owner keeps decl->Category.
+ORCA_API bool_t
+OBJ_DeclarePropertyType(struct PropertyType const *decl, lpcString_t owner);
+
 ORCA_API struct PropertyShorthand const *
 OBJ_FindPropertyShorthand(uint32_t ident);
 

@@ -240,16 +240,6 @@ Define image libraries:
 ImageLibrary = { IsExternal = true }
 ```
 
-#### PropertyTypes
-
-Define custom property types:
-
-```lua
-PropertyTypes = {
-	{ Name = "Title", Category = "NavigationBar", DataType = "String" },
-}
-```
-
 #### SystemMessages
 
 Define system message handlers:

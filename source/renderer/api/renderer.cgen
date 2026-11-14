@@ -366,6 +366,7 @@
         <property name="BlendMode" type="BlendMode" default="MixedAlpha">The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.</property>
         <property name="DepthTestFunction" type="CompareFunc">The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.</property>
         <property name="DepthWriteEnabled" type="bool">Whether depth buffer writing is enabled by default. When true, rendered fragments update the depth buffer; when false, depth values are not written.</property>
+        <property name="Uniforms" type="PropertyType" array="true">The uniforms this shader owns. Each is declared as the attached property `{ShaderName}.{Name}` with its DataType, and DefaultValue is the value used when a material or node leaves it unset. Materials and nodes set them by that name.</property>
       </properties>
       <fields><field name="shader" type="shader" pointer="true">Compiled shader for runtime use</field>
     </fields>

@@ -1,0 +1,4 @@
+/* Octopus entry stylesheet: the palette, then the optional gradient looks.
+   The looks are not released yet: restore the import below to enable them. */
+@import "app.css";
+/* @import "looks.css"; */

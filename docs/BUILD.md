@@ -73,7 +73,7 @@ Change the module `.cgen` or handwritten C source, then rerun `make modules`.
 
 Native Xcode projects live in each application folder: open
 `apps/chat/chat.xcodeproj` and select `chat-ios`, or
-`apps/cluster-demo/cluster-demo.xcodeproj` and select `cluster-demo-ios`.
+`apps/octopus/octopus.xcodeproj` and select `octopus-ios`.
 They support iPhone, iPad and Simulator, with shared schemes for Xcode Cloud.
 Regenerate them offline using `sh tools/xcode/generate.sh --all`.
 
