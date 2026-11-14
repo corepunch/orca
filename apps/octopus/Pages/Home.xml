@@ -1,8 +1,9 @@
 <!-- The timelines: home, connect and discover over the Feeds scope
-     (Data/Feeds.xml). Guests see sign-in prompts where a feed needs an account. -->
+     (Data/Feeds.xml). On a wide screen the Pivot unfolds into a hub and shows
+     them side by side. Guests see sign-in prompts where a feed needs an account. -->
 <Node2D Name="HomeContent">
-  <Pivot Name="Timeline" Title="Octopus" ExtendBodyBehindHeader="true" SelectionChanged="SelectFeed" class="octopus-ink">
-    <PivotItem Name="Feedhome" Header="home">
+  <Pivot Name="Timeline" Title="Octopus" ExtendBodyBehindHeader="true" SectionWidth="400" SelectionChanged="SelectFeed" class="octopus-ink">
+    <PivotItem Name="Feedhome" Header="home" SectionWidth="440">
       <Grid>
         <StackView Name="Timelinehome" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
           <StackView Name="Guesthome" Visible="{Binding DataContext/Reader/IsGuest}" Spacing="16" JustifyContent="Start">
