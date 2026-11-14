@@ -21,6 +21,5 @@ unaffected. The full design (envelopes, photos, safety numbers, sender keys)
 is in git history at commit `fa5f61d4`, if privacy ever becomes a selling
 point.
 
-Orca Messenger was removed from sale in France during that release, to avoid
-an encryption declaration. That is no longer needed, so France can be
-restored.
+Orca Messenger was briefly removed from sale in France during that release,
+to avoid an encryption declaration, and was restored the same day.
