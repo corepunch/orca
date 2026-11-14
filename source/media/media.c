@@ -41,6 +41,30 @@ int media_ProcessPhoto(lua_State *L, char const *bytes) {
   return media_push_photo(L, &photo);
 }
 
+int media_PhotoFilters(lua_State *L) {
+  lua_createtable(L, Media_FilterCount(), 0);
+  for (int i = 0; i < Media_FilterCount(); i++) {
+    lua_pushstring(L, Media_FilterId(i));
+    lua_rawseti(L, -2, i + 1);
+  }
+  return 1;
+}
+
+int media_FilterPhoto(lua_State *L, char const *bytes, char const *filter) {
+  size_t size;
+  lua_tolstring(L, 1, &size);
+  int index = Media_FindFilter(filter);
+  struct MediaError error = { "unknown_filter", "Choose one of the listed photo filters." };
+  if (index < 0) return media_push_error(L, &error);
+  if (!size || size > MEDIA_INPUT_LIMIT) {
+    error = (struct MediaError){ size ? "input_too_large" : "invalid_image", "Choose a still image no larger than 32 MiB." };
+    return media_push_error(L, &error);
+  }
+  struct MediaPhoto photo = {0};
+  if (!Media_FilterPhoto(bytes, size, index, &photo, &error)) return media_push_error(L, &error);
+  return media_push_photo(L, &photo);
+}
+
 #if defined(ORCA_IOS)
 static int media_picker_gc(lua_State *L) {
   void **request = lua_touserdata(L, 1);
@@ -90,6 +114,12 @@ int media_PickPhoto(lua_State *L) {
 #if !defined(__APPLE__)
 int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo, struct MediaError *error) {
   (void)bytes; (void)size; (void)photo;
+  *error = (struct MediaError){ "unsupported", "Photo processing is available on Apple platforms." };
+  return 0;
+}
+
+int Media_FilterPhoto(void const *bytes, size_t size, int filter, struct MediaPhoto *photo, struct MediaError *error) {
+  (void)bytes; (void)size; (void)filter; (void)photo;
   *error = (struct MediaError){ "unsupported", "Photo processing is available on Apple platforms." };
   return 0;
 }

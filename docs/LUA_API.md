@@ -60,8 +60,11 @@ demonstrates this boundary.
 `processPhoto(encodedBytes)` (Apple ImageIO conversion). Both return a processed
 photo table or `nil, {code,message}`; picker cancellation uses code `cancelled`.
 The result contains binary JPEG/thumbnail strings, dimensions, byte counts,
-MIME type and quality. Input and output bounds, metadata behavior, and platform
-support are declared in `source/media/media.cgen`. These functions prepare
+MIME type and quality. `photoFilters()` lists Instagram-style colour grades
+(`normal`, `clarendon`, `inkwell`, …, ported from the image editor's presets),
+and `filterPhoto(encodedBytes, name)` applies one and prepares the result like
+`processPhoto`; pass the unfiltered photo each time. Input and output bounds,
+metadata behavior, and platform support are declared in `source/media/media.cgen`. These functions prepare
 bytes; storage and messaging remain application API responsibilities.
 
 ## Native push notifications

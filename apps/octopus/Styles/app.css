@@ -22,6 +22,9 @@
 .octopus-light .post-content { color: #555555; }
 .octopus-light .post-detail .post-content { color: #000000; }
 .octopus-light .photo-frame { background-color: #ececec; }
+.octopus-light .filter-label { background-color: #8c000000; }
+.octopus-light .filter-on .filter-label { background-color: #0e8f86; }
+.octopus-light .filter-focus { border-color: #0e8f86; background-color: #00000000; }
 .octopus-light .loaded { background-color: #00000000; }
 .octopus-light .reaction { color: #767676; }
 .octopus-light .liked .like-reaction { color: #d80032; }
@@ -51,6 +54,9 @@
 .octopus-dark .post-content { color: #a6a6a6; }
 .octopus-dark .post-detail .post-content { color: #ffffff; }
 .octopus-dark .photo-frame { background-color: #1f1f1f; }
+.octopus-dark .filter-label { background-color: #8c000000; }
+.octopus-dark .filter-on .filter-label { background-color: #0e8f86; }
+.octopus-dark .filter-focus { border-color: #2cc5b8; background-color: #00000000; }
 .octopus-dark .loaded { background-color: #00000000; }
 .octopus-dark .reaction { color: #8a8a8a; }
 .octopus-dark .liked .like-reaction { color: #ff4f6d; }

@@ -427,8 +427,8 @@ test-live-emulated:
 	$(NODE) --test-reporter=spec $(CHAT_LIVE_DIR)/emulated.js
 
 ifeq ($(UNAME_S),Darwin)
-$(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules $(LUA_LIB) $(ZLIB_LIB) | directories
-	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
+$(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_filters.c source/media/media_apple.m source/media/media_native.h modules $(LUA_LIB) $(ZLIB_LIB) | directories
+	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_filters.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
 
 test-media: $(BINDIR)/test_media
 	$<

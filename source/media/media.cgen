@@ -16,5 +16,17 @@
       <arg name="bytes" type="string">Raw encoded image bytes, including embedded NUL bytes.</arg>
       <returns type="nresults">A processed-photo table, or nil and a table containing code and message.</returns>
     </function>
+    <function name="PhotoFilters" lua="true">
+      <summary>Lists the photo filter identifiers accepted by filterPhoto, starting with normal.</summary>
+      <details>Filters are per-pixel colour grades with optional vignettes, ported from the image editor's Instagram-style presets. Identifiers are lowercase names such as clarendon, valencia or inkwell; normal leaves colours unchanged.</details>
+      <returns type="nresults">An array of filter identifier strings.</returns>
+    </function>
+    <function name="FilterPhoto" lua="true">
+      <summary>Applies a named filter to encoded still-image bytes and prepares the result like processPhoto.</summary>
+      <details>The source is decoded and bounded exactly as processPhoto does, the filter is applied to the decoded sRGB pixels, and the result is encoded with the same JPEG budget and thumbnail. Pass the unfiltered processed photo each time to avoid compounding grades and JPEG generations. Unknown filters return code unknown_filter. Non-Apple processing returns unsupported.</details>
+      <arg name="bytes" type="string">Raw encoded image bytes, including embedded NUL bytes.</arg>
+      <arg name="filter" type="string">A filter identifier from photoFilters.</arg>
+      <returns type="nresults">A processed-photo table, or nil and a table containing code and message.</returns>
+    </function>
   </functions>
 </module>

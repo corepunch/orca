@@ -223,6 +223,66 @@ static void test_alpha_and_small_photo(lua_State *L) {
   lua_settop(L, 0);
 }
 
+static int filter(lua_State *L, CFDataRef data, char const *name) {
+  lua_getglobal(L, "media"); lua_getfield(L, -1, "filterPhoto"); lua_remove(L, -2);
+  lua_pushlstring(L, (char const *)CFDataGetBytePtr(data), CFDataGetLength(data));
+  lua_pushstring(L, name);
+  int status = lua_pcall(L, 2, 2, 0);
+  if (status != LUA_OK) fprintf(stderr, "%s\n", lua_tostring(L, -1));
+  return status == LUA_OK && lua_istable(L, -2) && lua_isnil(L, -1);
+}
+
+// Average RGB of a 1-pixel downsample of the region around (x, y) in [0, 1].
+static void sample(CFDataRef jpeg, double x, double y, int rgb[3]) {
+  CGImageSourceRef source = CGImageSourceCreateWithData(jpeg, NULL);
+  CGImageRef image = source ? CGImageSourceCreateImageAtIndex(source, 0, NULL) : NULL;
+  size_t w = image ? CGImageGetWidth(image) : 1, h = image ? CGImageGetHeight(image) : 1;
+  unsigned char pixel[4] = {0};
+  CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+  CGContextRef context = CGBitmapContextCreate(pixel, 1, 1, 8, 4, space,
+      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+  if (image) CGContextDrawImage(context, CGRectMake(-x * w + .5, -(1 - y) * h + .5, w, h), image);
+  for (int i = 0; i < 3; i++) rgb[i] = pixel[i];
+  CGContextRelease(context); CGColorSpaceRelease(space);
+  if (image) CGImageRelease(image);
+  if (source) CFRelease(source);
+}
+
+static void test_filters(lua_State *L) {
+  CFDataRef input = fixture(200, 200, 1, 0, 0);
+  check(input && process(L, input), "Prepare the unfiltered reference photo");
+  CFDataRef normal = result_data(L, "jpeg");
+  lua_settop(L, 0);
+  check(input && filter(L, input, "inkwell"), "Filter a real JPEG through the generated Lua API");
+  if (lua_istable(L, -2)) {
+    check(result_integer(L, "width") == 200 && result_integer(L, "height") == 200, "Filtering keeps the prepared size");
+    CFDataRef jpeg = result_data(L, "jpeg");
+    CGImageRef image = inspect_jpeg(jpeg, 200, 200);
+    if (image) CGImageRelease(image);
+    int left[3], right[3];
+    sample(jpeg, .25, .5, left); sample(jpeg, .75, .5, right);
+    check(abs(left[0] - left[2]) < 8 && abs(right[0] - right[2]) < 8, "Inkwell removes colour from the red and blue halves");
+    CFRelease(jpeg);
+    CFDataRef thumbnail = result_data(L, "thumbnail");
+    sample(thumbnail, .25, .5, left);
+    check(abs(left[0] - left[2]) < 8, "The thumbnail carries the same filter");
+    CFRelease(thumbnail);
+  }
+  lua_settop(L, 0);
+  check(input && filter(L, input, "earlybird"), "Apply a vignette filter");
+  if (lua_istable(L, -2) && normal) {
+    CFDataRef jpeg = result_data(L, "jpeg");
+    int corner[3], centre[3], plain[3];
+    sample(jpeg, .03, .03, corner); sample(jpeg, .25, .5, centre); sample(normal, .03, .03, plain);
+    check(corner[0] < plain[0] - 20, "Earlybird darkens the corners");
+    check(centre[0] > corner[0], "The vignette leaves the middle brighter than the corners");
+    CFRelease(jpeg);
+  }
+  lua_settop(L, 0);
+  if (normal) CFRelease(normal);
+  if (input) CFRelease(input);
+}
+
 int main(void) {
   @autoreleasepool {
     lua_State *L = luaL_newstate(); luaL_openlibs(L);
@@ -231,11 +291,17 @@ int main(void) {
     test_large_photo(L);
     test_megapixel_photo(L);
     test_alpha_and_small_photo(L);
+    test_filters(L);
     int status = luaL_dostring(L,
         "local p,e=media.processPhoto('not an image'); assert(p==nil and e.code=='invalid_image')\n"
         "p,e=media.processPhoto(''); assert(p==nil and e.code=='invalid_image')\n"
         "p,e=media.processPhoto(string.rep('x',32*1024*1024+1)); assert(p==nil and e.code=='input_too_large')\n"
-        "p,e=media.pickPhoto(); assert(p==nil and e.code=='cancelled')\n");
+        "p,e=media.pickPhoto(); assert(p==nil and e.code=='cancelled')\n"
+        "local f=media.photoFilters(); assert(#f==24 and f[1]=='normal')\n"
+        "local seen={} for _,id in ipairs(f) do assert(not seen[id]); seen[id]=true end\n"
+        "assert(seen.clarendon and seen.inkwell and seen.valencia)\n"
+        "p,e=media.filterPhoto('x','sepia'); assert(p==nil and e.code=='unknown_filter')\n"
+        "p,e=media.filterPhoto('not an image','moon'); assert(p==nil and e.code=='invalid_image')\n");
     if (status != LUA_OK) fprintf(stderr, "%s\n", lua_tostring(L, -1));
     check(status == LUA_OK, "Bad input, oversize input and picker cancellation return structured errors");
     check(picker_calls == 1, "Cancellation uses the existing native file-dialog bridge");

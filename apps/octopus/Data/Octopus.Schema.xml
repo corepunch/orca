@@ -105,11 +105,18 @@
   <Entity Name="OctopusSelections" Key="Id">
     <Column Name="Id" Type="string" Source="id"/>
     <Relation Name="Images" Entity="OctopusDraftImage" Many="true" Source="images"/>
+    <Relation Name="Filters" Entity="OctopusPhotoFilter" Many="true" Source="filters"/>
   </Entity>
   <Entity Name="OctopusDraftImage" Key="Id">
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="Index" Type="int" Source="index"/>
     <Column Name="PhotoPath" Type="string" Source="path"/>
+    <Column Name="Focused" Type="bool" Source="focused" Description="The photo the filter grid grades, marked when an album has several."/>
+  </Entity>
+  <Entity Name="OctopusPhotoFilter" Key="Id" Description="One filter tile: the focused photo's thumbnail graded by it.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="PhotoPath" Type="string" Source="path"/>
+    <Column Name="Selected" Type="bool" Source="selected"/>
   </Entity>
   <Entity Name="OctopusTag" Key="Label">
     <Column Name="Label" Type="string" Source="value"/>
@@ -241,6 +248,9 @@
     <Column Name="PhotoCount" Type="int"/>
     <Column Name="PhotoRows" Type="string"/>
     <Column Name="PhotoPreviewRatio" Type="float"/>
+    <Column Name="HasFilters" Type="bool"/>
+    <Column Name="FiltersOpen" Type="bool"/>
+    <Column Name="FilterName" Type="string"/>
   </Entity>
   <Entity Name="OctopusProfileDraft" Description="The reader's profile form on the me tab.">
     <Column Name="DisplayName" Type="string"/>

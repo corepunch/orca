@@ -8,6 +8,9 @@
   <Handler Name="SelectKind"/>
   <Handler Name="ChoosePhoto"/>
   <Handler Name="RemovePhoto"/>
+  <Handler Name="FocusPhoto"/>
+  <Handler Name="ToggleFilters"/>
+  <Handler Name="ApplyFilter"/>
   <Handler Name="SignInToWrite"/>
   <Handler Name="SignUpToWrite"/>
   <Expose Name="Selections" Entity="OctopusSelections"/>

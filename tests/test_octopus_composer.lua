@@ -11,6 +11,13 @@ local file = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = file:read("*a"); file:close()
 local media, notice, captured, rejected = Media.new(), "", nil, true
 media.pick = function() return { jpeg = jpeg } end
+-- Native grading is Apple-only; the stub marks which filter graded which bytes.
+local graded = {}
+media.filters = function() return { "normal", "clarendon", "inkwell" } end
+media.filter = function(_, bytes, name)
+    graded[#graded + 1] = name
+    return { jpeg = bytes, thumbnail = "graded:" .. name, width = 7 }
+end
 local provider = Provider.new {
     media = media, notice = function(value) notice = value end,
     client = { createPost = function(_, values)
@@ -63,5 +70,48 @@ assert(#provider.draftPhotos("photo") == 0 and not edit.draft.HasPhoto and edit.
 press("Kindquote")
 assert(#provider.draftPhotos("quote") == 1 and edit.draft.HasPhoto,
     "Publishing a photo album leaves the other kind's selection intact")
+
+-- Filters grade the focused photo from its original and publish the graded bytes.
+press("Kindphoto"); press("ChoosePhoto"); press("ChoosePhoto")
+local first, second = provider.draftPhotos("photo")[1], provider.draftPhotos("photo")[2]
+assert(edit.draft.HasFilters and not edit.draft.FiltersOpen and edit.draft.FilterName == "normal")
+assert(#graded == 0, "Closed filters grade nothing")
+press("ToggleFilters")
+assert(edit.draft.FiltersOpen and #graded == 2, "Opening the grid grades one preview per filter")
+screen:UpdateLayout(390, 844); settle()
+local tile = assert(form:findChild("Filterclarendon", true))
+local choices = assert(form:findChild("FilterChoices", true))
+assert(tile.ActualWidth > 60 and math.abs(tile.ActualHeight - tile.ActualWidth) < 2
+    and tile.ActualWidth < choices.ActualWidth / 4 + 1, "Filter tiles are squares in a four-column grid")
+local function pressIn(item, name)
+    if type(item) == "string" then item = assert(form:findChild(item, true), item) end
+    item:findChild(name, true):send("Node.LeftButtonUp"); settle()
+end
+-- Draft tiles are keyed by photo identity, so address them by position.
+local function photoTile(index)
+    local tile = assert(form:findChild("PhotoPreview", true)):getFirstChild():getFirstChild()
+    for _ = 2, index do tile = tile:getNext() end
+    return tile
+end
+assert(form:findChild("Filterinkwell", true), "Filter tiles are named by filter")
+pressIn("Filterclarendon", "SelectFilter")
+assert(second.filter == "clarendon" and second.thumbnail == "graded:clarendon" and first.filter == "normal",
+    "A filter grades only the newest, focused photo")
+assert(edit.draft.FilterName == "clarendon")
+pressIn(photoTile(1), "FocusSelectedPhoto")
+assert(edit.draft.FilterName == "normal" and #graded == 5, "Focusing another photo grades its own previews")
+pressIn("Filterinkwell", "SelectFilter")
+pressIn(photoTile(2), "FocusSelectedPhoto")
+pressIn("Filterinkwell", "SelectFilter")
+assert(second.filter == "inkwell" and graded[#graded] == "inkwell" and second.source.jpeg == jpeg,
+    "Changing filters regrades the original rather than the previous grade")
+pressIn("Filternormal", "SelectFilter")
+assert(second.filter == "normal" and second.thumbnail == nil and second.width == nil, "Normal restores the original")
+pressIn("Filterinkwell", "SelectFilter")
+press("Publish")
+assert(captured.photos[1] == first and captured.photos[2] == second
+    and first.thumbnail == "graded:inkwell" and second.thumbnail == "graded:inkwell",
+    "Publishing uploads each photo with its own filter")
+assert(not edit.draft.HasFilters, "A cleared draft hides the filters")
 scope:dispose(); media:clear()
-print("PASS: Octopus album composer limit, ordered per-tile removal, independent drafts, failed publish and successful clear")
+print("PASS: Octopus album composer limit, ordered per-tile removal, independent drafts, failed publish, successful clear and photo filters")

@@ -1,0 +1,13 @@
+<!-- One filter in the write form: the photo being edited, graded by the
+     filter, with its lowercase name on a scrim as on a Windows Phone tile.
+     The chosen filter gets an accent frame and an accent name bar. -->
+<Grid AspectRatio="1" class="photo-frame">
+  <BindingExpression Target="StateClasses">IF({DataContext/Selected}, "filter-on", "filter-off")</BindingExpression>
+  <ImageView Src="{Binding DataContext/PhotoPath, Mode=OneTime}" Stretch="UniformToFill" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
+  <Grid Height="22" MarginTop="auto" class="filter-label" IgnoreHitTest="true">
+    <TextBlock Text="{Binding DataContext/Id, Mode=OneTime}" FontSize="12" Padding="6 0" TextWrapping="NoWrap"
+               TextVerticalAlignment="Center" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
+  </Grid>
+  <Grid Name="SelectedFilterFrame" Visible="{Binding DataContext/Selected}" BorderWidth="3" class="filter-focus" IgnoreHitTest="true"/>
+  <Button Name="SelectFilter" Click="ApplyFilter" BackgroundColor="#00000000"/>
+</Grid>

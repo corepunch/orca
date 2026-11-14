@@ -1,5 +1,10 @@
+<!-- A selected photo in the write form. Tapping it chooses the photo the
+     filter grid grades; an album marks that photo with an accent frame. -->
 <Grid class="photo-frame">
   <ImageView Src="{Binding DataContext/PhotoPath, Mode=OneTime}" Stretch="UniformToFill" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
+  <Button Name="FocusSelectedPhoto" Click="FocusPhoto" BackgroundColor="#00000000"/>
+  <Grid Name="FocusedPhotoFrame" Visible="{Binding DataContext/Focused, Mode=OneTime}" BorderWidth="3"
+        class="filter-focus" IgnoreHitTest="true"/>
   <Button Name="RemoveSelectedPhoto" Click="RemovePhoto" Width="44" Height="44" MarginLeft="auto" MarginBottom="auto"
           Text="×" FontSize="26" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" BackgroundColor="#99000000" ForegroundColor="#ffffff"/>
 </Grid>

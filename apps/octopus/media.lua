@@ -25,6 +25,22 @@ function Media:pick()
     return native.pickPhoto()
 end
 
+-- Filter names from orca.media; empty where native processing is unavailable.
+function Media:filters()
+    local ok, native = pcall(require, "orca.media")
+    if not ok or type(native.photoFilters) ~= "function" then return {} end
+    return native.photoFilters()
+end
+
+-- Grades prepared photo bytes; returns a processed-photo table like pick().
+function Media:filter(bytes, name)
+    local ok, native = pcall(require, "orca.media")
+    if not ok or type(native.filterPhoto) ~= "function" then
+        return failure("unsupported", "Photo filters need ORCA's native photo support (macOS or iOS).")
+    end
+    return native.filterPhoto(bytes, name)
+end
+
 function Media:path(key)
     key = tostring(key)
     return self.keys[key] or (self.cache and self.cache:path(key))

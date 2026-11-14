@@ -20,6 +20,14 @@ struct MediaError { char const *code, *message; };
 
 int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo, struct MediaError *error);
 int Media_PickPhoto(struct MediaPhoto *photo, struct MediaError *error);
+// Decodes, filters (index from Media_FindFilter) and prepares like Media_ProcessPhoto.
+int Media_FilterPhoto(void const *bytes, size_t size, int filter, struct MediaPhoto *photo, struct MediaError *error);
+
+// Portable colour grades (media_filters.c); index 0 is normal.
+int Media_FilterCount(void);
+char const *Media_FilterId(int index);
+int Media_FindFilter(char const *id);
+void Media_FilterPixels(int index, unsigned char *rgba, size_t w, size_t h, size_t stride);
 
 #if defined(ORCA_IOS)
 void *Media_BeginPickPhoto(struct MediaError *error);

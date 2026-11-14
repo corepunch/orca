@@ -60,6 +60,17 @@ blocks with [Chat](../chat/README.md):
   accept up to nine images: add them in order, remove an individual thumbnail
   with its × button, or remove the entire selection. Feed cards and post pages
   show every selected image, each with its own preview and retry state.
+- Photos take the 24 Instagram filters from the image editor (clarendon,
+  juno, valencia, inkwell and the rest). Instagram's Windows Phone 8 beta
+  (2013) kept its iOS editor: pick, square crop, then a strip of filter
+  previews under the photo. Octopus keeps that flow in Metro form: "Choose a
+  filter" opens a four-column grid of square tiles, each the photo graded by
+  that filter with its lowercase name on a scrim; the chosen tile gets an
+  accent frame and name bar. A grid replaces the strip because horizontal
+  swipes page the Pivot. Each album photo keeps its own filter: tap a
+  thumbnail to choose which one the grid grades. Filters always regrade the
+  original, `normal` restores it, and publishing uploads the graded JPEGs.
+  Grading uses native `orca.media` (macOS and iOS); elsewhere the grid hides.
 
 `theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.

@@ -519,20 +519,68 @@ function Provider.new(context)
 
     -- Write tab -------------------------------------------------------------
 
-    -- Picked photos stay with their kind's draft until it is published.
-    local photos = {}
+    -- Picked photos stay with their kind's draft until it is published. Each
+    -- keeps its unfiltered original in `source`; a filter re-grades that
+    -- original in place, so the table itself is what publish uploads.
+    local photos, focus, filterNames = {}, {}, nil
+    local PREPARED = { "jpeg", "thumbnail", "width", "height", "byte_count", "thumbnail_width",
+        "thumbnail_height", "thumbnail_byte_count", "quality", "mime_type" }
+    local function prepare(photo)
+        if not photo.source then
+            photo.source, photo.filter, photo.previews = {}, "normal", {}
+            for _, field in ipairs(PREPARED) do photo.source[field] = photo[field] end
+        end
+        return photo
+    end
+    local function availableFilters()
+        filterNames = filterNames or (context.media.filters and context.media:filters()) or {}
+        return filterNames
+    end
+    local function photoKey(photo) return "draft-" .. tostring(photo) .. "-" .. photo.filter end
+    -- Previews grade the small thumbnail once per filter and photo.
+    local function filterPreviews(photo)
+        local rows = {}
+        for index, name in ipairs(availableFilters()) do
+            local path = photo.previews[name]
+            if not path then
+                local bytes = photo.source.thumbnail or photo.source.jpeg
+                local graded = name == "normal" and { jpeg = bytes } or context.media:filter(bytes, name)
+                path = graded and context.media:store(graded.jpeg, "filter-" .. tostring(photo) .. "-" .. name) or ""
+                photo.previews[name] = path
+            end
+            rows[index] = { id = name, path = path, selected = name == photo.filter }
+        end
+        return rows
+    end
     local function refreshSelections(scope)
         local edit = scope:member("Draft")
         local selected, images = photos[edit.key] or {}, {}
+        local focused = math.max(1, math.min(focus[edit.key] or #selected, #selected))
         for index, photo in ipairs(selected) do
-            images[index] = { id = "draft:" .. tostring(photo), index = index,
-                path = context.media:store(photo.jpeg, "draft-" .. tostring(photo)) or "" }
+            prepare(photo)
+            images[index] = { id = "draft:" .. tostring(photo) .. ":" .. photo.filter, index = index,
+                focused = #selected > 1 and index == focused,
+                path = context.media:store(photo.jpeg, photoKey(photo)) or "" }
         end
         edit.draft.HasPhoto, edit.draft.PhotoCount = #selected > 0, #selected
         local rows = math.ceil(#selected / 3)
         edit.draft.PhotoRows, edit.draft.PhotoPreviewRatio = string.rep("1fr ", rows), rows > 0 and 3 / rows or 0
         edit.draft.PhotoPath = images[1] and images[1].path or ""
-        scope:expose("Selections", scope.store:put("OctopusSelections", { id = edit.key, images = images }))
+        local current = selected[focused]
+        local filters = current and #availableFilters() > 0 and edit.draft.FiltersOpen and filterPreviews(current) or {}
+        edit.draft.HasFilters = current ~= nil and #availableFilters() > 0
+        edit.draft.FilterName = current and current.filter or ""
+        scope:expose("Selections", scope.store:put("OctopusSelections", { id = edit.key, images = images, filters = filters }))
+    end
+    local function applyFilter(photo, name)
+        if photo.filter == name then return true end
+        local graded, err = photo.source, nil
+        if name ~= "normal" then graded, err = context.media:filter(photo.source.jpeg, name) end
+        if not graded then return nil, err end
+        context.media:discard(photoKey(photo))
+        for _, field in ipairs(PREPARED) do photo[field] = graded[field] end
+        photo.filter = name
+        return true
     end
     local FIELDS = {
         text = { title = "Title", content = "Content" },
@@ -625,7 +673,7 @@ function Provider.new(context)
         published = function(ok, post, _, info, edit)
             if not ok then return end
             if info.cleared then
-                photos[info.key] = nil
+                photos[info.key], focus[info.key] = nil, nil
             end
             if info.visible then refreshSelections(edit.scope) end
             if context.published then context.published(post, info) end
@@ -729,7 +777,30 @@ function Provider.new(context)
             local selected = photos[kind] or {}
             if #selected >= 9 then context.notice(t("You can add up to 9 photos."), true); return end
             selected[#selected + 1] = photo
-            photos[kind] = selected
+            photos[kind], focus[kind] = selected, #selected
+            refreshSelections(scope)
+            context.notice("")
+        end,
+        -- Tapping a thumbnail chooses which photo the filters grade.
+        FocusPhoto = function(scope, params)
+            local edit = scope:member("Draft")
+            local index = params.item and params.item.values.Index
+            if edit.submitting or not index then return end
+            focus[edit.key] = index
+            refreshSelections(scope)
+        end,
+        ToggleFilters = function(scope)
+            local edit = scope:member("Draft")
+            edit.draft.FiltersOpen = not edit.draft.FiltersOpen
+            refreshSelections(scope)
+        end,
+        ApplyFilter = function(scope, params)
+            local edit = scope:member("Draft")
+            local selected, name = photos[edit.key] or {}, params.item and params.item.values.Id
+            local photo = selected[math.max(1, math.min(focus[edit.key] or #selected, #selected))]
+            if edit.submitting or not photo or not name then return end
+            local ok, err = applyFilter(prepare(photo), name)
+            if not ok then context.notice(type(err) == "table" and err.message or tostring(err), true); return end
             refreshSelections(scope)
             context.notice("")
         end,
@@ -740,6 +811,8 @@ function Provider.new(context)
             local index = params.item and params.item.values.Index
             if index then table.remove(selected, index) else selected = {} end
             photos[edit.key] = #selected > 0 and selected or nil
+            if index and focus[edit.key] and index <= focus[edit.key] then focus[edit.key] = focus[edit.key] - 1 end
+            if #selected == 0 then focus[edit.key] = nil end
             refreshSelections(scope)
         end,
         CancelReply = function(scope)

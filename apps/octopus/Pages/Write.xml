@@ -102,6 +102,18 @@
           <Binding Target="AspectRatio" Expression="DataContext/Draft/PhotoPreviewRatio"/>
         </GridBox>
       </StackView>
+      <!-- Filters grade the focused photo; Instagram's strip becomes a grid
+           because horizontal swipes belong to the Pivot. -->
+      <StackView Name="PhotoFilters" Visible="{Binding DataContext/Draft/HasFilters}" Spacing="8" JustifyContent="Start">
+        <Button Name="ToggleFilters" Click="ToggleFilters" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
+                TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
+                class="octopus-action octopus-outline">
+          <BindingExpression Target="TextResourceID">IF({DataContext/Draft/FiltersOpen}, "Hide filters", "Choose a filter")</BindingExpression>
+        </Button>
+        <GridBox Name="FilterChoices" Visible="{Binding DataContext/Draft/FiltersOpen}" Columns="1fr 1fr 1fr 1fr" Spacing="4"
+                 ItemNamePrefix="Filter" ItemsSource="{Binding DataContext/Selections/Filters}" ItemTemplate="Octopus/Templates/PhotoFilter"
+                 IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"/>
+      </StackView>
       <Button Name="ChoosePhoto" Click="ChoosePhoto" Height="44" BorderWidth="2" FontSize="15" FontWeight="Bold"
               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="{Binding DataContext/Draft/Status/IsSubmitting}"
               class="octopus-action octopus-outline">

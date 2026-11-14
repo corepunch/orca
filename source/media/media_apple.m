@@ -146,7 +146,7 @@ static int Media_Fail(struct MediaError *error, char const *code, char const *me
   return 0;
 }
 
-static CGImageRef Media_Flatten(CGImageRef source, size_t edge) {
+static CGImageRef Media_Flatten(CGImageRef source, size_t edge, int filter) {
   size_t w = CGImageGetWidth(source), h = CGImageGetHeight(source);
   double scale = fmin(1, fmin((double)edge / fmax(w, h),
       sqrt((double)MEDIA_PHOTO_PIXELS / ((double)w * h))));
@@ -161,6 +161,8 @@ static CGImageRef Media_Flatten(CGImageRef source, size_t edge) {
   CGContextFillRect(context, CGRectMake(0, 0, w, h));
   CGContextSetInterpolationQuality(context, kCGInterpolationHigh);
   CGContextDrawImage(context, CGRectMake(0, 0, w, h), source);
+  // The fill above makes every pixel opaque, so premultiplied RGB is plain sRGB.
+  if (filter > 0) Media_FilterPixels(filter, CGBitmapContextGetData(context), w, h, CGBitmapContextGetBytesPerRow(context));
   CGImageRef image = CGBitmapContextCreateImage(context);
   CGContextRelease(context);
   return image;
@@ -188,7 +190,7 @@ static CFDataRef Media_Compress(CGImageRef image, struct MediaPhoto *photo) {
   for (int step = 0; step < 6; step++) {
     size_t edge = MAX(minimum, floor(longest * pow(.85, step)));
     // Each candidate comes from the decoded original, avoiding accumulated blur.
-    CGImageRef resized = Media_Flatten(image, edge);
+    CGImageRef resized = Media_Flatten(image, edge, 0);
     if (!resized) return NULL;
     for (size_t i = 0; i < sizeof(qualities) / sizeof(qualities[0]); i++) {
       CFDataRef data = Media_Jpeg(resized, qualities[i]);
@@ -209,6 +211,10 @@ static CFDataRef Media_Compress(CGImageRef image, struct MediaPhoto *photo) {
 }
 
 int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo, struct MediaError *error) {
+  return Media_FilterPhoto(bytes, size, 0, photo, error);
+}
+
+int Media_FilterPhoto(void const *bytes, size_t size, int filter, struct MediaPhoto *photo, struct MediaError *error) {
   @autoreleasepool {
     if (!bytes || !size) return Media_Fail(error, "invalid_image", "Choose a readable still image.");
     if (size > MEDIA_INPUT_LIMIT) return Media_Fail(error, "input_too_large", "The source photo exceeds 32 MiB.");
@@ -251,11 +257,11 @@ int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo,
     });
     CFRelease(source);
     if (!decoded) return Media_Fail(error, "invalid_image", "The photo could not be decoded.");
-    CGImageRef flattened = Media_Flatten(decoded, edge);
+    CGImageRef flattened = Media_Flatten(decoded, edge, filter);
     CGImageRelease(decoded);
     if (!flattened) return Media_Fail(error, "memory", "There is not enough memory to prepare this photo.");
     CFDataRef jpeg = Media_Compress(flattened, photo);
-    CGImageRef small = Media_Flatten(flattened, 256);
+    CGImageRef small = Media_Flatten(flattened, 256, 0);
     CGImageRelease(flattened);
     CFDataRef thumbnail = small ? Media_Jpeg(small, .8) : NULL;
     if (small) {
