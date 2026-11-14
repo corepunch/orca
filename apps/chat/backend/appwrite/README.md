@@ -31,7 +31,16 @@ photo keys were absent from API responses. All test accounts, documents, state
 and objects were removed afterward. No email/SMS code deliveries were performed;
 delivery providers are not configured.
 
-Previous production deployment: `6ae08dfcb0d301fbdd7b` (2026-10-27, legacy collection layout). The uploaded source archive
+Current production deployment: `6af82f75bb83374e4e4e` (2026-11-14), source
+archive SHA-256 `cad0a83c15e830b1e79be7be9f77eef1d10e81cf6492080a64260d4b8c5c8405`
+from commit `3763f467`. It adds the end-to-end encryption device-key routes;
+`node src/migrate.js` provisioned the `device-keys` collection first and
+`--verify` passed. Function settings, scopes and variables were unchanged.
+The rollback deployment is `6af05e4ab6e42343f726` (2026-11-08). No live
+suite was run against it. Node `fetch` may need `--dns-result-order=ipv4first`
+on networks where IPv6 connections to Appwrite time out.
+
+Earlier production deployment: `6ae08dfcb0d301fbdd7b` (2026-10-27, legacy collection layout). The uploaded source archive
 contains `package.json` and `src/`, with SHA-256
 `5a3525d8b1d449dc58b88fd73cd2204858f4c544cfe65d1401e80b4afef7fc6e`.
 It includes direct-room `peer_id`, message editing/deletion, non-owner group/channel
