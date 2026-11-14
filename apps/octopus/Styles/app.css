@@ -7,7 +7,6 @@
 .octopus-light .octopus-accent-text { color: #0a7068; }
 .octopus-light .octopus-error { color: #e51400; }
 .octopus-light .octopus-link { color: #0a7068; background-color: #00000000; }
-.octopus-light .octopus-row { background-color: #00000000; }
 .octopus-light .octopus-primary { background-color: #0e8f86; color: #ffffff; }
 .octopus-light .octopus-outline { background-color: #00000000; color: #000000; border-color: #000000; }
 .octopus-light .octopus-danger { background-color: #00000000; color: #e51400; border-color: #e51400; }
@@ -40,8 +39,6 @@
 .octopus-dark .octopus-accent-text { color: #2cc5b8; }
 .octopus-dark .octopus-error { color: #ff5c5c; }
 .octopus-dark .octopus-link { color: #2cc5b8; background-color: #00000000; }
-/* Tappable rows and overlays stay clear; UIKit's Button:dark fill would otherwise win. */
-.octopus-dark .octopus-row { background-color: #00000000; }
 .octopus-dark .octopus-primary { background-color: #0e8f86; color: #ffffff; }
 .octopus-dark .octopus-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
 .octopus-dark .octopus-danger { background-color: #00000000; color: #ff5c5c; border-color: #ff5c5c; }
@@ -113,6 +110,12 @@
 .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
 .octopus-dark .frosted { background-color: #16161695; }
 .post-actions { background-color: #00000000; }
+/* Tappable rows and overlays are layout containers, never filled controls.
+   Each selector outranks the UIKit Button rule for the same state
+   (Button:dark 0,1,1; Button:dark:hover 0,2,1) without needing the palette
+   class on an ancestor, so no theme or pointer state brings the grey fill back. */
+.octopus-row, .octopus-row:dark, .octopus-row:hover, .octopus-row:active,
+.octopus-row:dark:hover, .octopus-row:dark:active { background-color: #00000000; }
 .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
 .octopus-dark .pivot-bar { background-color: #16161695; border-color: #38383a; }
 .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
