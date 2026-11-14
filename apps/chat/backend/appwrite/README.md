@@ -31,12 +31,14 @@ photo keys were absent from API responses. All test accounts, documents, state
 and objects were removed afterward. No email/SMS code deliveries were performed;
 delivery providers are not configured.
 
-Current production deployment: `6af832a329a5af00aaeb` (2026-11-14), source
-archive SHA-256 `20d0cec4e6a6fc1ecbdff6b99f34fc51e5c39a51999387f6b3386476d91280d0`
-from commit `58357ac0`, which removed the end-to-end encryption device-key
-routes again. Function settings, scopes and variables were unchanged; no live
-suite was run. The empty `device-keys` collection created for those routes was
-deleted the same day. Node `fetch` may need
+Current production deployment: `6af88d7fbc8bf1e15c45` (2026-11-14), source
+archive SHA-256 `ef124506e68b3b046a2580791bf619e3997c8b35109d4f84c7620ba61c4b02ec`
+from commit `b4e69b3c`, which lets `report_chat_content` take an Octopus post
+or comment. It was built inactive and then activated, so the Function was
+never paused; settings, scopes and variables were read before and after and
+are unchanged, and `live=true`. No live suite was run. The previous
+deployment `6af832a329a5af00aaeb` (same day, commit `58357ac0`) is kept for
+rollback. Node `fetch` may need
 `--dns-result-order=ipv4first` on networks where IPv6 connections to Appwrite
 time out.
 
