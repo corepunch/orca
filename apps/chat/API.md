@@ -175,9 +175,11 @@ refused. Account deletion removes all of the account's device records.
 publishing), verifies listed rows' signatures on the client, replaces a device
 the server reports as revoked, and erases local secrets on sign-out even when
 revocation cannot reach the server. Secrets are stored with `orca.credentials`
-under `chat-device:<scope>:<userId>`. The app does not attach a store yet;
-that happens with encrypted direct chats. See the
-[design note](docs/end-to-end-encryption.md).
+under `chat-device:<scope>:<userId>`. With the Appwrite backend, `device_sync.lua`
+publishes the device in the background after sign-in and retries with
+backoff (up to 15 minutes), so a backend without these routes never blocks
+the app. Sign-out revokes the device; account deletion erases its secrets. See
+the [design note](docs/end-to-end-encryption.md).
 
 ## Conversations, roles and invitations
 

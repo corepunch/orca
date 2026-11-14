@@ -104,4 +104,65 @@ client:signOut()
 assert(count(credentials.items) == 0 and not client.session, "Local erasure does not depend on the network")
 assert(#assert(Chat.demo():listDeviceKeys { "alex" }) == 0, "People without devices have no keys")
 
+-- Account deletion erases this device's secrets
+do
+  local creds = fakeCredentials()
+  local deleting = Chat.demo()
+  deleting:setDeviceKeys(assert(DeviceKeys.new { crypto = crypto, credentials = creds, scope = "s" }))
+  assert(deleting.deviceKeys:ensure(deleting) and count(creds.items) == 1)
+  assert(deleting:deleteAccount("DELETE"))
+  assert(count(creds.items) == 0, "Account deletion erases local device secrets")
+end
+
+-- Background publishing: after sign-in, retried with backoff, never blocking
+package.path = "apps/?.lua;" .. package.path
+package.loaded["Chat/polling"] = package.loaded["Chat/polling"] or dofile("apps/chat/polling.lua")
+local DeviceSync = dofile("apps/chat/device_sync.lua")
+local timers = {}
+local function runTimers()
+  local pending = timers; timers = {}
+  for _, timer in ipairs(pending) do if not timer.canceled then timer.callback() end end
+end
+local function createTimer(callback, duration)
+  local timer = { callback = callback, duration = duration }
+  function timer:cancel() self.canceled = true end
+  timers[#timers + 1] = timer
+  return timer
+end
+local syncCreds = fakeCredentials()
+local app = { client = Chat.mock() }
+local sync = assert(DeviceSync.new(app, { endpoint = "https://example.invalid/v1/", projectId = "p" },
+  { crypto = crypto, credentials = syncCreds, createTimer = createTimer }))
+app.client:setDeviceKeys(sync.store)
+sync:activate(); runTimers()
+assert(count(syncCreds.items) == 0, "Nothing is created before sign-in")
+assert(app.client:signIn("demo@example.invalid", "password123"))
+sync:activate(); runTimers()
+assert(sync.published == "me" and count(syncCreds.items) == 1, "Keys are published after sign-in")
+assert(next(syncCreds.items) == "chat-device:https://example.invalid/v1:p:me")
+assert(#assert(app.client:listDeviceKeys { "me" }) == 1)
+sync:activate(); runTimers()
+assert(#assert(app.client:listDeviceKeys { "me" }) == 1, "A published device is not republished")
+sync:suspend(); assert(app.client:signOut())
+assert(count(syncCreds.items) == 0)
+
+-- An older backend without the device routes: failures back off quietly
+local offline = { client = Chat.demo() }
+local offlineSync = assert(DeviceSync.new(offline, { endpoint = "https://example.invalid/v1", projectId = "p" },
+  { crypto = crypto, credentials = fakeCredentials(), createTimer = createTimer }))
+local transport = offline.client.transport
+offline.client.transport = function(request)
+  if request.url and request.url:find("publish_chat_device_key", 1, true) then
+    return { status = 404, body = '{"code":"not_found","message":"Chat endpoint not found."}', headers = {} }
+  end
+  return transport(request)
+end
+offlineSync:activate(); runTimers()
+assert(not offlineSync.published and offlineSync.lastError and offlineSync.scheduler.failures == 1)
+assert(#timers == 1 and timers[1].duration == 120000, "The first retry waits twice the interval")
+offlineSync:activate()
+assert(#timers == 1 and timers[1].duration == 120000, "Navigation does not cut the backoff short")
+assert(offline.client:sendMessage("weekend", "Messaging still works"), "A missing device route never blocks chat")
+offlineSync:suspend()
+
 print("PASS: Chat device keys: storage, publishing, verification, revocation and replacement")

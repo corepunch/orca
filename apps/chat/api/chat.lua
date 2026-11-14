@@ -198,6 +198,8 @@ function Client:deleteAccount(confirmation)
       return failure("session_changed", "The active account changed during account deletion.")
     end
     self.accountDeletion = { accepted = result.accepted == true, deleted = result.deleted == true, userId = user }
+    -- The server removes the device records; this device's secrets go too.
+    if self.deviceKeys then self.deviceKeys:erase(user) end
     result = self.accountDeletion
     self.session, self.avatarIds, self.messagePageRetryAt = nil, {}, nil
   end

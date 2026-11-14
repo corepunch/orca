@@ -3,8 +3,8 @@
 Status: proposal, 2026-11-14. Slices 1 and 2 are implemented: `orca.crypto`
 (tests in `tests/test_crypto.lua`) and device keys (the `device-keys`
 collection, its Function routes and `api.device_keys`; see
-[API.md](../API.md#end-to-end-encryption-device-keys)). The app does not
-publish keys yet, and messages are not encrypted yet.
+[API.md](../API.md#end-to-end-encryption-device-keys)). The app publishes
+this device's keys after sign-in. Messages are not encrypted yet.
 
 ## Goal and threat model
 

@@ -145,6 +145,11 @@ function DeviceKeys:secrets(userId)
     sign_secret = DeviceKeys.decode(record.sign_secret, 64) }
 end
 
+-- Erases local secrets only, for example after account deletion.
+function DeviceKeys:erase(userId)
+  return self.credentials.delete(self:_key(userId))
+end
+
 -- Sign-out: revoke on the server when reachable, then always erase local secrets.
 function DeviceKeys:forget(client)
   local session = client and client.session
