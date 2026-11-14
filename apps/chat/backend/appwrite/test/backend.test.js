@@ -14,7 +14,7 @@ import { runModeration, readReportedPhoto } from '../src/moderation.js';
 
 const clone = value => JSON.parse(JSON.stringify(value));
 class MemoryRepository {
-  constructor() { this.rows = new Map(); this.files = new Map(); this.locks = new Set(); }
+  constructor() { this.rows = new Map(); this.files = new Map(); this.locks = new Set(); this.databaseId = 'db'; this.bucketId = 'post-images'; }
   table(name) { if (!this.rows.has(name)) this.rows.set(name, new Map()); return this.rows.get(name); }
   async get(name, id) { const row = this.table(name).get(id); return row ? clone(row) : null; }
   async create(name, row, id = randomUUID()) {
@@ -51,7 +51,7 @@ function jpeg(width = 1, height = 1) {
     255, 218, 0, 8, 1, 1, 0, 0, 63, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 255, 217]);
 }
 function setup(serviceOptions = {}) {
-  const repo = new MemoryRepository(), clock = { now: 1700000000000 }, calls = [], users = new Map();
+  const repo = new MemoryRepository(), clock = { now: 1700000000000 }, calls = [], users = new Map(), social = new Map(), socialFiles = new Set();
   for (const name of ['owner', 'alice', 'bob', 'eve']) users.set(name, { $id: name, name, email: name + '@example.invalid', emailVerification: true, phone: '', phoneVerification: false });
   const rest = { async request(method, path, options = {}) {
     calls.push({ method, path, options: clone(options) });
@@ -71,13 +71,24 @@ function setup(serviceOptions = {}) {
       else if (kind === 'verification') row[phone === 'phone' ? 'phoneVerification' : 'emailVerification'] = true;
       return clone(row);
     }
+    const socialDoc = path.match(/^\/databases\/db\/collections\/(posts|comments)\/documents\/([^/?]+)$/);
+    if (socialDoc) {
+      const docKey = socialDoc[1] + '/' + decodeURIComponent(socialDoc[2]);
+      if (!social.has(docKey)) throw new Failure(404, 'not_found', 'Missing document.');
+      if (method === 'DELETE') { social.delete(docKey); return {}; }
+      if (method === 'GET') return clone(social.get(docKey));
+    }
+    const socialFile = path.match(/^\/storage\/buckets\/post-images\/files\/([^/?]+)$/);
+    if (socialFile && method === 'DELETE') {
+      if (!socialFiles.delete(decodeURIComponent(socialFile[1]))) throw new Failure(404, 'not_found', 'Missing file.'); return {};
+    }
     if (path.includes('/targets') || path.startsWith('/messaging/messages/')) return {};
     throw new Error('Unexpected fake REST route: ' + method + ' ' + path);
   } };
   const auth = new Auth(rest, repo, { now: () => clock.now, otpHmacKey: 'test-secret-never-use-in-production-123', emailProviderId: 'email-provider' });
   const service = new ChatService(repo, auth, { now: () => clock.now, ...serviceOptions });
   const call = (jwt, path, body = {}, method = 'POST', extra = {}) => execute({ method, path, body, ...extra }, service, { jwt, userId: jwt });
-  return { repo, auth, service, clock, calls, users, call };
+  return { repo, auth, service, clock, calls, users, call, social, socialFiles };
 }
 async function room(fixture, kind = 'group', others = ['alice'], visibility = 'private') {
   const response = await fixture.call('owner', '/rest/v1/rpc/create_chat_room', { room_name: 'Conversation', room_kind: kind, room_visibility: visibility, member_ids: others });
@@ -946,6 +957,31 @@ test('safety moderator tool takes down reported photos and supports idempotent d
   await runModeration(f.service, ['suspend', userReport.id, '--confirm', 'Reviewed']);
   assert.equal(f.users.get('owner').status, false);
   assert.equal((await f.call('owner', '/rest/v1/rpc/post_chat_message', { target_room: group.id, message_body: 'Rejected' })).status, 401);
+});
+
+test('safety reports Octopus posts and comments with copied evidence, and takedown removes them', async () => {
+  const f = setup();
+  f.social.set('posts/post-1', { $id: 'post-1', authorId: 'owner', title: 'Title', content: 'Abusive body', postType: 'photo',
+    imageId: 'img-1', imageIds: ['img-1', 'img-2'] });
+  f.social.set('comments/comment-1', { $id: 'comment-1', authorId: 'bob', postId: 'post-1', body: 'Abusive reply' });
+  f.socialFiles.add('img-1'); f.socialFiles.add('img-2');
+  const call = body => f.call('alice', '/rest/v1/rpc/report_chat_content', body);
+  assert.equal((await call({ target_user: 'bob', target_post: 'post-1', reason: 'harassment' })).status, 404, 'post author must match');
+  assert.equal((await call({ target_user: 'owner', target_post: 'missing', reason: 'spam' })).status, 404);
+  assert.equal((await call({ target_user: 'owner', target_post: 'post-1', target_comment: 'comment-1', reason: 'spam' })).status, 400);
+  assert.equal((await f.call('owner', '/rest/v1/rpc/report_chat_content', { target_user: 'owner', target_post: 'post-1', reason: 'spam' })).status, 400,
+    'nobody reports their own post');
+  const postReport = (await call({ target_user: 'owner', target_post: 'post-1', reason: 'harassment', details: 'Context' })).body;
+  const saved = await f.repo.get('reports', postReport.id);
+  assert.equal(saved.post_id, 'post-1'); assert.equal(saved.evidence.body, 'Abusive body'); assert.deepEqual(saved.evidence.image_ids, ['img-1', 'img-2']);
+  f.social.get('posts/post-1').content = 'Edited after the report';
+  assert.equal((await f.repo.get('reports', postReport.id)).evidence.body, 'Abusive body', 'evidence is a copy');
+  const commentReport = (await call({ target_user: 'bob', target_comment: 'comment-1', reason: 'hate' })).body;
+  assert.equal((await f.repo.get('reports', commentReport.id)).evidence.body, 'Abusive reply');
+  assert.deepEqual(await moderateReport(f.service, commentReport.id, 'takedown'), { resolved: true, action: 'takedown' });
+  assert.equal(f.social.has('comments/comment-1'), false);
+  assert.deepEqual(await moderateReport(f.service, postReport.id, 'takedown'), { resolved: true, action: 'takedown' });
+  assert.equal(f.social.has('posts/post-1'), false); assert.equal(f.socialFiles.size, 0, 'post images are removed');
 });
 
 test('safety community rules acceptance records the verified account and exact current version', async () => {
