@@ -536,7 +536,14 @@ local App = Application:extend {
         return PhotoViewer.open(self, attachment)
     end,
 
+    -- The click handler runs synchronously; the native picker suspends until
+    -- the person chooses, so it needs an application coroutine.
     attachPhoto = function(self, scope)
+        self:load(function() self:pickPhoto(scope) end)
+    end,
+
+    pickPhoto = function(self, scope)
+        if scope.disposed or not self.room then return end
         local composer = scope:member("Composer")
         if composer.submitting then self:notice(t("Finish sending before adding another photo.")); return end
         if composer.target then self:notice(t("Finish editing before adding a photo.")); return end

@@ -1024,7 +1024,17 @@ click(photoApp, "AttachPhoto")
 assert(photoApp.composer.Text == "A caption worth keeping" and not photoApp.photoDrafts[photoApp.room.id],
     "Cancelling the picker must preserve the text draft")
 cancelPick = false
+-- Like the native iOS picker, selection must run where it can suspend.
+local inlineAsync, pickedYieldable = orca.async, nil
+orca.async = function(fn, ...)
+    local co = coroutine.create(fn)
+    assert(coroutine.resume(co, ...))
+end
+local realPick = photoMedia.pick
+photoMedia.pick = function(...) pickedYieldable = coroutine.isyieldable(); return realPick(...) end
 click(photoApp, "AttachPhoto")
+orca.async, photoMedia.pick = inlineAsync, realPick
+assert(pickedYieldable == true, "The composer's photo button must pick on an application coroutine")
 assert(photoApp.screen:findChild("PhotoDraft", true).Visible, "A selected photo must show pending attachment feedback")
 photoApp.screen.Width = 320
 photoApp:notice("The message could not be sent. Check your connection and try again; your text and photo are still here.", true)
