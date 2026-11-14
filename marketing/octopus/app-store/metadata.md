@@ -2,13 +2,30 @@
 
 Pushed to Octopus Social 1.0 (en-GB) on 2026-11-14 with the 6.9-inch iPhone set.
 
+## Listing settings (set 2026-11-14)
+
+| Field | Value |
+|---|---|
+| Primary category | Social Networking |
+| Price / availability | Free, all territories, including new ones |
+| Age rating answers | Social media and user-generated content: yes; everything else none/no |
+| Content rights | Uses third-party content |
+| Copyright | 2026 Igor Chernakov |
+| Support URL | https://github.com/corepunch/orca/issues |
+| Marketing URL | https://github.com/corepunch/orca/tree/main/apps/octopus |
+| Privacy policy | https://corepunch.github.io/orca/chat/privacy/ (the shared-account policy) |
+| App Privacy | Linked to you, app functionality only: email, name, user ID, photos, other user content, coarse location, other data |
+| Review contact | Copied from Orca Messenger's review details; no demo account set |
+
+The keyword list avoids words already in the name and subtitle.
+
 **Subtitle** (≤30): Posts, photos and people
 
 **Promotional text** (≤170):
 Swipe sideways through home, connect and discover. A calm, chronological timeline with big type, photo albums and threaded replies, in light or dark.
 
 **Keywords** (≤100):
-social,blog,timeline,posts,photos,feed,panorama,metro,microblog,follow
+blog,timeline,feed,microblog,follow,friends,journal,quotes,links,albums,threads,panorama,metro
 
 **Description:**
 Octopus is a small, calm place to share posts and follow people, with a bold sideways-swiping interface.

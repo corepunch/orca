@@ -39,8 +39,11 @@ neighbouring screens visible at the edges. Each slot's footer reads
   hashes, the binary hash and the exports.
 
 The 1320 × 2868 set and the store text were uploaded to Octopus Social 1.0
-(en-GB) on 2026-11-14. Octopus targets iPhone and
-iPad, so a 13-inch iPad set is still needed before submission.
+(en-GB) on 2026-11-14. The same day `en-GB/ipad-2048x2732/` went into the
+13-inch iPad slot: seven unframed captures of the same stages from an iPad Air
+13-inch simulator (`capture.py --family ipad`, skipping the connect stage, which
+shows the same hub as home), and build 36 was attached to the version. The
+remaining listing settings are recorded in [metadata.md](metadata.md).
 
 ## Data
 
