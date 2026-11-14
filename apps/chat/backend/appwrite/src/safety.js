@@ -11,6 +11,16 @@ const baseTerms = ['fuck', 'shit', 'cunt', 'nigger', 'faggot', 'heil hitler', 'k
 const blockId = (from, to) => key('block:' + from + ':' + to);
 const pairLock = (from, to) => 'interaction:' + [from, to].sort().join(':');
 
+const socialPath = (repo, collection, docId) =>
+  `/databases/${encodeURIComponent(repo.databaseId)}/collections/${collection}/documents/${encodeURIComponent(docId)}`;
+const socialImages = doc => [...new Set([...(Array.isArray(doc.imageIds) ? doc.imageIds : []), doc.imageId]
+  .filter(value => typeof value === 'string' && value))].slice(0, 9);
+// Octopus collections are stored as plain Appwrite documents, not service payloads.
+async function socialDocument(rest, repo, collection, docId) {
+  try { return await rest.request('GET', socialPath(repo, collection, docId)); }
+  catch (error) { if (error.status === 404) return null; throw error; }
+}
+
 export class Safety {
   constructor(service, { blockedTerms = [], now = Date.now } = {}) {
     this.service = service; this.repo = service.repo; this.auth = service.auth; this.now = now;
@@ -68,8 +78,20 @@ export class Safety {
     const target = id(body.target_user), details = body.details || '';
     if (target === user.$id || !reasons.has(body.reason) || typeof details !== 'string' || Buffer.byteLength(details) > 2000)
       reject(400, 'validation', 'Choose a report reason and details of at most 2000 text bytes.');
-    let message;
-    if (body.target_message) {
+    if ([body.target_message, body.target_post, body.target_comment].filter(Boolean).length > 1)
+      reject(400, 'validation', 'Report one message, post or comment at a time.');
+    let message, social;
+    if (body.target_post || body.target_comment) {
+      // Octopus posts and comments are public; evidence is copied so a later
+      // edit or deletion cannot change what moderators review.
+      const kind = body.target_post ? 'post' : 'comment';
+      const doc = await socialDocument(this.auth.rest, this.repo, kind + 's', id(body.target_post || body.target_comment));
+      if (!doc || doc.authorId !== target) reject(404, 'not_found', 'The reported ' + kind + ' was not found.');
+      social = kind === 'post'
+        ? { post_id: doc.$id, evidence: { kind, title: doc.title || '', body: doc.content || '', quote_source: doc.quoteSource || '',
+            user_text: doc.userText || '', link_url: doc.linkUrl || '', image_ids: socialImages(doc) } }
+        : { comment_id: doc.$id, post_id: doc.postId, evidence: { kind, body: doc.body || '' } };
+    } else if (body.target_message) {
       message = await this.repo.get('messages', id(body.target_message));
       if (!message || message.sender_id !== target) reject(404, 'not_found', 'The reported message was not found.');
       await this.service.access(message.room_id, user.$id);
@@ -86,7 +108,7 @@ export class Safety {
     const report = await this.repo.create('reports', { reporter_id: user.$id, target_user: target,
       reason: body.reason, details, status: 'open', created_at: new Date(this.now()).toISOString(),
       ...(message ? { room_id: message.room_id, message_id: message.id,
-        evidence: { body: message.body, attachment_ids: message.attachment_ids || [] } } : {}) });
+        evidence: { body: message.body, attachment_ids: message.attachment_ids || [] } } : {}), ...social });
     return { id: report.id, submitted: true };
   }
   async rulesState(user) {
@@ -118,8 +140,19 @@ export async function moderateReport(service, reportId, action, notes = '') {
       return { resolved: true, action };
     }
     if (action === 'suspend') await service.auth.rest.request('PATCH', '/users/' + encodeURIComponent(report.target_user) + '/status', { body: { status: false } });
-    if (action === 'takedown') {
-      if (!report.message_id) reject(400, 'validation', 'A message report is required for content takedown. Suspend the account for profile abuse.');
+    if (action === 'takedown' && !report.message_id && (report.post_id || report.comment_id)) {
+      const kind = report.evidence?.kind === 'comment' ? 'comments' : 'posts';
+      const docId = kind === 'comments' ? report.comment_id : report.post_id;
+      const doc = await socialDocument(service.auth.rest, repo, kind, docId);
+      if (doc && doc.authorId !== report.target_user) reject(409, 'evidence_changed', 'The reported content no longer matches this report.');
+      if (doc) await service.auth.rest.request('DELETE', socialPath(repo, kind, docId));
+      // Image IDs come from the immutable evidence, so a retry still removes files.
+      if (kind === 'posts') for (const imageId of report.evidence?.image_ids || []) {
+        try { await service.auth.rest.request('DELETE', `/storage/buckets/${encodeURIComponent(repo.bucketId)}/files/${encodeURIComponent(imageId)}`); }
+        catch (error) { if (error.status !== 404) throw error; }
+      }
+    } else if (action === 'takedown') {
+      if (!report.message_id) reject(400, 'validation', 'A message, post or comment report is required for content takedown. Suspend the account for profile abuse.');
       await repo.lock('room:' + report.room_id, async () => {
         const message = await repo.get('messages', report.message_id);
         if (message && message.sender_id !== report.target_user) reject(409, 'evidence_changed', 'The reported content no longer matches this report.');
