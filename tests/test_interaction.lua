@@ -139,10 +139,12 @@ end
 -- A phone has no arrow keys: a tap or drag moves the caret under the finger.
 local function test_input_tap_places_caret()
 	pump_messages(screen)
-	local input = screen + ui.Input { Width = 300, Height = 40, Text = "me@gmailc.com" }
+	-- Offset like a real form field: pointer messages carry screen coordinates.
+	local form = screen + ui.StackView { Padding = 50 }
+	local input = form + ui.Input { Width = 300, Height = 40, Text = "me@gmailc.com" }
 	screen:UpdateLayout(screen.Width, screen.Height)
 	local function point(message, x)
-		orca.system.dispatchMessage { target = screen, message = message, x = x, y = 20 }
+		orca.system.dispatchMessage { target = screen, message = message, x = 50 + x, y = 70 }
 		pump_messages(screen)
 	end
 	local function typed(text)
@@ -164,7 +166,7 @@ local function test_input_tap_places_caret()
 	point("LeftButtonDown", 40); point("LeftButtonDragged", 1); point("LeftButtonUp", 1)
 	test.expect_eq(input.Cursor, 0, "Dragging a focused input slides the caret with the finger")
 	test.expect(width > 0, "Layout measured the input")
-	input:removeFromParent()
+	form:removeFromParent()
 end
 
 -- ---------------------------------------------------------------------------

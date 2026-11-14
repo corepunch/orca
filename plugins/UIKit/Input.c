@@ -297,7 +297,7 @@ Input_ByteOffset(char const *text, uint32_t characters)
   return boundary;
 }
 
-/* Tap or drag places the caret under the pointer, like a native text field;
+/* Tap or drag places the caret under the pointer (screen coordinates), like a native text field;
  * a phone has no arrow keys to fix a typo in the middle. */
 static void
 Input_PlaceCaret(struct Object *hObject, struct Input *pInput, float x, float y)
@@ -313,8 +313,9 @@ Input_PlaceCaret(struct Object *hObject, struct Input *pInput, float x, float y)
                         info->txWidth, Node2D_GetFrame(pNode2D, kBox3FieldWidth));
   float top = text_pos(NODE2D_FRAME(pNode2D, Padding, 1), concept->TextVerticalAlignment,
                        info->txHeight, Node2D_GetFrame(pNode2D, kBox3FieldHeight));
-  uint32_t index = TextBlockText_HitTest(concept->_text, x - left - info->txInsets.left,
-                                         y - top - info->txInsets.top);
+  struct vec3 local = Node2D_ToLocalPoint(pNode2D, x, y);
+  uint32_t index = TextBlockText_HitTest(concept->_text, local.x - left - info->txInsets.left,
+                                         local.y - top - info->txInsets.top);
   int cursor = Input_ByteOffset(text, index);
   if (cursor == pInput->Cursor) return;
   pInput->Cursor = cursor;
