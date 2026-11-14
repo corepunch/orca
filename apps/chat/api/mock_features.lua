@@ -379,6 +379,10 @@ return function(state, env)
             local function named(p)
                 if #name < 2 then return false end
                 if handle ~= "" and (p.username or ""):sub(1, #handle) == handle then return true end
+                -- Spaces and punctuation never decide a match: "CorePunch" finds "Core Punch".
+                local compact = (p.display_name or ""):lower():gsub("[%s%p]", "")
+                local wanted = name:gsub("[%s%p]", "")
+                if #wanted >= 2 and compact:sub(1, #wanted) == wanted then return true end
                 local parts = {}
                 for part in (p.display_name or ""):lower():gmatch("%S+") do parts[#parts + 1] = part end
                 for word in name:gmatch("%S+") do
