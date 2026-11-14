@@ -9,5 +9,5 @@
                TextVerticalAlignment="Center" ForegroundColor="#ffffff" IgnoreHitTest="true"/>
   </Grid>
   <Grid Name="SelectedFilterFrame" Visible="{Binding DataContext/Selected}" BorderWidth="3" class="filter-focus" IgnoreHitTest="true"/>
-  <Button Name="SelectFilter" Click="ApplyFilter" BackgroundColor="#00000000"/>
+  <Button Name="SelectFilter" Click="ApplyFilter" BackgroundColor="#00000000" class="octopus-row"/>
 </Grid>
