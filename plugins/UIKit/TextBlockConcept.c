@@ -27,6 +27,7 @@
  * so the foreground brush tints the text and never the emoji.
  */
 
+#include <math.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -864,6 +865,32 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor, uint32_t *last
   *lastLineWidth = ctx.lastLineWidth;
 
   return ctx.size;
+}
+
+/* Codepoint index whose caret lies nearest (x, y), in the same unscaled
+ * logical space as text_info.cursor. Each candidate is laid out the way the
+ * caret is: inputs are short, and wrapped lines keep their real positions. */
+ORCA_API uint32_t
+TextBlockText_HitTest(struct TextBlockText const *text, float x, float y)
+{
+  uint32_t count = 0;
+  for (uint32_t i = text->placeholder ? 1 : 0; i < text->numTextRuns; i++)
+    for (char const *p = text->run[i].string; p && *p; p++)
+      if (((unsigned char)*p & 0xc0) != 0x80) count++;
+  struct TextBlockText probe = *text;
+  uint32_t best = 0;
+  float bestScore = INFINITY;
+  for (uint32_t index = 0; index <= count; index++) {
+    LayoutCtx ctx = { .text = &probe, .bRender = FALSE };
+    probe.cursor = index;
+    if (FAILED(T_LayoutText(&ctx)) || !ctx.cursorSet) continue;
+    struct rect const *c = &ctx.cursor;
+    /* Lines first, then the nearest caret along the line. */
+    float dy = y < c->y ? c->y - y : (y > c->y + c->height ? y - c->y - c->height : 0);
+    float score = dy * 10000.0f + fabsf(x - c->x);
+    if (score < bestScore) bestScore = score, best = index;
+  }
+  return best;
 }
 
 ORCA_API HRESULT

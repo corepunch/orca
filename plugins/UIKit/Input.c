@@ -279,9 +279,65 @@ HANDLER(Input, Node, KillFocus)
   return FALSE;
 }
 
+/* Byte offset of the codepoint index, snapped back to a whole character so
+ * the caret never lands inside an emoji sequence. */
+static int
+Input_ByteOffset(char const *text, uint32_t characters)
+{
+  int bytes = 0;
+  for (uint32_t seen = 0; text[bytes]; bytes++) {
+    if (((unsigned char)text[bytes] & 0xc0) != 0x80 && seen++ == characters) break;
+  }
+  int boundary = 0;
+  while (text[boundary]) {
+    int next = Input_Step(text, boundary, 1);
+    if (next > bytes) break;
+    boundary = next;
+  }
+  return boundary;
+}
+
+/* Tap or drag places the caret under the pointer, like a native text field;
+ * a phone has no arrow keys to fix a typo in the middle. */
+static void
+Input_PlaceCaret(struct Object *hObject, struct Input *pInput, float x, float y)
+{
+  if (pInput->Type == kInputTypeCheckbox || pInput->Type == kInputTypeRadio) return;
+  struct TextBlockConcept *concept = GetTextBlockConcept(hObject);
+  struct TextRun *pTextRun = GetTextRun(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
+  char const *text = pTextRun->Text;
+  if (!concept || !concept->_text || !text || !*text) return;
+  struct text_info const *info = &pTextRun->_textinfo;
+  float left = text_pos(NODE2D_FRAME(pNode2D, Padding, 0), concept->TextHorizontalAlignment,
+                        info->txWidth, Node2D_GetFrame(pNode2D, kBox3FieldWidth));
+  float top = text_pos(NODE2D_FRAME(pNode2D, Padding, 1), concept->TextVerticalAlignment,
+                       info->txHeight, Node2D_GetFrame(pNode2D, kBox3FieldHeight));
+  uint32_t index = TextBlockText_HitTest(concept->_text, x - left - info->txInsets.left,
+                                         y - top - info->txInsets.top);
+  int cursor = Input_ByteOffset(text, index);
+  if (cursor == pInput->Cursor) return;
+  pInput->Cursor = cursor;
+  OBJ_SetDirty(hObject);
+}
+
+HANDLER(Input, Node, LeftButtonDown)
+{
+  if (core_GetFocus() == hObject) Input_PlaceCaret(hObject, pInput, pLeftButtonDown->x, pLeftButtonDown->y);
+  return FALSE;
+}
+
+HANDLER(Input, Node, LeftButtonDragged)
+{
+  if (core_GetFocus() != hObject) return FALSE;
+  Input_PlaceCaret(hObject, pInput, pLeftButtonDragged->x, pLeftButtonDragged->y);
+  return TRUE;
+}
+
 HANDLER(Input, Node, LeftButtonUp)
 {
   OBJ_SetFocus(hObject);
+  Input_PlaceCaret(hObject, pInput, pLeftButtonUp->x, pLeftButtonUp->y);
   if (pInput->Type == kInputTypeCheckbox) {
     bool_t checked = !pInput->Checked;
     PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Input_Checked), &checked);
