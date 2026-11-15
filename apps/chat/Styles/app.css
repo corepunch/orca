@@ -2,7 +2,11 @@
    chat-light or chat-dark (theme.lua, CHAT_APPEARANCE), so every rule follows
    the app palette and an appearance change restyles views already built.
    Rows reset their fill first so a later chat-soft can highlight them. */
-.chat-row { background-color: #00000000; }
+/* List rows are layout, never filled controls. Each selector outranks the
+   UIKit Button rule for the same state (Button:dark 0,1,1; Button:dark:hover
+   0,2,1), so no theme or pointer state brings back its grey fill. */
+.chat-row, .chat-row:dark, .chat-row:hover, .chat-row:active,
+.chat-row:dark:hover, .chat-row:dark:active { background-color: #00000000; }
 .chat-light .chat-background { background-color: #ffffff; }
 .chat-light .conversation { background-color: #ffffff; }
 .chat-light .chat-ink { color: #000000; }
@@ -17,7 +21,7 @@
 .chat-light .chat-accent-text { color: #006ad1; }
 .chat-light .chat-soft { background-color: #dcebff; }
 .chat-light .chat-chrome { background-color: #dddddd; }
-.chat-light .chat-error { color: #e51400; }
+.chat-light .chat-error { color: #e51400; background-color: #00000000; }
 .chat-light .chat-outline { background-color: #00000000; color: #000000; border-color: #000000; }
 .chat-light .chat-primary { background-color: #006ad1; color: #ffffff; }
 .chat-light .sent .bubble { background-color: #006ad1; }
@@ -42,7 +46,7 @@
 .chat-dark .chat-accent-text { color: #41beec; }
 .chat-dark .chat-soft { background-color: #0a2a4d; }
 .chat-dark .chat-chrome { background-color: #1f1f1f; }
-.chat-dark .chat-error { color: #ff5c5c; }
+.chat-dark .chat-error { color: #ff5c5c; background-color: #00000000; }
 .chat-dark .chat-outline { background-color: #00000000; color: #ffffff; border-color: #ffffff; }
 .chat-dark .chat-primary { background-color: #006ad1; color: #ffffff; }
 .chat-dark .sent .bubble { background-color: #006ad1; }

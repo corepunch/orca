@@ -1,5 +1,5 @@
 <!-- One tile of the Contacts portrait wall: the photo, or initials until it loads. -->
-<Button class="chat-action" BorderWidth="0" BackgroundColor="#00000000" Click="OpenContact">
+<Button class="chat-action chat-row" BorderWidth="0" BackgroundColor="#00000000" Click="OpenContact">
   <Grid Name="ContactAvatar" class="avatar" StateClasses="{Binding DataContext/Tone, Mode=OneTime}" IgnoreHitTest="true">
     <TextBlock Text="{Binding DataContext/Initials, Mode=OneTime}" FontSize="24" class="avatar-initials"
                TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
