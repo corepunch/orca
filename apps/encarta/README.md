@@ -3,7 +3,7 @@
 An iPad-first, offline encyclopedia for emerging readers, written in the
 spirit of the *Was ist Was* books: every topic starts from a question a child
 would ask. The home screen is a wall of illustrated questions, or a bookshelf
-of numbered covers, filtered by category or search. An article is read one
+of illustrated covers, filtered by category or search. An article is read one
 question per page, then a “Did you know?” page with the word lab, then a short
 quiz. The library has 15 illustrated articles. Search, both reading levels, word
 definitions, and reading checks work without a connection. Tap **Read aloud** in the reader to listen to the selected level.

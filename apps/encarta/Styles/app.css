@@ -79,35 +79,16 @@
 .count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--mist); text-vertical-align: center; }
 .empty { font-size: 18; color: var(--mist); }
 
-/* question cards */
-.card { border-radius: 20; overflow: hidden; }
-.card:hover { ring: 0 3 var(--sun); }
-.card-copy { padding: 12 14; }
-.card-tag, .card-question, .card-title { color: var(--white); }
-.card-tag { font-size: 11; font-weight: bold; letter-spacing: 1.6; text-vertical-align: center; }
-.card-question { font-size: 20; line-height: 24; font-weight: bold; }
-.card-title { font-size: 13; font-weight: bold; }
-
-/* bookshelf covers */
-.cover { border-radius: 3 10 10 3; overflow: hidden; }
-.cover:hover { ring: 0 3 var(--sun); }
-.spine { background-color: #00000040; }
-.band { padding: 0 8 0 10; background-color: var(--white); }
-.volume { font-size: 12; font-weight: bold; letter-spacing: 1.4; color: var(--ink); text-vertical-align: center; }
-.badge {
-  margin-top: 6;
-  border-radius: 10;
-  font-size: 12;
-  font-weight: bold;
-  text-align: center;
-  text-vertical-align: center;
-  color: var(--ink);
-  background-color: var(--sun);
-}
+/* illustrated covers */
+.card, .cover { border-radius: 8; overflow: hidden; }
+.card:hover, .cover:hover, .card:focus, .cover:focus { ring: 0 3 var(--sun); }
+.cover-art { border-radius: 8; }
 .cover-icon { color: #FFFFFF59; }
-.cover-copy { padding: 10 12 14; gap: 4; }
-.cover-title { font-family: Noto Serif; font-size: 20; line-height: 23; font-weight: bold; color: var(--white); }
-.cover-question { font-size: 13; line-height: 17; color: var(--white); }
+.cover-copy { padding: 14 14 16; gap: 5; }
+.cover-title, .card-question { font-family: Noto Serif; font-weight: bold; color: var(--white); }
+.cover-title { font-size: 23; line-height: 27; }
+.card-question { font-size: 20; line-height: 25; }
+.card-title { font-size: 13; line-height: 17; color: var(--white); }
 
 /* ---------- reader ---------- */
 .pane { padding: 26 20 20 24; gap: 6; overflow: hidden; }

@@ -5,9 +5,8 @@ local ReadAloud = require "encarta/Scripts/ReadAloud"
 local Controller = {}
 local FEATURED = "octopus"
 local byID, categories = {}, {}
-for index, article in ipairs(articles) do
+for _, article in ipairs(articles) do
     byID[article.id] = article
-    article.volume = index
     if not categories[article.category] then
         categories[article.category] = true
         categories[#categories + 1] = article.category
@@ -48,9 +47,8 @@ function Controller:card(article)
     card.Name = "Open_" .. article.id
     card.StyleClass = "card cat-" .. slug(article.category)
     setCoverArt(card, article)
-    control(card, "Category").Text = article.category:upper()
     control(card, "Question").Text = article.question
-    control(card, "Title").Text = article.title .. "  ›"
+    control(card, "Title").Text = article.title
     card.Click = function() self:openArticle(article.id) end
     return card
 end
@@ -59,9 +57,7 @@ function Controller:cover(article)
     local cover = prefab("Cover")
     cover.Name = "Cover_" .. article.id
     cover.StyleClass = "cover cat-" .. slug(article.category)
-    control(cover, "Volume").Text = string.format("Nº %02d", article.volume)
     control(cover, "Title").Text = article.title
-    control(cover, "Question").Text = article.question
     setCoverArt(cover, article)
     cover.Click = function() self:openArticle(article.id) end
     return cover

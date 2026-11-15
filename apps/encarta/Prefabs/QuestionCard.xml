@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Button Height="266" class="card">
-    <Grid Rows="128px 1fr" IgnoreHitTest="true">
-        <Node2D IgnoreHitTest="true">
-            <VectorView Name="Icon" Width="56" Height="56" MarginLeft="auto" MarginRight="auto"
-                MarginTop="auto" MarginBottom="auto" class="cover-icon" IgnoreHitTest="true"/>
-            <ImageView Name="Art" Stretch="UniformToFill" Visible="false" IgnoreHitTest="true"/>
-        </Node2D>
-        <Grid Rows="auto 1fr auto" Spacing="6" class="card-copy" IgnoreHitTest="true">
-            <TextBlock Name="Category" class="card-tag" IgnoreHitTest="true"/>
+    <Node2D IgnoreHitTest="true">
+        <VectorView Name="Icon" Width="56" Height="56" MarginLeft="auto" MarginRight="auto"
+            MarginTop="auto" MarginBottom="auto" class="cover-icon" IgnoreHitTest="true"/>
+        <ImageView Name="Art" Stretch="UniformToFill" Visible="false" class="cover-art" IgnoreHitTest="true"/>
+        <ImageView Src="encarta/Images/cover-shade.png" Stretch="Fill" class="cover-art" IgnoreHitTest="true"/>
+        <StackView JustifyContent="End" class="cover-copy" IgnoreHitTest="true">
             <TextBlock Name="Question" class="card-question" WordWrap="true" IgnoreHitTest="true"/>
-            <TextBlock Name="Title" class="card-title" IgnoreHitTest="true"/>
-        </Grid>
-    </Grid>
+            <TextBlock Name="Title" class="card-title" WordWrap="true" IgnoreHitTest="true"/>
+        </StackView>
+    </Node2D>
 </Button>
