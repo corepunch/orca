@@ -806,6 +806,9 @@ do
     linkApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     linkApp:show()
     assert(linkApp.screen:findChild("ContinueApple", true), "The sign-in page offers Apple where supported")
+    local emailPage = assert(linkApp.screen:findChild("EmailCodePage", true))
+    assert(emailPage:getFirstChild() == linkApp.screen:findChild("Email", true),
+        "The code form opens with the email field itself, without a label")
     for _, name in ipairs { "OtherOptions", "BrowsePublicPosts", "AuthPrivacyPolicy", "AuthCommunityRules" } do
         local link = assert(linkApp.screen:findChild(name, true), "Missing " .. name)
         assert(link.TextHorizontalAlignment == "Left", name .. " shares the form's left edge")
