@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StackView class="word">
+    <Button Name="Term" class="term"/>
+    <TextBlock Name="Meaning" Visible="false" WordWrap="true" class="definition"/>
+</StackView>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Button Height="308" class="cover">
+    <Grid Columns="10px 1fr" IgnoreHitTest="true">
+        <Node2D class="spine" IgnoreHitTest="true"/>
+        <Grid Rows="32px 1fr 112px" IgnoreHitTest="true">
+            <Grid Columns="1fr 20px" class="band" IgnoreHitTest="true">
+                <TextBlock Name="Volume" class="volume" IgnoreHitTest="true"/>
+                <TextBlock Text="?" Width="20" Height="20" class="badge" IgnoreHitTest="true"/>
+            </Grid>
+            <Node2D IgnoreHitTest="true">
+                <VectorView Name="Icon" Width="76" Height="76" MarginLeft="auto" MarginRight="auto"
+                    MarginTop="auto" MarginBottom="auto" class="cover-icon" IgnoreHitTest="true"/>
+                <ImageView Name="Art" Stretch="UniformToFill" Visible="false" IgnoreHitTest="true"/>
+            </Node2D>
+            <StackView class="cover-copy" IgnoreHitTest="true">
+                <TextBlock Name="Title" class="cover-title" WordWrap="true" IgnoreHitTest="true"/>
+                <TextBlock Name="Question" class="cover-question" WordWrap="true" IgnoreHitTest="true"/>
+            </StackView>
+        </Grid>
+    </Grid>
+</Button>

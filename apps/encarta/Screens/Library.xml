@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Screen Name="Encarta" Width="1024" Height="768" ResizeMode="CanResize"
+    RespectSafeArea="true" Appearance="Dark" ClearColor="$night"
+    StyleSheet="encarta/Styles/app.css">
+    <Node2D>
+        <StackView Name="LibraryScroll" OverflowY="Scroll" class="library">
+            <Grid Columns="1fr auto" class="top">
+                <TextBlock class="wordmark">Encarta</TextBlock>
+                <Grid Columns="auto auto" Spacing="4" class="views">
+                    <Button Name="ShowWall" Text="Questions" class="view"/>
+                    <Button Name="ShowShelf" Text="Bookshelf" class="view"/>
+                </Grid>
+            </Grid>
+            <Grid Columns="1fr auto" Spacing="10">
+                <Input Name="Search" PlaceholderText="What do you want to know?" class="search"/>
+                <Button Name="ClearSearch" Text="Clear" class="clear"/>
+            </Grid>
+            <StackView Name="Categories" Direction="Horizontal" class="chips"/>
+            <Node2D Name="Featured" Height="250" class="feature">
+                <ImageView Name="FeaturedImage" Src="encarta/Images/octopus.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
+                <StackView JustifyContent="End" AlignItems="Start" class="feature-frame">
+                    <StackView Width="520" class="feature-copy">
+                        <TextBlock Name="FeaturedTag" class="feature-tag">STORY OF THE DAY  ·  ANIMALS</TextBlock>
+                        <TextBlock Name="FeaturedQuestion" class="feature-question" WordWrap="true"/>
+                        <Button Name="OpenFeatured" Text="Find out  ›" class="feature-button"/>
+                    </StackView>
+                </StackView>
+            </Node2D>
+            <Grid Columns="1fr auto">
+                <TextBlock Name="CatalogTitle" class="section-title"/>
+                <TextBlock Name="ResultCount" class="count"/>
+            </Grid>
+            <TextBlock Name="EmptyResults" Visible="false" class="empty" WordWrap="true">
+                Nothing yet. Try a word like “moon”, “rain”, or “animals”.
+            </TextBlock>
+            <Grid Name="Topics" Spacing="14">
+                <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr 1fr")</BindingExpression>
+            </Grid>
+            <Grid Name="Shelf" Spacing="18" Visible="false">
+                <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr")</BindingExpression>
+            </Grid>
+        </StackView>
+
+        <Grid Name="Reader" Visible="false">
+            <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
+            <StackView Name="Pane" class="pane">
+                <BindingExpression Target="Node.Opacity">IF(STEP(900, {Screen.Width}), 1, 0)</BindingExpression>
+                <TextBlock Name="ArticleCategory" class="pane-tag"/>
+                <TextBlock Name="ArticleTitle" class="pane-title" WordWrap="true"/>
+                <TextBlock Name="ArticleDeck" class="pane-deck" WordWrap="true"/>
+                <StackView Name="Steps" class="steps"/>
+            </StackView>
+            <Grid Rows="auto 1fr auto" class="page">
+                <Grid Name="ReaderBar" Columns="auto 1fr auto auto auto" Spacing="10">
+                    <Button Name="Back" Text="‹  Library" class="soft"/>
+                    <Node2D IgnoreHitTest="true">
+                        <TextBlock Name="ReadAloudError" Visible="false" class="read-error" WordWrap="true">Audio couldn’t play. Try again.</TextBlock>
+                    </Node2D>
+                    <Grid Columns="auto auto" Spacing="4" class="levels">
+                        <Button Name="FirstRead" Text="First read" class="level"/>
+                        <Button Name="ReadMore" Text="Read more" class="level"/>
+                    </Grid>
+                    <Button Name="ReadAloud" Text="Read aloud" Visible="false" class="listen"/>
+                    <Button Name="StopReading" Text="Stop" Visible="false" class="soft"/>
+                </Grid>
+                <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
+                    <TextBlock Name="StepLabel" class="step-label"/>
+                    <StackView Name="Sections"/>
+                    <StackView Name="FactPage" Visible="false" class="fact-page">
+                        <TextBlock class="question" WordWrap="true">Did you know?</TextBlock>
+                        <TextBlock Name="Fact" class="fact" WordWrap="true"/>
+                        <StackView Name="ArticleMedia" Visible="false" class="media">
+                            <ImageView Name="ArticleImage" Stretch="UniformToFill" Height="240" IgnoreHitTest="true" class="media-image"/>
+                            <TextBlock Name="ArticleCaption" class="hint" WordWrap="true"/>
+                        </StackView>
+                        <TextBlock class="small-title">Word lab</TextBlock>
+                        <TextBlock class="hint">Tap a word to see what it means.</TextBlock>
+                        <StackView Name="Words" class="words"/>
+                    </StackView>
+                    <StackView Name="QuizPage" Visible="false" class="quiz-page">
+                        <TextBlock Name="Question" class="question" WordWrap="true"/>
+                        <Grid Name="Answers" Spacing="12">
+                            <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr", "1fr")</BindingExpression>
+                        </Grid>
+                        <TextBlock Name="Feedback" Visible="false" class="feedback" WordWrap="true"/>
+                        <TextBlock class="small-title">What next?</TextBlock>
+                        <Grid Name="Related" Columns="1fr 1fr" Spacing="12"/>
+                    </StackView>
+                </StackView>
+                <Grid Name="Pager" Columns="1fr auto auto" Spacing="12" class="pager">
+                    <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" class="dots"/>
+                    <Button Name="Previous" Text="‹  Back" class="soft pager-button"/>
+                    <Button Name="Next" class="next"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Node2D>
+</Screen>

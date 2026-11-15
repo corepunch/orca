@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Button Height="164" class="card">
+    <Grid Rows="auto 1fr auto" Spacing="6" IgnoreHitTest="true">
+        <Grid Columns="18px 1fr" Spacing="6" IgnoreHitTest="true">
+            <VectorView Name="Icon" Width="18" Height="18" class="card-icon" IgnoreHitTest="true"/>
+            <TextBlock Name="Category" class="card-tag" IgnoreHitTest="true"/>
+        </Grid>
+        <TextBlock Name="Question" class="card-question" WordWrap="true" IgnoreHitTest="true"/>
+        <TextBlock Name="Title" class="card-title" IgnoreHitTest="true"/>
+    </Grid>
+</Button>

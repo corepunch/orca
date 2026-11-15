@@ -1,0 +1,254 @@
+/* Question wall: a night-blue library, white reading pages, category colors. */
+
+/* ---------- library ---------- */
+.library { padding: 22 30 36; gap: 16; }
+.wordmark {
+  font-family: Noto Serif;
+  font-size: 26;
+  font-weight: bold;
+  color: var(--white);
+  text-vertical-align: center;
+}
+.views { padding: 4; border-radius: 14; background-color: var(--night-raised); }
+.view {
+  min-height: 40;
+  padding: 0 16;
+  border-radius: 10;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--mist);
+  background-color: var(--night-raised);
+}
+.view:hover { color: var(--white); }
+.view.view-on, .view.view-on:hover, .view.view-on:active { color: var(--ink); background-color: var(--white); }
+
+.search {
+  min-height: 72;
+  padding: 8 24;
+  border-radius: 22;
+  background-color: var(--white);
+  font-size: 26;
+  color: var(--ink);
+  placeholder-color: var(--muted);
+}
+.search:focus { ring: 0 3 var(--sun); }
+.clear {
+  min-height: 72;
+  padding: 0 22;
+  border-radius: 22;
+  font-size: 16;
+  font-weight: bold;
+  color: var(--white);
+  background-color: var(--night-raised);
+}
+.clear:hover, .clear:active { background-color: var(--night-line); }
+
+.chips { gap: 8; margin-bottom: 4; }
+.chip {
+  min-height: 40;
+  padding: 0 16;
+  border-radius: 20;
+  border: 2 solid var(--night-line);
+  font-size: 15;
+  font-weight: bold;
+  color: var(--white);
+  background-color: var(--night);
+}
+.chip:hover { background-color: var(--night-raised); }
+.chip.chip-on, .chip.chip-on:hover { color: var(--ink); background-color: var(--white); border-color: var(--white); }
+
+.feature { border-radius: 22; overflow: hidden; background-color: var(--night-raised); }
+.feature-frame { padding: 18; }
+.feature-copy { padding: 18 22; gap: 6; border-radius: 16; background-color: #091020D9; }
+.feature-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
+.feature-question { font-size: 32; line-height: 38; font-weight: bold; color: var(--white); }
+.feature-button {
+  min-height: 46;
+  margin-top: 4;
+  margin-right: auto;
+  padding: 0 20;
+  border-radius: 12;
+  font-size: 16;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.feature-button:hover, .feature-button:active { background-color: var(--sun-light); }
+
+.section-title { font-size: 22; font-weight: bold; color: var(--white); text-vertical-align: center; }
+.count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--mist); text-vertical-align: center; }
+.empty { font-size: 18; color: var(--mist); }
+
+/* question cards */
+.card { padding: 16 18; border-radius: 20; }
+.card:hover { ring: 0 3 var(--sun); }
+.card-icon, .card-tag, .card-question, .card-title { color: var(--white); }
+.card-tag { font-size: 11; font-weight: bold; letter-spacing: 1.6; text-vertical-align: center; }
+.card-question { font-size: 20; line-height: 24; font-weight: bold; }
+.card-title { font-size: 13; font-weight: bold; }
+
+/* bookshelf covers */
+.cover { border-radius: 3 10 10 3; overflow: hidden; }
+.cover:hover { ring: 0 3 var(--sun); }
+.spine { background-color: #00000040; }
+.band { padding: 0 8 0 10; background-color: var(--white); }
+.volume { font-size: 12; font-weight: bold; letter-spacing: 1.4; color: var(--ink); text-vertical-align: center; }
+.badge {
+  margin-top: 6;
+  border-radius: 10;
+  font-size: 12;
+  font-weight: bold;
+  text-align: center;
+  text-vertical-align: center;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.cover-icon { color: #FFFFFF59; }
+.cover-copy { padding: 10 12 14; gap: 4; }
+.cover-title { font-family: Noto Serif; font-size: 20; line-height: 23; font-weight: bold; color: var(--white); }
+.cover-question { font-size: 13; line-height: 17; color: var(--white); }
+
+/* ---------- reader ---------- */
+.pane { padding: 26 20 20 24; gap: 6; overflow: hidden; }
+.pane-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
+.pane-title { font-family: Noto Serif; font-size: 36; line-height: 42; font-weight: bold; color: var(--white); }
+.pane-deck { font-size: 15; line-height: 21; color: var(--mist); }
+.steps { margin-top: 18; gap: 6; }
+.step {
+  min-height: 54;
+  padding: 8 12;
+  border-radius: 14;
+  background-color: var(--night);
+}
+.step:hover { background-color: var(--night-raised); }
+.step-on, .step-on:hover { background-color: var(--night-raised); }
+.mark {
+  border: 2 solid var(--night-line);
+  border-radius: 15;
+  font-size: 13;
+  font-weight: bold;
+  text-align: center;
+  text-vertical-align: center;
+  color: var(--mist);
+}
+.mark-on { color: var(--ink); background-color: var(--sun); border-color: var(--sun); }
+.mark-done { color: var(--white); background-color: var(--go); border-color: var(--go); }
+.step-text { font-size: 15; line-height: 19; font-weight: bold; color: var(--mist); }
+.step-text-on { color: var(--white); }
+
+.page { margin: 18; padding: 22 40 24; border-radius: 26; background-color: var(--page); }
+.soft, .level {
+  min-height: 46;
+  padding: 0 16;
+  border-radius: 12;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--page-soft);
+}
+.soft:hover, .level:hover { background-color: var(--page-line); }
+.levels { padding: 4; border-radius: 14; background-color: var(--page-soft); }
+.level { min-height: 40; }
+.level.level-on, .level.level-on:hover, .level.level-on:active { color: var(--white); background-color: var(--ink); }
+.listen {
+  min-height: 46;
+  padding: 0 18;
+  border-radius: 12;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.listen:hover, .listen:active { background-color: var(--sun-light); }
+.read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
+
+.reader-scroll { padding: 26 0 20; gap: 14; }
+.step-label { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
+.section, .fact-page, .quiz-page { gap: 16; }
+.paragraphs { gap: 14; }
+.question { font-size: 44; line-height: 50; font-weight: bold; color: var(--ink); }
+.answer { font-size: 25; line-height: 38; color: var(--ink); }
+.fact {
+  padding: 22 24;
+  border-radius: 20;
+  font-family: Noto Serif;
+  font-size: 26;
+  line-height: 36;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.media { gap: 6; }
+.media-image { border-radius: 18; }
+.small-title { margin-top: 8; font-size: 20; font-weight: bold; color: var(--ink); }
+.hint { font-size: 15; color: var(--muted); }
+.words { gap: 8; }
+.word { gap: 4; }
+.term {
+  min-height: 48;
+  padding: 0 16;
+  border-radius: 12;
+  text-align: left;
+  font-size: 18;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--page-soft);
+}
+.term:hover { background-color: var(--page-line); }
+.definition { padding: 2 16 6; font-size: 18; line-height: 26; color: var(--ink); }
+
+.tile {
+  min-height: 120;
+  padding: 16 18;
+  border-radius: 20;
+  border: 2 solid var(--page-line);
+  text-align: left;
+  font-size: 21;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--page-soft);
+}
+.tile:hover { border-color: var(--muted); }
+.tile.tile-right, .tile.tile-right:hover { border-color: var(--go); background-color: var(--go-light); }
+.tile.tile-wrong, .tile.tile-wrong:hover { border-color: var(--page-line); background-color: var(--page-line); }
+.feedback { padding: 14 18; border-radius: 16; font-size: 19; line-height: 26; font-weight: bold; color: var(--ink); background-color: var(--page-soft); }
+.feedback.feedback-right { color: var(--white); background-color: var(--go); }
+
+.pager { padding-top: 12; }
+.dots { gap: 6; padding-left: 8; }
+.dot { border-radius: 5; background-color: var(--page-line); }
+.dot-on { background-color: var(--ink); }
+.next {
+  min-height: 54;
+  padding: 0 24;
+  border-radius: 16;
+  font-size: 18;
+  font-weight: bold;
+  color: var(--white);
+  background-color: var(--ink);
+}
+.next:hover, .next:active { background-color: var(--muted); }
+.pager-button { min-height: 54; border-radius: 16; }
+
+/* ---------- category colors ---------- */
+.cat-animals { background-color: var(--animals); }
+.cat-space { background-color: var(--space); }
+.cat-earth { background-color: var(--earth); }
+.cat-science { background-color: var(--science); }
+.cat-plants { background-color: var(--plants); }
+.cat-your-body { background-color: var(--your-body); }
+.cat-long-ago { background-color: var(--long-ago); }
+.chip-animals { border-color: var(--animals); }
+.chip-space { border-color: var(--space); }
+.chip-earth { border-color: var(--earth); }
+.chip-science { border-color: var(--science); }
+.chip-plants { border-color: var(--plants); }
+.chip-your-body { border-color: var(--your-body); }
+.chip-long-ago { border-color: var(--long-ago); }
+.chip-animals.chip-on, .chip-animals.chip-on:hover { color: var(--white); background-color: var(--animals); border-color: var(--animals); }
+.chip-space.chip-on, .chip-space.chip-on:hover { color: var(--white); background-color: var(--space); border-color: var(--space); }
+.chip-earth.chip-on, .chip-earth.chip-on:hover { color: var(--white); background-color: var(--earth); border-color: var(--earth); }
+.chip-science.chip-on, .chip-science.chip-on:hover { color: var(--white); background-color: var(--science); border-color: var(--science); }
+.chip-plants.chip-on, .chip-plants.chip-on:hover { color: var(--white); background-color: var(--plants); border-color: var(--plants); }
+.chip-your-body.chip-on, .chip-your-body.chip-on:hover { color: var(--white); background-color: var(--your-body); border-color: var(--your-body); }
+.chip-long-ago.chip-on, .chip-long-ago.chip-on:hover { color: var(--white); background-color: var(--long-ago); border-color: var(--long-ago); }

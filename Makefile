@@ -708,7 +708,7 @@ APP_LUA_TESTS += test-octopus-safety
 APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
-APP_LUA_TESTS += test-editor-welcome test-editor-tabs
+APP_LUA_TESTS += test-editor-welcome test-editor-tabs test-encarta
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -761,6 +761,8 @@ $(eval $(call LUA_TEST_RULE,test-data-lint,tests/test_data_lint.lua,unite copysh
 $(eval $(call LUA_TEST_RULE,test-ledger-example,tests/test_ledger_example.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
+.PHONY: test-encarta
+$(eval $(call LUA_TEST_RULE,test-encarta,tests/test_encarta.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
 
