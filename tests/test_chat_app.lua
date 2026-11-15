@@ -806,6 +806,10 @@ do
     linkApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     linkApp:show()
     assert(linkApp.screen:findChild("ContinueApple", true), "The sign-in page offers Apple where supported")
+    for _, name in ipairs { "OtherOptions", "BrowsePublicPosts", "AuthPrivacyPolicy", "AuthCommunityRules" } do
+        local link = assert(linkApp.screen:findChild(name, true), "Missing " .. name)
+        assert(link.TextHorizontalAlignment == "Left", name .. " shares the form's left edge")
+    end
     -- Each provider's mark sits before its label, centred together, on the
     -- provider's own button colours (Apple white in dark mode; Google white).
     linkApp.screen:UpdateLayout(390, 844)
