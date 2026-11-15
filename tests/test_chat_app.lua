@@ -806,6 +806,23 @@ do
     linkApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     linkApp:show()
     assert(linkApp.screen:findChild("ContinueApple", true), "The sign-in page offers Apple where supported")
+    -- Each provider's mark sits before its label, centred together, on the
+    -- provider's own button colours (Apple white in dark mode; Google white).
+    linkApp.screen:UpdateLayout(390, 844)
+    for _, case in ipairs { { "ContinueApple", "apple" }, { "ContinueGoogle", "google" } } do
+        local button = linkApp.screen:findChild(case[1], true)
+        local content, label = button:findChild(case[1] .. "Content", true), button:findChild(case[1] .. "Label", true)
+        local logo = content:getFirstChild()
+        assert(logo ~= label and logo.ActualX < label.ActualX, case[1] .. " shows its logo before the label")
+        assert(math.abs(content.ActualX + content.ActualWidth / 2 - button.ActualWidth / 2) < 2, case[1] .. " centres logo and label")
+        local serialized = require("orca.filesystem").serializeObjectToString(logo)
+        assert(serialized:find("brands/" .. case[2], 1, true), case[1] .. " uses the provider's own mark")
+    end
+    local google = linkApp.screen:findChild("ContinueGoogleContent", true):getFirstChild()
+    local segments = 0
+    local part = google:getFirstChild()
+    while part do segments = segments + 1; part = part:getNext() end
+    assert(segments == 4, "Google's mark keeps its four colours")
     click(linkApp, "ContinueApple")
     assert(opened and opened.url == "https://mock.invalid/oauth/apple" and opened.scheme == "appwrite-callback-mock",
         "Continue with Apple opens the provider page in a browser session")
