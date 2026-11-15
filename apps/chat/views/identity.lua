@@ -221,11 +221,15 @@ function Identity.auth(self, mode)
             C.text(description, { FontSize = 15, class = "chat-muted", WordWrap = true }),
         }), form,
     })
-    body:addChild(C.button(t("Privacy policy"), function() remember(); self:show("/privacy") end,
-        { Name = "AuthPrivacyPolicy", FontSize = 14 }))
-    body:addChild(C.button(t("Community rules"), function() remember(); self:show("/rules") end,
-        { Name = "AuthCommunityRules", FontSize = 14 }))
-    body:addChild(link(t("Browse public posts"), "BrowsePublicPosts", "/posts"))
+    -- Secondary links share the form's left edge and sit together.
+    local function aside(label, name, action)
+        return C.button(label, action, { Name = name, FontSize = 15, TextHorizontalAlignment = "Left" })
+    end
+    body:addChild(C.stack({ Name = "AuthLinks", Spacing = 0 }, {
+        link(t("Browse public posts"), "BrowsePublicPosts", "/posts"),
+        aside(t("Privacy policy"), "AuthPrivacyPolicy", function() remember(); self:show("/privacy") end),
+        aside(t("Community rules"), "AuthCommunityRules", function() remember(); self:show("/rules") end),
+    }))
     if not self.remote then
         body:addChild(C.text(t("Offline demo · code 123456\nEmail: demo@example.invalid · password123"), {
             Name = "OfflineAuthHint", FontSize = 11, class = "chat-dim", WordWrap = true }))
@@ -382,12 +386,12 @@ local function profileBody(self, profile)
         C.text(t("Emoji graphics by Twemoji, licensed under CC-BY 4.0. Noto fonts by Google, SIL Open Font License. Font rendering by FreeType (FreeType License). PNG decoding by libpng (libpng License) and JPEG decoding by libjpeg (IJG License). LZ4 compression by Yann Collet, BSD 2-Clause License. Lua by Lua.org, PUC-Rio, MIT License. Networking by curl (Daniel Stenberg, curl license), XML parsing by libxml2 (MIT License) and TLS by Mbed TLS (Apache License 2.0)."),
             { Name = "Credits", FontSize = 14, class = "chat-muted", WordWrap = true }),
         C.button(t("Privacy policy"), function() self:show("/privacy", "Forward") end,
-            { Name = "PrivacyPolicy", FontSize = 18 }),
+            { Name = "PrivacyPolicy", FontSize = 18, TextHorizontalAlignment = "Left" }),
         C.button(t("Community rules"), function() self:show("/rules", "Forward") end,
-            { Name = "CommunityRules", FontSize = 18 }),
+            { Name = "CommunityRules", FontSize = 18, TextHorizontalAlignment = "Left" }),
         C.command("SignOut", "log-out", t("sign out"), function() self:signOut() end, "chat-error"),
         C.button(t("delete account"), function() self:show("/delete-account", "Forward") end,
-            { Name = "DeleteAccount", FontSize = 18, class = "chat-error" }),
+            { Name = "DeleteAccount", FontSize = 18, class = "chat-error", TextHorizontalAlignment = "Left" }),
     })
 end
 
