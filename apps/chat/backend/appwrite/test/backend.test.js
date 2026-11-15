@@ -610,6 +610,25 @@ test('people search finds a display name typed with or without spaces, in any sc
   assert.deepEqual(await names('carol', 'carol'), ['Core Punch'], 'usernames still match without the index');
 });
 
+test('a new account gets a username from its email, without punctuation, numbered when taken', async () => {
+  const fixture = setup();
+  const account = (id, email, name = '') => fixture.users.set(id, { $id: id, name, email, emailVerification: true, phone: '', phoneVerification: false });
+  const username = async id => (await fixture.call(id, '/rest/v1/rpc/get_chat_profile')).body.username;
+  account('u1', 'Igor.Chernakov@gmail.com');
+  assert.equal(await username('u1'), 'igorchernakov', 'local part, lower case, no punctuation');
+  account('u2', 'igor_chernakov+news@example.com');
+  assert.equal(await username('u2'), 'igorchernakov2', 'a +tag is dropped and a taken name gets a number');
+  account('u3', 'k2x8q@privaterelay.appleid.com', 'Core Punch');
+  assert.equal(await username('u3'), 'corepunch', 'an Apple private relay address uses the account name');
+  account('u4', 'ab@example.com');
+  assert.equal(await username('u4'), null, 'too short to be a useful name: none');
+  account('u5', 'alice@other.invalid');
+  assert.equal(await username('u5'), 'alice2', 'never another account ID');
+  assert.equal(await username('u1'), 'igorchernakov', 'later sign-ins keep the name');
+  assert.equal((await fixture.call('u1', '/rest/v1/rpc/update_chat_profile', { values: { username: 'corepunch2' } })).body.username,
+    'corepunch2', 'the person can change it');
+});
+
 test('invites count only new memberships, expire, revoke, and never exceed allowance', async () => {
   const fixture = setup(), group = await room(fixture, 'group', []);
   const invite = (await fixture.call('owner', '/rest/v1/rpc/create_chat_invite', { target_room: group.id })).body;
