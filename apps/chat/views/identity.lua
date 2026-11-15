@@ -75,14 +75,41 @@ function Identity.auth(self, mode)
     local function providers()
         local signin = self.signin
         if not signin or not signin.supported then return nil end
+        -- Brand marks are masks tinted here: Apple's logo takes the label
+        -- colour; Google's "G" is its four segments in their own colours.
+        local function mark(file, foreground, class)
+            return ui.VectorView { Source = "Chat/assets/brands/" .. file .. ".svg", Width = 20, Height = 20,
+                Foreground = foreground, class = class, IgnoreHitTest = true }
+        end
+        local logos = {
+            apple = function() return mark("apple", nil, "chat-provider-ink") end,
+            google = function()
+                local logo = ui.Grid { Width = 20, Height = 20, IgnoreHitTest = true }
+                for _, part in ipairs { { "blue", "#4285F4" }, { "green", "#34A853" },
+                    { "yellow", "#FBBC05" }, { "red", "#EA4335" } } do
+                    logo:addChild(mark("google-" .. part[1], part[2]))
+                end
+                return logo
+            end,
+        }
         local function provider(name, label, id)
-            return C.button(label, function()
+            local button = C.button("", function()
                 if busy then return end
                 remember()
                 self:notice("")
                 local ok, err = signin:start(id)
                 if not ok then self:notice(err and err.message or t("Please try again."), true) end
-            end, { Name = name, Height = 52, FontSize = 16, Background = "#00000000" })
+            end, { Name = name, Height = 52, Background = "#00000000", BorderWidth = "1",
+                class = "chat-provider chat-provider-" .. id })
+            -- Logo before the label, centred together, as each provider's guidelines show.
+            button:addChild(C.stack({ Name = name .. "Content", Direction = "Horizontal", AlignItems = "Center",
+                Spacing = 10, MarginLeft = 0/0, MarginRight = 0/0, MarginTop = 0/0, MarginBottom = 0/0, -- NaN: auto
+                IgnoreHitTest = true }, {
+                logos[id](),
+                C.text(label, { Name = name .. "Label", FontSize = 16, FontWeight = "Bold",
+                    class = "chat-provider-ink", IgnoreHitTest = true }),
+            }))
+            return button
         end
         return C.stack({ Name = "ProviderSignIn", Spacing = 12 }, {
             provider("ContinueApple", t("Continue with Apple"), "apple"),

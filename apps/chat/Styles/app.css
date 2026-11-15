@@ -65,6 +65,18 @@
    corners; a photo rounds the corners it shares with its bubble. */
 .chat-input { border-radius: 4; }
 .chat-outline { border-radius: 4; }
+/* Sign in with Apple and Google, after each provider's button guidelines:
+   Apple white on dark and black on light; Google always white with a grey
+   outline and its full-colour mark. The label and Apple logo use -ink. */
+.chat-provider { border-radius: 8; }
+.chat-dark .chat-provider-apple { background-color: #ffffff; border-color: #ffffff; }
+.chat-dark .chat-provider-apple .chat-provider-ink { color: #000000; }
+.chat-light .chat-provider-apple { background-color: #000000; border-color: #000000; }
+.chat-light .chat-provider-apple .chat-provider-ink { color: #ffffff; }
+.chat-dark .chat-provider-google { background-color: #ffffff; border-color: #ffffff; }
+.chat-light .chat-provider-google { background-color: #ffffff; border-color: #747775; }
+.chat-provider-google .chat-provider-ink { color: #1f1f1f; }
+.chat-provider:hover { opacity: 0.9; }
 .chat-primary { border-radius: 6; }
 .chat-badge { border-radius: 6; }
 /* Filled checkbox corners match the other 6-point controls. */
