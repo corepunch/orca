@@ -20,7 +20,8 @@ local pages = {
 }
 
 function Shell.new(screen, navigate, menu)
-    local self = setmetatable({ screen = screen, pages = {}, items = {}, routes = {} }, Shell)
+    -- joined: pages whose own frosted strip docks on the bar (Pages/Posts.xml).
+    local self = setmetatable({ screen = screen, pages = {}, items = {}, routes = {}, joined = { Posts = true } }, Shell)
     screen.Name = "ChatShell"
     self.content = ui.PageHost { Name = "TabContent" }
     local buttons = {}
@@ -53,6 +54,8 @@ function Shell:show(key, content)
         if item.selected ~= (value == key) then item.selected = value == key end
     end
     self.active = key
+    -- A page that docks its own frosted strip on the bar shares one panel with it.
+    self.bar.StateClasses = self.joined[key] and "bar-joined" or ""
     core.runAllPrograms(self.screen)
     return self.screen
 end

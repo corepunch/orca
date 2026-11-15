@@ -62,6 +62,30 @@ local function top(node)
 end
 local newPost = app.screen:findChild("NewPublicPost", true)
 assert(top(newPost) + newPost.ActualHeight <= top(bar), "Public tasks must sit above the root footer")
+-- Like Messages: the timeline header frost reaches the top edge behind the
+-- status bar, and the commands strip and app bar form one frosted panel.
+do
+    app.screen.SafeAreaTop, app.screen.SafeAreaBottom = 59, 34
+    settle(app); settle(app)
+    local function header(node)
+        local tag = fs.serializeObjectToString(node):match("<[%w_:][^>]*>") or ""
+        local classes = tag:match('%sclass="([^"]*)"') or ""
+        if (" " .. classes .. " "):find(" pivot-bar ", 1, true) then return node end
+        local child = node:getFirstChild()
+        while child do local found = header(child); if found then return found end; child = child:getNext() end
+    end
+    local bar_ = assert(header(timeline), "Timeline header bar")
+    assert(top(bar_) == 0 and bar_.ActualHeight > 59, "The posts header extends behind the status bar")
+    local commands = app.screen:findChild("PostsCommands", true)
+    assert(math.abs(top(commands) + commands.ActualHeight - top(bar)) < 0.5, "The commands sit flush on the app bar")
+    assert(commands.BackdropFilterBlurRadius > 0 and commands.BackgroundColor.A < 1, "The commands strip is frosted like the bar")
+    assert(bar.BorderWidthTop == 0, "No hairline divides the commands strip from the app bar")
+    press(app, "AppBarChats")
+    assert(bar.BorderWidthTop > 0, "Other pages keep the app bar's hairline")
+    press(app, "AppBarPosts")
+    app.screen.SafeAreaTop, app.screen.SafeAreaBottom = 0, 0
+    settle(app)
+end
 
 assert(feature.client:currentUserId() == app.client:getSession().user.id, "Posts uses the same account")
 feature.app:selectFeed("discover"); settle(app)
