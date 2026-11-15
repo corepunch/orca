@@ -512,13 +512,13 @@ assert(glyph.className == "VectorView" and tostring(glyph.Source):match("message
     "App bar buttons draw only their glyph: " .. tostring(glyph.Source))
 -- The keyboard lifts a focused settings field above itself on the focused page.
 drain(app)
--- Tapping the Mobile row opens the number field in place, as in Telegram.
-assert(not profile:findChild("PhoneEditor", true).Visible, "The number editor stays closed until its row is tapped")
-profile:findChild("PhoneSetting", true):send("Node.LeftButtonUp")
+-- Tapping the Username row opens its field in place, as in Telegram.
+assert(not profile:findChild("UsernameEditor", true).Visible, "The username editor stays closed until its row is tapped")
+profile:findChild("UsernameSetting", true):send("Node.LeftButtonUp")
 drain(app)
-local identifier = assert(profile:findChild("PhoneNumber", true))
-assert(profile:findChild("PhoneEditor", true).Visible and not profile:findChild("LinkForm", true).Visible
-    and identifier.Type == "Phone", "The Mobile row opens a phone keypad field, not email verification")
+local identifier = assert(profile:findChild("Username", true))
+assert(profile:findChild("UsernameEditor", true).Visible and not profile:findChild("LinkForm", true).Visible,
+    "The Username row opens its field in place, not email verification")
 local function bottomOnScreen(node)
     local y = node.ActualY + node.ActualHeight
     for parent in function(_, p) p = p:getParent(); return p ~= profile and p or nil end, nil, node do
@@ -788,6 +788,10 @@ assert(authApp.avatarPaths[newUserId] and authApp.screen:findChild("WelcomeAvata
 assert(authApp.screen:findChild("ChooseAvatar", true) and authApp.screen:findChild("UploadAvatar", true))
 click(authApp, "WelcomePictureContinue")
 assert(authApp.screen:findChild("ConversationListAll", true), "Continue carries on into the app")
+do
+    local settings = authApp:dispatch("/profile").view
+    assert(not settings:findChild("PhoneSetting", true), "A new account is offered no Mobile row without SMS verification")
+end
 assert(authApp.authDraft == nil, "Successful authentication must clear form drafts")
 assert(not authApp.screen:findChild("ContinueApple", true), "Provider buttons need native browser sign-in")
 
@@ -904,19 +908,10 @@ do
     local boxCentre, iconCentre = screenX(indicator) + indicator.ActualWidth / 2, screenX(icon) + icon.ActualWidth / 2
     assert(math.abs(boxCentre - iconCentre) < 1, ("Check box indicator centre %g must match icon centre %g"):format(boxCentre, iconCentre))
 end
--- A phone number saves as typed, without a code, and only for its owner.
+-- Without SMS verification a number can be neither proven nor found: a new
+-- account is offered no Mobile row and no phone discovery.
 assert(not otpApp.screen:findChild("DiscoverablePhone", true), "Unverified numbers offer no phone discovery")
-click(otpApp, "PhoneSetting")
-otpApp.screen:findChild("PhoneNumber", true).Text = "151 1234"
-click(otpApp, "PhoneEditorSave")
-assert(otpApp.screen:findChild("PhoneEditor", true).Visible and otpApp.screen:findChild("SettingsStatus", true).Visible,
-    "A number without + and country code stays open with an error")
-otpApp.screen:findChild("PhoneNumber", true).Text = "+44 7700 900987"
-click(otpApp, "PhoneEditorSave")
-assert(otpApp.client:getProfile().phone == "+447700900987", "The number saves in E.164 without verification")
-assert(not otpApp.screen:findChild("PhoneEditor", true).Visible
-    and otpApp.screen:findChild("PhoneSettingValue", true):getTextContent() == "+447700900987",
-    "Saving closes the editor and the Mobile row shows the number")
+assert(otpApp.screen:findChild("PhoneSetting", true), "A saved number stays visible, to review or remove it")
 -- Email changes still prove ownership with a code.
 click(otpApp, "EmailSetting")
 assert(otpApp.screen:findChild("LinkForm", true).Visible and otpApp.screen:findChild("LinkIdentifier", true).Type == "Email",

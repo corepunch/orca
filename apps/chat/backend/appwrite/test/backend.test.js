@@ -668,6 +668,30 @@ test('a new account gets a username from its email, without punctuation, numbere
     'corepunch2', 'the person can change it');
 });
 
+test('contacts find only people who verified their email and opted in, and nothing is stored', async () => {
+  const fixture = setup();
+  const match = async (user, emails) => fixture.call(user, '/rest/v1/rpc/match_chat_contacts', { emails });
+  await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { discoverable_email: true } });
+  await fixture.call('bob', '/rest/v1/rpc/get_chat_profile');
+  await fixture.call('eve', '/rest/v1/rpc/update_chat_profile', { values: { discoverable_email: true } });
+  fixture.users.get('eve').emailVerification = false;
+  const before = JSON.stringify([...fixture.repo.table('state').values()].filter(row => !String(row.kind).startsWith('rate')));
+  const found = await match('owner', [' Alice@Example.invalid ', 'alice@example.invalid', 'bob@example.invalid',
+    'eve@example.invalid', 'owner@example.invalid', 'nobody@example.invalid', 'not-an-email']);
+  assert.equal(found.status, 200);
+  assert.deepEqual(found.body.map(row => [row.id, row.email]), [['alice', 'alice@example.invalid']],
+    'only verified, opted-in people other than you, each once');
+  assert.equal(found.body[0].phone, undefined); assert.equal(found.body[0].discoverable_email, undefined);
+  assert.equal(JSON.stringify([...fixture.repo.table('state').values()].filter(row => !String(row.kind).startsWith('rate'))), before,
+    'the addresses are not stored');
+  await fixture.call('alice', '/rest/v1/rpc/set_chat_user_block', { target_user: 'owner', blocked: true });
+  assert.deepEqual((await match('owner', ['alice@example.invalid'])).body, [], 'a block hides the person');
+  assert.equal((await match('owner', Array.from({ length: 501 }, (_, i) => i + '@example.invalid'))).status, 400);
+  assert.equal((await match('owner', 'alice@example.invalid')).status, 400);
+  for (let i = 0; i < 10; i++) assert.equal((await match('bob', ['alice@example.invalid'])).status, 200);
+  assert.equal((await match('bob', ['alice@example.invalid'])).status, 429, 'matching is rate limited');
+});
+
 test('invites count only new memberships, expire, revoke, and never exceed allowance', async () => {
   const fixture = setup(), group = await room(fixture, 'group', []);
   const invite = (await fixture.call('owner', '/rest/v1/rpc/create_chat_invite', { target_room: group.id })).body;

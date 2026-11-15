@@ -149,6 +149,7 @@ def main():
         'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown'],
         'ORCAProject': 'project', 'ITSAppUsesNonExemptEncryption': False,
         'NSCameraUsageDescription': 'Your camera takes a profile photo or a photo to share, only when you choose to.',
+        'NSContactsUsageDescription': 'Find friends who use the app: only email addresses are checked, and your contacts are never stored.',
         'UIApplicationSceneManifest': {
             'UIApplicationSupportsMultipleScenes': False,
             'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{

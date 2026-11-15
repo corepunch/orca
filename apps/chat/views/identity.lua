@@ -374,7 +374,10 @@ local function profileBody(self, profile)
         ProfileAvatar.controls(self, photo, self.status),
         self.status,
         C.eyebrow(t("account")),
-        rows { nameRow, editors[1], usernameRow, editors[2], phoneRow, editors[3], emailRow },
+        -- No SMS verification yet, so a number cannot be found or proven: only
+        -- an already saved number stays visible, to review or remove it.
+        rows((profile.phone or "") ~= "" and { nameRow, editors[1], usernameRow, editors[2], phoneRow, editors[3], emailRow }
+            or { nameRow, editors[1], usernameRow, editors[2], emailRow }),
         link,
         settingsStatus,
         C.eyebrow(t("privacy")),

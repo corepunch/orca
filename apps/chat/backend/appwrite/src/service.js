@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { compactName, eq, key, order, reject } from './rest.js';
 import { identifier } from './auth.js';
 
-const PEOPLE_RESULTS = 20;
+const PEOPLE_RESULTS = 20, CONTACT_EMAILS = 500;
 // Read state starts with this release: older history never counts as unread,
 // so existing members do not open the app to "99+" everywhere.
 const UNREAD_SINCE = '2026-11-15T00:00:00.000Z', UNREAD_LIMIT = 100;
@@ -177,6 +177,29 @@ export class ChatService {
         if (!account[field + 'Verification'] || account[field]?.toLowerCase() !== value) continue;
       }
       result.push(publicProfile({ ...profile, display_name: this.safety.displayName(profile.display_name) }));
+    }
+    return result;
+  }
+  // Friends from the device's contacts: only people who verified that email
+  // and turned on "find me by email", like an email search. The addresses are
+  // used for this lookup only and never stored.
+  async matchContacts(user, emails) {
+    if (!Array.isArray(emails) || emails.length > CONTACT_EMAILS || emails.some(value => typeof value !== 'string'))
+      reject(400, 'validation', 'Send at most 500 email addresses.');
+    await this.auth.limit('contacts:' + user.$id, 10, 3600);
+    const wanted = [...new Set(emails.map(value => value.trim().toLowerCase())
+      .filter(value => value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)))];
+    const result = [], seen = new Set();
+    for (let start = 0; start < wanted.length; start += 100) {
+      const batch = wanted.slice(start, start + 100);
+      for (const profile of await this.repo.list('profiles', [{ method: 'equal', attribute: 'email', values: batch }])) {
+        if (seen.has(profile.id) || profile.id === user.$id || !profile.discoverable_email) continue;
+        if (await this.safety.blocked(user.$id, profile.id)) continue;
+        const account = await this.auth.rest.request('GET', '/users/' + encodeURIComponent(profile.id));
+        if (!account.emailVerification || account.email?.toLowerCase() !== profile.email) continue;
+        seen.add(profile.id);
+        result.push({ ...publicProfile({ ...profile, display_name: this.safety.displayName(profile.display_name) }), email: profile.email });
+      }
     }
     return result;
   }
