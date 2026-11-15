@@ -2,10 +2,10 @@
 
 An iPad-first, offline encyclopedia for emerging readers, written in the
 spirit of the *Was ist Was* books: every topic starts from a question a child
-would ask. The home screen is a wall of those questions, or a bookshelf of
-numbered covers, filtered by category or search. An article is read one
+would ask. The home screen is a wall of illustrated questions, or a bookshelf
+of numbered covers, filtered by category or search. An article is read one
 question per page, then a “Did you know?” page with the word lab, then a short
-quiz. The library has 13 original articles. Search, both reading levels, word
+quiz. The library has 15 illustrated articles. Search, both reading levels, word
 definitions, and reading checks work without a connection. Tap **Read aloud** in the reader to listen to the selected level.
 The article follows the recording and marks each spoken word. Use **Pause**
 and **Resume** to take a break, or **Stop** to start over. The app needs no
@@ -45,13 +45,18 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 | `id`, `title`, `category`, `deck`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>` and `.chip-<slug>` rule in the stylesheet, and an icon in `Icons/`. |
 | `question` | The cover question shown on the wall and the bookshelf, such as “Why is Mars red?”. |
 | `fact` | One astonishing, checkable “Did you know?” sentence. |
-| `cover` (optional) | A bundled cover illustration for the bookshelf. Without it the cover uses `image`, then the category icon. |
-| `first`, `more` | Two versions of the same topic. Each section is a question heading followed by one or more paragraphs, and is shown as its own page. Use short sentences and concrete words in the first read. Expand the explanations in the second version. |
-| `image` (optional) | A bundled image path and a plain-language caption. |
+| `cover` (optional) | A bundled cover path for the Questions overview and Bookshelf. Leave it out to reuse the article's illustration. If neither is supplied, the cover uses the category icon. |
+| `first`, `more` | Two versions of the same topic. Each section is a question heading followed by one or more paragraphs, and is shown as its own page. A section can also have a named `image = { path = …, caption = … }` field. Use this for a picture or diagram that helps answer that question. |
+| `image` (optional) | A bundled image path and a plain-language caption. Used on the first question of either reading level unless that section specifies its own image. |
 | `words` | Word, plain pronunciation guide, and meaning in context. Pick words used in the topic. |
 | `quiz` | One question with choices, a 1-based correct choice, and a short explanation. Make sure either reading level gives enough information to answer it. |
 | `related` | IDs of other articles in the bundle. |
 | `sources` | References for editorial review. The app never opens or fetches these URLs. |
+
+Keep artwork under [Images/](Images/) as landscape 3:2 JPEGs. Keep the main
+subject near the middle for the bookshelf crop. The reader shows the whole
+image so diagram labels stay in view. See [artwork prompts](Artwork.md) for
+the painted illustrations and diagrams.
 
 ## Update a recording
 

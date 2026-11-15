@@ -36,11 +36,18 @@ end
 
 -- Library -------------------------------------------------------------------
 
+local function setCoverArt(tile, article)
+    local art = article.cover or (article.image and article.image.path)
+    local image, mark = control(tile, "Art"), control(tile, "Icon")
+    image.Visible, mark.Visible = art ~= nil, art == nil
+    if art then image.Src = art else mark.Source = icon(article) end
+end
+
 function Controller:card(article)
     local card = prefab("QuestionCard")
     card.Name = "Open_" .. article.id
     card.StyleClass = "card cat-" .. slug(article.category)
-    control(card, "Icon").Source = icon(article)
+    setCoverArt(card, article)
     control(card, "Category").Text = article.category:upper()
     control(card, "Question").Text = article.question
     control(card, "Title").Text = article.title .. "  ›"
@@ -55,10 +62,7 @@ function Controller:cover(article)
     control(cover, "Volume").Text = string.format("Nº %02d", article.volume)
     control(cover, "Title").Text = article.title
     control(cover, "Question").Text = article.question
-    local art = article.cover or (article.image and article.image.path)
-    local image, mark = control(cover, "Art"), control(cover, "Icon")
-    image.Visible, mark.Visible = art ~= nil, art == nil
-    if art then image.Src = art else mark.Source = icon(article) end
+    setCoverArt(cover, article)
     cover.Click = function() self:openArticle(article.id) end
     return cover
 end
@@ -174,7 +178,8 @@ function Controller:setReadingLevel(level, page)
     clear(sections)
     self.sections, self.blockPage, self.pages = {}, {}, {}
     local blocks = {}
-    for i, entry in ipairs(byID[state.id][level]) do
+    local article = byID[state.id]
+    for i, entry in ipairs(article[level]) do
         local section = prefab("Section")
         local title = control(section, "Title")
         title.Text = entry[1]
@@ -185,6 +190,13 @@ function Controller:setReadingLevel(level, page)
             paragraph.Text = entry[p]
             paragraphs:addChild(paragraph)
             blocks[#blocks + 1], self.blockPage[paragraph] = paragraph, i
+        end
+        local image = entry.image or (i == 1 and article.image)
+        if image then
+            local media = control(section, "SectionMedia")
+            control(media, "SectionImage").Src = image.path
+            control(media, "SectionCaption").Text = image.caption
+            media.Visible = true
         end
         sections:addChild(section)
         self.sections[i] = section
@@ -299,12 +311,6 @@ end
 function Controller:showFact(article)
     local state, view = self.current, self.view
     control(view, "Fact").Text = article.fact
-    local media, image = control(view, "ArticleMedia"), article.image
-    media.Visible = image ~= nil
-    if image then
-        control(media, "ArticleImage").Src = image.path
-        control(media, "ArticleCaption").Text = image.caption
-    end
     local words = control(view, "Words")
     clear(words)
     for i, word in ipairs(article.words) do

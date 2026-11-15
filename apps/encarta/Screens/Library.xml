@@ -69,10 +69,6 @@
                     <StackView Name="FactPage" Visible="false" class="fact-page">
                         <TextBlock class="question" WordWrap="true">Did you know?</TextBlock>
                         <TextBlock Name="Fact" class="fact" WordWrap="true"/>
-                        <StackView Name="ArticleMedia" Visible="false" class="media">
-                            <ImageView Name="ArticleImage" Stretch="UniformToFill" Height="240" IgnoreHitTest="true" class="media-image"/>
-                            <TextBlock Name="ArticleCaption" class="hint" WordWrap="true"/>
-                        </StackView>
                         <TextBlock class="small-title">Word lab</TextBlock>
                         <TextBlock class="hint">Tap a word to see what it means.</TextBlock>
                         <StackView Name="Words" class="words"/>

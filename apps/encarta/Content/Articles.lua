@@ -1,4 +1,14 @@
 -- Original text. Reference URLs are for editors; the app never fetches them.
+local function art(name, caption)
+    return { path = "encarta/Images/" .. name .. ".jpg", caption = caption }
+end
+
+local moon = art("moon", "Sunlight makes a bright crescent on the Moon.")
+local phases = art("moon-phases", "Four ways the Moon looks from the Northern Hemisphere as it goes around Earth.")
+local waterCycle = art("water-cycle", "Water vapor rises. Rain falls from clouds, and rivers carry water back to the sea.")
+local volcano = art("volcanoes", "Glowing lava flows down the side of an erupting volcano.")
+local sprout = art("seeds", "A bean seed splits open. A root grows down, and a shoot grows up.")
+
 return {
     {
         id = "octopus",
@@ -18,10 +28,7 @@ return {
             { "A disguise that changes", "Tiny sacs of color sit just under an octopus’s skin. Muscles stretch these sacs to make the color easier to see. The octopus can switch from light to dark or make a spotted pattern.",
                 "Some octopuses can make their skin bumpy as well. Matching the color and shape of the ground can make them very hard to spot." },
         },
-        image = {
-            path = "encarta/Images/octopus.jpg",
-            caption = "An artist’s view of an octopus among rocks and sea plants.",
-        },
+        image = art("octopus", "An octopus stretches its arms among rocks and sea plants."),
         words = {
             { "sucker", "SUCK-er", "A little cup that can stick to a surface. An octopus uses suckers to grip things." },
             { "camouflage", "KAM-uh-flahzh", "A way to blend in so other animals have trouble seeing you." },
@@ -46,14 +53,15 @@ return {
         deck = "Why the Moon seems to change shape.",
         fact = "Footprints left on the Moon in 1969 are still there, because no wind blows them away.",
         keywords = "sun Earth night orbit crescent phases sunlight",
+        image = moon,
         first = {
             { "Light from the Sun", "The Moon does not make its own light. The Sun shines on it. Some of that light bounces off the Moon and reaches our eyes." },
-            { "A thin Moon, a round Moon", "The Moon goes around Earth. As it moves, we see more or less of the part lit by the Sun. Sometimes we see a thin curve. Sometimes we see a bright, round face." },
+            { "A thin Moon, a round Moon", "The Moon goes around Earth. As it moves, we see more or less of the part lit by the Sun. Sometimes we see a thin curve. Sometimes we see a bright, round face.", image = phases },
         },
         more = {
             { "A changing view", "The Sun lights half of the Moon. As the Moon orbits Earth, we see different amounts of that bright half. We call these views phases.",
-                "A crescent is a thin curve of light. At full Moon, almost all of the side facing Earth looks bright. At new Moon, the bright side mostly faces away from us." },
-            { "Be a Moon watcher", "Try looking for the Moon at the same time for several days. Draw the shape of the bright part when you can see it. The change is easier to notice when you compare your drawings." },
+                "A crescent is a thin curve of light. At full Moon, almost all of the side facing Earth looks bright. At new Moon, the bright side mostly faces away from us.", image = phases },
+            { "Be a Moon watcher", "Try looking for the Moon at the same time for several days. Draw the shape of the bright part when you can see it. The change is easier to notice when you compare your drawings.", image = moon },
         },
         words = {
             { "orbit", "OR-bit", "To go around another object in space." },
@@ -76,14 +84,15 @@ return {
         deck = "Follow a drop from the ground to the clouds and back.",
         fact = "The water in your glass has been going around the water cycle for millions of years.",
         keywords = "rain cloud river ocean weather evaporation condensation precipitation",
+        image = art("water", "Rain falls from a cloud over a mountain lake."),
         first = {
             { "Up into the air", "After it rains, a puddle may get smaller. Some of its water turns into a gas and mixes with the air. We cannot see this gas." },
-            { "Back down again", "When damp air cools enough, tiny drops of water can form a cloud. If drops get big enough, they can fall as rain. Water on the ground can start the trip again." },
+            { "Back down again", "When damp air cools enough, tiny drops of water can form a cloud. If drops get big enough, they can fall as rain. Water on the ground can start the trip again.", image = waterCycle },
         },
         more = {
             { "From water to vapor", "Water from oceans, lakes, and puddles can change from a liquid into a gas called water vapor. This is evaporation. Heat from the Sun helps move water from the surface into the air.",
                 "As moist air cools, some of its vapor can turn back into liquid drops or form ice crystals. Clouds are made of these small drops or crystals." },
-            { "From clouds to ground", "Water falls from clouds as rain or snow when the drops or ice crystals grow big enough. It may soak into the ground, collect as snow, or run into rivers and return to the ocean." },
+            { "From clouds to ground", "Water falls from clouds as rain or snow when the drops or ice crystals grow big enough. It may soak into the ground, collect as snow, or run into rivers and return to the ocean.", image = waterCycle },
         },
         words = {
             { "evaporation", "ee-vap-uh-RAY-shun", "When liquid water changes into a gas called water vapor." },
@@ -106,6 +115,7 @@ return {
         deck = "A busy hive works together like one big team.",
         fact = "To make one spoonful of honey, bees visit thousands of flowers.",
         keywords = "insect bug hive honey flower pollen pollination wax queen",
+        image = art("bees", "A honeybee visits a flower. Look for the yellow pollen on its back leg."),
         first = {
             { "Who lives in a hive?", "Honeybees live together in a hive. One hive can hold thousands of bees. Each bee has a job to do." },
             { "Why do bees visit flowers?", "A bee drinks sweet juice from flowers. Yellow dust called pollen sticks to its fuzzy body. When the bee visits the next flower, it carries the pollen along. This helps the plant make seeds." },
@@ -137,6 +147,7 @@ return {
         deck = "Birds that cannot fly, but can really swim.",
         fact = "An emperor penguin can dive more than 500 meters deep. That is deeper than the tallest skyscraper in Europe is tall.",
         keywords = "bird antarctica ice cold ocean swim fish feathers",
+        image = art("penguins", "An emperor penguin uses its flippers to swim below the ice."),
         first = {
             { "Can a penguin fly?", "No! A penguin is a bird, but it cannot fly. Its wings are stiff and flat, like flippers. Penguins use them to zoom through the water." },
             { "How does a penguin stay warm?", "Many penguins live where the sea is very cold. Their feathers are packed close together. A layer of fat under the skin helps keep their bodies warm." },
@@ -167,6 +178,7 @@ return {
         deck = "How we know about animals no one ever saw.",
         fact = "Birds are dinosaurs, so a chicken is a living cousin of Tyrannosaurus rex.",
         keywords = "fossil bones reptile extinct prehistoric history birds",
+        image = art("dinosaurs", "A scientist brushes dirt away from a fossil bone."),
         first = {
             { "When did dinosaurs live?", "Dinosaurs lived millions of years ago. Some were as big as a bus. Others were as small as a chicken. No person ever saw a living dinosaur." },
             { "How do we know what they looked like?", "We learn about dinosaurs from fossils. A fossil can be a bone, a tooth, or a footprint that turned to stone. Scientists study fossils like clues in a mystery." },
@@ -197,6 +209,7 @@ return {
         deck = "Our closest star gives Earth light and warmth.",
         fact = "The sunlight reaching your eyes now left the Sun about eight minutes ago.",
         keywords = "star light heat day sky solar system planets",
+        image = art("sun", "A loop of glowing gas rises above the Sun’s surface."),
         first = {
             { "Is the Sun a star?", "Yes! The Sun is a star. It looks bigger than other stars because it is much closer to us. It is a giant ball of very hot gas." },
             { "What would happen without the Sun?", "The Sun gives Earth light and heat. Plants use sunlight to grow. Without the Sun, Earth would be dark and frozen. Never look right at the Sun. It can hurt your eyes." },
@@ -228,6 +241,7 @@ return {
         deck = "Visit the red planet with robot explorers.",
         fact = "A day on Mars lasts about 40 minutes longer than a day on Earth.",
         keywords = "planet red rover robot solar system dust",
+        image = art("mars", "A rover rolls across the rusty ground on Mars."),
         first = {
             { "Why is Mars red?", "Mars is a planet, like Earth. It looks red because its dirt has rust in it. Mars is cold and dusty, with no air we can breathe." },
             { "Has anyone been to Mars?", "Not yet! No person has gone to Mars. Instead, we send robots called rovers. They roll across the ground, take pictures, and study the rocks." },
@@ -258,9 +272,11 @@ return {
         deck = "Mountains that can rumble, smoke, and grow.",
         fact = "Measured from the sea floor, Mauna Kea in Hawaiʻi is taller than Mount Everest.",
         keywords = "lava magma eruption mountain rock ash fire",
+        cover = volcano.path,
+        image = art("volcano-cutaway", "Magma rises inside the volcano. Once it flows out of the vent, we call it lava."),
         first = {
             { "What is inside a volcano?", "Deep under the ground, it is so hot that some rock melts. Melted rock is called magma. A volcano is a place where magma can come up to the top." },
-            { "What happens when a volcano erupts?", "When a volcano erupts, hot melted rock flows out. Now we call it lava. Lava cools and turns into hard rock. Over time, a volcano can grow into a mountain." },
+            { "What happens when a volcano erupts?", "When a volcano erupts, hot melted rock flows out. Now we call it lava. Lava cools and turns into hard rock. Over time, a volcano can grow into a mountain.", image = volcano },
         },
         more = {
             { "Why does magma come up?", "Magma is lighter than the solid rock around it, so it slowly rises. It collects in a space under the volcano. When the pressure is high enough, the magma bursts or oozes out through an opening called a vent.",
@@ -289,6 +305,7 @@ return {
         deck = "Sunlight and raindrops paint the sky.",
         fact = "Every rainbow is really a full circle. From the ground, the land hides the bottom half.",
         keywords = "light color rain sun prism weather sky",
+        image = art("rainbows", "Look closely: red is on the outside of the rainbow, and violet is on the inside."),
         first = {
             { "What color is sunlight?", "Sunlight looks white, but it is a mix of many colors. Red, orange, yellow, green, blue, and violet are all inside it." },
             { "Where do rainbows come from?", "When sunlight shines into raindrops, the drops bend the light. The colors spread apart and make a rainbow. Stand with the Sun behind you to look for one." },
@@ -319,6 +336,7 @@ return {
         deck = "An invisible push and pull.",
         fact = "Sea turtles can sense Earth’s magnetism and use it to find their way across the ocean.",
         keywords = "magnet metal iron compass north south pull push force",
+        image = art("magnets", "Steel paper clips stick to the ends of a horseshoe magnet."),
         first = {
             { "How can a magnet pull without touching?", "A magnet can pull some metal things toward it. It can pick up a paper clip without touching it. Magnets stick to iron, but not to wood or plastic." },
             { "Why do magnets sometimes push away?", "Every magnet has two ends, called poles. One is north and one is south. A north pole and a south pole pull together. Two north poles push apart." },
@@ -349,13 +367,15 @@ return {
         deck = "A whole plant packed into a tiny case.",
         fact = "Scientists grew a date palm from a seed that was about 2,000 years old.",
         keywords = "plant grow sprout garden flower tree root soil",
+        cover = sprout.path,
+        image = art("seed-cutaway", "Inside a bean seed, the coat protects the baby plant and its stored food."),
         first = {
             { "What is inside a seed?", "A seed holds a baby plant. It also holds food for the baby plant to use. A hard coat keeps the seed safe." },
-            { "What does a seed need to grow?", "A seed needs water, air, and the right warmth to sprout. First a root grows down. Then a little shoot grows up toward the light." },
+            { "What does a seed need to grow?", "A seed needs water, air, and the right warmth to sprout. First a root grows down. Then a little shoot grows up toward the light.", image = sprout },
         },
         more = {
             { "How does a seed wake up?", "A seed can wait for a long time before it grows. When it soaks up water, it swells and its coat splits open. This first growth is called germination.",
-                "The root pushes down to hold the plant in place and drink water. The shoot pushes up. Once the first leaves open, the plant can use sunlight to make its own food." },
+                "The root pushes down to hold the plant in place and drink water. The shoot pushes up. Once the first leaves open, the plant can use sunlight to make its own food.", image = sprout },
             { "How do seeds travel?", "Plants cannot walk, so their seeds travel in other ways. Dandelion seeds float on the wind. Burrs hitch a ride on animal fur. Birds eat berries and drop the seeds far away.",
                 "Try it: put a bean seed on a damp paper towel inside a clear bag. Check it each day and draw what you see." },
         },
@@ -380,6 +400,7 @@ return {
         deck = "The strong muscle that keeps you going.",
         fact = "Your heart beats about 100,000 times every day.",
         keywords = "body blood muscle beat pulse health exercise",
+        image = art("heart", "Put a hand on your chest. Can you feel your heart beating?"),
         first = {
             { "Where is your heart?", "Make a fist. Your heart is about that big. It is a muscle in your chest, and it squeezes again and again, all day and all night." },
             { "What does your heart do all day?", "Each squeeze pushes blood through tubes all over your body. Blood carries air and food to every part of you. Put your hand on your chest to feel your heart beat." },
@@ -402,5 +423,79 @@ return {
         },
         related = { "magnets", "bees" },
         sources = { "https://www.nhlbi.nih.gov/health/heart/how-heart-works" },
+    },
+    {
+        id = "pyramids",
+        category = "Long Ago",
+        title = "The Pyramids",
+        question = "How did Egyptians build the pyramids?",
+        deck = "Follow a block of stone from the ground up.",
+        fact = "A boat crew’s log from ancient Egypt still tells us about stone deliveries for the Great Pyramid.",
+        keywords = "egypt egyptian giza khufu pharaoh limestone ramp sledge nile ancient builders",
+        image = art("pyramids", "An artist’s idea of how a crew might have pulled a stone block up a ramp at Giza."),
+        first = {
+            { "How did workers move the stones?", "Teams pulled blocks of stone too heavy for you to lift. They used ropes and set each block on a wooden sled. For some stones, part of the trip was by boat." },
+            { "How did the stones get so high?", "Workers probably pulled stones up ramps to reach the next layer. A ramp lets you go up a little at a time. Try pushing a toy up a book propped on a box. We still do not know just how the ramps went." },
+        },
+        more = {
+            { "Where did the stone come from?", "Much of the stone for the Great Pyramid came from quarries close to Giza. A quarry is a place where workers cut stone out of the ground. Some fine white limestone came from farther away.",
+                "A crew leader named Merer wrote down trips carrying that stone by boat. His log gives us a glimpse of how teams brought supplies to the building site while the pyramid was going up." },
+            { "Why are we still curious about the ramps?", "A sledge has wooden runners that slide along the ground. With ropes, a crew could pull it up a sloping ramp. The builders set blocks in layers, each smaller than the one beneath it.",
+                "A straight ramp could have reached the lower layers. Higher up, a straight ramp would have needed to be very long. Did the builders turn their ramps around corners, or lift the blocks another way? The clues leave room for more than one answer." },
+        },
+        words = {
+            { "ramp", "RAMP", "A sloping path between a low place and a higher one." },
+            { "sledge", "SLEJ", "A wooden sled used to drag something heavy along the ground." },
+        },
+        quiz = {
+            question = "How could a ramp help the pyramid builders?",
+            choices = { "It could carry a boat across a river.", "It could break a big stone in half.", "It could let a crew pull stone up a little at a time." },
+            correct = 3,
+            explanation = "A slope lets a crew pull a stone up to the next level.",
+        },
+        related = { "dinosaurs", "earth-layers" },
+        sources = {
+            "https://www.ifao.egnet.net/uploads/publications/divers/MIFAO136_ann_01.pdf",
+            "https://gizamedia.rc.fas.harvard.edu/documents/lehner_treasures_032-045.pdf",
+            "https://gizamedia.rc.fas.harvard.edu/images/MFA-images/Giza/GizaImage/full/library/egypt_age_of_pyramids.pdf",
+        },
+    },
+    {
+        id = "earth-layers",
+        category = "Earth",
+        title = "Inside Earth",
+        question = "What’s inside Earth?",
+        deck = "Take a trip from the ground to Earth’s hot center.",
+        fact = "Some rock deep in the mantle moves about as slowly as your fingernails grow.",
+        keywords = "planet interior layers crust mantle outer core inner core iron rock earthquake geology",
+        cover = "encarta/Images/earth-cover.jpg",
+        image = art("earth-layers", "From the outside in: thin crust, thick mantle, liquid outer core, and solid inner core. The crust is drawn thicker so you can see it."),
+        first = {
+            { "What is under your feet?", "A thin shell of rock lies under your feet. It covers Earth like the shell on a boiled egg. We call it the crust. Under the crust is the mantle, a thick layer of hot rock." },
+            { "What is at the center of Earth?", "Deep below the rock are two layers of metal. The outer core is so hot that its metal flows. At the very center is the solid inner core. All the weight above it squeezes it very hard." },
+        },
+        more = {
+            { "Why is the inner core solid?", "As you go deeper, it gets hotter and the rock and metal are squeezed harder. The weight of all the layers above creates enormous pressure at the center.",
+                "Both parts of the core are made mostly of iron. The outer core is liquid. The inner core is even hotter, but the pressure there is so great that its metal stays solid." },
+            { "How can we tell what is down there?", "Tap one end of a table while you rest your other hand on the far end. You may feel the shake travel through the table. Earthquakes send shakes called seismic waves through Earth.",
+                "Scientists record when the waves arrive. Some waves travel through solid rock but cannot cross liquid. Where those waves stop showing up is one clue that the outer core is liquid." },
+        },
+        words = {
+            { "mantle", "MAN-tul", "The thick layer of hot rock between Earth’s crust and its core." },
+            { "pressure", "PRESH-er", "How hard something is pushed or squeezed." },
+        },
+        quiz = {
+            question = "Which layer of Earth is made of liquid metal?",
+            choices = { "The crust", "The outer core", "The inner core" },
+            correct = 2,
+            explanation = "Metal flows in the outer core. The inner core is solid.",
+        },
+        related = { "volcanoes", "magnets" },
+        sources = {
+            "https://pubs.usgs.gov/gip/dynamic/inside.html",
+            "https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma",
+            "https://www.usgs.gov/media/images/p-wave-and-s-wave-paths-through-earth",
+            "https://www.usgs.gov/media/audio/what-do-we-know-about-interior-earth",
+        },
     },
 }

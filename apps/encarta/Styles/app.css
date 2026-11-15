@@ -80,9 +80,10 @@
 .empty { font-size: 18; color: var(--mist); }
 
 /* question cards */
-.card { padding: 16 18; border-radius: 20; }
+.card { border-radius: 20; overflow: hidden; }
 .card:hover { ring: 0 3 var(--sun); }
-.card-icon, .card-tag, .card-question, .card-title { color: var(--white); }
+.card-copy { padding: 12 14; }
+.card-tag, .card-question, .card-title { color: var(--white); }
 .card-tag { font-size: 11; font-weight: bold; letter-spacing: 1.6; text-vertical-align: center; }
 .card-question { font-size: 20; line-height: 24; font-weight: bold; }
 .card-title { font-size: 13; font-weight: bold; }

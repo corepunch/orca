@@ -2,4 +2,8 @@
 <StackView class="section">
     <TextBlock Name="Title" HighlightColor="$sun-light" class="question" WordWrap="true"/>
     <StackView Name="Paragraphs" class="paragraphs"/>
+    <StackView Name="SectionMedia" Visible="false" class="media">
+        <ImageView Name="SectionImage" Stretch="Uniform" AspectRatio="1.5" IgnoreHitTest="true" class="media-image"/>
+        <TextBlock Name="SectionCaption" class="hint" WordWrap="true"/>
+    </StackView>
 </StackView>
