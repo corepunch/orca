@@ -96,6 +96,12 @@ claiming historical fidelity.
   its reason shown under the account rows. Sign out is the last command, in
   the error colour. Telegram for Windows Phone's sub-pages and its ellipsis
   log-out menu are not adopted; the settings stay on one page.
+- The Me tab (user request, 2026-11-15) uses the Settings list form: the
+  96-point photo with the name and @username centred on it, then
+  **public profile** (bio and posts, open to everyone) and **settings**
+  (account, privacy, notifications) as icon rows with a muted line, and
+  **sign out** last in the error colour. Profile and posts are one row
+  because they open the same page.
 - The character picker uses four equal square columns, with six-point gaps
   horizontally and vertically (user decision, 2026-11-02). Its portraits
   align to the page's 12-point leading edge; the Pivot owns that inset.

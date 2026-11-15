@@ -131,6 +131,23 @@ settle(app)
 assert(app.currentRoute == "/posts/post" and feature.app.post.id == "p-small")
 app:show("/me"); settle(app)
 assert(app.shell.active == "Me" and app.screen:findChild("MyPublicProfile", true))
+-- Me follows the Settings list: the identity centres on the photo, one row per
+-- destination with an icon and a muted line, and sign out last.
+do
+    local photo, identity = app.screen:findChild("MeAvatarHost", true), app.screen:findChild("MeIdentity", true)
+    assert(math.abs(top(identity) + identity.ActualHeight / 2 - (top(photo) + photo.ActualHeight / 2)) < 0.5,
+        "Name and handle centre on the photo")
+    assert(not app.screen:findChild("MyPosts", true), "Profile and posts are one destination")
+    local rows = { "MyPublicProfile", "MeSettings", "MeSignOut" }
+    for index, name in ipairs(rows) do
+        local row = app.screen:findChild(name, true)
+        assert(row.ActualHeight == 64, name .. " is a 64-point row")
+        if index > 1 then
+            local previous = app.screen:findChild(rows[index - 1], true)
+            assert(top(row) >= top(previous) + previous.ActualHeight, name .. " follows " .. rows[index - 1])
+        end
+    end
+end
 press(app, "MeSettings")
 assert(app.currentRoute == "/profile" and app.screen ~= shell)
 assert(app.screen:findChild("ProfileName", true) and not app.screen:findChild("AppBar", true))
