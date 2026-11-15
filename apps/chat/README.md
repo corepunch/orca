@@ -175,7 +175,12 @@ name draft. Channels start with a name and private/public visibility, and people
 join separately. Channel browsing and invitation entry have separate views.
 No contact is required for discovery: people are found by name or username, like in other messengers;
 email requires a verified address and that person's discovery opt-in in
-Profile. A phone number typed in settings is private and never searchable. Display names are separate from public usernames.
+Profile. Phone numbers cannot be verified without SMS, so they are never
+searchable and new accounts are offered no Mobile row; a number saved earlier
+stays visible to review or remove. On iPhone and iPad, **Find friends from
+contacts** on the new-chat page matches the email addresses in the device's
+contacts (after the system permission prompt) against people who turned on
+Find me by email; nothing from the address book is stored. Display names are separate from public usernames.
 
 Route constructors attach the shell, navigation and composer before scheduling
 Appwrite work with `orca.async`. Session restoration, inboxes, profiles, contacts,
