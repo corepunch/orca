@@ -131,8 +131,9 @@ function Identity.auth(self, mode)
     elseif mode == "magic" then
         title, description = t("sign in"), t("We'll email you a link. Open it on this device to sign in, or to create your account.")
         local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
+        -- One field needs no label: the placeholder says what goes in it.
         form = C.stack({ Name = "MagicLinkPage", Spacing = 16 }, {
-            field(t("Email address"), email),
+            email,
             action(t("Email me a link"), "SendMagicLink", t("Sending link…"), function()
                 local result, err = self.client:requestMagicLink(email.Text)
                 if not result then self:notice(err.message, true); return end
@@ -196,8 +197,9 @@ function Identity.auth(self, mode)
         -- Email codes are the default way in: no password to remember and no SMS cost.
         title, description = t("sign in"), t("We'll email you a code. New here? The same code creates your account.")
         local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
+        -- One field needs no label: the placeholder says what goes in it.
         form = C.stack({ Name = "EmailCodePage", Spacing = 16 }, {
-            field(t("Email address"), email),
+            email,
             action(t("Email me a code"), "RequestCode", t("Sending code…"), function()
                 requestCode(email.Text, "/auth")
             end), self.status,
