@@ -25,7 +25,8 @@ permissions:
   contents: read
 
 env:
-  PROJECT: ${{ inputs.project || 'chat' }}
+  # Not PROJECT: make would take it over the Makefile's apps/<name>.
+  APP_NAME: ${{ inputs.project || 'chat' }}
 
 jobs:
   apk:
@@ -57,15 +58,14 @@ jobs:
       - name: Generate engine API
         run: make modules
       - name: Build APK (arm64-v8a, x86_64)
-        env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+        # tools/android/Makefile falls back to the runner's ANDROID_NDK_LATEST_HOME.
         run: |
-          make "$PROJECT-android" ABIS="arm64-v8a x86_64"
+          make "$APP_NAME-android" ABIS="arm64-v8a x86_64"
           mkdir -p dist
-          cp tools/android/project/app/build/outputs/apk/debug/app-debug.apk "dist/orca-$PROJECT-android.apk"
+          cp tools/android/project/app/build/outputs/apk/debug/app-debug.apk "dist/orca-$APP_NAME-android.apk"
       - uses: actions/upload-artifact@v4
         with:
-          name: orca-${{ env.PROJECT }}-android
+          name: orca-${{ env.APP_NAME }}-android
           path: dist/*.apk
 
   # Chat on an emulator: launch, then a declined Google sign-in callback
