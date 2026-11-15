@@ -120,6 +120,35 @@ After `.cgen` changes, run `make modules`.
 - In change mode, coordinate agents for independent work and run the relevant
   lint, type check, build, and tests after each feature.
 
+## Encarta: how to write articles
+
+`apps/encarta` takes its voice from the *Was ist Was* children's nonfiction
+series, not from Wikipedia. An article is a guided discovery for a curious
+6–10-year-old, not a neutral summary. The field layout lives in
+[the Encarta README](apps/encarta/README.md#write-another-article).
+
+- Make every section heading a question a child would actually ask
+  ("Why does Mars look red?", "Can a penguin fly?"), and answer it in the
+  first sentence below.
+- Open with a hook: something surprising, a comparison, or a "Picture
+  this…". Never open with a definition ("X is a Y that…").
+- Measure with the child's world: a fist, a school bus, a bathtub, a football
+  field, the time it takes to brush your teeth. Avoid bare large numbers.
+- Speak to the reader as "you". Give them something to try, watch for, or feel
+  ("Press two fingers on your wrist…").
+- Prefer concrete verbs and one idea per sentence. In `first`, aim for 8–12
+  words per sentence and no word a child must decode without help; in `more`,
+  explain *why* and *how*, and introduce at most two terms.
+- Add one `fact` – a single "Did you know?" sentence with the most
+  astonishing true detail. It must be checkable against `sources`.
+- Wonder, never fear: dangerous topics (volcanoes, sharks) stay fascinating,
+  with safety framed calmly.
+- Accuracy beats drama. No invented anecdotes, no "scientists think" without
+  a source, and say "about" for rounded numbers.
+- Do not edit headings or paragraphs of an article with a recording in
+  `Narration/` unless you regenerate it; the Read aloud button hides itself
+  when the transcript no longer matches.
+
 ## Chat: fast Appwrite unit tests
 
 For Appwrite work, run only the smallest affected unit tests by default.
