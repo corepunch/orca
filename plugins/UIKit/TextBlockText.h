@@ -54,6 +54,8 @@ ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
 ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
 ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
 /* Codepoint index of the caret position nearest a point in text space. */
+void TextBlockText_VisitRange(struct TextBlockText const *text, int start, int end,
+                              void (*visit)(void *, struct rect), void *context);
 ORCA_API uint32_t TextBlockText_HitTest(struct TextBlockText const *text, float x, float y);
 ORCA_API HRESULT TextBlockText_Rasterize(struct TextBlockText *text, struct AXsize *size, unsigned char **bitmap);
 /* Also returns the premultiplied RGBA emoji layer, or NULL when there is none. */

@@ -402,6 +402,9 @@ typedef struct {
   /* inputs */
   struct TextBlockText const *text;
   bool_t    bRender;
+  int rangeStart, rangeEnd;
+  void (*visitRange)(void *, struct rect);
+  void *rangeContext;
 
   /* outputs */
   struct AXsize  size;         /* final pixel size (scaled) */
@@ -564,6 +567,7 @@ T_LayoutText(LayoutCtx *ctx)
           int64_t cx16 = (int64_t)ls.lineX << 16;
           uint32_t prev_gi2 = 0;
           lpcString_t wp = word_start;
+          int64_t rangeLeft = -1, rangeRight = 0;
           while (wp < word_p) {
             if (!strncmp(wp, "<u>",  3)) { wp += 3; continue; }
             if (!strncmp(wp, "</u>", 4)) { wp += 4; continue; }
@@ -574,6 +578,8 @@ T_LayoutText(LayoutCtx *ctx)
               ctx->cursor.height = (int)(m.height / scale);
               ctx->cursorSet     = TRUE;
             }
+            int const firstChar = current_char;
+            int64_t const glyphLeft = cx16;
             size_t const emoji = Font_EmojiLength(wp);
             if (emoji) {
               /* the cursor counts code points; an emoji spans several */
@@ -581,20 +587,33 @@ T_LayoutText(LayoutCtx *ctx)
                 u8_readchar(&wp);
               cx16 += Font_GetEmojiAdvance(m.em);
               prev_gi2 = 0;
-              continue;
+            } else {
+              uint32_t const wch = u8_readchar(&wp);
+              current_char++;
+              uint32_t const gi = T_LoadChar(m.face, wch);
+              if (gi) {
+                if (text->trimLeading && ls.lineY == 0) {
+                  struct font_glyph bounds;
+                  if (FontFace_GetGlyphBounds(m.face, gi, m.fontScale, &bounds))
+                    leading = MIN(leading, ls.baseline + bounds.yoff);
+                }
+                cx16 += FontFace_GetGlyphKerning(m.face, prev_gi2, gi, m.fontScale);
+                cx16 += FontFace_GetGlyphAdvance(m.face, gi, m.fontScale);
+              }
+              prev_gi2 = gi;
             }
-            uint32_t const wch = u8_readchar(&wp);
-            current_char++;
-            uint32_t const gi = T_LoadChar(m.face, wch);
-            if (!gi) { prev_gi2 = 0; continue; }
-            if (text->trimLeading && ls.lineY == 0) {
-              struct font_glyph bounds;
-              if (FontFace_GetGlyphBounds(m.face, gi, m.fontScale, &bounds))
-                leading = MIN(leading, ls.baseline + bounds.yoff);
+            if (ctx->visitRange && firstChar < ctx->rangeEnd && current_char > ctx->rangeStart) {
+              if (rangeLeft < 0) rangeLeft = glyphLeft;
+              rangeRight = cx16;
             }
-            cx16 += FontFace_GetGlyphKerning(m.face, prev_gi2, gi, m.fontScale);
-            cx16 += FontFace_GetGlyphAdvance(m.face, gi, m.fontScale);
-            prev_gi2 = gi;
+          }
+          if (rangeLeft >= 0 && rangeRight > rangeLeft) {
+            ctx->visitRange(ctx->rangeContext, (struct rect){
+              .x = FONT_SCALE_16_16(rangeLeft) / scale,
+              .y = ls.lineY / scale,
+              .width = FONT_SCALE_16_16(rangeRight - rangeLeft) / scale,
+              .height = ls.lineHeight / scale,
+            });
           }
         }
 
@@ -865,6 +884,18 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor, uint32_t *last
   *lastLineWidth = ctx.lastLineWidth;
 
   return ctx.size;
+}
+
+void
+TextBlockText_VisitRange(struct TextBlockText const *text, int start, int end,
+                         void (*visit)(void *, struct rect), void *context)
+{
+  if (text->placeholder || end <= start) return;
+  LayoutCtx layout = {
+    .text = text, .rangeStart = start, .rangeEnd = end,
+    .visitRange = visit, .rangeContext = context,
+  };
+  T_LayoutText(&layout);
 }
 
 /* Codepoint index whose caret lies nearest (x, y), in the same unscaled

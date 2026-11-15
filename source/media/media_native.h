@@ -31,6 +31,14 @@ void Media_FilterPixels(int index, unsigned char *rgba, size_t w, size_t h, size
 
 int Media_CanTakePhoto(void);
 
+#if defined(__APPLE__)
+void *Media_OpenAudio(void const *bytes, size_t size);
+int Media_PlayAudio(void *player);
+void Media_PauseAudio(void *player);
+double Media_AudioStatus(void *player, int *playing);
+void Media_CloseAudio(void *player);
+#endif
+
 #if defined(ORCA_IOS)
 void *Media_BeginPickPhoto(struct MediaError *error);
 void *Media_BeginTakePhoto(struct MediaError *error);

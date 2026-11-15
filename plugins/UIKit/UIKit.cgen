@@ -570,6 +570,10 @@
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawForeground"/>
       </handles>
+      <properties>
+        <property name="HighlightedRange" type="vec2">Half-open range of zero-based Unicode code point offsets to highlight. An empty range disables the highlight.</property>
+        <property name="HighlightColor" type="color">Color drawn behind the highlighted text.</property>
+      </properties>
       <fields>
         <field name="_node2D" type="Node2D" pointer="true">Internal reference to the underlying Node2D instance </field>
       </fields>

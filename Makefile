@@ -98,7 +98,7 @@ CFLAGS += -I$(ZLIB_SRCDIR) -I$(FREETYPE_SRCDIR)/include -I$(PNG_SRCDIR) -I$(PNG_
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
 	LIBS += -framework OpenGL -framework IOSurface
-	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
+	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security -framework AVFoundation
 	UNITEOBJECTS += media_apple.o
 	UNITEOBJECTS += notifications_apple.o
 	UNITEOBJECTS += signin_apple.o
@@ -434,7 +434,7 @@ test-live-emulated:
 
 ifeq ($(UNAME_S),Darwin)
 $(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_filters.c source/media/media_apple.m source/media/media_native.h modules $(LUA_LIB) $(ZLIB_LIB) | directories
-	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_filters.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
+	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_filters.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -framework AVFoundation -o $@
 
 test-media: $(BINDIR)/test_media
 	$<

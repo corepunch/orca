@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import <AVFoundation/AVFoundation.h>
 #include <TargetConditionals.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <ImageIO/ImageIO.h>
@@ -9,10 +10,34 @@
 #include <sys/stat.h>
 #include "media_native.h"
 
+void *Media_OpenAudio(void const *bytes, size_t size) {
+  NSData *data = [NSData dataWithBytes:bytes length:size];
+  return [[AVAudioPlayer alloc] initWithData:data error:NULL];
+}
+
+int Media_PlayAudio(void *player) {
+  return [(AVAudioPlayer *)player play];
+}
+
+void Media_PauseAudio(void *player) {
+  [(AVAudioPlayer *)player pause];
+}
+
+double Media_AudioStatus(void *player, int *playing) {
+  AVAudioPlayer *audio = player;
+  *playing = audio.isPlaying;
+  return audio.currentTime;
+}
+
+void Media_CloseAudio(void *player) {
+  AVAudioPlayer *audio = player;
+  [audio stop];
+  [audio release];
+}
+
 #if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
 #import <PhotosUI/PhotosUI.h>
-#import <AVFoundation/AVFoundation.h>
 
 // One request presents either the photo library or the camera, then yields
 // to Lua until done. Both results go through Media_ProcessPhoto.

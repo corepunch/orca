@@ -2,6 +2,7 @@
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
+#include <limits.h>
 
 #include <UIKit/UIKit.h>
 
@@ -84,6 +85,25 @@ HANDLER(TextBlock, Node2D, UpdateGeometry)
   return TRUE;
 }
 
+struct text_highlight {
+  struct ViewEntity entity;
+  struct ViewDef const *view;
+  struct rect bounds;
+};
+
+static void
+draw_highlight(void *context, struct rect rect)
+{
+  struct text_highlight *highlight = context;
+  rect.width = MIN(rect.width, highlight->bounds.width - rect.x);
+  rect.height = MIN(rect.height - 2, highlight->bounds.height - rect.y - 1);
+  if (rect.width <= 0 || rect.height <= 0) return;
+  rect.x += highlight->bounds.x;
+  rect.y += highlight->bounds.y + 1;
+  highlight->entity.bbox = BOX3_FromRect(rect);
+  R_DrawEntity(highlight->view, &highlight->entity);
+}
+
 HANDLER(TextBlock, Node2D, DrawForeground)
 {
   if (!memcmp(&pDrawForeground->brush, &(struct BrushShorthand){0}, sizeof(struct BrushShorthand))) return FALSE;
@@ -113,6 +133,18 @@ HANDLER(TextBlock, Node2D, DrawForeground)
   float bbox_height = entity.bbox.max.y - entity.bbox.min.y;
   if (bbox_width == 0 || bbox_height == 0) {
     return TRUE;
+  }
+
+  struct vec2 const range = pTextBlock->HighlightedRange;
+  if (pTextBlock->HighlightColor.a > 0 && range.x >= 0 && range.y > range.x && (double)range.y < INT_MAX) {
+    struct BrushShorthand const brush = { .Color = pTextBlock->HighlightColor };
+    struct text_highlight highlight = {
+      .view = pDrawForeground->viewdef,
+      .bounds = mesh_rect(GetNode2D(hObject), text, &GetTextRun(hObject)->_textinfo),
+    };
+    Node2D_GetViewEntity(GetNode2D(hObject), &highlight.entity, NULL, &brush);
+    highlight.entity.radius = (struct vec4){0};
+    TextBlockText_VisitRange(text->_text, (int)range.x, (int)range.y, draw_highlight, &highlight);
   }
 
   R_DrawEntity(pDrawForeground->viewdef, &entity);

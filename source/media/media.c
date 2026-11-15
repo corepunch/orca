@@ -11,6 +11,78 @@ static int media_push_error(lua_State *L, struct MediaError const *error) {
   return 2;
 }
 
+#if defined(__APPLE__)
+#define MEDIA_AUDIO_PLAYER "orca.media.AudioPlayer"
+
+static void **media_audio_handle(lua_State *L) {
+  return luaL_checkudata(L, 1, MEDIA_AUDIO_PLAYER);
+}
+
+static void *media_audio_player(lua_State *L) {
+  void *player = *media_audio_handle(L);
+  luaL_argcheck(L, player, 1, "audio player is closed");
+  return player;
+}
+
+static int media_audio_play(lua_State *L) {
+  lua_pushboolean(L, Media_PlayAudio(media_audio_player(L)));
+  return 1;
+}
+
+static int media_audio_pause(lua_State *L) {
+  Media_PauseAudio(media_audio_player(L));
+  return 0;
+}
+
+static int media_audio_status(lua_State *L) {
+  int playing;
+  double position = Media_AudioStatus(media_audio_player(L), &playing);
+  lua_pushnumber(L, position);
+  lua_pushboolean(L, playing);
+  return 2;
+}
+
+static int media_audio_close(lua_State *L) {
+  void **player = media_audio_handle(L);
+  if (*player) Media_CloseAudio(*player);
+  *player = NULL;
+  return 0;
+}
+#endif
+
+int media_OpenAudio(lua_State *L, char const *bytes) {
+#if defined(__APPLE__)
+  size_t size;
+  lua_tolstring(L, 1, &size);
+  if (!size || size > MEDIA_INPUT_LIMIT) {
+    struct MediaError error = { "invalid_audio", "Provide a local audio clip no larger than 32 MiB." };
+    return media_push_error(L, &error);
+  }
+  void **player = lua_newuserdatauv(L, sizeof(*player), 0);
+  *player = Media_OpenAudio(bytes, size);
+  if (!*player) {
+    struct MediaError error = { "invalid_audio", "This audio clip could not be decoded." };
+    return media_push_error(L, &error);
+  }
+  if (luaL_newmetatable(L, MEDIA_AUDIO_PLAYER)) {
+    static luaL_Reg const methods[] = {
+      { "play", media_audio_play }, { "pause", media_audio_pause },
+      { "status", media_audio_status }, { "close", media_audio_close },
+      { "__gc", media_audio_close }, { NULL, NULL },
+    };
+    luaL_setfuncs(L, methods, 0);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+  }
+  lua_setmetatable(L, -2);
+  return 1;
+#else
+  (void)bytes;
+  struct MediaError error = { "unsupported", "Local audio playback is available on Apple platforms." };
+  return media_push_error(L, &error);
+#endif
+}
+
 static int media_push_photo(lua_State *L, struct MediaPhoto *photo) {
   lua_createtable(L, 0, 10);
   lua_pushlstring(L, (char const *)photo->jpeg, photo->byte_count); lua_setfield(L, -2, "jpeg");
