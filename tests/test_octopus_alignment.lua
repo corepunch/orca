@@ -92,4 +92,41 @@ for _, width in ipairs { 390, 320 } do
     end
 end
 scope:dispose()
-print("PASS: Octopus text, photo, quote, link and repost alignment at 390 and 320 points")
+
+-- People to follow and people search: the name and bio centre on the photo.
+client.getSession = function() return { user = { id = "reader" } } end
+client.suggestPeople = function()
+    return { { userId = "carol", username = "carol", bio = "I am a product designer with an eye for typography." },
+        { userId = "dave", username = "dave", bio = "" } }, 0
+end
+local people = data.scope("Octopus/Data/Feeds.xml", { provider = provider, store = store })
+people:member("Suggestions"):refresh()
+for _, width in ipairs { 390, 320 } do
+    local screen = assert(fs.loadObjectFromXmlString(([[
+<Screen Width="%d" Height="844" ResizeMode="NoResize">
+  <StackView Overflow="hidden scroll">
+    <ItemsStack Name="Suggestions" Spacing="14" JustifyContent="Start" ItemNamePrefix="Suggestion"
+                ItemsSource="{Binding DataContext/Suggestions/Items}" ItemTemplate="Octopus/Templates/Person"/>
+  </StackView>
+</Screen>]]):format(width)))
+    people:attach(screen)
+    core.flushQueue()
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(width, 844)
+    for _, id in ipairs { "carol", "dave" } do
+        local row = assert(screen:findChild("Suggestion" .. id, true), "Missing person " .. id)
+        local photo = assert(row:findChild("AvatarPhoto", true)):getParent()
+        local text = assert(row:findChild("PersonText", true))
+        local name, bio = row:findChild("PersonName", true), row:findChild("PersonBio", true)
+        local first, last = top(name, screen), top(name, screen) + name.ActualHeight
+        if bio.Visible then last = top(bio, screen) + bio.ActualHeight end
+        local photoMiddle = top(photo, screen) + photo.ActualHeight / 2
+        assert(math.abs((first + last) / 2 - photoMiddle) < 1.5,
+            ("Name and bio centre on the photo (%s, %d points): text %.1f, photo %.1f"):format(id, width, (first + last) / 2, photoMiddle))
+        assert(math.abs(top(photo, screen) + photo.ActualHeight / 2 - (top(row, screen) + row.ActualHeight / 2)) < 0.5,
+            "The photo is centred in the row's touch target: " .. id)
+    end
+end
+people:dispose()
+print("PASS: Octopus text, photo, quote, link and repost alignment, and person rows, at 390 and 320 points")
