@@ -66,10 +66,35 @@ export class ChatService {
     if (unchanged(previous, values(previous))) return { ...previous, notification_previews: previous.notification_previews !== false };
     return this.repo.lock('profile:' + user.$id, async () => {
       const current = await this.repo.get('profiles', user.$id), row = values(current);
-      if (!current) return this.repo.create('profiles', row, user.$id);
+      if (!current) return this.createProfile(user, row);
       if (!unchanged(current, row)) return this.repo.update('profiles', user.$id, row);
       return { ...current, notification_previews: current.notification_previews !== false };
     });
+  }
+  // A new account starts with a username friends can type: the email's local
+  // part without punctuation (igor.chernakov@… → igorchernakov), or the account
+  // name when the address is a private relay. A taken name gets a number.
+  handleBase(user) {
+    const plain = value => String(value || '').normalize('NFKD').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const email = user.emailVerification ? String(user.email || '') : '';
+    const relay = /@privaterelay\.appleid\.com$/i.test(email);
+    // A +tag (igor+news@…) names a filter, not the person.
+    const base = !relay && plain(email.split('@')[0].split('+')[0]) || plain(user.name);
+    return base.length >= 3 ? base.slice(0, 30) : null;
+  }
+  async createProfile(user, row) {
+    const base = this.handleBase(user);
+    for (let attempt = 1; base && attempt <= 20; attempt++) {
+      const handle = attempt === 1 ? base : base + attempt;
+      if ((await this.repo.list('profiles', [eq('username', handle)], 1)).length) continue;
+      // Like a chosen name, never one that is an account ID: that would fix it forever.
+      try { await this.auth.rest.request('GET', '/users/' + encodeURIComponent(handle)); continue; }
+      catch (error) { if (error.status !== 404) throw error; }
+      try { return await this.repo.create('profiles', { ...row, username: handle }, user.$id); }
+      // Another sign-up claimed it between the check and the write.
+      catch (error) { if (error.code !== 'handle_taken' && error.status !== 409) throw error; }
+    }
+    return this.repo.create('profiles', row, user.$id);
   }
   async profileById(userId) {
     const previous = await this.repo.get('profiles', userId);

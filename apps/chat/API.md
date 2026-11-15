@@ -129,7 +129,11 @@ begins with `+` (or `00`); the client removes spaces, dots, parentheses and
 hyphens, requiring 8–15 digits with a nonzero country prefix. Only a verified
 login phone, never a typed one, can be discoverable. Usernames are
 unique lowercase strings of 3–32 letters, numbers or underscores, beginning
-with a letter. An empty username clears it. Profiles cannot edit Auth identifiers.
+with a letter. An empty username clears it. A new account starts with a username taken from
+its verified email's local part (lower case, letters and digits only, any
+`+tag` dropped; the account name for an Apple private-relay address), numbered
+when taken and never equal to an account ID; bases under three characters get
+none. Existing accounts are not given one. Profiles cannot edit Auth identifiers.
 
 Discovery flags default to false and require the corresponding verified
 identifier. Email and phone searches are exact. Any other query is a name:
