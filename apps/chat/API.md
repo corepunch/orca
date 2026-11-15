@@ -78,6 +78,7 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email,notification_previews}`; `email` is verified, `phone` is the private typed number; message previews default on |
 | `updateProfile(values)` | Self profile after changing public name, username, the private `phone` (E.164, `""` removes it), discovery flags or the private boolean `notification_previews` preference |
 | `findPeople(query)` | Public `{id,display_name,username}` matches for a name, username prefix or opted-in identifier |
+| `matchContacts(emails)` | Public profiles plus the matching `email` for up to 500 addresses from the device's contacts: only verified, opted-in ("find me by email"), unblocked people other than you; 10 calls an hour; addresses are not stored |
 | `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
 | `getSession()` | Defensive session copy or nil; no request |
 | `restoreSession()` | Validates the saved Appwrite credential and obtains a fresh JWT; called explicitly on app launch |
