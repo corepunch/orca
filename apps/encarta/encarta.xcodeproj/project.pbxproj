@@ -49,6 +49,7 @@
 "MARKETING_VERSION" = "1.0";
 "CURRENT_PROJECT_VERSION" = "1";
 "CODE_SIGN_STYLE" = "Automatic";
+"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
 "GCC_OPTIMIZATION_LEVEL" = "0";
 "DEBUG_INFORMATION_FORMAT" = "dwarf";
 "ONLY_ACTIVE_ARCH" = "YES";
@@ -98,6 +99,7 @@
 "MARKETING_VERSION" = "1.0";
 "CURRENT_PROJECT_VERSION" = "1";
 "CODE_SIGN_STYLE" = "Automatic";
+"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
 "GCC_OPTIMIZATION_LEVEL" = "s";
 "DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
 "ONLY_ACTIVE_ARCH" = "NO";
@@ -590,6 +592,25 @@
 );
 "runOnlyForDeploymentPostprocessing" = 0;
 };
+"4930BB2B935190FC0668B0B0" = {
+"isa" = "PBXFileReference";
+"name" = "Assets.xcassets";
+"path" = "Assets.xcassets";
+"sourceTree" = "SOURCE_ROOT";
+"lastKnownFileType" = "folder.assetcatalog";
+};
+"6274D928CACE8315E511B6EF" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "4930BB2B935190FC0668B0B0";
+};
+"7899A95B247C4825828F736C" = {
+"isa" = "PBXResourcesBuildPhase";
+"buildActionMask" = 2147483647;
+"files" = (
+"6274D928CACE8315E511B6EF",
+);
+"runOnlyForDeploymentPostprocessing" = 0;
+};
 "41D311A605520FC7B8B9A980" = {
 "isa" = "PBXShellScriptBuildPhase";
 "buildActionMask" = 2147483647;
@@ -615,6 +636,7 @@
 "buildPhases" = (
 "45666D976BAB316D970EC459",
 "878A52FC5FF6A57D50B7B870",
+"7899A95B247C4825828F736C",
 "41D311A605520FC7B8B9A980",
 );
 "buildRules" = (
@@ -687,6 +709,7 @@
 "2D25A9B56DCCB8131EBB5456",
 "90C4A5508CD24F3833987AAE",
 "D20ADA84B682F079A05DF86A",
+"4930BB2B935190FC0668B0B0",
 "BEAD8915881B60FC177E63AB",
 );
 "sourceTree" = "<group>";
