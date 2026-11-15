@@ -1,0 +1,102 @@
+name: Android
+
+# Debug APK of an ORCA project (docs/ANDROID.md) with arm64-v8a and x86_64
+# engines, then Chat's emulator smoke test. Pull requests and main otherwise
+# run only the Linux checks (build.yml), so this runs by hand (Actions ->
+# Android -> Run workflow) and on pushes to main that change the Android port.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'source/android/**'
+      - 'tools/android/**'
+      - 'tools/mobile/**'
+      - 'libs/platform'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Project under apps/ to package (needs package.lua)'
+        default: chat
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  PROJECT: ${{ inputs.project || 'chat' }}
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      # Host code generation only; the NDK builds the engine and its dependencies.
+      - name: Install codegen dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config zlib1g-dev cmake
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Cache native dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            build/android/downloads
+            build/android/sources
+            build/android/*/deps
+          key: android-deps-${{ hashFiles('tools/android/dependencies.py') }}-${{ hashFiles('.gitmodules') }}
+      - name: Generate engine API
+        run: make modules
+      - name: Build APK (arm64-v8a, x86_64)
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+        run: |
+          make "$PROJECT-android" ABIS="arm64-v8a x86_64"
+          mkdir -p dist
+          cp tools/android/project/app/build/outputs/apk/debug/app-debug.apk "dist/orca-$PROJECT-android.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orca-${{ env.PROJECT }}-android
+          path: dist/*.apk
+
+  # Chat on an emulator: launch, then a declined Google sign-in callback
+  # through the app's URL scheme (offline; no Appwrite request).
+  smoke-test:
+    needs: apk
+    if: ${{ (inputs.project || 'chat') == 'chat' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: orca-chat-android
+          path: build/android/apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Smoke test Chat on an emulator (API 34, x86_64)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: sh tools/android/smoke-test.sh build/android/apk/orca-chat-android.apk org.orca.chat apps/chat build/android/smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: orca-chat-android-smoke
+          path: build/android/smoke/

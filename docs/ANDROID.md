@@ -45,9 +45,16 @@ tools/android/smoke-test.sh tools/android/project/app/build/outputs/apk/debug/ap
     org.orca.chat apps/chat build/android/smoke
 ```
 
-Screenshots and `logcat.txt` are written to the output directory. CI's
-`test-android` job runs it on an API 34 x86_64 emulator against the
-`build-android` APK and uploads the results as `orca-chat-android-smoke`.
+Screenshots and `logcat.txt` are written to the output directory.
+
+## GitHub Actions
+
+`.github/workflows/android.yml` builds a debug APK with arm64-v8a and x86_64
+engines and uploads it as `orca-<project>-android`. It runs on pushes to
+`main` that change the Android port, and by hand (Actions → Android → Run
+workflow), where `project` picks any `apps/<name>` with a `package.lua`
+(default `chat`). For Chat it then runs the smoke test on an API 34 x86_64
+emulator and uploads the results as `orca-chat-android-smoke`.
 
 ## Runtime
 

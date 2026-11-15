@@ -36,7 +36,7 @@ LUA_SOURCES := $(filter-out $(addprefix libs/lua/,lua.c luac.c onelua.c ltests.c
 NATIVE_OBJECTS := $(ROOT)/obj/platform.o $(ROOT)/obj/lua.o $(ROOT)/obj/lz4.o $(ROOT)/obj/glue.o \
 	$(ROOT)/obj/source/android/android_main.o $(VENDOR_OBJECTS)
 LIBS := $(addprefix $(DEPS)/lib/,libcurl.a libmbedtls.a libmbedx509.a libmbedcrypto.a libxml2.a) \
-	-lEGL -lGLESv3 -landroid -llog -lm -ldl
+	-lEGL -lGLESv3 -landroid -laaudio -llog -lm -ldl
 LIBRARY := $(BUILD_DIR)/gradle/jniLibs/$(ABI)/libmain.so
 .PHONY: library dependencies generated settings apk assets clean
 
