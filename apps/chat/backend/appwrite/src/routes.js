@@ -33,6 +33,7 @@ rpc('get_chat_rules_state', (s, c) => s.safety.rulesState(c.user));
 rpc('accept_chat_rules', (s, c) => s.safety.acceptRules(c.user, c.body));
 rpc('update_chat_profile', (s, c) => s.updateProfile(c.user, c.body.values));
 rpc('find_chat_people', (s, c) => s.findPeople(c.user, c.body.query));
+rpc('match_chat_contacts', (s, c) => s.matchContacts(c.user, c.body.emails));
 rpc('create_chat_room', (s, c) => s.createRoom(c.user, c.body));
 rpc('list_chat_members', (s, c) => s.listMembers(c.user, c.body.target_room));
 rpc('set_chat_member_role', (s, c) => s.setRole(c.user, c.body));

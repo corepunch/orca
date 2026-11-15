@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Octopus</string>
+	<string>ORCA Octopus</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -20,7 +20,7 @@
 		<string>ru</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>Octopus</string>
+	<string>ORCA Octopus</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -33,6 +33,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Your camera takes a profile photo or a photo to share, only when you choose to.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Find friends who use the app: only email addresses are checked, and your contacts are never stored.</string>
 	<key>ORCAProject</key>
 	<string>project</string>
 	<key>UIApplicationSceneManifest</key>

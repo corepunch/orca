@@ -46,7 +46,7 @@ CFLAGS += $(SANITIZER_FLAGS)
 LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications signin
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications signin contacts
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -330,6 +330,7 @@ test-chat: copyshare $(LUA_BIN)
 	$(TARGET) -test=tests/test_chat_features.lua
 	$(TARGET) -test=tests/test_chat_contacts.lua
 	$(TARGET) -test=tests/test_chat_row_style.lua
+	$(TARGET) -test=tests/test_chat_contact_matches.lua
 	$(TARGET) -test=tests/test_chat_app.lua
 	$(TARGET) -test=tests/test_chat_loading.lua
 	$(TARGET) -test=tests/test_chat_session_ui.lua

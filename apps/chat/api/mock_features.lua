@@ -405,6 +405,20 @@ return function(state, env)
             table.sort(rows, function(a, b) return a.rank < b.rank end)
             for _, row in ipairs(rows) do row.rank = nil end
             return response(200, rows)
+        elseif name == "match_chat_contacts" then
+            if type(body.emails) ~= "table" or #body.emails > 500 then return fail(400, "validation", "Send at most 500 email addresses.") end
+            local wanted, rows = {}, {}
+            for _, value in ipairs(body.emails) do
+                if type(value) == "string" then wanted[value:lower():match("^%s*(.-)%s*$")] = true end
+            end
+            for _, account in ipairs(state.users) do
+                local p = state.profiles[account.id]
+                if account.id ~= user.id and p and p.discoverable_email and account.email_confirmed_at
+                    and account.email and wanted[account.email:lower()] and not P.blocked(user.id, account.id) then
+                    rows[#rows + 1] = { id = p.id, display_name = p.display_name, username = p.username, email = account.email:lower() }
+                end
+            end
+            return response(200, rows)
         elseif name == "create_chat_room" then return createRoom(user, body)
         elseif name == "list_chat_members" then
             if not member(body.target_room, user.id) then return fail(403, "42501", "Conversation unavailable.") end
@@ -572,7 +586,7 @@ return function(state, env)
         end
         local name = path:match("^/rest/v1/rpc/(.+)$")
         local known = name and ({ list_chat_blocks=1,set_chat_user_block=1,report_chat_content=1,get_chat_rules_state=1,accept_chat_rules=1,
-            delete_chat_account=1,list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
+            delete_chat_account=1,list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,match_chat_contacts=1,create_chat_room=1,list_chat_members=1,
             set_chat_member_role=1,remove_chat_member=1,leave_chat_room=1,update_chat_room=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
             find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
             reserve_chat_photo=1,discard_chat_photo=1 })[name]

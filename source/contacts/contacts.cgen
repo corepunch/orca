@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
+<module name="contacts" namespace="orca" prefix="contacts_">
+  <includes>
+    <include file="include/api.h"/>
+  </includes>
+  <functions>
+    <function name="Supported" lua="true">
+      <summary>Reports whether readEmails can read the device's address book.</summary>
+      <details>True on iOS, where the system Contacts store exists. False on other platforms and command-line tools.</details>
+      <returns type="nresults">A boolean.</returns>
+    </function>
+    <function name="ReadEmails" lua="true">
+      <summary>Reads names and email addresses from the device's contacts after the person allows access.</summary>
+      <details>On iOS the first call shows the system permission prompt, using the app's NSContactsUsageDescription, then reads every contact's display name and email addresses on a background queue. The call yields the application coroutine until done; outside a yieldable coroutine it returns not_yieldable. Returns an array of { name, emails } tables, at most 5000 contacts and 5 addresses each; contacts without an address are left out. Errors are nil and a table with code and message: permission when access is denied or restricted, unsupported on other platforms, failed when the store cannot be read. Phone numbers, photos and other fields are never read. Nothing is retained after the call.</details>
+      <returns type="nresults">An array of contact tables, or nil and a structured error.</returns>
+    </function>
+  </functions>
+</module>

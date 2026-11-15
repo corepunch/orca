@@ -91,9 +91,13 @@ function Conversations.newRoom(self)
         self.newSelection = {}; updateSelection()
         if active() then self:openRoom(room) end
     end
-    local function addPerson(parent, person, prefix)
+    -- detail: a second line, such as the name from the device's contacts.
+    local function addPerson(parent, person, prefix, detail)
+        local handle = person.username and "@" .. person.username
+        local subtitle = detail and detail ~= "" and detail ~= publicName(person)
+            and (handle and detail .. " · " .. handle or detail) or handle
         local button = row(prefix .. person.id, C.avatar(publicName(person), 52, person.id, self, person.id),
-            publicName(person), person.username and "@" .. person.username, function()
+            publicName(person), subtitle, function()
             if busy or not active() then return end
             if mode == "direct" then
                 busy = true
@@ -149,6 +153,40 @@ function Conversations.newRoom(self)
             selected.Visible, findPeople.Visible, nextButton.Visible = true, true, true
         elseif mode == "direct" then self:goBack("/")
         else changeMode("direct") end
+    end
+    -- Friends from the device's contacts: their email addresses are matched
+    -- once against people who opted in to "find me by email" (Data: none kept).
+    local contacts = self.contactsNative
+    if contacts == nil then
+        local ok, native = pcall(require, "orca.contacts")
+        contacts = ok and native or false
+    end
+    if contacts and contacts.supported() then
+        actions:addChild(C.command("FromContacts", "user-round-plus", t("Find friends from contacts"), function()
+            if busy or not active() or mode ~= "direct" then return end
+            clearResults(); notice("")
+            local request, pending = generation, discoveryLoading()
+            self:load(function()
+                local entries, err = contacts.readEmails()
+                local emails, names = {}, {}
+                for _, entry in ipairs(entries or {}) do
+                    for _, address in ipairs(entry.emails or {}) do
+                        local key = address:lower()
+                        if not names[key] and #emails < 500 then names[key], emails[#emails + 1] = entry.name, key end
+                    end
+                end
+                local found
+                if entries then found, err = self.client:matchContacts(emails) end
+                if self.sessionEpoch ~= epoch or generation ~= request or not active() then return end
+                pending:removeFromParent()
+                if not found then notice(err and err.message or t("Contacts could not be read."), true); return end
+                if #found == 0 then
+                    results:addChild(C.text(t("None of your contacts can be found yet. Friends appear here once they turn on Find me by email."),
+                        { Name = "NoContactMatches", FontSize = 14, class = "chat-muted", WordWrap = true, Padding = "0 8" }))
+                end
+                for _, person in ipairs(found) do addPerson(results, person, "FoundPersonContact", names[person.email]) end
+            end)
+        end))
     end
     for _, item in ipairs {
         { "KindGroup", "users-round", t("New group"), "group" },

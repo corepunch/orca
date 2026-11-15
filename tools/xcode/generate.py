@@ -94,6 +94,8 @@ def scheme(path, project_name, name, target, product):
 
 # orca.media.takePhoto opens the camera only from an explicit user action.
 CAMERA_USAGE = 'Your camera takes a profile photo or a photo to share, only when you choose to.'
+# orca.contacts.readEmails reads the address book only after "find friends from contacts".
+CONTACTS_USAGE = 'Find friends who use the app: only email addresses are checked, and your contacts are never stored.'
 
 
 def info_plist(display_name, launch_storyboard=None):
@@ -108,7 +110,7 @@ def info_plist(display_name, launch_storyboard=None):
                 UISupportedInterfaceOrientations=orientations,
                 **{'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown']},
                 ORCAProject='project', ITSAppUsesNonExemptEncryption=False,
-                NSCameraUsageDescription=CAMERA_USAGE, UIApplicationSceneManifest={
+                NSCameraUsageDescription=CAMERA_USAGE, NSContactsUsageDescription=CONTACTS_USAGE, UIApplicationSceneManifest={
                     'UIApplicationSupportsMultipleScenes': False,
                     'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{
                         'UISceneConfigurationName': 'ORCA', 'UISceneDelegateClassName': 'OrcaSceneDelegate',
@@ -163,7 +165,7 @@ def generate(args, app):
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'AVFoundation', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
-                  'UserNotifications', 'AuthenticationServices')
+                  'UserNotifications', 'AuthenticationServices', 'Contacts')
     linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]

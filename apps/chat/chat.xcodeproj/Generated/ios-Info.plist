@@ -44,6 +44,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Your camera takes a profile photo or a photo to share, only when you choose to.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Find friends who use the app: only email addresses are checked, and your contacts are never stored.</string>
 	<key>ORCAProject</key>
 	<string>project</string>
 	<key>UIApplicationSceneManifest</key>

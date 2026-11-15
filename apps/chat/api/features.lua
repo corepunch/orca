@@ -177,6 +177,15 @@ return function(Client, helpers)
         local field, normalized = identifier(query)
         return self:_rpc("find_chat_people", { query = normalized or query:lower() })
     end
+    -- People among the device's contacts who verified that email and opted in
+    -- to "find me by email". The addresses are matched once and not kept.
+    function Client:matchContacts(emails)
+        if type(emails) ~= "table" or #emails > 500 then return failure("validation", "Send at most 500 email addresses.") end
+        local list = {}
+        for _, value in ipairs(emails) do if type(value) == "string" then list[#list + 1] = value end end
+        if #list == 0 then return {} end
+        return self:_rpc("match_chat_contacts", { emails = list })
+    end
     function Client:findChannels(query)
         if type(query) ~= "string" or #query > 80 then return failure("validation", "Use a channel name of at most 80 characters.") end
         return self:_rpc("find_chat_channels", { query = query })
