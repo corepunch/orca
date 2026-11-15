@@ -36,7 +36,6 @@ function Social.me(self)
     page:findChild("MeName", true):setTextContent(name)
     page:findChild("MeHandle", true):setTextContent("")
     page:findChild("MyPublicProfile", true).Click = function() self:show("/posts/me", "Forward") end
-    page:findChild("MyPosts", true).Click = function() self:show("/posts/me", "Forward") end
     page:findChild("MeSettings", true).Click = function() self:show("/profile", "Forward") end
     page:findChild("MeSignOut", true).Click = function() self:signOut() end
     self.meContent = page
