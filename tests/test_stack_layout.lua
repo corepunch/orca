@@ -255,6 +255,25 @@ test_stack_view_scroll_height_changed()
 test_stack_view_scroll_height_includes_bottom_padding()
 test_stack_view_align_items_center()
 test_stack_view_align_items_center_implicit_height()
+-- ---------------------------------------------------------------------------
+-- MinHeight counts while measuring, so a row of min-height buttons reserves
+-- their full height and the next sibling starts below them
+-- ---------------------------------------------------------------------------
+local function test_stack_view_min_height_measure()
+	local column = screen + ui.StackView { Name = "test_min_height", Direction = "Vertical" }
+	local row = column + ui.StackView { Direction = "Horizontal" }
+	local chip = row + ui.Button { Text = "Chip", MinHeight = 40 }
+	local below = column + ui.TextBlock { Text = "Below" }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(chip.ActualHeight, 40, "MinHeight raises the arranged height")
+	test.expect_eq(row.ActualHeight, 40, "The row reserves its child's MinHeight")
+	test.expect_eq(below.ActualY, 40, "The next sibling starts below the min-height row")
+	column:removeFromParent()
+end
+
+test_stack_view_min_height_measure()
 test_stack_view_align_items_start()
 test_stack_view_align_items_end()
 test_stack_view_aspect_ratio()

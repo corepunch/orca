@@ -967,6 +967,12 @@ HANDLER(Node2D, Node2D, Measure)
   } else {
     NODE2D_FRAME(n, Size, 1).Desired = NODE2D_FRAME(n, Size, 1).Requested;
   }
+  // Arrange never goes below Min (Node2D_SetFrame), so the parent must
+  // reserve it too; otherwise a min-height control overflows its row.
+  FOR_LOOP(i, 2) {
+    float const min = NODE2D_FRAME(n, Size, i).Min;
+    if (min > NODE2D_FRAME(n, Size, i).Desired) NODE2D_FRAME(n, Size, i).Desired = min;
+  }
   struct Size result = { NODE2D_FRAME(n, Size, 0).Desired + TOTAL_MARGIN(n, 0),
                          NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1) };
   // Measuring may itself have changed the subtree (bindings, generated items);
