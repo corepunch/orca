@@ -952,6 +952,7 @@ R_BeginFrame(struct color color)
   axGetSize(&size);
   axBeginPaint();
 #if ORCA_METAL
+  GLMTL_BeginFrame();
   R_BindDefaultFramebuffer();
 #endif
 

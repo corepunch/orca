@@ -35,6 +35,16 @@
 #define MAX_VERTEX_ATTRIBS GLSL_MSL_MAX_ATTRIBUTES
 #define MAX_SET_BYTES 4096
 
+#if TARGET_OS_IPHONE
+#import <UIKit/UIApplication.h>
+#endif
+
+// Metal and QuartzCore return autoreleased drawables, command buffers and
+// descriptors. macOS paints from the engine's loop outside any pool, so a
+// frame without one would keep every drawable and stall nextDrawable.
+void *objc_autoreleasePoolPush(void);
+void objc_autoreleasePoolPop(void *pool);
+
 #pragma mark - Objects
 
 @interface GLMTexture : NSObject {
@@ -70,6 +80,10 @@
 @public
   id<MTLBuffer> buffer;
   NSUInteger size;
+  // Metal needs vertex strides in multiples of 4: a copy of the contents with
+  // padded elements, for the source stride, offset and element size it was made for.
+  id<MTLBuffer> padded;
+  NSUInteger paddedStride, paddedOffset, paddedElement;
 }
 @end
 @implementation GLMBuffer
@@ -149,6 +163,14 @@ typedef struct
 
 typedef struct
 {
+  uint32_t program;
+  uint32_t color, depth, stencil;
+  uint8_t blend, src, dst, mask;
+  struct { uint16_t format, stride; } attrs[MAX_VERTEX_ATTRIBS];
+} pipeline_key_t;
+
+typedef struct
+{
   GLenum target;
   GLMTexture *__unsafe_unretained bound2D, *__unsafe_unretained boundCube;
 } unit_t;
@@ -203,7 +225,6 @@ static struct
 
   GLenum error;
   id<MTLRenderPipelineState> lastPipeline;
-  NSData *lastPipelineKey;
   NSMutableDictionary<NSData *, id<MTLDepthStencilState>> *depthStates;
   NSMutableDictionary<NSNumber *, id<MTLSamplerState>> *samplers;
   NSMutableDictionary<NSNumber *, id<MTLRenderPipelineState>> *blitPipelines;
@@ -211,6 +232,8 @@ static struct
   id<MTLDepthStencilState> depthAlways, depthDisabled;
   id<MTLBuffer> constantAttribute;
   GLMTexture *blackTexture, *blackCube;
+  void *framePool;
+  pipeline_key_t lastKey;
 } gl;
 
 enum { OBJ_TEXTURE, OBJ_BUFFER, OBJ_FRAMEBUFFER, OBJ_RENDERBUFFER, OBJ_VERTEXARRAY, OBJ_SHADER, OBJ_PROGRAM };
@@ -317,7 +340,6 @@ static void end_pass(void)
   gl.encoderFramebuffer = nil;
   gl.encoderOpen = NO;
   gl.lastPipeline = nil;
-  gl.lastPipelineKey = nil;
 }
 
 static void commit(BOOL wait)
@@ -476,15 +498,15 @@ static MTLPixelFormat pixel_format(GLenum internal, GLenum format)
     case GL_DEPTH_STENCIL: case GL_DEPTH24_STENCIL8: return MTLPixelFormatDepth32Float_Stencil8;
   }
   if (internal >= 0x93B0 && internal <= 0x93DD) {
-    if (@available(macOS 11.0, iOS 8.0, *)) {
+    if (@available(macOS 11.0, iOS 13.0, *)) {
+      if (![gl.device supportsFamily:MTLGPUFamilyApple2]) return MTLPixelFormatInvalid;
       if (internal == 0x93B0) return MTLPixelFormatASTC_4x4_LDR;
       if (internal == 0x93D0) return MTLPixelFormatASTC_4x4_sRGB;
     }
     return MTLPixelFormatInvalid;
   }
   if (internal >= 0x83F0 && internal <= 0x83F3) {
-    if (@available(macOS 10.11, iOS 16.4, *)) {
-      if (![gl.device respondsToSelector:@selector(supportsBCTextureCompression)]) return MTLPixelFormatInvalid;
+    if (@available(macOS 11.0, iOS 16.4, *)) {
       if (!gl.device.supportsBCTextureCompression) return MTLPixelFormatInvalid;
       if (internal <= 0x83F1) return MTLPixelFormatBC1_RGBA;
       return internal == 0x83F2 ? MTLPixelFormatBC2_RGBA : MTLPixelFormatBC3_RGBA;
@@ -567,6 +589,7 @@ static BOOL allocate(GLMTexture *t, GLenum target, MTLPixelFormat format, GLint 
   if (!texture) return set_error(GL_OUT_OF_MEMORY), NO;
   t->texture = texture;
   t->swizzled = nil;
+  t->sampler = nil;
   t->width = w, t->height = h;
   t->levels = (GLint)levels;
   t->internalFormat = internal;
@@ -597,6 +620,7 @@ static BOOL grow_levels(GLMTexture *t, GLint level)
   [blit endEncoding];
   t->texture = grown;
   t->swizzled = nil;
+  t->sampler = nil;
   t->levels = (GLint)grown.mipmapLevelCount;
   t->lastUse = gl.serial;
   return YES;
@@ -635,7 +659,7 @@ static void *convert_pixels(void const *pixels, GLsizei w, GLsizei h, GLenum for
   NSUInteger stride = ((NSUInteger)w * bpp + gl.unpackAlignment - 1) / gl.unpackAlignment * gl.unpackAlignment;
   if (format != GL_RGB) return *rowBytes = stride, NULL;
   uint8_t *out = malloc((size_t)w * h * 4);
-  if (!out) return NULL;
+  if (!out) return *rowBytes = 0, NULL;
   for (GLsizei r = 0; r < h; r++) {
     uint8_t const *src = (uint8_t const *)pixels + r * stride;
     uint8_t *dst = out + (size_t)r * w * 4;
@@ -694,6 +718,7 @@ void glBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage
   GLMBuffer *b = binding ? *binding : nil;
   if (!b) return set_error(GL_INVALID_OPERATION);
   b->size = (NSUInteger)MAX(size, 0);
+  b->padded = nil;
   b->buffer = !size ? nil
             : data ? [gl.device newBufferWithBytes:data length:size options:MTLResourceStorageModeShared]
                    : [gl.device newBufferWithLength:size options:MTLResourceStorageModeShared];
@@ -827,6 +852,7 @@ void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei widt
   if (!source || is_depth_format(pf)) return;
   NSUInteger rowBytes;
   void *converted = convert_pixels(source, width, height, format, type, &rowBytes);
+  if (!rowBytes) return set_error(GL_OUT_OF_MEMORY);
   write_region(t, target_slice(target), level, 0, 0, width, height, converted ? converted : source,
                rowBytes, rowBytes * height);
   free(converted);
@@ -844,6 +870,7 @@ void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, G
   if (!source) return;
   NSUInteger rowBytes;
   void *converted = convert_pixels(source, width, height, format, type, &rowBytes);
+  if (!rowBytes) return set_error(GL_OUT_OF_MEMORY);
   write_region(t, target_slice(target), level, xoffset, yoffset, width, height,
                converted ? converted : source, rowBytes, rowBytes * height);
   free(converted);
@@ -1143,6 +1170,11 @@ static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, B
     rp.depthAttachment.texture = dst;
     rp.depthAttachment.loadAction = MTLLoadActionLoad;
     rp.depthAttachment.storeAction = MTLStoreActionStore;
+    if (has_stencil(dst.pixelFormat)) {
+      rp.stencilAttachment.texture = dst;
+      rp.stencilAttachment.loadAction = MTLLoadActionLoad;
+      rp.stencilAttachment.storeAction = MTLStoreActionStore;
+    }
   } else {
     rp.colorAttachments[0].texture = dst;
     rp.colorAttachments[0].loadAction = MTLLoadActionLoad;
@@ -1213,6 +1245,9 @@ void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format
   flush_pending_clear();
   targets_t src = framebuffer_targets(gl.readFramebuffer);
   if (!src.color || width < 1 || height < 1) return set_error(GL_INVALID_OPERATION);
+  // Metal rejects a copy outside the texture; OpenGL leaves those pixels undefined.
+  if (x < 0 || y < 0 || x + width > (GLint)src.color.width || y + height > (GLint)src.color.height)
+    return set_error(GL_INVALID_VALUE);
   GLint top = src.flipped ? y : (GLint)src.color.height - (y + height);
   NSUInteger rowBytes = (NSUInteger)width * 4;
   id<MTLBuffer> buffer = [gl.device newBufferWithLength:rowBytes * height options:MTLResourceStorageModeShared];
@@ -1735,18 +1770,34 @@ static GLsizei type_size(GLenum type)
   return type == GL_FLOAT ? 4 : type == GL_HALF_FLOAT ? 2 : 1;
 }
 
-typedef struct
+static NSUInteger source_stride(attrib_t const *a)
 {
-  uint32_t program;
-  uint32_t color, depth, stencil;
-  uint8_t blend, src, dst, mask;
-  struct { uint16_t format, stride; } attrs[MAX_VERTEX_ATTRIBS];
-} pipeline_key_t;
+  return a->stride ? (NSUInteger)a->stride : (NSUInteger)(a->size * type_size(a->type));
+}
+
+// Tightly packed 3-byte or 6-byte elements (UINT8 or FLOAT16 vectors from a
+// mesh file) are copied once into elements padded to a multiple of 4 bytes.
+static id<MTLBuffer> padded_buffer(attrib_t const *a)
+{
+  GLMBuffer *b = a->buffer;
+  NSUInteger stride = source_stride(a), element = (NSUInteger)(a->size * type_size(a->type));
+  if (b->padded && b->paddedStride == stride && b->paddedOffset == a->offset && b->paddedElement == element)
+    return b->padded;
+  NSUInteger count = b->size > a->offset ? (b->size - a->offset + stride - 1) / stride : 0;
+  NSUInteger padded = (element + 3) & ~(NSUInteger)3;
+  b->padded = [gl.device newBufferWithLength:MAX(count * padded, 4) options:MTLResourceStorageModeShared];
+  uint8_t const *src = (uint8_t const *)b->buffer.contents + a->offset;
+  uint8_t *dst = b->padded.contents;
+  for (NSUInteger i = 0; i < count; i++)
+    memcpy(dst + i * padded, src + i * stride, MIN(element, b->size - a->offset - i * stride));
+  b->paddedStride = stride, b->paddedOffset = a->offset, b->paddedElement = element;
+  return b->padded;
+}
 
 static id<MTLRenderPipelineState> pipeline_for(GLMProgram *p, targets_t const *t, pipeline_key_t *key)
 {
+  if (gl.lastPipeline && !memcmp(&gl.lastKey, key, sizeof(*key))) return gl.lastPipeline;
   NSData *data = [NSData dataWithBytes:key length:sizeof(*key)];
-  if (gl.lastPipeline && [gl.lastPipelineKey isEqualToData:data]) return gl.lastPipeline;
   id<MTLRenderPipelineState> pso = p->pipelines[data];
   if (!pso) {
     MTLRenderPipelineDescriptor *d = [MTLRenderPipelineDescriptor new];
@@ -1787,7 +1838,7 @@ static id<MTLRenderPipelineState> pipeline_for(GLMProgram *p, targets_t const *t
     p->pipelines[data] = pso;
   }
   gl.lastPipeline = pso;
-  gl.lastPipelineKey = data;
+  gl.lastKey = *key;
   return pso;
 }
 
@@ -1878,7 +1929,8 @@ static BOOL prepare_draw(void)
     attrib_t const *a = &va->attribs[l];
     if (a->enabled && a->buffer) {
       key.attrs[l].format = (uint16_t)vertex_format(a->size, a->type, a->normalized);
-      key.attrs[l].stride = (uint16_t)(a->stride ? a->stride : a->size * type_size(a->type));
+      NSUInteger stride = source_stride(a);
+      key.attrs[l].stride = (uint16_t)(stride % 4 ? (a->size * type_size(a->type) + 3) & ~3 : stride);
     } else {
       int columns;
       BOOL integer;
@@ -1921,7 +1973,9 @@ static BOOL prepare_draw(void)
     uint32_t l = p->refl->attributes[i].location;
     attrib_t const *a = &va->attribs[l];
     NSUInteger index = GLSL_MSL_VERTEX_BUFFER_BASE + l;
-    if (a->enabled && a->buffer && a->buffer->buffer)
+    if (a->enabled && a->buffer && a->buffer->buffer && source_stride(a) % 4)
+      [gl.encoder setVertexBuffer:padded_buffer(a) offset:0 atIndex:index];
+    else if (a->enabled && a->buffer && a->buffer->buffer)
       [gl.encoder setVertexBuffer:a->buffer->buffer offset:a->offset atIndex:index];
     else
       [gl.encoder setVertexBuffer:gl.constantAttribute offset:0 atIndex:index];
@@ -1982,14 +2036,31 @@ void glFinish(void)
   commit(YES);
 }
 
+// iOS frames already run in the display link's run loop pool.
+void GLMTL_BeginFrame(void)
+{
+#if TARGET_OS_OSX
+  if (!gl.framePool) gl.framePool = objc_autoreleasePoolPush();
+#endif
+}
+
 void GLMTL_Present(void)
 {
-  if (!gl.device) return;
-  if (!gl.drawFramebuffer) flush_pending_clear();
-  end_pass();
-  if (gl.drawable) {
-    [command_buffer() presentDrawable:gl.drawable];
-    gl.drawable = nil;
+  if (gl.device) {
+    if (!gl.drawFramebuffer) flush_pending_clear();
+    end_pass();
+#if TARGET_OS_IPHONE
+    // iOS refuses GPU work from a background app, as OpenGL ES presents were.
+    if (UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
+      gl.drawable = nil;
+      gl.cb = nil;
+    }
+#endif
+    if (gl.drawable) {
+      [command_buffer() presentDrawable:gl.drawable];
+      gl.drawable = nil;
+    }
+    commit(NO);
   }
-  commit(NO);
+  if (gl.framePool) objc_autoreleasePoolPop(gl.framePool), gl.framePool = NULL;
 }

@@ -335,8 +335,10 @@ void glDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices
 void glFlush(void);
 void glFinish(void);
 
-// Not part of OpenGL: presents the drawable rendered since the last call and
-// submits the frame. R_EndFrame calls it in place of a buffer swap.
+// Not part of OpenGL: R_BeginFrame opens an autorelease pool for the frame,
+// which GLMTL_Present closes after presenting the drawable rendered since the
+// last call and submitting the frame. R_EndFrame calls it in place of a swap.
+void GLMTL_BeginFrame(void);
 void GLMTL_Present(void);
 // Not part of OpenGL: wraps an IOSurface as the texture bound to target.
 // Returns 0 on success.

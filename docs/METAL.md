@@ -3,9 +3,11 @@
 iOS and macOS builds render with Metal. The renderer itself is unchanged: it
 still issues OpenGL ES 3.0 calls, and `source/renderer/metal/gl_metal.m`
 implements exactly that subset on Metal. Apple builds include
-`source/renderer/metal/gl_metal.h` in place of a system OpenGL header and link
-no OpenGL framework, so a renderer change that calls something outside the
-subset fails to link rather than silently drawing nothing.
+`source/renderer/metal/gl_metal.h` in place of a system OpenGL header and the
+engine links no OpenGL framework, so a renderer change that calls something
+outside the subset fails to link rather than silently drawing nothing. (The
+macOS platform library still links OpenGL for its `RENDERER=gl` code, which a
+Metal build compiles but never calls.)
 
 OpenGL ES on iOS presents through `CAEAGLLayer`, which displays at most about
 60 frames per second on ProMotion iPhones whatever the display link requests
@@ -74,7 +76,10 @@ user-declared uniform blocks, struct uniforms and sampler arrays.
 - **Texture uploads** write directly unless the GPU may still read the texture
   (it was used by an uncompleted command buffer); then the upload is a blit in
   the command stream, so draws before it still see the old contents, as in
-  OpenGL. `glTexImage2D` replaces the storage of a texture that is in use.
+  OpenGL. Such a blit ends the current render pass, and the next draw
+  reloads the attachments: uploading to a texture already drawn this frame
+  (a palette, a lazily filled atlas) costs a pass split. Staging those uploads
+  ahead of the frame is a possible optimization. `glTexImage2D` replaces the storage of a texture that is in use.
   RGB data gains an alpha channel. Alpha8 masks use a swizzled texture view.
 - **Row order.** Metal's textures start at the top row, OpenGL's at the
   bottom. Every vertex stage multiplies `gl_Position.y` by a hidden uniform:
@@ -86,6 +91,15 @@ user-declared uniform blocks, struct uniforms and sampler arrays.
 - **Blits and copies** draw a textured quad, because Metal's blit encoder can
   neither scale nor flip rows. Backdrop filters read the drawable, so the
   layer's `framebufferOnly` is off.
+- **Vertex strides** must be multiples of 4 in Metal; a tightly packed 3- or
+  6-byte attribute (UINT8 or FLOAT16 vectors in a mesh file) is copied once
+  into padded elements. Unnormalized byte attributes are read as normalized
+  (Metal converts only normalized integers to float inputs), logged once.
+- **Clears** are load actions and ignore the write masks; `R_ClearScreen`
+  opens them before clearing.
+- **macOS frames** run in an autorelease pool from `R_BeginFrame` to
+  `GLMTL_Present`, since the engine loop has none; iOS frames use the display
+  link's. On iOS a frame painted in the background is dropped, not presented.
 - **Formats.** Depth-stencil buffers are `Depth32Float_Stencil8`. ASTC 4x4
   is supported where Metal has it; S3TC (DDS) only on Macs and on iPads that
   support BC compression; PVRTC is not supported.
