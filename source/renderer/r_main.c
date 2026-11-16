@@ -86,6 +86,11 @@ R_ClearScreen(struct color color, float depth, byte_t stencil)
                          : tr.state.stencil.write ? tr.state.stencil.mask : 0;
   GLint clearFlags = 0;
 
+#ifdef R_USE_SRGB
+  // GL_FRAMEBUFFER_SRGB encodes the clear value too; linearize it the way
+  // shader color uniforms are, so a clear matches a fill of the same color.
+  color.r = powf(color.r, 2.2f), color.g = powf(color.g, 2.2f), color.b = powf(color.b, 2.2f);
+#endif
   R_Call(glClearColor, color.r, color.g, color.b, color.a);
   clearFlags |= GL_COLOR_BUFFER_BIT;
 

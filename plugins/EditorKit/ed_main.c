@@ -367,7 +367,7 @@ ORCA_API void ED_Draw(void) {
     s_draw_hook();
     return;
   }
-  R_BeginFrame((struct color){ 0.05, 0.05, 0.05 });
+  R_BeginFrame((struct color){ 0.25, 0.25, 0.25 });
 
   ED_DrawWindow(editor.root->children);
   
