@@ -114,6 +114,34 @@ else
 endif
 LDFLAGS += $(EXE_RPATH)
 
+.DEFAULT_GOAL := default
+
+# GLSL to MSL translation, used by the Metal renderer on Apple platforms and
+# tested on every host.
+SHADER_GEN = $(BUILDDIR)/shaders/include
+include tools/shaders/shaders.mk
+SHADER_LIB = $(LIBDIR)/libglslmsl.a
+SHADER_OBJS = $(patsubst %.cpp,$(OBJECTDIR)/shaders/%.o,$(SHADER_SOURCES))
+CXX_RUNTIME = $(if $(filter Darwin,$(UNAME_S)),-lc++,-lstdc++)
+$(OBJECTDIR)/shaders/%.o: %.cpp $(SHADER_GEN)/glslang/build_info.h
+	$(Q)mkdir -p "$(@D)"
+	$(Q)echo "Compiling $<"
+	$(Q)$(CXX) -O2 -g -fPIC $(ARCH_FLAGS) $(SHADER_CXXFLAGS) -c "$<" -o "$@"
+$(SHADER_LIB): $(SHADER_OBJS) | directories
+	$(Q)rm -f "$@" && ar rcs "$@" $^
+
+# Apple builds render with Metal through an OpenGL ES layer (source/renderer/
+# metal); RENDERER=gl keeps the system OpenGL framework.
+RENDERER ?= $(if $(filter Darwin,$(UNAME_S)),metal,gl)
+ifeq ($(RENDERER),metal)
+	CFLAGS += -DORCA_METAL=1 -DAX_METAL=1
+	LIBS := $(subst -framework OpenGL ,,$(LIBS)) -framework Metal -framework QuartzCore
+	UNITEOBJECTS += gl_metal.o
+	LIBS += $(SHADER_LIB) $(CXX_RUNTIME)
+	PLATFORM_MAKEFLAGS += METAL=1
+endif
+
+
 # LuaRocks installation directories (can be overridden)
 INST_PREFIX ?= /usr/local
 INST_BINDIR ?= $(INST_PREFIX)/bin
@@ -140,7 +168,7 @@ $(SOURCEMODULES2): /%: $(PNG_LIB) $(JPEG_LIB) | modules directories
 	$(Q)find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
 platform: | directories
-	$(Q)$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
+	$(Q)$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)" $(PLATFORM_MAKEFLAGS)
 
 $(SOURCEMODULES2): | directories
 
@@ -201,6 +229,11 @@ buildunite: $(OBJECTDIR)/signin_apple.o
 # Apple's UIKit with __has_include, so this file is built without generated/.
 $(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_native.h | directories
 	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -x objective-c -c $< -o $@
+endif
+ifeq ($(RENDERER),metal)
+buildunite: $(OBJECTDIR)/gl_metal.o $(SHADER_LIB)
+$(OBJECTDIR)/gl_metal.o: source/renderer/metal/gl_metal.m source/renderer/metal/gl_metal.h source/renderer/metal/glsl_msl.h | directories
+	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -fobjc-arc -x objective-c -c $< -o $@
 endif
 
 buildlib: platform lua buildunite
@@ -562,7 +595,8 @@ TEST_SHADER_UNIFORMS_BIN = $(BINDIR)/test_shader_uniforms
 TEST_TEXTURE_DOWNSCALE_BIN = $(BINDIR)/test_texture_downscale
 .PHONY: test-texture-downscale
 TEST_SCREEN_SPACE_CAPTURE_BIN = $(BINDIR)/test_screen_space_capture
-TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),-framework OpenGL,-lGL)
+# With RENDERER=metal, liborca itself provides the OpenGL ES calls.
+TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),$(if $(filter metal,$(RENDERER)),,-framework OpenGL),-lGL)
 .PHONY: test-screen-space-capture
 TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
 EDITOR_PLUGIN_OBJECT = $(OBJECTDIR)/plugin_EditorKit.o
@@ -592,6 +626,9 @@ $(1): $(3)
 	$(Q)echo "Running $(1)"
 	$(Q)$(TARGET) -test=$(2)
 endef
+
+.PHONY: test-glsl-msl
+$(eval $(call C_TEST_RULE,test-glsl-msl,tests/test_glsl_msl.c,$(BINDIR)/test_glsl_msl,platform $(SOURCEMODULES2) buildlib $(SHADER_LIB),,$(TEST_LDFLAGS) $(SHADER_LIB) $(CXX_RUNTIME) -lm))
 
 .PHONY: test-ios-tmpname
 $(eval $(call C_TEST_RULE,test-ios-tmpname,tests/test_ios_tmpname.c,$(BINDIR)/test_ios_tmpname,directories tools/ios/lua_config.h,,))
@@ -640,7 +677,7 @@ $(eval $(call C_TEST_RULE,test-vectorview-density,tests/test_vectorview_density.
 # Opt-in desktop test: intentionally excluded from test-headless.
 .PHONY: test-macos-retina
 ifeq ($(UNAME_S),Darwin)
-$(eval $(call C_TEST_RULE,test-macos-retina,tests/test_macos_retina.m,$(BINDIR)/test_macos_retina,unite,-Wno-deprecated-declarations,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -framework AppKit -framework OpenGL))
+$(eval $(call C_TEST_RULE,test-macos-retina,tests/test_macos_retina.m,$(BINDIR)/test_macos_retina,unite,-Wno-deprecated-declarations,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -framework AppKit $(if $(filter metal,$(RENDERER)),-framework QuartzCore,-framework OpenGL)))
 else
 test-macos-retina:
 	$(Q)echo "test-macos-retina requires macOS and a desktop display"
@@ -648,7 +685,7 @@ endif
 
 .PHONY: test-macos-offscreen
 ifeq ($(UNAME_S),Darwin)
-$(eval $(call C_TEST_RULE,test-macos-offscreen,tests/test_macos_offscreen.m,$(BINDIR)/test_macos_offscreen,unite,-Wno-deprecated-declarations,$(TEST_LDFLAGS) -lplatform -framework AppKit -framework OpenGL))
+$(eval $(call C_TEST_RULE,test-macos-offscreen,tests/test_macos_offscreen.m,$(BINDIR)/test_macos_offscreen,unite,-Wno-deprecated-declarations,$(TEST_LDFLAGS) -lplatform -framework AppKit $(if $(filter metal,$(RENDERER)),,-framework OpenGL)))
 else
 test-macos-offscreen:
 	$(Q)echo "test-macos-offscreen requires macOS"
@@ -845,7 +882,7 @@ $(eval $(call LUA_TEST_RULE,test-editor-welcome,tests/test_editor_welcome.lua,un
 $(eval $(call LUA_TEST_RULE,test-editor-tabs,tests/test_editor_tabs.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-projects,tests/test_editor_projects.lua,unite copyshare))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-glsl-msl test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

@@ -8,7 +8,11 @@
 #import <UIKit/UIWindowScene.h>
 #import <QuartzCore/CADisplayLink.h>
 #import <QuartzCore/QuartzCore.h>
+#if ORCA_METAL
+#include <source/renderer/metal/gl_metal.h>
+#else
 #import <OpenGLES/ES3/gl.h>
+#endif
 
 #include <include/api.h>
 #include <include/renderer.h>

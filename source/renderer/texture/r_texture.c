@@ -522,7 +522,7 @@ R_BindFramebuffer(struct Texture* image)
     R_Call(glBindFramebuffer, GL_FRAMEBUFFER, image->framebuffer);
     R_ClearScreen(color_new(0, 0, 0, 0), 1, 0);
   } else {
-    axBindFramebuffer();
+    R_BindDefaultFramebuffer();
   }
   tr.currentRenderTarget = image;
   return S_OK;
@@ -570,7 +570,37 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
   return object;
 }
 
-#if defined(__APPLE__) && !TARGET_OS_IPHONE
+#if defined(__APPLE__) && !TARGET_OS_IPHONE && ORCA_METAL
+#include <IOSurface/IOSurface.h>
+// Metal samples an IOSurface as an ordinary 2D texture, so IOSurface stays
+// FALSE and no rectangle-texture shader is involved.
+bool_t
+IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
+{
+  IOSurfaceRef surface = IOSurfaceLookup(surfaceID);
+  if (!surface) return FALSE;
+  GLsizei w = (GLsizei)IOSurfaceGetWidth(surface), h = (GLsizei)IOSurfaceGetHeight(surface);
+  if (!img->texnum) R_Call(glGenTextures, 1, &img->texnum);
+  R_Call(glBindTexture, GL_TEXTURE_2D, img->texnum);
+  bool_t ok = GLMTL_TexImageIOSurface(GL_TEXTURE_2D, surface, w, h) == 0;
+  CFRelease(surface);
+  if (!ok) return FALSE;
+  img->Width = w;
+  img->Height = h;
+  img->Scale = 1;
+  img->IOSurface = FALSE;
+  R_ApplyImageParms(img, GL_TEXTURE_2D, FALSE);
+  return TRUE;
+}
+
+// IOSurfaceTexture_Start
+HANDLER(IOSurfaceTexture, Object, Start) {
+  struct Texture *img = GetTexture(hObject);
+  if (!IOSurface_CreateTextureFrom(pIOSurfaceTexture->IOSurface, img))
+    Con_Error("IOSurface %u: can't create a texture", pIOSurfaceTexture->IOSurface);
+  return TRUE;
+}
+#elif defined(__APPLE__) && !TARGET_OS_IPHONE
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/glext.h>

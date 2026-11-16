@@ -1,5 +1,12 @@
 #import <AppKit/AppKit.h>
+#if ORCA_METAL
+#import <QuartzCore/CAMetalLayer.h>
+#include <source/renderer/metal/gl_metal.h>
+typedef NSView RetinaView;
+#else
 #import <OpenGL/gl3.h>
+typedef NSOpenGLView RetinaView;
+#endif
 #include <math.h>
 #include <assert.h>
 #include <include/api.h>
@@ -12,7 +19,7 @@ extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_renderer(lua_State *L);
 extern int luaopen_orca_UIKit(lua_State *L);
 
-static void check_drawable(NSOpenGLView *view, uint32_t width, uint32_t height, float scale)
+static void check_drawable(RetinaView *view, uint32_t width, uint32_t height, float scale)
 {
   struct AXsize logical;
   axGetSize(&logical);
@@ -27,6 +34,11 @@ static void check_drawable(NSOpenGLView *view, uint32_t width, uint32_t height, 
   assert(viewport[2] == lroundf(width * scale));
   assert(viewport[3] == lroundf(height * scale));
   assert(glGetError() == GL_NO_ERROR);
+#if ORCA_METAL
+  CGSize drawable = ((CAMetalLayer *)view.layer).drawableSize;
+  assert(lround(drawable.width) == lroundf(width * scale));
+  assert(lround(drawable.height) == lroundf(height * scale));
+#endif
   assert(R_EndFrame() >= 0);
 }
 
@@ -73,14 +85,22 @@ int main(void)
 
     NSWindow *window = nil;
     for (NSWindow *candidate in NSApp.windows) {
+#if ORCA_METAL
+      if (![candidate.contentView.layer isKindOfClass:CAMetalLayer.class]) continue;
+#else
       if (![candidate.contentView isKindOfClass:NSOpenGLView.class]) continue;
+#endif
       window = candidate;
       break;
     }
     assert(window && (window.styleMask & NSWindowStyleMaskResizable));
-    NSOpenGLView *view = (NSOpenGLView *)window.contentView;
+    RetinaView *view = (RetinaView *)window.contentView;
+#if ORCA_METAL
+    assert(axGetMetalLayer() == (__bridge void *)view.layer);
+#else
     assert(view.wantsBestResolutionOpenGLSurface);
     assert(view.openGLContext && glGetString(GL_VERSION));
+#endif
     float backing = window.backingScaleFactor;
     check_drawable(view, 400, 300, backing);
     drain_events(400, 300);
@@ -98,8 +118,18 @@ int main(void)
     id<NSWindowDelegate> delegate = window.delegate;
     assert([delegate respondsToSelector:@selector(windowDidChangeBackingProperties:)]);
     NSNotification *changed = [NSNotification notificationWithName:NSWindowDidChangeBackingPropertiesNotification object:window];
+#if ORCA_METAL
+    // The Metal view's density follows the window's HIGHDPI flag, not a view
+    // property, so only the notification itself is replayed.
+    [delegate windowDidChangeBackingProperties:changed];
+    check_drawable(view, 400, 300, backing);
+    check_icon(icon, backing);
+    drain_events(400, 300);
+    for (unsigned i = 0; i < 0; i++) {
+#else
     for (unsigned i = 0; i < 2; i++) {
       view.wantsBestResolutionOpenGLSurface = i != 0;
+#endif
       [delegate windowDidChangeBackingProperties:changed];
       check_drawable(view, 400, 300, i ? backing : 1.f);
       check_icon(icon, i ? backing : 1.f);

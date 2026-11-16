@@ -168,6 +168,62 @@ Shader_Release(struct shader* shader)
   return S_OK;
 }
 
+// Engine declarations (version, uniforms, attributes or varyings, fragment
+// output), the lighting helpers and the stage's own source, in order. The
+// texts are written to `texts`; returns the number of `codes`, 0 on error.
+uint32_t
+Shader_AssembleSource(struct shader_desc const* def, bool_t vertex,
+                      char texts[][SHADER_TEXT_LENGTH], lpcString_t *codes)
+{
+#ifdef R_USE_GLES
+  lpcString_t v300 = "#version 300 es\nprecision lowp float;\n";
+#else
+  lpcString_t v300 = "#version 330 core\nprecision lowp float;\n";
+#endif
+  uint32_t dwNumTexts = 0;
+
+  strcpy(texts[dwNumTexts++], v300);
+
+#define ADD_TEXT(uniforms, prefix)                                             \
+  for (struct uniform_def const* u = uniforms; *u->Name; u++) {                \
+    if (dwNumTexts + 2 >= SHADER_MAX_TEXTS) return 0;                         \
+    if (u->ArraySize) {                                                        \
+      snprintf(texts[dwNumTexts++], SHADER_TEXT_LENGTH, "#define %sCount %d\n", u->Name, u->ArraySize); \
+      snprintf(texts[dwNumTexts++], SHADER_TEXT_LENGTH, prefix " %s%s %s[%d];\n", glsl_precision[u->Precision], glsl_type[u->Type], u->Name, u->ArraySize); \
+    } else { \
+      snprintf(texts[dwNumTexts++], SHADER_TEXT_LENGTH, prefix " %s%s %s;\n", glsl_precision[u->Precision], glsl_type[u->Type], u->Name); \
+    } \
+  }
+
+  ADD_TEXT(def->Uniforms, "uniform");
+
+  if (vertex) {
+    ADD_TEXT(def->Attributes, "in");
+    ADD_TEXT(def->Shared, "out");
+  } else {
+    ADD_TEXT(def->Shared, "in");
+    if (def->FragmentOut) {
+      snprintf(texts[dwNumTexts++],SHADER_TEXT_LENGTH,"out lowp vec4 %s;\n",def->FragmentOut);
+    }
+  }
+#undef ADD_TEXT
+
+  FOR_LOOP(i, dwNumTexts) codes[i] = texts[i];
+
+  uint32_t _ApplyLighting(struct shader_desc const*,lpcString_t *,uint32_t);
+  if (vertex) {
+    dwNumTexts = _ApplyLighting(def, codes, dwNumTexts);
+  }
+
+  lpcString_t source = vertex ? def->VertexShader : def->FragmentShader;
+  if (!source) {
+    Con_Error("%s: missing %s shader source", def->Name, vertex ? "vertex" : "fragment");
+    return 0;
+  }
+  codes[dwNumTexts++] = source;
+  return dwNumTexts;
+}
+
 static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
 {
   GLuint shader = 0;
@@ -176,60 +232,14 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   if (!(shader = glCreateShader(type))) {
     return 0;
   }
-  //    lpcString_t  v150 = "#version 150";
-#ifdef R_USE_GLES
-  lpcString_t v300 = "#version 300 es\nprecision lowp float;\n";
-#else
-  lpcString_t v300 = "#version 330 core\nprecision lowp float;\n";
-#endif
-
-  static char pszTexts[255][256];
-  static lpcString_t pszCodes[256];
-  uint32_t dwNumTexts = 0;
-
-  memset(pszTexts, 0, sizeof(pszTexts));
-  memset(pszCodes, 0, sizeof(pszCodes));
-
-  strcpy(pszTexts[dwNumTexts++], v300);
-
-#define ADD_TEXT(uniforms, prefix)                                             \
-  for (struct uniform_def const* u = uniforms; *u->Name; u++) {                \
-    assert(dwNumTexts < MAX_UNIFORMS);                                         \
-    if (u->ArraySize) {                                                        \
-      snprintf(pszTexts[dwNumTexts++], sizeof(*pszTexts), "#define %sCount %d\n", u->Name, u->ArraySize); \
-      snprintf(pszTexts[dwNumTexts++], sizeof(*pszTexts), prefix " %s%s %s[%d];\n", glsl_precision[u->Precision], glsl_type[u->Type], u->Name, u->ArraySize); \
-    } else { \
-      snprintf(pszTexts[dwNumTexts++], sizeof(*pszTexts), prefix " %s%s %s;\n", glsl_precision[u->Precision], glsl_type[u->Type], u->Name); \
-    } \
-  }
-
-  ADD_TEXT(def->Uniforms, "uniform");
-
-  if (type == GL_VERTEX_SHADER) {
-    ADD_TEXT(def->Attributes, "in");
-    ADD_TEXT(def->Shared, "out");
-  } else {
-    ADD_TEXT(def->Shared, "in");
-    if (def->FragmentOut) {
-      snprintf(pszTexts[dwNumTexts++],sizeof(*pszTexts),"out lowp vec4 %s;\n",def->FragmentOut);
-    }
-  }
-
-  FOR_LOOP(i, dwNumTexts) pszCodes[i] = pszTexts[i];
-
-  uint32_t _ApplyLighting(struct shader_desc*,lpcString_t *,uint32_t);
-  if (type == GL_VERTEX_SHADER) {
-    dwNumTexts = _ApplyLighting(def, pszCodes, dwNumTexts);
-  }
-
+  static char pszTexts[SHADER_MAX_TEXTS][SHADER_TEXT_LENGTH];
+  static lpcString_t pszCodes[SHADER_MAX_TEXTS];
   lpcString_t shaderType = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
-  lpcString_t source = type == GL_VERTEX_SHADER ? def->VertexShader : def->FragmentShader;
-  if (!source) {
-    Con_Error("%s: missing %s shader source", def->Name, shaderType);
+  uint32_t dwNumTexts = Shader_AssembleSource(def, type == GL_VERTEX_SHADER, pszTexts, pszCodes);
+  if (!dwNumTexts) {
     R_Call(glDeleteShader, shader);
     return 0;
   }
-  pszCodes[dwNumTexts++] = source;
 
   R_Call(glShaderSource, shader, dwNumTexts, pszCodes, NULL);
   R_Call(glCompileShader, shader);
@@ -982,7 +992,7 @@ HANDLER(Shader, Object, Destroy) {
 }
 
 uint32_t
-_ApplyLighting(struct shader_desc* def,
+_ApplyLighting(struct shader_desc const* def,
                lpcString_t *pszCodes,
                uint32_t dwNumTexts)
 {

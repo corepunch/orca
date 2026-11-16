@@ -31,6 +31,11 @@ CC := xcrun --sdk $(SDK) clang
 MIN_FLAG := $(if $(filter iphoneos,$(SDK)),-miphoneos-version-min,-mios-simulator-version-min)=$(IOS_MIN)
 FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I$(DEPS)/include/libxml2
 include tools/mobile/third_party.mk
+# Metal is the renderer; RENDERER=gl builds the OpenGL ES one.
+RENDERER ?= metal
+ifeq ($(RENDERER),metal)
+FLAGS += -DORCA_METAL=1 -DAX_METAL=1
+endif
 VENDOR_FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -fPIC -MMD -MP
 FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
 CFLAGS := $(FLAGS) -Igenerated
@@ -42,7 +47,12 @@ OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(RO
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_animation.o ios_scroll.o)
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts
+ifeq ($(RENDERER),metal)
+# GLSL is translated to MSL when a program links; dependencies.py builds
+# glslang, SPIRV-Cross and the translator into libglslmsl.a.
+IOS_OBJECTS += $(ROOT)/obj/source/renderer/metal/gl_metal.o
+endif
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules
@@ -65,6 +75,9 @@ $(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings
 endef
 $(foreach module,$(MODULES),$(eval $(call unity,$(module),source/$(module))))
 $(foreach plugin,$(PLUGINS),$(eval $(call unity,plugin_$(plugin),plugins/$(plugin))))
+$(ROOT)/obj/source/renderer/metal/gl_metal.o: source/renderer/metal/gl_metal.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
+	@mkdir -p "$(@D)"
+	$(CC) $(OBJCFLAGS) -fobjc-arc -c "$<" -o "$@"
 $(ROOT)/obj/%.o: %.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
 	@mkdir -p "$(@D)"
 	$(CC) $(OBJCFLAGS) -c "$<" -o "$@"

@@ -154,6 +154,10 @@ takes over its place, so one callback draws the single drawable once.
 Paints should equal callbacks while scrolling; more paints than callbacks
 means double-drawn frames.
 
+Builds render with Metal by default (see [Metal renderer](METAL.md)); the
+measurements below were taken with OpenGL ES, which `RENDERER=gl` still
+builds, and explain why Metal replaced it.
+
 Read `begin_frame` as waiting, not work: binding and clearing the OpenGL ES
 drawable blocks until the system returns one. On an iPhone 14 Pro Max the
 Octopus feed scrolled at a steady 60 Hz with about 6–7 ms of engine work
@@ -161,8 +165,8 @@ and a 9–10 ms `begin_frame` wait per frame, with or without the frosted-bar
 blur. Removing work therefore does not raise the rate above 60 Hz; it only
 lengthens that wait.
 
-ORCA stays at 60 Hz with OpenGL ES; going higher needs a Metal presentation
-path. Instruments' Animation Hitches template, attached to the running app,
+OpenGL ES stays at 60 Hz; going higher needs a Metal presentation path.
+Instruments' Animation Hitches template, attached to the running app,
 measured the frames actually displayed while scrolling the Octopus feed:
 
 | Request | Displayed | CPU to display |
@@ -188,7 +192,8 @@ the samples, so a slow frame shows which phase took the time. The simulator
 runs OpenGL ES on a software rasterizer, so its paint times do not represent
 devices.
 
-The platform backend uses UIWindowScene and OpenGL ES 3, Retina backing buffers,
+The platform backend uses UIWindowScene and a CAMetalLayer (OpenGL ES 3 with
+`RENDERER=gl`), Retina backing buffers,
 tap/drag events, vertical swipe scrolling and UIKeyInput. The drawable fills the
 window, including the status-bar and home-indicator areas. `Screen.ClearColor`
 paints the entire canvas and determines status-bar text contrast. By default,

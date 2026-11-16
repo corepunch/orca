@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[2]
+METAL_UNIT = 'metal_renderer.m'
 
 
 def write(path, content):
@@ -50,8 +51,12 @@ def unity_sources(root=ROOT):
     units['u_platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
     units['ios_runtime.m'] = [root / 'source/ios.m', root / 'source/ios_animation.m',
                               root / 'source/ios_scroll.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
+    metal = root / 'source/renderer/metal'
     units['native_modules.m'] = [path for name in config['MODULES']
-                                  for path in sorted((root / 'source' / name).rglob('*.m'))]
+                                  for path in sorted((root / 'source' / name).rglob('*.m'))
+                                  if metal not in path.parents]
+    # The Metal renderer's OpenGL ES layer is the one unit compiled with ARC.
+    units[METAL_UNIT] = sorted(metal.glob('*.m'))
     return units
 
 
