@@ -51,8 +51,8 @@ struct shader_desc shader_rect = {
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
     { "u_texture", UT_SAMPLER_2D_RECT, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
@@ -81,6 +81,9 @@ struct shader_desc shader_rect = {
   "}\n"};
 #endif
 
+// Box extents (u_bboxMin/u_bboxMax) are highp in every shader: Apple GPUs run
+// lowp/mediump as 16-bit floats (max 65504), which a stencil clip or a long
+// scrolling box would overflow, dropping everything it clips.
 struct shader_desc shader_ui = {
   .Name = "UI Shader",
   .Version = 150,
@@ -93,8 +96,8 @@ struct shader_desc shader_ui = {
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
     { "u_borderWidth", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
@@ -109,7 +112,7 @@ struct shader_desc shader_ui = {
       // Unit position inside the box and the box size in points, for
       // fragment-only UI materials (Shader_UseUIVertexStage).
       { "v_boxCoord", UT_FLOAT_VEC2 },
-      { "v_boxSize", UT_FLOAT_VEC2 },
+      { "v_boxSize", UT_FLOAT_VEC2, PRECISION_HIGH },
     },
     .VertexShader =
   "#define r u_radius\n"
@@ -118,7 +121,7 @@ struct shader_desc shader_ui = {
   "  vec2 s = step(vec2(0.5), a_position.xy);\n"
   "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
-  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  highp vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
   "#ifdef USE_SQUIRCLE\n"
   "  vec2 corner = vec2(1.0) - a_position.xy * 2.0;\n"
   "  vec2 arc = a_texcoord0 - corner;\n"
@@ -126,9 +129,9 @@ struct shader_desc shader_ui = {
   "  vec2 squircleBorder = sign(a_texcoord1) * pow(abs(a_texcoord1), vec2(0.5));\n"
   "  vec2 softArc = mix(arc, squircleArc, 0.35);\n"
   "  vec2 softBorder = mix(a_texcoord1, squircleBorder, 0.35);\n"
-  "  vec2 pos = a_position.xy * rectSize + (corner + softArc) * rad + softBorder * brd;\n"
+  "  highp vec2 pos = a_position.xy * rectSize + (corner + softArc) * rad + softBorder * brd;\n"
   "#else\n"
-  "  vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
+  "  highp vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
   "#endif\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
@@ -156,8 +159,8 @@ struct shader_desc shader_cinematic = {
     { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_cinematicPalette", UT_SAMPLER_2D, PRECISION_LOW },
  
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
   },
     .Attributes = {
       { "a_position", UT_FLOAT_VEC4 },
@@ -193,8 +196,8 @@ struct shader_desc shader_ninepatch = {
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
     { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
@@ -233,8 +236,8 @@ struct shader_desc shader_charset= {
     { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_charset", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_palette", UT_SAMPLER_2D, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_textureSize", UT_FLOAT_VEC2, PRECISION_LOW },
     { "u_selectedItem", UT_FLOAT_VEC2, PRECISION_LOW },
@@ -379,8 +382,8 @@ struct shader_desc shader_button = {
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
 //    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
     { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
     { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
@@ -448,8 +451,8 @@ struct shader_desc shader_roundedbox = {
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
     { "u_color", UT_COLOR, PRECISION_LOW },
     { "u_radius", UT_FLOAT_VEC4, PRECISION_LOW },
-    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
-    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_lightDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0, -1, -0.5} },
     { "u_specularPower", UT_FLOAT, PRECISION_LOW, 0, {1.5} },
     { "u_viewDir", UT_FLOAT_VEC3, PRECISION_LOW, 0, {0.0, 0.0, 1.0}}
