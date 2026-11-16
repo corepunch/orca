@@ -474,13 +474,18 @@ android:
 ios-devices:
 	$(MAKE) -f tools/ios/Makefile list-devices
 
-# make ipad APP=<name>: build, sign, install and launch apps/<name> on the
-# development iPad. Override the device with DEVICE=<UDID-or-name>.
-IPAD_UDID ?= 00008020-000D14800204402E
-.PHONY: ipad
-ipad:
-	@test -n "$(APP)" || { echo 'Usage: make ipad APP=<name> (an apps/<name>/package.lua project)'; exit 1; }
-	$(MAKE) $(APP)-ios DEVICE_TYPE=iPad DEVICE="$(or $(DEVICE),$(IPAD_UDID))"
+# make iphone|ipad APP=<name>: build, sign, install and launch apps/<name>
+# on your device named by IPHONE_DEVICE or IPAD_DEVICE (UDID or name, e.g.
+# exported in ~/.zshrc). DEVICE=<UDID-or-name> overrides it.
+.PHONY: iphone ipad
+iphone: DEVICE_FAMILY = iPhone
+iphone: FAMILY_DEVICE = $(IPHONE_DEVICE)
+ipad: DEVICE_FAMILY = iPad
+ipad: FAMILY_DEVICE = $(IPAD_DEVICE)
+iphone ipad:
+	@test -n "$(APP)" || { echo 'Usage: make $@ APP=<name> (an apps/<name>/package.lua project)'; exit 1; }
+	@test -n "$(or $(DEVICE),$(FAMILY_DEVICE))" || { echo 'Set $(shell echo $@ | tr a-z A-Z)_DEVICE=<UDID-or-name> (see make ios-devices) or pass DEVICE=.'; exit 1; }
+	$(MAKE) $(APP)-ios DEVICE_TYPE=$(DEVICE_FAMILY) DEVICE="$(or $(DEVICE),$(FAMILY_DEVICE))"
 
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
