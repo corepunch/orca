@@ -474,6 +474,14 @@ android:
 ios-devices:
 	$(MAKE) -f tools/ios/Makefile list-devices
 
+# make ipad APP=<name>: build, sign, install and launch apps/<name> on the
+# development iPad. Override the device with DEVICE=<UDID-or-name>.
+IPAD_UDID ?= 00008020-000D14800204402E
+.PHONY: ipad
+ipad:
+	@test -n "$(APP)" || { echo 'Usage: make ipad APP=<name> (an apps/<name>/package.lua project)'; exit 1; }
+	$(MAKE) $(APP)-ios DEVICE_TYPE=iPad DEVICE="$(or $(DEVICE),$(IPAD_UDID))"
+
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 

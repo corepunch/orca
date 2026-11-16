@@ -69,6 +69,7 @@ Run these commands from the repository root:
 make chat-ios                        # Build, sign, install and launch on a connected device
 make octopus-ios                     # Same workflow for any apps/<name>/package.lua project
 make chat-ios DEVICE=<identifier>     # Select a device when several are available
+make ipad APP=encarta                # Same, on the development iPad (IPAD_UDID; DEVICE= overrides)
 make ios-sim                         # Build the simulator .app
 make ios-run                         # Install and launch an iPhone simulator
 make ios-run DEVICE_TYPE=iPad        # Install and launch an iPad simulator
