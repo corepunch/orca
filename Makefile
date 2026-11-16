@@ -575,6 +575,8 @@ TEST_SHADER_UNIFORMS_BIN = $(BINDIR)/test_shader_uniforms
 TEST_TEXTURE_DOWNSCALE_BIN = $(BINDIR)/test_texture_downscale
 .PHONY: test-texture-downscale
 TEST_SCREEN_SPACE_CAPTURE_BIN = $(BINDIR)/test_screen_space_capture
+TEST_DEFERRED_GPU_RESOURCES_BIN = $(BINDIR)/test_deferred_gpu_resources
+.PHONY: test-deferred-gpu-resources
 TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),-framework OpenGL,-lGL)
 .PHONY: test-screen-space-capture
 TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
@@ -646,6 +648,7 @@ $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-texture-downscale,tests/test_texture_downscale.c,$(TEST_TEXTURE_DOWNSCALE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
+$(eval $(call C_TEST_RULE,test-deferred-gpu-resources,tests/test_deferred_gpu_resources.c,$(TEST_DEFERRED_GPU_RESOURCES_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 
 .PHONY: test-vectorview-density
 $(eval $(call C_TEST_RULE,test-vectorview-density,tests/test_vectorview_density.c,$(BINDIR)/test_vectorview_density,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -llua5.4 -lplatform -lm $(TEST_GL_LIBS) $(if $(filter Darwin,$(UNAME_S)),,-rdynamic)))

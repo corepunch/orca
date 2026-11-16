@@ -258,6 +258,7 @@
         <field name="framebuffer" type="uint">OpenGL framebuffer object identifier for render-to-texture operations.</field>
         <field name="depthbuffer" type="uint">OpenGL depth buffer (renderbuffer) object identifier for depth testing when rendering to this texture.</field>
         <field name="loaded" type="bool">Used for on-demand texture loading.</field>
+        <field name="deferred" type="bool">Set when an Image loads without a GL context: its file is uploaded the first time the texture is bound.</field>
       </fields>
     </class>
     <class name="Image" parent="Texture">

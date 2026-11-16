@@ -332,7 +332,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     return NOERROR;
   }
 
-  if (!shader->shader) {
+  struct shader const *program = Shader_GetProgram(shader);
+  if (!program) {
     static uint32_t missing_shader_log_mask = 0;
     enum shader_type shader_index = SHADER_COUNT;
     FOR_LOOP(i, SHADER_COUNT) {
@@ -354,7 +355,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     return E_FAIL;
   }
   
-  struct shader_universal_target const *target = &shader->shader->target;
+  struct shader_universal_target const *target = &program->target;
 
   enum blend_mode blend = ent->material.blendMode != BLEND_MODE_INHERIT ? ent->material.blendMode
                          : target->HasBlendMode ? target->BlendMode : BLEND_MODE_INHERIT;
@@ -374,9 +375,9 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     R_SetDepthWrite(write);
   }
 
-  Shader_BindMaterial(shader->shader, view, ent);
-  Shader_BindConstants(shader->shader, ent);
-  Shader_BindAttributes(shader->shader, model);
+  Shader_BindMaterial(program, view, ent);
+  Shader_BindConstants(program, ent);
+  Shader_BindAttributes(program, model);
 
   //	glPolygonMode(GL_FRONT_AND_BACK, ent->shader?GL_LINE:GL_FILL);
   

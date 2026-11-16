@@ -310,6 +310,29 @@ GLES builds retain RGBA targets, matching their disabled `R_USE_SRGB` pipeline.
 This also keeps the editor Preview's PNG snapshots at the same brightness as
 the standalone application.
 
+### GPU Resources Are Created on First Use
+
+Loading a resource and creating its GPU object are separate steps, so XML,
+CSS and Lua can load shaders and images before a window or GL context exists
+(at startup, in headless tests, or before `renderer.init`):
+
+- **Shader**: `Object.Start` only declares its `Shader.Uniforms` properties.
+  `Shader_GetProgram` builds the GL program the first time the shader draws
+  (`R_DrawEntity`), from the object's properties and `VertexShader` /
+  `FragmentShader` children. A program that fails to compile or link becomes
+  the error shader, so the failure is reported once, at first draw.
+- **Image**: with a context, `Object.Start` uploads the file as before.
+  Without one it reads only the image's size, for layout, and sets
+  `Texture.deferred`; `Texture_Bind` uploads the file the first time the
+  texture is bound and clears the flag, success or not.
+
+Built-in shaders and textures are still created by `renderer.init`.
+Programmatic textures (`Texture_Create` with pixel data, render targets,
+glyph atlases) and file meshes still create GL objects when they are made;
+they are made while drawing, or after initialization. No platform loses its
+GL context today. If one does, clearing a resource's handle (`shader`,
+`texnum` with `deferred`) is enough for it to be recreated on its next draw.
+
 ### The `tr.buffer` Sentinel
 
 `tr.buffer` is set by `glGenBuffers` inside `R_InitBuffers()` during `renderer_Init()`. It is `0` until the full init completes. Use this as the canonical check for "is the renderer initialized?":

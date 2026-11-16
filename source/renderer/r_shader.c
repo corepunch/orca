@@ -882,26 +882,30 @@ _DeclareUniforms(struct Object *hObject, struct Shader *pShader)
   }
 }
 
-// Shader_Start
-HANDLER(Shader, Object, Start) {
+// The program description: uniforms from the object's properties and the
+// stage sources from its VertexShader / FragmentShader children. Reads the
+// object only, so it can run again whenever the program must be (re)built.
+static uint32_t
+_BuildDesc(struct Object *hObject, struct Shader const *pShader,
+           struct shader_desc *desc)
+{
   uint32_t NumUniforms = 0;
-  struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
-  _DeclareUniforms(hObject, pShader);
+  *desc = (struct shader_desc){ .Name = OBJ_GetName(hObject) };
   for (struct Property *p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
     struct uniform_def ud = {0};
     lpcString_t local = PROP_GetName(p);
     switch (PROP_GetLongIdentifier(p)) {
       case ID_Shader_BlendMode:
-        desc.UniversalTarget.HasBlendMode = TRUE;
-        desc.UniversalTarget.BlendMode = (enum blend_mode)pShader->BlendMode;
+        desc->UniversalTarget.HasBlendMode = TRUE;
+        desc->UniversalTarget.BlendMode = (enum blend_mode)pShader->BlendMode;
         continue;
       case ID_Shader_DepthTestFunction:
-        desc.UniversalTarget.HasDepthTestFunction = TRUE;
-        desc.UniversalTarget.DepthTestFunction = (enum compare_func)pShader->DepthTestFunction;
+        desc->UniversalTarget.HasDepthTestFunction = TRUE;
+        desc->UniversalTarget.DepthTestFunction = (enum compare_func)pShader->DepthTestFunction;
         continue;
       case ID_Shader_DepthWriteEnabled:
-        desc.UniversalTarget.HasDepthWriteEnabled = TRUE;
-        desc.UniversalTarget.DepthWriteEnabled = pShader->DepthWriteEnabled;
+        desc->UniversalTarget.HasDepthWriteEnabled = TRUE;
+        desc->UniversalTarget.DepthWriteEnabled = pShader->DepthWriteEnabled;
         continue;
     }
     if (strrchr(local, '.')) {
@@ -946,24 +950,31 @@ HANDLER(Shader, Object, Start) {
       default:
         continue;
     }
-    desc.Uniforms[NumUniforms++] = ud;
+    desc->Uniforms[NumUniforms++] = ud;
   }
   FOR_EACH_OBJECT(hChild, hObject) {
     if (GetVertexShader(hChild)) {
       struct VertexShader const *vs = GetVertexShader(hChild);
-      desc.VertexShader = OBJ_GetTextContent(hChild);
-      desc.Shading = vs->Shading;
-      desc.Version = MAX(desc.Version, vs->Version);
+      desc->VertexShader = OBJ_GetTextContent(hChild);
+      desc->Shading = vs->Shading;
+      desc->Version = MAX(desc->Version, vs->Version);
     } else if (GetFragmentShader(hChild)) {
       struct FragmentShader const *fs = GetFragmentShader(hChild);
-      desc.FragmentShader = OBJ_GetTextContent(hChild);
-      desc.FragmentOut = fs->Out;
-      desc.Version = MAX(desc.Version, fs->Version);
+      desc->FragmentShader = OBJ_GetTextContent(hChild);
+      desc->FragmentOut = fs->Out;
+      desc->Version = MAX(desc->Version, fs->Version);
     }
   }
-  // tr.buffer is 0 until the renderer has a GL context (headless tests never
-  // get one); macOS's libGL crashes on GL calls without a current context.
-  if (!tr.buffer) return TRUE;
+  return NumUniforms;
+}
+
+// Builds the GL program of a Shader object. A program that fails to compile
+// or link becomes the error shader, so it is reported once, not every frame.
+static void
+_Realize(struct Object *hObject, struct Shader *pShader)
+{
+  struct shader_desc desc;
+  uint32_t NumUniforms = _BuildDesc(hObject, pShader, &desc);
   GLuint prognum = desc.VertexShader || Shader_UseUIVertexStage(&desc, NumUniforms)
                   ? _CreateGLProgram(&desc) : 0;
   if (prognum != 0) {
@@ -975,6 +986,26 @@ HANDLER(Shader, Object, Start) {
     Con_Error("Can't register shader %s", OBJ_GetName(hObject));
     Shader_LoadFromDef(&shader_error, &pShader->shader);
   }
+}
+
+struct shader *
+Shader_GetProgram(struct Shader const *shader)
+{
+  struct Shader *pShader = (struct Shader *)shader;
+  bool_t const builtin = shader >= tr.shaders && shader < tr.shaders + SHADER_COUNT;
+  if (!pShader->shader && !builtin && tr.buffer) {
+    struct Object *hObject = CMP_GetObject(pShader);
+    if (hObject) _Realize(hObject, pShader);
+  }
+  return pShader->shader;
+}
+
+// Shader_Start: loading makes no GL calls. The uniforms are declared now,
+// because materials and nodes set them as properties; the program is built
+// by Shader_GetProgram the first time the shader draws, when the renderer
+// has a current GL context.
+HANDLER(Shader, Object, Start) {
+  _DeclareUniforms(hObject, pShader);
   return TRUE;
 }
 
