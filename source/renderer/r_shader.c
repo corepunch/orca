@@ -961,6 +961,9 @@ HANDLER(Shader, Object, Start) {
       desc.Version = MAX(desc.Version, fs->Version);
     }
   }
+  // tr.buffer is 0 until the renderer has a GL context (headless tests never
+  // get one); macOS's libGL crashes on GL calls without a current context.
+  if (!tr.buffer) return TRUE;
   GLuint prognum = desc.VertexShader || Shader_UseUIVertexStage(&desc, NumUniforms)
                   ? _CreateGLProgram(&desc) : 0;
   if (prognum != 0) {
@@ -977,7 +980,7 @@ HANDLER(Shader, Object, Start) {
 
 // Shader_Destroy
 HANDLER(Shader, Object, Destroy) {
-  Shader_Release(pShader->shader);
+  if (pShader->shader) Shader_Release(pShader->shader);
   return TRUE;
 }
 
