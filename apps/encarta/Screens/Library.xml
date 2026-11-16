@@ -13,7 +13,7 @@
             </Grid>
             <Grid Columns="1fr auto" Spacing="10">
                 <Input Name="Search" PlaceholderText="What do you want to know?" class="search"/>
-                <Button Name="ClearSearch" Text="Clear" class="clear"/>
+                <Button Name="ClearSearch" Text="Clear" Visible="false" class="clear"/>
             </Grid>
             <StackView Name="Categories" Direction="Horizontal" class="chips"/>
             <Node2D Name="Featured" Height="250" class="feature">
@@ -41,7 +41,7 @@
             </Grid>
         </StackView>
 
-        <Grid Name="Reader" Visible="false">
+        <Grid Name="Reader" Rows="1fr" Visible="false" class="reader">
             <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
             <StackView Name="Pane" class="pane">
                 <BindingExpression Target="Node.Opacity">IF(STEP(900, {Screen.Width}), 1, 0)</BindingExpression>
@@ -74,13 +74,13 @@
                         <StackView Name="Words" class="words"/>
                     </StackView>
                     <StackView Name="QuizPage" Visible="false" class="quiz-page">
-                        <TextBlock Name="Question" class="question" WordWrap="true"/>
-                        <Grid Name="Answers" Spacing="12">
-                            <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr", "1fr")</BindingExpression>
-                        </Grid>
+                        <TextBlock Name="QuizQuestion" class="question" WordWrap="true"/>
+                        <Grid Name="Answers" Columns="1fr" Spacing="10"/>
                         <TextBlock Name="Feedback" Visible="false" class="feedback" WordWrap="true"/>
                         <TextBlock class="small-title">What next?</TextBlock>
-                        <Grid Name="Related" Columns="1fr 1fr" Spacing="12"/>
+                        <Grid Name="Related" Spacing="14">
+                            <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr", "1fr 1fr")</BindingExpression>
+                        </Grid>
                     </StackView>
                 </StackView>
                 <Grid Name="Pager" Columns="1fr auto auto" Spacing="12" class="pager">

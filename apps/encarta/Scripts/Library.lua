@@ -99,6 +99,7 @@ function Controller:filter(query)
     query = (query or ""):lower():match("^%s*(.-)%s*$")
     if query == self.query then return end
     self.query = query
+    control(self.view, "ClearSearch").Visible = query ~= ""
     self:refresh()
 end
 
@@ -273,7 +274,7 @@ function Controller:showQuiz(article)
     local state, view = self.current, self.view
     local quiz = article.quiz
     local answers, feedback = control(view, "Answers"), control(view, "Feedback")
-    control(view, "Question").Text = quiz.question
+    control(view, "QuizQuestion").Text = quiz.question
     local buttons = {}
     local function update()
         feedback.Visible = state.answer ~= nil

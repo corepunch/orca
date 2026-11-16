@@ -1,7 +1,8 @@
 /* Question wall: a night-blue library, white reading pages, category colors. */
 
 /* ---------- library ---------- */
-.library { padding: 22 30 36; gap: 16; }
+.library { padding: 22 30 36; gap: 16; background-color: var(--night); }
+.reader { background-color: var(--night); }
 .wordmark {
   font-family: Noto Serif;
   font-size: 26;
@@ -180,8 +181,8 @@
 .definition { padding: 2 16 6; font-size: 18; line-height: 26; color: var(--ink); }
 
 .tile {
-  min-height: 120;
-  padding: 16 18;
+  min-height: 64;
+  padding: 14 20;
   border-radius: 20;
   border: 2 solid var(--page-line);
   text-align: left;
