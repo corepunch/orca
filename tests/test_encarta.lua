@@ -121,7 +121,25 @@ local function heading(n) return control("Title", section(n)) end
 local function visibleTop(n) return reading:contentTop(section(n)) + scroll.ContentOffset.Y end
 assert(count(sections) == 5 and section(5).Visible, "the whole article is one page")
 assert(heading(1).Text == "Why does the Moon seem to change shape?")
-assert(control("StepLabel").Text == "SPACE  ·  5 QUESTIONS" and current() == 1)
+assert(control("StepLabel").Text == "5 QUESTIONS" and control("ArticleCategory").Text == "SPACE" and current() == 1)
+
+-- The contents column and the title bar paint under the status bar but keep
+-- their content below it; the page starts under the bar.
+view.SafeAreaTop = 24
+layout(1024, 768)
+local bar, pane = control("ReaderBar"), control("Pane")
+local function screenTop(node)
+    local top = 0
+    while node and node ~= view do top, node = top + node.ActualY, node.parent end
+    return top
+end
+assert(screenTop(bar) == 0 and screenTop(pane) == 0, "the panels reach the top edge")
+assert(screenTop(control("Back")) >= 24 and screenTop(control("ArticleTitle")) >= 24, "the title stays below the status bar")
+assert(screenTop(control("Step1")) >= 24, "the contents stay below the status bar")
+assert(scroll.AdjustedContentInsetTop >= bar.ActualHeight and scroll.ContentOffset.Y == 0, "the page rests below the title bar")
+assert(screenTop(control("StepLabel")) >= bar.ActualHeight, "the first line of the page is not covered")
+view.SafeAreaTop = 0
+layout(1024, 768)
 assert(not view:findChild("Pager", true) and not view:findChild("Next", true), "no pager on a continuous page")
 local image, caption = questionImage()
 assert(image.Src == "encarta/Images/moon-phases.jpg" and caption.Text:match("Northern Hemisphere"), "a question shows its own diagram")
@@ -153,8 +171,8 @@ reading:finishScroll()
 assert(scroll.ContentOffset.Y == 0 and current() == 1)
 
 layout(768, 1024)
-assert(control("Pane").Opacity == 0 and scroll.ActualWidth > 600, "portrait gives the page the full width")
-local page = scroll.ActualWidth
+assert(control("Pane").Opacity == 0 and scroll.ActualWidth > 700, "portrait gives the page the full width")
+local page = sections.ActualWidth
 assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
 assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
 assert(heading(1).ActualWidth > page * 0.9, "the question runs across the page, above the artwork")

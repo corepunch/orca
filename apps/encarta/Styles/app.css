@@ -92,11 +92,10 @@
 .card-title { font-size: 12; line-height: 15; color: var(--white); }
 
 /* ---------- reader ---------- */
-.pane { padding: 26 20 20 24; gap: 6; overflow: hidden; }
-.pane-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
-.pane-title { font-family: Noto Serif; font-size: 36; line-height: 42; font-weight: bold; color: var(--white); }
-.pane-deck { font-size: 15; line-height: 21; color: var(--mist); }
-.steps { margin-top: 18; gap: 6; }
+/* Three flat panels: dark contents, a paper title bar, and the white page. */
+.pane { padding: 22 16 20 20; gap: 6; overflow: hidden; background-color: var(--night); }
+.pane-tag { padding: 6 0 6 8; font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
+.steps { gap: 6; }
 .step {
   min-height: 54;
   padding: 8 12;
@@ -120,7 +119,11 @@
 .step-text { font-size: 15; line-height: 19; font-weight: bold; color: var(--mist); }
 .step-text-on { color: var(--white); }
 
-.page { margin: 18; padding: 22 40 24; border-radius: 26; background-color: var(--page); }
+.article { background-color: var(--page); }
+.reader-bar { padding: 14 24; border-bottom-width: 1; border-color: var(--paper-line); background-color: var(--paper); }
+.title-block { gap: 2; }
+.title-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
+.title { font-family: Noto Serif; font-size: 26; line-height: 32; font-weight: bold; color: var(--ink); }
 .soft, .level {
   min-height: 46;
   padding: 0 16;
@@ -146,7 +149,8 @@
 .listen:hover, .listen:active { background-color: var(--sun-light); }
 .read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
 
-.reader-scroll { padding: 26 0 40; gap: 14; }
+.reader-scroll { padding: 28 40 48; gap: 14; }
+.deck { font-family: Noto Serif; font-size: 22; line-height: 31; color: var(--muted); }
 .sections { gap: 56; }
 .step-label { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
 .section, .fact-page, .quiz-page { gap: 16; }

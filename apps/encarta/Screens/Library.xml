@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Screen Name="Encarta" Width="1024" Height="768" ResizeMode="CanResize"
-    RespectSafeArea="true" Appearance="Dark" ClearColor="$night"
+    RespectSafeArea="false" Appearance="Dark" ClearColor="$night"
     StyleSheet="encarta/Styles/app.css">
     <Node2D>
         <StackView Name="LibraryScroll" OverflowY="Scroll" class="library">
@@ -51,26 +51,30 @@
             </Grid>
         </StackView>
 
+        <!-- Three panels: the dark contents column and, beside it, a fixed
+             paper title bar over the white scrolling page. The column and
+             the bar paint under the status bar but keep their content below it. -->
         <Grid Name="Reader" Rows="1fr" Visible="false" class="reader">
             <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
-            <StackView Name="Pane" class="pane">
+            <StackView Name="Pane" ContentInsetAdjustment="Always" class="pane">
                 <BindingExpression Target="Node.Opacity">IF(STEP(900, {Screen.Width}), 1, 0)</BindingExpression>
-                <TextBlock Name="ArticleCategory" class="pane-tag"/>
-                <TextBlock Name="ArticleTitle" class="pane-title" WordWrap="true"/>
-                <TextBlock Name="ArticleDeck" class="pane-deck" WordWrap="true"/>
+                <TextBlock class="pane-tag">QUESTIONS</TextBlock>
                 <StackView Name="Steps" class="steps"/>
             </StackView>
-            <Grid Rows="auto 1fr" class="page">
-                <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="10">
+            <Node2D class="article">
+                <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="16" AlignItems="Center"
+                    SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
                     <Button Name="Back" class="soft">
                         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
                             <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
                             <TextBlock Text="Library" IgnoreHitTest="true"/>
                         </StackView>
                     </Button>
-                    <Node2D IgnoreHitTest="true">
+                    <StackView class="title-block">
+                        <TextBlock Name="ArticleCategory" class="title-tag"/>
+                        <TextBlock Name="ArticleTitle" class="title" TextWrapping="NoWrap" TextOverflow="Ellipsis" OverflowX="Hidden"/>
                         <TextBlock Name="ReadAloudError" Visible="false" class="read-error" WordWrap="true">Audio couldn’t play. Try again.</TextBlock>
-                    </Node2D>
+                    </StackView>
                     <Button Name="ReadAloud" Visible="false" class="listen">
                         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
                             <VectorView Name="ReadAloudIcon" Source="encarta/Icons/volume-2.svg" Width="20" Height="20" IgnoreHitTest="true"/>
@@ -86,9 +90,10 @@
                 </Grid>
                 <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
                     <TextBlock Name="StepLabel" class="step-label"/>
+                    <TextBlock Name="ArticleDeck" class="deck" WordWrap="true"/>
                     <StackView Name="Sections" class="sections"/>
                 </StackView>
-            </Grid>
+            </Node2D>
         </Grid>
     </Node2D>
 </Screen>

@@ -88,13 +88,17 @@ function ReadAloud:reveal(block)
         top = top + node.ActualY
         node = node.parent
     end
+    -- The page runs under the title bar: its visible part starts below the
+    -- inset that layout publishes.
     local offset = scroll.ContentOffset.Y
     local visibleTop, visibleBottom = top + offset, top + offset + block.ActualHeight
-    local margin, target = 20, offset
-    if visibleTop < margin then
-        target = margin - top
-    elseif visibleBottom > scroll.ActualHeight - margin then
-        target = math.max(margin - top, scroll.ActualHeight - margin - top - block.ActualHeight)
+    local first = scroll.AdjustedContentInsetTop + 20
+    local last = scroll.ActualHeight - scroll.AdjustedContentInsetBottom - 20
+    local target = offset
+    if visibleTop < first then
+        target = first - top
+    elseif visibleBottom > last then
+        target = math.max(first - top, last - top - block.ActualHeight)
     end
     target = math.max(math.min(0, scroll.ActualHeight - scroll.ScrollHeight), math.min(0, target))
     if target ~= offset then scroll.ContentOffset = { X = 0, Y = target } end
