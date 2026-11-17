@@ -121,7 +121,7 @@ local function heading(n) return control("Title", section(n)) end
 local function visibleTop(n) return reading:contentTop(section(n)) + scroll.ContentOffset.Y end
 assert(count(sections) == 5 and section(5).Visible, "the whole article is one page")
 assert(heading(1).Text == "Why does the Moon seem to change shape?")
-assert(control("StepLabel").Text == "5 QUESTIONS" and control("ArticleCategory").Text == "SPACE" and current() == 1)
+assert(not view:findChild("StepLabel", true) and control("ArticleCategory").Text == "SPACE" and current() == 1)
 
 -- The contents column and the title bar paint under the status bar but keep
 -- their content below it; the page starts under the bar.
@@ -137,7 +137,10 @@ assert(screenTop(bar) == 0 and screenTop(pane) == 0, "the panels reach the top e
 assert(screenTop(control("Back")) >= 24 and screenTop(control("ArticleTitle")) >= 24, "the title stays below the status bar")
 assert(screenTop(control("Step1")) >= 24, "the contents stay below the status bar")
 assert(scroll.AdjustedContentInsetTop >= bar.ActualHeight and scroll.ContentOffset.Y == 0, "the page rests below the title bar")
-assert(screenTop(control("StepLabel")) >= bar.ActualHeight, "the first line of the page is not covered")
+assert(screenTop(control("ArticleDeck")) >= bar.ActualHeight, "the first line of the page is not covered")
+local last = bar.parent:getFirstChild()
+while last:getNext() do last = last:getNext() end
+assert(last == bar, "the frosted bar draws over the page and takes the taps on Back")
 view.SafeAreaTop = 0
 layout(1024, 768)
 assert(not view:findChild("Pager", true) and not view:findChild("Next", true), "no pager on a continuous page")

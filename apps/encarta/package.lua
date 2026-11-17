@@ -15,6 +15,7 @@ ThemeLibrary = {
     { Key = "page-line", Value = "#DCE1EC" },
     { Key = "paper", Value = "#F5EFE2" },
     { Key = "paper-line", Value = "#E4D9C3" },
+    { Key = "paper-frost", Value = "#F5EFE2B8" },
     { Key = "ink", Value = "#18213A" },
     { Key = "muted", Value = "#5C6680" },
     { Key = "sun", Value = "#FFD23F" },

@@ -362,7 +362,6 @@ function Controller:showArticle()
     control(view, "ArticleDeck").Text = article.deck
     self:cancelScroll()
     self.chosenSection = nil
-    control(view, "StepLabel").Text = string.format("%d QUESTIONS", #article.sections)
     self:buildSections(article)
     self:setReaderVisible(true)
     self:setScroll(state.scroll or 0)

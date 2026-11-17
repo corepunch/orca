@@ -51,8 +51,8 @@
             </Grid>
         </StackView>
 
-        <!-- Three panels: the dark contents column and, beside it, a fixed
-             paper title bar over the white scrolling page. The column and
+        <!-- Three panels: the dark contents column and, beside it, a frosted
+             paper title bar drawn over the white scrolling page. The column and
              the bar paint under the status bar but keep their content below it. -->
         <Grid Name="Reader" Rows="1fr" Visible="false" class="reader">
             <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
@@ -62,12 +62,17 @@
                 <StackView Name="Steps" class="steps"/>
             </StackView>
             <Node2D class="article">
+                <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
+                    <TextBlock Name="ArticleDeck" class="deck" WordWrap="true"/>
+                    <StackView Name="Sections" class="sections"/>
+                </StackView>
+                <!-- After the page, so the frosted bar draws over it and takes its taps. -->
                 <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="16" AlignItems="Center"
                     SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
-                    <Button Name="Back" class="soft">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                            <TextBlock Text="Library" IgnoreHitTest="true"/>
+                    <Button Name="Back" class="back">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" IgnoreHitTest="true"/>
+                            <TextBlock Text="LIBRARY" class="back-label" IgnoreHitTest="true"/>
                         </StackView>
                     </Button>
                     <StackView class="title-block">
@@ -88,11 +93,6 @@
                         </StackView>
                     </Button>
                 </Grid>
-                <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
-                    <TextBlock Name="StepLabel" class="step-label"/>
-                    <TextBlock Name="ArticleDeck" class="deck" WordWrap="true"/>
-                    <StackView Name="Sections" class="sections"/>
-                </StackView>
             </Node2D>
         </Grid>
     </Node2D>
