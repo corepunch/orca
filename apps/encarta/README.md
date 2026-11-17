@@ -53,7 +53,8 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 | `related` | IDs of other articles in the bundle. |
 | `sources` | References for editorial review. The app never opens or fetches these URLs. |
 
-Keep artwork under [Images/](Images/) as landscape 3:2 JPEGs. Keep the main
+Keep artwork under [Images/](Images/) as landscape 3:2 JPEGs at 1200×800,
+quality about 82; larger files only slow the library down. Keep the main
 subject near the middle for the bookshelf crop. The reader shows the whole
 image so diagram labels stay in view. See [artwork prompts](Artwork.md) for
 the painted illustrations and diagrams.
