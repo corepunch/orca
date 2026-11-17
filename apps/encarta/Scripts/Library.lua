@@ -35,11 +35,17 @@ end
 
 -- Library -------------------------------------------------------------------
 
+-- Library tiles show the small copy made by Tools/make_thumbnails.sh; the
+-- reader and the featured strip keep the full-size picture.
+local function thumbnail(path)
+    return (path:gsub("/Images/([^/]+)$", "/Images/Thumbs/%1"))
+end
+
 local function setCoverArt(tile, article)
     local art = article.cover or (article.image and article.image.path)
     local image, mark = control(tile, "Art"), control(tile, "Icon")
     image.Visible, mark.Visible = art ~= nil, art == nil
-    if art then image.Src = art else mark.Source = icon(article) end
+    if art then image.Src = thumbnail(art) else mark.Source = icon(article) end
 end
 
 function Controller:card(article)
