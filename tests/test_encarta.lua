@@ -98,13 +98,13 @@ assert(count(wall) == 1 and control("Open_moon", wall))
 click("Open_moon", wall)
 assert(not library.Visible and reader.Visible)
 assert(control("ArticleTitle").Text == "The Moon")
-assert(visibleSection().Text == "Where does moonlight come from?")
+assert(visibleSection().Text == "Why does the Moon seem to change shape?")
 local image, caption = questionImage()
-assert(image.Src == "encarta/Images/moon.jpg" and caption.Text:match("crescent"), "a question can share the cover art")
-assert(control("StepLabel").Text == "SPACE  ·  QUESTION 1 OF 4")
+assert(image.Src == "encarta/Images/moon-phases.jpg" and caption.Text:match("Northern Hemisphere"), "a question shows its own diagram")
+assert(control("StepLabel").Text == "SPACE  ·  QUESTION 1 OF 5")
 assert(not control("Previous").Visible and control("Next").Text == "Next question")
 layout(1024, 768)
-assert(count(control("Steps")) == 6 and control("Pane").Opacity == 1)
+assert(count(control("Steps")) == 5 and control("Pane").Opacity == 1)
 layout(768, 1024)
 assert(control("Pane").Opacity == 0 and control("ReaderScroll").ActualWidth > 600, "portrait gives the page the full width")
 local page = control("ReaderScroll").ActualWidth
@@ -118,21 +118,21 @@ end
 local heading, paragraphs = visibleBody()
 assert(heading.ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
 assert(paragraphs.ActualWidth < page * 0.7, "the answer shares its row with the artwork")
-assert(control("ReadMore").ActualHeight >= 40)
 layout(1024, 768)
 
-local listen = control("ReadAloud")
+local listen, listenIcon = control("ReadAloud"), control("ReadAloudIcon")
 local narration = app.libraryController.readAloud
 local timings = require "encarta/Narration/Timings"
-assert(listen.Visible and listen.ActualHeight >= 44 and listen.ActualWidth < 200)
+local function icon(name) return listenIcon.Source == "encarta/Icons/" .. name .. ".svg" end
+assert(listen.Visible and listen.ActualHeight >= 44 and listen.ActualWidth < 200 and icon("volume-2"))
 click("ReadAloud")
-assert(playing and listen.Text == "Pause" and control("StopReading").Visible)
+assert(playing and listen.Text == "Pause" and icon("pause") and control("StopReading").Visible)
 local function hear(mark)
     position = (mark[1] + mark[2]) / 2000
     narration:update()
     core.flushQueue()
 end
-local first = timings["moon-first"][1].words
+local first = timings.moon[1].words
 local title = visibleSection()
 hear(first[1])
 assert(title.HighlightedRange.X == first[1][3] and title.HighlightedRange.Y == first[1][4])
@@ -140,46 +140,27 @@ hear(first[2])
 assert(title.HighlightedRange.X == first[2][3] and title.HighlightedRange.Y == first[2][4])
 
 click("ReadAloud")
-assert(not playing and listen.Text == "Resume" and title.HighlightedRange.Y == first[2][4])
+assert(not playing and listen.Text == "Resume" and icon("play") and title.HighlightedRange.Y == first[2][4])
 click("ReadAloud")
 assert(playing and opened == 1, "Resume reuses the same recording and position")
-hear(timings["moon-first"][2].words[1])
+hear(timings.moon[2].words[1])
 assert(title.HighlightedRange.Y == 0)
-hear(timings["moon-first"][3].words[1])
-assert(visibleSection().Text == "Why does the Moon change shape?", "the reader turns the page with the narration")
+hear(timings.moon[4].words[1])
+assert(visibleSection().Text == "How far away is the Moon?", "the reader turns the page with the narration")
 assert(app.libraryController.current.page == 2 and playing)
-assert(questionImage().Src == "encarta/Images/moon-phases.jpg", "narration moves to the next question's diagram")
+assert(not questionImage(), "a later question does not inherit the cover art")
 
 click("StopReading")
-assert(not playing and closed == 1 and listen.Text == "Read aloud")
+assert(not playing and closed == 1 and listen.Text == "Read aloud" and icon("volume-2"))
 click("ReadAloud")
 assert(playing and opened == 2 and position == 0)
-click("ReadMore")
-assert(not playing and closed == 2 and listen.Text == "Read aloud")
-assert(visibleSection().Text == "Why does the Moon seem to change shape?" and app.libraryController.current.page == 1)
-assert(questionImage().Src == "encarta/Images/moon-phases.jpg", "a diagram can also appear in the other reading level")
 click("Step5")
-click("Next")
-assert(control("FactPage").Visible and control("StepLabel").Text == "SPACE  ·  DID YOU KNOW?")
-assert(control("Fact").Text:match("Footprints"))
-click("Word1")
-assert(control("Meaning", control("Words")).Visible)
-click("Step7")
-assert(control("QuizPage").Visible and not control("Next").Visible)
-assert(control("QuizQuestion").Text == "Where does the light we see on the Moon come from?", "the quiz shows its own question")
-click("Answer2")
-assert(control("Feedback").Text:match("^Not quite") and control("Answer2").BackgroundColor.B > control("Answer2").BackgroundColor.G)
-click("Answer1")
-assert(control("Feedback").Text:match("^You got it!") and control("Answer1").BackgroundColor.G > control("Answer1").BackgroundColor.B, "the right answer turns green")
-
+assert(not playing and closed == 2 and listen.Text == "Read aloud")
+assert(visibleSection().Text == "How can you track the Moon?" and not control("Next").Visible)
+assert(questionImage().Src == "encarta/Images/moon.jpg", "a later question can reuse the cover art")
 control("ReaderScroll").ContentOffset = { X = 0, Y = -100 }
-click("Open_water", control("Related"))
-assert(control("ArticleTitle").Text == "The Water Cycle" and not control("Feedback").Visible)
-assert(app.libraryController.current.page == 1)
-click("Back")
-assert(control("ArticleTitle").Text == "The Moon" and control("ReaderScroll").ContentOffset.Y == -100)
-assert(control("QuizPage").Visible and app.libraryController.current.level == "more")
-assert(control("Meaning", control("Words")).Visible and control("Feedback").Text:match("^You got it!"))
+click("Previous")
+assert(visibleSection().Text == "Who has walked on the Moon?" and control("ReaderScroll").ContentOffset.Y == 0)
 click("Back")
 assert(library.Visible and not reader.Visible and control("ResultCount").Text == "1 ARTICLE")
 
@@ -200,22 +181,19 @@ page = control("ReaderScroll").ActualWidth
 assert(heading.ActualWidth > page * 0.9 and paragraphs.ActualWidth > page * 0.9,
     "a text-only question spreads across the page without an empty picture column")
 layout(1024, 768)
-click("Step5")
-assert(not questionImage(), "art belongs to reading pages")
 click("ReadAloud")
-hear(timings["octopus-first"][1].words[1])
-assert(visibleSection() and app.libraryController.current.page == 1, "narration brings the reader back to the text")
+hear(timings.octopus[1].words[1])
+assert(app.libraryController.current.page == 1, "narration brings the reader back to the text")
 local octopusTitle = visibleSection()
 click("Back")
 assert(not playing and octopusTitle.HighlightedRange.Y == 0 and not control("StopReading").Visible)
 
 click("Open_pyramids", wall)
 assert(control("ArticleTitle").Text == "The Pyramids" and questionImage().Src == "encarta/Images/pyramids.jpg")
+assert(not control("ReadAloud").Visible, "articles without a recording hide Read aloud")
 click("Back")
 click("Open_earth-layers", wall)
 assert(control("ArticleTitle").Text == "Inside Earth" and questionImage().Src == "encarta/Images/earth-layers.jpg")
-click("ReadMore")
-assert(questionImage().Src == "encarta/Images/earth-layers.jpg")
 click("Back")
 
 local function checkArtwork(path)
@@ -223,13 +201,11 @@ local function checkArtwork(path)
     assert(bytes:sub(1, 2) == string.char(0xff, 0xd8), path .. " must be a bundled JPEG")
 end
 for _, article in ipairs(require "encarta/Content/Articles") do
-    assert(article.question and article.fact and article.image.caption ~= "", article.id)
+    assert(article.question and article.image.caption ~= "", article.id)
     checkArtwork(article.image.path)
     if article.cover then checkArtwork(article.cover) end
-    for _, level in ipairs({ "first", "more" }) do
-        for _, section in ipairs(article[level]) do
-            if section.image then checkArtwork(section.image.path) end
-        end
+    for _, section in ipairs(article.sections) do
+        if section.image then checkArtwork(section.image.path) end
     end
 end
 

@@ -26,11 +26,9 @@ EXTRA_PRONUNCIATIONS = {
 def passages(lua):
     script = """
     for _, article in ipairs(dofile(arg[1])) do
-        for _, level in ipairs({"first", "more"}) do
-            for _, section in ipairs(article[level]) do
-                for _, text in ipairs(section) do
-                    io.write(article.id, "\\0", level, "\\0", text, "\\0")
-                end
+        for _, section in ipairs(article.sections) do
+            for _, text in ipairs(section) do
+                io.write(article.id, "\\0", text, "\\0")
             end
         end
     end
@@ -39,9 +37,9 @@ def passages(lua):
         [lua, "-", ROOT / "Content/Articles.lua"], input=script.encode()
     ).decode().split("\0")
     tracks = {}
-    for index in range(0, len(fields) - 1, 3):
-        article, level, text = fields[index:index + 3]
-        tracks.setdefault((article, level), []).append(text)
+    for index in range(0, len(fields) - 1, 2):
+        article, text = fields[index:index + 2]
+        tracks.setdefault(article, []).append(text)
     return tracks
 
 
@@ -91,8 +89,7 @@ def generate(model, lua):
     staging = tempfile.TemporaryDirectory(prefix="encarta-narration-")
     with staging as directory:
         temp = Path(directory)
-        for (article, level), paragraphs in passages(lua).items():
-            name = f"{article}-{level}"
+        for name, paragraphs in passages(lua).items():
             groups.append(f'    ["{name}"] = {{')
             frame = 0
             with wave.open(str(temp / f"{name}.wav"), "wb") as track:
@@ -119,7 +116,7 @@ def generate(model, lua):
             groups.append("    },")
             print(f"{name}: {frame / rate:.1f} s", flush=True)
         groups.append("}")
-        for recording in temp.glob("*-*.wav"):
+        for recording in temp.glob("*.wav"):
             (ROOT / "Narration" / recording.name).write_bytes(recording.read_bytes())
         (ROOT / "Narration/Timings.lua").write_text("\n".join(groups) + "\n", encoding="utf-8")
 
