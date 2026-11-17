@@ -445,16 +445,16 @@ endif
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
 .PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools android
 ios:
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos app
 
 ios-sim:
-	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator app
 
 ios-run:
-	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator run
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator run
 
 ios-install:
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos install
 
 # Build, sign, install and launch any apps/<name>/package.lua project.
 .PHONY: ios-deploy-force
@@ -462,17 +462,17 @@ ios-deploy-force:
 
 # Android: needs ANDROID_NDK_HOME, the Android SDK and Gradle; see docs/ANDROID.md.
 android:
-	$(MAKE) -f tools/android/Makefile apk
+	$(Q)$(MAKE) --no-print-directory -f tools/android/Makefile apk
 %-android:
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*)'; exit 1; }
-	$(MAKE) -f tools/android/Makefile PROJECT="$(or $(PROJECT),apps/$*)" APPLICATION_ID="$(or $(APPLICATION_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" apk
+	$(Q)$(MAKE) --no-print-directory -f tools/android/Makefile PROJECT="$(or $(PROJECT),apps/$*)" APPLICATION_ID="$(or $(APPLICATION_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" apk
 
 %-ios: ios-deploy-force
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*); set PROJECT=<directory> containing package.lua.'; exit 1; }
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
 
 ios-devices:
-	$(MAKE) -f tools/ios/Makefile list-devices
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile list-devices
 
 # make iphone|ipad APP=<name>: build, sign, install and launch apps/<name>
 # on your device named by IPHONE_DEVICE or IPAD_DEVICE (UDID or name, e.g.

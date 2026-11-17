@@ -15,21 +15,25 @@ VENDOR_HEADERS := $(VENDOR_CONFIG)/pnglibconf.h $(VENDOR_CONFIG)/jconfig.h
 
 $(VENDOR_CONFIG)/pnglibconf.h: libs/libpng/scripts/pnglibconf.h.prebuilt
 	@mkdir -p "$(@D)"
-	cp "$<" "$@"
+	$(Q)cp "$<" "$@"
 $(VENDOR_CONFIG)/jconfig.h: libs/libjpeg/jconfig.txt
 	@mkdir -p "$(@D)"
-	cp "$<" "$@"
+	$(Q)cp "$<" "$@"
 $(VENDOR_ROOT)/freetype/%.o: libs/freetype/src/%.c source/renderer/third_party/freetype_modules.h $(ROOT)/settings
 	@mkdir -p "$(@D)"
-	$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -I. -DFT2_BUILD_LIBRARY -DFT_CONFIG_MODULES_H='"source/renderer/third_party/freetype_modules.h"' -c "$<" -o "$@"
+	@echo "  CC      freetype/$*"
+	$(Q)$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -I. -DFT2_BUILD_LIBRARY -DFT_CONFIG_MODULES_H='"source/renderer/third_party/freetype_modules.h"' -c "$<" -o "$@"
 $(VENDOR_ROOT)/png/%.o: libs/libpng/%.c $(VENDOR_HEADERS) $(ROOT)/settings
 	@mkdir -p "$(@D)"
-	$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -DPNG_ARM_NEON_OPT=0 -c "$<" -o "$@"
+	@echo "  CC      png/$*"
+	$(Q)$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -DPNG_ARM_NEON_OPT=0 -c "$<" -o "$@"
 $(VENDOR_ROOT)/jpeg/%.o: libs/libjpeg/%.c $(VENDOR_HEADERS) $(ROOT)/settings
 	@mkdir -p "$(@D)"
-	$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -c "$<" -o "$@"
+	@echo "  CC      jpeg/$*"
+	$(Q)$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -c "$<" -o "$@"
 $(VENDOR_ROOT)/zlib/%.o: libs/zlib/%.c $(ROOT)/settings
 	@mkdir -p "$(@D)"
-	$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -DHAVE_UNISTD_H=1 -c "$<" -o "$@"
+	@echo "  CC      zlib/$*"
+	$(Q)$(CC) $(VENDOR_FLAGS) $(VENDOR_INCLUDES) -DHAVE_UNISTD_H=1 -c "$<" -o "$@"
 .PHONY: vendor-libraries
 vendor-libraries: $(VENDOR_OBJECTS)
