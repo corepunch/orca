@@ -139,11 +139,11 @@ is too short.
   field, the time it takes to brush your teeth. Avoid bare large numbers.
 - Speak to the reader as "you". Give them something to try, watch for, or feel
   ("Press two fingers on your wrist…").
-- Prefer concrete verbs and one idea per sentence. In `first`, aim for 8–12
-  words per sentence and no word a child must decode without help; in `more`,
-  explain *why* and *how*, and introduce at most two terms.
-- Add one `fact` – a single "Did you know?" sentence with the most
-  astonishing true detail. It must be checkable against `sources`.
+- Prefer concrete verbs and one idea per sentence. Explain *why* and *how*,
+  keep most sentences at 10–15 words, and introduce at most two new terms per
+  section, each explained where it first appears.
+- Give each article at least one astonishing true detail inside a section
+  ("What is amazing is that…"). It must be checkable against `sources`.
 - Wonder, never fear: dangerous topics (volcanoes, sharks) stay fascinating,
   with safety framed calmly.
 - Accuracy beats drama. No invented anecdotes, no "scientists think" without

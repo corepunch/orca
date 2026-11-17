@@ -1,8 +1,8 @@
 # Writing Encarta articles
 
-Our articles are too thin. Most sections are a heading and two or three short
-sentences, so the child gets an answer but never an explanation. A *Was ist Was*
-page does more. It asks a question, answers it, and then keeps going: why it
+Our first articles were too thin. Most sections were a heading and two or
+three short sentences, so the child got an answer but never an explanation. A
+*Was ist Was* page does more. It asks a question, answers it, and then keeps going: why it
 happens, what it looks like, an example, a surprise, and what comes next. This
 guide shows how they do that and sets the length and shape we write to.
 
@@ -22,19 +22,21 @@ spread.
 
 We measured twelve sections of body text, each from its subheading to the next
 box or subheading, and compared them with the 15 articles in
-[Content/Articles.lua](Content/Articles.lua).
+[Content/Articles.lua](Content/Articles.lua): first as they were before this
+guide (the longer of the two reading levels the app had then), and again after
+they were rewritten to it.
 
-| Measure | *Was ist Was* | Encarta `first` | Encarta `more` |
+| Measure | *Was ist Was* | Encarta before | Encarta now |
 | --- | --- | --- | --- |
-| Words per section | **84** (37–144) | 29 | 53 |
-| Sentences per section | **6** (3–12) | 3.4 | 5 |
-| Words per sentence | **13** (5–41) | 8.5 | 10.6 |
-| Sections per topic | **4–6** per spread | 2 | 2 |
-| Words per topic (body) | **about 450** | about 60 | about 110 |
+| Words per section | **84** (37–144) | 53 | 119 (96–139) |
+| Sentences per section | **6** (3–12) | 5 | 9 |
+| Words per sentence | **13** (5–41) | 10.6 | 13 |
+| Sections per topic | **4–6** per spread | 2 | 4–5 |
+| Words per topic (body) | **about 450** | about 110 | about 540 |
 
-A single spread holds about four times as much text as one of our whole
-`more` articles. The sentences themselves are not much longer. The difference
-is that each section has *more of them*, and each one adds something.
+A single spread held about four times as much text as one of our whole
+articles. The sentences themselves were not much longer. The difference was
+that each section had *more of them*, and each one added something.
 
 ## How a spread is built
 
@@ -54,9 +56,10 @@ is that each section has *more of them*, and each one adds something.
 4. **Captions.** Each photo gets a two- or three-word title (*Well informed*,
    *Step inside!*) and one or two sentences that link the picture to the text.
 
-Our article maps onto this: `question` and `deck` are the lead, `first` and
-`more` sections are the subheadings, `fact` is the *Did you know?* box, `image`
-captions are the captions, and `words` is the glossary.
+Our article maps onto this: `question` and `deck` are the lead, `sections`
+are the subheadings, and `image` captions are the captions. The reader has no
+side boxes or glossary, so the surprise and the new words live in the section
+text itself.
 
 ## How a section fills up
 
@@ -103,14 +106,14 @@ as explanation, not a list of facts.
 
 ## Our targets
 
-| | `first` (ages 6–8) | `more` (ages 8–10) |
-| --- | --- | --- |
-| Sections | 3–4 | 4–5 |
-| Paragraphs per section | 1–2 | 2 |
-| Sentences per section | 5–7 | 7–10 |
-| Words per section | 50–80 | 90–140 |
-| Words per sentence | 8–12, some shorter | 10–15, up to about 25 |
-| Whole article | 200–300 words | 450–650 words |
+| | Target |
+| --- | --- |
+| Sections | 4–5 |
+| Paragraphs per section | 2 |
+| Sentences per section | 7–10 |
+| Words per section | 90–140 |
+| Words per sentence | 10–15, some shorter, up to about 25 |
+| Whole article | 450–650 words |
 
 The reader page scrolls (`ReaderScroll` in
 [Screens/Library.xml](Screens/Library.xml)), so a longer section is fine. One
@@ -134,13 +137,13 @@ Write the heading as a question a child would ask. Then:
 | 6 | Add a contrast, a surprise, or something to try. | 1 |
 | 7 | End with a consequence or point to the next question. | 1 |
 
-In `more`, split this into two paragraphs: moves 1–3 explain how it works,
-and moves 4–7 give the example and the wider picture.
+Split this into two paragraphs: moves 1–3 explain how it works, and moves
+4–7 give the example and the wider picture.
 
 ### Worked example
 
-This is the current `more` section on octopus colour, two paragraphs and five
-sentences (57 words):
+This was the octopus colour section before the rewrite, two paragraphs and
+five sentences (57 words):
 
 > **A disguise that changes**
 > Tiny sacs of color sit just under an octopus's skin. Muscles stretch these
@@ -171,17 +174,11 @@ so a real article would move the bumpy-skin part into its own section, "Why
 does an octopus's skin get bumpy?". Check every new number against the
 article's `sources` before publishing.
 
-## Captions, facts, and words
+## Captions
 
-- **Captions**: one or two sentences, 10–30 words, that tell the child what to
-  look for in the picture ("Look for the yellow pollen on its back leg").
-  A caption should not repeat the body text.
-- **`fact`**: one sentence, like a *Schon gewusst?* box. The best ones are
-  short and surprising, such as where a word comes from or one astonishing
-  number with a comparison.
-- **`words`**: the terms move 3 introduced. If a word is in the glossary, the
-  section text must already explain it in place, because the glossary is for
-  looking up again, not for explaining it the first time.
+A caption is one or two sentences, 10–30 words, that tell the child what to
+look for in the picture ("Look for the yellow pollen on its back leg"). It
+should not repeat the body text.
 
 ## Checklist before you commit
 
@@ -193,15 +190,14 @@ article's `sources` before publishing.
 - [ ] No section is just a list; sentences link with *because*, *so*,
       *then*, *but*, *for example*.
 - [ ] New facts and numbers are covered by `sources`.
-- [ ] The quiz can be answered from either reading level.
 - [ ] If the article has a recording in `Narration/`, regenerate it (see
       [Update a recording](README.md#update-a-recording)).
 
 ## Where *Was ist Was* and Encarta differ
 
 - **Who it is for.** The sample is from the main series, for ages 8 and up.
-  Our `first` level is for younger readers, so it keeps shorter sentences
-  but should still fill each section with five to seven of them.
+  Our readers start at 6, so keep most sentences at 10–15 words and let only
+  a few run longer, even where the sample would.
 - **Addressing the reader.** The sample uses "you" only now and then, a
   couple of times in 16 pages. We use it more, as `AGENTS.md` asks. Use it
   for a single prompt ("Press two fingers on your wrist…") in a section,
