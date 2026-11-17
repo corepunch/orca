@@ -102,7 +102,7 @@ assert(visibleSection().Text == "Why does the Moon seem to change shape?")
 local image, caption = questionImage()
 assert(image.Src == "encarta/Images/moon-phases.jpg" and caption.Text:match("Northern Hemisphere"), "a question shows its own diagram")
 assert(control("StepLabel").Text == "SPACE  ·  QUESTION 1 OF 5")
-assert(not control("Previous").Visible and control("Next").Text == "Next question")
+assert(not control("Previous").Visible and control("TextBlock", control("Next")).Text == "Next question")
 layout(1024, 768)
 assert(count(control("Steps")) == 5 and control("Pane").Opacity == 1)
 layout(768, 1024)
@@ -120,13 +120,13 @@ assert(heading.ActualWidth > page * 0.9, "the question runs across the page, abo
 assert(paragraphs.ActualWidth < page * 0.7, "the answer shares its row with the artwork")
 layout(1024, 768)
 
-local listen, listenIcon = control("ReadAloud"), control("ReadAloudIcon")
+local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
 local narration = app.libraryController.readAloud
 local timings = require "encarta/Narration/Timings"
 local function icon(name) return listenIcon.Source == "encarta/Icons/" .. name .. ".svg" end
 assert(listen.Visible and listen.ActualHeight >= 44 and listen.ActualWidth < 200 and icon("volume-2"))
 click("ReadAloud")
-assert(playing and listen.Text == "Pause" and icon("pause") and control("StopReading").Visible)
+assert(playing and listenLabel.Text == "Pause" and icon("pause") and control("StopReading").Visible)
 local function hear(mark)
     position = (mark[1] + mark[2]) / 2000
     narration:update()
@@ -140,7 +140,7 @@ hear(first[2])
 assert(title.HighlightedRange.X == first[2][3] and title.HighlightedRange.Y == first[2][4])
 
 click("ReadAloud")
-assert(not playing and listen.Text == "Resume" and icon("play") and title.HighlightedRange.Y == first[2][4])
+assert(not playing and listenLabel.Text == "Resume" and icon("play") and title.HighlightedRange.Y == first[2][4])
 click("ReadAloud")
 assert(playing and opened == 1, "Resume reuses the same recording and position")
 hear(timings.moon[2].words[1])
@@ -151,11 +151,11 @@ assert(app.libraryController.current.page == 2 and playing)
 assert(not questionImage(), "a later question does not inherit the cover art")
 
 click("StopReading")
-assert(not playing and closed == 1 and listen.Text == "Read aloud" and icon("volume-2"))
+assert(not playing and closed == 1 and listenLabel.Text == "Read aloud" and icon("volume-2"))
 click("ReadAloud")
 assert(playing and opened == 2 and position == 0)
 click("Step5")
-assert(not playing and closed == 2 and listen.Text == "Read aloud")
+assert(not playing and closed == 2 and listenLabel.Text == "Read aloud")
 assert(visibleSection().Text == "How can you track the Moon?" and not control("Next").Visible)
 assert(questionImage().Src == "encarta/Images/moon.jpg", "a later question can reuse the cover art")
 control("ReaderScroll").ContentOffset = { X = 0, Y = -100 }

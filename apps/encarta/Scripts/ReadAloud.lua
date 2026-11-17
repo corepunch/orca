@@ -14,6 +14,7 @@ function ReadAloud.new(view, openAudio)
         scroll = assert(view:findChild("ReaderScroll", true)),
         play = assert(view:findChild("ReadAloud", true)),
         playIcon = assert(view:findChild("ReadAloudIcon", true)),
+        playLabel = assert(view:findChild("ReadAloudLabel", true)),
         stopButton = assert(view:findChild("StopReading", true)),
         error = assert(view:findChild("ReadAloudError", true)),
     }, ReadAloud)
@@ -28,7 +29,7 @@ function ReadAloud.new(view, openAudio)
 end
 
 function ReadAloud:setPlayLabel(text, icon)
-    self.play.Text = text
+    self.playLabel.Text = text
     self.playIcon.Source = "encarta/Icons/" .. icon .. ".svg"
 end
 

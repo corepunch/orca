@@ -9,10 +9,10 @@
                 <Grid Columns="1fr auto" Spacing="8">
                     <Node2D>
                         <Input Name="Search" PlaceholderText="What do you want to know?" class="search"/>
-                        <VectorView Source="encarta/Icons/search.svg" Width="20" Height="20" MarginLeft="-28" MarginTop="auto" MarginBottom="auto" class="search-icon" IgnoreHitTest="true"/>
+                        <VectorView Source="encarta/Icons/search.svg" Width="20" Height="20" MarginLeft="16" VerticalAlignment="Center" class="search-icon" IgnoreHitTest="true"/>
                     </Node2D>
                     <Button Name="ClearSearch" Width="44" Height="44" Visible="false" class="clear">
-                        <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="clear-icon" IgnoreHitTest="true"/>
+                        <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
                     </Button>
                 </Grid>
                 <Grid Columns="auto auto" Spacing="4" class="views">
@@ -27,8 +27,11 @@
                     <StackView Width="460" class="feature-copy">
                         <TextBlock Name="FeaturedTag" class="feature-tag">STORY OF THE DAY  ·  ANIMALS</TextBlock>
                         <TextBlock Name="FeaturedQuestion" class="feature-question" WordWrap="true"/>
-                        <Button Name="OpenFeatured" Text="Find out" class="feature-button icon-end">
-                            <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" HorizontalAlignment="Right" MarginRight="-28" MarginTop="auto" MarginBottom="auto" class="ink-icon" IgnoreHitTest="true"/>
+                        <Button Name="OpenFeatured" class="feature-button">
+                            <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                                <TextBlock Text="Find out" IgnoreHitTest="true"/>
+                                <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                            </StackView>
                         </Button>
                     </StackView>
                 </StackView>
@@ -59,17 +62,26 @@
             </StackView>
             <Grid Rows="auto 1fr auto" class="page">
                 <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="10">
-                    <Button Name="Back" Text="Library" class="soft icon-start">
-                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" MarginLeft="-28" MarginTop="auto" MarginBottom="auto" class="ink-icon" IgnoreHitTest="true"/>
+                    <Button Name="Back" class="soft">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                            <TextBlock Text="Library" IgnoreHitTest="true"/>
+                        </StackView>
                     </Button>
                     <Node2D IgnoreHitTest="true">
                         <TextBlock Name="ReadAloudError" Visible="false" class="read-error" WordWrap="true">Audio couldn’t play. Try again.</TextBlock>
                     </Node2D>
-                    <Button Name="ReadAloud" Text="Read aloud" Visible="false" class="listen icon-start">
-                        <VectorView Name="ReadAloudIcon" Source="encarta/Icons/volume-2.svg" Width="20" Height="20" MarginLeft="-28" MarginTop="auto" MarginBottom="auto" class="ink-icon" IgnoreHitTest="true"/>
+                    <Button Name="ReadAloud" Visible="false" class="listen">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <VectorView Name="ReadAloudIcon" Source="encarta/Icons/volume-2.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                            <TextBlock Name="ReadAloudLabel" Text="Read aloud" IgnoreHitTest="true"/>
+                        </StackView>
                     </Button>
-                    <Button Name="StopReading" Text="Stop" Visible="false" class="soft icon-start">
-                        <VectorView Source="encarta/Icons/square.svg" Width="20" Height="20" MarginLeft="-28" MarginTop="auto" MarginBottom="auto" class="ink-icon" IgnoreHitTest="true"/>
+                    <Button Name="StopReading" Visible="false" class="soft">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <VectorView Source="encarta/Icons/square.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                            <TextBlock Text="Stop" IgnoreHitTest="true"/>
+                        </StackView>
                     </Button>
                 </Grid>
                 <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
@@ -78,11 +90,17 @@
                 </StackView>
                 <Grid Name="Pager" Columns="1fr auto auto" Spacing="12" class="pager">
                     <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" class="dots"/>
-                    <Button Name="Previous" Text="Back" class="soft pager-button icon-start">
-                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" MarginLeft="-28" MarginTop="auto" MarginBottom="auto" class="ink-icon" IgnoreHitTest="true"/>
+                    <Button Name="Previous" class="soft pager-button">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                            <TextBlock Text="Back" IgnoreHitTest="true"/>
+                        </StackView>
                     </Button>
-                    <Button Name="Next" Text="Next question" class="next icon-end">
-                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" HorizontalAlignment="Right" MarginRight="-28" MarginTop="auto" MarginBottom="auto" class="white-icon" IgnoreHitTest="true"/>
+                    <Button Name="Next" class="next">
+                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                            <TextBlock Text="Next question" IgnoreHitTest="true"/>
+                            <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        </StackView>
                     </Button>
                 </Grid>
             </Grid>
