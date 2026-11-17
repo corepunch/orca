@@ -32,17 +32,17 @@
   color: var(--ink);
   placeholder-color: var(--muted);
 }
+.search { padding-left: 46; }
 .search:focus { ring: 0 3 var(--sun); }
+.search-icon { color: var(--muted); }
 .clear {
   min-height: 44;
-  padding: 0 16;
+  padding: 0;
   border-radius: 14;
-  font-size: 16;
-  font-weight: bold;
-  color: var(--white);
   background-color: var(--night-raised);
 }
 .clear:hover, .clear:active { background-color: var(--night-line); }
+.clear-icon { color: var(--white); }
 
 .chips { gap: 8; }
 .chip {
@@ -213,6 +213,12 @@
 }
 .next:hover, .next:active { background-color: var(--muted); }
 .pager-button { min-height: 54; border-radius: 16; }
+
+/* Buttons with a 20-point icon child at the start or end of the label. */
+.icon-start { padding-left: 44; }
+.icon-end { padding-right: 44; }
+.ink-icon { color: var(--ink); }
+.white-icon { color: var(--white); }
 
 /* ---------- category colors ---------- */
 .cat-animals { background-color: var(--animals); }

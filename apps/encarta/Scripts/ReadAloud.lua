@@ -13,6 +13,7 @@ function ReadAloud.new(view, openAudio)
         openAudio = openAudio or media.openAudio,
         scroll = assert(view:findChild("ReaderScroll", true)),
         play = assert(view:findChild("ReadAloud", true)),
+        playIcon = assert(view:findChild("ReadAloudIcon", true)),
         stopButton = assert(view:findChild("StopReading", true)),
         error = assert(view:findChild("ReadAloudError", true)),
     }, ReadAloud)
@@ -24,6 +25,11 @@ function ReadAloud.new(view, openAudio)
     self.play.Click = function() self:toggle() end
     self.stopButton.Click = function() self:stop() end
     return self
+end
+
+function ReadAloud:setPlayLabel(text, icon)
+    self.play.Text = text
+    self.playIcon.Source = "encarta/Icons/" .. icon .. ".svg"
 end
 
 function ReadAloud:cancelTimer()
@@ -50,7 +56,7 @@ function ReadAloud:stop()
     end
     self:clearHighlight()
     self.followedBlock = nil
-    self.play.Text = "Read aloud"
+    self:setPlayLabel("Read aloud", "volume-2")
     self.stopButton.Visible = false
     self.error.Visible = false
 end
@@ -97,7 +103,7 @@ function ReadAloud:update()
     local elapsed, playing = self.player:status()
     if not playing then
         self:stop()
-        self.play.Text = "Read again"
+        self:setPlayLabel("Read again", "rotate-ccw")
         return
     end
 
@@ -130,7 +136,7 @@ function ReadAloud:toggle()
     if self.timerID then
         self:cancelTimer()
         self.player:pause()
-        self.play.Text = "Resume"
+        self:setPlayLabel("Resume", "play")
         return
     end
 
@@ -144,7 +150,7 @@ function ReadAloud:toggle()
         return
     end
     self.error.Visible = false
-    self.play.Text = "Pause"
+    self:setPlayLabel("Pause", "pause")
     self.stopButton.Visible = true
     self.timerID = self.timer:setTimer(33)
 end
