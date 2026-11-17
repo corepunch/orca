@@ -152,8 +152,6 @@ function Controller.mount(view, openAudio)
     for name, action in pairs({
         ClearSearch = self.clearQuery, OpenFeatured = self.openFeatured,
         ShowWall = function() self:setShelf(false) end, ShowShelf = function() self:setShelf(true) end,
-        FirstRead = function() self:setReadingLevel("first") end,
-        ReadMore = function() self:setReadingLevel("more") end,
         Previous = function() self:goToPage(self.current.page - 1) end,
         Next = function() self:goToPage(self.current.page + 1) end,
         Back = self.goBack,
@@ -170,19 +168,12 @@ end
 
 -- Reader --------------------------------------------------------------------
 
-local MARKS = { fact = "!", quiz = "?" }
-
-function Controller:setReadingLevel(level, page)
-    local state = self.current
-    if state.level == level and not page then return end
-    state.level = level
-    self.readAloud:stop()
+function Controller:buildSections(article)
     local sections = control(self.view, "Sections")
     clear(sections)
-    self.sections, self.blockPage, self.pages = {}, {}, {}
+    self.sections, self.blockPage = {}, {}
     local blocks = {}
-    local article = byID[state.id]
-    for i, entry in ipairs(article[level]) do
+    for i, entry in ipairs(article.sections) do
         local section = prefab("Section")
         local title = control(section, "Title")
         title.Text = entry[1]
@@ -203,45 +194,32 @@ function Controller:setReadingLevel(level, page)
         end
         sections:addChild(section)
         self.sections[i] = section
-        self.pages[i] = { kind = "section", label = entry[1] }
     end
-    self.pages[#self.pages + 1] = { kind = "fact", label = "Did you know?" }
-    self.pages[#self.pages + 1] = { kind = "quiz", label = "Check your reading" }
-    self.readAloud:setTrack(state.id, level, blocks)
-    control(self.view, "FirstRead").StateClasses = level == "first" and "level-on" or ""
-    control(self.view, "ReadMore").StateClasses = level == "more" and "level-on" or ""
-    self:showPage(page or 1)
+    self.readAloud:setTrack(article.id, blocks)
 end
 
 function Controller:showPage(n, offset)
     local state, view = self.current, self.view
-    local pages = self.pages
-    n = math.max(1, math.min(n, #pages))
-    state.page = n
-    local page = pages[n]
-    for i, section in ipairs(self.sections) do section.Visible = i == n end
-    control(view, "FactPage").Visible = page.kind == "fact"
-    control(view, "QuizPage").Visible = page.kind == "quiz"
-
-    local category = byID[state.id].category:upper()
+    local article = byID[state.id]
     local count = #self.sections
-    control(view, "StepLabel").Text = page.kind == "section"
-        and string.format("%s  ·  QUESTION %d OF %d", category, n, count)
-        or category .. "  ·  " .. page.label:upper()
+    n = math.max(1, math.min(n, count))
+    state.page = n
+    for i, section in ipairs(self.sections) do section.Visible = i == n end
+    control(view, "StepLabel").Text = string.format("%s  ·  QUESTION %d OF %d", article.category:upper(), n, count)
 
     local steps, dots = control(view, "Steps"), control(view, "Dots")
     clear(steps)
     clear(dots)
-    for i, entry in ipairs(pages) do
+    for i, entry in ipairs(article.sections) do
         local stateName = i == n and "on" or (i < n and "done" or nil)
         local step = prefab("Step")
         step.Name = "Step" .. i
         step.StyleClass = stateName == "on" and "step step-on" or "step"
         local mark = control(step, "Mark")
-        mark.Text = MARKS[entry.kind] or tostring(i)
+        mark.Text = tostring(i)
         mark.StyleClass = stateName and "mark mark-" .. stateName or "mark"
         local label = control(step, "Label")
-        label.Text = entry.label
+        label.Text = entry[1]
         label.StyleClass = stateName == "on" and "step-text step-text-on" or "step-text"
         step.Click = function() self:goToPage(i) end
         steps:addChild(step)
@@ -251,13 +229,8 @@ function Controller:showPage(n, offset)
         dot.Width = i == n and 28 or 10
         dots:addChild(dot)
     end
-    local previous, nextButton = control(view, "Previous"), control(view, "Next")
-    previous.Visible = n > 1
-    nextButton.Visible = n < #pages
-    local upcoming = pages[n + 1]
-    if upcoming then
-        nextButton.Text = (upcoming.kind == "section" and "Next question" or upcoming.label) .. "  ›"
-    end
+    control(view, "Previous").Visible = n > 1
+    control(view, "Next").Visible = n < count
     control(view, "ReaderScroll").ContentOffset = { X = 0, Y = offset or 0 }
 end
 
@@ -276,73 +249,14 @@ function Controller:setReaderVisible(visible)
     control(self.view, "Reader").Visible = visible
 end
 
-function Controller:showQuiz(article)
-    local state, view = self.current, self.view
-    local quiz = article.quiz
-    local answers, feedback = control(view, "Answers"), control(view, "Feedback")
-    control(view, "QuizQuestion").Text = quiz.question
-    local buttons = {}
-    local function update()
-        feedback.Visible = state.answer ~= nil
-        local right = state.answer == quiz.correct
-        feedback.Text = right and "You got it! " .. quiz.explanation
-            or "Not quite. Look back at the article and try again."
-        feedback.StateClasses = right and "feedback-right" or ""
-        for i, button in ipairs(buttons) do
-            button.StateClasses = i ~= state.answer and "" or (right and "tile-right" or "tile-wrong")
-        end
-    end
-    clear(answers)
-    for i, choice in ipairs(quiz.choices) do
-        local button = prefab("Choice")
-        button.Name = "Answer" .. i
-        button.Text = choice
-        button.Click = function()
-            state.answer = i
-            update()
-        end
-        answers:addChild(button)
-        buttons[i] = button
-    end
-    update()
-
-    local related = control(view, "Related")
-    clear(related)
-    for _, id in ipairs(article.related) do related:addChild(self:card(byID[id])) end
-end
-
-function Controller:showFact(article)
-    local state, view = self.current, self.view
-    control(view, "Fact").Text = article.fact
-    local words = control(view, "Words")
-    clear(words)
-    for i, word in ipairs(article.words) do
-        local row = prefab("Word")
-        local term, meaning = control(row, "Term"), control(row, "Meaning")
-        term.Name = "Word" .. i
-        term.Text = word[1] .. "  ·  " .. word[2]
-        meaning.Text = word[3]
-        meaning.Visible = state.revealed[i] == true
-        term.Click = function()
-            meaning.Visible = not meaning.Visible
-            state.revealed[i] = meaning.Visible
-        end
-        words:addChild(row)
-    end
-end
-
 function Controller:showArticle()
     local state, view = self.current, self.view
     local article = byID[state.id]
     control(view, "ArticleCategory").Text = article.category:upper()
     control(view, "ArticleTitle").Text = article.title
     control(view, "ArticleDeck").Text = article.deck
-    self:showFact(article)
-    self:showQuiz(article)
-    local page, level = state.page or 1, state.level
-    state.level = nil
-    self:setReadingLevel(level, page)
-    self:showPage(page, state.scroll)
+    self:buildSections(article)
+    self:showPage(state.page, state.scroll)
     self:setReaderVisible(true)
     if control(view, "Search"):isFocused() then control(view, "Back"):setFocus() end
 end
@@ -352,7 +266,7 @@ function Controller:openArticle(id)
         self.current.scroll = control(self.view, "ReaderScroll").ContentOffset.Y
         table.insert(self.history, self.current)
     end
-    self.current = { id = id, level = "first", page = 1, revealed = {} }
+    self.current = { id = id, page = 1 }
     self:showArticle()
 end
 

@@ -16,15 +16,8 @@ return {
         title = "Octopuses",
         question = "How does an octopus hide?",
         deck = "How an eight-armed animal hides in plain sight.",
-        fact = "An octopus has three hearts and blue blood.",
         keywords = "ocean sea mollusk squid disguise camouflage ink suckers siphon beak",
-        first = {
-            { "How many arms does an octopus have?", "An octopus has eight arms, and each one is soft and bendy. Its arms have no bones at all. Each arm is covered with round cups called suckers. The suckers grab rocks, shells, and food. They can even smell what they touch! An octopus feels around in dark cracks with its arms. That is how it finds crabs and shrimp to eat." },
-            { "How does an octopus hide?", "An octopus hides by changing the color of its skin. In less than a second, it can turn from red to brown to white. It can match the sand, a rock, or a patch of seaweed. It can even make its skin bumpy like a rock. A hungry fish might swim right past without seeing it. Hiding keeps the octopus safe while it rests or hunts." },
-            { "What does an octopus do when it is in danger?", "When an octopus is in danger, it has a few clever tricks. First, it can squirt a dark cloud of ink into the water. The ink hides it like a puff of smoke. Then it zooms away by pushing water out of its body. It can also squeeze into a tiny crack. The only hard part of its body is its beak, a mouth like a parrot’s. If the beak fits through a hole, the rest can follow." },
-            { "How smart is an octopus?", "An octopus is one of the smartest animals in the sea. It can open clamshells to get the food inside. In aquariums, some octopuses even take apart parts of their tanks! An octopus also seems to know people apart. It may like one keeper and splash another one with water. Scientists still have lots to learn about how it thinks." },
-        },
-        more = {
+        sections = {
             { "How does an octopus use its arms?", "An octopus uses its eight arms to crawl, grab, explore, and smell. Each arm is lined with hundreds of suckers, round cups that stick to almost anything. A sucker can feel and smell the things it touches. So an octopus can find a crab hiding in a dark crack without even seeing it.",
                 "The arms are clever in another way, too. Each sucker is moved by its own bundle of nerves, which works almost like a tiny brain. That lets every sucker move on its own, so an arm can twist open a shell while the octopus watches for danger. If an attacker grabs an arm, the octopus can let it go and escape. Later, it grows a new arm in its place." },
             { "How does an octopus change color?", "An octopus changes color by stretching tiny bags of color in its skin. Thousands of these bags sit just under the surface. Each one holds red, yellow, brown, or black color. Tiny muscles pull on a bag and spread it out, so its color shows. When the muscles relax, the bag shrinks to a dot, and the color almost disappears.",
@@ -35,18 +28,6 @@ return {
                 "Octopuses also seem to have opinions about people. In one aquarium, an octopus kept squirting water at a keeper it seemed to dislike. Another shot a jet of water at a lamp. Most octopuses live alone, so each one works things out by itself. Next time you visit an aquarium, watch an octopus closely and see what it explores." },
         },
         image = art("octopus", "An octopus stretches its arms among rocks and sea plants."),
-        words = {
-            { "sucker", "SUCK-er", "A little cup that can stick to a surface. An octopus uses suckers to grip things." },
-            { "camouflage", "KAM-uh-flahzh", "A way to blend in so other animals have trouble seeing you." },
-            { "siphon", "SY-fun", "A tube an octopus uses to squirt water and zoom away." },
-        },
-        quiz = {
-            question = "How can an octopus hide on a rock?",
-            choices = { "It makes the rock move.", "It changes the color of its skin.", "It closes its eyes." },
-            correct = 2,
-            explanation = "An octopus can make its skin look like the rock around it.",
-        },
-        related = { "water" },
         sources = {
             "https://ocean.si.edu/ocean-life/invertebrates/how-octopuses-and-squids-change-color",
             "https://www.montereybayaquarium.org/animals/animals-a-to-z/giant-pacific-octopus",
@@ -59,16 +40,9 @@ return {
         title = "The Moon",
         question = "Why does the Moon change shape?",
         deck = "Why the Moon seems to change shape.",
-        fact = "Footprints left on the Moon in 1969 are still there, because no wind blows them away.",
         keywords = "sun Earth night orbit crescent phases sunlight crater astronaut Apollo",
         image = moon,
-        first = {
-            { "Where does moonlight come from?", "Moonlight comes from the Sun, not from the Moon itself. The Moon does not make any light of its own. The Sun shines on the Moon, like a flashlight on a ball. Some of that light bounces off the Moon’s gray rocks. Then it travels all the way to your eyes. So when you see the Moon, you see sunlight that bounced!" },
-            { "Why does the Moon change shape?", "The Moon does not really change shape. It only looks that way from Earth. The Sun always lights up half of the Moon. The Moon travels around Earth, so we see that bright half from different sides. Sometimes we see the whole bright half as a round Moon. Sometimes we see only a thin curve. One trip around Earth takes about a month.", image = phases },
-            { "What is it like on the Moon?", "The Moon is a quiet, dusty world with almost no air. You could not breathe there without a space suit. The ground is covered in gray dust and rocks. Round holes called craters are everywhere. Space rocks crashed into the Moon and made them. There is no wind and no rain there. So the holes stay for a very, very long time." },
-            { "Can you watch the Moon change?", "Yes, you can be a Moon watcher at home. Look for the Moon at the same time each evening. Draw the bright part you see in a notebook. Some nights you may not find it at all. Do not worry, because sometimes the Moon is up during the day. After a few weeks, line up your drawings. You will see the Moon grow round and then thin again.", image = moon },
-        },
-        more = {
+        sections = {
             { "Why does the Moon seem to change shape?", "The Moon seems to change shape because we see different amounts of its sunny side. The Sun always lights half of the Moon, just as it lights half of Earth to make day. As the Moon orbits Earth, the lit half turns toward us or away from us. Each of these views is called a phase.",
                 "At new Moon, the sunny side faces away from us, so the Moon is very hard to see. A few days later, a thin curve of light called a crescent appears. About two weeks after new Moon, we see the whole sunny side, a full Moon. Then the bright part shrinks again. The whole cycle takes about 29 and a half days, which is close to one month.", image = phases },
             { "How far away is the Moon?", "The Moon is about 384,000 kilometers away, or about 239,000 miles. That is so far that about 30 Earths could fit in the gap between us and the Moon. A car driving nonstop on a highway would need about five months to get there. The Apollo astronauts flew in a powerful rocket, and their trip took about three days.",
@@ -80,18 +54,6 @@ return {
             { "How can you track the Moon?", "You can track the Moon by drawing it at the same time each day for a month. Choose a window or a spot outside where you can see a lot of sky. Draw the shape of the bright part, and write the date beside it. On cloudy nights, just write “cloudy” and try again the next day.",
                 "After a week or two, compare your drawings. Is the bright part growing or shrinking? Which side is lit, the left or the right? You may also spot the Moon in the daytime, because it is not only out at night. People have watched the Moon change in just this way for thousands of years.", image = moon },
         },
-        words = {
-            { "orbit", "OR-bit", "To go around another object in space." },
-            { "crescent", "CRESS-unt", "A shape like a thin slice of a round moon." },
-            { "crater", "KRAY-ter", "A round hole made when a rock from space crashes into the ground." },
-        },
-        quiz = {
-            question = "Where does the light we see on the Moon come from?",
-            choices = { "The Sun", "Lights on the Moon", "Clouds around Earth" },
-            correct = 1,
-            explanation = "Sunlight bounces off the Moon and reaches our eyes.",
-        },
-        related = { "water" },
         sources = {
             "https://science.nasa.gov/moon/moon-phases/",
             "https://science.nasa.gov/moon/facts/",
@@ -105,16 +67,9 @@ return {
         title = "The Water Cycle",
         question = "Where does rain come from?",
         deck = "Follow a drop from the ground to the clouds and back.",
-        fact = "The water in your glass has been going around the water cycle for millions of years.",
         keywords = "rain cloud river ocean weather evaporation condensation precipitation snow puddle vapor",
         image = art("water", "Rain falls from a cloud over a mountain lake."),
-        first = {
-            { "Where does a puddle go?", "A puddle goes up into the air! After rain, puddles slowly get smaller. The Sun warms the water in them. Little by little, the water turns into a gas. This gas is called water vapor. You cannot see it, but it mixes with the air all around you. Wet clothes on a line dry in the same way." },
-            { "How is a cloud made?", "A cloud is made of tiny drops of water floating in the sky. High up, the air is cold. When warm, damp air rises, it cools down. Then the water vapor turns back into tiny drops. Billions of drops crowd together, and we see a cloud. You can watch this happen at home. Breathe on a cold window, and a little cloud of drops appears.", image = waterCycle },
-            { "Why does rain fall?", "Rain falls when the drops in a cloud get too heavy. Inside a cloud, tiny drops bump into each other. When they bump, they join and grow bigger. Soon they are too heavy to float. Then they fall to the ground as rain. If the air is very cold, they fall as snow instead. Most raindrops are smaller than a pea." },
-            { "Does water go around and around?", "Yes, the same water goes around and around. Rain soaks into the ground or runs into rivers. Rivers carry it back to the sea. Then the Sun warms it, and it rises into the air again. This trip that never ends is called the water cycle. The water you drink today may once have been in a cloud, a river, or the sea." },
-        },
-        more = {
+        sections = {
             { "What is evaporation?", "Evaporation is how liquid water turns into a gas called water vapor. Water is made of tiny pieces, far too small to see. When the Sun warms a lake or a puddle, some pieces at the top move fast enough to escape. Then they float away into the air as water vapor.",
                 "The warmer it is, the faster water evaporates. That is why a puddle disappears quickly on a hot, sunny day but can last for days when it is cool. Wind helps too, because it carries the damp air away. Most of the water vapor in the air comes from the oceans. If you split Earth’s surface into ten equal parts, oceans would cover about seven of them." },
             { "How do clouds form?", "Clouds form when water vapor cools and turns back into tiny drops. This change is called condensation. Warm air rises, and as it climbs higher, it cools. Cool air cannot hold as much water vapor, so some of the vapor turns into drops or tiny bits of ice.",
@@ -124,18 +79,6 @@ return {
             { "Where does water go after it lands?", "After water lands, it can take many paths. Some soaks into the soil, where plant roots drink it up. Some sinks deeper and fills the spaces between rocks underground. This hidden water is called groundwater. Many people pump groundwater up from wells to drink.",
                 "Other water runs downhill into streams and rivers, which carry it back to the sea. Some falls as snow on high mountains and stays frozen for a long time. Plants give some water back to the air through their leaves. Sooner or later, almost every drop rises into the air again, and the cycle starts over. The Sun’s heat keeps the whole trip going." },
         },
-        words = {
-            { "evaporation", "ee-vap-uh-RAY-shun", "When liquid water changes into a gas called water vapor." },
-            { "condensation", "kon-den-SAY-shun", "When water vapor changes back into liquid water." },
-            { "precipitation", "prih-sip-ih-TAY-shun", "Water that falls from clouds, like rain, snow, or sleet." },
-        },
-        quiz = {
-            question = "What can happen to the water in a shrinking puddle?",
-            choices = { "It loses its weight forever.", "It turns into sand.", "Some of it turns into water vapor." },
-            correct = 3,
-            explanation = "During evaporation, liquid water changes into gas and mixes with the air.",
-        },
-        related = { "octopus", "moon" },
         sources = {
             "https://www.usgs.gov/water-science-school/water-cycle",
             "https://scied.ucar.edu/learning-zone/clouds/how-clouds-form",
@@ -149,16 +92,9 @@ return {
         title = "Honeybees",
         question = "Why do bees visit flowers?",
         deck = "A busy hive works together like one big team.",
-        fact = "To make one spoonful of honey, bees visit thousands of flowers.",
         keywords = "insect bug hive honey flower pollen pollination wax queen nectar honeycomb dance drone",
         image = art("bees", "A honeybee visits a flower. Look for the yellow pollen on its back leg."),
-        first = {
-            { "Who lives in a hive?", "A hive is home to one big bee family. A strong hive can hold about 60,000 bees. That is like a whole football stadium full of fans! There is only one queen, and she lays the eggs. Almost all the other bees are female workers. A few hundred male bees, called drones, live there too. No bee can live alone for long, because each one needs the others." },
-            { "Why do bees visit flowers?", "Bees visit flowers to collect food for the hive. They drink a sweet juice called nectar. They also gather a yellow dust called pollen. Pollen sticks to the tiny hairs on a bee’s fuzzy body. When the bee lands on the next flower, some pollen rubs off. That helps the plant make seeds and fruit. So the bee gets food, and the flower gets help." },
-            { "How do bees make honey?", "Bees make honey from the nectar they collect. A bee carries nectar home in a special honey stomach. At the hive, the nectar goes into tiny wax rooms called cells. Fresh nectar is runny, almost like water. So the bees fan it with their wings until it gets thick. Then they close each cell with a lid of wax. The honey is food for winter, when few flowers bloom." },
-            { "How does a bee tell its friends where food is?", "A bee dances to show its friends where food is! It dances on the honeycomb inside the dark hive. First it runs in a straight line and wiggles its body. Then it loops around and does it again. The straight run points the way to the flowers. A longer wiggle means the flowers are farther away. The other bees follow the dancer, then fly off to find the food." },
-        },
-        more = {
+        sections = {
             { "Who does which job in a hive?", "A worker bee’s job depends mostly on how old it is. The queen lays the eggs, and at her busiest she can lay up to 1,500 in a single day. That is about one egg every minute, all day and all night. Young workers stay inside, where they clean the cells, feed the baby bees, and look after the queen.",
                 "Older workers build comb and guard the door, and the oldest fly out to collect nectar, pollen, and water. A worker born in summer lives only about six weeks, so new bees keep taking over. Workers born in the fall can live for several months, because they rest in the hive through winter. The male bees, called drones, do not collect food. Their job is to mate with a young queen from another hive." },
             { "How do bees build their honeycomb?", "Worker bees build their honeycomb from wax that comes out of their own bodies. Small glands on the underside of a worker’s belly make thin flakes of wax. The bee chews each flake until it is soft, then presses it into place. Bit by bit, the workers shape rows of six-sided rooms called cells.",
@@ -170,18 +106,6 @@ return {
             { "How do bees tell each other where flowers are?", "Honeybees share directions to food by dancing. A forager that finds good flowers comes home and dances on the honeycomb in the dark hive. In the waggle dance, she runs in a straight line while shaking her body from side to side. Then she circles back and does it again. The direction of the straight run shows which way to fly, using the Sun as a guide.",
                 "A run straight up the comb means the food is toward the Sun, and a run straight down means it is away from the Sun. The waggle tells the distance too, because a longer waggle means a longer flight. Other bees follow the dancer closely, then fly out and find the flowers on their own. For food very close to the hive, bees do a simpler round dance." },
         },
-        words = {
-            { "pollen", "POL-un", "A fine yellow dust made by flowers. Plants need it to make seeds." },
-            { "nectar", "NEK-ter", "A sweet juice inside flowers. Bees drink it and turn it into honey." },
-            { "pollination", "pol-ih-NAY-shun", "Moving pollen from one flower to another so the plant can make seeds." },
-        },
-        quiz = {
-            question = "How does a bee help a flower make seeds?",
-            choices = { "It carries pollen to another flower.", "It waters the flower.", "It eats the flower’s leaves." },
-            correct = 1,
-            explanation = "Pollen sticks to the bee and rubs off on the next flower it visits.",
-        },
-        related = { "seeds", "octopus" },
         sources = {
             "https://canr.udel.edu/maarec/honey-bee-biology/the-colony-and-its-organization/",
             "https://content.ces.ncsu.edu/honey-bee-dance-language",
@@ -194,16 +118,9 @@ return {
         title = "Penguins",
         question = "Can a penguin fly?",
         deck = "Birds that cannot fly, but can really swim.",
-        fact = "An emperor penguin can dive more than 500 meters deep. That is deeper than the tallest skyscraper in Europe is tall.",
         keywords = "bird antarctica ice cold ocean swim fish feathers emperor huddle egg flipper",
         image = art("penguins", "An emperor penguin uses its flippers to swim below the ice."),
-        first = {
-            { "Can a penguin fly?", "No, a penguin cannot fly, but it is still a bird. Its wings are stiff and flat, like the paddles of a canoe. These special wings are called flippers. A penguin flaps them under the water, just as other birds flap in the air. So a penguin flies through the sea instead of the sky! On land, it waddles on short legs or slides on its belly." },
-            { "How does a penguin stay warm?", "A penguin stays warm with a thick coat of feathers. The feathers are short and packed tightly together. They overlap like the tiles on a roof. That keeps out the icy water and the wind. Under the skin, a layer of fat works like a warm blanket. Emperor penguins also stand together in a big crowd. Each one takes a turn in the warm middle." },
-            { "Where do penguins live?", "Almost all penguins live in the southern half of the world. Some live on the ice near Antarctica, the coldest place on Earth. Others live on warmer beaches in Africa, South America, and Australia. The Galápagos penguin even lives near the equator, where it is hot. But every penguin needs the sea, because that is where its food is. Penguins eat fish, squid, and tiny shrimp-like animals called krill." },
-            { "How does a penguin dad care for his egg?", "An emperor penguin dad keeps his egg warm on his feet! The mom lays one egg in the middle of winter. Then she walks off to the sea to eat. The dad tucks the egg under a warm flap of skin. He stands guard for about two months. In all that time, he does not eat at all. When the mom comes back, she takes over feeding the chick." },
-        },
-        more = {
+        sections = {
             { "Why can’t a penguin fly?", "A penguin cannot fly because its body is built for swimming instead. Its wing bones are flat and stiff, so the whole wing works like a paddle. These paddle wings are called flippers. Its body is heavy and smooth, which helps it dive down instead of bobbing on top of the water.",
                 "Under the water, a penguin flaps its flippers up and down, just as a sparrow flaps its wings in the air. Its feet and tail help it steer, like the rudder of a boat. The emperor penguin can dive more than 500 meters deep, which is as far as five football fields laid end to end. It can hold its breath for more than 20 minutes, about as long as a cartoon episode. On land it waddles, but in the sea it is a speedy, graceful swimmer." },
             { "How does a penguin stay warm in the icy sea?", "A penguin stays warm because it is wrapped in layers. Its short, stiff feathers grow very close together and overlap like the tiles on a roof. Under them, a soft, fluffy layer traps warm air next to the skin. Below the skin is a thick layer of fat, which holds in heat like a winter coat.",
@@ -215,18 +132,6 @@ return {
             { "Do all penguins live on ice?", "No, many penguins never see snow at all. There are 18 kinds of penguins, and only five of them live in Antarctica. Others live on coasts and islands in South America, Africa, Australia, and New Zealand. The Galápagos penguin even lives near the equator, where the sun is hot all year.",
                 "Penguins also come in very different sizes. The emperor penguin is the biggest, standing about 115 centimeters tall, which is about as tall as a six-year-old child. The little penguin of Australia and New Zealand is the smallest, at only about 30 centimeters, the length of a school ruler. It weighs about one kilogram, as much as a bag of sugar. Big or small, every penguin is a bird that swims instead of flying." },
         },
-        words = {
-            { "flipper", "FLIP-er", "A flat, stiff limb that helps an animal swim." },
-            { "krill", "KRILL", "Tiny ocean animals that look like shrimp. Many sea animals eat them." },
-            { "countershading", "KOWN-ter-shay-ding", "Hiding with a dark back and a light belly, so an animal is hard to see from above or below." },
-        },
-        quiz = {
-            question = "What do penguins use their wings for?",
-            choices = { "Flying over the ice", "Swimming through the water", "Digging in the sand" },
-            correct = 2,
-            explanation = "A penguin’s stiff wings work like flippers in the water.",
-        },
-        related = { "octopus", "water" },
         sources = {
             "https://www.antarctica.gov.au/about-antarctica/animals/penguins/",
             "https://www.nationalgeographic.com/animals/birds/facts/emperor-penguin",
@@ -239,16 +144,9 @@ return {
         title = "Dinosaurs",
         question = "How do we know about dinosaurs?",
         deck = "How we know about animals no one ever saw.",
-        fact = "Birds are dinosaurs, so a chicken is a living cousin of Tyrannosaurus rex.",
         keywords = "fossil bones reptile extinct prehistoric history birds asteroid footprint teeth",
         image = art("dinosaurs", "A scientist brushes dirt away from a fossil bone."),
-        first = {
-            { "When did dinosaurs live?", "Dinosaurs lived a very, very long time ago. The last giant ones died out about 66 million years ago. Picture a stack of paper with one sheet for each year. That stack would be as tall as a high mountain! Dinosaurs ruled the land for more than 140 million years. People came along much, much later. So no person ever saw a living dinosaur." },
-            { "How do we know about dinosaurs?", "We know about dinosaurs because they left fossils behind. A fossil is a bone, tooth, or footprint that turned to stone. Scientists dig fossils out of rock very carefully. They use small tools and soft brushes, like in the photo. Then they fit the bones together like a giant puzzle. Each fossil is a clue about how the animal lived.", image = art("dinosaurs", "A scientist brushes dirt away from a fossil bone.") },
-            { "Were all dinosaurs giants?", "No, dinosaurs came in many different sizes. Some were longer than a school bus. Others were only as big as a chicken. Some ate meat, and some ate only plants. Scientists can tell which by looking at their teeth. Sharp teeth were good for biting meat, and flat teeth were good for chewing leaves. So even a single tooth can tell a story." },
-            { "Are there still dinosaurs today?", "Yes, in a way, because birds are dinosaurs! Long ago, some small dinosaurs had feathers. Over a very long time, they changed into birds. Most other dinosaurs died out after a huge rock from space hit Earth. But some birds lived through it. Their great-great-grandchildren still fly today. So a pigeon in the park is a tiny dinosaur cousin." },
-        },
-        more = {
+        sections = {
             { "How does a bone turn into stone?", "A bone turns into stone very slowly, after it is buried. First an animal dies, and its soft parts, like skin and muscle, rot away or get eaten. Only the hard parts, such as bones and teeth, are left. If mud or sand covers them, they are kept safe from wind and hungry scavengers.",
                 "Over many years, more layers pile on top and squeeze the mud below into rock. Water seeps through the ground and leaves tiny bits of minerals inside the bones, until they turn to stone. This can take thousands or even millions of years. A stony bone or shell like this is called a fossil. Very few animals ever become fossils, so every one that is found is precious." },
             { "Can a footprint be a fossil?", "Yes, a footprint can be a fossil, even though no bone is left. Scientists sort fossils into two groups. Body fossils are parts of the animal itself, such as bones, teeth, claws, and skulls. Trace fossils are signs the animal left behind, such as footprints, marks from skin or feathers, and even fossil poop.",
@@ -260,18 +158,6 @@ return {
             { "Are birds really dinosaurs?", "Yes, birds really are dinosaurs, and they are the only ones still alive. They come from theropods, a group of meat-eating dinosaurs that walked on two legs. Tyrannosaurus rex was a theropod too, so it is a distant relative of every bird. The oldest bird-like fossils are more than 150 million years old.",
                 "Those early birds looked like small dinosaurs with feathers. Paleontologists have also found dinosaurs that were not birds but still had feathers, so feathers came before flying. Look at a chicken’s scaly feet and sharp claws, and you can almost picture its ancient family. Birds lived through the asteroid while their giant cousins did not. So the next time a sparrow hops past you, you are watching a living dinosaur." },
         },
-        words = {
-            { "fossil", "FOSS-ul", "Part or trace of a living thing from long ago, kept in rock." },
-            { "paleontologist", "pay-lee-un-TOL-uh-jist", "A scientist who studies fossils to learn about life long ago." },
-            { "asteroid", "AS-ter-oyd", "A big rock that travels through space around the Sun." },
-        },
-        quiz = {
-            question = "How do we know about dinosaurs?",
-            choices = { "People took photos of them.", "We study fossils left in rock.", "They still live in the forest." },
-            correct = 2,
-            explanation = "Fossils such as bones, teeth, and footprints are clues about dinosaurs.",
-        },
-        related = { "volcanoes", "bees" },
         sources = {
             "https://www.nhm.ac.uk/discover/dino-directory.html",
             "https://www.nhm.ac.uk/discover/how-are-fossils-formed.html",
@@ -284,16 +170,9 @@ return {
         title = "The Sun",
         question = "Is the Sun a star?",
         deck = "Our closest star gives Earth light and warmth.",
-        fact = "The sunlight reaching your eyes now left the Sun about eight minutes ago.",
         keywords = "star light heat day sky solar system planets fusion prominence gravity orbit",
         image = art("sun", "A loop of glowing gas rises above the Sun’s surface."),
-        first = {
-            { "Is the Sun a star?", "Yes, the Sun is a star, just like the dots you see at night. It looks bigger and brighter because it is much closer to us. The other stars are much, much farther away. The Sun is a giant ball of very hot, glowing gas. More than a million Earths could fit inside it. Picture a huge box holding a million marbles!" },
-            { "How hot is the Sun?", "The Sun is hotter than anything on Earth. Its surface is about 5,500 degrees Celsius. That is more than ten times hotter than a pizza oven. Deep in its middle, it is even hotter. There, tiny bits of gas crash together and make energy. That energy shines out as light and heat. It warms Earth even from very far away." },
-            { "How far away is the Sun?", "The Sun is about 150 million kilometers away. A car on the highway would need more than 150 years to drive there! Light is much faster than any car. Sunlight takes about eight minutes to reach you. That is about as long as a short cartoon. So when you see the Sun, you see light from eight minutes ago." },
-            { "What would happen without the Sun?", "Without the Sun, Earth would be dark and frozen. The Sun gives us daylight. When your side of Earth faces the Sun, it is day. Its heat keeps the air warm and the oceans liquid. Plants use sunlight to make their food, and animals eat the plants. So almost every living thing needs the Sun. But never look straight at it, because it can hurt your eyes." },
-        },
-        more = {
+        sections = {
             { "What is the Sun made of?", "The Sun is made mostly of two gases, hydrogen and helium. It is so hot inside that the gas turns into plasma, a glowing gas that carries electricity. The Sun’s own gravity pulls all this gas inward and holds it together in a ball. Gravity is the pull that draws things toward each other, the same pull that makes a dropped spoon fall to the floor.",
                 "The Sun is huge compared with Earth. It is about 100 times wider, so if Earth were a pea, the Sun would be about as wide as an open umbrella. About 1.3 million Earths could fit inside it. The Sun also holds almost all the stuff in our solar system, 99.8 percent of it. All the planets, moons, and space rocks together make up the tiny bit that is left." },
             { "Where does the Sun’s energy come from?", "The Sun’s energy comes from its core, the hot, heavy center. The core is about 15 million degrees Celsius, far hotter than the surface. There, the Sun’s weight squeezes the gas so hard that tiny pieces of hydrogen smash together and join to make helium. This joining is called nuclear fusion, and it gives off huge amounts of energy.",
@@ -303,18 +182,6 @@ return {
             { "What is the glowing loop in the picture?", "The glowing loop in the picture is called a prominence. A prominence is a giant cloud of hot, glowing gas that floats above the Sun’s surface. It is held up by the Sun’s magnetism, the same invisible force that makes a magnet stick to a fridge. Because the Sun’s magnetism twists into loops, the gas often curves into an arch.",
                 "The gas in a prominence is a little cooler and thicker than the gas around it. Sometimes a prominence breaks loose and flings a cloud of gas out into space. If that cloud reaches Earth, it can make the northern and southern lights glow in the night sky. Scientists watch the Sun with special telescopes, so they can see these storms coming. Never try this yourself, because looking at the Sun can hurt your eyes, even with sunglasses.", image = art("sun", "A loop of glowing gas rises above the Sun’s surface.") },
         },
-        words = {
-            { "star", "STAR", "A huge ball of hot, glowing gas in space." },
-            { "gravity", "GRAV-ih-tee", "A pull that draws objects toward each other." },
-            { "prominence", "PROM-ih-nunss", "A huge cloud of glowing gas held up above the Sun’s surface." },
-        },
-        quiz = {
-            question = "Why is it daytime on your side of Earth?",
-            choices = { "The Sun turns on.", "Your side of Earth faces the Sun.", "The Moon makes light." },
-            correct = 2,
-            explanation = "Earth spins, and it is day on the side that faces the Sun.",
-        },
-        related = { "moon", "mars", "rainbows" },
         sources = {
             "https://science.nasa.gov/sun/",
             "https://science.nasa.gov/sun/facts/",
@@ -327,15 +194,9 @@ return {
         title = "Mars",
         question = "Why is Mars red?",
         deck = "Visit the red planet with robot explorers.",
-        fact = "A day on Mars lasts about 40 minutes longer than a day on Earth.",
         keywords = "planet red rover robot solar system dust rust Perseverance",
         image = art("mars", "A rover rolls across the rusty ground on Mars."),
-        first = {
-            { "Why is Mars red?", "Mars looks red because its dirt and rocks are rusty. The ground on Mars has lots of iron in it. Long ago, the iron slowly turned into rust. You may have seen rust on an old bike or nail. On Mars, the wind blows this rusty dust everywhere. The dust even floats high up in the air. That is why people call Mars the red planet." },
-            { "What is Mars like?", "Mars is a cold, dry, and dusty planet. A planet is a big, round world that travels around a star. Mars goes around our Sun, just like Earth does. But Mars is only about half as wide as Earth. It is farther from the Sun, so it gets much colder. Its air is very thin, and we could not breathe it. Wind can stir up dust storms that cover the whole planet." },
-            { "Has anyone been to Mars?", "No person has been to Mars yet, but robots have. We send robots called rovers to drive across the ground. A rover has wheels, cameras, and tools for studying rocks. One rover, called Perseverance, landed on Mars in 2021. It is about as big as a car. It even carried a tiny helicopter that flew 72 times. Maybe one day, people will follow the robots there." },
-        },
-        more = {
+        sections = {
             { "Why is Mars red?", "Mars is red because its rocks and dust are full of rust. The ground holds a lot of iron. When iron reacts with oxygen, it turns into rust, which is reddish brown. A bike left out in the rain rusts in the same way. Rust is a kind of iron oxide.",
                 "Mars is also very dusty, and strong winds lift the fine dust high into the air. Because the dust floats in the sky, the whole planet glows red when we see it from far away. From Earth, you can sometimes spot Mars at night as a reddish dot. So when you see red Mars, you are really looking at rust." },
             { "What is the weather like on Mars?", "Mars is much colder than Earth because it is farther from the Sun. On average, it is about minus 85 degrees Fahrenheit there. That is much colder than the inside of your freezer at home. The air is also very thin and made mostly of carbon dioxide, the gas you breathe out. Thin air cannot hold heat, so warmth escapes quickly at night.",
@@ -347,17 +208,6 @@ return {
             { "What do robots do on Mars?", "Robots on Mars explore the ground and study its rocks. The robots that drive around are called rovers. A rover is a robot car with wheels, cameras, and science tools. The rover Perseverance is about the size of a car. It landed on Mars on February 18, 2021, after a trip of about seven months.",
                 "It landed in Jezero Crater, a giant bowl about 28 miles wide. Billions of years ago, a river ran into this bowl and filled it with a lake. Perseverance drills into the rocks there and stores small samples in tubes. Scientists hope a future mission can bring them to Earth. A small helicopter named Ingenuity rode along and made the first powered flight on another planet." },
         },
-        words = {
-            { "planet", "PLAN-it", "A large, round world that travels around a star." },
-            { "rover", "ROH-ver", "A robot vehicle that drives across the ground of another world." },
-        },
-        quiz = {
-            question = "Why does Mars look red?",
-            choices = { "It is very hot.", "Its dirt has rust in it.", "It is covered in red plants." },
-            correct = 2,
-            explanation = "Rusty dust and rocks give Mars its red color.",
-        },
-        related = { "sun", "volcanoes" },
         sources = {
             "https://science.nasa.gov/mars/",
             "https://science.nasa.gov/mars/facts/",
@@ -372,17 +222,10 @@ return {
         title = "Volcanoes",
         question = "What is inside a volcano?",
         deck = "Mountains that can rumble, smoke, and grow.",
-        fact = "Measured from the sea floor, Mauna Kea in Hawaiʻi is taller than Mount Everest.",
         keywords = "lava magma eruption mountain rock ash fire island Hawaii volcanologist",
         cover = volcano.path,
         image = art("volcano-cutaway", "Magma rises inside the volcano. Once it flows out of the vent, we call it lava."),
-        first = {
-            { "What is inside a volcano?", "Inside a volcano is a path for melted rock from deep below. Far under the ground, it is very hot. It is so hot that some rock melts. Melted rock under the ground is called magma. Magma is lighter than the hard rock around it, so it slowly rises. It can collect in a big space under the volcano. A volcano is a place where magma can reach the top." },
-            { "What happens when a volcano erupts?", "When a volcano erupts, melted rock and gas burst out. To erupt means to burst out suddenly. Once the melted rock comes out, we call it lava. Some volcanoes let lava pour out slowly, like thick syrup. Others explode and throw ash high into the sky. This ash is not soft like ash from a campfire. It is made of tiny, sharp bits of rock and glass.", image = volcano },
-            { "How hot is lava?", "Lava is hot enough to melt gold and iron! The hottest lava is about four times hotter than a kitchen oven. That is why fresh lava glows bright orange and red. As lava cools, it turns dark and hard. Then it becomes new rock. Sometimes lava cools very fast and turns into shiny black glass. Never touch lava, because even cooled rock can be hot inside." },
-            { "Can a volcano build an island?", "Yes, a volcano can build a whole island. It starts deep down on the sea floor. Each eruption adds a new layer of rock. Layer by layer, the volcano grows taller. One day, its top pokes out of the sea. The islands of Hawaiʻi were built this way. Some of their volcanoes are still growing today." },
-        },
-        more = {
+        sections = {
             { "Where does magma come from?", "Magma comes from deep inside Earth, many tens of miles under the ground. Down there, it is hot enough to melt some of the rock. Magma is a mix of melted rock, tiny crystals, and gas. Because magma is lighter than the solid rock around it, it slowly rises, a bit like a bubble rising in water.",
                 "On its way up, magma can pool in a space under a volcano called a magma chamber. Gas in the magma pushes outward, like the fizz in a shaken bottle of soda. When the push grows strong enough, magma finds a weak spot and breaks through. The opening where it comes out is called a vent. That is the moment a volcano erupts." },
             { "Why are some eruptions gentle and others explosive?", "Some eruptions are gentle because their lava is runny and gas can escape easily. Then lava pours out and flows downhill in glowing rivers. Mauna Loa in Hawaiʻi erupts like this. People can usually walk away from these slow lava flows.",
@@ -394,18 +237,6 @@ return {
             { "How do scientists know a volcano may erupt?", "Scientists know because a volcano often gives warning signs before it erupts. These scientists are called volcanologists. As magma moves up, it cracks rock and causes many small earthquakes. Machines called seismometers feel this shaking, even when people cannot.",
                 "Rising magma can also make the ground swell up, like a balloon slowly filling. GPS sensors measure these tiny changes in the ground. Other tools sniff the gases coming out of the volcano. In the United States alone, scientists keep watch on more than 160 volcanoes this way. Their warnings help people get away safely in time." },
         },
-        words = {
-            { "magma", "MAG-muh", "Melted rock under the ground." },
-            { "lava", "LAH-vuh", "Melted rock after it comes out of a volcano. It cools into hard rock." },
-            { "erupt", "ih-RUPT", "To burst out suddenly. A volcano erupts when lava or ash comes out." },
-        },
-        quiz = {
-            question = "What do we call melted rock once it comes out of a volcano?",
-            choices = { "Lava", "Sand", "Ice" },
-            correct = 1,
-            explanation = "Magma is called lava after it flows out of a volcano.",
-        },
-        related = { "mars", "dinosaurs" },
         sources = {
             "https://www.usgs.gov/programs/VHP/about-volcanoes",
             "https://volcanoes.usgs.gov/volcanic_ash/ash.html",
@@ -420,16 +251,9 @@ return {
         title = "Rainbows",
         question = "Where do rainbows come from?",
         deck = "Sunlight and raindrops paint the sky.",
-        fact = "Every rainbow is really a full circle. From the ground, the land hides the bottom half.",
         keywords = "light color rain sun prism weather sky spectrum double rainbow refraction",
         image = art("rainbows", "Look closely: red is on the outside of the rainbow, and violet is on the inside."),
-        first = {
-            { "What color is sunlight?", "Sunlight looks white, but it is really a mix of colors. Red, orange, yellow, green, blue, and violet are all inside it. Most of the time, the colors are mixed together. Then we only see white light. But sometimes something spreads the colors apart. A glass of water in a sunny window can do it. Look for a little band of colors on the wall." },
-            { "Where do rainbows come from?", "Rainbows come from sunlight shining into raindrops. Each raindrop works like a tiny ball of glass. When light goes into the drop, it bends. Each color bends a different amount, so the colors spread out. The light bounces off the back of the drop. Then it comes back out toward your eyes. Millions of drops together make one big rainbow." },
-            { "When can you see a rainbow?", "You can see a rainbow when the Sun is behind you and rain is in front. Rainbows like a low Sun. Look in the morning or late afternoon. When the Sun is high at midday, the rainbow hides below the ground. A rainbow often shows up after a rain shower. The Sun comes out while the rain is still falling far away. So next time it rains, turn your back to the Sun and look!" },
-            { "Why do some rainbows come in pairs?", "Sometimes you can see a second rainbow above the first one. The light bounces twice inside each raindrop. Every bounce makes the light weaker, so the second rainbow is fainter. Its colors are also upside down. Red is on the inside, and violet is on the outside. Look for a darker strip of sky between the two bows." },
-        },
-        more = {
+        sections = {
             { "What is sunlight made of?", "Sunlight is made of many colors mixed together. When they are all mixed, our eyes see plain white light. When something spreads them apart, we see a band of colors called a spectrum. People often list seven colors: red, orange, yellow, green, blue, indigo, and violet.",
                 "In real life, the colors have no sharp edges. Each one slowly melts into the next, so there are many more shades than seven. Many people today leave out indigo and just say blue and violet. A glass prism can spread sunlight into a spectrum, and so can a single raindrop. That is where every rainbow begins." },
             { "How does a raindrop make a rainbow?", "A raindrop makes a rainbow by bending and bouncing sunlight. First, light bends as it goes from the air into the water. This bending is called refraction. Each color bends a slightly different amount, so the colors begin to fan out. Then the light hits the back of the drop and reflects, which means it bounces back.",
@@ -441,18 +265,6 @@ return {
             { "Can you make a rainbow?", "Yes, you can make your own rainbow on a sunny day. Stand with your back to the Sun, so your shadow points away from it. Then spray a fine mist of water from a garden hose in front of you. The tiny drops in the mist act just like raindrops.",
                 "Watch the mist carefully, and a small rainbow may appear. You can also make colors indoors. Put a glass of water on a sunny windowsill, and look for a band of colors on the floor or wall. Each one is a tiny spectrum, made the same way as a real rainbow." },
         },
-        words = {
-            { "spectrum", "SPEK-trum", "The band of colors you see when white light is spread apart." },
-            { "refraction", "rih-FRAK-shun", "The bending of light when it goes from one thing, like air, into another, like water." },
-            { "reflect", "rih-FLEKT", "To bounce back. A mirror reflects light." },
-        },
-        quiz = {
-            question = "Where should the Sun be when you look for a rainbow?",
-            choices = { "In front of you", "Behind you", "Under the ground" },
-            correct = 2,
-            explanation = "Sunlight comes from behind you, bends in the raindrops, and comes back to your eyes.",
-        },
-        related = { "sun", "water" },
         sources = {
             "https://www.metoffice.gov.uk/weather/learn-about/weather/optical-effects/rainbows",
             "https://www.weather.gov/fgz/Rainbow",
@@ -464,16 +276,9 @@ return {
         title = "Magnets",
         question = "How does a magnet pull?",
         deck = "An invisible push and pull.",
-        fact = "Sea turtles can sense Earth’s magnetism and use it to find their way across the ocean.",
         keywords = "magnet metal iron compass north south pull push force magnetic field poles lodestone electromagnet",
         image = art("magnets", "Steel paper clips stick to the ends of a horseshoe magnet."),
-        first = {
-            { "How can a magnet pull without touching?", "A magnet pulls with a force you cannot see. A force is a push or a pull. Around every magnet is an invisible space where its force works. When a paper clip comes into this space, the magnet pulls it close. The paper clip can jump the last little bit by itself! The pull gets weaker as you move farther away. Try it and see how close you must get." },
-            { "What does a magnet stick to?", "A magnet sticks to iron and to steel, which has iron in it. A few other metals, like nickel, stick too. Your fridge door has steel in it, so magnets hold on to it. But many things do not stick at all. Wood, plastic, paper, and glass stay put. Even some metals do not stick, like aluminum cans. Try testing things around your home to find out." },
-            { "Why do magnets sometimes push away?", "Magnets push away when two matching ends meet. Every magnet has two ends, called poles. One is the north pole, and one is the south pole. A north pole and a south pole pull together. But two north poles push apart. Two south poles push apart too. Hold two magnets close, and you can feel them push!" },
-            { "Why does a compass point north?", "A compass points north because Earth acts like a giant magnet. The needle in a compass is a tiny magnet. It can spin around freely. Earth’s magnet pulls on the needle and turns it. So one end always points north. Sailors and travelers have used compasses for hundreds of years. With a compass, you can find your way even on a cloudy night." },
-        },
-        more = {
+        sections = {
             { "How can a magnet pull without touching?", "A magnet can pull without touching because a magnetic field spreads out around it. A magnetic field is the space around a magnet where its force works. A force is a push or a pull, and you cannot see this one. You can still notice it, though, when a paper clip slides toward a magnet across the table.",
                 "The field is strongest close to the magnet’s ends, called poles, and gets weaker farther away. That is why a paper clip jumps only when it gets close. The force can even work through thin things. For example, a magnet under a sheet of paper can drag a paper clip on top of it. In the same way, a fridge magnet holds a drawing tight against the door." },
             { "Why do some metals stick to magnets?", "Some metals stick because of how their tiniest parts are lined up. Iron, nickel, and cobalt are strongly magnetic. Inside them, tiny particles called electrons spin like little tops. In these metals, most of the electrons spin the same way, so their pull adds up. Steel contains a lot of iron, so magnets stick to steel too.",
@@ -485,18 +290,6 @@ return {
             { "Can electricity make a magnet?", "Yes, electricity can make a magnet. When electricity flows through a coil of wire, the coil becomes a magnet. This kind of magnet is called an electromagnet. When the electricity is switched off, its magnetism disappears.",
                 "That switch makes electromagnets very useful. For example, a big electromagnet on a crane can lift heavy iron and steel scraps, then let go when the power goes off. Electromagnets also work inside speakers, electric motors, and doorbells. Many machines in your home have one hidden inside. So magnets are not just toys on the fridge. They help run the world around you every day." },
         },
-        words = {
-            { "pole", "POHL", "One of the two ends of a magnet, where its pull is strongest." },
-            { "attract", "uh-TRAKT", "To pull something closer." },
-            { "magnetic field", "mag-NET-ik FEELD", "The space around a magnet where its push or pull works." },
-        },
-        quiz = {
-            question = "What happens when you put two north poles together?",
-            choices = { "They push apart.", "They stick together.", "They change color." },
-            correct = 1,
-            explanation = "Matching poles push away from each other.",
-        },
-        related = { "heart", "sun" },
         sources = {
             "https://www.britannica.com/science/magnet",
             "https://education.nationalgeographic.org/resource/magnetism/",
@@ -509,17 +302,10 @@ return {
         title = "Seeds",
         question = "What is inside a seed?",
         deck = "A whole plant packed into a tiny case.",
-        fact = "Scientists grew a date palm from a seed that was about 2,000 years old.",
         keywords = "plant grow sprout garden flower tree root soil germination dispersal fruit",
         cover = sprout.path,
         image = art("seed-cutaway", "Inside a bean seed, the coat protects the baby plant and its stored food."),
-        first = {
-            { "What is inside a seed?", "A seed holds a tiny baby plant, curled up and asleep. Next to the baby plant is a packed lunch of stored food. The baby plant needs this food, because it has no leaves yet. A tough skin called the seed coat wraps around everything. It keeps the seed safe from cold, bumps, and hungry bugs. Open a soaked bean, and you can see the baby plant inside." },
-            { "What does a seed need to grow?", "A seed needs water, air, and the right warmth to sprout. Sprout means to start growing. Many seeds wait through winter, because cold is a bad time to grow. In spring, the seed drinks water and swells up like a sponge. Then its coat cracks, and a little root pokes out. The root grows down, and a shoot grows up toward the light. Soon the first leaves open to catch the sunshine.", image = sprout },
-            { "How do seeds get to new places?", "Plants cannot walk, so their seeds travel in clever ways. Dandelion seeds have fluffy tops that float on the wind like tiny umbrellas. Burrs have little hooks that grab onto animal fur and socks. Birds eat berries and drop the seeds far away. A coconut can float across the sea to a new beach. Moving away helps, because a baby plant needs its own room and light." },
-            { "Can you grow a seed yourself?", "Yes, you can watch a seed wake up at home. Put a bean seed on a damp paper towel. Slide the towel into a clear plastic bag. Keep it warm and damp, because the seed needs water to wake. Look at it every day and draw what you see. Within about a week, a root should poke out first. Then the shoot will follow, reaching up for light." },
-        },
-        more = {
+        sections = {
             { "What are the parts of a seed?", "Every seed has three main parts: a baby plant, a food store, and a coat. The baby plant already has a tiny root and a tiny shoot, folded up tight. Its food is often packed into two thick seed leaves. In a bean, the two halves you can pull apart are those seed leaves, full of food.",
                 "The seed coat works like a raincoat and a suit of armor at once. It keeps the baby plant from drying out, and it guards against bugs and bumps. Because the coat seals the seed so well, the seed can rest for months or longer. That is why farmers can keep dry seeds in sacks all winter and plant them in spring." },
             { "How does a seed wake up?", "A seed wakes up when it gets water, air, and the right warmth. First it soaks up water and swells, until its coat splits open. This first growth is called germination. The tiny root comes out first and grows down, because the young plant needs water and something to hold it in place.",
@@ -529,18 +315,6 @@ return {
             { "Why do some plants grow fruit around their seeds?", "Many plants wrap their seeds in sweet fruit, so that animals will carry them. A bird eats a berry and flies away. Later the seeds come out in its droppings, often far from the parent plant. The hard seed coat keeps the seed safe on its trip through the bird.",
                 "You eat seed packages too. An apple has small brown seeds in its core, and a tomato is full of tiny seeds. A peach hides its seed inside a hard pit. Next time you eat fruit, look for the seeds and count them. Each one holds a baby plant that could grow into a whole new plant." },
         },
-        words = {
-            { "sprout", "SPROWT", "To begin to grow. A sprout is a very young plant." },
-            { "germination", "jur-mih-NAY-shun", "When a seed starts to grow into a new plant." },
-            { "dispersal", "dih-SPUR-sul", "The way seeds spread out away from the plant that made them." },
-        },
-        quiz = {
-            question = "What grows out of a seed first?",
-            choices = { "A flower", "A root", "A fruit" },
-            correct = 2,
-            explanation = "The root grows down first, then a shoot grows up toward the light.",
-        },
-        related = { "bees", "water", "sun" },
         sources = {
             "https://www.britannica.com/science/seed-plant-reproductive-part",
             "https://www.britannica.com/science/germination",
@@ -555,16 +329,9 @@ return {
         title = "Your Heart",
         question = "What does your heart do all day?",
         deck = "The strong muscle that keeps you going.",
-        fact = "Your heart beats about 100,000 times every day.",
         keywords = "body blood muscle beat pulse health exercise chambers valves lungs oxygen",
         image = art("heart", "Put a hand on your chest. Can you feel your heart beating?"),
-        first = {
-            { "Where is your heart?", "Your heart sits in the middle of your chest, tucked between your two lungs. Make a fist, and you will see about how big it is. Your ribs wrap around it like a strong cage. The heart is a muscle, just like the muscles in your arms. But it never stops to rest, because your body needs it every second. It squeezes all day and all night, even while you sleep." },
-            { "What does your heart do all day?", "Your heart pumps blood all around your body. Each squeeze pushes blood into long tubes that reach your toes and your fingers. Blood carries food and oxygen to every part of you. Oxygen is a gas in the air you breathe. Your muscles and brain need both to work. Then the blood comes back to the heart for another trip. In one day your heart beats more times than you could ever count." },
-            { "Why does your heart go lub-dub?", "Your heart goes lub-dub because little doors inside it snap shut. These doors are called valves. They open to let blood through and close so it cannot flow back. The first shut makes the lub sound. The second shut makes the dub sound. Put your ear on a friend’s chest, and you may hear it too. Doctors listen to these sounds to check that a heart is healthy." },
-            { "Why does your heart beat faster when you run?", "When you run, your heart beats faster to keep up. Your busy muscles need more oxygen, so your heart pumps blood faster. You can feel this yourself. Press two fingers gently on the inside of your wrist. The little beats you feel are your pulse. Count them, then jump for a minute and count again. Playing and running help keep your heart strong." },
-        },
-        more = {
+        sections = {
             { "What is inside your heart?", "Your heart has four rooms inside, called chambers. The two top chambers collect blood as it flows in from your body and lungs. The two bottom chambers are the strong pumps that push blood back out. A wall of muscle runs down the middle and keeps the right side and the left side apart.",
                 "Between the chambers sit valves, which work like doors that swing only one way. They open to let blood pass, then snap shut so it cannot flow backward. When they close, they make the lub-dub sound. The lub is the first set of doors shutting, and the dub is the second. Doctors listen to these sounds to check how well your heart is working." },
             { "Why does blood go to your lungs?", "Blood goes to your lungs to pick up oxygen. Oxygen is a gas in the air that every part of your body needs to stay alive. The right side of your heart pumps tired blood, which has used up its oxygen, to your lungs. There the blood picks up fresh oxygen from the air you breathe in.",
@@ -574,18 +341,6 @@ return {
             { "Why does your heart beat faster when you run?", "Your heart beats faster when you run, because your muscles need more oxygen. Working muscles use up oxygen quickly, so your heart must deliver blood more often. For a grown-up at rest, a normal heart rate is 60 to 100 beats in one minute. That means about one or two beats each time a clock ticks one second.",
                 "You can measure your own heart rate, called your pulse. Press two fingers gently on the inside of your wrist and count the beats for 30 seconds. Double that number to get your beats in one minute. Then run in place for a minute and count again. Your number will jump, and it slowly drops back as you rest. Playing and exercise help keep your heart strong." },
         },
-        words = {
-            { "pulse", "PULSS", "The beat you can feel as your heart pushes blood through your body." },
-            { "oxygen", "OK-sih-jun", "A gas in the air that your body needs to live." },
-            { "valve", "VALV", "A little door in the heart that lets blood flow only one way." },
-        },
-        quiz = {
-            question = "What does your heart push through your body?",
-            choices = { "Air", "Water", "Blood" },
-            correct = 3,
-            explanation = "Each beat pushes blood through the blood vessels.",
-        },
-        related = { "magnets", "bees" },
         sources = {
             "https://www.nhlbi.nih.gov/health/heart/anatomy",
             "https://www.nhlbi.nih.gov/health/heart/blood-flow",
@@ -598,16 +353,9 @@ return {
         title = "The Pyramids",
         question = "How did Egyptians build the pyramids?",
         deck = "Follow a block of stone from the ground up.",
-        fact = "A boat crew’s log from ancient Egypt still tells us about stone deliveries for the Great Pyramid.",
         keywords = "egypt egyptian giza khufu pharaoh limestone ramp sledge nile ancient builders tomb quarry merer",
         image = art("pyramids", "An artist’s idea of how a crew might have pulled a stone block up a ramp at Giza."),
-        first = {
-            { "Why did Egyptians build the pyramids?", "The pyramids were giant tombs for Egypt’s kings. A king of Egypt was called a pharaoh. They built them because they believed a king lived on after death. So they made him a huge, safe home for his body. The biggest is the Great Pyramid at Giza, built for King Khufu. It was once about as tall as a 40-story skyscraper. Workers built it about 4,500 years ago." },
-            { "How did workers move the stones?", "Teams pulled blocks of stone too heavy for you to lift. Many blocks weighed more than a car. Workers tied each block onto a wooden sled with ropes. Then they dragged the sled across the sand. An old painting shows a worker pouring water on the sand in front. Damp sand helps, because it turns firm and the sled glides. For some stones, part of the trip was by boat on the Nile." },
-            { "How did the stones get so high?", "Workers probably pulled stones up ramps to reach the next layer. A ramp is a sloping path, like a long hill of mud and stone. It lets a crew pull a stone up a little at a time. Each pull is easier, because the slope shares the work of lifting. Try pushing a toy car up a book propped on a box. We still do not know just how the ramps went." },
-            { "Who built the pyramids?", "Thousands of Egyptian workers built the pyramids, and they were paid. We know because scientists found the town where many of them lived. They found ovens for baking bread and bones from meat they ate. Workers split into teams, and each team had a name. The teams worked together, like players on a sports team. Some workers were hurt, and doctors helped them heal." },
-        },
-        more = {
+        sections = {
             { "Why did the pharaohs want pyramids?", "The pyramids were tombs, built to protect a pharaoh’s body and treasures forever. A pharaoh was a king of ancient Egypt. Egyptians believed that a king lived on after death and needed a safe home for his spirit. Inside, builders made rooms and passages that led to the king’s burial chamber.",
                 "The Great Pyramid at Giza was built for King Khufu, about 4,500 years ago. When it was new, it rose about 481 feet, or 146 meters, about as tall as a 40-story building. It is made of more than two million blocks of stone. If you set one block every minute, day and night, you would need about four years to place them all." },
             { "Where did the stone come from?", "Most of the stone for the Great Pyramid came from quarries right next to Giza. A quarry is a place where workers cut stone out of the ground. They used copper chisels, wooden wedges, and hard stone hammers to split the rock into blocks. The finest white limestone, used for the smooth outer coat, came from Tura, across the Nile River.",
@@ -617,18 +365,6 @@ return {
             { "Why are we still curious about the ramps?", "Builders probably used ramps, because a ramp lets a crew pull a stone up a little at a time. A ramp is a sloping path between a low place and a higher one. The builders set blocks in layers, and each layer was smaller than the one beneath it. A straight ramp could have reached the lower layers easily.",
                 "Higher up, a straight ramp would have had to grow very long. Did the builders wrap their ramps around the pyramid, like a path circling a hill? Did they build ramps inside, or lift blocks with levers? Experts still argue, because the builders cleared most of their ramps away. The clues leave room for more than one answer." },
         },
-        words = {
-            { "pharaoh", "FAIR-oh", "A king of ancient Egypt." },
-            { "ramp", "RAMP", "A sloping path between a low place and a higher one." },
-            { "sledge", "SLEJ", "A wooden sled used to drag something heavy along the ground." },
-        },
-        quiz = {
-            question = "How could a ramp help the pyramid builders?",
-            choices = { "It could carry a boat across a river.", "It could break a big stone in half.", "It could let a crew pull stone up a little at a time." },
-            correct = 3,
-            explanation = "A slope lets a crew pull a stone up to the next level.",
-        },
-        related = { "dinosaurs", "earth-layers" },
         sources = {
             "https://www.ifao.egnet.net/uploads/publications/divers/MIFAO136_ann_01.pdf",
             "https://gizamedia.rc.fas.harvard.edu/documents/lehner_treasures_032-045.pdf",
@@ -644,17 +380,10 @@ return {
         title = "Inside Earth",
         question = "What’s inside Earth?",
         deck = "Take a trip from the ground to Earth’s hot center.",
-        fact = "Some rock deep in the mantle moves about as slowly as your fingernails grow.",
         keywords = "planet interior layers crust mantle outer core inner core iron rock earthquake geology compass magnetic seismic",
         cover = "encarta/Images/earth-cover.jpg",
         image = art("earth-layers", "From the outside in: thin crust, thick mantle, liquid outer core, and solid inner core. The crust is drawn thicker so you can see it."),
-        first = {
-            { "What is under your feet?", "Under your feet is a thin shell of rock called the crust. It covers Earth like the shell on a boiled egg. Mountains, oceans, and your home all sit on top of it. Under the oceans, the crust is only about as thick as a one-hour walk. Under the land, it is much thicker. Still, it is thin compared to Earth, because our planet is so huge." },
-            { "What is the mantle?", "The mantle is a thick layer of hot rock under the crust. It is the biggest layer inside Earth by far. The rock is solid, but it is so hot that it slowly flows. It bends and creeps very slowly, like stiff clay. It moves so slowly that you would never see it. This slow creep helps shove big pieces of the crust around." },
-            { "What is at the center of Earth?", "At the center of Earth is the core, a huge ball of metal. It is made mostly of iron. The outer core is so hot that its metal flows like a liquid. At the very center is the solid inner core. It is almost as hot as the surface of the Sun! It stays solid because the weight above squeezes it so hard." },
-            { "How far is it to the center of Earth?", "The center of Earth is about 6,400 kilometers below you. That is about 4,000 miles. A car driving nonstop on a highway would need almost three days to get there. But nobody can really go there, because it is far too hot. No drill has ever come close. Scientists learn about the inside by listening to earthquake shakes." },
-        },
-        more = {
+        sections = {
             { "How thick are Earth’s layers?", "Earth has four main layers, and they get hotter as you go down. The crust is the thinnest. Under the oceans it is only about 5 kilometers thick, about as far as you could walk in an hour. Under the continents it averages about 30 kilometers, and it is even thicker beneath tall mountains.",
                 "Below the crust lies the mantle, which is about 2,900 kilometers thick. It is by far the biggest layer. If Earth were split into ten equal scoops, the mantle would fill more than eight of them. Under the mantle comes the metal core, and it has two parts." },
             { "Why is the inner core solid?", "The inner core is solid because it is squeezed so hard. As you go deeper, it gets hotter, and the rock and metal are pressed harder. This squeeze is called pressure. At the center, the weight of all the layers above presses in from every side, like a whole mountain standing on a single coin.",
@@ -664,18 +393,6 @@ return {
             { "How can we tell what is down there?", "We learn what is inside Earth by watching how earthquake waves travel through it. Tap one end of a table while you rest your other hand on the far end. You may feel the shake travel through the wood. Earthquakes send shakes like that through the whole planet, called seismic waves.",
                 "Scientists in many countries record when the waves arrive. Some waves travel through solid rock but cannot cross liquid. On the far side of Earth from a big earthquake, those waves never show up, because the liquid outer core blocks them. Other waves bend and change speed as they pass from layer to layer, like light bending in a glass of water. Putting all these clues together, scientists drew a map of Earth’s insides without ever going there." },
         },
-        words = {
-            { "mantle", "MAN-tul", "The thick layer of hot rock between Earth’s crust and its core." },
-            { "pressure", "PRESH-er", "How hard something is pushed or squeezed." },
-            { "seismic wave", "SIZE-mik wayv", "A shake that travels through Earth, often from an earthquake." },
-        },
-        quiz = {
-            question = "Which layer of Earth is made of liquid metal?",
-            choices = { "The crust", "The outer core", "The inner core" },
-            correct = 2,
-            explanation = "Metal flows in the outer core. The inner core is solid.",
-        },
-        related = { "volcanoes", "magnets" },
         sources = {
             "https://pubs.usgs.gov/gip/dynamic/inside.html",
             "https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma",

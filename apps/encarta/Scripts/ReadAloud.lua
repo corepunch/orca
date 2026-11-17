@@ -55,11 +55,10 @@ function ReadAloud:stop()
     self.error.Visible = false
 end
 
-function ReadAloud:setTrack(articleID, level, blocks)
+function ReadAloud:setTrack(name, blocks)
     self:stop()
     self.track = nil
     self.words = {}
-    local name = articleID .. "-" .. level
     local recording = recordings[name]
     self.play.Visible = false
     if not recording or #recording ~= #blocks then return end
