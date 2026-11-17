@@ -34,6 +34,8 @@ make test-encarta
 
 Follow the article voice in the repository's `AGENTS.md` (*Encarta: how to
 write articles*).
+For length and section structure, follow [Writing Encarta articles](WRITING.md):
+each section answers its question in five to ten sentences, not two.
 
 Add one record to [Content/Articles.lua](Content/Articles.lua). It appears
 automatically in browse and search, and can be linked from other articles by ID.

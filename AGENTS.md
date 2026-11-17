@@ -126,6 +126,9 @@ After `.cgen` changes, run `make modules`.
 series, not from Wikipedia. An article is a guided discovery for a curious
 6–10-year-old, not a neutral summary. The field layout lives in
 [the Encarta README](apps/encarta/README.md#write-another-article).
+Length targets, the section recipe and the *Was ist Was* analysis live in
+[Writing Encarta articles](apps/encarta/WRITING.md); a two-sentence section
+is too short.
 
 - Make every section heading a question a child would actually ask
   ("Why does Mars look red?", "Can a penguin fly?"), and answer it in the
