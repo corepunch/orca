@@ -79,6 +79,11 @@ The model and tools are needed only to regenerate the audio.
 python3 apps/encarta/Tools/generate_narration.py /path/to/en_US-kristin-medium.onnx
 ```
 
+The generator records every article, and only moon, octopus and water are
+bundled today. If piper reports a missing `espeak-ng-data/phontab` under a
+build path, its install path is too long for espeak; install it in a shorter
+folder.
+
 ## Design reference
 
 [Microsoft’s Encarta guide](https://download.microsoft.com/documents/uk/athome/SM_Learn_5MinEncarta_F.pdf)

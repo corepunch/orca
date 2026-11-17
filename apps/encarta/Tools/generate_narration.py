@@ -17,6 +17,9 @@ WORDS = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)*")
 EXTRA_PRONUNCIATIONS = {
     "octopuses": "AA K T AH P UH S IH Z",
     "octopus's": "AA K T AH P UH S IH Z",
+    "parrot's": "P EH R AH T S",
+    "clamshells": "K L AE M SH EH L Z",
+    "dulls": "D AH L Z",
 }
 
 
