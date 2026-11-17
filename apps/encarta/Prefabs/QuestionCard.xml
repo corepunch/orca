@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Button Height="266" class="card">
+<Button AspectRatio="1.4" class="card">
     <Node2D IgnoreHitTest="true">
-        <VectorView Name="Icon" Width="56" Height="56" MarginLeft="auto" MarginRight="auto"
+        <VectorView Name="Icon" Width="44" Height="44" MarginLeft="auto" MarginRight="auto"
             MarginTop="auto" MarginBottom="auto" class="cover-icon" IgnoreHitTest="true"/>
         <ImageView Name="Art" Stretch="UniformToFill" Visible="false" class="cover-art" IgnoreHitTest="true"/>
         <ImageView Src="encarta/Images/cover-shade.png" Stretch="Fill" class="cover-art" IgnoreHitTest="true"/>

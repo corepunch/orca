@@ -4,22 +4,22 @@
     StyleSheet="encarta/Styles/app.css">
     <Node2D>
         <StackView Name="LibraryScroll" OverflowY="Scroll" class="library">
-            <Grid Columns="1fr auto" class="top">
+            <Grid Columns="auto 1fr auto" Spacing="18" AlignItems="Center" class="top">
                 <TextBlock class="wordmark">Encarta</TextBlock>
+                <Grid Columns="1fr auto" Spacing="8">
+                    <Input Name="Search" PlaceholderText="What do you want to know?" class="search"/>
+                    <Button Name="ClearSearch" Text="Clear" Visible="false" class="clear"/>
+                </Grid>
                 <Grid Columns="auto auto" Spacing="4" class="views">
                     <Button Name="ShowWall" Text="Questions" class="view"/>
                     <Button Name="ShowShelf" Text="Bookshelf" class="view"/>
                 </Grid>
             </Grid>
-            <Grid Columns="1fr auto" Spacing="10">
-                <Input Name="Search" PlaceholderText="What do you want to know?" class="search"/>
-                <Button Name="ClearSearch" Text="Clear" Visible="false" class="clear"/>
-            </Grid>
             <StackView Name="Categories" Direction="Horizontal" class="chips"/>
-            <Node2D Name="Featured" Height="250" class="feature">
+            <Node2D Name="Featured" Height="176" class="feature">
                 <ImageView Name="FeaturedImage" Src="encarta/Images/octopus.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
                 <StackView JustifyContent="End" AlignItems="Start" class="feature-frame">
-                    <StackView Width="520" class="feature-copy">
+                    <StackView Width="460" class="feature-copy">
                         <TextBlock Name="FeaturedTag" class="feature-tag">STORY OF THE DAY  ·  ANIMALS</TextBlock>
                         <TextBlock Name="FeaturedQuestion" class="feature-question" WordWrap="true"/>
                         <Button Name="OpenFeatured" Text="Find out  ›" class="feature-button"/>
@@ -33,11 +33,11 @@
             <TextBlock Name="EmptyResults" Visible="false" class="empty" WordWrap="true">
                 Nothing yet. Try a word like “moon”, “rain”, or “animals”.
             </TextBlock>
-            <Grid Name="Topics" Spacing="14">
-                <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr 1fr")</BindingExpression>
+            <Grid Name="Topics" Spacing="12">
+                <BindingExpression Target="Grid.Columns">IF(STEP(1100, {Screen.Width}), "1fr 1fr 1fr 1fr 1fr", IF(STEP(700, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr"))</BindingExpression>
             </Grid>
-            <Grid Name="Shelf" Spacing="18" Visible="false">
-                <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr")</BindingExpression>
+            <Grid Name="Shelf" Spacing="12" Visible="false">
+                <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "1fr 1fr 1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr")</BindingExpression>
             </Grid>
         </StackView>
 

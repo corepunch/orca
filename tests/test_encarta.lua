@@ -61,7 +61,7 @@ assert(library.Visible and not reader.Visible)
 assert(control("ResultCount").Text == "15 ARTICLES" and count(wall) == 15 and wall.Visible and not shelf.Visible)
 assert(control("CatalogTitle").Text == "Big questions")
 local card = control("Open_mars", wall)
-assert(card.ActualWidth > 200 and card.ActualHeight == 266, "four illustrated question cards per row in landscape")
+assert(card.ActualWidth > 200 and math.abs(card.ActualWidth / card.ActualHeight - 1.4) < 0.02, "four landscape question cards per row")
 assert(control("Question", card).Text == "Why is Mars red?")
 local pyramidCover = control("Art", control("Open_pyramids", wall))
 local earthCover = control("Art", control("Open_earth-layers", wall))
@@ -69,7 +69,7 @@ assert(pyramidCover.Visible and pyramidCover.Src == "encarta/Images/Thumbs/pyram
 assert(earthCover.Visible and earthCover.Src == "encarta/Images/Thumbs/earth-cover.jpg"
     and earthCover.ActualHeight == control("Open_earth-layers", wall).ActualHeight, "art fills the question card")
 assert(search.ActualHeight >= 44 and control("OpenFeatured").ActualHeight >= 44)
-assert(control("FeaturedImage").ActualWidth > 900 and control("FeaturedImage").ActualHeight == 250)
+assert(control("FeaturedImage").ActualWidth > 900 and control("FeaturedImage").ActualHeight == 176)
 local background = card.BackgroundColor
 assert(background.B > 0.5 and background.R < 0.3, "space cards resolve the packaged category color")
 

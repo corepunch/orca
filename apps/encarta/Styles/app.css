@@ -1,11 +1,11 @@
 /* Question wall: a night-blue library, white reading pages, category colors. */
 
 /* ---------- library ---------- */
-.library { padding: 22 30 36; gap: 16; background-color: var(--night); }
+.library { padding: 16 24 28; gap: 12; background-color: var(--night); }
 .reader { background-color: var(--night); }
 .wordmark {
   font-family: Noto Serif;
-  font-size: 26;
+  font-size: 24;
   font-weight: bold;
   color: var(--white);
   text-vertical-align: center;
@@ -24,19 +24,19 @@
 .view.view-on, .view.view-on:hover, .view.view-on:active { color: var(--ink); background-color: var(--white); }
 
 .search {
-  min-height: 72;
-  padding: 8 24;
-  border-radius: 22;
+  min-height: 44;
+  padding: 4 16;
+  border-radius: 14;
   background-color: var(--white);
-  font-size: 26;
+  font-size: 17;
   color: var(--ink);
   placeholder-color: var(--muted);
 }
 .search:focus { ring: 0 3 var(--sun); }
 .clear {
-  min-height: 72;
-  padding: 0 22;
-  border-radius: 22;
+  min-height: 44;
+  padding: 0 16;
+  border-radius: 14;
   font-size: 16;
   font-weight: bold;
   color: var(--white);
@@ -44,13 +44,13 @@
 }
 .clear:hover, .clear:active { background-color: var(--night-line); }
 
-.chips { gap: 8; margin-bottom: 4; }
+.chips { gap: 8; }
 .chip {
-  min-height: 40;
-  padding: 0 16;
-  border-radius: 20;
+  min-height: 36;
+  padding: 0 14;
+  border-radius: 18;
   border: 2 solid var(--night-line);
-  font-size: 15;
+  font-size: 14;
   font-weight: bold;
   color: var(--white);
   background-color: var(--night);
@@ -58,13 +58,13 @@
 .chip:hover { background-color: var(--night-raised); }
 .chip.chip-on, .chip.chip-on:hover { color: var(--ink); background-color: var(--white); border-color: var(--white); }
 
-.feature { border-radius: 22; overflow: hidden; background-color: var(--night-raised); }
-.feature-frame { padding: 18; }
-.feature-copy { padding: 18 22; gap: 6; border-radius: 16; background-color: #091020D9; }
+.feature { border-radius: 16; overflow: hidden; background-color: var(--night-raised); }
+.feature-frame { padding: 14; }
+.feature-copy { padding: 12 16; gap: 4; border-radius: 12; background-color: #091020D9; }
 .feature-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
-.feature-question { font-size: 32; line-height: 38; font-weight: bold; color: var(--white); }
+.feature-question { font-size: 24; line-height: 29; font-weight: bold; color: var(--white); }
 .feature-button {
-  min-height: 46;
+  min-height: 44;
   margin-top: 4;
   margin-right: auto;
   padding: 0 20;
@@ -76,7 +76,7 @@
 }
 .feature-button:hover, .feature-button:active { background-color: var(--sun-light); }
 
-.section-title { font-size: 22; font-weight: bold; color: var(--white); text-vertical-align: center; }
+.section-title { font-size: 19; font-weight: bold; color: var(--white); text-vertical-align: center; }
 .count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--mist); text-vertical-align: center; }
 .empty { font-size: 18; color: var(--mist); }
 
@@ -85,11 +85,11 @@
 .card:hover, .cover:hover, .card:focus, .cover:focus { ring: 0 3 var(--sun); }
 .cover-art { border-radius: 8; }
 .cover-icon { color: #FFFFFF59; }
-.cover-copy { padding: 14 14 16; gap: 5; }
+.cover-copy { padding: 10 12 12; gap: 3; }
 .cover-title, .card-question { font-family: Noto Serif; font-weight: bold; color: var(--white); }
-.cover-title { font-size: 23; line-height: 27; }
-.card-question { font-size: 20; line-height: 25; }
-.card-title { font-size: 13; line-height: 17; color: var(--white); }
+.cover-title { font-size: 18; line-height: 22; }
+.card-question { font-size: 17; line-height: 21; }
+.card-title { font-size: 12; line-height: 15; color: var(--white); }
 
 /* ---------- reader ---------- */
 .pane { padding: 26 20 20 24; gap: 6; overflow: hidden; }
