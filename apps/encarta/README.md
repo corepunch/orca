@@ -4,12 +4,12 @@ An iPad-first, offline encyclopedia for emerging readers, written in the
 spirit of the *Was ist Was* books: every topic starts from a question a child
 would ask. The home screen is a wall of illustrated questions, or a bookshelf
 of illustrated covers, filtered by category or search. An article is read one
-question per page, then a “Did you know?” page with the word lab, then a short
-quiz. The library has 15 illustrated articles. Search, both reading levels, word
-definitions, and reading checks work without a connection. Tap **Read aloud** in the reader to listen to the selected level.
-The article follows the recording and marks each spoken word. Use **Pause**
-and **Resume** to take a break, or **Stop** to start over. The app needs no
-account or service.
+question per page, with a picture or diagram where it helps answer the
+question. The library has 15 illustrated articles, and search and reading work
+without a connection. Articles with a recording show **Read aloud** in the
+reader. The article follows the recording, turns the page with it, and marks
+each spoken word. Use **Pause** and **Resume** to take a break, or **Stop** to
+start over. The app needs no account or service.
 
 ## Run it
 
@@ -38,7 +38,7 @@ For length and section structure, follow [Writing Encarta articles](WRITING.md):
 each section answers its question in five to ten sentences, not two.
 
 Add one record to [Content/Articles.lua](Content/Articles.lua). It appears
-automatically in browse and search, and can be linked from other articles by ID.
+automatically in browse and search.
 Keep the layout in [Screens/Library.xml](Screens/Library.xml) and [Prefabs/](Prefabs/),
 and the visual treatment in [Styles/app.css](Styles/app.css).
 
@@ -46,13 +46,9 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 | --- | --- |
 | `id`, `title`, `category`, `deck`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>` and `.chip-<slug>` rule in the stylesheet, and an icon in `Icons/`. |
 | `question` | The cover question shown on the wall and the bookshelf, such as “Why is Mars red?”. |
-| `fact` | One astonishing, checkable “Did you know?” sentence. |
 | `cover` (optional) | A bundled cover path for the Questions overview and Bookshelf. Leave it out to reuse the article's illustration. If neither is supplied, the cover uses the category icon. |
-| `first`, `more` | Two versions of the same topic. Each section is a question heading followed by one or more paragraphs, and is shown as its own page. A section can also have a named `image = { path = …, caption = … }` field. Use this for a picture or diagram that helps answer that question. |
-| `image` (optional) | A bundled image path and a plain-language caption. Used on the first question of either reading level unless that section specifies its own image. |
-| `words` | Word, plain pronunciation guide, and meaning in context. Pick words used in the topic. |
-| `quiz` | One question with choices, a 1-based correct choice, and a short explanation. Make sure either reading level gives enough information to answer it. |
-| `related` | IDs of other articles in the bundle. |
+| `sections` | The article body. Each section is a question heading followed by one or more paragraphs, and is shown as its own page. A section can also have a named `image = { path = …, caption = … }` field. Use this for a picture or diagram that helps answer that question. |
+| `image` | A bundled image path and a plain-language caption. Used on the first question unless that section specifies its own image, and as the cover when there is no `cover`. |
 | `sources` | References for editorial review. The app never opens or fetches these URLs. |
 
 Keep artwork under [Images/](Images/) as landscape 3:2 JPEGs at 1536×1024.
@@ -64,10 +60,11 @@ the painted illustrations and diagrams.
 
 ## Update a recording
 
-Each reading level has a WAV recording and word timings under `Narration/`.
+A narrated article has a WAV recording, `Narration/<id>.wav`, and word
+timings keyed by its ID in `Narration/Timings.lua`.
 The generator reads headings and paragraphs directly from `Content/Articles.lua`.
 The app checks the transcript before showing the Read aloud button. Regenerate
-the recordings after changing a heading or paragraph.
+the recording after changing a heading or paragraph.
 
 Run the generator on macOS with Python 3.12, `piper-tts==1.3.0`,
 `pocketsphinx==5.0.4`, and the Kristin medium voice and adjacent ONNX config.
@@ -90,9 +87,9 @@ folder.
 shows a searchable index, text with related links, and a separate area for
 optional media. [Microsoft’s Encarta Kids announcement](https://news.microsoft.com/source/2004/07/07/microsoft-encarta-provides-fun-features-to-a-new-generation-of-students/)
 describes a separate library of articles for children, with pictures, color,
-and themed categories. This app keeps the shared article structure and links.
-Its two reading levels, Word Lab, and comprehension checks are new choices for
-learning to read.
+and themed categories. This app keeps the searchable library and the
+separate media area, and shapes each article as a series of questions for
+children who are learning to read.
 
 [The octopus illustration](Images/octopus.jpg) was created with built-in
 ImageGen and encoded as a JPEG for the offline bundle.
