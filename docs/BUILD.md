@@ -84,6 +84,7 @@ Start with `make ios-run` for the chat app in an
 iPhone simulator, or `make ios-run DEVICE_TYPE=iPad` for an iPad simulator.
 `make ios` builds an arm64 device bundle; `make ios-install` signs, installs,
 and launches it using an installed development profile and identity.
+Add `APP=<name>` to any of these to build `apps/<name>` instead of Chat.
 See [iOS build and deployment](IOS.md) for prerequisites, outputs and options.
 See [Android](ANDROID.md) for `make chat-android` and the NDK/Gradle requirements.
 

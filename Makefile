@@ -443,18 +443,20 @@ test-headless: test-media
 endif
 
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
+# APP=<name> selects apps/<name>; without it, tools/ios/Makefile builds Chat.
 .PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools android
+IOS_APP = $(if $(APP),PROJECT="$(or $(PROJECT),apps/$(APP))" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$(APP))" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $(APP))")
 ios:
-	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos $(IOS_APP) app
 
 ios-sim:
-	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator $(IOS_APP) app
 
 ios-run:
-	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator run
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator $(IOS_APP) run
 
 ios-install:
-	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos $(IOS_APP) install
 
 # Build, sign, install and launch any apps/<name>/package.lua project.
 .PHONY: ios-deploy-force
@@ -485,7 +487,7 @@ ipad: FAMILY_DEVICE = $(IPAD_DEVICE)
 iphone ipad:
 	@test -n "$(APP)" || { echo 'Usage: make $@ APP=<name> (an apps/<name>/package.lua project)'; exit 1; }
 	@test -n "$(or $(DEVICE),$(FAMILY_DEVICE))" || { echo 'Set $(shell echo $@ | tr a-z A-Z)_DEVICE=<UDID-or-name> (see make ios-devices) or pass DEVICE=.'; exit 1; }
-	$(MAKE) $(APP)-ios DEVICE_TYPE=$(DEVICE_FAMILY) DEVICE="$(or $(DEVICE),$(FAMILY_DEVICE))"
+	$(Q)$(MAKE) --no-print-directory $(APP)-ios DEVICE_TYPE=$(DEVICE_FAMILY) DEVICE="$(or $(DEVICE),$(FAMILY_DEVICE))"
 
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
