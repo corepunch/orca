@@ -796,6 +796,7 @@ SV_CMD(GET, binding_functions)
   binding_function(response, "SQRT", "SQRT(x)", "Square root");
   binding_function(response, "POW", "POW(x, y)", "Power");
   binding_function(response, "MOD", "MOD(x, y)", "Modulo");
+  binding_function(response, "NOT", "NOT(x)", "Logical not");
   binding_function(response, "AND", "AND(a, b)", "Logical and");
   binding_function(response, "OR", "OR(a, b)", "Logical or");
   binding_function(response, "EQUAL", "EQUAL(a, b)", "Equality test");
