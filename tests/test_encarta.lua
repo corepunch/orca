@@ -110,6 +110,14 @@ assert(control("Pane").Opacity == 0 and control("ReaderScroll").ActualWidth > 60
 local page = control("ReaderScroll").ActualWidth
 assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
 assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
+local function visibleBody()
+    for section in sections.children do
+        if section.Visible then return control("Title", section), control("Paragraphs", section) end
+    end
+end
+local heading, paragraphs = visibleBody()
+assert(heading.ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
+assert(paragraphs.ActualWidth < page * 0.7, "the answer shares its row with the artwork")
 assert(control("ReadMore").ActualHeight >= 40)
 layout(1024, 768)
 
@@ -186,6 +194,12 @@ assert(control("ArticleTitle").Text == "Octopuses")
 assert(questionImage().Src == "encarta/Images/octopus.jpg")
 click("Step2")
 assert(not questionImage(), "a text-only question does not inherit the previous image")
+layout(768, 1024)
+heading, paragraphs = visibleBody()
+page = control("ReaderScroll").ActualWidth
+assert(heading.ActualWidth > page * 0.9 and paragraphs.ActualWidth > page * 0.9,
+    "a text-only question spreads across the page without an empty picture column")
+layout(1024, 768)
 click("Step5")
 assert(not questionImage(), "art belongs to reading pages")
 click("ReadAloud")

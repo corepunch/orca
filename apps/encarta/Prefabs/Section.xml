@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid AlignItems="Start" class="section">
-    <BindingExpression Target="Grid.Columns">IF(STEP(760, {Screen.Width}), "3fr 2fr", "1fr")</BindingExpression>
-    <StackView class="section-text">
-        <TextBlock Name="Title" HighlightColor="$sun-light" class="question" WordWrap="true"/>
+<StackView class="section">
+    <TextBlock Name="Title" HighlightColor="$sun-light" class="question" WordWrap="true"/>
+    <!-- The picture column exists only while the picture is shown, so an
+         imageless answer spans the full width. Hidden cells take no track. -->
+    <Grid Name="SectionBody" AlignItems="Start" class="section-body">
+        <BindingExpression Target="Grid.Columns">IF(AND(STEP(760, {Screen.Width}), {./SectionMedia/Visible}), "3fr 2fr", "1fr")</BindingExpression>
         <StackView Name="Paragraphs" class="paragraphs"/>
-    </StackView>
-    <StackView Name="SectionMedia" Visible="false" class="media">
-        <ImageView Name="SectionImage" Stretch="Uniform" AspectRatio="1.5" IgnoreHitTest="true" class="media-image"/>
-        <TextBlock Name="SectionCaption" class="hint" WordWrap="true"/>
-    </StackView>
-</Grid>
+        <StackView Name="SectionMedia" Visible="false" class="media">
+            <ImageView Name="SectionImage" Stretch="Uniform" AspectRatio="1.5" IgnoreHitTest="true" class="media-image"/>
+            <TextBlock Name="SectionCaption" class="hint" WordWrap="true"/>
+        </StackView>
+    </Grid>
+</StackView>
