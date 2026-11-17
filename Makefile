@@ -695,6 +695,8 @@ HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-animation-clock
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
+HEADLESS_LUA_TESTS += test-page-control
+$(eval $(call LUA_TEST_RULE,test-page-control,tests/test_page_control.lua,unite))
 
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications

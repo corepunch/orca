@@ -1079,6 +1079,26 @@
         <field name="_drawnFrame" type="uint32">Engine frame that last drew the dots; the animation stops when the indicator is no longer drawn</field>
       </fields>
     </class>
+    <class name="PageControl" parent="Node2D">
+      <summary>Row of dots showing how many pages there are and which one is current</summary>
+      <details>After UIKit's UIPageControl. Each page is an 8-point dot; the current page is a 24-point pill drawn in Foreground, and the others use PageIndicatorColor, or Foreground at 30% opacity when it is unset. The control measures the row of dots and is 26 points tall, centered in its slot. A tap on the left or right half moves one page toward that side, as do the Left and Right keys; both set CurrentPage, so bind it to a PageHost, a scroll position or any page source. PageControl only shows the position: the pages themselves belong to their own container.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonUp"/>
+        <handle message="Node.KeyDown"/>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ForegroundContent"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="NumberOfPages" type="int">Number of pages, one dot each</property>
+        <property name="CurrentPage" type="int">Zero-based index of the current page, kept within NumberOfPages</property>
+        <property name="HidesForSinglePage" type="bool">Draw nothing when there is only one page</property>
+        <property name="PageIndicatorColor" type="color">Color of the dots that are not current; unset uses Foreground at 30% opacity</property>
+      </properties>
+    </class>
     <class name="VectorView" parent="Node2D">
       <summary>Rasterizes SVG icons to tintable alpha-mask textures in UIKit</summary>
       <details>Loads an SVG from an asset path, rasterizes it to an alpha8 bitmap using NanoSVG, and caches the result as a GPU texture. The texture is always treated as a template mask — the inherited Foreground color tints the icon. Unlike ImageView, no query parameters are needed in the Source path.</details>

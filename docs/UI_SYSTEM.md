@@ -267,6 +267,22 @@ orca.async(function()
 end)
 ```
 
+`PageControl` is UIKit's page indicator, after `UIPageControl`, available in
+Lua and XML. It draws one 8-point dot per page (`NumberOfPages`) and the
+current page (`CurrentPage`, zero-based and kept in range) as a 24-point pill
+in the inherited `Foreground`. Other dots use `PageIndicatorColor`, or
+`Foreground` at 30% opacity when it is unset. It measures its row of dots and
+is 26 points tall. A tap on its left or right half, or the Left and Right
+keys, moves one page and writes `CurrentPage`, so observers and bindings see
+it. `HidesForSinglePage` hides it for one page. It only shows the position:
+bind `CurrentPage` to whatever owns the pages, such as a `PageHost` or a
+scroll position.
+
+```xml
+<PageControl Name="Dots" NumberOfPages="5" CurrentPage="{Binding DataContext/Page}"
+    Foreground="$ink" PageIndicatorColor="$page-line"/>
+```
+
 ## Images and viewport notifications
 
 For thumbnail/full stages, queue priority, authenticated delivery and decoder
