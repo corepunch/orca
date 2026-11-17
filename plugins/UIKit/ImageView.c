@@ -203,10 +203,34 @@ HANDLER(ImageView, Object, Destroy)
  *
  *  Local file paths
  *  ----------------
- *  Load synchronously via FS_LoadObject, then start the resource through the
- *  idempotent object lifecycle before exposing its Texture component.
- *  Keep the Object alive in _src_object.
+ *  Load synchronously through the shared-image cache, so a file is decoded
+ *  once however many views show it. Keep the Object alive in _src_object.
  */
+/* Local images are shared by path, so every ImageView showing the same file
+ * reuses one decoded texture instead of decoding and uploading its own copy.
+ * Each entry keeps one reference for the life of the process. */
+#define MAX_SHARED_IMAGES 256
+static struct { char *path; struct Object *image; } _shared[MAX_SHARED_IMAGES];
+static int _numShared;
+
+static struct Object *
+_LoadSharedImage(lpcString_t path)
+{
+  FOR_LOOP(i, _numShared) {
+    if (!strcmp(_shared[i].path, path)) return OBJ_AddRef(_shared[i].image), _shared[i].image;
+  }
+  struct Object *image = FS_LoadObject(path);
+  if (!image) return NULL;
+  OBJ_SendMessageW(image, ID_Object_Start, 0, NULL);
+  struct Texture *texture = GetTexture(image);
+  if (texture && texture->Width > 0 && texture->Height > 0 && _numShared < MAX_SHARED_IMAGES) {
+    _shared[_numShared].path = strdup(path);
+    _shared[_numShared++].image = image;
+    OBJ_AddRef(image);
+  }
+  return image;
+}
+
 HANDLER(ImageView, Node, LoadView)
 {
   const char *src = pImageView->Src;
@@ -279,12 +303,11 @@ HANDLER(ImageView, Node, LoadView)
 
   /* Local file path: load synchronously. */
   if (pImageView->_src_object) return TRUE;
-  struct Object *file_obj = FS_LoadObject(src);
+  struct Object *file_obj = _LoadSharedImage(src);
   if (!file_obj) {
     Con_Printf("ImageView: failed to load '%s'", src);
     return TRUE;
   }
-  OBJ_SendMessageW(file_obj, ID_Object_Start, 0, NULL);
 
   struct Texture *texture = GetTexture(file_obj);
   if (!texture || texture->Width <= 0 || texture->Height <= 0) {
