@@ -44,7 +44,7 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 
 | Fields | What to write |
 | --- | --- |
-| `id`, `title`, `category`, `deck`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>` and `.chip-<slug>` rule in the stylesheet, and an icon in `Icons/`. |
+| `id`, `title`, `category`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>` and `.chip-<slug>` rule in the stylesheet, and an icon in `Icons/`. |
 | `question` | The cover question shown on the wall and the bookshelf, such as “Why is Mars red?”. |
 | `cover` (optional) | A bundled cover path for the Questions overview and Bookshelf. Leave it out to reuse the article's illustration. If neither is supplied, the cover uses the category icon. |
 | `sections` | The article body. Each section is a question heading followed by one or more paragraphs, and is shown as its own page. A section can also have a named `image = { path = …, caption = … }` field. Use this for a picture or diagram that helps answer that question. |

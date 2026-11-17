@@ -15,7 +15,6 @@ return {
         category = "Animals",
         title = "Octopuses",
         question = "How does an octopus hide?",
-        deck = "How an eight-armed animal hides in plain sight.",
         keywords = "ocean sea mollusk squid disguise camouflage ink suckers siphon beak",
         sections = {
             { "How does an octopus use its arms?", "An octopus uses its eight arms to crawl, grab, explore, and smell. Each arm is lined with hundreds of suckers, round cups that stick to almost anything. A sucker can feel and smell the things it touches. So an octopus can find a crab hiding in a dark crack without even seeing it.",
@@ -39,7 +38,6 @@ return {
         category = "Space",
         title = "The Moon",
         question = "Why does the Moon change shape?",
-        deck = "Why the Moon seems to change shape.",
         keywords = "sun Earth night orbit crescent phases sunlight crater astronaut Apollo",
         image = moon,
         sections = {
@@ -66,7 +64,6 @@ return {
         category = "Earth",
         title = "The Water Cycle",
         question = "Where does rain come from?",
-        deck = "Follow a drop from the ground to the clouds and back.",
         keywords = "rain cloud river ocean weather evaporation condensation precipitation snow puddle vapor",
         image = art("water", "Rain falls from a cloud over a mountain lake."),
         sections = {
@@ -91,7 +88,6 @@ return {
         category = "Animals",
         title = "Honeybees",
         question = "Why do bees visit flowers?",
-        deck = "A busy hive works together like one big team.",
         keywords = "insect bug hive honey flower pollen pollination wax queen nectar honeycomb dance drone",
         image = art("bees", "A honeybee visits a flower. Look for the yellow pollen on its back leg."),
         sections = {
@@ -117,7 +113,6 @@ return {
         category = "Animals",
         title = "Penguins",
         question = "Can a penguin fly?",
-        deck = "Birds that cannot fly, but can really swim.",
         keywords = "bird antarctica ice cold ocean swim fish feathers emperor huddle egg flipper",
         image = art("penguins", "An emperor penguin uses its flippers to swim below the ice."),
         sections = {
@@ -143,7 +138,6 @@ return {
         category = "Long Ago",
         title = "Dinosaurs",
         question = "How do we know about dinosaurs?",
-        deck = "How we know about animals no one ever saw.",
         keywords = "fossil bones reptile extinct prehistoric history birds asteroid footprint teeth",
         image = art("dinosaurs", "A scientist brushes dirt away from a fossil bone."),
         sections = {
@@ -169,7 +163,6 @@ return {
         category = "Space",
         title = "The Sun",
         question = "Is the Sun a star?",
-        deck = "Our closest star gives Earth light and warmth.",
         keywords = "star light heat day sky solar system planets fusion prominence gravity orbit",
         image = art("sun", "A loop of glowing gas rises above the Sun’s surface."),
         sections = {
@@ -193,7 +186,6 @@ return {
         category = "Space",
         title = "Mars",
         question = "Why is Mars red?",
-        deck = "Visit the red planet with robot explorers.",
         keywords = "planet red rover robot solar system dust rust Perseverance",
         image = art("mars", "A rover rolls across the rusty ground on Mars."),
         sections = {
@@ -221,7 +213,6 @@ return {
         category = "Earth",
         title = "Volcanoes",
         question = "What is inside a volcano?",
-        deck = "Mountains that can rumble, smoke, and grow.",
         keywords = "lava magma eruption mountain rock ash fire island Hawaii volcanologist",
         cover = volcano.path,
         image = art("volcano-cutaway", "Magma rises inside the volcano. Once it flows out of the vent, we call it lava."),
@@ -250,7 +241,6 @@ return {
         category = "Science",
         title = "Rainbows",
         question = "Where do rainbows come from?",
-        deck = "Sunlight and raindrops paint the sky.",
         keywords = "light color rain sun prism weather sky spectrum double rainbow refraction",
         image = art("rainbows", "Look closely: red is on the outside of the rainbow, and violet is on the inside."),
         sections = {
@@ -275,7 +265,6 @@ return {
         category = "Science",
         title = "Magnets",
         question = "How does a magnet pull?",
-        deck = "An invisible push and pull.",
         keywords = "magnet metal iron compass north south pull push force magnetic field poles lodestone electromagnet",
         image = art("magnets", "Steel paper clips stick to the ends of a horseshoe magnet."),
         sections = {
@@ -301,7 +290,6 @@ return {
         category = "Plants",
         title = "Seeds",
         question = "What is inside a seed?",
-        deck = "A whole plant packed into a tiny case.",
         keywords = "plant grow sprout garden flower tree root soil germination dispersal fruit",
         cover = sprout.path,
         image = art("seed-cutaway", "Inside a bean seed, the coat protects the baby plant and its stored food."),
@@ -328,7 +316,6 @@ return {
         category = "Your Body",
         title = "Your Heart",
         question = "What does your heart do all day?",
-        deck = "The strong muscle that keeps you going.",
         keywords = "body blood muscle beat pulse health exercise chambers valves lungs oxygen",
         image = art("heart", "Put a hand on your chest. Can you feel your heart beating?"),
         sections = {
@@ -352,7 +339,6 @@ return {
         category = "Long Ago",
         title = "The Pyramids",
         question = "How did Egyptians build the pyramids?",
-        deck = "Follow a block of stone from the ground up.",
         keywords = "egypt egyptian giza khufu pharaoh limestone ramp sledge nile ancient builders tomb quarry merer",
         image = art("pyramids", "An artist’s idea of how a crew might have pulled a stone block up a ramp at Giza."),
         sections = {
@@ -379,7 +365,6 @@ return {
         category = "Earth",
         title = "Inside Earth",
         question = "What’s inside Earth?",
-        deck = "Take a trip from the ground to Earth’s hot center.",
         keywords = "planet interior layers crust mantle outer core inner core iron rock earthquake geology compass magnetic seismic",
         cover = "encarta/Images/earth-cover.jpg",
         image = art("earth-layers", "From the outside in: thin crust, thick mantle, liquid outer core, and solid inner core. The crust is drawn thicker so you can see it."),

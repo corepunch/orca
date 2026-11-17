@@ -63,7 +63,6 @@
             </StackView>
             <Node2D class="article">
                 <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
-                    <TextBlock Name="ArticleDeck" class="deck" WordWrap="true"/>
                     <StackView Name="Sections" class="sections"/>
                 </StackView>
                 <!-- After the page, so the frosted bar draws over it and takes its taps. -->

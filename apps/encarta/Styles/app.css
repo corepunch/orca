@@ -161,7 +161,6 @@
 .read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
 
 .reader-scroll { padding: 28 40 48; gap: 14; }
-.deck { font-family: Noto Serif; font-size: 22; line-height: 31; color: var(--muted); }
 .sections { gap: 56; }
 .section, .fact-page, .quiz-page { gap: 16; }
 .section-body { gap: 32; }

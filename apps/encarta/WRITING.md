@@ -56,7 +56,7 @@ that each section had *more of them*, and each one added something.
 4. **Captions.** Each photo gets a two- or three-word title (*Well informed*,
    *Step inside!*) and one or two sentences that link the picture to the text.
 
-Our article maps onto this: `question` and `deck` are the lead, `sections`
+Our article maps onto this: `question` is the lead, `sections`
 are the subheadings, and `image` captions are the captions. The reader has no
 side boxes or glossary, so the surprise and the new words live in the section
 text itself.

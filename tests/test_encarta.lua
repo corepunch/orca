@@ -137,7 +137,7 @@ assert(screenTop(bar) == 0 and screenTop(pane) == 0, "the panels reach the top e
 assert(screenTop(control("Back")) >= 24 and screenTop(control("ArticleTitle")) >= 24, "the title stays below the status bar")
 assert(screenTop(control("Step1")) >= 24, "the contents stay below the status bar")
 assert(scroll.AdjustedContentInsetTop >= bar.ActualHeight and scroll.ContentOffset.Y == 0, "the page rests below the title bar")
-assert(screenTop(control("ArticleDeck")) >= bar.ActualHeight, "the first line of the page is not covered")
+assert(screenTop(heading(1)) >= bar.ActualHeight, "the first heading of the page is not covered")
 local last = bar.parent:getFirstChild()
 while last:getNext() do last = last:getNext() end
 assert(last == bar, "the frosted bar draws over the page and takes the taps on Back")

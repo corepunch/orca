@@ -72,7 +72,7 @@ end
 
 local function matches(article, query, category)
     if category and article.category ~= category then return false end
-    local terms = table.concat({ article.title, article.question, article.category, article.deck, article.keywords }, " "):lower()
+    local terms = table.concat({ article.title, article.question, article.category, article.keywords }, " "):lower()
     for word in query:gmatch("%S+") do
         if not terms:find(word, 1, true) then return false end
     end
@@ -359,7 +359,6 @@ function Controller:showArticle()
     local article = byID[state.id]
     control(view, "ArticleCategory").Text = article.category:upper()
     control(view, "ArticleTitle").Text = article.title
-    control(view, "ArticleDeck").Text = article.deck
     self:cancelScroll()
     self.chosenSection = nil
     self:buildSections(article)
