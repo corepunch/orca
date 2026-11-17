@@ -107,7 +107,9 @@ layout(1024, 768)
 assert(count(control("Steps")) == 4 and control("Pane").Opacity == 1)
 layout(768, 1024)
 assert(control("Pane").Opacity == 0 and control("ReaderScroll").ActualWidth > 600, "portrait gives the page the full width")
-assert(image.ActualWidth > 500 and math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
+local page = control("ReaderScroll").ActualWidth
+assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
+assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
 assert(control("ReadMore").ActualHeight >= 40)
 layout(1024, 768)
 

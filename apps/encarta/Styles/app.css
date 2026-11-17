@@ -147,10 +147,11 @@
 
 .reader-scroll { padding: 26 0 20; gap: 14; }
 .step-label { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
-.section, .fact-page, .quiz-page { gap: 16; }
+.section-text, .fact-page, .quiz-page { gap: 16; }
+.section-text { padding-right: 32; }
 .paragraphs { gap: 14; }
-.question { font-size: 44; line-height: 50; font-weight: bold; color: var(--ink); }
-.answer { font-size: 25; line-height: 38; color: var(--ink); }
+.question { font-size: 34; line-height: 40; font-weight: bold; color: var(--ink); }
+.answer { font-size: 20; line-height: 31; color: var(--ink); }
 .fact {
   padding: 22 24;
   border-radius: 20;
@@ -161,7 +162,7 @@
   color: var(--ink);
   background-color: var(--sun);
 }
-.media { gap: 6; }
+.media { margin-top: 8; gap: 8; }
 .media-image { border-radius: 18; }
 .small-title { margin-top: 8; font-size: 20; font-weight: bold; color: var(--ink); }
 .hint { font-size: 15; color: var(--muted); }
