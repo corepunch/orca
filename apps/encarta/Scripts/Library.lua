@@ -163,7 +163,7 @@ function Controller.mount(view, openAudio)
     for name, action in pairs({
         ClearSearch = self.clearQuery, OpenFeatured = self.openFeatured,
         ShowWall = function() self:setShelf(false) end, ShowShelf = function() self:setShelf(true) end,
-        Back = self.goBack,
+        Back = self.goBack, PageBack = self.goBack,
     }) do
         control(view, name).Click = function() action(self) end
     end

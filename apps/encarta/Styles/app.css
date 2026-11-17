@@ -92,7 +92,7 @@
 .card-title { font-size: 12; line-height: 15; color: var(--white); }
 
 /* ---------- reader ---------- */
-/* Three flat panels: dark contents, a paper title bar, and the white page. */
+/* Two flat panels at full height: dark contents and the white page. */
 .pane { padding: 22 16 20 16; gap: 6; overflow: hidden; background-color: var(--night); }
 .pane-tag { padding: 6 0 6 8; font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
 .steps { gap: 6; }
@@ -120,21 +120,15 @@
 .step-text-on { color: var(--white); }
 
 .article { background-color: var(--page); }
-/* Frosted like apps/chat: the page scrolls under the bar, blurred and tinted. */
-.reader-bar {
-  padding: 14 24;
-  border-bottom-width: 1;
-  border-color: var(--paper-line);
-  backdrop-filter: blur(20) saturate(1.8);
-  background-color: var(--paper-frost);
-}
 /* Windows Phone back button: a ringed chevron and a capitalised label. */
 .back { min-height: 46; padding: 0 6 0 0; color: var(--ink); background-color: #00000000; }
 .back:hover, .back:active { opacity: 0.7; background-color: #00000000; }
+.pane-back { margin-bottom: 10; color: var(--white); }
+.article-head { padding-bottom: 12; }
 .back-label { font-size: 13; font-weight: bold; letter-spacing: 1.2; }
 .title-block { gap: 2; }
 .title-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
-.title { font-family: Noto Serif; font-size: 26; line-height: 32; font-weight: bold; color: var(--ink); }
+.title { font-family: Noto Serif; font-size: 40; line-height: 48; font-weight: bold; color: var(--ink); }
 .soft, .level {
   min-height: 46;
   padding: 0 16;

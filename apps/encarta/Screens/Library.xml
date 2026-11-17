@@ -51,32 +51,33 @@
             </Grid>
         </StackView>
 
-        <!-- Three panels: the dark contents column and, beside it, a frosted
-             paper title bar drawn over the white scrolling page. The column and
-             the bar paint under the status bar but keep their content below it. -->
+        <!-- Two panels at full height: the dark contents column, led by the
+             way back to the library, and the white page, which opens with the
+             article's category and title. Both paint under the status bar but
+             keep their content below it. Without the column, a ringed back
+             button sits above the title instead. -->
         <Grid Name="Reader" Rows="1fr" Visible="false" class="reader">
             <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
             <StackView Name="Pane" ContentInsetAdjustment="Always" class="pane">
                 <BindingExpression Target="Node.Opacity">IF(STEP(900, {Screen.Width}), 1, 0)</BindingExpression>
+                <Button Name="Back" class="back pane-back">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" IgnoreHitTest="true"/>
+                        <TextBlock Text="LIBRARY" class="back-label" IgnoreHitTest="true"/>
+                    </StackView>
+                </Button>
                 <TextBlock class="pane-tag">QUESTIONS</TextBlock>
                 <StackView Name="Steps" class="steps"/>
             </StackView>
-            <Node2D class="article">
-                <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
-                    <StackView Name="Sections" class="sections"/>
-                </StackView>
-                <!-- After the page, so the frosted bar draws over it and takes its taps. -->
-                <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="16" AlignItems="Center"
-                    SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
-                    <Button Name="Back" class="back">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" IgnoreHitTest="true"/>
-                            <TextBlock Text="LIBRARY" class="back-label" IgnoreHitTest="true"/>
-                        </StackView>
-                    </Button>
+            <StackView Name="ReaderScroll" OverflowY="Scroll" ContentInsetAdjustment="Always" class="article reader-scroll">
+                <Grid Name="ArticleHead" Columns="1fr auto auto" Spacing="16" AlignItems="Start" class="article-head">
                     <StackView class="title-block">
+                        <Button Name="PageBack" Width="46" Height="46" HorizontalAlignment="Left" class="back">
+                            <BindingExpression Target="Node.Visible">NOT(STEP(900, {Screen.Width}))</BindingExpression>
+                            <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                        </Button>
                         <TextBlock Name="ArticleCategory" class="title-tag"/>
-                        <TextBlock Name="ArticleTitle" class="title" TextWrapping="NoWrap" TextOverflow="Ellipsis" OverflowX="Hidden"/>
+                        <TextBlock Name="ArticleTitle" class="title" WordWrap="true"/>
                         <TextBlock Name="ReadAloudError" Visible="false" class="read-error" WordWrap="true">Audio couldn’t play. Try again.</TextBlock>
                     </StackView>
                     <Button Name="ReadAloud" Visible="false" class="listen">
@@ -92,7 +93,8 @@
                         </StackView>
                     </Button>
                 </Grid>
-            </Node2D>
+                <StackView Name="Sections" class="sections"/>
+            </StackView>
         </Grid>
     </Node2D>
 </Screen>

@@ -123,24 +123,25 @@ assert(count(sections) == 5 and section(5).Visible, "the whole article is one pa
 assert(heading(1).Text == "Why does the Moon seem to change shape?")
 assert(not view:findChild("StepLabel", true) and control("ArticleCategory").Text == "SPACE" and current() == 1)
 
--- The contents column and the title bar paint under the status bar but keep
--- their content below it; the page starts under the bar.
+-- The contents column and the page fill the height and paint under the
+-- status bar but keep their content below it. Back leads the contents
+-- column; the page opens with the article's category and title.
 view.SafeAreaTop = 24
 layout(1024, 768)
-local bar, pane = control("ReaderBar"), control("Pane")
+local pane = control("Pane")
 local function screenTop(node)
     local top = 0
     while node and node ~= view do top, node = top + node.ActualY, node.parent end
     return top
 end
-assert(screenTop(bar) == 0 and screenTop(pane) == 0, "the panels reach the top edge")
-assert(screenTop(control("Back")) >= 24 and screenTop(control("ArticleTitle")) >= 24, "the title stays below the status bar")
-assert(screenTop(control("Step1")) >= 24, "the contents stay below the status bar")
-assert(scroll.AdjustedContentInsetTop >= bar.ActualHeight and scroll.ContentOffset.Y == 0, "the page rests below the title bar")
-assert(screenTop(heading(1)) >= bar.ActualHeight, "the first heading of the page is not covered")
-local last = bar.parent:getFirstChild()
-while last:getNext() do last = last:getNext() end
-assert(last == bar, "the frosted bar draws over the page and takes the taps on Back")
+assert(not view:findChild("ReaderBar", true), "no title bar above the page")
+assert(screenTop(scroll) == 0 and screenTop(pane) == 0 and scroll.ActualHeight == 768, "the panels fill the height")
+assert(control("Back").parent == pane and screenTop(control("Back")) >= 24, "Back leads the contents, below the status bar")
+assert(screenTop(control("Step1")) > screenTop(control("Back")), "the questions follow Back")
+local head = control("ArticleHead")
+assert(head.parent == scroll and screenTop(control("ArticleTitle")) >= 24, "the title opens the page, below the status bar")
+assert(screenTop(heading(1)) > screenTop(control("ArticleTitle")), "the first question follows the title")
+assert(not control("PageBack").Visible, "the page has no back button beside the contents")
 view.SafeAreaTop = 0
 layout(1024, 768)
 assert(not view:findChild("Pager", true) and not view:findChild("Next", true), "no pager on a continuous page")
@@ -175,12 +176,17 @@ assert(scroll.ContentOffset.Y == 0 and current() == 1)
 
 layout(768, 1024)
 assert(control("Pane").Opacity == 0 and scroll.ActualWidth > 700, "portrait gives the page the full width")
+assert(control("PageBack").Visible, "without the contents, a back button leads the page")
 local page = sections.ActualWidth
 assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
 assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
 assert(heading(1).ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
 assert(control("Paragraphs", section(1)).ActualWidth < page * 0.7, "the answer shares its row with the artwork")
 assert(control("Paragraphs", section(2)).ActualWidth > page * 0.9, "a text-only question spreads across the page")
+click("PageBack")
+assert(not reader.Visible and control("LibraryScroll").Visible, "the page's back button returns to the library")
+click("Open_moon", wall)
+reading:finishScroll()
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
