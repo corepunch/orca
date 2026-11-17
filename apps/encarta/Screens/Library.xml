@@ -60,7 +60,7 @@
                 <TextBlock Name="ArticleDeck" class="pane-deck" WordWrap="true"/>
                 <StackView Name="Steps" class="steps"/>
             </StackView>
-            <Grid Rows="auto 1fr auto" class="page">
+            <Grid Rows="auto 1fr" class="page">
                 <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="10">
                     <Button Name="Back" class="soft">
                         <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
@@ -86,23 +86,8 @@
                 </Grid>
                 <StackView Name="ReaderScroll" OverflowY="Scroll" class="reader-scroll">
                     <TextBlock Name="StepLabel" class="step-label"/>
-                    <StackView Name="Sections"/>
+                    <StackView Name="Sections" class="sections"/>
                 </StackView>
-                <Grid Name="Pager" Columns="1fr auto auto" Spacing="12" class="pager">
-                    <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" class="dots"/>
-                    <Button Name="Previous" class="soft pager-button">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                            <TextBlock Text="Back" IgnoreHitTest="true"/>
-                        </StackView>
-                    </Button>
-                    <Button Name="Next" class="next">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <TextBlock Text="Next question" IgnoreHitTest="true"/>
-                            <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                        </StackView>
-                    </Button>
-                </Grid>
             </Grid>
         </Grid>
     </Node2D>

@@ -1,3 +1,4 @@
+local core = require "orca.core"
 local fs = require "orca.filesystem"
 local articles = require "encarta/Content/Articles"
 local ReadAloud = require "encarta/Scripts/ReadAloud"
@@ -141,7 +142,17 @@ end
 function Controller.mount(view, openAudio)
     local self = setmetatable({ view = view, history = {}, query = "", shelf = false }, { __index = Controller })
     self.readAloud = ReadAloud.new(view, openAudio)
-    self.readAloud.onBlock = function(block) self:follow(block) end
+    self.timer = core.Timer {
+        Tick = function(_, args)
+            if args.timerId == self.scrollTimer then self:stepScroll() end
+        end,
+    }
+    self.readAloud.onBlock = function(block) return self:follow(block) end
+    local scroll = control(view, "ReaderScroll")
+    scroll.onContentOffsetChanged = function(_, offset) self:onScroll(offset.Y) end
+    -- Layout places the questions after the article opens, and again on a
+    -- resize, so the current question is found once their positions are known.
+    scroll.onScrollHeightChanged = function() self:refreshCurrentSection() end
     control(view, "FeaturedQuestion").Text = byID[FEATURED].question
     self:addChips()
     self:setCategory(nil)
@@ -152,8 +163,6 @@ function Controller.mount(view, openAudio)
     for name, action in pairs({
         ClearSearch = self.clearQuery, OpenFeatured = self.openFeatured,
         ShowWall = function() self:setShelf(false) end, ShowShelf = function() self:setShelf(true) end,
-        Previous = function() self:goToPage(self.current.page - 1) end,
-        Next = function() self:goToPage(self.current.page + 1) end,
         Back = self.goBack,
     }) do
         control(view, name).Click = function() action(self) end
@@ -168,22 +177,31 @@ end
 
 -- Reader --------------------------------------------------------------------
 
+-- An article is one continuous page. The steps beside it jump to a question
+-- and follow the reading position; narration only keeps its word in view.
+local SCROLL_EASE, SCROLL_TICK_MS = 0.28, 16
+
+-- A question becomes current once its heading passes this line, measured from
+-- the top of the visible page as a share of the page height.
+local CURRENT_LINE = 0.3
+
 function Controller:buildSections(article)
     local sections = control(self.view, "Sections")
     clear(sections)
-    self.sections, self.blockPage = {}, {}
+    self.sections, self.headingSection = {}, {}
     local blocks = {}
     for i, entry in ipairs(article.sections) do
         local section = prefab("Section")
+        section.Name = "Section" .. i
         local title = control(section, "Title")
         title.Text = entry[1]
-        blocks[#blocks + 1], self.blockPage[title] = title, i
+        blocks[#blocks + 1], self.headingSection[title] = title, i
         local paragraphs = control(section, "Paragraphs")
         for p = 2, #entry do
             local paragraph = prefab("Paragraph")
             paragraph.Text = entry[p]
             paragraphs:addChild(paragraph)
-            blocks[#blocks + 1], self.blockPage[paragraph] = paragraph, i
+            blocks[#blocks + 1] = paragraph
         end
         local image = entry.image or (i == 1 and article.image)
         if image then
@@ -196,52 +214,139 @@ function Controller:buildSections(article)
         self.sections[i] = section
     end
     self.readAloud:setTrack(article.id, blocks)
+    self:buildSteps(article)
 end
 
-function Controller:showPage(n, offset)
-    local state, view = self.current, self.view
-    local article = byID[state.id]
-    local count = #self.sections
-    n = math.max(1, math.min(n, count))
-    state.page = n
-    for i, section in ipairs(self.sections) do section.Visible = i == n end
-    control(view, "StepLabel").Text = string.format("%s  ·  QUESTION %d OF %d", article.category:upper(), n, count)
-
-    local steps, dots = control(view, "Steps"), control(view, "Dots")
+function Controller:buildSteps(article)
+    local steps = control(self.view, "Steps")
     clear(steps)
-    clear(dots)
+    self.steps = {}
     for i, entry in ipairs(article.sections) do
-        local stateName = i == n and "on" or (i < n and "done" or nil)
         local step = prefab("Step")
         step.Name = "Step" .. i
-        step.StyleClass = stateName == "on" and "step step-on" or "step"
-        local mark = control(step, "Mark")
-        mark.Text = tostring(i)
-        mark.StyleClass = stateName and "mark mark-" .. stateName or "mark"
-        local label = control(step, "Label")
-        label.Text = entry[1]
-        label.StyleClass = stateName == "on" and "step-text step-text-on" or "step-text"
-        step.Click = function() self:goToPage(i) end
+        control(step, "Mark").Text = tostring(i)
+        control(step, "Label").Text = entry[1]
+        step.Click = function() self:scrollToSection(i) end
         steps:addChild(step)
-
-        local dot = prefab("Dot")
-        dot.StyleClass = i == n and "dot dot-on" or "dot"
-        dot.Width = i == n and 28 or 10
-        dots:addChild(dot)
+        self.steps[i] = step
     end
-    control(view, "Previous").Visible = n > 1
-    control(view, "Next").Visible = n < count
-    control(view, "ReaderScroll").ContentOffset = { X = 0, Y = offset or 0 }
+    self.currentSection = nil
 end
 
-function Controller:goToPage(n)
-    self.readAloud:stop()
-    self:showPage(n)
+-- Steps before the current question are done, the current one is on.
+function Controller:setCurrentSection(n)
+    if n == self.currentSection then return end
+    self.currentSection = n
+    for i, step in ipairs(self.steps) do
+        local state = i == n and "on" or (i < n and "done" or nil)
+        step.StateClasses = state == "on" and "step-on" or ""
+        control(step, "Mark").StateClasses = state and "mark-" .. state or ""
+        control(step, "Label").StateClasses = state == "on" and "step-text-on" or ""
+    end
 end
 
+-- The top of a node in the reader's scrolled content, independent of the
+-- current scroll position.
+function Controller:contentTop(node)
+    local scroll, top = control(self.view, "ReaderScroll"), 0
+    while node and node ~= scroll do
+        top = top + node.ActualY
+        node = node.parent
+    end
+    return top
+end
+
+function Controller:scrollLimit()
+    local scroll = control(self.view, "ReaderScroll")
+    return math.min(0, scroll.ActualHeight - scroll.ScrollHeight)
+end
+
+-- The offset that puts a question's heading at the top of the page, clamped
+-- so the last questions stop at the end of the article.
+function Controller:sectionOffset(n)
+    local top = self:contentTop(self.sections[n]) - self:contentTop(self.sections[1])
+    return math.max(self:scrollLimit(), math.min(0, -top))
+end
+
+function Controller:sectionAt(offset)
+    local scroll = control(self.view, "ReaderScroll")
+    if offset <= self:scrollLimit() + 1 and offset < 0 then return #self.sections end
+    local line = self:contentTop(self.sections[1]) - offset + scroll.ActualHeight * CURRENT_LINE
+    local current = 1
+    for i, section in ipairs(self.sections) do
+        if self:contentTop(section) <= line then current = i end
+    end
+    return current
+end
+
+function Controller:refreshCurrentSection()
+    if not self.sections or #self.sections == 0 then return end
+    local offset = control(self.view, "ReaderScroll").ContentOffset.Y
+    self:setCurrentSection(self.chosenSection or self:sectionAt(offset))
+end
+
+-- Called for every ContentOffset write: wheel, touch, inertia, narration and
+-- our own animation. Only a scroll we did not start releases a chosen step.
+function Controller:onScroll(offset)
+    if not self.sections or #self.sections == 0 then return end
+    if not self.scrolling then
+        self:cancelScroll()
+        self.chosenSection = nil
+    end
+    self:refreshCurrentSection()
+end
+
+function Controller:setScroll(offset)
+    local scroll = control(self.view, "ReaderScroll")
+    self.scrolling = true
+    scroll.ContentOffset = { X = 0, Y = offset }
+    self.scrolling = false
+end
+
+function Controller:cancelScroll()
+    if self.scrollTimer then self.timer:cancelTimer(self.scrollTimer) end
+    self.scrollTimer, self.scrollTarget = nil, nil
+end
+
+-- Finish an animated jump at once (tests, or a new article).
+function Controller:finishScroll()
+    local target = self.scrollTarget
+    self:cancelScroll()
+    if target then self:setScroll(target) end
+end
+
+function Controller:stepScroll()
+    local scroll, target = control(self.view, "ReaderScroll"), self.scrollTarget
+    if not target then return self:cancelScroll() end
+    local offset = scroll.ContentOffset.Y
+    local next = offset + (target - offset) * SCROLL_EASE
+    if math.abs(target - next) < 0.5 then next = target end
+    self:setScroll(next)
+    if next == target then self:cancelScroll() end
+end
+
+-- Narration reaching a question's heading brings that question up, as a
+-- step would, without stopping the recording.
 function Controller:follow(block)
-    local page = self.blockPage and self.blockPage[block]
-    if page and page ~= self.current.page then self:showPage(page) end
+    local n = self.headingSection and self.headingSection[block]
+    if not n then return false end
+    self:glideToSection(n)
+    return true
+end
+
+function Controller:scrollToSection(n, animated)
+    self.readAloud:stop()
+    self:glideToSection(n, animated)
+end
+
+function Controller:glideToSection(n, animated)
+    self:cancelScroll()
+    self.chosenSection = n
+    local target = self:sectionOffset(n)
+    self:setCurrentSection(n)
+    if animated == false then return self:setScroll(target) end
+    self.scrollTarget = target
+    self.scrollTimer = self.timer:setTimer(SCROLL_TICK_MS)
 end
 
 function Controller:setReaderVisible(visible)
@@ -255,18 +360,23 @@ function Controller:showArticle()
     control(view, "ArticleCategory").Text = article.category:upper()
     control(view, "ArticleTitle").Text = article.title
     control(view, "ArticleDeck").Text = article.deck
+    self:cancelScroll()
+    self.chosenSection = nil
+    control(view, "StepLabel").Text = string.format("%s  ·  %d QUESTIONS", article.category:upper(), #article.sections)
     self:buildSections(article)
-    self:showPage(state.page, state.scroll)
     self:setReaderVisible(true)
+    self:setScroll(state.scroll or 0)
+    self:refreshCurrentSection()
     if control(view, "Search"):isFocused() then control(view, "Back"):setFocus() end
 end
 
 function Controller:openArticle(id)
     if self.current then
+        self:finishScroll()
         self.current.scroll = control(self.view, "ReaderScroll").ContentOffset.Y
         table.insert(self.history, self.current)
     end
-    self.current = { id = id, page = 1 }
+    self.current = { id = id }
     self:showArticle()
 end
 
@@ -276,6 +386,7 @@ end
 
 function Controller:goBack()
     self.readAloud:stop()
+    self:cancelScroll()
     self.current = table.remove(self.history)
     if self.current then
         self:showArticle()

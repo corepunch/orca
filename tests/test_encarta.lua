@@ -98,30 +98,72 @@ assert(count(wall) == 1 and control("Open_moon", wall))
 click("Open_moon", wall)
 assert(not library.Visible and reader.Visible)
 assert(control("ArticleTitle").Text == "The Moon")
-assert(visibleSection().Text == "Why does the Moon seem to change shape?")
+layout(1024, 768)
+local reading = app.libraryController
+local scroll = control("ReaderScroll")
+local function section(n) return control("Section" .. n, sections) end
+-- The current step is the one whose mark is painted sun yellow on the next
+-- frame.
+local function current()
+    layout(view.Width, view.Height)
+    local found
+    for i = 1, count(control("Steps")) do
+        local mark = control("Mark", control("Step" .. i)).BackgroundColor
+        if mark.R > 0.9 and mark.G > 0.7 and mark.B < 0.4 then
+            assert(not found, "only one step is current")
+            found = i
+        end
+    end
+    assert(found == reading.currentSection)
+    return found
+end
+local function heading(n) return control("Title", section(n)) end
+local function visibleTop(n) return reading:contentTop(section(n)) + scroll.ContentOffset.Y end
+assert(count(sections) == 5 and section(5).Visible, "the whole article is one page")
+assert(heading(1).Text == "Why does the Moon seem to change shape?")
+assert(control("StepLabel").Text == "SPACE  ·  5 QUESTIONS" and current() == 1)
+assert(not view:findChild("Pager", true) and not view:findChild("Next", true), "no pager on a continuous page")
 local image, caption = questionImage()
 assert(image.Src == "encarta/Images/moon-phases.jpg" and caption.Text:match("Northern Hemisphere"), "a question shows its own diagram")
-assert(control("StepLabel").Text == "SPACE  ·  QUESTION 1 OF 5")
-assert(not control("Previous").Visible and control("TextBlock", control("Next")).Text == "Next question")
-layout(1024, 768)
+assert(control("SectionImage", section(5)).Src == "encarta/Images/moon.jpg", "a later question can reuse the cover art")
+assert(not control("SectionMedia", section(2)).Visible, "a later question does not inherit the cover art")
 assert(count(control("Steps")) == 5 and control("Pane").Opacity == 1)
+assert(scroll.ScrollHeight > scroll.ActualHeight * 2, "the article scrolls")
+
+local home = visibleTop(1)
+click("Step3")
+assert(reading.scrollTarget and current() == 3, "the step lights at once and the page glides there")
+reading:finishScroll()
+assert(math.abs(visibleTop(3) - home) < 0.5 and current() == 3, "a step brings its question to the top")
+scroll.ContentOffset = { X = 0, Y = 0 }
+assert(current() == 1, "scrolling by hand moves the current question")
+scroll.ContentOffset = { X = 0, Y = -(reading:contentTop(section(2)) - reading:contentTop(section(1))) }
+assert(current() == 2)
+scroll.ContentOffset = { X = 0, Y = reading:scrollLimit() }
+assert(current() == 5, "the end of the article is its last question")
+click("Step4")
+reading:finishScroll()
+if scroll.ContentOffset.Y == reading:scrollLimit() then
+    assert(current() == 4, "a question that cannot reach the top stays chosen")
+end
+scroll.ContentOffset = { X = 0, Y = scroll.ContentOffset.Y + 40 }
+assert(current() == reading:sectionAt(scroll.ContentOffset.Y), "scrolling by hand releases the chosen question")
+click("Step1")
+reading:finishScroll()
+assert(scroll.ContentOffset.Y == 0 and current() == 1)
+
 layout(768, 1024)
-assert(control("Pane").Opacity == 0 and control("ReaderScroll").ActualWidth > 600, "portrait gives the page the full width")
-local page = control("ReaderScroll").ActualWidth
+assert(control("Pane").Opacity == 0 and scroll.ActualWidth > 600, "portrait gives the page the full width")
+local page = scroll.ActualWidth
 assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
 assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
-local function visibleBody()
-    for section in sections.children do
-        if section.Visible then return control("Title", section), control("Paragraphs", section) end
-    end
-end
-local heading, paragraphs = visibleBody()
-assert(heading.ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
-assert(paragraphs.ActualWidth < page * 0.7, "the answer shares its row with the artwork")
+assert(heading(1).ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
+assert(control("Paragraphs", section(1)).ActualWidth < page * 0.7, "the answer shares its row with the artwork")
+assert(control("Paragraphs", section(2)).ActualWidth > page * 0.9, "a text-only question spreads across the page")
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
-local narration = app.libraryController.readAloud
+local narration = reading.readAloud
 local timings = require "encarta/Narration/Timings"
 local function icon(name) return listenIcon.Source == "encarta/Icons/" .. name .. ".svg" end
 assert(listen.Visible and listen.ActualHeight >= 44 and listen.ActualWidth < 200 and icon("volume-2"))
@@ -133,7 +175,7 @@ local function hear(mark)
     core.flushQueue()
 end
 local first = timings.moon[1].words
-local title = visibleSection()
+local title = heading(1)
 hear(first[1])
 assert(title.HighlightedRange.X == first[1][3] and title.HighlightedRange.Y == first[1][4])
 hear(first[2])
@@ -145,22 +187,21 @@ click("ReadAloud")
 assert(playing and opened == 1, "Resume reuses the same recording and position")
 hear(timings.moon[2].words[1])
 assert(title.HighlightedRange.Y == 0)
-hear(timings.moon[4].words[1])
-assert(visibleSection().Text == "How far away is the Moon?", "the reader turns the page with the narration")
-assert(app.libraryController.current.page == 2 and playing)
-assert(not questionImage(), "a later question does not inherit the cover art")
+hear(timings.moon[7].words[1])
+assert(heading(3).HighlightedRange.Y > 0 and current() == 3, "the steps follow the narration down the page")
+reading:finishScroll()
+assert(playing and math.abs(visibleTop(3) - home) < 0.5, "a new question glides to the top while reading")
+hear(timings.moon[8].words[1])
+local paragraph = control("Paragraphs", section(3))
+local top = reading:contentTop(paragraph) + scroll.ContentOffset.Y
+assert(top >= 0 and top < scroll.ActualHeight and current() == 3, "narration keeps its word in view")
 
 click("StopReading")
 assert(not playing and closed == 1 and listenLabel.Text == "Read aloud" and icon("volume-2"))
 click("ReadAloud")
 assert(playing and opened == 2 and position == 0)
-click("Step5")
-assert(not playing and closed == 2 and listenLabel.Text == "Read aloud")
-assert(visibleSection().Text == "How can you track the Moon?" and not control("Next").Visible)
-assert(questionImage().Src == "encarta/Images/moon.jpg", "a later question can reuse the cover art")
-control("ReaderScroll").ContentOffset = { X = 0, Y = -100 }
-click("Previous")
-assert(visibleSection().Text == "Who has walked on the Moon?" and control("ReaderScroll").ContentOffset.Y == 0)
+click("Step2")
+assert(not playing and closed == 2 and listenLabel.Text == "Read aloud", "jumping to a question stops the narration")
 click("Back")
 assert(library.Visible and not reader.Visible and control("ResultCount").Text == "1 ARTICLE")
 
@@ -173,18 +214,12 @@ assert(control("Featured").Visible and not control("EmptyResults").Visible and n
 click("OpenFeatured")
 assert(control("ArticleTitle").Text == "Octopuses")
 assert(questionImage().Src == "encarta/Images/octopus.jpg")
-click("Step2")
-assert(not questionImage(), "a text-only question does not inherit the previous image")
-layout(768, 1024)
-heading, paragraphs = visibleBody()
-page = control("ReaderScroll").ActualWidth
-assert(heading.ActualWidth > page * 0.9 and paragraphs.ActualWidth > page * 0.9,
-    "a text-only question spreads across the page without an empty picture column")
 layout(1024, 768)
+assert(scroll.ContentOffset.Y == 0 and current() == 1, "a new article starts at its first question")
 click("ReadAloud")
 hear(timings.octopus[1].words[1])
-assert(app.libraryController.current.page == 1, "narration brings the reader back to the text")
-local octopusTitle = visibleSection()
+assert(playing and heading(1).HighlightedRange.Y > 0)
+local octopusTitle = heading(1)
 click("Back")
 assert(not playing and octopusTitle.HighlightedRange.Y == 0 and not control("StopReading").Visible)
 

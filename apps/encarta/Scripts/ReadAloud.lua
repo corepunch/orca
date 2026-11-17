@@ -124,8 +124,8 @@ function ReadAloud:update()
         self.highlighted = word.block
         word.block.HighlightedRange = { X = word.timing[3], Y = word.timing[4] }
         if word.block ~= self.followedBlock then
-            if self.onBlock then self.onBlock(word.block) end
-            self:reveal(word.block)
+            -- The page may take over, for example to bring a new question up.
+            if not (self.onBlock and self.onBlock(word.block)) then self:reveal(word.block) end
             self.followedBlock = word.block
         end
         self.view:post("Window.Paint", renderer.getSize())

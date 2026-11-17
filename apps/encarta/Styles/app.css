@@ -113,6 +113,7 @@
   text-align: center;
   text-vertical-align: center;
   color: var(--mist);
+  background-color: #00000000;
 }
 .mark-on { color: var(--ink); background-color: var(--sun); border-color: var(--sun); }
 .mark-done { color: var(--white); background-color: var(--go); border-color: var(--go); }
@@ -145,7 +146,8 @@
 .listen:hover, .listen:active { background-color: var(--sun-light); }
 .read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
 
-.reader-scroll { padding: 26 0 20; gap: 14; }
+.reader-scroll { padding: 26 0 40; gap: 14; }
+.sections { gap: 56; }
 .step-label { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
 .section, .fact-page, .quiz-page { gap: 16; }
 .section-body { gap: 32; }
@@ -198,21 +200,6 @@
 .feedback { padding: 14 18; border-radius: 16; font-size: 19; line-height: 26; font-weight: bold; color: var(--ink); background-color: var(--page-soft); }
 .feedback.feedback-right { color: var(--white); background-color: var(--go); }
 
-.pager { padding-top: 12; }
-.dots { gap: 6; padding-left: 8; }
-.dot { border-radius: 5; background-color: var(--page-line); }
-.dot-on { background-color: var(--ink); }
-.next {
-  min-height: 54;
-  padding: 0 24;
-  border-radius: 16;
-  font-size: 18;
-  font-weight: bold;
-  color: var(--white);
-  background-color: var(--ink);
-}
-.next:hover, .next:active { background-color: var(--muted); }
-.pager-button { min-height: 54; border-radius: 16; }
 
 /* ---------- category colors ---------- */
 .cat-animals { background-color: var(--animals); }
