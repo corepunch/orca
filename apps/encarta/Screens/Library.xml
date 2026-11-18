@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Screen Name="Encarta" Width="1024" Height="768" ResizeMode="CanResize"
-    RespectSafeArea="false" Appearance="Dark" ClearColor="$night"
+    RespectSafeArea="false" Appearance="Dark" ClearColor="$wood"
     StyleSheet="encarta/Styles/app.css">
     <Node2D>
         <StackView Name="LibraryScroll" OverflowY="Scroll" class="library">
