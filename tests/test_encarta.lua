@@ -162,6 +162,10 @@ assert(image.ActualWidth > 300 and math.abs(image.ActualWidth / image.ActualHeig
 assert(part("SectionImage", 3).Src == "encarta/Images/moon.jpg", "a question without its own picture shows the article's")
 assert(not part("SectionMedia", 2).Visible, "the picture opens a question; its last spread holds the extras")
 assert(fits(1), "the first spread fits the book without scrolling")
+local fold = control("Fold")
+local book = control("Book")
+assert(fold.Opacity == 1 and math.abs(fold.ActualHeight - book.ActualHeight) < 1
+    and math.abs(screenLeft(fold) + fold.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1, "the fold shades the middle of the book")
 assert(not control("PrevPage").Visible and control("NextPage").Visible and control("NextLabel").Text == "Turn the page")
 assert(count(control("Dots")) == 2, "a dot per spread of the question")
 
@@ -190,6 +194,7 @@ assert(shown() == spread(1) and not control("PrevPage").Visible)
 -- On a narrow screen the pages stack and the spread scrolls.
 layout(600, 900)
 text, side = part("TextPage", 1), part("SidePage", 1)
+assert(control("Fold").Opacity == 0, "stacked pages have no fold")
 assert(screenTop(side) > screenTop(text) and side.ActualWidth > 450 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
 layout(1024, 768)
 

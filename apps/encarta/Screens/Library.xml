@@ -84,7 +84,14 @@
                 </Button>
             </Grid>
             <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" ContentInsetAdjustment="Always" class="book-row">
-                <Node2D Name="Sections" class="book"/>
+                <Node2D Name="Book" class="book">
+                    <Node2D Name="Sections"/>
+                    <!-- The fold between the two pages: a thin crease with the left
+                         page shading into it. Gone when the pages stack. -->
+                    <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
+                        <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
+                    </ImageView>
+                </Node2D>
                 <StackView Name="Steps" class="tabs"/>
             </Grid>
             <Grid Name="Pager" Columns="1fr auto 1fr" SafeAreaEdge="Bottom" ContentInsetAdjustment="Always" class="pager">
