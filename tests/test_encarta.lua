@@ -209,15 +209,17 @@ assert(screenTop(book) >= screenTop(bar) + bar.ActualHeight and screenTop(book) 
 assert(control("Back").ActualHeight >= 44 and control("Step1").ActualHeight >= 44)
 view.SafeAreaTop, view.SafeAreaBottom = 0, 0
 layout(1024, 768)
-assert(not view:findChild("Pager", true) and screenTop(book) + book.ActualHeight > 740, "the book runs to the foot of the screen")
+assert(not view:findChild("Pager", true) and screenTop(book) + book.ActualHeight > 700, "the book runs nearly to the foot of the screen")
 
--- A page's outer margin turns it; the dots lie over the foot of the book.
+-- A page's outer margin turns it; the dots sit under the book.
 local back, onward, dots = control("PrevPage"), control("NextPage"), control("Dots")
 assert(onward.ActualWidth >= 40 and count(onward) == 0 and onward.BackgroundColor.A == 0 and onward.ActualHeight == book.ActualHeight
     and screenLeft(onward) + onward.ActualWidth == screenLeft(book) + book.ActualWidth, "the right margin turns the page onward, and shows nothing")
 assert(screenLeft(back) == screenLeft(book) and back.ActualWidth >= 40, "the left margin turns it back")
-assert(screenTop(dots) > screenTop(book) + book.ActualHeight - 40 and screenTop(dots) + dots.ActualHeight < screenTop(book) + book.ActualHeight
-    and math.abs(screenLeft(dots) + dots.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1, "the dots sit over the foot of the book")
+local foot = screenTop(book) + book.ActualHeight
+assert(screenTop(dots) >= foot and math.abs(screenTop(dots) + dots.ActualHeight / 2 - (foot + 768) / 2) < 1
+    and math.abs(screenLeft(dots) + dots.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1,
+    "the dots sit midway between the book and the foot of the screen")
 assert(screenLeft(control("Steps")) >= screenLeft(sections) + sections.ActualWidth, "the bookmarks stick out of the book's edge")
 
 -- The left page reads, the right page shows.

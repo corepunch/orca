@@ -177,7 +177,9 @@
 .listen:hover, .listen:active { background-color: var(--sun-light); }
 .read-error { font-size: 13; color: var(--sun-light); text-vertical-align: center; }
 
-.book-row { padding: 0 12 16 20; }
+.book-row { padding: 0 12 0 20; }
+/* Side padding matches the book's, so the dots centre under the book. */
+.dots-row { padding: 0 56 0 20; }
 .book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
 .tabs { padding: 18 0 0; gap: 8; }
 .tab {
@@ -197,9 +199,8 @@
 .tab.tab-on, .tab.tab-on:hover { color: var(--ink); background-color: var(--sun); }
 
 /* The side padding is the page-turning margin. The gap gives each page the
-   same margin at the fold as at its outer edge. The foot keeps text clear of
-   the dots. */
-.spread { padding: 26 40 44; }
+   same margin at the fold as at its outer edge. */
+.spread { padding: 26 40 30; }
 .pages { gap: 80; }
 .page { gap: 14; }
 .kicker { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--animals); }
@@ -246,11 +247,11 @@
 .link-tag { color: var(--animals); }
 .link-text { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
 
-/* Invisible page margins that turn the page, and the dots at the book's foot. */
+/* Invisible page margins that turn the page, and the dots under the book. */
 .turn, .turn:hover, .turn:focus, .turn:active { padding: 0; border-radius: 0; background-color: #00000000; }
 .dots { gap: 8; }
-.dot { border-radius: 5; background-color: var(--paper-line); }
-.dot.dot-on { background-color: var(--animals); }
+.dot { border-radius: 5; background-color: var(--wood-line); }
+.dot.dot-on { background-color: var(--sun); }
 
 
 /* ---------- category colors ---------- */

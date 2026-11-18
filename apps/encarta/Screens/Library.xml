@@ -136,7 +136,8 @@
              narration, the open spread with one bookmark per question on its
              edge. The bar is docked: it reaches the top of the screen and
              keeps its own content clear of the status bar. The book fills the
-             rest, clear of the home indicator. -->
+             rest, above a strip for the page dots that stays clear of the
+             home indicator. -->
         <Node2D Name="Reader" Visible="false" class="reader">
             <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
                 <Button Name="Back" class="back">
@@ -163,7 +164,8 @@
                     </StackView>
                 </Button>
             </Grid>
-            <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" ContentInsetAdjustment="Always" class="book-row">
+            <Grid Name="BookArea" Rows="1fr auto" ContentInsetAdjustment="Always">
+            <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" class="book-row">
                 <Node2D Name="Book" class="book">
                     <Node2D Name="Sections"/>
                     <!-- The fold between the two pages: a thin crease with the left
@@ -176,10 +178,14 @@
                          they cover no content. -->
                     <Button Name="PrevPage" Width="40" MarginRight="auto" class="turn"/>
                     <Button Name="NextPage" Width="40" MarginLeft="auto" class="turn"/>
-                    <!-- A dot per spread of the question, at the foot of the book. -->
-                    <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="14" IgnoreHitTest="true" class="dots"/>
                 </Node2D>
                 <StackView Name="Steps" class="tabs"/>
+            </Grid>
+            <!-- A dot per spread of the question, midway between the foot of
+                 the book and the foot of the screen, centred under the book. -->
+            <Node2D Name="DotsRow" Height="40" IgnoreHitTest="true" class="dots-row">
+                <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" IgnoreHitTest="true" class="dots"/>
+            </Node2D>
             </Grid>
         </Node2D>
     </Node2D>
