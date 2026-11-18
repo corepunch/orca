@@ -332,6 +332,44 @@ assert(part("NextUpTag", 10).Text == "THE END" and part("NextUpText", 10).Text =
 click("Step1")
 assert(shown() == spread(1) and not control("PrevPage").Visible)
 
+-- Real touches, sent through hit testing: a sideways swipe turns the page,
+-- and so does a tap on a page's outer margin.
+local orca = require "orca"
+local function touch(message, x, y)
+    orca.system.dispatchMessage { target = view, message = message, x = x, y = y }
+    core.flushQueue()
+end
+local function swipe(x1, y1, x2, y2)
+    touch("LeftButtonDown", x1, y1)
+    touch("LeftButtonDragged", (x1 + x2) / 2, (y1 + y2) / 2)
+    touch("LeftButtonDragged", x2, y2)
+    touch("LeftButtonUp", x2, y2)
+end
+local function tap(x, y)
+    touch("LeftButtonDown", x, y)
+    touch("LeftButtonUp", x, y)
+end
+local midX, midY = screenLeft(book) + book.ActualWidth * 0.3, screenTop(book) + book.ActualHeight * 0.6
+swipe(midX, midY, midX + 200, midY)
+assert(shown() == spread(1), "the first spread has nothing before it")
+swipe(midX + 200, midY, midX, midY)
+assert(shown() == spread(2) and current() == 1, "swiping left turns the page onward")
+swipe(midX + 20, midY, midX, midY)
+swipe(midX, midY - 150, midX + 30, midY + 150)
+assert(shown() == spread(2), "a short or an up-and-down drag does not turn the page")
+-- This swipe ends over the card that leads to the next question.
+local card = part("NextUp", 2)
+local cardX, cardY = screenLeft(card) + card.ActualWidth / 2, screenTop(card) + card.ActualHeight / 2
+swipe(cardX - 200, cardY, cardX, cardY)
+assert(shown() == spread(1), "swiping right turns back, and letting go is not a tap")
+tap(screenLeft(book) + book.ActualWidth - 20, midY)
+assert(shown() == spread(2), "a tap on the right margin turns the page")
+tap(cardX, cardY)
+assert(shown() == spread(3) and current() == 2, "after a swipe, taps reach the page again")
+tap(screenLeft(book) + 20, midY)
+assert(shown() == spread(2), "a tap on the left margin turns back")
+click("Step1")
+
 -- On a narrow screen the pages stack and the spread scrolls.
 layout(600, 900)
 text, side = part("TextPage", 1), part("SidePage", 1)
@@ -408,7 +446,9 @@ for i, at in ipairs({ { 0.15, 0.48 }, { 0.55, 0.77 }, { 0.80, 0.29 } }) do
     assert(math.abs(x - at[1]) < 0.01 and math.abs(y - at[2]) < 0.01, ("spot %d sits at %.2f, %.2f"):format(i, x, y))
 end
 assert(not part("SpotNote", 1).Visible and part("SectionCaption", 1).Text:match("Tap the numbers"))
-click("Spot2", spread(1))
+-- A real tap, to be sure the spot is hit where it is drawn.
+local second = part("Spot2", 1)
+tap(screenLeft(second) + second.ActualWidth / 2, screenTop(second) + second.ActualHeight / 2)
 layout(1024, 768)
 assert(part("SpotNote", 1).Visible and part("SpotTitle", 1).Text == "2  Suckers" and part("SpotText", 1).Text:match("Round cups"))
 local chosen, other = control("Mark", part("Spot2", 1)).BackgroundColor, control("Mark", part("Spot1", 1)).BackgroundColor

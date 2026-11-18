@@ -213,6 +213,7 @@ function Controller.mount(view, openAudio, passportPath)
     control(view, "FeaturedQuestion").Text = byID[FEATURED].question
     self:addChips()
     self:addObjects()
+    self:watchSwipes()
     self:setCategory(nil)
     self:setMode("study")
     local search = control(view, "Search")
@@ -242,9 +243,9 @@ end
 
 -- An article is a book. Each question takes one spread per paragraph: the
 -- left page reads, the right page shows. The first spread of a question
--- carries its picture, the last one its extras and the way onward. Tapping
--- a page's outer margin turns it; bookmarks on the book's edge jump between
--- questions.
+-- carries its picture, the last one its extras and the way onward. Swiping
+-- sideways or tapping a page's outer margin turns it; bookmarks on the
+-- book's edge jump between questions.
 
 -- Numbered spots sit on a picture at fractions of its size. One grid holds
 -- them all, because a full-size layer per spot would take the taps meant for
@@ -421,6 +422,47 @@ function Controller:setPage(n)
     control(self.view, "NextPage").Visible = n < #self.spreads
     -- Reaching the last spread means the whole article has been read.
     if n == #self.spreads then self.passport:add(self.current.id) end
+end
+
+-- A sideways swipe across the book turns the page, like a tap on a page's
+-- margin. A press becomes a swipe once it has moved far enough and mostly
+-- sideways; from then on the book's content is hidden from hit testing, so
+-- letting go is not also a tap on whatever lies under the finger.
+local SWIPE_START, SWIPE = 12, 48
+
+function Controller:watchSwipes()
+    local view = self.view
+    local book = control(view, "Book")
+    local press, swiping
+    local function shield(on)
+        for _, name in ipairs({ "Sections", "PrevPage", "NextPage" }) do control(view, name).IgnoreHitTest = on end
+    end
+    book.LeftButtonDown = function(_, at)
+        -- A swipe let go outside the book never ended here: end it now.
+        if swiping then shield(false) end
+        press, swiping = { x = at.x, y = at.y, dx = 0 }, false
+        return false
+    end
+    book.LeftButtonDragged = function(_, at)
+        if not press then return false end
+        local dx, dy = at.x - press.x, at.y - press.y
+        if not swiping then
+            if math.abs(dx) < SWIPE_START or math.abs(dx) < math.abs(dy) * 1.5 then return false end
+            swiping = true
+            shield(true)
+        end
+        press.dx = dx
+        return true
+    end
+    book.LeftButtonUp = function()
+        local dx = press and press.dx or 0
+        local was = swiping
+        press, swiping = nil, false
+        if not was then return false end
+        shield(false)
+        if math.abs(dx) >= SWIPE then self:turnTo(self.page + (dx < 0 and 1 or -1)) end
+        return true
+    end
 end
 
 -- A page turned by hand stops the narration; the narration turns pages

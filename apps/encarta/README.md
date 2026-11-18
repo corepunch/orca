@@ -8,8 +8,8 @@ library is also a wall of illustrated questions or a bookshelf of illustrated
 covers, filtered by category or search. An article opens as a
 book: each question takes one spread per paragraph, with the text on the left
 page and a picture, a surprising fact or something to try on the right.
-Tapping a page's outer margin turns it, and bookmarks on the book's edge jump
-between questions. The library has 15 illustrated articles, and search and reading work
+Swiping sideways or tapping a page's outer margin turns it, and bookmarks on
+the book's edge jump between questions. The library has 15 illustrated articles, and search and reading work
 without a connection. Articles with a recording show **Read aloud** in the
 reader. The article follows the recording, turns the page with it, and marks
 each spoken word. Use **Pause** and **Resume** to take a break, or **Stop** to
