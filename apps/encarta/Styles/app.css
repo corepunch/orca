@@ -133,7 +133,8 @@
 .book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
 .tabs { padding: 18 0 0; gap: 8; }
 .tab {
-  border-radius: 10;
+  border-top-right-radius: 10;
+  border-bottom-right-radius: 10;
   font-size: 16;
   font-weight: bold;
   color: var(--ink);
