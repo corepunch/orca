@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A place in the passport: a question mark until the stamp is earned, then
+     the article's picture inside a ring of its category colour. -->
+<Node2D AspectRatio="1" class="stamp">
+    <TextBlock Name="Blank" class="stamp-blank">?</TextBlock>
+    <ImageView Name="Art" Stretch="UniformToFill" Visible="false" class="stamp-art"/>
+</Node2D>

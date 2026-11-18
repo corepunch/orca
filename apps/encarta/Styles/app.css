@@ -128,6 +128,30 @@
 }
 .bubble-all:hover, .bubble-all:active { background-color: var(--sun-light); }
 
+.drawer { border-radius: 8; background-color: #00000000; }
+.drawer:hover, .drawer:focus { background-color: #FFF8E71F; ring: 0 3 var(--sun); }
+.drawer-plate { color: var(--ink); }
+
+/* ---------- question hunt and passport ---------- */
+.hunt-body { padding: 0 20 20; }
+.stamp-count { padding: 8 16; border-radius: 20; font-size: 15; font-weight: bold; color: var(--ink); background-color: var(--sun); }
+.passport { padding: 24 24 28; gap: 10; border-radius: 14; background-color: #F6EDD8; }
+.passport-title { font-family: Noto Serif; font-size: 26; font-weight: bold; color: var(--your-body); }
+.stamps { margin-top: 8; }
+.stamp { border-radius: 60; border: 2 solid var(--wood-line); background-color: #00000000; }
+.stamp-blank { font-family: Noto Serif; font-size: 26; font-weight: bold; text-align: center; text-vertical-align: center; color: var(--wood-line); }
+.stamp.stamp-on { padding: 5; border: 0 solid #00000000; }
+.stamp-art { border-radius: 60; }
+.hunt-card { padding: 24 28 28; gap: 14; border-radius: 14; background-color: var(--paper); }
+.hunt-hint { font-size: 18; color: var(--muted); }
+.choice { padding: 0; border-radius: 14; border: 3 solid var(--paper-line); overflow: hidden; background-color: #FFFFFF; }
+.choice:hover, .choice:focus { border-color: var(--sun); }
+.choice-art { border-radius: 10; }
+.choice-title { padding: 10 12 12; font-size: 18; font-weight: bold; color: var(--ink); }
+.choice.choice-wrong, .choice.choice-wrong:hover { opacity: 0.4; border-color: var(--paper-line); }
+.choice.choice-right, .choice.choice-right:hover { border-color: var(--go); background-color: var(--go-light); }
+.feedback-title { font-family: Noto Serif; font-size: 24; font-weight: bold; color: var(--earth); }
+
 /* illustrated covers */
 .card, .cover { border-radius: 8; overflow: hidden; }
 .card:hover, .cover:hover, .card:focus, .cover:focus { ring: 0 3 var(--sun); }

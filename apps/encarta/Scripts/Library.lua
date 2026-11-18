@@ -2,6 +2,8 @@ local fs = require "orca.filesystem"
 local ui = require "orca.UIKit"
 local articles = require "encarta/Content/Articles"
 local ReadAloud = require "encarta/Scripts/ReadAloud"
+local Passport = require "encarta/Scripts/Passport"
+local Hunt = require "encarta/Scripts/Hunt"
 
 local Controller = {}
 local FEATURED = "octopus"
@@ -201,8 +203,11 @@ function Controller:addChips()
     end
 end
 
-function Controller.mount(view, openAudio)
-    local self = setmetatable({ view = view, history = {}, query = "", mode = "study" }, { __index = Controller })
+-- `passportPath` says where stamps are kept; the app's own folder if absent.
+function Controller.mount(view, openAudio, passportPath)
+    local self = setmetatable({ view = view, history = {}, query = "", mode = "study", home = "LibraryScroll" }, { __index = Controller })
+    self.passport = Passport.open(passportPath)
+    self.hunt = Hunt.new(view, articles, self.passport, function(id) self:openArticle(id) end)
     self.readAloud = ReadAloud.new(view, openAudio)
     self.readAloud.onBlock = function(block) self:follow(block) end
     control(view, "FeaturedQuestion").Text = byID[FEATURED].question
@@ -218,6 +223,7 @@ function Controller.mount(view, openAudio)
         ShowStudy = function() self:setMode("study") end,
         ShowWall = function() self:setMode("wall") end, ShowShelf = function() self:setMode("shelf") end,
         Postcard = self.openFeatured, BubbleClose = self.closeBubble,
+        OpenPassport = self.openHunt, OpenHunt = self.openHunt, HuntBack = self.closeHunt,
         Back = self.goBack,
         PrevPage = function() self:turnTo(self.page - 1) end,
         NextPage = function() self:turnTo(self.page + 1) end,
@@ -404,6 +410,8 @@ function Controller:setPage(n)
     end
     control(self.view, "PrevPage").Visible = n > 1
     control(self.view, "NextPage").Visible = n < #self.spreads
+    -- Reaching the last spread means the whole article has been read.
+    if n == #self.spreads then self.passport:add(self.current.id) end
 end
 
 -- A page turned by hand stops the narration; the narration turns pages
@@ -433,9 +441,25 @@ function Controller:follow(block)
     if target ~= offset then scroll.ContentOffset = { X = 0, Y = target } end
 end
 
+-- The reader covers whichever screen it was opened from: the library or the
+-- hunt.
 function Controller:setReaderVisible(visible)
-    control(self.view, "LibraryScroll").Visible = not visible
+    for _, name in ipairs({ "LibraryScroll", "Hunt" }) do
+        control(self.view, name).Visible = not visible and name == self.home
+    end
     control(self.view, "Reader").Visible = visible
+    if not visible and self.home == "Hunt" then self.hunt:show() end
+end
+
+function Controller:openHunt()
+    self:closeBubble()
+    self.home = "Hunt"
+    self:setReaderVisible(false)
+end
+
+function Controller:closeHunt()
+    self.home = "LibraryScroll"
+    self:setReaderVisible(false)
 end
 
 function Controller:showArticle()

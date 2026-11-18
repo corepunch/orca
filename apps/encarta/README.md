@@ -13,7 +13,11 @@ between questions. The library has 15 illustrated articles, and search and readi
 without a connection. Articles with a recording show **Read aloud** in the
 reader. The article follows the recording, turns the page with it, and marks
 each spoken word. Use **Pause** and **Resume** to take a break, or **Stop** to
-start over. The app needs no account or service.
+start over. The top drawers of the desk open **Question Hunt**: a riddle with
+three pictures, beside an explorer's passport with a stamp for every article.
+A stamp is earned by picking the right picture or by reading an article to its
+last spread. Stamps are kept in a small text file in the app's own folder
+(`ENCARTA_DATA_DIR` overrides where). The app needs no account or service.
 
 ## Run it
 
@@ -56,6 +60,7 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 | `image` | A bundled image path and a plain-language caption. Opens every question that has no image of its own, and is the cover when there is no `cover`. |
 | `spots` (optional, on an image) | Numbered points to tap on the picture: `{ x, y, title, text }`, with `x` and `y` as fractions of the picture from its top-left corner. Keep to three or four, each on a part the text names. |
 | `related` (optional) | The `id` of another article, offered as “See also” on the last spread. |
+| `hunt` | The article's riddle for Question Hunt: `{ question, fact }`. The question must have this article as its only sensible answer among all the others; the fact is one sentence from the article that settles it. |
 | `sources` | References for editorial review. The app never opens or fetches these URLs. |
 
 Keep artwork under [Images/](Images/) as landscape 3:2 JPEGs at 1536×1024.

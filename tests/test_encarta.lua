@@ -6,6 +6,9 @@ require "orca.renderer"
 
 local project = fs.init("apps/encarta")
 local position, playing, opened, closed = 0, false, 0, 0
+-- Stamps go to a scratch file, never to the real passport.
+local passportPath = os.tmpname()
+os.remove(passportPath)
 local app = require(project.StartupViewController)(function(bytes)
     assert(#bytes > 100 and bytes:sub(1, 4) == "RIFF" and bytes:sub(9, 12) == "WAVE", "read packaged WAV audio")
     position, opened = 0, opened + 1
@@ -15,7 +18,7 @@ local app = require(project.StartupViewController)(function(bytes)
         status = function() return position, playing end,
         close = function() playing = false; closed = closed + 1 end,
     }
-end)
+end, passportPath)
 app:activate_route("/")
 local view = app.screen
 view.ResizeMode = "NoResize"
@@ -100,6 +103,64 @@ click("ShowStudy")
 click("Postcard")
 assert(reader.Visible and control("ArticleTitle").Text == "Octopuses", "the postcard opens today's question")
 click("Back")
+-- The top drawers open the passport and the hunt.
+local huntDrawer, hunt = control("OpenHunt"), control("Hunt")
+assert(math.abs(left(huntDrawer) - left(study) - study.ActualWidth * 0.674) < 1 and math.abs(huntDrawer.ActualWidth - study.ActualWidth * 0.29) < 1
+    and math.abs(top(huntDrawer) - top(study) - study.ActualHeight * 456 / 625) < 1 and huntDrawer.ActualHeight >= 44, "the hunt's button covers the top right drawer")
+assert(math.abs(left(control("OpenPassport")) - left(study) - study.ActualWidth * 0.036) < 1, "the passport's covers the top left one")
+click("OpenHunt")
+layout(1024, 768)
+assert(hunt.Visible and not library.Visible and not reader.Visible)
+local passport, card, stamps = control("Passport"), control("HuntCard"), control("Stamps")
+assert(left(card) > left(passport) + passport.ActualWidth and card.ActualWidth > passport.ActualWidth, "the passport sits beside the hunt")
+assert(control("StampCount").Text == "0 of 15 stamps" and count(stamps) == 15)
+local blank = control("Stamp_octopus")
+assert(control("Blank", blank).Visible and not control("Art", blank).Visible and math.abs(blank.ActualWidth - blank.ActualHeight) < 1, "an unearned stamp is a round question mark")
+-- A hunt is a riddle and three pictures; the first is for the first article.
+local choices = control("Choices")
+assert(control("HuntQuestion").Text == "Which animal can squeeze through any hole its beak fits through?")
+assert(control("HuntKicker").Text == "HUNT  ·  ANIMALS" and count(choices) == 3 and control("HuntHint").Text == "Pick a picture.")
+assert(control("Art", control("Choice_octopus")).Src == "encarta/Images/Thumbs/octopus.jpg" and control("Title", control("Choice_dinosaurs")).Text == "Dinosaurs")
+assert(control("Choice_magnets").ActualHeight >= 88 and not control("HuntFeedback").Visible and not control("HuntActions").Visible)
+click("Choice_dinosaurs")
+assert(control("HuntHint").Text == "Not this one. Try another picture." and not control("HuntFeedback").Visible
+    and control("StampCount").Text == "0 of 15 stamps", "a wrong pick costs nothing")
+click("Choice_octopus")
+layout(1024, 768)
+assert(control("HuntFeedback").Visible and control("HuntFeedbackTitle").Text == "Yes! New stamp" and control("HuntReveal").Text:match("no bones"))
+assert(control("StampCount").Text == "1 of 15 stamps" and control("HuntActions").Visible)
+local earned = control("Stamp_octopus")
+assert(control("Art", earned).Visible and control("Art", earned).Src == "encarta/Images/Thumbs/octopus.jpg" and not control("Blank", earned).Visible)
+assert(earned.BackgroundColor.R > 0.8 and earned.BackgroundColor.B < 0.3, "an earned stamp wears its category colour")
+assert(card.ScrollHeight <= card.ActualHeight + 1 and passport.ScrollHeight <= passport.ActualHeight + 1, "the hunt and the passport fit the screen")
+click("Choice_dinosaurs")
+assert(control("HuntHint").Text == "You found it!", "a solved hunt ignores further picks")
+click("NextHunt")
+assert(control("HuntQuestion").Text == "Where have only twelve people ever walked?" and not control("HuntFeedback").Visible, "the next hunt is the next unstamped article")
+click("Choice_moon")
+assert(control("StampCount").Text == "2 of 15 stamps" and control("ReadHuntedText").Text == "Read “Why does the Moon change shape?”")
+click("ReadHunted")
+assert(reader.Visible and not hunt.Visible and control("ArticleTitle").Text == "The Moon", "the hunt leads into its article")
+click("Back")
+assert(hunt.Visible and not library.Visible, "Back returns to the hunt")
+assert(control("HuntQuestion").Text == "What do about a million tiny cloud drops make when they join?", "a solved hunt makes way for a new one")
+click("HuntBack")
+assert(library.Visible and study.Visible and not hunt.Visible)
+-- Reading an article to its last spread earns its stamp too, and stamps are
+-- kept on disk.
+app.libraryController:openArticle("heart")
+assert(not app.libraryController.passport:has("heart"))
+app.libraryController:setPage(#app.libraryController.spreads)
+click("Back")
+click("OpenPassport")
+assert(hunt.Visible and control("StampCount").Text == "3 of 15 stamps" and control("Art", control("Stamp_heart")).Visible)
+assert(control("HuntQuestion").Text:match("cloud drops"), "an unsolved hunt waits for you")
+local kept = require("encarta/Scripts/Passport").open(passportPath)
+assert(kept.count == 3 and kept:has("octopus") and kept:has("moon") and kept:has("heart") and not kept:has("water"), "stamps survive a restart")
+assert(not kept:add("moon") and kept.count == 3, "a stamp is earned once")
+click("HuntBack")
+layout(1024, 768)
+
 -- Typing a question leaves the study for the wall, where results show.
 search.Text = "moon"
 core.flushQueue()
@@ -409,6 +470,7 @@ local function checkArtwork(path)
 end
 for _, article in ipairs(require "encarta/Content/Articles") do
     assert(article.question and article.image.caption ~= "", article.id)
+    assert(#article.hunt == 2 and article.hunt[1]:sub(-1) == "?" and article.hunt[2] ~= "", article.id .. " has a riddle and its fact")
     checkArtwork(article.image.path)
     if article.cover then checkArtwork(article.cover) end
     assert(not article.related or article.related ~= article.id and (function()
@@ -437,4 +499,5 @@ for name in pairs(timings) do
     end
 end
 
-print("PASS: Encarta study, question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")
+os.remove(passportPath)
+print("PASS: Encarta study, question hunt and passport, question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")

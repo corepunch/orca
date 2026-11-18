@@ -3,7 +3,8 @@
 -- { x, y, title, text } with x and y as fractions of the picture. A section
 -- may add `wow` (its astonishing fact) and `try` (something to do); they sit
 -- on the question's last spread and are not narrated. An article may name a
--- `related` article id.
+-- `related` article id. Every article has a `hunt`: a riddle whose answer is
+-- the article, and the fact that settles it.
 local function art(name, caption, spots)
     return { path = "encarta/Images/" .. name .. ".jpg", caption = caption, spots = spots }
 end
@@ -26,6 +27,7 @@ local sprout = art("seeds", "A bean seed splits open. A root grows down, and a s
 return {
     {
         id = "octopus",
+        hunt = { "Which animal can squeeze through any hole its beak fits through?", "An octopus has no bones. Its only hard part is its beak." },
         category = "Animals",
         title = "Octopuses",
         question = "How does an octopus hide?",
@@ -59,6 +61,7 @@ return {
     },
     {
         id = "moon",
+        hunt = { "Where have only twelve people ever walked?", "Twelve astronauts walked on the Moon between 1969 and 1972." },
         related = "sun",
         category = "Space",
         title = "The Moon",
@@ -91,6 +94,7 @@ return {
     },
     {
         id = "water",
+        hunt = { "What do about a million tiny cloud drops make when they join?", "About a million cloud drops must join to make one raindrop." },
         related = "rainbows",
         category = "Earth",
         title = "The Water Cycle",
@@ -126,6 +130,7 @@ return {
     },
     {
         id = "bees",
+        hunt = { "Who dances in the dark to give directions?", "A honeybee’s waggle dance shows other bees where the flowers are." },
         related = "seeds",
         category = "Animals",
         title = "Honeybees",
@@ -162,6 +167,7 @@ return {
     },
     {
         id = "penguins",
+        hunt = { "Which bird swims with its wings and cannot fly?", "A penguin’s flat, stiff wings work like paddles." },
         related = "octopus",
         category = "Animals",
         title = "Penguins",
@@ -198,6 +204,7 @@ return {
     },
     {
         id = "dinosaurs",
+        hunt = { "Whose only living relatives are the birds?", "Birds are the only dinosaurs still alive." },
         related = "pyramids",
         category = "Long Ago",
         title = "Dinosaurs",
@@ -235,6 +242,7 @@ return {
     },
     {
         id = "sun",
+        hunt = { "What is so big that about 1.3 million Earths could fit inside it?", "The Sun is about 100 times wider than Earth." },
         related = "moon",
         category = "Space",
         title = "The Sun",
@@ -264,6 +272,7 @@ return {
     },
     {
         id = "mars",
+        hunt = { "Which planet is covered in rust?", "Rust in its rocks and dust makes Mars red." },
         related = "moon",
         category = "Space",
         title = "Mars",
@@ -302,6 +311,7 @@ return {
     },
     {
         id = "volcanoes",
+        hunt = { "What built every one of the main Hawaiian Islands?", "Layer by layer, lava from volcanoes built the islands." },
         related = "earth-layers",
         category = "Earth",
         title = "Volcanoes",
@@ -336,6 +346,7 @@ return {
     },
     {
         id = "rainbows",
+        hunt = { "What appears when sunlight bends and bounces inside raindrops?", "Each raindrop spreads sunlight into its colors." },
         related = "water",
         category = "Science",
         title = "Rainbows",
@@ -370,6 +381,7 @@ return {
     },
     {
         id = "magnets",
+        hunt = { "What can pull a paper clip without touching it?", "A magnetic field spreads out around a magnet." },
         related = "earth-layers",
         category = "Science",
         title = "Magnets",
@@ -406,6 +418,7 @@ return {
     },
     {
         id = "seeds",
+        hunt = { "What holds a baby plant, its food, and a coat?", "Every seed has those three main parts." },
         related = "bees",
         category = "Plants",
         title = "Seeds",
@@ -438,6 +451,7 @@ return {
     },
     {
         id = "heart",
+        hunt = { "What makes a lub-dub sound inside your chest?", "The sound is your heart’s valves snapping shut." },
         category = "Your Body",
         title = "Your Heart",
         question = "What does your heart do all day?",
@@ -469,6 +483,7 @@ return {
     },
     {
         id = "pyramids",
+        hunt = { "What was built from more than two million blocks of stone?", "The Great Pyramid at Giza was built for King Khufu." },
         related = "dinosaurs",
         category = "Long Ago",
         title = "The Pyramids",
@@ -505,6 +520,7 @@ return {
     },
     {
         id = "earth-layers",
+        hunt = { "What has a solid metal ball at its center?", "Earth’s inner core is solid iron, squeezed too tightly to melt." },
         related = "volcanoes",
         category = "Earth",
         title = "Inside Earth",

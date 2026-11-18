@@ -5,10 +5,10 @@ local Library = require "encarta/Scripts/Library"
 return Application:extend {
     quitOnQ = false,
     layout = function(_, context) return context.slots.inner end,
-    __init = function(self, openAudio)
+    __init = function(self, openAudio, passportPath)
         Application.__init(self)
         self.library = assert(fs.loadObject("encarta/Screens/Library"))
-        self.libraryController = Library.mount(self.library, openAudio)
+        self.libraryController = Library.mount(self.library, openAudio, passportPath)
     end,
     run = function(self)
         local result = Application.run(self)
