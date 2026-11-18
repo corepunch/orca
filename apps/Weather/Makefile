@@ -6,5 +6,5 @@ LIB_PATH = $(BUILD_DIR)
 .PHONY: run
 
 run:
-	@echo "Running WeatherTabs sample..."
+	@echo "Running Weather..."
 	DYLD_LIBRARY_PATH=$(LIB_PATH) $(BUILD_DIR)/$(APP_NAME) $(DATA_DIR)

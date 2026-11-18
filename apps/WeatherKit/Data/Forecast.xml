@@ -1,0 +1,15 @@
+<!-- The forecast panorama: the spots, the selected spot's report, and one
+     view per section. The report refreshes every half hour while showing. -->
+<DataScope Name="Forecast" Schema="WeatherKit/Data/Weather.Schema.xml">
+  <Query Name="Spots" Entity="WeatherSpot" Operation="spots" Description="The profile's spots."/>
+  <View Name="SpotList" Source="Spots" Selection="first"/>
+  <Query Name="Report" Entity="WeatherRow" Operation="report" Require="SpotId" Poll="1800000"
+         Description="The verdicts and conditions for the selected spot.">
+    <Param Name="SpotId" Type="string" Bind="SpotList.Selected.Id"/>
+  </Query>
+  <View Name="Now" Source="Report" Filter="nowRows"/>
+  <View Name="Reasons" Source="Report" Filter="reasonRows"/>
+  <View Name="Hours" Source="Report" Filter="hourRows"/>
+  <View Name="Days" Source="Report" Filter="dayRows"/>
+  <View Name="Conditions" Source="Report" Filter="metricRows"/>
+</DataScope>

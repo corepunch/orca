@@ -1,15 +1,17 @@
-Name="Weather"
-StartupViewController="Weather/App"
-StartupRoute="/"
-WindowWidth=400
-WindowHeight=800
+-- Weather: the everyday profile over the shared weather kit (../WeatherKit).
+-- Fishing, Surf and the other activity apps are siblings of this one.
+Name = "Weather"
+StartupViewController = "Weather/App"
+StartupRoute = "/"
+WindowWidth = 390
+WindowHeight = 844
 ProjectReferences = {
-  { Name="views",  Path="views" },
-  { Name="assets", Path="assets" },
-  { Name="model",  Path="model"  }
+    { Name = "WeatherKit", Path = "../WeatherKit" },
+}
+EnginePlugins = { { Name = "orca.UIKit" } }
+ThemeLibrary = {
+    { Key = "accent", Value = "#0050EF" },
 }
 SystemMessages = {
-  { Message="KeyDown", Key="q", Command="return" },
-  { Message="WindowClosed", Command="return" },
-  { Message="RequestReload", Command="window:refresh()" }
+    { Message = "WindowClosed", Command = "return" },
 }

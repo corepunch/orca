@@ -1,0 +1,23 @@
+<!-- What a weather app shows. Every report row is a WeatherRow; Kind tells the
+     panorama section (now, reason, hour, day, metric) and Tone the verdict
+     (good, fair, poor, info) that colours it. -->
+<Schema>
+  <Entity Name="WeatherSpot" Key="Id" ObjectName="Id" Description="A place the profile forecasts for.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Title" Type="string" Source="title"/>
+    <Column Name="Region" Type="string" Source="region" Default=""/>
+  </Entity>
+  <Entity Name="WeatherRow" Key="Id" ObjectName="Id" Description="One line of a report.">
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Kind" Type="string" Source="kind"/>
+    <Column Name="Order" Type="int" Source="order"/>
+    <Column Name="Title" Type="string" Source="title" Default=""/>
+    <Column Name="Value" Type="string" Source="value" Default=""/>
+    <Column Name="Detail" Type="string" Source="detail" Default=""/>
+    <Column Name="Note" Type="string" Source="note" Default=""/>
+    <Column Name="Tone" Type="string" Source="tone" Default="info"/>
+    <Column Name="Score" Type="int" Source="score" Default="0"/>
+    <Column Name="ScoreText" Type="string" Computed="scoreText" DependsOn="Score" Description="The score as shown, 0 to 100."/>
+    <Column Name="Icon" Type="string" Source="icon" Default=""/>
+  </Entity>
+</Schema>

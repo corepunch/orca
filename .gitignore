@@ -108,8 +108,6 @@ build/webgl/plugins_luaopen.h
 site/
 docs/quickstart.md
 gdb.txt
-apps/Weather/**/*.lua
-!apps/Weather/config/*.lua
 Error
 /apps/Book/Images
 

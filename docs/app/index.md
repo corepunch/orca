@@ -69,7 +69,7 @@ ORCA currently supports two entry styles through the same startup module:
   the normal entry for an XML-first app. Declare the resource libraries it uses.
 - `StartupViewController = "MyApp/App"`, with `StartupRoute`, constructs an
   `Application` subclass and dispatches its initial route. This is the pattern
-  used by Banking and Weather.
+  used by Banking and by the weather apps (Weather, Fishing, Surf).
 
 Set one entry style deliberately. If both are present, the current startup
 module chooses `StartupViewController` first.
@@ -251,7 +251,7 @@ Treat samples as references for specific mechanisms, not complete standards.
 | --- | --- | --- |
 | [Adventure shell](../../apps/Adventure/Screens/Adventures.xml) | XML shell, tab bindings, native page navigation | Its play controller also constructs message rows manually; this is not the preferred collection ownership pattern. |
 | [Banking app](../../apps/Banking/App.moon) | `Application`, separate views/layout, authentication routing | Banking was migrated to Widget/Application in commit `2071831f`; its old routing plugin was removed. |
-| [Weather app](../../apps/Weather/App.moon) | The same Widget/Application entry; separate model/service modules | Some views obtain remote data during content construction; prefer explicit request state for new work. |
+| [Weather kit](../../apps/WeatherKit/README.md) | One XML panorama, scope and provider shared by several apps; each app is a scoring profile | Profiles are Lua tables; spots are fixed lists, with no search or device location yet. |
 | [Example package](../../apps/Example/package.lua) | Semantic theme values, CSS, resources, and reusable presentation | Its dark/violet palette is one app design, not a universal ORCA theme. |
 | [Chat app](../../apps/chat/App.lua) | A Lua service adapter, working app states, and a native portrait preview | Its application shell remains Lua; message and photo rows use XML templates with typed, retained ItemsSource records. |
 

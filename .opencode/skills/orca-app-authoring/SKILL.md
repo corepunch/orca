@@ -17,9 +17,11 @@ documents rather than duplicating them in skills.
   convert existing applications.
 - Preserve an explicit user choice or established Lua/MoonScript widget app.
   Both presentation paths use the same ORCA runtime.
-- Select a relevant sample by mechanism. Banking and Weather use the current
+- Select a relevant sample by mechanism. Banking uses the current
   Widget/Application pattern; Adventure demonstrates native page navigation;
-  Example demonstrates themes and CSS. Do not copy an entire sample or treat
+  Example demonstrates themes and CSS; WeatherKit shows several apps
+  (Weather, Fishing, Surf) sharing one XML page, scope and provider through
+  per-app profiles. Do not copy an entire sample or treat
   the chat prototype's single app module as the standard.
 
 Author pages, templates and scenes in XML.

@@ -1,0 +1,25 @@
+/* Windows Phone dark theme: black page, white type, one accent per app
+   (the profile's ThemeLibrary `accent`). Verdict tones are state classes
+   set from the data: good, fair, poor, info. */
+.wx-page { background-color: #000000; }
+.wx-ink { color: #ffffff; }
+.wx-dim { color: #9a9a9a; }
+.wx-accent { color: var(--accent); }
+.wx-link { background-color: #00000000; color: var(--accent); }
+.wx-row { background-color: #00000000; }
+.wx-poor { color: #e51400; }
+
+.wx-tile { background-color: #333333; }
+.wx-tile-ink { color: #ffffff; }
+.wx-bar { background-color: #333333; }
+.wx-tone { color: #9a9a9a; }
+
+.good .wx-tile { background-color: var(--accent); }
+.good .wx-bar { background-color: var(--accent); }
+.fair .wx-tile { background-color: #f0a30a; }
+.fair .wx-bar { background-color: #f0a30a; }
+.poor .wx-tile { background-color: #e51400; }
+.poor .wx-bar { background-color: #e51400; }
+.good .wx-tone { color: var(--accent); }
+.fair .wx-tone { color: #f0a30a; }
+.poor .wx-tone { color: #e51400; }

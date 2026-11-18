@@ -729,6 +729,7 @@ APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome test-editor-tabs test-encarta
+APP_LUA_TESTS += test-weather-profiles
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -783,6 +784,8 @@ $(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lu
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 .PHONY: test-encarta
 $(eval $(call LUA_TEST_RULE,test-encarta,tests/test_encarta.lua,unite))
+.PHONY: test-weather-profiles
+$(eval $(call LUA_TEST_RULE,test-weather-profiles,tests/test_weather_profiles.lua,unite copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
 
