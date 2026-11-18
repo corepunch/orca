@@ -34,20 +34,6 @@ ORCA_API int write_property(lua_State*, struct PropertyType const*, void const*)
   lua_setfield(L, -2, "__gc");                                                 \
   lua_setmetatable(L, -2);
 
-//INLINE void*
-//API_GetModule(lua_State* L, lpcString_t szName)
-//{
-//  lua_getfield(L, LUA_REGISTRYINDEX, szName);
-//  if (lua_islightuserdata(L, -1) || lua_isuserdata(L, -1)) {
-//    void* value = lua_touserdata(L, -1);
-//    lua_pop(L, 1);
-//    return value;
-//  } else {
-//    lua_pop(L, 1);
-//    return NULL;
-//  }
-//}
-
 INLINE
 int
 luaX_require(lua_State* L, lpcString_t szModuleName, uint32_t dwReturnValues)

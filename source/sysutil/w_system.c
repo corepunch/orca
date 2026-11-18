@@ -221,8 +221,6 @@ ORCA_API int luaopen_orca_system(lua_State* L)
      explicit system.set_theme() call in the application config. */
   dark_theme = axIsDarkTheme();
 
-  //	lua_pushlightuserdata(L, &api_system);
-  //	lua_setfield(L, LUA_REGISTRYINDEX, IID_SYSTEM);
   luaL_newlib(L, lib_system);
 
   lua_pushstring(L, axGetPlatform());
