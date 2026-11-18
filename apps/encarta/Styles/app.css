@@ -208,19 +208,25 @@
 .tabs { padding: 18 0 0; gap: 8; }
 .tab {
   /* Square where the bookmark leaves the book, round at its free end. */
+  padding: 0;
   border-radius: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-top-right-radius: 10;
   border-bottom-right-radius: 10;
-  font-size: 16;
-  font-weight: bold;
-  color: var(--ink);
   background-color: var(--paper-line);
 }
 .tab:hover { background-color: var(--paper); }
-.tab.tab-done, .tab.tab-done:hover { color: var(--cream); background-color: var(--go); }
-.tab.tab-on, .tab.tab-on:hover { color: var(--ink); background-color: var(--sun); }
+.tab.tab-done, .tab.tab-done:hover { background-color: var(--go); }
+/* The current bookmark lies on the page, so all its corners show. */
+.tab.tab-on, .tab.tab-on:hover {
+  border-top-left-radius: 10;
+  border-bottom-left-radius: 10;
+  background-color: var(--sun);
+  box-shadow: 0 1 4 0 #2A1E1040;
+}
+.tab-label { font-size: 16; font-weight: bold; text-align: center; text-vertical-align: center; color: var(--ink); }
+.tab-label-done { color: var(--cream); }
 
 /* The side padding is the page-turning margin. The gap gives each page the
    same margin at the fold as at its outer edge. */

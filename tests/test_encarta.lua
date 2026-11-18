@@ -258,7 +258,7 @@ assert(count(sections) == 10 and shown() == spread(1), "five questions of two pa
 assert(part("Title", 1).Text == "Why does the Moon seem to change shape?")
 assert(part("Kicker", 1).Text == "QUESTION 1 OF 5  ·  PAGE 1 OF 2")
 assert(control("ArticleCategory").Text == "SPACE" and control("ArticleTitle").Text == "The Moon" and current() == 1)
-assert(count(control("Steps")) == 5 and control("Step3").Text == "3", "one bookmark per question")
+assert(count(control("Steps")) == 5 and control("Label", control("Step3")).Text == "3", "one bookmark per question")
 
 -- The bar and the book fill the height; the bar keeps its content below
 -- the status bar and the book stays above the home indicator.
@@ -281,7 +281,11 @@ local foot = screenTop(book) + book.ActualHeight
 assert(screenTop(dots) >= foot and math.abs(screenTop(dots) + dots.ActualHeight / 2 - (foot + 768) / 2) < 1
     and math.abs(screenLeft(dots) + dots.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1,
     "the dots sit midway between the book and the foot of the screen")
-assert(screenLeft(control("Steps")) >= screenLeft(sections) + sections.ActualWidth, "the bookmarks stick out of the book's edge")
+local edge = screenLeft(sections) + sections.ActualWidth
+assert(screenLeft(control("Step2")) == edge and control("Shade", control("Step2")).Visible, "a resting bookmark is tucked behind the book, in its shade")
+assert(screenLeft(control("Step1")) < edge and not control("Shade", control("Step1")).Visible
+    and screenLeft(control("Step1")) + control("Step1").ActualWidth == screenLeft(control("Step2")) + control("Step2").ActualWidth,
+    "the current bookmark reaches onto the page")
 
 -- The left page reads, the right page shows.
 local text, side = part("TextPage", 1), part("SidePage", 1)

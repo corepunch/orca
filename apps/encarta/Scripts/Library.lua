@@ -373,13 +373,16 @@ function Controller:addExtras(spread, article, n)
     onward.Visible = true
 end
 
+local TAB, TAB_REACH = 44, 12
+
 function Controller:buildSteps(article)
     local steps = control(self.view, "Steps")
     clear(steps)
     self.steps = {}
     for i in ipairs(article.sections) do
         local step = prefab("Step")
-        step.Name, step.Text = "Step" .. i, tostring(i)
+        step.Name = "Step" .. i
+        control(step, "Label").Text = tostring(i)
         step.Click = function() self:turnTo(self.firstSpread[i]) end
         steps:addChild(step)
         self.steps[i] = step
@@ -397,8 +400,14 @@ function Controller:setPage(n)
     local spread = self.spreads[n]
     spread.node.ContentOffset = { X = 0, Y = 0 }
     self.currentSection = spread.section
+    -- The current bookmark is stuck onto the page: it reaches over the book's
+    -- edge and loses the shade the book casts on the others.
     for i, step in ipairs(self.steps) do
-        step.StateClasses = i == spread.section and "tab-on" or (i < spread.section and "tab-done" or "")
+        local on = i == spread.section
+        step.StateClasses = on and "tab-on" or (i < spread.section and "tab-done" or "")
+        step.Width, step.MarginLeft = on and TAB + TAB_REACH or TAB, on and -TAB_REACH or 0
+        control(step, "Label").StateClasses = step.StateClasses ~= "" and "tab-label-" .. step.StateClasses:sub(5) or ""
+        control(step, "Shade").Visible = not on
     end
     local dots = control(self.view, "Dots")
     clear(dots)
