@@ -2,11 +2,14 @@
 
 An iPad-first, offline encyclopedia for emerging readers, written in the
 spirit of the *Was ist Was* books: every topic starts from a question a child
-would ask. The home screen is a wall of illustrated questions, or a bookshelf
-of illustrated covers, filtered by category or search. An article opens as a
+would ask. The home screen is an explorer's study: each object on the desk
+stands for a category, and tapping one offers a few of its questions. The same
+library is also a wall of illustrated questions or a bookshelf of illustrated
+covers, filtered by category or search. An article opens as a
 book: each question takes one spread per paragraph, with the text on the left
 page and a picture, a surprising fact or something to try on the right.
-Bookmarks on the book's edge jump between questions. The library has 15 illustrated articles, and search and reading work
+Tapping a page's outer margin turns it, and bookmarks on the book's edge jump
+between questions. The library has 15 illustrated articles, and search and reading work
 without a connection. Articles with a recording show **Read aloud** in the
 reader. The article follows the recording, turns the page with it, and marks
 each spoken word. Use **Pause** and **Resume** to take a break, or **Stop** to
@@ -45,7 +48,7 @@ and the visual treatment in [Styles/app.css](Styles/app.css).
 
 | Fields | What to write |
 | --- | --- |
-| `id`, `title`, `category`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>` and `.chip-<slug>` rule in the stylesheet, and an icon in `Icons/`. |
+| `id`, `title`, `category`, `keywords` | Stable unique ID, visible topic metadata, and words a child might search for. A new category also needs a color in `package.lua`, a `.cat-<slug>`, `.chip-<slug>` and `.plate-<slug>` rule in the stylesheet, an icon in `Icons/`, and an object in the study: something in the picture and an `Object_<slug>` button over it in `Screens/Library.xml`. |
 | `question` | The cover question shown on the wall and the bookshelf, such as “Why is Mars red?”. |
 | `cover` (optional) | A bundled cover path for the Questions overview and Bookshelf. Leave it out to reuse the article's illustration. If neither is supplied, the cover uses the category icon. |
 | `sections` | The article body. Each section is a question heading followed by one or more paragraphs. Every paragraph gets its own spread, so keep a paragraph to what fits one page (about 75 words). A section can also have a named `image = { path = …, caption = … }` field. Use this for a picture or diagram that helps answer that question. |

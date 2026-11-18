@@ -15,11 +15,92 @@
                         <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
                     </Button>
                 </Grid>
-                <Grid Columns="auto auto" Spacing="4" class="views">
+                <Grid Columns="auto auto auto" Spacing="4" class="views">
+                    <Button Name="ShowStudy" Text="Study" class="view"/>
                     <Button Name="ShowWall" Text="Questions" class="view"/>
                     <Button Name="ShowShelf" Text="Bookshelf" class="view"/>
                 </Grid>
             </Grid>
+            <!-- The explorer's study: one picture, with a grid of clear buttons
+                 laid over it. The grid's tracks follow the picture: the wall
+                 above the desk, split into the window, the middle and the
+                 right, and the desk front below. Each object's button fills
+                 its cell and carries the name plate at its foot. -->
+            <Node2D Name="Study" AspectRatio="1.6" class="room">
+                <ImageView Name="StudyArt" Src="encarta/Images/study.jpg" Stretch="Fill" IgnoreHitTest="true" class="room-art"/>
+                <Grid Name="StudyMap" Rows="412fr 213fr">
+                    <Grid Columns="300fr 400fr 300fr">
+                        <Button Name="Object_space" class="object">
+                            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                <TextBlock Text="Space" class="plate plate-space" IgnoreHitTest="true"/>
+                            </StackView>
+                        </Button>
+                        <Grid Rows="150fr 262fr">
+                            <Node2D/>
+                            <Grid Columns="110fr 190fr 100fr">
+                            <Button Name="Object_long-ago" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Long Ago" class="plate plate-long-ago" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            <Button Name="Object_earth" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Earth" class="plate plate-earth" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            <Button Name="Object_plants" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Plants" class="plate plate-plants" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            </Grid>
+                        </Grid>
+                        <Grid Rows="215fr 197fr">
+                            <Button Name="Object_your-body" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Your Body" class="plate plate-your-body" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            <Grid Columns="115fr 185fr">
+                            <Button Name="Object_science" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Science" class="plate plate-science" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            <Button Name="Object_animals" class="object">
+                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                                    <TextBlock Text="Animals" class="plate plate-animals" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Button>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                    <Grid Columns="350fr 300fr 350fr">
+                        <Node2D/>
+                        <Button Name="Postcard" MarginTop="auto" MarginBottom="auto" class="postcard">
+                            <Grid Columns="72px 1fr" Spacing="12" AlignItems="Center" IgnoreHitTest="true">
+                                <ImageView Name="PostcardImage" Stretch="UniformToFill" AspectRatio="1" IgnoreHitTest="true" class="postcard-art"/>
+                                <StackView IgnoreHitTest="true" class="postcard-copy">
+                                    <TextBlock class="postcard-tag" IgnoreHitTest="true">TODAY’S QUESTION</TextBlock>
+                                    <TextBlock Name="PostcardQuestion" class="postcard-question" WordWrap="true" IgnoreHitTest="true"/>
+                                </StackView>
+                            </Grid>
+                        </Button>
+                        <Node2D/>
+                    </Grid>
+                </Grid>
+                <!-- Tapping an object opens its questions here, over the wall. -->
+                <StackView Name="Bubble" Visible="false" Width="400" MarginLeft="auto" MarginRight="auto" MarginTop="14" MarginBottom="auto" class="bubble">
+                    <Grid Columns="1fr auto" AlignItems="Center">
+                        <TextBlock Name="BubbleTitle" class="bubble-title"/>
+                        <Button Name="BubbleClose" Width="44" Height="44" class="bubble-close">
+                            <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                        </Button>
+                    </Grid>
+                    <StackView Name="BubbleList" class="bubble-list"/>
+                    <Button Name="BubbleAll" class="bubble-all"/>
+                </StackView>
+            </Node2D>
             <StackView Name="Categories" Direction="Horizontal" class="chips"/>
             <Node2D Name="Featured" Height="176" class="feature">
                 <ImageView Name="FeaturedImage" Src="encarta/Images/octopus.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
@@ -36,7 +117,7 @@
                     </StackView>
                 </StackView>
             </Node2D>
-            <Grid Columns="1fr auto">
+            <Grid Name="CatalogHead" Columns="1fr auto">
                 <TextBlock Name="CatalogTitle" class="section-title"/>
                 <TextBlock Name="ResultCount" class="count"/>
             </Grid>
@@ -53,10 +134,9 @@
 
         <!-- The reader is a book on a desk: a bar with the way back and the
              narration, the open spread with one bookmark per question on its
-             edge, and the page turner. The bar and the turner are docked:
-             they reach the screen edges, keep their own content clear of the
-             status bar and the home indicator, and the book fills the space
-             between them. -->
+             edge. The bar is docked: it reaches the top of the screen and
+             keeps its own content clear of the status bar. The book fills the
+             rest, clear of the home indicator. -->
         <Node2D Name="Reader" Visible="false" class="reader">
             <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
                 <Button Name="Back" class="back">
@@ -91,27 +171,17 @@
                     <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
                         <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
                     </ImageView>
+                    <!-- Tapping the outer margin of a page turns it. -->
+                    <Button Name="PrevPage" Width="52" MarginRight="auto" class="turn">
+                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                    </Button>
+                    <Button Name="NextPage" Width="52" MarginLeft="auto" class="turn">
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                    </Button>
+                    <!-- A dot per spread of the question, at the foot of the book. -->
+                    <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="14" IgnoreHitTest="true" class="dots"/>
                 </Node2D>
                 <StackView Name="Steps" class="tabs"/>
-            </Grid>
-            <Grid Name="Pager" Columns="1fr auto 1fr" SafeAreaEdge="Bottom" ContentInsetAdjustment="Always" class="pager">
-                <Node2D>
-                <Button Name="PrevPage" MarginRight="auto" class="turn">
-                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                        <TextBlock Text="Back a page" IgnoreHitTest="true"/>
-                    </StackView>
-                </Button>
-                </Node2D>
-                <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" class="dots"/>
-                <Node2D>
-                <Button Name="NextPage" MarginLeft="auto" class="turn turn-next">
-                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                        <TextBlock Name="NextLabel" Text="Turn the page" IgnoreHitTest="true"/>
-                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                    </StackView>
-                </Button>
-                </Node2D>
             </Grid>
         </Node2D>
     </Node2D>

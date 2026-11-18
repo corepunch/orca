@@ -47,6 +47,67 @@ local function count(node) local n = 0 for _ in node.children do n = n + 1 end r
 core.flushQueue()
 layout(1024, 768)
 assert(library.Visible and not reader.Visible)
+
+-- The library opens in the study: one picture with a clear button over each
+-- object, one object per category.
+local study, bubble = control("Study"), control("Bubble")
+local function left(node) local x = 0 while node and node ~= view do x, node = x + node.ActualX, node.parent end return x end
+local function top(node) local y = 0 while node and node ~= view do y, node = y + node.ActualY, node.parent end return y end
+assert(study.Visible and not wall.Visible and not shelf.Visible, "the study opens first")
+assert(not control("Categories").Visible and not control("Featured").Visible and not control("CatalogHead").Visible)
+assert(control("ShowStudy").BackgroundColor.R > 0.9 and control("ShowWall").BackgroundColor.R < 0.5)
+assert(math.abs(study.ActualWidth / study.ActualHeight - 1.6) < 0.01 and study.ActualWidth > 900, "the study keeps its picture's proportions")
+assert(control("StudyArt").ActualWidth == study.ActualWidth and control("StudyArt").ActualHeight == study.ActualHeight)
+assert(top(study) + study.ActualHeight <= 768, "the study fits the screen without scrolling")
+for _, name in ipairs({ "animals", "space", "earth", "science", "plants", "your-body", "long-ago" }) do
+    local object = control("Object_" .. name)
+    assert(object.ActualWidth >= 88 and object.ActualHeight >= 88, name .. " is easy to tap")
+end
+-- The grid follows the picture: the window on the left third, the globe in
+-- the middle, the aquarium at the right edge, all standing on the desk.
+local earth, space, animals = control("Object_earth"), control("Object_space"), control("Object_animals")
+local desk = top(study) + study.ActualHeight * 412 / 625
+assert(left(space) == left(study) and math.abs(space.ActualWidth - study.ActualWidth * 0.3) < 1)
+assert(math.abs(left(earth) + earth.ActualWidth / 2 - left(study) - study.ActualWidth * 0.505) < 1, "the globe's button sits on the globe")
+assert(math.abs(left(animals) + animals.ActualWidth - left(study) - study.ActualWidth) < 1)
+assert(math.abs(top(earth) + earth.ActualHeight - desk) < 1 and math.abs(top(space) + space.ActualHeight - desk) < 1, "objects stand on the desk")
+local postcard = control("Postcard")
+assert(top(postcard) > desk and control("PostcardQuestion").Text == "How does an octopus hide?"
+    and control("PostcardImage").Src == "encarta/Images/Thumbs/octopus.jpg", "today's question lies in the desk")
+
+-- Tapping an object opens a bubble with a few of its questions.
+assert(not bubble.Visible)
+click("Object_earth")
+layout(1024, 768)
+assert(bubble.Visible and control("BubbleTitle").Text == "Earth" and count(control("BubbleList")) == 3)
+assert(control("BubbleAll").Text == "See all 3 articles" and control("Label", control("Bubble_volcanoes")).Text == "What is inside a volcano?")
+assert(top(bubble) + bubble.ActualHeight < top(study) + study.ActualHeight and control("Bubble_water").ActualHeight >= 44)
+click("Object_space")
+assert(bubble.Visible and control("BubbleTitle").Text == "Space" and not view:findChild("Bubble_volcanoes", true), "another object replaces the bubble")
+click("BubbleClose")
+assert(not bubble.Visible)
+click("Object_earth")
+click("Bubble_volcanoes")
+assert(reader.Visible and control("ArticleTitle").Text == "Volcanoes", "a question in the bubble opens its article")
+click("Back")
+assert(library.Visible and study.Visible, "Back returns to the study")
+click("Object_space")
+click("BubbleAll")
+assert(wall.Visible and not study.Visible and not bubble.Visible and control("CatalogTitle").Text == "Space" and count(wall) == 3,
+    "See all opens the category on the wall")
+click("Category_all")
+click("ShowStudy")
+click("Postcard")
+assert(reader.Visible and control("ArticleTitle").Text == "Octopuses", "the postcard opens today's question")
+click("Back")
+-- Typing a question leaves the study for the wall, where results show.
+search.Text = "moon"
+core.flushQueue()
+assert(wall.Visible and not study.Visible and control("ResultCount").Text == "1 ARTICLE")
+click("ClearSearch")
+assert(wall.Visible, "clearing the search stays on the wall")
+layout(1024, 768)
+
 assert(control("ResultCount").Text == "15 ARTICLES" and count(wall) == 15 and wall.Visible and not shelf.Visible)
 assert(control("CatalogTitle").Text == "Big questions")
 local card = control("Open_mars", wall)
@@ -138,18 +199,25 @@ assert(part("Kicker", 1).Text == "QUESTION 1 OF 5  ·  PAGE 1 OF 2")
 assert(control("ArticleCategory").Text == "SPACE" and control("ArticleTitle").Text == "The Moon" and current() == 1)
 assert(count(control("Steps")) == 5 and control("Step3").Text == "3", "one bookmark per question")
 
--- The bar, the book and the page turner fill the height; the bar and the
--- turner keep their content clear of the system bars.
+-- The bar and the book fill the height; the bar keeps its content below
+-- the status bar and the book stays above the home indicator.
+local bar, book = control("ReaderBar"), control("Book")
 view.SafeAreaTop, view.SafeAreaBottom = 24, 20
 layout(1024, 768)
-local bar, pager = control("ReaderBar"), control("Pager")
 assert(screenTop(bar) == 0 and screenTop(control("Back")) >= 24, "Back sits below the status bar")
-assert(screenTop(pager) + pager.ActualHeight == 768, "the page turner reaches the bottom")
-assert(screenTop(control("NextPage")) + control("NextPage").ActualHeight <= 748, "the page turner stays above the home indicator")
-assert(control("Back").ActualHeight >= 44 and control("NextPage").ActualHeight >= 44 and control("Step1").ActualHeight >= 44)
+assert(screenTop(book) >= screenTop(bar) + bar.ActualHeight and screenTop(book) + book.ActualHeight <= 748, "the book stays above the home indicator")
+assert(control("Back").ActualHeight >= 44 and control("Step1").ActualHeight >= 44)
 view.SafeAreaTop, view.SafeAreaBottom = 0, 0
 layout(1024, 768)
-assert(screenTop(sections) >= screenTop(bar) + bar.ActualHeight and screenTop(sections) + sections.ActualHeight <= screenTop(pager) + 1)
+assert(not view:findChild("Pager", true) and screenTop(book) + book.ActualHeight > 740, "the book runs to the foot of the screen")
+
+-- A page's outer margin turns it; the dots lie over the foot of the book.
+local back, onward, dots = control("PrevPage"), control("NextPage"), control("Dots")
+assert(onward.ActualWidth >= 44 and onward.ActualHeight == book.ActualHeight
+    and screenLeft(onward) + onward.ActualWidth == screenLeft(book) + book.ActualWidth, "the right margin turns the page onward")
+assert(screenLeft(back) == screenLeft(book) and back.ActualWidth >= 44, "the left margin turns it back")
+assert(screenTop(dots) > screenTop(book) + book.ActualHeight - 40 and screenTop(dots) + dots.ActualHeight < screenTop(book) + book.ActualHeight
+    and math.abs(screenLeft(dots) + dots.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1, "the dots sit over the foot of the book")
 assert(screenLeft(control("Steps")) >= screenLeft(sections) + sections.ActualWidth, "the bookmarks stick out of the book's edge")
 
 -- The left page reads, the right page shows.
@@ -163,10 +231,12 @@ assert(part("SectionImage", 3).Src == "encarta/Images/moon.jpg", "a question wit
 assert(not part("SectionMedia", 2).Visible, "the picture opens a question; its last spread holds the extras")
 assert(fits(1), "the first spread fits the book without scrolling")
 local fold = control("Fold")
-local book = control("Book")
+local words = control("Paragraphs", spread(1))
+assert(screenLeft(words) >= screenLeft(back) + back.ActualWidth
+    and screenLeft(image) + image.ActualWidth <= screenLeft(onward), "the page margins stay clear of the text and the picture")
 assert(fold.Opacity == 1 and math.abs(fold.ActualHeight - book.ActualHeight) < 1
     and math.abs(screenLeft(fold) + fold.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1, "the fold shades the middle of the book")
-assert(not control("PrevPage").Visible and control("NextPage").Visible and control("NextLabel").Text == "Turn the page")
+assert(not control("PrevPage").Visible and control("NextPage").Visible)
 assert(count(control("Dots")) == 2, "a dot per spread of the question")
 
 -- Turning pages.
@@ -174,7 +244,7 @@ click("NextPage")
 assert(shown() == spread(2) and current() == 1 and part("Kicker", 2).Text == "QUESTION 1 OF 5  ·  PAGE 2 OF 2")
 assert(not part("Title", 2).Visible and part("Running", 2).Visible and part("Running", 2).Text == part("Title", 1).Text,
     "later spreads repeat the question as a running head")
-assert(control("PrevPage").Visible and control("NextLabel").Text == "Next question" and fits(2))
+assert(control("PrevPage").Visible and fits(2))
 assert(control("Dot2").ActualWidth > control("Dot1").ActualWidth, "the current spread's dot is the long one")
 assert(part("NextUp", 2).Visible and part("NextUpText", 2).Text == "How far away is the Moon?")
 assert(not part("Wow", 2).Visible and not part("Try", 2).Visible and not part("Related", 2).Visible, "extras appear only when written")
@@ -195,7 +265,7 @@ assert(shown() == spread(1) and not control("PrevPage").Visible)
 layout(600, 900)
 text, side = part("TextPage", 1), part("SidePage", 1)
 assert(control("Fold").Opacity == 0, "stacked pages have no fold")
-assert(screenTop(side) > screenTop(text) and side.ActualWidth > 450 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
+assert(screenTop(side) > screenTop(text) and side.ActualWidth > 380 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
@@ -339,4 +409,4 @@ for name in pairs(timings) do
     end
 end
 
-print("PASS: Encarta question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")
+print("PASS: Encarta study, question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")

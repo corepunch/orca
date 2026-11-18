@@ -80,6 +80,54 @@
 .count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--sand); text-vertical-align: center; }
 .empty { font-size: 18; color: var(--sand); }
 
+/* the study: a picture with clear buttons over its objects */
+.room { border-radius: 16; overflow: hidden; background-color: var(--wood-raised); }
+.room-art { border-radius: 16; }
+.object { padding: 0 0 8; border-radius: 14; background-color: #00000000; }
+.object:hover, .object:focus { background-color: #FFF8E733; }
+.object.object-on, .object.object-on:hover { background-color: #FFF8E74D; ring: 0 3 var(--sun); }
+.plate {
+  padding: 4 12;
+  border-radius: 6;
+  border: 2 solid var(--paper-line);
+  font-family: Noto Serif;
+  font-size: 16;
+  font-weight: bold;
+  background-color: var(--paper);
+}
+.plate-animals { color: var(--animals); }
+.plate-space { color: var(--space); }
+.plate-earth { color: var(--earth); }
+.plate-science { color: var(--science); }
+.plate-plants { color: var(--plants); }
+.plate-your-body { color: var(--your-body); }
+.plate-long-ago { color: var(--long-ago); }
+.postcard { margin-left: 14; margin-right: 14; padding: 10; border-radius: 8; background-color: var(--paper); }
+.postcard:hover, .postcard:focus { ring: 0 3 var(--sun); }
+.postcard-art { border-radius: 4; }
+.postcard-copy { gap: 2; }
+.postcard-tag { font-size: 11; font-weight: bold; letter-spacing: 1.4; color: var(--animals); }
+.postcard-question { font-family: Noto Serif; font-size: 17; line-height: 21; font-weight: bold; color: var(--ink); }
+.bubble { padding: 10 12 12 18; gap: 6; border-radius: 18; border: 2 solid var(--paper-line); background-color: var(--paper); }
+.bubble-title { font-family: Noto Serif; font-size: 22; font-weight: bold; color: var(--ink); text-vertical-align: center; }
+.bubble-close { padding: 0; border-radius: 22; color: var(--muted); background-color: #00000000; }
+.bubble-close:hover { background-color: var(--paper-line); }
+.bubble-list { gap: 6; }
+.bubble-item { min-height: 48; margin-right: 6; padding: 10 14; border-radius: 12; background-color: #FFFFFF; }
+.bubble-item:hover, .bubble-item:focus { background-color: var(--sun-light); }
+.bubble-question { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
+.bubble-all {
+  min-height: 44;
+  margin-top: 4;
+  margin-right: 6;
+  border-radius: 22;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.bubble-all:hover, .bubble-all:active { background-color: var(--sun-light); }
+
 /* illustrated covers */
 .card, .cover { border-radius: 8; overflow: hidden; }
 .card:hover, .cover:hover, .card:focus, .cover:focus { ring: 0 3 var(--sun); }
@@ -92,8 +140,8 @@
 .card-title { font-size: 12; line-height: 15; color: var(--cream); }
 
 /* ---------- reader ---------- */
-/* A book on the desk: a bar, the open spread with bookmarks on its
-   edge, and the page turner. */
+/* A book on the desk: a bar and the open spread, with bookmarks on its
+   edge. */
 .reader-bar { padding: 10 20; }
 .back {
   min-height: 46;
@@ -129,7 +177,7 @@
 .listen:hover, .listen:active { background-color: var(--sun-light); }
 .read-error { font-size: 13; color: var(--sun-light); text-vertical-align: center; }
 
-.book-row { padding: 0 12 0 20; }
+.book-row { padding: 0 12 16 20; }
 .book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
 .tabs { padding: 18 0 0; gap: 8; }
 .tab {
@@ -144,8 +192,10 @@
 .tab.tab-done, .tab.tab-done:hover { color: var(--cream); background-color: var(--go); }
 .tab.tab-on, .tab.tab-on:hover { color: var(--ink); background-color: var(--sun); }
 
-.spread { padding: 26 34 30; }
-.pages { gap: 40; }
+/* Side padding keeps the text clear of the page-turning margins; the foot
+   keeps it clear of the dots. */
+.spread { padding: 26 60 44; }
+.pages { gap: 56; }
 .page { gap: 14; }
 .kicker { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--animals); }
 .question { font-family: Noto Serif; font-size: 31; line-height: 38; font-weight: bold; color: var(--ink); }
@@ -189,22 +239,13 @@
 .link-tag { color: var(--animals); }
 .link-text { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
 
-.pager { padding: 10 20 12; }
-.turn {
-  min-height: 46;
-  padding: 0 16;
-  border-radius: 23;
-  font-size: 15;
-  font-weight: bold;
-  color: var(--cream);
-  background-color: var(--wood-raised);
-}
-.turn:hover, .turn:active { background-color: var(--wood-line); }
-.turn.turn-next { color: var(--ink); background-color: var(--sun); }
-.turn.turn-next:hover, .turn.turn-next:active { background-color: var(--sun-light); }
+/* Page margins that turn the page, and the dots at the book's foot. */
+.turn { padding: 0; color: var(--paper-line); background-color: #00000000; }
+.turn:hover, .turn:focus { color: var(--muted); background-color: #6E5D4614; }
+.turn:active { color: var(--ink); background-color: #6E5D4626; }
 .dots { gap: 8; }
-.dot { border-radius: 5; background-color: var(--wood-line); }
-.dot.dot-on { background-color: var(--sun); }
+.dot { border-radius: 5; background-color: var(--paper-line); }
+.dot.dot-on { background-color: var(--animals); }
 
 
 /* ---------- category colors ---------- */

@@ -92,20 +92,26 @@ function Controller:refresh()
             shelf:addChild(self:cover(article))
         end
     end
-    wall.Visible, shelf.Visible = not self.shelf, self.shelf
-    control(view, "Featured").Visible = self.query == "" and not self.category
-    local title = self.shelf and "On the shelf" or "Big questions"
+    local study = self.mode == "study"
+    wall.Visible, shelf.Visible = self.mode == "wall", self.mode == "shelf"
+    control(view, "Study").Visible = study
+    control(view, "Categories").Visible = not study
+    control(view, "CatalogHead").Visible = not study
+    control(view, "Featured").Visible = not study and self.query == "" and not self.category
+    local title = self.mode == "shelf" and "On the shelf" or "Big questions"
     if self.query ~= "" then title = "Search results"
     elseif self.category then title = self.category end
     control(view, "CatalogTitle").Text = title
     control(view, "ResultCount").Text = (count == 1 and "1 ARTICLE" or count .. " ARTICLES")
-    control(view, "EmptyResults").Visible = count == 0
+    control(view, "EmptyResults").Visible = count == 0 and not study
 end
 
 function Controller:filter(query)
     query = (query or ""):lower():match("^%s*(.-)%s*$")
     if query == self.query then return end
     self.query = query
+    -- Typing a question leaves the study for the wall, where results show.
+    if query ~= "" and self.mode == "study" then return self:setMode("wall") end
     control(self.view, "ClearSearch").Visible = query ~= ""
     self:refresh()
 end
@@ -118,11 +124,67 @@ function Controller:setCategory(category)
     self:refresh()
 end
 
-function Controller:setShelf(shelf)
-    self.shelf = shelf
-    control(self.view, "ShowWall").StateClasses = shelf and "" or "view-on"
-    control(self.view, "ShowShelf").StateClasses = shelf and "view-on" or ""
+-- The library has three views: the study, the wall of questions and the
+-- bookshelf.
+function Controller:setMode(mode)
+    self.mode = mode
+    for name, button in pairs({ study = "ShowStudy", wall = "ShowWall", shelf = "ShowShelf" }) do
+        control(self.view, button).StateClasses = name == mode and "view-on" or ""
+    end
+    control(self.view, "ClearSearch").Visible = self.query ~= ""
+    self:closeBubble()
     self:refresh()
+end
+
+-- Study ---------------------------------------------------------------------
+
+-- Each object in the study stands for a category. Tapping one opens a bubble
+-- with a few of its questions and the way to all of them.
+local BUBBLE_QUESTIONS = 3
+
+function Controller:closeBubble()
+    control(self.view, "Bubble").Visible = false
+    if self.bubbleObject then self.bubbleObject.StateClasses = "" end
+    self.bubbleObject = nil
+end
+
+function Controller:openBubble(category, object)
+    self:closeBubble()
+    local view, list = self.view, control(self.view, "BubbleList")
+    clear(list)
+    local total = 0
+    for _, article in ipairs(articles) do
+        if article.category == category then
+            total = total + 1
+            if total <= BUBBLE_QUESTIONS then
+                local item = prefab("BubbleItem")
+                item.Name = "Bubble_" .. article.id
+                control(item, "Label").Text = article.question
+                item.Click = function() self:openArticle(article.id) end
+                list:addChild(item)
+            end
+        end
+    end
+    control(view, "BubbleTitle").Text = category
+    local all = control(view, "BubbleAll")
+    all.Text = total == 1 and "See this article" or ("See all %d articles"):format(total)
+    all.Click = function()
+        self:setCategory(category)
+        self:setMode("wall")
+    end
+    self.bubbleObject = object
+    object.StateClasses = "object-on"
+    control(view, "Bubble").Visible = true
+end
+
+function Controller:addObjects()
+    for _, category in ipairs(categories) do
+        local object = control(self.view, "Object_" .. slug(category))
+        object.Click = function() self:openBubble(category, object) end
+    end
+    local featured = byID[FEATURED]
+    control(self.view, "PostcardQuestion").Text = featured.question
+    control(self.view, "PostcardImage").Src = thumbnail(featured.cover or featured.image.path)
 end
 
 function Controller:addChips()
@@ -140,19 +202,22 @@ function Controller:addChips()
 end
 
 function Controller.mount(view, openAudio)
-    local self = setmetatable({ view = view, history = {}, query = "", shelf = false }, { __index = Controller })
+    local self = setmetatable({ view = view, history = {}, query = "", mode = "study" }, { __index = Controller })
     self.readAloud = ReadAloud.new(view, openAudio)
     self.readAloud.onBlock = function(block) self:follow(block) end
     control(view, "FeaturedQuestion").Text = byID[FEATURED].question
     self:addChips()
+    self:addObjects()
     self:setCategory(nil)
-    self:setShelf(false)
+    self:setMode("study")
     local search = control(view, "Search")
     self:filter(search.Text)
     search.onTextChanged = function(_, text) self:filter(text) end
     for name, action in pairs({
         ClearSearch = self.clearQuery, OpenFeatured = self.openFeatured,
-        ShowWall = function() self:setShelf(false) end, ShowShelf = function() self:setShelf(true) end,
+        ShowStudy = function() self:setMode("study") end,
+        ShowWall = function() self:setMode("wall") end, ShowShelf = function() self:setMode("shelf") end,
+        Postcard = self.openFeatured, BubbleClose = self.closeBubble,
         Back = self.goBack,
         PrevPage = function() self:turnTo(self.page - 1) end,
         NextPage = function() self:turnTo(self.page + 1) end,
@@ -171,8 +236,9 @@ end
 
 -- An article is a book. Each question takes one spread per paragraph: the
 -- left page reads, the right page shows. The first spread of a question
--- carries its picture, the last one its extras and the way onward. Bookmarks
--- on the book's edge jump between questions.
+-- carries its picture, the last one its extras and the way onward. Tapping
+-- a page's outer margin turns it; bookmarks on the book's edge jump between
+-- questions.
 
 -- Numbered spots sit on a picture at fractions of its size. One grid holds
 -- them all, because a full-size layer per spot would take the taps meant for
@@ -315,8 +381,8 @@ function Controller:buildSteps(article)
     self.page, self.currentSection = nil, nil
 end
 
--- Show one spread: light its bookmark, draw a dot per spread of its question
--- and name what the page turner leads to.
+-- Show one spread: light its bookmark and draw a dot per spread of its
+-- question.
 function Controller:setPage(n)
     n = math.max(1, math.min(#self.spreads, n))
     if n == self.page then return end
@@ -332,13 +398,12 @@ function Controller:setPage(n)
     clear(dots)
     for page = 1, spread.pages do
         local on = page == spread.page
-        local dot = ui.Node2D { Name = "Dot" .. page, Width = on and 28 or 10, Height = 10 }
+        local dot = ui.Node2D { Name = "Dot" .. page, Width = on and 28 or 10, Height = 10, IgnoreHitTest = true }
         dot.StyleClass = on and "dot dot-on" or "dot"
         dots:addChild(dot)
     end
     control(self.view, "PrevPage").Visible = n > 1
     control(self.view, "NextPage").Visible = n < #self.spreads
-    control(self.view, "NextLabel").Text = spread.page == spread.pages and "Next question" or "Turn the page"
 end
 
 -- A page turned by hand stops the narration; the narration turns pages
