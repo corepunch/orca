@@ -67,6 +67,16 @@ function Sky.moon(epoch)
         daysFromSyzygy = math.min(phase, math.abs(phase - 0.5), 1 - phase) * SYNODIC }
 end
 
+-- Whether the moon is about above the horizon at a local hour. The moon
+-- crosses the sky about 50 minutes later each day: overhead at noon when
+-- new, at midnight when full, and up for roughly twelve hours around that.
+-- Good to about an hour; latitude and season shift it.
+function Sky.moonUp(phase, hourOfDay)
+    local transit = (12 + phase * 24) % 24
+    local d = math.abs(hourOfDay - transit) % 24
+    return math.min(d, 24 - d) < 6
+end
+
 -- "2026-11-18T06:00" → hours and minutes, and a lowercase short weekday.
 function Sky.clock(iso) return iso and iso:sub(12, 16) or "—" end
 function Sky.hour(iso) return tonumber(iso and iso:sub(12, 13)) end

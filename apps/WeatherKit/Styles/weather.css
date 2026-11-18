@@ -12,7 +12,7 @@
 .wx-tile { background-color: #333333; }
 .wx-tile-ink { color: #ffffff; }
 .wx-bar { background-color: #333333; }
-.wx-tone { color: #9a9a9a; }
+.wx-tone { color: #ffffff; }
 
 .good .wx-tile { background-color: var(--accent); }
 .good .wx-bar { background-color: var(--accent); }

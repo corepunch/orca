@@ -45,12 +45,16 @@ function Report.rows(profile, spot, forecast)
     local rows, hours = {}, forecast.hours
     local now = hours[forecast.now]
     if not now then return rows end
-    local result = rate(profile, now, forecast)
+    -- The verdict card shows the current hour, or the hour the profile
+    -- cares about next (tonight's first dark hour for stargazing).
+    local focusIndex = profile.focus and profile.focus(forecast) or forecast.now
+    local focus = hours[focusIndex] or now
+    local result = rate(profile, focus, forecast)
     row(rows, spot, "now", "now", {
-        title = result.word, value = Score.fmt(now.temp, "°"), score = result.score, tone = result.verdict,
-        icon = Sky.icon(now.code),
-        detail = Sky.describe(now.code) .. " · feels like " .. Score.fmt(now.feels, "°"),
-        note = (profile.summary and profile.summary(now, forecast)) or spot.title,
+        title = result.word, value = Score.fmt(focus.temp, "°"), score = result.score, tone = result.verdict,
+        icon = Sky.icon(focus.code),
+        detail = Sky.describe(focus.code) .. " · feels like " .. Score.fmt(focus.feels, "°"),
+        note = focus == now and spot.title or spot.title .. " · from " .. Sky.clock(focus.time),
     })
     for index = 1, math.min(REASONS_SHOWN, #result.reasons) do
         local reason = result.reasons[index]
@@ -85,7 +89,7 @@ function Report.rows(profile, spot, forecast)
             })
         end
     end
-    for index, metric in ipairs(profile.metrics(now, forecast)) do
+    for index, metric in ipairs(profile.metrics(focus, forecast)) do
         row(rows, spot, "metric", tostring(index), {
             title = metric.label, value = metric.value, detail = metric.note or "", tone = metric.tone or "info", score = 0,
         })

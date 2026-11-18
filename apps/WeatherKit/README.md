@@ -10,9 +10,10 @@ hour: is it good, fair or poor for *this* activity, and why?
 | [Weather](../Weather/profile.lua) | Is it nice to be outside? | — |
 | [Fishing](../Fishing/profile.lua) | Will the fish bite? Pressure trend, wind on the water, dawn and dusk, moon | — |
 | [Surf](../Surf/profile.lua) | Is it worth paddling out? Swell size and period, offshore or onshore wind for each beach | Marine forecast |
-
-Planned next: sailing / kitesurf, hiking / mountain, gardening / farming and
-stargazing.
+| [Sailing](../Sailing/profile.lua) | Is there a steady, usable wind? Wind band, gusts, offshore danger for kites | Marine forecast when there is sea |
+| [Hiking](../Hiking/profile.lua) | Is the trail safe and pleasant? Thunder and storm energy, ridge gusts, cold, fog, freezing level | Forecast at the spot's height |
+| [Garden](../Garden/profile.lua) | Good for garden work, and what does the garden need? Frost ahead, wet or frozen soil, wind for spraying, watering | Soil, evapotranspiration |
+| [Stargazing](../Stargazing/profile.lua) | Will the night be dark and clear? Darkness, clouds, the moon up or down, damp and haze | Cloud layers; tonight's card |
 
 ## The screen
 
@@ -60,18 +61,24 @@ showing.
 3. Write `note(hour)` (one line under each hour) and `metrics(hour, forecast)`
    (the conditions section). `Report.pressure`, `Report.wind`, `Report.sun` and
    `Report.moon` are ready-made.
-4. Set `needsMarine = true` to receive `swellHeight`, `swellPeriod`,
+4. Set `needsMarine = true` (or `"optional"`, so a failed marine request
+   still shows the rest) to receive `swellHeight`, `swellPeriod`,
    `swellDir`, `waveHeight` and `seaTemp` on every hour.
 5. Optional: `window(hour)` limits which hours count towards a day's best
-   window (daylight by default for most; stargazing would use the night).
+   window (daylight for most; the dark for stargazing), and `focus(forecast)`
+   picks the hour index the verdict card shows instead of now (Stargazing
+   shows tonight's first dark hour).
 6. Add checks to `tests/test_weather_profiles.lua`. Then run
    `sh tools/xcode/generate.sh <Name>` for an iPhone project.
 
 An hour has `time`, `temp`, `feels`, `code` (WMO), `wind`, `gust`, `windDir`,
 `pressure`, `pressureTrend` (hPa over 3 h), `cloud`, `rainChance`, `rain`,
-`humidity`, `visibility`, `uv`, `isDay` and its `day` (`sunrise`, `sunset`,
+`humidity`, `dewPoint`, `visibility`, `uv`, `isDay`, `cloudLow`/`Mid`/`High`,
+`freezingLevel`, `cape`, `soilMoisture`, `soilTemp`, `et0`, `epoch` (UTC) and its `day` (`sunrise`, `sunset`,
 `max`, `min`). Units are °C, m/s, hPa and metres. `forecast.spot` is the
-selected spot, and `forecast.epoch` is the time of the request.
+selected spot, `forecast.epoch` the time of the request and `forecast.elevation`
+the height the forecast is for. Snow codes at temperatures above 5 °C (3 °C
+for a day's low) are reported as rain: the model occasionally says otherwise.
 
 ## Run and test
 
@@ -83,4 +90,5 @@ build/bin/orca -test=tests/test_weather_profiles.lua   # or: make test-weather-p
 The test runs every app on a synthetic forecast, so it needs no network.
 
 Not yet: searching for a place, device location, saved spots, units other
-than metric, and tides. Open-Meteo has no tide forecast.
+than metric, tides, and the moon's real rise and set times (stargazing
+estimates whether it is up from its phase, to about an hour). Open-Meteo has no tide forecast.

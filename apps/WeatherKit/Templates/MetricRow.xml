@@ -1,6 +1,6 @@
 <!-- One condition the profile watches: label, value and a short note. -->
 <StackView Spacing="0" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
   <TextBlock Text="{Binding DataContext/Title}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
-  <TextBlock Name="MetricValue" Text="{Binding DataContext/Value}" FontSize="26" class="wx-ink" IgnoreHitTest="true"/>
+  <TextBlock Name="MetricValue" Text="{Binding DataContext/Value}" FontSize="26" class="wx-tone" IgnoreHitTest="true"/>
   <TextBlock Text="{Binding DataContext/Detail}" FontSize="14" WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>
 </StackView>

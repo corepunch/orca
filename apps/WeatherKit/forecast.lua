@@ -11,7 +11,8 @@ local DAYS = 7
 
 local HOURLY = "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m," ..
     "wind_direction_10m,pressure_msl,cloud_cover,precipitation_probability,precipitation," ..
-    "relative_humidity_2m,visibility,uv_index,is_day"
+    "relative_humidity_2m,visibility,uv_index,is_day,dew_point_2m,cloud_cover_low,cloud_cover_mid," ..
+    "cloud_cover_high,freezing_level_height,cape,soil_moisture_0_to_1cm,soil_temperature_0cm,et0_fao_evapotranspiration"
 local DAILY = "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max," ..
     "precipitation_sum,wind_speed_10m_max,sunrise,sunset"
 local MARINE = "wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period," ..
@@ -40,6 +41,16 @@ function Forecast.networkFetch(url)
     return body
 end
 
+-- The model sometimes reports snow at temperatures where it can only be rain
+-- (San Francisco, "heavy snow" at 11 °C). Snow codes above these
+-- temperatures become the matching rain code.
+local RAIN_FOR_SNOW = { [71] = 61, [73] = 63, [75] = 65, [77] = 61, [85] = 80, [86] = 82 }
+local function plausible(code, temp, warmEnough)
+    if RAIN_FOR_SNOW[code] and temp and temp >= warmEnough then return RAIN_FOR_SNOW[code] end
+    return code
+end
+Forecast.plausible = plausible
+
 local function column(block, name, index) return block and block[name] and block[name][index] end
 
 -- Change of sea-level pressure over the last three hours, hPa.
@@ -67,13 +78,21 @@ function Forecast.parse(weather, marine, epoch)
             rainChance = column(h, "precipitation_probability", index), rain = column(h, "precipitation", index),
             humidity = column(h, "relative_humidity_2m", index), visibility = column(h, "visibility", index),
             uv = column(h, "uv_index", index), isDay = column(h, "is_day", index) == 1,
+            dewPoint = column(h, "dew_point_2m", index), cloudLow = column(h, "cloud_cover_low", index),
+            cloudMid = column(h, "cloud_cover_mid", index), cloudHigh = column(h, "cloud_cover_high", index),
+            freezingLevel = column(h, "freezing_level_height", index), cape = column(h, "cape", index),
+            soilMoisture = column(h, "soil_moisture_0_to_1cm", index),
+            soilTemp = column(h, "soil_temperature_0cm", index), et0 = column(h, "et0_fao_evapotranspiration", index),
             waveHeight = mi and column(m, "wave_height", mi), wavePeriod = mi and column(m, "wave_period", mi),
             waveDir = mi and column(m, "wave_direction", mi), swellHeight = mi and column(m, "swell_wave_height", mi),
             swellPeriod = mi and column(m, "swell_wave_period", mi), swellDir = mi and column(m, "swell_wave_direction", mi),
             seaTemp = mi and column(m, "sea_surface_temperature", mi),
         }
     end
-    for index, hour in ipairs(hours) do hour.pressureTrend = trend(hours, index) end
+    for index, hour in ipairs(hours) do
+        hour.pressureTrend = trend(hours, index)
+        hour.code = plausible(hour.code, hour.temp, 5)
+    end
     local days = {}
     for index, date in ipairs(d.time or {}) do
         days[index] = {
@@ -84,16 +103,22 @@ function Forecast.parse(weather, marine, epoch)
             sunrise = column(d, "sunrise", index), sunset = column(d, "sunset", index),
         }
     end
+    -- A day whose coldest hour is above 3 °C had no snow.
+    for _, day in ipairs(days) do day.code = plausible(day.code, day.min, 3) end
     local offset = weather.utc_offset_seconds or 0
     local localHour = os.date("!%Y-%m-%dT%H:00", epoch + offset)
     local now = 1
     for index, hour in ipairs(hours) do
         if hour.time == localHour then now = index; break end
     end
+    -- Each hour's UTC time, counted from the current hour.
+    local hourStart = epoch - (epoch + offset) % 3600
+    for index, hour in ipairs(hours) do hour.epoch = hourStart + (index - now) * 3600 end
     local dayOf = {}
     for _, day in ipairs(days) do dayOf[day.date] = day end
     for _, hour in ipairs(hours) do hour.day = dayOf[hour.date] end
-    return { hours = hours, days = days, now = now, epoch = epoch, offset = offset, hasMarine = m ~= nil }
+    return { hours = hours, days = days, now = now, epoch = epoch, offset = offset, hasMarine = m ~= nil,
+        elevation = weather.elevation }
 end
 
 function Forecast.load(spot, needsMarine, fetch, epoch)
@@ -103,8 +128,9 @@ function Forecast.load(spot, needsMarine, fetch, epoch)
     if not weather then return nil, err end
     local marine
     if marineUrl then
+        -- "optional": waves help but the forecast stands without them.
         marine, err = fetch(marineUrl)
-        if not marine then return nil, err end
+        if not marine and needsMarine ~= "optional" then return nil, err end
     end
     return Forecast.parse(weather, marine, epoch or os.time())
 end
