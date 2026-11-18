@@ -44,17 +44,6 @@ local shelf = control("Shelf")
 local sections = control("Sections")
 local search = control("Search")
 local function count(node) local n = 0 for _ in node.children do n = n + 1 end return n end
-local function visibleSection()
-    for section in sections.children do if section.Visible then return control("Title", section) end end
-end
-local function questionImage()
-    for section in sections.children do
-        if section.Visible and control("SectionMedia", section).Visible then
-            return control("SectionImage", section), control("SectionCaption", section)
-        end
-    end
-end
-
 core.flushQueue()
 layout(1024, 768)
 assert(library.Visible and not reader.Visible)
@@ -100,93 +89,108 @@ assert(not library.Visible and reader.Visible)
 assert(control("ArticleTitle").Text == "The Moon")
 layout(1024, 768)
 local reading = app.libraryController
-local scroll = control("ReaderScroll")
-local function section(n) return control("Section" .. n, sections) end
--- The current step is the one whose mark is painted sun yellow on the next
--- frame.
+local function spread(n) return control("Spread" .. n, sections) end
+local function part(name, n) return control(name, spread(n)) end
+local function shown()
+    local found
+    for node in sections.children do
+        if node.Visible then
+            assert(not found, "one spread at a time")
+            found = node
+        end
+    end
+    return found
+end
+local function screenTop(node)
+    local top = 0
+    while node and node ~= view do top, node = top + node.ActualY, node.parent end
+    return top
+end
+local function screenLeft(node)
+    local left = 0
+    while node and node ~= view do left, node = left + node.ActualX, node.parent end
+    return left
+end
+-- The current question is the one whose bookmark is painted sun yellow on
+-- the next frame.
 local function current()
     layout(view.Width, view.Height)
     local found
     for i = 1, count(control("Steps")) do
-        local mark = control("Mark", control("Step" .. i)).BackgroundColor
-        if mark.R > 0.9 and mark.G > 0.7 and mark.B < 0.4 then
-            assert(not found, "only one step is current")
+        local tab = control("Step" .. i).BackgroundColor
+        if tab.R > 0.9 and tab.G > 0.7 and tab.B < 0.4 then
+            assert(not found, "only one bookmark is current")
             found = i
         end
     end
     assert(found == reading.currentSection)
     return found
 end
-local function heading(n) return control("Title", section(n)) end
-local function visibleTop(n) return reading:contentTop(section(n)) + scroll.ContentOffset.Y end
-assert(count(sections) == 5 and section(5).Visible, "the whole article is one page")
-assert(heading(1).Text == "Why does the Moon seem to change shape?")
-assert(not view:findChild("StepLabel", true) and control("ArticleCategory").Text == "SPACE" and current() == 1)
-
--- The contents column and the page fill the height and paint under the
--- status bar but keep their content below it. Back leads the contents
--- column; the page opens with the article's category and title.
-view.SafeAreaTop = 24
-layout(1024, 768)
-local pane = control("Pane")
-local function screenTop(node)
-    local top = 0
-    while node and node ~= view do top, node = top + node.ActualY, node.parent end
-    return top
+local function fits(n)
+    local node = spread(n)
+    return node.ScrollHeight <= node.ActualHeight + 1
 end
-assert(not view:findChild("ReaderBar", true), "no title bar above the page")
-assert(screenTop(scroll) == 0 and screenTop(pane) == 0 and scroll.ActualHeight == 768, "the panels fill the height")
-assert(control("Back").parent == pane and screenTop(control("Back")) >= 24, "Back leads the contents, below the status bar")
-assert(screenTop(control("Step1")) > screenTop(control("Back")), "the questions follow Back")
-local head = control("ArticleHead")
-assert(head.parent == scroll and screenTop(control("ArticleTitle")) >= 24, "the title opens the page, below the status bar")
-assert(screenTop(heading(1)) > screenTop(control("ArticleTitle")), "the first question follows the title")
-assert(not control("PageBack").Visible, "the page has no back button beside the contents")
-view.SafeAreaTop = 0
-layout(1024, 768)
-assert(not view:findChild("Pager", true) and not view:findChild("Next", true), "no pager on a continuous page")
-local image, caption = questionImage()
-assert(image.Src == "encarta/Images/moon-phases.jpg" and caption.Text:match("Northern Hemisphere"), "a question shows its own diagram")
-assert(control("SectionImage", section(5)).Src == "encarta/Images/moon.jpg", "a later question can reuse the cover art")
-assert(not control("SectionMedia", section(2)).Visible, "a later question does not inherit the cover art")
-assert(count(control("Steps")) == 5 and control("Pane").Opacity == 1)
-assert(scroll.ScrollHeight > scroll.ActualHeight * 2, "the article scrolls")
 
-local home = visibleTop(1)
-click("Step3")
-assert(reading.scrollTarget and current() == 3, "the step lights at once and the page glides there")
-reading:finishScroll()
-assert(math.abs(visibleTop(3) - home) < 0.5 and current() == 3, "a step brings its question to the top")
-scroll.ContentOffset = { X = 0, Y = 0 }
-assert(current() == 1, "scrolling by hand moves the current question")
-scroll.ContentOffset = { X = 0, Y = -(reading:contentTop(section(2)) - reading:contentTop(section(1))) }
-assert(current() == 2)
-scroll.ContentOffset = { X = 0, Y = reading:scrollLimit() }
-assert(current() == 5, "the end of the article is its last question")
+-- A question takes one spread per paragraph; only one spread is open.
+assert(count(sections) == 10 and shown() == spread(1), "five questions of two paragraphs make ten spreads")
+assert(part("Title", 1).Text == "Why does the Moon seem to change shape?")
+assert(part("Kicker", 1).Text == "QUESTION 1 OF 5  ·  PAGE 1 OF 2")
+assert(control("ArticleCategory").Text == "SPACE" and control("ArticleTitle").Text == "The Moon" and current() == 1)
+assert(count(control("Steps")) == 5 and control("Step3").Text == "3", "one bookmark per question")
+
+-- The bar, the book and the page turner fill the height; the bar and the
+-- turner keep their content clear of the system bars.
+view.SafeAreaTop, view.SafeAreaBottom = 24, 20
+layout(1024, 768)
+local bar, pager = control("ReaderBar"), control("Pager")
+assert(screenTop(bar) == 0 and screenTop(control("Back")) >= 24, "Back sits below the status bar")
+assert(screenTop(pager) + pager.ActualHeight == 768, "the page turner reaches the bottom")
+assert(screenTop(control("NextPage")) + control("NextPage").ActualHeight <= 748, "the page turner stays above the home indicator")
+assert(control("Back").ActualHeight >= 44 and control("NextPage").ActualHeight >= 44 and control("Step1").ActualHeight >= 44)
+view.SafeAreaTop, view.SafeAreaBottom = 0, 0
+layout(1024, 768)
+assert(screenTop(sections) >= screenTop(bar) + bar.ActualHeight and screenTop(sections) + sections.ActualHeight <= screenTop(pager) + 1)
+assert(screenLeft(control("Steps")) >= screenLeft(sections) + sections.ActualWidth, "the bookmarks stick out of the book's edge")
+
+-- The left page reads, the right page shows.
+local text, side = part("TextPage", 1), part("SidePage", 1)
+assert(screenLeft(side) > screenLeft(text) + text.ActualWidth and math.abs(side.ActualWidth - text.ActualWidth) < 2, "two equal pages")
+local image = part("SectionImage", 1)
+assert(part("SectionMedia", 1).Visible and image.Src == "encarta/Images/moon-phases.jpg", "a question shows its own diagram")
+assert(part("SectionCaption", 1).Text:match("Northern Hemisphere"))
+assert(image.ActualWidth > 300 and math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the artwork keeps its proportions")
+assert(part("SectionImage", 3).Src == "encarta/Images/moon.jpg", "a question without its own picture shows the article's")
+assert(not part("SectionMedia", 2).Visible, "the picture opens a question; its last spread holds the extras")
+assert(fits(1), "the first spread fits the book without scrolling")
+assert(not control("PrevPage").Visible and control("NextPage").Visible and control("NextLabel").Text == "Turn the page")
+assert(count(control("Dots")) == 2, "a dot per spread of the question")
+
+-- Turning pages.
+click("NextPage")
+assert(shown() == spread(2) and current() == 1 and part("Kicker", 2).Text == "QUESTION 1 OF 5  ·  PAGE 2 OF 2")
+assert(not part("Title", 2).Visible and part("Running", 2).Visible and part("Running", 2).Text == part("Title", 1).Text,
+    "later spreads repeat the question as a running head")
+assert(control("PrevPage").Visible and control("NextLabel").Text == "Next question" and fits(2))
+assert(control("Dot2").ActualWidth > control("Dot1").ActualWidth, "the current spread's dot is the long one")
+assert(part("NextUp", 2).Visible and part("NextUpText", 2).Text == "How far away is the Moon?")
+assert(not part("Wow", 2).Visible and not part("Try", 2).Visible and not part("Related", 2).Visible, "extras appear only when written")
+click("NextUp", spread(2))
+assert(shown() == spread(3) and current() == 2, "the last spread leads to the next question")
 click("Step4")
-reading:finishScroll()
-if scroll.ContentOffset.Y == reading:scrollLimit() then
-    assert(current() == 4, "a question that cannot reach the top stays chosen")
-end
-scroll.ContentOffset = { X = 0, Y = scroll.ContentOffset.Y + 40 }
-assert(current() == reading:sectionAt(scroll.ContentOffset.Y), "scrolling by hand releases the chosen question")
+assert(shown() == spread(7) and current() == 4, "a bookmark opens its question")
+click("PrevPage")
+assert(shown() == spread(6) and current() == 3)
+click("Step5")
+click("NextPage")
+assert(shown() == spread(10) and not control("NextPage").Visible, "the book ends at its last spread")
+assert(part("NextUpTag", 10).Text == "THE END" and part("NextUpText", 10).Text == "Back to the library")
 click("Step1")
-reading:finishScroll()
-assert(scroll.ContentOffset.Y == 0 and current() == 1)
+assert(shown() == spread(1) and not control("PrevPage").Visible)
 
-layout(768, 1024)
-assert(control("Pane").Opacity == 0 and scroll.ActualWidth > 700, "portrait gives the page the full width")
-assert(control("PageBack").Visible, "without the contents, a back button leads the page")
-local page = sections.ActualWidth
-assert(image.ActualWidth > 200 and image.ActualWidth < page / 2, "the question artwork sits in a side column")
-assert(math.abs(image.ActualWidth / image.ActualHeight - 1.5) < 0.02, "the question artwork keeps its proportions")
-assert(heading(1).ActualWidth > page * 0.9, "the question runs across the page, above the artwork")
-assert(control("Paragraphs", section(1)).ActualWidth < page * 0.7, "the answer shares its row with the artwork")
-assert(control("Paragraphs", section(2)).ActualWidth > page * 0.9, "a text-only question spreads across the page")
-click("PageBack")
-assert(not reader.Visible and control("LibraryScroll").Visible, "the page's back button returns to the library")
-click("Open_moon", wall)
-reading:finishScroll()
+-- On a narrow screen the pages stack and the spread scrolls.
+layout(600, 900)
+text, side = part("TextPage", 1), part("SidePage", 1)
+assert(screenTop(side) > screenTop(text) and side.ActualWidth > 450 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
@@ -202,7 +206,7 @@ local function hear(mark)
     core.flushQueue()
 end
 local first = timings.moon[1].words
-local title = heading(1)
+local title = part("Title", 1)
 hear(first[1])
 assert(title.HighlightedRange.X == first[1][3] and title.HighlightedRange.Y == first[1][4])
 hear(first[2])
@@ -213,22 +217,22 @@ assert(not playing and listenLabel.Text == "Resume" and icon("play") and title.H
 click("ReadAloud")
 assert(playing and opened == 1, "Resume reuses the same recording and position")
 hear(timings.moon[2].words[1])
-assert(title.HighlightedRange.Y == 0)
+assert(title.HighlightedRange.Y == 0 and shown() == spread(1))
+hear(timings.moon[3].words[1])
+assert(playing and shown() == spread(2), "the narration turns the page itself")
 hear(timings.moon[7].words[1])
-assert(heading(3).HighlightedRange.Y > 0 and current() == 3, "the steps follow the narration down the page")
-reading:finishScroll()
-assert(playing and math.abs(visibleTop(3) - home) < 0.5, "a new question glides to the top while reading")
+assert(part("Title", 5).HighlightedRange.Y > 0 and shown() == spread(5) and current() == 3, "the bookmarks follow the narration")
 hear(timings.moon[8].words[1])
-local paragraph = control("Paragraphs", section(3))
-local top = reading:contentTop(paragraph) + scroll.ContentOffset.Y
-assert(top >= 0 and top < scroll.ActualHeight and current() == 3, "narration keeps its word in view")
+local paragraph = part("Paragraphs", 5)
+local top = screenTop(paragraph) - screenTop(spread(5))
+assert(playing and top >= 0 and top < spread(5).ActualHeight and shown() == spread(5), "narration keeps its word in view")
 
 click("StopReading")
 assert(not playing and closed == 1 and listenLabel.Text == "Read aloud" and icon("volume-2"))
 click("ReadAloud")
 assert(playing and opened == 2 and position == 0)
 click("Step2")
-assert(not playing and closed == 2 and listenLabel.Text == "Read aloud", "jumping to a question stops the narration")
+assert(not playing and closed == 2 and listenLabel.Text == "Read aloud", "turning to a question by hand stops the narration")
 click("Back")
 assert(library.Visible and not reader.Visible and control("ResultCount").Text == "1 ARTICLE")
 
@@ -240,22 +244,60 @@ click("ClearSearch")
 assert(control("Featured").Visible and not control("EmptyResults").Visible and not control("ClearSearch").Visible)
 click("OpenFeatured")
 assert(control("ArticleTitle").Text == "Octopuses")
-assert(questionImage().Src == "encarta/Images/octopus.jpg")
+assert(part("SectionImage", 1).Src == "encarta/Images/octopus.jpg")
 layout(1024, 768)
-assert(scroll.ContentOffset.Y == 0 and current() == 1, "a new article starts at its first question")
+assert(shown() == spread(1) and current() == 1, "a new article starts at its first spread")
+
+-- Numbered spots sit on the picture where the article puts them; tapping one
+-- opens its note.
+local picture = part("Picture", 1)
+local function center(node)
+    return (screenLeft(node) + node.ActualWidth / 2 - screenLeft(picture)) / picture.ActualWidth,
+        (screenTop(node) + node.ActualHeight / 2 - screenTop(picture)) / picture.ActualHeight
+end
+for i, at in ipairs({ { 0.15, 0.48 }, { 0.55, 0.77 }, { 0.80, 0.29 } }) do
+    local spot = part("Spot" .. i, 1)
+    local x, y = center(spot)
+    assert(spot.Text == tostring(i) and spot.ActualWidth >= 44 and spot.ActualHeight >= 44, "a spot is big enough to tap")
+    assert(math.abs(x - at[1]) < 0.04 and math.abs(y - at[2]) < 0.04, ("spot %d sits at %.2f, %.2f"):format(i, x, y))
+end
+assert(not part("SpotNote", 1).Visible and part("SectionCaption", 1).Text:match("Tap the numbers"))
+click("Spot2", spread(1))
+layout(1024, 768)
+assert(part("SpotNote", 1).Visible and part("SpotTitle", 1).Text == "2  Suckers" and part("SpotText", 1).Text:match("Round cups"))
+local chosen, other = part("Spot2", 1).BackgroundColor, part("Spot1", 1).BackgroundColor
+assert(chosen.R > 0.8 and chosen.B < 0.3 and other.B > 0.9, "the chosen spot is filled")
+assert(fits(1), "the spread still fits with a note open")
+
+-- A question's last spread carries its written extras.
+click("NextPage")
+layout(1024, 768)
+assert(part("Wow", 2).Visible and part("WowText", 2).Text:match("smell what it touches") and not part("Try", 2).Visible)
+assert(part("Try", 4).Visible and part("TryText", 4).Text:match("balloon") and part("Wow", 4).Visible)
+assert(not part("Related", 4).Visible and part("Related", 8).Visible, "See also closes the article")
+for n = 1, 8 do
+    reading:setPage(n)
+    layout(1024, 768)
+    assert(fits(n), "octopus spread " .. n .. " fits the book")
+end
+click("Related", spread(8))
+assert(control("ArticleTitle").Text == "Penguins" and shown() == spread(1), "See also opens the related article")
+click("Back")
+assert(control("ArticleTitle").Text == "Octopuses" and shown() == spread(8), "Back returns to the spread you left")
+reading:setPage(1)
 click("ReadAloud")
 hear(timings.octopus[1].words[1])
-assert(playing and heading(1).HighlightedRange.Y > 0)
-local octopusTitle = heading(1)
+assert(playing and part("Title", 1).HighlightedRange.Y > 0)
+local octopusTitle = part("Title", 1)
 click("Back")
 assert(not playing and octopusTitle.HighlightedRange.Y == 0 and not control("StopReading").Visible)
 
 click("Open_pyramids", wall)
-assert(control("ArticleTitle").Text == "The Pyramids" and questionImage().Src == "encarta/Images/pyramids.jpg")
+assert(control("ArticleTitle").Text == "The Pyramids" and part("SectionImage", 1).Src == "encarta/Images/pyramids.jpg")
 assert(not control("ReadAloud").Visible, "articles without a recording hide Read aloud")
 click("Back")
 click("Open_earth-layers", wall)
-assert(control("ArticleTitle").Text == "Inside Earth" and questionImage().Src == "encarta/Images/earth-layers.jpg")
+assert(control("ArticleTitle").Text == "Inside Earth" and part("SectionImage", 1).Src == "encarta/Images/earth-layers.jpg")
 click("Back")
 
 local function checkArtwork(path)
@@ -266,6 +308,14 @@ for _, article in ipairs(require "encarta/Content/Articles") do
     assert(article.question and article.image.caption ~= "", article.id)
     checkArtwork(article.image.path)
     if article.cover then checkArtwork(article.cover) end
+    assert(not article.related or article.related ~= article.id and (function()
+        for _, other in ipairs(require "encarta/Content/Articles") do
+            if other.id == article.related then return true end
+        end
+    end)(), article.id .. " names a related article that exists")
+    for _, spot in ipairs(article.image.spots or {}) do
+        assert(spot[1] > 0 and spot[1] < 1 and spot[2] > 0 and spot[2] < 1 and spot[3] ~= "" and spot[4] ~= "", article.id)
+    end
     for _, section in ipairs(article.sections) do
         if section.image then checkArtwork(section.image.path) end
     end
@@ -284,4 +334,4 @@ for name in pairs(timings) do
     end
 end
 
-print("PASS: Encarta question wall, illustrated bookshelf and reader, offline recordings and synchronized highlights")
+print("PASS: Encarta question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")

@@ -92,120 +92,118 @@
 .card-title { font-size: 12; line-height: 15; color: var(--white); }
 
 /* ---------- reader ---------- */
-/* Two flat panels at full height: dark contents and the white page. */
-.pane { padding: 22 16 20 16; gap: 6; overflow: hidden; background-color: var(--night); }
-.pane-tag { padding: 6 0 6 8; font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
-.steps { gap: 6; }
-.step {
-  min-height: 54;
-  padding: 8 12;
-  border-radius: 14;
-  background-color: var(--night);
-}
-.step:hover { background-color: var(--night-raised); }
-.step-on, .step-on:hover { background-color: var(--night-raised); }
-.mark {
-  border: 2 solid var(--night-line);
-  border-radius: 15;
-  font-size: 13;
-  font-weight: bold;
-  text-align: center;
-  text-vertical-align: center;
-  color: var(--mist);
-  background-color: #00000000;
-}
-.mark-on { color: var(--ink); background-color: var(--sun); border-color: var(--sun); }
-.mark-done { color: var(--white); background-color: var(--go); border-color: var(--go); }
-.step-text { font-size: 15; line-height: 19; font-weight: bold; color: var(--mist); }
-.step-text-on { color: var(--white); }
-
-.article { background-color: var(--page); }
-/* Windows Phone back button: a ringed chevron and a capitalised label. */
-.back { min-height: 46; padding: 0 6 0 0; color: var(--ink); background-color: #00000000; }
-.back:hover, .back:active { opacity: 0.7; background-color: #00000000; }
-.pane-back { margin-bottom: 10; color: var(--white); }
-.article-head { padding-bottom: 12; }
-.back-label { font-size: 13; font-weight: bold; letter-spacing: 1.2; }
-.title-block { gap: 2; }
-.title-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
-.title { font-family: Noto Serif; font-size: 40; line-height: 48; font-weight: bold; color: var(--ink); }
-.soft, .level {
+/* A book on the night desk: a bar, the open spread with bookmarks on its
+   edge, and the page turner. */
+.reader-bar { padding: 10 20; }
+.back {
   min-height: 46;
-  padding: 0 16;
-  border-radius: 12;
+  padding: 0 18 0 12;
+  border-radius: 23;
   font-size: 15;
   font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
+  color: var(--white);
+  background-color: var(--night-raised);
 }
-.soft:hover, .level:hover { background-color: var(--page-line); }
-.levels { padding: 4; border-radius: 14; background-color: var(--page-soft); }
-.level { min-height: 40; }
-.level.level-on, .level.level-on:hover, .level.level-on:active { color: var(--white); background-color: var(--ink); }
+.back:hover, .back:active { background-color: var(--night-line); }
+.crumb-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); text-vertical-align: center; }
+.crumb-title { font-family: Noto Serif; font-size: 19; font-weight: bold; color: var(--white); text-vertical-align: center; }
+.soft {
+  min-height: 46;
+  padding: 0 16;
+  border-radius: 23;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--white);
+  background-color: var(--night-raised);
+}
+.soft:hover { background-color: var(--night-line); }
 .listen {
   min-height: 46;
   padding: 0 18;
-  border-radius: 12;
+  border-radius: 23;
   font-size: 15;
   font-weight: bold;
   color: var(--ink);
   background-color: var(--sun);
 }
 .listen:hover, .listen:active { background-color: var(--sun-light); }
-.read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
+.read-error { font-size: 13; color: var(--sun-light); text-vertical-align: center; }
 
-.reader-scroll { padding: 28 40 48; gap: 14; }
-.sections { gap: 56; }
-.section, .fact-page, .quiz-page { gap: 16; }
-.section-body { gap: 32; }
+.book-row { padding: 0 12 0 20; }
+.book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
+.tabs { padding: 18 0 0; gap: 8; }
+.tab {
+  border-radius: 10;
+  font-size: 16;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--paper-line);
+}
+.tab:hover { background-color: var(--paper); }
+.tab.tab-done, .tab.tab-done:hover { color: var(--white); background-color: var(--go); }
+.tab.tab-on, .tab.tab-on:hover { color: var(--ink); background-color: var(--sun); }
+
+.spread { padding: 26 34 30; }
+.pages { gap: 40; }
+.page { gap: 14; }
+.kicker { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--animals); }
+.question { font-family: Noto Serif; font-size: 31; line-height: 38; font-weight: bold; color: var(--ink); }
+.running { font-family: Noto Serif; font-size: 17; line-height: 22; font-weight: bold; color: var(--muted); }
 .paragraphs { gap: 14; }
-.question { font-size: 34; line-height: 40; font-weight: bold; color: var(--ink); }
-.answer { font-size: 20; line-height: 31; color: var(--ink); }
-.fact {
-  padding: 22 24;
-  border-radius: 20;
-  font-family: Noto Serif;
-  font-size: 26;
-  line-height: 36;
-  font-weight: bold;
-  color: var(--ink);
-  background-color: var(--sun);
-}
-.media { gap: 8; }
-.media-image { border-radius: 18; }
-.small-title { margin-top: 8; font-size: 20; font-weight: bold; color: var(--ink); }
-.hint { font-size: 15; color: var(--muted); }
-.words { gap: 8; }
-.word { gap: 4; }
-.term {
-  min-height: 48;
-  padding: 0 16;
-  border-radius: 12;
-  text-align: left;
-  font-size: 18;
-  font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
-}
-.term:hover { background-color: var(--page-line); }
-.definition { padding: 2 16 6; font-size: 18; line-height: 26; color: var(--ink); }
+.answer { font-size: 21; line-height: 33; color: var(--ink); }
+.media { gap: 10; }
+.media-image { border-radius: 14; }
+.hint { font-size: 14; color: var(--muted); }
 
-.tile {
-  min-height: 64;
-  padding: 14 20;
-  border-radius: 20;
-  border: 2 solid var(--page-line);
-  text-align: left;
-  font-size: 21;
+.spot {
+  border-radius: 22;
+  border: 3 solid var(--animals);
+  font-size: 17;
   font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
+  color: var(--animals);
+  background-color: var(--white);
 }
-.tile:hover { border-color: var(--muted); }
-.tile.tile-right, .tile.tile-right:hover { border-color: var(--go); background-color: var(--go-light); }
-.tile.tile-wrong, .tile.tile-wrong:hover { border-color: var(--page-line); background-color: var(--page-line); }
-.feedback { padding: 14 18; border-radius: 16; font-size: 19; line-height: 26; font-weight: bold; color: var(--ink); background-color: var(--page-soft); }
-.feedback.feedback-right { color: var(--white); background-color: var(--go); }
+.spot:hover { background-color: var(--sun-light); }
+.spot.spot-on, .spot.spot-on:hover { color: var(--white); background-color: var(--animals); border-color: var(--white); }
+.spot-note { padding: 12 16; gap: 2; border-radius: 12; border: 2 solid var(--paper-line); background-color: var(--white); }
+.spot-title { font-family: Noto Serif; font-size: 18; font-weight: bold; color: var(--ink); }
+.spot-text { font-size: 16; line-height: 23; color: var(--ink); }
+
+.callout { padding: 14 18; gap: 4; border-radius: 16; }
+.wow { background-color: var(--sun-light); }
+.try { background-color: var(--go-light); }
+.callout-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; }
+.wow-tag { color: var(--long-ago); }
+.try-tag { color: var(--earth); }
+.callout-text { font-size: 18; line-height: 26; color: var(--ink); }
+.link-card {
+  min-height: 64;
+  padding: 12 18;
+  border-radius: 16;
+  border: 2 solid var(--paper-line);
+  background-color: var(--white);
+}
+.link-card:hover, .link-card:focus { border-color: var(--animals); }
+.link-copy { gap: 2; }
+.link-tag { color: var(--animals); }
+.link-text { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
+
+.pager { padding: 10 20 12; }
+.turn {
+  min-height: 46;
+  padding: 0 16;
+  border-radius: 23;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--white);
+  background-color: var(--night-raised);
+}
+.turn:hover, .turn:active { background-color: var(--night-line); }
+.turn.turn-next { color: var(--ink); background-color: var(--sun); }
+.turn.turn-next:hover, .turn.turn-next:active { background-color: var(--sun-light); }
+.dots { gap: 8; }
+.dot { border-radius: 5; background-color: var(--night-line); }
+.dot.dot-on { background-color: var(--sun); }
 
 
 /* ---------- category colors ---------- */

@@ -51,50 +51,61 @@
             </Grid>
         </StackView>
 
-        <!-- Two panels at full height: the dark contents column, led by the
-             way back to the library, and the white page, which opens with the
-             article's category and title. Both paint under the status bar but
-             keep their content below it. Without the column, a ringed back
-             button sits above the title instead. -->
-        <Grid Name="Reader" Rows="1fr" Visible="false" class="reader">
-            <BindingExpression Target="Grid.Columns">IF(STEP(900, {Screen.Width}), "272px 1fr", "0px 1fr")</BindingExpression>
-            <StackView Name="Pane" ContentInsetAdjustment="Always" class="pane">
-                <BindingExpression Target="Node.Opacity">IF(STEP(900, {Screen.Width}), 1, 0)</BindingExpression>
-                <Button Name="Back" class="back pane-back">
-                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" VerticalAlignment="Center" IgnoreHitTest="true">
-                        <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" IgnoreHitTest="true"/>
-                        <TextBlock Text="LIBRARY" class="back-label" IgnoreHitTest="true"/>
+        <!-- The reader is a book on a desk: a bar with the way back and the
+             narration, the open spread with one bookmark per question on its
+             edge, and the page turner. The bar and the turner are docked:
+             they reach the screen edges, keep their own content clear of the
+             status bar and the home indicator, and the book fills the space
+             between them. -->
+        <Node2D Name="Reader" Visible="false" class="reader">
+            <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
+                <Button Name="Back" class="back">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        <TextBlock Text="Library" IgnoreHitTest="true"/>
                     </StackView>
                 </Button>
-                <TextBlock class="pane-tag">QUESTIONS</TextBlock>
-                <StackView Name="Steps" class="steps"/>
-            </StackView>
-            <StackView Name="ReaderScroll" OverflowY="Scroll" ContentInsetAdjustment="Always" class="article reader-scroll">
-                <Grid Name="ArticleHead" Columns="1fr auto auto" Spacing="16" AlignItems="Start" class="article-head">
-                    <StackView class="title-block">
-                        <Button Name="PageBack" Width="46" Height="46" HorizontalAlignment="Left" class="back">
-                            <BindingExpression Target="Node.Visible">NOT(STEP(900, {Screen.Width}))</BindingExpression>
-                            <VectorView Source="encarta/Icons/circle-chevron-left.svg" Width="34" Height="34" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
-                        </Button>
-                        <TextBlock Name="ArticleCategory" class="title-tag"/>
-                        <TextBlock Name="ArticleTitle" class="title" WordWrap="true"/>
-                        <TextBlock Name="ReadAloudError" Visible="false" class="read-error" WordWrap="true">Audio couldn’t play. Try again.</TextBlock>
+                <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" class="crumbs">
+                    <TextBlock Name="ArticleCategory" class="crumb-tag"/>
+                    <TextBlock Name="ArticleTitle" class="crumb-title"/>
+                    <TextBlock Name="ReadAloudError" Visible="false" class="read-error">Audio couldn’t play. Try again.</TextBlock>
+                </StackView>
+                <Button Name="ReadAloud" Visible="false" class="listen">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Name="ReadAloudIcon" Source="encarta/Icons/volume-2.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        <TextBlock Name="ReadAloudLabel" Text="Read aloud" IgnoreHitTest="true"/>
                     </StackView>
-                    <Button Name="ReadAloud" Visible="false" class="listen">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <VectorView Name="ReadAloudIcon" Source="encarta/Icons/volume-2.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                            <TextBlock Name="ReadAloudLabel" Text="Read aloud" IgnoreHitTest="true"/>
-                        </StackView>
-                    </Button>
-                    <Button Name="StopReading" Visible="false" class="soft">
-                        <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
-                            <VectorView Source="encarta/Icons/square.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                            <TextBlock Text="Stop" IgnoreHitTest="true"/>
-                        </StackView>
-                    </Button>
-                </Grid>
-                <StackView Name="Sections" class="sections"/>
-            </StackView>
-        </Grid>
+                </Button>
+                <Button Name="StopReading" Visible="false" class="soft">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Source="encarta/Icons/square.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        <TextBlock Text="Stop" IgnoreHitTest="true"/>
+                    </StackView>
+                </Button>
+            </Grid>
+            <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" ContentInsetAdjustment="Always" class="book-row">
+                <Node2D Name="Sections" class="book"/>
+                <StackView Name="Steps" class="tabs"/>
+            </Grid>
+            <Grid Name="Pager" Columns="1fr auto 1fr" SafeAreaEdge="Bottom" ContentInsetAdjustment="Always" class="pager">
+                <Node2D>
+                <Button Name="PrevPage" MarginRight="auto" class="turn">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        <TextBlock Text="Back a page" IgnoreHitTest="true"/>
+                    </StackView>
+                </Button>
+                </Node2D>
+                <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" class="dots"/>
+                <Node2D>
+                <Button Name="NextPage" MarginLeft="auto" class="turn turn-next">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <TextBlock Name="NextLabel" Text="Turn the page" IgnoreHitTest="true"/>
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                    </StackView>
+                </Button>
+                </Node2D>
+            </Grid>
+        </Node2D>
     </Node2D>
 </Screen>

@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A numbered point on a picture; at least 44 points to tap. -->
+<Button Width="44" Height="44" class="spot"/>

@@ -13,6 +13,8 @@ ThemeLibrary = {
     { Key = "page", Value = "#FFFFFF" },
     { Key = "page-soft", Value = "#EEF1F8" },
     { Key = "page-line", Value = "#DCE1EC" },
+    { Key = "paper", Value = "#FFFBF0" },
+    { Key = "paper-line", Value = "#EADFC8" },
     { Key = "ink", Value = "#18213A" },
     { Key = "muted", Value = "#5C6680" },
     { Key = "sun", Value = "#FFD23F" },

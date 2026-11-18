@@ -11,7 +11,6 @@ function ReadAloud.new(view, openAudio)
     local self = setmetatable({
         view = view,
         openAudio = openAudio or media.openAudio,
-        scroll = assert(view:findChild("ReaderScroll", true)),
         play = assert(view:findChild("ReadAloud", true)),
         playIcon = assert(view:findChild("ReadAloudIcon", true)),
         playLabel = assert(view:findChild("ReadAloudLabel", true)),
@@ -81,29 +80,6 @@ function ReadAloud:setTrack(name, blocks)
     self.play.Visible = true
 end
 
-function ReadAloud:reveal(block)
-    local scroll = self.scroll
-    local top, node = 0, block
-    while node ~= scroll do
-        top = top + node.ActualY
-        node = node.parent
-    end
-    -- The page runs under the title bar: its visible part starts below the
-    -- inset that layout publishes.
-    local offset = scroll.ContentOffset.Y
-    local visibleTop, visibleBottom = top + offset, top + offset + block.ActualHeight
-    local first = scroll.AdjustedContentInsetTop + 20
-    local last = scroll.ActualHeight - scroll.AdjustedContentInsetBottom - 20
-    local target = offset
-    if visibleTop < first then
-        target = first - top
-    elseif visibleBottom > last then
-        target = math.max(first - top, last - top - block.ActualHeight)
-    end
-    target = math.max(math.min(0, scroll.ActualHeight - scroll.ScrollHeight), math.min(0, target))
-    if target ~= offset then scroll.ContentOffset = { X = 0, Y = target } end
-end
-
 function ReadAloud:update()
     local elapsed, playing = self.player:status()
     if not playing then
@@ -128,8 +104,8 @@ function ReadAloud:update()
         self.highlighted = word.block
         word.block.HighlightedRange = { X = word.timing[3], Y = word.timing[4] }
         if word.block ~= self.followedBlock then
-            -- The page may take over, for example to bring a new question up.
-            if not (self.onBlock and self.onBlock(word.block)) then self:reveal(word.block) end
+            -- The page shows the block: it turns to its spread.
+            if self.onBlock then self.onBlock(word.block) end
             self.followedBlock = word.block
         end
         self.view:post("Window.Paint", renderer.getSize())

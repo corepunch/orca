@@ -1,6 +1,11 @@
 -- Original text. Reference URLs are for editors; the app never fetches them.
-local function art(name, caption)
-    return { path = "encarta/Images/" .. name .. ".jpg", caption = caption }
+-- Optional fields: a picture may carry `spots`, numbered points to tap, each
+-- { x, y, title, text } with x and y as fractions of the picture. A section
+-- may add `wow` (its astonishing fact) and `try` (something to do); they sit
+-- on the question's last spread and are not narrated. An article may name a
+-- `related` article id.
+local function art(name, caption, spots)
+    return { path = "encarta/Images/" .. name .. ".jpg", caption = caption, spots = spots }
 end
 
 local moon = art("moon", "Sunlight makes a bright crescent on the Moon.")
@@ -18,15 +23,25 @@ return {
         keywords = "ocean sea mollusk squid disguise camouflage ink suckers siphon beak",
         sections = {
             { "How does an octopus use its arms?", "An octopus uses its eight arms to crawl, grab, explore, and smell. Each arm is lined with hundreds of suckers, round cups that stick to almost anything. A sucker can feel and smell the things it touches. So an octopus can find a crab hiding in a dark crack without even seeing it.",
-                "The arms are clever in another way, too. Each sucker is moved by its own bundle of nerves, which works almost like a tiny brain. That lets every sucker move on its own, so an arm can twist open a shell while the octopus watches for danger. If an attacker grabs an arm, the octopus can let it go and escape. Later, it grows a new arm in its place." },
+                "The arms are clever in another way, too. Each sucker is moved by its own bundle of nerves, which works almost like a tiny brain. That lets every sucker move on its own, so an arm can twist open a shell while the octopus watches for danger. If an attacker grabs an arm, the octopus can let it go and escape. Later, it grows a new arm in its place." ,
+                wow = "A sucker can smell what it touches. So an octopus can find a crab without even seeing it." },
             { "How does an octopus change color?", "An octopus changes color by stretching tiny bags of color in its skin. Thousands of these bags sit just under the surface. Each one holds red, yellow, brown, or black color. Tiny muscles pull on a bag and spread it out, so its color shows. When the muscles relax, the bag shrinks to a dot, and the color almost disappears.",
-                "Because the octopus’s brain controls these muscles directly, the change is fast. A frightened octopus can go from pale to dark in less than a second. It can also raise little bumps on its skin, so it looks rough like a rock or coral. Blending in like this is called camouflage. It keeps the octopus safe from sharks and big fish, and it lets it sneak up on crabs." },
+                "Because the octopus’s brain controls these muscles directly, the change is fast. A frightened octopus can go from pale to dark in less than a second. It can also raise little bumps on its skin, so it looks rough like a rock or coral. Blending in like this is called camouflage. It keeps the octopus safe from sharks and big fish, and it lets it sneak up on crabs." ,
+                wow = "Thousands of tiny bags of color sit just under an octopus’s skin.",
+                try = "Draw a small dot on a balloon. Blow the balloon up and watch the dot spread wide. A color bag in octopus skin spreads out the same way." },
             { "How does an octopus escape?", "An octopus escapes with ink, speed, and a squeeze. When a hunter comes close, the octopus can squirt a cloud of black ink. The cloud hides the octopus from view. It also dulls the hunter’s sense of smell, so the hunter cannot follow the octopus’s scent.",
-                "To swim fast, an octopus fills its body with water and then blasts it out through a muscle tube called a siphon. This works like letting go of a balloon full of air, which zooms off as the air rushes out. An octopus can also squeeze through very small gaps, because it has no bones. Its only hard part is its beak, a sharp mouth like a parrot’s. If the beak fits through a hole, the rest of the octopus can follow." },
+                "To swim fast, an octopus fills its body with water and then blasts it out through a muscle tube called a siphon. This works like letting go of a balloon full of air, which zooms off as the air rushes out. An octopus can also squeeze through very small gaps, because it has no bones. Its only hard part is its beak, a sharp mouth like a parrot’s. If the beak fits through a hole, the rest of the octopus can follow." ,
+                wow = "Octopus ink does two jobs. It hides the octopus, and it dulls the hunter’s sense of smell.",
+                try = "Blow up a balloon and let it go. It zooms off as the air rushes out. An octopus shoots away the same way, but with water." },
             { "Why do people say octopuses are smart?", "People say octopuses are smart because they solve problems in surprising ways. An octopus can open a clamshell to reach the food inside. Some octopuses move rocks to build a safe den. Others pull a shell over themselves like a little roof. In aquariums, a few have even taken apart the filters that clean their tank water.",
                 "Octopuses also seem to have opinions about people. In one aquarium, an octopus kept squirting water at a keeper it seemed to dislike. Another shot a jet of water at a lamp. Most octopuses live alone, so each one works things out by itself. Next time you visit an aquarium, watch an octopus closely and see what it explores." },
         },
-        image = art("octopus", "An octopus stretches its arms among rocks and sea plants."),
+        image = art("octopus", "An octopus stretches its arms among rocks and sea plants.", {
+            { 0.15, 0.48, "Arms", "Eight arms crawl, grab, explore, and smell." },
+            { 0.55, 0.77, "Suckers", "Round cups that stick, feel, and smell what they touch." },
+            { 0.80, 0.29, "Skin", "Tiny bags of color under the skin let the octopus change color." },
+        }),
+        related = "penguins",
         sources = {
             "https://ocean.si.edu/ocean-life/invertebrates/how-octopuses-and-squids-change-color",
             "https://www.montereybayaquarium.org/animals/animals-a-to-z/giant-pacific-octopus",
