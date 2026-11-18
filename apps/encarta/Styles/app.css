@@ -181,6 +181,10 @@
 .book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
 .tabs { padding: 18 0 0; gap: 8; }
 .tab {
+  /* Square where the bookmark leaves the book, round at its free end. */
+  border-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
   border-top-right-radius: 10;
   border-bottom-right-radius: 10;
   font-size: 16;
