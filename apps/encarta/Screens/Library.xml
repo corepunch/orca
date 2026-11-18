@@ -168,6 +168,31 @@
              rest, above a strip for the page dots that stays clear of the
              home indicator. -->
         <Node2D Name="Reader" Visible="false" class="reader">
+            <Grid Name="BookArea" Rows="1fr auto" ContentInsetAdjustment="Always">
+            <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" class="book-row">
+                <Node2D Name="Book" class="book">
+                    <Node2D Name="Sections"/>
+                    <!-- The fold between the two pages: a thin crease with the left
+                         page shading into it. Gone when the pages stack. -->
+                    <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
+                        <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
+                    </ImageView>
+                    <!-- Tapping the outer margin of a page turns it. The zones are
+                         invisible and as wide as the spread's side padding, so
+                         they cover no content. -->
+                    <Button Name="PrevPage" Width="40" MarginRight="auto" class="turn"/>
+                    <Button Name="NextPage" Width="40" MarginLeft="auto" class="turn"/>
+                </Node2D>
+                <StackView Name="Steps" class="tabs"/>
+            </Grid>
+            <!-- A dot per spread of the question, midway between the foot of
+                 the book and the foot of the screen, centred under the book. -->
+            <Node2D Name="DotsRow" Height="40" IgnoreHitTest="true" class="dots-row">
+                <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" IgnoreHitTest="true" class="dots"/>
+            </Node2D>
+            </Grid>
+            <!-- The bar comes last so that it lies over the book area, which
+                 runs under it, and takes its own taps. -->
             <Grid Name="ReaderBar" Columns="auto 1fr auto auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
                 <Button Name="Back" class="back">
                     <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" VerticalAlignment="Center" IgnoreHitTest="true">
@@ -193,44 +218,11 @@
                     </StackView>
                 </Button>
             </Grid>
-            <Grid Name="BookArea" Rows="1fr auto" ContentInsetAdjustment="Always">
-            <Grid Name="BookRow" Columns="1fr auto" Rows="1fr" class="book-row">
-                <Node2D Name="Book" class="book">
-                    <Node2D Name="Sections"/>
-                    <!-- The fold between the two pages: a thin crease with the left
-                         page shading into it. Gone when the pages stack. -->
-                    <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
-                        <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
-                    </ImageView>
-                    <!-- Tapping the outer margin of a page turns it. The zones are
-                         invisible and as wide as the spread's side padding, so
-                         they cover no content. -->
-                    <Button Name="PrevPage" Width="40" MarginRight="auto" class="turn"/>
-                    <Button Name="NextPage" Width="40" MarginLeft="auto" class="turn"/>
-                </Node2D>
-                <StackView Name="Steps" class="tabs"/>
-            </Grid>
-            <!-- A dot per spread of the question, midway between the foot of
-                 the book and the foot of the screen, centred under the book. -->
-            <Node2D Name="DotsRow" Height="40" IgnoreHitTest="true" class="dots-row">
-                <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" IgnoreHitTest="true" class="dots"/>
-            </Node2D>
-            </Grid>
         </Node2D>
 
         <!-- Question Hunt: the passport on the left, a riddle with three
              pictures on the right. -->
         <Node2D Name="Hunt" Visible="false" class="reader">
-            <Grid Name="HuntBar" Columns="auto 1fr auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
-                <Button Name="HuntBack" class="back">
-                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" VerticalAlignment="Center" IgnoreHitTest="true">
-                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                        <TextBlock Text="Study" IgnoreHitTest="true"/>
-                    </StackView>
-                </Button>
-                <TextBlock class="crumb-title">Question Hunt</TextBlock>
-                <TextBlock Name="StampCount" class="stamp-count"/>
-            </Grid>
             <Grid Name="HuntBody" Columns="2fr 3fr" Rows="1fr" Spacing="20" ContentInsetAdjustment="Always" class="hunt-body">
                 <StackView Name="Passport" OverflowY="Scroll" class="passport">
                     <TextBlock class="passport-title">Explorer’s Passport</TextBlock>
@@ -255,6 +247,17 @@
                         </Button>
                     </Grid>
                 </StackView>
+            </Grid>
+            <!-- Last, so that it lies over the body and takes its own taps. -->
+            <Grid Name="HuntBar" Columns="auto 1fr auto" Spacing="12" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="reader-bar">
+                <Button Name="HuntBack" class="back">
+                    <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" VerticalAlignment="Center" IgnoreHitTest="true">
+                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
+                        <TextBlock Text="Study" IgnoreHitTest="true"/>
+                    </StackView>
+                </Button>
+                <TextBlock class="crumb-title">Question Hunt</TextBlock>
+                <TextBlock Name="StampCount" class="stamp-count"/>
             </Grid>
         </Node2D>
     </Node2D>

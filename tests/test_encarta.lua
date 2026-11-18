@@ -5,6 +5,7 @@ require "orca.UIKit"
 require "orca.renderer"
 
 local project = fs.init("apps/encarta")
+local orca = require "orca"
 local position, playing, opened, closed = 0, false, 0, 0
 -- Stamps go to a scratch file, never to the real passport.
 local passportPath = os.tmpname()
@@ -144,8 +145,12 @@ assert(reader.Visible and not hunt.Visible and control("ArticleTitle").Text == "
 click("Back")
 assert(hunt.Visible and not library.Visible, "Back returns to the hunt")
 assert(control("HuntQuestion").Text == "What do about a million tiny cloud drops make when they join?", "a solved hunt makes way for a new one")
-click("HuntBack")
-assert(library.Visible and study.Visible and not hunt.Visible)
+-- A real tap, through hit testing.
+local leave = control("HuntBack")
+orca.system.dispatchMessage { target = view, message = "LeftButtonDown", x = left(leave) + 20, y = top(leave) + 20 }
+orca.system.dispatchMessage { target = view, message = "LeftButtonUp", x = left(leave) + 20, y = top(leave) + 20 }
+core.flushQueue()
+assert(library.Visible and study.Visible and not hunt.Visible, "the hunt's way back answers a tap")
 -- Reading an article to its last spread earns its stamp too, and stamps are
 -- kept on disk.
 app.libraryController:openArticle("heart")
@@ -334,7 +339,6 @@ assert(shown() == spread(1) and not control("PrevPage").Visible)
 
 -- Real touches, sent through hit testing: a sideways swipe turns the page,
 -- and so does a tap on a page's outer margin.
-local orca = require "orca"
 local function touch(message, x, y)
     orca.system.dispatchMessage { target = view, message = message, x = x, y = y }
     core.flushQueue()
@@ -368,7 +372,14 @@ tap(cardX, cardY)
 assert(shown() == spread(3) and current() == 2, "after a swipe, taps reach the page again")
 tap(screenLeft(book) + 20, midY)
 assert(shown() == spread(2), "a tap on the left margin turns back")
-click("Step1")
+-- The bar and the bookmarks answer real taps too: nothing lies over them.
+local function tapOn(node) tap(screenLeft(node) + node.ActualWidth / 2, screenTop(node) + node.ActualHeight / 2) end
+tapOn(control("Step3"))
+assert(shown() == spread(5) and current() == 3, "a bookmark answers a tap")
+tapOn(control("Back"))
+assert(library.Visible and not reader.Visible, "Back answers a tap")
+click("Open_moon", wall)
+layout(1024, 768)
 
 -- On a narrow screen the pages stack and the spread scrolls.
 layout(600, 900)
