@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- A numbered point on a picture; at least 44 points to tap. -->
-<Button Width="44" Height="44" class="spot"/>
+<!-- A numbered point on a picture: a small mark inside a clear button that
+     is at least 44 points to tap. -->
+<Button Width="44" Height="44" class="spot-hit">
+    <Node2D IgnoreHitTest="true">
+        <TextBlock Name="Mark" Width="30" Height="30" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="auto" class="spot" IgnoreHitTest="true"/>
+    </Node2D>
+</Button>

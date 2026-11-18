@@ -171,13 +171,11 @@
                     <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
                         <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
                     </ImageView>
-                    <!-- Tapping the outer margin of a page turns it. -->
-                    <Button Name="PrevPage" Width="52" MarginRight="auto" class="turn">
-                        <VectorView Source="encarta/Icons/chevron-left.svg" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
-                    </Button>
-                    <Button Name="NextPage" Width="52" MarginLeft="auto" class="turn">
-                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
-                    </Button>
+                    <!-- Tapping the outer margin of a page turns it. The zones are
+                         invisible and as wide as the spread's side padding, so
+                         they cover no content. -->
+                    <Button Name="PrevPage" Width="40" MarginRight="auto" class="turn"/>
+                    <Button Name="NextPage" Width="40" MarginLeft="auto" class="turn"/>
                     <!-- A dot per spread of the question, at the foot of the book. -->
                     <StackView Name="Dots" Direction="Horizontal" AlignItems="Center" MarginLeft="auto" MarginRight="auto" MarginTop="auto" MarginBottom="14" IgnoreHitTest="true" class="dots"/>
                 </Node2D>

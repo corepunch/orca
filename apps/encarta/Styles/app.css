@@ -196,10 +196,11 @@
 .tab.tab-done, .tab.tab-done:hover { color: var(--cream); background-color: var(--go); }
 .tab.tab-on, .tab.tab-on:hover { color: var(--ink); background-color: var(--sun); }
 
-/* Side padding keeps the text clear of the page-turning margins; the foot
-   keeps it clear of the dots. */
-.spread { padding: 26 60 44; }
-.pages { gap: 56; }
+/* The side padding is the page-turning margin. The gap gives each page the
+   same margin at the fold as at its outer edge. The foot keeps text clear of
+   the dots. */
+.spread { padding: 26 40 44; }
+.pages { gap: 80; }
 .page { gap: 14; }
 .kicker { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--animals); }
 .question { font-family: Noto Serif; font-size: 31; line-height: 38; font-weight: bold; color: var(--ink); }
@@ -210,16 +211,18 @@
 .media-image { border-radius: 14; }
 .hint { font-size: 14; color: var(--muted); }
 
+.spot-hit, .spot-hit:hover, .spot-hit:active { padding: 0; background-color: #00000000; }
 .spot {
-  border-radius: 22;
-  border: 3 solid var(--animals);
-  font-size: 17;
+  border-radius: 15;
+  border: 2 solid var(--animals);
+  font-size: 15;
   font-weight: bold;
+  text-align: center;
+  text-vertical-align: center;
   color: var(--animals);
-  background-color: var(--cream);
+  background-color: #FFFFFF;
 }
-.spot:hover { background-color: var(--sun-light); }
-.spot.spot-on, .spot.spot-on:hover { color: var(--cream); background-color: var(--animals); border-color: var(--cream); }
+.spot.spot-on { color: #FFFFFF; background-color: var(--animals); border-color: #FFFFFF; }
 .spot-note { padding: 12 16; gap: 2; border-radius: 12; border: 2 solid var(--paper-line); background-color: var(--cream); }
 .spot-title { font-family: Noto Serif; font-size: 18; font-weight: bold; color: var(--ink); }
 .spot-text { font-size: 16; line-height: 23; color: var(--ink); }
@@ -243,10 +246,8 @@
 .link-tag { color: var(--animals); }
 .link-text { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
 
-/* Page margins that turn the page, and the dots at the book's foot. */
-.turn { padding: 0; color: var(--paper-line); background-color: #00000000; }
-.turn:hover, .turn:focus { color: var(--muted); background-color: #6E5D4614; }
-.turn:active { color: var(--ink); background-color: #6E5D4626; }
+/* Invisible page margins that turn the page, and the dots at the book's foot. */
+.turn, .turn:hover, .turn:focus, .turn:active { padding: 0; border-radius: 0; background-color: #00000000; }
 .dots { gap: 8; }
 .dot { border-radius: 5; background-color: var(--paper-line); }
 .dot.dot-on { background-color: var(--animals); }

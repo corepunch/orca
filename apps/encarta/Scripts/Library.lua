@@ -242,11 +242,11 @@ end
 
 -- Numbered spots sit on a picture at fractions of its size. One grid holds
 -- them all, because a full-size layer per spot would take the taps meant for
--- the spots under it. Each distinct x gets an auto column and each distinct y
--- an auto row; the flexible tracks between them carry the fractions. The
--- shares are worked out for a picture of the usual size, so a spot's centre
--- lands on its point there and stays within a few points of it elsewhere.
-local SPOT, PICTURE = 44, { 420, 280 }
+-- the spots under it. Each distinct x gets a zero-width column and each
+-- distinct y a zero-height row, with flexible tracks between them carrying
+-- the fractions; a spot hangs centred on its crossing, so spots may sit as
+-- close together as the picture needs.
+local SPOT = 44
 
 local function tracks(spots, axis)
     local values, seen = {}, {}
@@ -257,14 +257,12 @@ local function tracks(spots, axis)
         end
     end
     table.sort(values)
-    local free = PICTURE[axis] - #values * SPOT
     local parts, rank, last = {}, {}, 0
     for position, value in ipairs(values) do
-        local share = (value * PICTURE[axis] - SPOT / 2 - (position - 1) * SPOT) / free
-        parts[#parts + 1] = string.format("%.4ffr auto", math.max(share - last, 0.0001))
-        rank[value], last = position, math.max(share, last)
+        parts[#parts + 1] = string.format("%.4ffr 0px", value - last)
+        rank[value], last = position, value
     end
-    parts[#parts + 1] = string.format("%.4ffr", math.max(1 - last, 0.0001))
+    parts[#parts + 1] = string.format("%.4ffr", 1 - last)
     return table.concat(parts, " "), rank, #values * 2 + 1
 end
 
@@ -283,9 +281,11 @@ function Controller:addSpots(spread, spots)
         local i = cells[cell]
         if not i then layer:addChild(ui.Node2D {}) else
             local button = prefab("Spot")
-            button.Name, button.Text = "Spot" .. i, tostring(i)
+            button.MarginLeft, button.MarginTop = -SPOT / 2, -SPOT / 2
+            button.Name = "Spot" .. i
+            control(button, "Mark").Text = tostring(i)
             button.Click = function()
-                for n, other in ipairs(buttons) do other.StateClasses = n == i and "spot-on" or "" end
+                for n, other in ipairs(buttons) do control(other, "Mark").StateClasses = n == i and "spot-on" or "" end
                 control(note, "SpotTitle").Text = i .. "  " .. spots[i][3]
                 control(note, "SpotText").Text = spots[i][4]
                 note.Visible = true

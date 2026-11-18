@@ -213,9 +213,9 @@ assert(not view:findChild("Pager", true) and screenTop(book) + book.ActualHeight
 
 -- A page's outer margin turns it; the dots lie over the foot of the book.
 local back, onward, dots = control("PrevPage"), control("NextPage"), control("Dots")
-assert(onward.ActualWidth >= 44 and onward.ActualHeight == book.ActualHeight
-    and screenLeft(onward) + onward.ActualWidth == screenLeft(book) + book.ActualWidth, "the right margin turns the page onward")
-assert(screenLeft(back) == screenLeft(book) and back.ActualWidth >= 44, "the left margin turns it back")
+assert(onward.ActualWidth >= 40 and count(onward) == 0 and onward.BackgroundColor.A == 0 and onward.ActualHeight == book.ActualHeight
+    and screenLeft(onward) + onward.ActualWidth == screenLeft(book) + book.ActualWidth, "the right margin turns the page onward, and shows nothing")
+assert(screenLeft(back) == screenLeft(book) and back.ActualWidth >= 40, "the left margin turns it back")
 assert(screenTop(dots) > screenTop(book) + book.ActualHeight - 40 and screenTop(dots) + dots.ActualHeight < screenTop(book) + book.ActualHeight
     and math.abs(screenLeft(dots) + dots.ActualWidth / 2 - screenLeft(book) - book.ActualWidth / 2) < 1, "the dots sit over the foot of the book")
 assert(screenLeft(control("Steps")) >= screenLeft(sections) + sections.ActualWidth, "the bookmarks stick out of the book's edge")
@@ -230,6 +230,10 @@ assert(image.ActualWidth > 300 and math.abs(image.ActualWidth / image.ActualHeig
 assert(part("SectionImage", 3).Src == "encarta/Images/moon.jpg", "a question without its own picture shows the article's")
 assert(not part("SectionMedia", 2).Visible, "the picture opens a question; its last spread holds the extras")
 assert(fits(1), "the first spread fits the book without scrolling")
+local middle = screenLeft(book) + book.ActualWidth / 2
+assert(math.abs((screenLeft(text) - screenLeft(book)) - (middle - screenLeft(text) - text.ActualWidth)) < 1
+    and math.abs((screenLeft(side) - middle) - (screenLeft(book) + book.ActualWidth - screenLeft(side) - side.ActualWidth)) < 1,
+    "each page has the same margin at the fold as at its outer edge")
 local fold = control("Fold")
 local words = control("Paragraphs", spread(1))
 assert(screenLeft(words) >= screenLeft(back) + back.ActualWidth
@@ -247,7 +251,7 @@ assert(not part("Title", 2).Visible and part("Running", 2).Visible and part("Run
 assert(control("PrevPage").Visible and fits(2))
 assert(control("Dot2").ActualWidth > control("Dot1").ActualWidth, "the current spread's dot is the long one")
 assert(part("NextUp", 2).Visible and part("NextUpText", 2).Text == "How far away is the Moon?")
-assert(not part("Wow", 2).Visible and not part("Try", 2).Visible and not part("Related", 2).Visible, "extras appear only when written")
+assert(part("Wow", 2).Visible and not part("Try", 2).Visible and not part("Related", 2).Visible, "extras appear only when written")
 click("NextUp", spread(2))
 assert(shown() == spread(3) and current() == 2, "the last spread leads to the next question")
 click("Step4")
@@ -265,7 +269,7 @@ assert(shown() == spread(1) and not control("PrevPage").Visible)
 layout(600, 900)
 text, side = part("TextPage", 1), part("SidePage", 1)
 assert(control("Fold").Opacity == 0, "stacked pages have no fold")
-assert(screenTop(side) > screenTop(text) and side.ActualWidth > 380 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
+assert(screenTop(side) > screenTop(text) and side.ActualWidth > 420 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")
@@ -333,14 +337,14 @@ end
 for i, at in ipairs({ { 0.15, 0.48 }, { 0.55, 0.77 }, { 0.80, 0.29 } }) do
     local spot = part("Spot" .. i, 1)
     local x, y = center(spot)
-    assert(spot.Text == tostring(i) and spot.ActualWidth >= 44 and spot.ActualHeight >= 44, "a spot is big enough to tap")
-    assert(math.abs(x - at[1]) < 0.04 and math.abs(y - at[2]) < 0.04, ("spot %d sits at %.2f, %.2f"):format(i, x, y))
+    assert(control("Mark", spot).Text == tostring(i) and spot.ActualWidth >= 44 and spot.ActualHeight >= 44, "a spot is big enough to tap")
+    assert(math.abs(x - at[1]) < 0.01 and math.abs(y - at[2]) < 0.01, ("spot %d sits at %.2f, %.2f"):format(i, x, y))
 end
 assert(not part("SpotNote", 1).Visible and part("SectionCaption", 1).Text:match("Tap the numbers"))
 click("Spot2", spread(1))
 layout(1024, 768)
 assert(part("SpotNote", 1).Visible and part("SpotTitle", 1).Text == "2  Suckers" and part("SpotText", 1).Text:match("Round cups"))
-local chosen, other = part("Spot2", 1).BackgroundColor, part("Spot1", 1).BackgroundColor
+local chosen, other = control("Mark", part("Spot2", 1)).BackgroundColor, control("Mark", part("Spot1", 1)).BackgroundColor
 assert(chosen.R > 0.8 and chosen.B < 0.3 and other.B > 0.9, "the chosen spot is filled")
 assert(fits(1), "the spread still fits with a note open")
 
@@ -374,6 +378,28 @@ click("Back")
 click("Open_earth-layers", wall)
 assert(control("ArticleTitle").Text == "Inside Earth" and part("SectionImage", 1).Src == "encarta/Images/earth-layers.jpg")
 click("Back")
+
+-- Every spread of every article fits the book at the iPad size, with a
+-- picture note open where there is one.
+for _, article in ipairs(require "encarta/Content/Articles") do
+    reading:openArticle(article.id)
+    for n in ipairs(reading.spreads) do
+        reading:setPage(n)
+        local spot = spread(n):findChild("Spot1", true)
+        if spot then spot:send("Node.LeftButtonUp") end
+        layout(1024, 768)
+        local art, image = spread(n):findChild("Picture", true), article.sections[reading.spreads[n].section].image or article.image
+        for i, at in ipairs(reading.spreads[n].page == 1 and image.spots or {}) do
+            local mark = control("Spot" .. i, spread(n))
+            local x = (screenLeft(mark) + mark.ActualWidth / 2 - screenLeft(art)) / art.ActualWidth
+            local y = (screenTop(mark) + mark.ActualHeight / 2 - screenTop(art)) / art.ActualHeight
+            assert(math.abs(x - at[1]) < 0.01 and math.abs(y - at[2]) < 0.01,
+                ("%s spot %d sits at %.2f, %.2f instead of %.2f, %.2f"):format(article.id, i, x, y, at[1], at[2]))
+        end
+        assert(fits(n), ("%s spread %d fits the book (%d of %d)"):format(article.id, n, spread(n).ScrollHeight, spread(n).ActualHeight))
+    end
+    reading:goBack()
+end
 
 local function checkArtwork(path)
     local bytes = assert(fs.readTextFile(path), path)
