@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Heart" Shader="encarta/Study/Baked" BlendMode="Opaque"
+          Baked.Albedo="encarta/Images/Thumbs/heart.jpg" Baked.Lightmap="encarta/Study/Textures/lightmap.png"/>

@@ -4,7 +4,7 @@ WindowWidth = 1024
 WindowHeight = 768
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
-EnginePlugins = { { Name = "orca.UIKit" } }
+EnginePlugins = { { Name = "orca.UIKit" }, { Name = "orca.SceneKit" } }
 ThemeLibrary = {
     { Key = "wood", Value = "#4E2D16" },
     { Key = "wood-raised", Value = "#6B4020" },

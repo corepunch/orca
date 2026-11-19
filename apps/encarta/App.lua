@@ -16,4 +16,9 @@ return Application:extend {
         return result
     end,
     ["/"] = function(self) return self.library end,
+    -- The 3D room planned as the home screen. Preview: orca apps/encarta -url=/study
+    ["/study"] = function(self)
+        self.study = self.study or assert(fs.loadObject("encarta/Screens/Study"))
+        return self.study
+    end,
 }
