@@ -11,7 +11,7 @@ surface gets two UV sets: UV0 repeats its wood or picture texture, UV1 is its
 own patch of the shared lightmap. The lightmap is path traced here with numpy
 (three lights, two bounces), so the engine only multiplies texture by light.
 
-Needs numpy and Pillow. Textures are listed in Study/README.md.
+Needs numpy and Pillow. The textures are drawn here too; see Study/README.md.
 """
 import argparse
 import math
@@ -31,9 +31,9 @@ F = np.float32
 
 MATERIALS = {
     # name: (texture file in Study/Textures, metres per repeat)
-    "Planks": ("hinoki_planks.jpg", 1.6),
-    "Floor": ("wood_floor.jpg", 2.0),
-    "Oak": ("oak_veneer.jpg", 1.2),
+    "Planks": ("planks.jpg", 1.6),
+    "Floor": ("floor.jpg", 2.0),
+    "Oak": ("oak.jpg", 1.2),
     "Dark": ("dark_wood.jpg", 1.0),
     "Globe": ("globe.jpg", None),
     "Sky": ("night_sky.jpg", None),
@@ -85,14 +85,14 @@ def build_scene():
     WX0, WX1, WY0, WY1 = -2.25, -1.05, 1.15, 2.55
     box((X0, -0.1, Z0), (X1, 0, Z1), "Floor", density=56, skip="x- x+ y- z- z+")
     box((X0, H, Z0), (X1, H + 0.1, Z1), color="#F3E6CC", density=20, skip="x- x+ y+ z- z+")
-    box((X0 - 0.1, 0, Z0), (X0, H, Z1), "Planks", density=40, skip="x- y- y+ z- z+", rot=True)
-    box((X1, 0, Z0), (X1 + 0.1, H, Z1), "Planks", density=40, skip="x+ y- y+ z- z+", rot=True)
-    box((X0, 0, Z1), (X1, H, Z1 + 0.1), "Planks", density=12, skip="x- x+ y- y+ z+", rot=True)
+    box((X0 - 0.1, 0, Z0), (X0, H, Z1), "Planks", density=40, skip="x- y- y+ z- z+")
+    box((X1, 0, Z0), (X1 + 0.1, H, Z1), "Planks", density=40, skip="x+ y- y+ z- z+")
+    box((X0, 0, Z1), (X1, H, Z1 + 0.1), "Planks", density=12, skip="x- x+ y- y+ z+")
     T = 0.14  # wall thickness, so the window has a reveal
-    box((X0, 0, Z0 - T), (WX0, H, Z0), "Planks", density=64, skip="x- y- y+ z-", rot=True)
-    box((WX1, 0, Z0 - T), (X1, H, Z0), "Planks", density=64, skip="x+ y- y+ z-", rot=True)
-    box((WX0, 0, Z0 - T), (WX1, WY0, Z0), "Planks", density=64, skip="x- x+ y- z-", rot=True)
-    box((WX0, WY1, Z0 - T), (WX1, H, Z0), "Planks", density=64, skip="x- x+ y+ z-", rot=True)
+    box((X0, 0, Z0 - T), (WX0, H, Z0), "Planks", density=64, skip="x- y- y+ z-")
+    box((WX1, 0, Z0 - T), (X1, H, Z0), "Planks", density=64, skip="x+ y- y+ z-")
+    box((WX0, 0, Z0 - T), (WX1, WY0, Z0), "Planks", density=64, skip="x- x+ y- z-")
+    box((WX0, WY1, Z0 - T), (WX1, H, Z0), "Planks", density=64, skip="x- x+ y+ z-")
     box((X0, 0, Z0), (X1, 0.12, Z0 + 0.025), "Dark", density=48, skip="x- x+ y- z-")       # skirting
     # Window: sky, frame and glazing bars.
     box((WX0 - 0.3, WY0 - 0.3, Z0 - 0.5), (WX1 + 0.3, WY1 + 0.3, Z0 - 0.45), "Sky", density=24,
@@ -590,18 +590,70 @@ def cap(mb, p, c, size):
 # ---------------------------------------------------------------- generated textures
 
 
-def make_textures(src):
-    """Copy downloaded textures and draw the generated ones (globe, sky, white)."""
+def make_textures(natural_earth):
+    """Draw every texture: four woods, the night sky, and the globe when its outlines are given."""
     tex = os.path.join(OUT, "Textures")
     os.makedirs(tex, exist_ok=True)
-    if src:
-        for a, b in (("hinoki_planks", "hinoki_planks"), ("wood_floor", "wood_floor"), ("oak_veneer_01", "oak_veneer"),
-                     ("dark_wood", "dark_wood")):
-            Image.open(os.path.join(src, a + ".jpg")).convert("RGB").save(os.path.join(tex, b + ".jpg"), quality=88)
-        draw_globe(os.path.join(src, "ne_110m_land.geojson"), os.path.join(src, "ne_110m_lakes.geojson"),
-                   os.path.join(tex, "globe.jpg"))
+    save = lambda im, name: Image.fromarray(im).save(os.path.join(tex, name), quality=90)
+    # light and dark tone, planks across the image, rings per plank, seed
+    save(draw_wood((238, 190, 104), (205, 150, 72), planks=8, rings=5, joints=0, seed=11), "planks.jpg")
+    save(draw_wood((176, 120, 70), (128, 82, 44), planks=10, rings=4, joints=2, seed=12), "floor.jpg")
+    save(draw_wood((214, 166, 104), (172, 124, 70), planks=1, rings=14, joints=0, seed=13), "oak.jpg")
+    save(draw_wood((112, 62, 36), (62, 30, 18), planks=1, rings=18, joints=0, seed=14), "dark_wood.jpg")
     Image.new("RGB", (4, 4), "white").save(os.path.join(tex, "white.png"))
     draw_sky(os.path.join(tex, "night_sky.jpg"))
+    if natural_earth:
+        draw_globe(os.path.join(natural_earth, "ne_110m_land.geojson"),
+                   os.path.join(natural_earth, "ne_110m_lakes.geojson"), os.path.join(tex, "globe.jpg"))
+
+
+def soft_noise(n, along, across, rng):
+    """Noise that tiles: white noise blurred in the frequency domain.
+    along and across are the blur lengths in texels down and across the image."""
+    f = np.fft.fft2(rng.standard_normal((n, n)))
+    fy, fx = np.fft.fftfreq(n)[:, None], np.fft.fftfreq(n)[None, :]
+    f *= np.exp(-((fy * along) ** 2 + (fx * across) ** 2) * 2 * math.pi ** 2)
+    out = np.fft.ifft2(f).real
+    return out / out.std()
+
+
+def draw_wood(light, dark, planks, rings, joints, seed, n=1024):
+    """A tiling wood texture with the grain running up the image.
+
+    Growth rings are a sine across the grain, bent by slow noise; fine streaks
+    and pores are noise stretched along the grain. Boards get their own piece
+    of that pattern, their own tone, a dark seam and, on floors, end joints."""
+    rng = np.random.default_rng(seed)
+    x = np.arange(n)[None, :] / n
+    bend = soft_noise(n, 260, 40, rng)
+    ring = 0.5 + 0.5 * np.sin(2 * math.pi * (x * rings * planks + bend * 0.55))
+    ring = ring ** 1.6                                        # narrow dark late wood, wide pale early wood
+    streak = soft_noise(n, 90, 1.6, rng)
+    pore = soft_noise(n, 14, 0.8, rng)
+    cloud = soft_noise(n, 200, 120, rng)
+    t = 0.5 + 0.30 * (ring - 0.5) + 0.11 * streak + 0.05 * pore + 0.07 * cloud
+    shade = np.ones((n, n))
+    if planks > 1:
+        w = n // planks
+        for i in range(planks):
+            sl = slice(i * w, (i + 1) * w if i < planks - 1 else n)
+            # Each board is cut from somewhere else in the tree.
+            t[:, sl] = np.roll(np.roll(t, int(rng.integers(n)), axis=0), int(rng.integers(n)), axis=1)[:, sl]
+            t[:, sl] += rng.uniform(-0.09, 0.09)
+            for _ in range(int(rng.integers(0, 2)) if joints == 0 else 0):     # an occasional knot on wall boards
+                ky, kx, kr = rng.uniform(0, n), i * w + rng.uniform(0.3, 0.7) * w, rng.uniform(5, 10)
+                yy = np.minimum(np.abs(np.arange(n)[:, None] - ky), n - np.abs(np.arange(n)[:, None] - ky))
+                d2 = (yy / 1.6) ** 2 + (np.arange(n)[None, :] - kx) ** 2
+                t -= 0.45 * np.exp(-d2 / (2 * kr * kr))
+            shade[:, i * w:i * w + 2] = 0.55                                   # seam between boards
+            shade[:, i * w + 2:i * w + 4] = 1.06                               # and the lit edge next to it
+            for _ in range(joints):
+                y = int(rng.integers(n))
+                shade[y:y + 2, sl] = 0.6
+    t = np.clip(t, 0, 1)[..., None]
+    rgb = (np.array(dark, F) / 255) ** 2.2 * (1 - t) + (np.array(light, F) / 255) ** 2.2 * t   # mix in linear light
+    rgb = np.clip(rgb * shade[..., None], 0, 1) ** (1 / 2.2)
+    return (rgb * 255 + 0.5).astype(np.uint8)
 
 
 def draw_globe(land, lakes, path):
@@ -726,13 +778,14 @@ def write_xml(stats, camera):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--draft", action="store_true", help="few paths, one bounce: fast and noisy")
-    ap.add_argument("--textures", metavar="DIR", help="folder with the downloaded source textures to import")
+    ap.add_argument("--natural-earth", metavar="DIR",
+                    help="folder with ne_110m_land.geojson and ne_110m_lakes.geojson, to redraw the globe")
     ap.add_argument("--no-bake", action="store_true", help="rewrite meshes and XML, keep the lightmap")
     ap.add_argument("--paths", type=int, default=32, help="bounce paths per texel")
     ap.add_argument("--size", type=int, default=1024, help="lightmap size in texels")
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     args = ap.parse_args()
-    make_textures(args.textures)
+    make_textures(args.natural_earth)
     build_scene()
     charts = make_charts()
     scale = 1.0      # shrink every chart evenly until the atlas holds them all

@@ -20,10 +20,10 @@ void main() {
   <FragmentShader Out="FragColor">
 in vec2 v_uv0; in vec2 v_uv1; in vec3 v_tint;
 void main() {
-  vec3 light = texture(Lightmap, v_uv1).rgb * 2.0;   // the bake's LIGHTMAP_RANGE
+  vec3 light = texture(Lightmap, v_uv1).rgb * 4.0;   // the bake's LIGHTMAP_RANGE
   vec3 c = texture(Albedo, fract(v_uv0)).rgb * v_tint * light;
-  c = c / (1.0 + 0.35 * c);
-  FragColor = vec4(c * 1.25, 1.0);
+  c = c / (1.0 + 0.45 * c);          // soft shoulder so the lamp's pool keeps its colour
+  FragColor = vec4(c * 1.3, 1.0);
 }
   </FragmentShader>
 </Shader>
