@@ -28,7 +28,13 @@ local ICONS = {
 local COMPASS = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" }
 
 function Sky.describe(code) return DESCRIPTIONS[code] or "unknown" end
-function Sky.icon(code) return "WeatherKit/assets/icons/weather/" .. (ICONS[code] or "cloud") .. ".svg" end
+-- Clear and partly cloudy skies show the moon after dark (`isDay == false`).
+local NIGHT = { sun = "moon", ["partly-cloudy"] = "cloud-moon" }
+function Sky.icon(code, isDay)
+    local name = ICONS[code] or "cloud"
+    if isDay == false then name = NIGHT[name] or name end
+    return "WeatherKit/assets/icons/weather/" .. name .. ".svg"
+end
 function Sky.isStorm(code) return code ~= nil and code >= 95 end
 function Sky.isWet(code) return code ~= nil and code >= 51 and code < 95 end
 function Sky.isSnow(code) return code ~= nil and ((code >= 71 and code <= 77) or code == 85 or code == 86) end

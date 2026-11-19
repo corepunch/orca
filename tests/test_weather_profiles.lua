@@ -39,6 +39,9 @@ check(Sky.weekday("2026-11-18") == "wed 18" and Sky.weekday("2027-01-01") == "fr
 check(Sky.angle(350, 10) == 20 and Sky.angle(90, 270) == 180, "Bearings wrap")
 check(Sky.moonUp(0.5, 0) and not Sky.moonUp(0.5, 12) and Sky.moonUp(0, 12) and not Sky.moonUp(0, 0),
     "A full moon is up at midnight, a new moon at noon")
+check(Sky.icon(0, false):find("/moon%.svg$") and Sky.icon(2, false):find("/cloud%-moon%.svg$")
+    and Sky.icon(0, true):find("/sun%.svg$") and Sky.icon(0):find("/sun%.svg$") and Sky.icon(63, false):find("/rain%.svg$"),
+    "Clear nights show the moon; rain is rain day or night")
 check(Sky.isSnow(75) and not Sky.isSnow(65) and Sky.isHeavy(75), "Snow codes")
 check(Sky.compass(0) == "N" and Sky.compass(225) == "SW" and Sky.compass(350) == "N", "Compass points")
 

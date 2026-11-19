@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <dirent.h>
+#include <poll.h>
 #include <sys/stat.h>
 #include <zlib.h>
 #include <ctype.h>
@@ -71,11 +72,17 @@ bool_t OBJ_IsPrefabView(struct Object const *object);
    workspace tree, so resolve "Project/Screens/Main/Child" by finding the
    longest prefix that names a scene file, loading (or reusing) that document
    and descending into it. The startup screen is the live object on display
-   until its edits are reverted; a reverted document is reloaded from disk. */
+   until its edits are reverted; a reverted document is reloaded from disk.
+   The reserved document "app" is the screen of the running Application
+   (apps started with StartupViewController), whatever route it shows. */
 static char const editor_documents_lua[] =
   "local fs = require 'orca.filesystem'\n"
   "local docs, reverted = {}, {}\n"
   "return function(doc, startup, drop)\n"
+  "  if doc == 'app' then\n"
+  "    local A = package.loaded['orca.core.application']\n"
+  "    return A and A.app and A.app.screen\n"
+  "  end\n"
   "  if drop then docs[doc], reverted[doc] = nil, true return nil end\n"
   "  local o = docs[doc]\n"
   "  if o then return o end\n"
@@ -91,6 +98,7 @@ static char const editor_documents_lua[] =
 static int editor_documents_ref = LUA_NOREF;
 
 static bool_t is_document(lpcString_t path) {
+  if (!strcmp(path, "app")) return TRUE;
   lpcString_t rel = strchr(path, '/');
   path_t file = {0};
   if (!rel) return FALSE;
@@ -2067,7 +2075,9 @@ struct {
 };
 
 /* Return the next request line from stdin, keeping partial reads and any
-   further pipelined lines for the next call. */
+   further pipelined lines for the next call. Waits at most one frame for
+   input and returns "" when none arrived, so the application keeps running
+   (network replies, timers, animations) between requests; NULL at EOF. */
 LPSTR UI_ReadClientCommands(void) {
   static char buf[16384], line[sizeof(buf)];
   static size_t len = 0;
@@ -2082,6 +2092,8 @@ LPSTR UI_ReadClientCommands(void) {
       return line;
     }
     if (len == sizeof(buf)) len = 0; /* drop an oversized line */
+    struct pollfd input = { .fd = STDIN_FILENO, .events = POLLIN };
+    if (poll(&input, 1, 16) == 0) return "";
     ssize_t n = read(STDIN_FILENO, buf + len, sizeof(buf) - len);
     if (n <= 0) return NULL;
     len += n;
@@ -2092,6 +2104,10 @@ LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
   if (msg->message == kEventReadCommands) {
     LPSTR url = UI_ReadClientCommands();
     if (!url) exit(0);
+    if (!*url) {
+      axPostMessageW(msg->target, kEventReadCommands, 0, NULL);
+      return TRUE;
+    }
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
       xmlNodePtr response = xmlNewNode(NULL, XMLSTR("response"));
       enum cmd cmd = cmd_GET;

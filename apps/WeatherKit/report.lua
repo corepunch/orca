@@ -52,7 +52,7 @@ function Report.rows(profile, spot, forecast)
     local result = rate(profile, focus, forecast)
     row(rows, spot, "now", "now", {
         title = result.word, value = Score.fmt(focus.temp, "°"), score = result.score, tone = result.verdict,
-        icon = Sky.icon(focus.code),
+        icon = Sky.icon(focus.code, focus.isDay),
         detail = Sky.describe(focus.code) .. " · feels like " .. Score.fmt(focus.feels, "°"),
         note = focus == now and spot.title or spot.title .. " · from " .. Sky.clock(focus.time),
     })
@@ -65,7 +65,7 @@ function Report.rows(profile, spot, forecast)
         local rated = rate(profile, hour, forecast)
         row(rows, spot, "hour", hour.time, {
             title = index == forecast.now and "now" or Sky.clock(hour.time), value = rated.word,
-            detail = profile.note(hour, forecast), score = rated.score, tone = rated.verdict, icon = Sky.icon(hour.code),
+            detail = profile.note(hour, forecast), score = rated.score, tone = rated.verdict, icon = Sky.icon(hour.code, hour.isDay),
         })
     end
     local today = now.date
