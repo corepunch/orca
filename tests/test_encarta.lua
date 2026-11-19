@@ -57,8 +57,14 @@ assert(library.Visible and not reader.Visible)
 local study, bubble = control("Study"), control("Bubble")
 local function left(node) local x = 0 while node and node ~= view do x, node = x + node.ActualX, node.parent end return x end
 local function top(node) local y = 0 while node and node ~= view do y, node = y + node.ActualY, node.parent end return y end
-assert(study.Visible and not wall.Visible and not shelf.Visible, "the study opens first")
-assert(not control("Categories").Visible and not control("Featured").Visible and not control("CatalogHead").Visible)
+assert(study.Visible and not shelf.Visible, "the study opens first")
+assert(not control("Categories").Visible and not control("Featured").Visible)
+assert(wall.Visible and count(wall) == 15 and control("CatalogTitle").Text == "Big questions" and top(wall) > top(study) + study.ActualHeight,
+    "the wall of questions runs under the study")
+-- On an upright iPad the questions fill the space below the desk.
+layout(1024, 1366)
+assert(top(study) + study.ActualHeight < 800 and top(control("Open_mars", wall)) < 1366, "question cards show under the study when the screen is tall")
+layout(1024, 768)
 assert(control("ShowStudy").BackgroundColor.R > 0.9 and control("ShowWall").BackgroundColor.R < 0.5)
 assert(math.abs(study.ActualWidth / study.ActualHeight - 1.6) < 0.01 and study.ActualWidth > 900, "the study keeps its picture's proportions")
 assert(control("StudyArt").ActualWidth == study.ActualWidth and control("StudyArt").ActualHeight == study.ActualHeight)
@@ -136,6 +142,12 @@ assert(earned.BackgroundColor.R > 0.8 and earned.BackgroundColor.B < 0.3, "an ea
 assert(card.ScrollHeight <= card.ActualHeight + 1 and passport.ScrollHeight <= passport.ActualHeight + 1, "the hunt and the passport fit the screen")
 click("Choice_dinosaurs")
 assert(control("HuntHint").Text == "You found it!", "a solved hunt ignores further picks")
+-- On an upright iPad the passport lies across the top, above the hunt.
+layout(1024, 1366)
+assert(top(card) >= top(passport) + passport.ActualHeight and math.abs(card.ActualWidth - passport.ActualWidth) < 1, "the passport lies above the hunt when upright")
+assert(top(control("Stamp_earth-layers")) < top(control("Stamp_octopus")) + control("Stamp_octopus").ActualHeight * 2, "its stamps run in two rows")
+assert(card.ScrollHeight <= card.ActualHeight + 1 and top(card) + card.ActualHeight <= 1366, "and the hunt fits below it")
+layout(1024, 768)
 click("NextHunt")
 assert(control("HuntQuestion").Text == "Where have only twelve people ever walked?" and not control("HuntFeedback").Visible, "the next hunt is the next unstamped article")
 click("Choice_moon")
@@ -169,7 +181,7 @@ layout(1024, 768)
 -- Typing a question leaves the study for the wall, where results show.
 search.Text = "moon"
 core.flushQueue()
-assert(wall.Visible and not study.Visible and control("ResultCount").Text == "1 ARTICLE")
+assert(wall.Visible and not study.Visible and control("Categories").Visible and control("ResultCount").Text == "1 ARTICLE")
 click("ClearSearch")
 assert(wall.Visible, "clearing the search stays on the wall")
 layout(1024, 768)
@@ -386,6 +398,11 @@ layout(600, 900)
 text, side = part("TextPage", 1), part("SidePage", 1)
 assert(control("Fold").Opacity == 0, "stacked pages have no fold")
 assert(screenTop(side) > screenTop(text) and side.ActualWidth > 420 and math.abs(side.ActualWidth - text.ActualWidth) < 2, "pages stack when narrow")
+-- On an upright iPad they stack too, and the picture fills the width.
+layout(1024, 1366)
+text, side = part("TextPage", 1), part("SidePage", 1)
+assert(screenTop(side) > screenTop(text) and side.ActualWidth > 800 and control("Fold").Opacity == 0, "pages stack when the screen is upright")
+assert(part("SectionImage", 1).ActualWidth > 800 and fits(1), "the stacked spread fills the upright screen without scrolling")
 layout(1024, 768)
 
 local listen, listenIcon, listenLabel = control("ReadAloud"), control("ReadAloudIcon"), control("ReadAloudLabel")

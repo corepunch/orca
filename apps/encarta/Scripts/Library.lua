@@ -95,17 +95,18 @@ function Controller:refresh()
         end
     end
     local study = self.mode == "study"
-    wall.Visible, shelf.Visible = self.mode == "wall", self.mode == "shelf"
+    -- The wall of questions also runs under the study: on an upright screen it
+    -- fills the space below the desk, on a wide one it is a scroll away.
+    wall.Visible, shelf.Visible = self.mode ~= "shelf", self.mode == "shelf"
     control(view, "Study").Visible = study
     control(view, "Categories").Visible = not study
-    control(view, "CatalogHead").Visible = not study
     control(view, "Featured").Visible = not study and self.query == "" and not self.category
     local title = self.mode == "shelf" and "On the shelf" or "Big questions"
     if self.query ~= "" then title = "Search results"
     elseif self.category then title = self.category end
     control(view, "CatalogTitle").Text = title
     control(view, "ResultCount").Text = (count == 1 and "1 ARTICLE" or count .. " ARTICLES")
-    control(view, "EmptyResults").Visible = count == 0 and not study
+    control(view, "EmptyResults").Visible = count == 0
 end
 
 function Controller:filter(query)

@@ -175,7 +175,7 @@
                     <!-- The fold between the two pages: a thin crease with the left
                          page shading into it. Gone when the pages stack. -->
                     <ImageView Name="Fold" Src="encarta/Images/book-fold.png" Stretch="Fill" Width="160" MarginLeft="auto" MarginRight="auto" IgnoreHitTest="true">
-                        <BindingExpression Target="Node.Opacity">IF(STEP(760, {Screen.Width}), 1, 0)</BindingExpression>
+                        <BindingExpression Target="Node.Opacity">IF(AND(STEP(760, {Screen.Width}), STEP({Screen.Height}, {Screen.Width})), 1, 0)</BindingExpression>
                     </ImageView>
                     <!-- Tapping the outer margin of a page turns it. The zones are
                          invisible and as wide as the spread's side padding, so
@@ -223,11 +223,18 @@
         <!-- Question Hunt: the passport on the left, a riddle with three
              pictures on the right. -->
         <Node2D Name="Hunt" Visible="false" class="reader">
-            <Grid Name="HuntBody" Columns="2fr 3fr" Rows="1fr" Spacing="20" ContentInsetAdjustment="Always" class="hunt-body">
+            <!-- Side by side on a wide screen. On an upright one the passport
+                 lies across the top, its stamps in two rows, with the hunt
+                 below it. -->
+            <Grid Name="HuntBody" Spacing="20" ContentInsetAdjustment="Always" class="hunt-body">
+                <BindingExpression Target="Grid.Columns">IF(STEP({Screen.Height}, {Screen.Width}), "2fr 3fr", "1fr")</BindingExpression>
+                <BindingExpression Target="Grid.Rows">IF(STEP({Screen.Height}, {Screen.Width}), "1fr", "auto 1fr")</BindingExpression>
                 <StackView Name="Passport" OverflowY="Scroll" class="passport">
                     <TextBlock class="passport-title">Explorer’s Passport</TextBlock>
                     <TextBlock Name="PassportHint" class="hint" WordWrap="true"/>
-                    <Grid Name="Stamps" Columns="1fr 1fr 1fr 1fr" Spacing="12" class="stamps"/>
+                    <Grid Name="Stamps" Spacing="12" class="stamps">
+                        <BindingExpression Target="Grid.Columns">IF(STEP({Screen.Height}, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr")</BindingExpression>
+                    </Grid>
                 </StackView>
                 <StackView Name="HuntCard" OverflowY="Scroll" class="hunt-card">
                     <TextBlock Name="HuntKicker" class="kicker"/>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- One opening of the book: a page to read and a page to look at. Side by
-     side on a wide screen, stacked on a narrow one, where the whole spread
-     scrolls. -->
+     side on a wide screen. On a narrow or an upright one they stack, so the
+     picture fills the width under the text, and the spread scrolls if it must. -->
 <StackView OverflowY="Scroll" Visible="false" class="spread">
     <Grid Name="Pages" AlignItems="Start" class="pages">
-        <BindingExpression Target="Grid.Columns">IF(STEP(760, {Screen.Width}), "1fr 1fr", "1fr")</BindingExpression>
+        <BindingExpression Target="Grid.Columns">IF(AND(STEP(760, {Screen.Width}), STEP({Screen.Height}, {Screen.Width})), "1fr 1fr", "1fr")</BindingExpression>
         <StackView Name="TextPage" class="page">
             <TextBlock Name="Kicker" class="kicker"/>
             <TextBlock Name="Title" HighlightColor="$sun-light" class="question" WordWrap="true"/>
