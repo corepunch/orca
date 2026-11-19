@@ -492,6 +492,10 @@ iphone ipad:
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
+.PHONY: test-mesh-mcp
+test-mesh-mcp:
+	PYTHONPYCACHEPREFIX=build/pycache python3 -m unittest discover -s tests -p 'test_mesh_mcp.py'
+
 test-octopus-cache: $(LUA_BIN)
 	$(LUA) tests/test_octopus_cache.lua
 
