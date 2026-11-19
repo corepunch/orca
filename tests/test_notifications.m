@@ -64,7 +64,11 @@ int main(void) {
     __block BOOL completed = NO;
     [delegate userNotificationCenter:nil willPresentNotification:(UNNotification *)message
         withCompletionHandler:^(UNNotificationPresentationOptions options) {
-      assert(options == UNNotificationPresentationOptionNone);
+      // No conversation is open, so the message shows a banner with sound.
+      UNNotificationPresentationOptions banner = UNNotificationPresentationOptionSound
+        | UNNotificationPresentationOptionBadge | UNNotificationPresentationOptionBanner
+        | UNNotificationPresentationOptionList;
+      assert(options == banner);
       completed = YES;
     }];
     assert(completed);

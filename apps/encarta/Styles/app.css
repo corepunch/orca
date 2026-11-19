@@ -1,69 +1,70 @@
-/* Question wall: a night-blue library, white reading pages, category colors. */
+/* An explorer's study: a wooden desk, cream paper, category colors. */
 
 /* ---------- library ---------- */
-.library { padding: 22 30 36; gap: 16; }
+.library { padding: 16 24 28; gap: 12; background-color: var(--wood); }
+.reader { background-color: var(--wood); }
 .wordmark {
   font-family: Noto Serif;
-  font-size: 26;
+  font-size: 24;
   font-weight: bold;
-  color: var(--white);
+  color: var(--cream);
   text-vertical-align: center;
 }
-.views { padding: 4; border-radius: 14; background-color: var(--night-raised); }
+.views { padding: 4; border-radius: 14; background-color: var(--wood-raised); }
 .view {
   min-height: 40;
   padding: 0 16;
   border-radius: 10;
   font-size: 15;
   font-weight: bold;
-  color: var(--mist);
-  background-color: var(--night-raised);
+  color: var(--sand);
+  background-color: var(--wood-raised);
 }
-.view:hover { color: var(--white); }
-.view.view-on, .view.view-on:hover, .view.view-on:active { color: var(--ink); background-color: var(--white); }
+.view:hover { color: var(--cream); }
+.view.view-on, .view.view-on:hover, .view.view-on:active { color: var(--ink); background-color: var(--cream); }
 
 .search {
-  min-height: 72;
-  padding: 8 24;
-  border-radius: 22;
-  background-color: var(--white);
-  font-size: 26;
+  min-height: 44;
+  padding: 4 16;
+  border-radius: 14;
+  background-color: var(--cream);
+  font-size: 17;
   color: var(--ink);
   placeholder-color: var(--muted);
 }
+.search { padding-left: 46; }
 .search:focus { ring: 0 3 var(--sun); }
+.search-icon { color: var(--muted); }
 .clear {
-  min-height: 72;
-  padding: 0 22;
-  border-radius: 22;
-  font-size: 16;
-  font-weight: bold;
-  color: var(--white);
-  background-color: var(--night-raised);
+  min-height: 44;
+  padding: 0;
+  border-radius: 14;
+  color: var(--cream);
+  background-color: var(--wood-raised);
 }
-.clear:hover, .clear:active { background-color: var(--night-line); }
+.clear:hover, .clear:active { background-color: var(--wood-line); }
 
-.chips { gap: 8; margin-bottom: 4; }
+.chips { gap: 8; }
 .chip {
-  min-height: 40;
-  padding: 0 16;
-  border-radius: 20;
-  border: 2 solid var(--night-line);
-  font-size: 15;
+  min-height: 36;
+  padding: 0 14;
+  border-radius: 18;
+  border: 2 solid var(--wood-line);
+  font-size: 14;
   font-weight: bold;
-  color: var(--white);
-  background-color: var(--night);
+  color: var(--cream);
+  background-color: var(--wood);
 }
-.chip:hover { background-color: var(--night-raised); }
-.chip.chip-on, .chip.chip-on:hover { color: var(--ink); background-color: var(--white); border-color: var(--white); }
+.chip:hover { background-color: var(--wood-raised); }
+.chip.chip-on, .chip.chip-on:hover { color: var(--ink); background-color: var(--cream); border-color: var(--cream); }
 
-.feature { border-radius: 22; overflow: hidden; background-color: var(--night-raised); }
-.feature-frame { padding: 18; }
-.feature-copy { padding: 18 22; gap: 6; border-radius: 16; background-color: #091020D9; }
+.feature { border-radius: 16; overflow: hidden; background-color: var(--wood-raised); }
+.feature-frame { padding: 14; }
+.feature-copy { padding: 12 16; gap: 4; border-radius: 12; background-color: #2A1608D9; }
 .feature-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
-.feature-question { font-size: 32; line-height: 38; font-weight: bold; color: var(--white); }
+.feature-question { font-size: 24; line-height: 29; font-weight: bold; color: var(--cream); }
 .feature-button {
-  min-height: 46;
+  min-height: 44;
   margin-top: 4;
   margin-right: auto;
   padding: 0 20;
@@ -75,142 +76,213 @@
 }
 .feature-button:hover, .feature-button:active { background-color: var(--sun-light); }
 
-.section-title { font-size: 22; font-weight: bold; color: var(--white); text-vertical-align: center; }
-.count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--mist); text-vertical-align: center; }
-.empty { font-size: 18; color: var(--mist); }
+.section-title { font-size: 19; font-weight: bold; color: var(--cream); text-vertical-align: center; }
+.count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--sand); text-vertical-align: center; }
+.empty { font-size: 18; color: var(--sand); }
+
+/* the study: a picture with clear buttons over its objects */
+.room { border-radius: 16; overflow: hidden; background-color: var(--wood-raised); }
+.room-art { border-radius: 16; }
+.object { padding: 0 0 8; border-radius: 14; background-color: #00000000; }
+.object:hover, .object:focus { background-color: #FFF8E733; }
+.object.object-on, .object.object-on:hover { background-color: #FFF8E74D; ring: 0 3 var(--sun); }
+.plate {
+  padding: 4 12;
+  border-radius: 6;
+  border: 2 solid var(--paper-line);
+  font-family: Noto Serif;
+  font-size: 16;
+  font-weight: bold;
+  background-color: var(--paper);
+}
+.plate-animals { color: var(--animals); }
+.plate-space { color: var(--space); }
+.plate-earth { color: var(--earth); }
+.plate-science { color: var(--science); }
+.plate-plants { color: var(--plants); }
+.plate-your-body { color: var(--your-body); }
+.plate-long-ago { color: var(--long-ago); }
+.postcard { margin-left: 14; margin-right: 14; padding: 10; border-radius: 8; background-color: var(--paper); }
+.postcard:hover, .postcard:focus { ring: 0 3 var(--sun); }
+.postcard-art { border-radius: 4; }
+.postcard-copy { gap: 2; }
+.postcard-tag { font-size: 11; font-weight: bold; letter-spacing: 1.4; color: var(--animals); }
+.postcard-question { font-family: Noto Serif; font-size: 17; line-height: 21; font-weight: bold; color: var(--ink); }
+.bubble { padding: 10 12 12 18; gap: 6; border-radius: 18; border: 2 solid var(--paper-line); background-color: var(--paper); }
+.bubble-title { font-family: Noto Serif; font-size: 22; font-weight: bold; color: var(--ink); text-vertical-align: center; }
+.bubble-close { padding: 0; border-radius: 22; color: var(--muted); background-color: #00000000; }
+.bubble-close:hover { background-color: var(--paper-line); }
+.bubble-list { gap: 6; }
+.bubble-item { min-height: 48; margin-right: 6; padding: 10 14; border-radius: 12; background-color: #FFFFFF; }
+.bubble-item:hover, .bubble-item:focus { background-color: var(--sun-light); }
+.bubble-question { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
+.bubble-all {
+  min-height: 44;
+  margin-top: 4;
+  margin-right: 6;
+  border-radius: 22;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--ink);
+  background-color: var(--sun);
+}
+.bubble-all:hover, .bubble-all:active { background-color: var(--sun-light); }
+
+.drawer { border-radius: 8; background-color: #00000000; }
+.drawer:hover, .drawer:focus { background-color: #FFF8E71F; ring: 0 3 var(--sun); }
+.drawer-plate { color: var(--ink); }
+
+/* ---------- question hunt and passport ---------- */
+.hunt-body { padding: 0 20 20; }
+.stamp-count { padding: 8 16; border-radius: 20; font-size: 15; font-weight: bold; color: var(--ink); background-color: var(--sun); }
+.passport { padding: 24 24 28; gap: 10; border-radius: 14; background-color: #F6EDD8; }
+.passport-title { font-family: Noto Serif; font-size: 26; font-weight: bold; color: var(--your-body); }
+.stamps { margin-top: 8; }
+.stamp { border-radius: 60; border: 2 solid var(--wood-line); background-color: #00000000; }
+.stamp-blank { font-family: Noto Serif; font-size: 26; font-weight: bold; text-align: center; text-vertical-align: center; color: var(--wood-line); }
+.stamp.stamp-on { padding: 5; border: 0 solid #00000000; }
+.stamp-art { border-radius: 60; }
+.hunt-card { padding: 24 28 28; gap: 14; border-radius: 14; background-color: var(--paper); }
+.hunt-hint { font-size: 18; color: var(--muted); }
+.choice { padding: 0; border-radius: 14; border: 3 solid var(--paper-line); overflow: hidden; background-color: #FFFFFF; }
+.choice:hover, .choice:focus { border-color: var(--sun); }
+.choice-art { border-radius: 10; }
+.choice-title { padding: 10 12 12; font-size: 18; font-weight: bold; color: var(--ink); }
+.choice.choice-wrong, .choice.choice-wrong:hover { opacity: 0.4; border-color: var(--paper-line); }
+.choice.choice-right, .choice.choice-right:hover { border-color: var(--go); background-color: var(--go-light); }
+.feedback-title { font-family: Noto Serif; font-size: 24; font-weight: bold; color: var(--earth); }
 
 /* illustrated covers */
 .card, .cover { border-radius: 8; overflow: hidden; }
 .card:hover, .cover:hover, .card:focus, .cover:focus { ring: 0 3 var(--sun); }
 .cover-art { border-radius: 8; }
-.cover-icon { color: #FFFFFF59; }
-.cover-copy { padding: 14 14 16; gap: 5; }
-.cover-title, .card-question { font-family: Noto Serif; font-weight: bold; color: var(--white); }
-.cover-title { font-size: 23; line-height: 27; }
-.card-question { font-size: 20; line-height: 25; }
-.card-title { font-size: 13; line-height: 17; color: var(--white); }
+.cover-icon { color: #FFF8E759; }
+.cover-copy { padding: 10 12 12; gap: 3; }
+.cover-title, .card-question { font-family: Noto Serif; font-weight: bold; color: var(--cream); }
+.cover-title { font-size: 18; line-height: 22; }
+.card-question { font-size: 17; line-height: 21; }
+.card-title { font-size: 12; line-height: 15; color: var(--cream); }
 
 /* ---------- reader ---------- */
-.pane { padding: 26 20 20 24; gap: 6; overflow: hidden; }
-.pane-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); }
-.pane-title { font-family: Noto Serif; font-size: 36; line-height: 42; font-weight: bold; color: var(--white); }
-.pane-deck { font-size: 15; line-height: 21; color: var(--mist); }
-.steps { margin-top: 18; gap: 6; }
-.step {
-  min-height: 54;
-  padding: 8 12;
-  border-radius: 14;
-  background-color: var(--night);
-}
-.step:hover { background-color: var(--night-raised); }
-.step-on, .step-on:hover { background-color: var(--night-raised); }
-.mark {
-  border: 2 solid var(--night-line);
-  border-radius: 15;
-  font-size: 13;
-  font-weight: bold;
-  text-align: center;
-  text-vertical-align: center;
-  color: var(--mist);
-}
-.mark-on { color: var(--ink); background-color: var(--sun); border-color: var(--sun); }
-.mark-done { color: var(--white); background-color: var(--go); border-color: var(--go); }
-.step-text { font-size: 15; line-height: 19; font-weight: bold; color: var(--mist); }
-.step-text-on { color: var(--white); }
-
-.page { margin: 18; padding: 22 40 24; border-radius: 26; background-color: var(--page); }
-.soft, .level {
+/* A book on the desk: a bar and the open spread, with bookmarks on its
+   edge. */
+.reader-bar { padding: 10 20; }
+.back {
   min-height: 46;
-  padding: 0 16;
-  border-radius: 12;
+  padding: 0 18 0 12;
+  border-radius: 23;
   font-size: 15;
   font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
+  color: var(--cream);
+  background-color: var(--wood-raised);
 }
-.soft:hover, .level:hover { background-color: var(--page-line); }
-.levels { padding: 4; border-radius: 14; background-color: var(--page-soft); }
-.level { min-height: 40; }
-.level.level-on, .level.level-on:hover, .level.level-on:active { color: var(--white); background-color: var(--ink); }
+.back:hover, .back:active { background-color: var(--wood-line); }
+.crumb-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--sun); text-vertical-align: center; }
+.crumb-title { font-family: Noto Serif; font-size: 19; font-weight: bold; color: var(--cream); text-vertical-align: center; }
+.soft {
+  min-height: 46;
+  padding: 0 16;
+  border-radius: 23;
+  font-size: 15;
+  font-weight: bold;
+  color: var(--cream);
+  background-color: var(--wood-raised);
+}
+.soft:hover { background-color: var(--wood-line); }
 .listen {
   min-height: 46;
   padding: 0 18;
-  border-radius: 12;
+  border-radius: 23;
   font-size: 15;
   font-weight: bold;
   color: var(--ink);
   background-color: var(--sun);
 }
 .listen:hover, .listen:active { background-color: var(--sun-light); }
-.read-error { font-size: 13; color: #B3261E; text-vertical-align: center; }
+.read-error { font-size: 13; color: var(--sun-light); text-vertical-align: center; }
 
-.reader-scroll { padding: 26 0 20; gap: 14; }
-.step-label { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--muted); }
-.section, .fact-page, .quiz-page { gap: 16; }
-.paragraphs { gap: 14; }
-.question { font-size: 44; line-height: 50; font-weight: bold; color: var(--ink); }
-.answer { font-size: 25; line-height: 38; color: var(--ink); }
-.fact {
-  padding: 22 24;
-  border-radius: 20;
-  font-family: Noto Serif;
-  font-size: 26;
-  line-height: 36;
-  font-weight: bold;
-  color: var(--ink);
+.book-row { padding: 0 12 0 20; }
+/* Side padding matches the book's, so the dots centre under the book. */
+.dots-row { padding: 0 56 0 20; }
+.book { border-radius: 14; overflow: hidden; background-color: var(--paper); }
+.tabs { padding: 18 0 0; gap: 8; }
+.tab {
+  /* Square where the bookmark leaves the book, round at its free end. */
+  padding: 0;
+  border-radius: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 10;
+  border-bottom-right-radius: 10;
+  background-color: var(--paper-line);
+}
+.tab:hover { background-color: var(--paper); }
+.tab.tab-done, .tab.tab-done:hover { background-color: var(--go); }
+/* The current bookmark lies on the page, so all its corners show. */
+.tab.tab-on, .tab.tab-on:hover {
+  border-top-left-radius: 10;
+  border-bottom-left-radius: 10;
   background-color: var(--sun);
+  box-shadow: 0 1 4 0 #2A1E1040;
 }
-.media { gap: 6; }
-.media-image { border-radius: 18; }
-.small-title { margin-top: 8; font-size: 20; font-weight: bold; color: var(--ink); }
-.hint { font-size: 15; color: var(--muted); }
-.words { gap: 8; }
-.word { gap: 4; }
-.term {
-  min-height: 48;
-  padding: 0 16;
-  border-radius: 12;
-  text-align: left;
-  font-size: 18;
-  font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
-}
-.term:hover { background-color: var(--page-line); }
-.definition { padding: 2 16 6; font-size: 18; line-height: 26; color: var(--ink); }
+.tab-label { font-size: 16; font-weight: bold; text-align: center; text-vertical-align: center; color: var(--ink); }
+.tab-label-done { color: var(--cream); }
 
-.tile {
-  min-height: 120;
-  padding: 16 18;
-  border-radius: 20;
-  border: 2 solid var(--page-line);
-  text-align: left;
-  font-size: 21;
-  font-weight: bold;
-  color: var(--ink);
-  background-color: var(--page-soft);
-}
-.tile:hover { border-color: var(--muted); }
-.tile.tile-right, .tile.tile-right:hover { border-color: var(--go); background-color: var(--go-light); }
-.tile.tile-wrong, .tile.tile-wrong:hover { border-color: var(--page-line); background-color: var(--page-line); }
-.feedback { padding: 14 18; border-radius: 16; font-size: 19; line-height: 26; font-weight: bold; color: var(--ink); background-color: var(--page-soft); }
-.feedback.feedback-right { color: var(--white); background-color: var(--go); }
+/* The side padding is the page-turning margin. The gap gives each page the
+   same margin at the fold as at its outer edge. */
+.spread { padding: 26 40 30; }
+.pages { gap: 80; }
+.page { gap: 14; }
+.kicker { font-size: 12; font-weight: bold; letter-spacing: 1.6; color: var(--animals); }
+.question { font-family: Noto Serif; font-size: 31; line-height: 38; font-weight: bold; color: var(--ink); }
+.running { font-family: Noto Serif; font-size: 17; line-height: 22; font-weight: bold; color: var(--muted); }
+.paragraphs { gap: 14; }
+.answer { font-size: 21; line-height: 33; color: var(--ink); }
+.media { gap: 10; }
+.media-image { border-radius: 14; }
+.hint { font-size: 14; color: var(--muted); }
 
-.pager { padding-top: 12; }
-.dots { gap: 6; padding-left: 8; }
-.dot { border-radius: 5; background-color: var(--page-line); }
-.dot-on { background-color: var(--ink); }
-.next {
-  min-height: 54;
-  padding: 0 24;
+.spot-hit, .spot-hit:hover, .spot-hit:active { padding: 0; background-color: #00000000; }
+.spot {
+  border-radius: 15;
+  border: 2 solid var(--animals);
+  font-size: 15;
+  font-weight: bold;
+  text-align: center;
+  text-vertical-align: center;
+  color: var(--animals);
+  background-color: #FFFFFF;
+}
+.spot.spot-on { color: #FFFFFF; background-color: var(--animals); border-color: #FFFFFF; }
+.spot-note { padding: 12 16; gap: 2; border-radius: 12; border: 2 solid var(--paper-line); background-color: var(--cream); }
+.spot-title { font-family: Noto Serif; font-size: 18; font-weight: bold; color: var(--ink); }
+.spot-text { font-size: 16; line-height: 23; color: var(--ink); }
+
+.callout { padding: 14 18; gap: 4; border-radius: 16; }
+.wow { background-color: var(--sun-light); }
+.try { background-color: var(--go-light); }
+.callout-tag { font-size: 12; font-weight: bold; letter-spacing: 1.6; }
+.wow-tag { color: var(--long-ago); }
+.try-tag { color: var(--earth); }
+.callout-text { font-size: 18; line-height: 26; color: var(--ink); }
+.link-card {
+  min-height: 64;
+  padding: 12 18;
   border-radius: 16;
-  font-size: 18;
-  font-weight: bold;
-  color: var(--white);
-  background-color: var(--ink);
+  border: 2 solid var(--paper-line);
+  background-color: var(--cream);
 }
-.next:hover, .next:active { background-color: var(--muted); }
-.pager-button { min-height: 54; border-radius: 16; }
+.link-card:hover, .link-card:focus { border-color: var(--animals); }
+.link-copy { gap: 2; }
+.link-tag { color: var(--animals); }
+.link-text { font-size: 17; line-height: 22; font-weight: bold; color: var(--ink); }
+
+/* Invisible page margins that turn the page, and the dots under the book. */
+.turn, .turn:hover, .turn:focus, .turn:active { padding: 0; border-radius: 0; background-color: #00000000; }
+.dots { gap: 8; }
+.dot { border-radius: 5; background-color: var(--wood-line); }
+.dot.dot-on { background-color: var(--sun); }
+
 
 /* ---------- category colors ---------- */
 .cat-animals { background-color: var(--animals); }
@@ -227,10 +299,10 @@
 .chip-plants { border-color: var(--plants); }
 .chip-your-body { border-color: var(--your-body); }
 .chip-long-ago { border-color: var(--long-ago); }
-.chip-animals.chip-on, .chip-animals.chip-on:hover { color: var(--white); background-color: var(--animals); border-color: var(--animals); }
-.chip-space.chip-on, .chip-space.chip-on:hover { color: var(--white); background-color: var(--space); border-color: var(--space); }
-.chip-earth.chip-on, .chip-earth.chip-on:hover { color: var(--white); background-color: var(--earth); border-color: var(--earth); }
-.chip-science.chip-on, .chip-science.chip-on:hover { color: var(--white); background-color: var(--science); border-color: var(--science); }
-.chip-plants.chip-on, .chip-plants.chip-on:hover { color: var(--white); background-color: var(--plants); border-color: var(--plants); }
-.chip-your-body.chip-on, .chip-your-body.chip-on:hover { color: var(--white); background-color: var(--your-body); border-color: var(--your-body); }
-.chip-long-ago.chip-on, .chip-long-ago.chip-on:hover { color: var(--white); background-color: var(--long-ago); border-color: var(--long-ago); }
+.chip-animals.chip-on, .chip-animals.chip-on:hover { color: var(--cream); background-color: var(--animals); border-color: var(--animals); }
+.chip-space.chip-on, .chip-space.chip-on:hover { color: var(--cream); background-color: var(--space); border-color: var(--space); }
+.chip-earth.chip-on, .chip-earth.chip-on:hover { color: var(--cream); background-color: var(--earth); border-color: var(--earth); }
+.chip-science.chip-on, .chip-science.chip-on:hover { color: var(--cream); background-color: var(--science); border-color: var(--science); }
+.chip-plants.chip-on, .chip-plants.chip-on:hover { color: var(--cream); background-color: var(--plants); border-color: var(--plants); }
+.chip-your-body.chip-on, .chip-your-body.chip-on:hover { color: var(--cream); background-color: var(--your-body); border-color: var(--your-body); }
+.chip-long-ago.chip-on, .chip-long-ago.chip-on:hover { color: var(--cream); background-color: var(--long-ago); border-color: var(--long-ago); }

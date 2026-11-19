@@ -548,9 +548,6 @@ typedef struct _DRAWSTRETCHRAWSTRUCT
   bool_t refresh;
 } DRAWSTRETCHRAWSTRUCT, *PDRAWSTRETCHRAWSTRUCT;
 
-// #define IID_RENDERER "IRENDERER"
-#define IID_WINDOW "IWINDOW"
-
 typedef void (*SHADERENUMPROC)(struct _SHADERCONST *, void*);
 
 //ORCA_API HRESULT R_Init(uint32_t width, uint32_t height, bool_t offscreen);

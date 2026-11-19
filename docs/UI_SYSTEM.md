@@ -267,6 +267,22 @@ orca.async(function()
 end)
 ```
 
+`PageControl` is UIKit's page indicator, after `UIPageControl`, available in
+Lua and XML. It draws one 8-point dot per page (`NumberOfPages`) and the
+current page (`CurrentPage`, zero-based and kept in range) as a 24-point pill
+in the inherited `Foreground`. Other dots use `PageIndicatorColor`, or
+`Foreground` at 30% opacity when it is unset. It measures its row of dots and
+is 26 points tall. A tap on its left or right half, or the Left and Right
+keys, moves one page and writes `CurrentPage`, so observers and bindings see
+it. `HidesForSinglePage` hides it for one page. It only shows the position:
+bind `CurrentPage` to whatever owns the pages, such as a `PageHost` or a
+scroll position.
+
+```xml
+<PageControl Name="Dots" NumberOfPages="5" CurrentPage="{Binding DataContext/Page}"
+    Foreground="$ink" PageIndicatorColor="$page-line"/>
+```
+
 ## Images and viewport notifications
 
 For thumbnail/full stages, queue priority, authenticated delivery and decoder
@@ -374,6 +390,27 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
   Set `ContentInsetAdjustment="Always"` on an edge-to-edge panorama to keep
   its title below the iPhone safe area. Generated parts carry
   `panorama-title` and `panorama-header`.
+- `Chart` with `LineSeries` and `ColumnSeries` children, after the WPF
+  Toolkit and the Windows Phone toolkit charts. The chart's `ItemsSource`
+  holds one record per category; `CategoryPath` names the field labelled
+  under the plot (WPF's `IndependentValuePath`), and each series'
+  `ValuePath` names its number (`DependentValuePath`). The value axis fits
+  every visible series with 1, 2 or 5 × 10ⁿ intervals, includes zero under
+  columns, and yields to `Minimum`, `Maximum` and `Interval`. Value labels
+  sit on the right and categories underneath, thinned automatically or by
+  `LabelInterval`; a series with a `Title` joins the legend above the plot.
+  Gridlines take the chart's `color` at 20% opacity, each series its own
+  `color`, and generated labels the `chart-label` class. Lines are drawn
+  as rounded strokes `StrokeThickness` wide, so they keep their width on
+  every renderer. `apps/Weather` uses it for its hourly and "today" views:
+
+  ```xml
+  <Chart Height="190" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short">
+    <ColumnSeries ValuePath="Temp" Title="temperature °C" class="wx-series"/>
+    <LineSeries ValuePath="Wind" Title="wind m/s" class="wx-series-2"/>
+  </Chart>
+  ```
+
 - `ApplicationBar` with `ApplicationBarIconButton` (`IconUri`, `Text`,
   `IsEnabled`, `Click`) and `ApplicationBarMenuItem` (`Text`, `IsEnabled`,
   `Click`). Collapsed, it shows plain 28-point glyph buttons, without the

@@ -565,6 +565,18 @@ do
     state.A = true
     run()
     check(label.Text == "both", "AND of two true flags")
+    local hidden = ui.TextBlock {}
+    hidden.DataContext = state
+    check(hidden:attachPropertyProgram("Node.Visible", "NOT({DataContext/A})", "Expression", true), "NOT compiles over a flag")
+    core.advanceFrame(); core.runAllPrograms(hidden)
+    check(hidden.Visible == false, "NOT of a true flag")
+    state.A = false
+    core.advanceFrame(); core.runAllPrograms(hidden)
+    check(hidden.Visible == true, "NOT of a false flag")
+    local narrow = ui.TextBlock {}
+    check(narrow:attachPropertyProgram("Node.Visible", "NOT(STEP(900, 768))", "Expression", true), "NOT compiles over STEP")
+    core.advanceFrame(); core.runAllPrograms(narrow)
+    check(narrow.Visible == true, "NOT turns a float STEP into a visible flag")
     -- Literal text keeps its leading spaces when joined to a field.
     local message = data.Schema.define("TestMessage", { { "Text", "string" } }):instantiate()
     local joined = ui.TextBlock {}

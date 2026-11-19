@@ -872,7 +872,6 @@ before_core_module_registered(lua_State* L)
   memcpy(core.file_loaders, saved_file_loaders, sizeof(core.file_loaders));
   memcpy(core.fonts, saved_fonts, sizeof(core.fonts));
   core.realtime = axGetMilliseconds();
-  //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
 
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");

@@ -1,0 +1,8 @@
+<!-- The place hub and the page of one activity there. -->
+<Routes>
+  <Route Path="/" Name="HubPage" Page="Weather/Pages/Hub" Scope="Weather/Data/Hub.xml"/>
+  <Route Path="/activity" Name="ActivityPage" Page="Weather/Pages/Activity" Scope="Weather/Data/Activity.xml">
+    <Param Name="PlaceId" From="place.id"/>
+    <Param Name="ActivityId" From="activity.id"/>
+  </Route>
+</Routes>

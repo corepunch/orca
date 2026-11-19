@@ -706,25 +706,6 @@ VM_Init(void);
 
 #endif
 
-/*
- WIMs stuff (move to a plugin)
- */
-
-typedef struct _WIMSCREENVIEW
-{
-  uint32_t id;
-  lpcString_t string;
-}* PWIMSCREENVIEW;
-
-typedef void (*WIMSCREENPROC)(PWIMSCREENVIEW, void*);
-void WIM_EnumScreens(WIMSCREENPROC, void*);
-
-// #define IID_FILESYSTEM "FILESYSTEM"
-//#define IID_GAME "IMODULE"
-// #define IID_LOCALIZATION "ILOCALIZATION"
-// #define IID_CONSOLE "CONSOLE"
-// #define IID_SYSTEM "SYSTEM"
-
 typedef enum
 {
   LOC_UNDEFINED,

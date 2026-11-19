@@ -13,7 +13,9 @@
 #include <source/ios_scroll.h>
 #endif
 
-#define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
+// Reach of a stencil clip on an axis that does not clip: past any screen,
+// yet small enough to stay finite in a GPU's 16-bit floats (max 65504).
+#define STENCIL_VISIBLE_OVERFLOW_EXTENT 16384.0f
 // Normal UIScrollView retention is 0.998 per millisecond: -1000 * log(0.998).
 #define SCROLL_DECELERATION_RATE 2.00200267f
 

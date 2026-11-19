@@ -281,7 +281,7 @@ every list of posts offers.
   `scope:present(node, "Post")` makes a subtree present one exposed record, as
   a row presents its item.
 - Bindings evaluate on paint. Expressions join and choose values
-  (`{DataContext/A} + " · " + {DataContext/B}`, `IF(...)`, `AND`, `OR`);
+  (`{DataContext/A} + " · " + {DataContext/B}`, `IF(...)`, `AND`, `OR`, `NOT`);
   keep algorithms in provider operations.
 
 Author pages and templates in XML.

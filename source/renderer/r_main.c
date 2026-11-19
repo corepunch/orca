@@ -86,6 +86,11 @@ R_ClearScreen(struct color color, float depth, byte_t stencil)
                          : tr.state.stencil.write ? tr.state.stencil.mask : 0;
   GLint clearFlags = 0;
 
+#ifdef R_USE_SRGB
+  // GL_FRAMEBUFFER_SRGB encodes the clear value too; linearize it the way
+  // shader color uniforms are, so a clear matches a fill of the same color.
+  color.r = powf(color.r, 2.2f), color.g = powf(color.g, 2.2f), color.b = powf(color.b, 2.2f);
+#endif
   R_Call(glClearColor, color.r, color.g, color.b, color.a);
   clearFlags |= GL_COLOR_BUFFER_BIT;
 
@@ -327,7 +332,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     return NOERROR;
   }
 
-  if (!shader->shader) {
+  struct shader const *program = Shader_GetProgram(shader);
+  if (!program) {
     static uint32_t missing_shader_log_mask = 0;
     enum shader_type shader_index = SHADER_COUNT;
     FOR_LOOP(i, SHADER_COUNT) {
@@ -349,7 +355,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     return E_FAIL;
   }
   
-  struct shader_universal_target const *target = &shader->shader->target;
+  struct shader_universal_target const *target = &program->target;
 
   enum blend_mode blend = ent->material.blendMode != BLEND_MODE_INHERIT ? ent->material.blendMode
                          : target->HasBlendMode ? target->BlendMode : BLEND_MODE_INHERIT;
@@ -369,9 +375,9 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     R_SetDepthWrite(write);
   }
 
-  Shader_BindMaterial(shader->shader, view, ent);
-  Shader_BindConstants(shader->shader, ent);
-  Shader_BindAttributes(shader->shader, model);
+  Shader_BindMaterial(program, view, ent);
+  Shader_BindConstants(program, ent);
+  Shader_BindAttributes(program, model);
 
   //	glPolygonMode(GL_FRONT_AND_BACK, ent->shader?GL_LINE:GL_FILL);
   

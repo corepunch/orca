@@ -389,6 +389,21 @@ tok_op(BOOL) {
   output->value[0] = s && *s ? 1 : 0;
   return TRUE;
 }
+/* NOT inverts a flag, a number or a string's truth as IF reads it. Like BOOL
+   it yields an integer, so it binds straight to a boolean property such as
+   Node.Visible; NOT(STEP(900, {Screen.Width})) is true below 900 points. */
+tok_op(NOT) {
+  bool_t on;
+  if (regs[0].type == kDataTypeString) {
+    const char *s = VM_REG_STR(&regs[0]);
+    on = s && *s;
+  } else {
+    on = regs[0].value[0] != 0.0f;
+  }
+  InitOutput(output, kDataTypeInt, sizeof(float));
+  output->value[0] = on ? 0 : 1;
+  return TRUE;
+}
 OPERATOR(AND, v[0] != 0 && v[1] != 0);
 OPERATOR(OR, v[0] != 0 || v[1] != 0);
 OPERATOR(ABS, fabs(v[0]));
@@ -442,6 +457,7 @@ tok_op(call)
   CALL(MIX);
   CALL(SCALE);
   CALL(BOOL);
+  CALL(NOT);
   CALL(AND);
   CALL(OR);
   CALL(ABS);

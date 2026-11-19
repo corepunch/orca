@@ -369,6 +369,12 @@ Model_CreateError(void);
 // shader
 HRESULT
 Shader_LoadFromDef(struct shader_desc*, struct shader**);
+
+// The GL program of a shader, building a Shader object's program on first
+// use (loading a Shader makes no GL calls). NULL if it has none.
+struct shader *
+Shader_GetProgram(struct Shader const *);
+
 void
 Shader_BindMaterial(struct shader const*,
 										struct ViewDef const*,

@@ -476,18 +476,20 @@ test-headless: test-media
 endif
 
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
+# APP=<name> selects apps/<name>; without it, tools/ios/Makefile builds Chat.
 .PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools android
+IOS_APP = $(if $(APP),PROJECT="$(or $(PROJECT),apps/$(APP))" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$(APP))" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $(APP))")
 ios:
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos $(IOS_APP) app
 
 ios-sim:
-	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator app
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator $(IOS_APP) app
 
 ios-run:
-	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator run
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphonesimulator $(IOS_APP) run
 
 ios-install:
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos $(IOS_APP) install
 
 # Build, sign, install and launch any apps/<name>/package.lua project.
 .PHONY: ios-deploy-force
@@ -495,20 +497,37 @@ ios-deploy-force:
 
 # Android: needs ANDROID_NDK_HOME, the Android SDK and Gradle; see docs/ANDROID.md.
 android:
-	$(MAKE) -f tools/android/Makefile apk
+	$(Q)$(MAKE) --no-print-directory -f tools/android/Makefile apk
 %-android:
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*)'; exit 1; }
-	$(MAKE) -f tools/android/Makefile PROJECT="$(or $(PROJECT),apps/$*)" APPLICATION_ID="$(or $(APPLICATION_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" apk
+	$(Q)$(MAKE) --no-print-directory -f tools/android/Makefile PROJECT="$(or $(PROJECT),apps/$*)" APPLICATION_ID="$(or $(APPLICATION_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" apk
 
 %-ios: ios-deploy-force
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*); set PROJECT=<directory> containing package.lua.'; exit 1; }
-	$(MAKE) -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
 
 ios-devices:
-	$(MAKE) -f tools/ios/Makefile list-devices
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile list-devices
+
+# make iphone|ipad APP=<name>: build, sign, install and launch apps/<name>
+# on your device named by IPHONE_DEVICE or IPAD_DEVICE (UDID or name, e.g.
+# exported in ~/.zshrc). DEVICE=<UDID-or-name> overrides it.
+.PHONY: iphone ipad
+iphone: DEVICE_FAMILY = iPhone
+iphone: FAMILY_DEVICE = $(IPHONE_DEVICE)
+ipad: DEVICE_FAMILY = iPad
+ipad: FAMILY_DEVICE = $(IPAD_DEVICE)
+iphone ipad:
+	@test -n "$(APP)" || { echo 'Usage: make $@ APP=<name> (an apps/<name>/package.lua project)'; exit 1; }
+	@test -n "$(or $(DEVICE),$(FAMILY_DEVICE))" || { echo 'Set $(shell echo $@ | tr a-z A-Z)_DEVICE=<UDID-or-name> (see make ios-devices) or pass DEVICE=.'; exit 1; }
+	$(Q)$(MAKE) --no-print-directory $(APP)-ios DEVICE_TYPE=$(DEVICE_FAMILY) DEVICE="$(or $(DEVICE),$(FAMILY_DEVICE))"
 
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
+
+.PHONY: test-mesh-mcp
+test-mesh-mcp:
+	PYTHONPYCACHEPREFIX=build/pycache python3 -m unittest discover -s tests -p 'test_mesh_mcp.py'
 
 test-octopus-cache: $(LUA_BIN)
 	$(LUA) tests/test_octopus_cache.lua
@@ -595,6 +614,8 @@ TEST_SHADER_UNIFORMS_BIN = $(BINDIR)/test_shader_uniforms
 TEST_TEXTURE_DOWNSCALE_BIN = $(BINDIR)/test_texture_downscale
 .PHONY: test-texture-downscale
 TEST_SCREEN_SPACE_CAPTURE_BIN = $(BINDIR)/test_screen_space_capture
+TEST_DEFERRED_GPU_RESOURCES_BIN = $(BINDIR)/test_deferred_gpu_resources
+.PHONY: test-deferred-gpu-resources
 # With RENDERER=metal, liborca itself provides the OpenGL ES calls.
 TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),$(if $(filter metal,$(RENDERER)),,-framework OpenGL),-lGL)
 .PHONY: test-screen-space-capture
@@ -670,6 +691,7 @@ $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-texture-downscale,tests/test_texture_downscale.c,$(TEST_TEXTURE_DOWNSCALE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
+$(eval $(call C_TEST_RULE,test-deferred-gpu-resources,tests/test_deferred_gpu_resources.c,$(TEST_DEFERRED_GPU_RESOURCES_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 
 .PHONY: test-vectorview-density
 $(eval $(call C_TEST_RULE,test-vectorview-density,tests/test_vectorview_density.c,$(BINDIR)/test_vectorview_density,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -llua5.4 -lplatform -lm $(TEST_GL_LIBS) $(if $(filter Darwin,$(UNAME_S)),,-rdynamic)))
@@ -714,11 +736,14 @@ HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-animation-clock
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
+HEADLESS_LUA_TESTS += test-page-control
+$(eval $(call LUA_TEST_RULE,test-page-control,tests/test_page_control.lua,unite))
 
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
+HEADLESS_LUA_TESTS += test-chart
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
@@ -746,6 +771,7 @@ APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome test-editor-tabs test-encarta
+APP_LUA_TESTS += test-weather
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -800,8 +826,12 @@ $(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lu
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 .PHONY: test-encarta
 $(eval $(call LUA_TEST_RULE,test-encarta,tests/test_encarta.lua,unite))
+.PHONY: test-weather
+$(eval $(call LUA_TEST_RULE,test-weather,tests/test_weather.lua,unite copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
+.PHONY: test-chart
+$(eval $(call LUA_TEST_RULE,test-chart,tests/test_chart.lua,unite))
 
 .PHONY: test-chat-polling
 test-chat-polling: unite

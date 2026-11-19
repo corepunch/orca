@@ -437,29 +437,19 @@ R_MakeGradientTexture(float angle, struct color a, struct color b);
 //  return S_OK;
 //}
 
-// Image_Start
-HANDLER(Image, Object, Start) {
+// Uploads an Image's file into its texture. FALSE, with no GL texture and a
+// zero size, if the file is missing or can't be decoded.
+static bool_t
+_UploadImage(struct Image const *pImage, struct Texture *pTexture)
+{
   struct AXsize tex = MAKE_TEX_SIZE(0, 0);
   struct file* pFile;
-  struct Texture* pTexture = GetTexture(hObject);
-  if (!tr.buffer) {
-    /* Headless layout needs dimensions without creating a GPU resource. */
-    if ((pFile = FS_LoadFile(pImage->Source))) {
-      struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
-      tex = R_ImageSize(&sb);
-      FS_FreeFile(pFile);
-    }
-    pTexture->Width = tex.width / MAX(1, pTexture->Scale);
-    pTexture->Height = tex.height / MAX(1, pTexture->Scale);
-    return TRUE;
-  }
   R_Call(glGenTextures, 1, &pTexture->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, pTexture->texnum);
   if ((pFile = FS_LoadFile(pImage->Source))) {
     struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
     tex = R_TexImage(GL_TEXTURE_2D, &sb, pTexture, pImage);
     R_ApplyImageParms(pTexture, GL_TEXTURE_2D, pImage->HasMipmaps);
-    // Con_Error("%d %d %s", texture_size.width, texture_size.height, filename);
     FS_FreeFile(pFile);
   } else Con_Error("%s: can't load image", pImage->Source);
   if (tex.width == 0 || tex.height == 0) {
@@ -469,6 +459,26 @@ HANDLER(Image, Object, Start) {
   }
   pTexture->Width = tex.width / MAX(1, pTexture->Scale);
   pTexture->Height = tex.height / MAX(1, pTexture->Scale);
+  return TRUE;
+}
+
+// Image_Start: with a GL context the file is uploaded now. Without one
+// (before the window exists, or in headless tests) only its size is read,
+// for layout, and the texture is marked deferred: Texture_Bind uploads it
+// the first time it draws.
+HANDLER(Image, Object, Start) {
+  struct Texture* pTexture = GetTexture(hObject);
+  if (tr.buffer) return _UploadImage(pImage, pTexture);
+  struct AXsize tex = MAKE_TEX_SIZE(0, 0);
+  struct file* pFile;
+  if ((pFile = FS_LoadFile(pImage->Source))) {
+    struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
+    tex = R_ImageSize(&sb);
+    FS_FreeFile(pFile);
+  }
+  pTexture->Width = tex.width / MAX(1, pTexture->Scale);
+  pTexture->Height = tex.height / MAX(1, pTexture->Scale);
+  pTexture->deferred = TRUE;
 
 //  if (*pImage->Source == '#') {
 //    struct Texture* pTexture = ZeroAlloc(sizeof(struct Texture));
@@ -510,6 +520,13 @@ Texture_Bind(struct Texture const* image,
 						 GLint location,
 						 GLint unit)
 {
+  if (image->deferred && tr.buffer) {
+    struct Texture *pTexture = (struct Texture *)image;
+    struct Object *hObject = CMP_GetObject(pTexture); // deferred only on an Image's texture
+    struct Image const *pImage = hObject ? GetImage(hObject) : NULL;
+    pTexture->deferred = FALSE; // one attempt: a missing file is reported once
+    if (pImage) _UploadImage(pImage, pTexture);
+  }
   R_Call(glActiveTexture, GL_TEXTURE0 + unit);
   R_Call(glBindTexture, target, image->texnum);
   R_Call(glUniform1i, location, unit);

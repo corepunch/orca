@@ -101,7 +101,7 @@ def compile_assets(project, bundle, sdk, minimum):
             '--platform', sdk, '--minimum-deployment-target', minimum,
             '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', 'AppIcon',
             '--output-partial-info-plist', str(partial),
-        ], check=True)
+        ], check=True, stdout=subprocess.DEVNULL)
         return plistlib.loads(partial.read_bytes())
 
 

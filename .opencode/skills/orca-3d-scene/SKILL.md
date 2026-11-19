@@ -6,7 +6,8 @@ description: Set up, drive and debug an ORCA project that renders a 3D scene (Sc
 # ORCA 3D Scene
 
 The cluster demo that used to be the worked example was removed; the snippets
-below use a placeholder project named `MyApp`. Generated assets come from `$orca-blender-pipeline`; this skill covers what the engine
+below use a placeholder project named `MyApp`. Generated assets come from `$orca-blender-pipeline`,
+or, for simple shapes without Blender, from `tools/mesh_mcp.py` ([docs/mesh-mcp.md](../../../docs/mesh-mcp.md)); this skill covers what the engine
 expects and how to run it. Facts below were verified against the source in
 `plugins/SceneKit/`, `source/renderer/` and `source/core/components/`.
 

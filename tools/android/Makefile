@@ -25,6 +25,11 @@ DEPS := $(ROOT)/deps
 GLUE := $(ANDROID_NDK)/sources/android/native_app_glue
 FLAGS := -fPIC -O2 -g -MMD -MP -DORCA_STATIC=1 -DHAVE_WINDOWING -I. -I$(ROOT)/include -I$(DEPS)/include \
 	-I$(DEPS)/include/libxml2 -Ilibs/lua -Ilibs/lz4/lib -I$(GLUE)
+ifeq ($(V),1)
+Q :=
+else
+Q := @
+endif
 include tools/mobile/third_party.mk
 VENDOR_FLAGS := -fPIC -O2 -g -MMD -MP
 FLAGS := $(VENDOR_INCLUDES) $(FLAGS)

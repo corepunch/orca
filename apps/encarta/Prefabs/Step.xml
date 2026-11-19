@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Button class="step">
-    <Grid Columns="30px 1fr" Spacing="12" AlignItems="Center" IgnoreHitTest="true">
-        <TextBlock Name="Mark" Width="30" Height="30" class="mark" IgnoreHitTest="true"/>
-        <TextBlock Name="Label" class="step-text" WordWrap="true" IgnoreHitTest="true"/>
-    </Grid>
+<!-- A bookmark on the edge of the book: one per question. A bookmark at rest
+     is tucked behind the book, which shades its inner end. -->
+<Button Width="44" Height="52" class="tab">
+    <Node2D IgnoreHitTest="true">
+        <TextBlock Name="Label" class="tab-label" IgnoreHitTest="true"/>
+        <ImageView Name="Shade" Src="encarta/Images/tab-shade.png" Stretch="Fill" Width="14" MarginRight="auto" IgnoreHitTest="true"/>
+    </Node2D>
 </Button>

@@ -1,0 +1,7 @@
+<!-- A place; tapping it shows its hub. -->
+<Button Height="64" Click="ChoosePlace" BorderWidth="0" class="wx-row">
+  <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
+    <TextBlock Name="PlaceTitle" Text="{Binding DataContext/Title}" FontSize="26" class="wx-ink" IgnoreHitTest="true"/>
+    <TextBlock Text="{Binding DataContext/Region}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+  </StackView>
+</Button>

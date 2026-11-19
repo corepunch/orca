@@ -216,6 +216,13 @@ reply is an XML `<response status="success|error">` document.
 | `put/binding/<path>?property=&expression=&mode=` | Set or (empty expression) remove a binding |
 | `post/node/<parent>?class=&name=`, `post/duplicate/<path>`, `delete/node/<path>` | Structure |
 | `get/snapshot/<doc>?width=&height=&file=` | Render offscreen to PNG, plus each node's rectangle |
+| `post/message/<path>?name=Node.LeftButtonUp` | Queue a message on a node, as a tap or `node:post` does |
+
+The document `app` is the running Application's screen, for apps started
+with `StartupViewController` (`get/snapshot/app`, `put/node/app/Page/Panorama?SelectedIndex=1`).
+Between requests the server waits at most one frame for input, so the
+application keeps running: network replies, timers and animations advance.
+[`tools/capture.py`](../../tools/capture.py) uses this to screenshot apps.
 | `get/binding-functions`, `get/class/<base>` | Completion data |
 | `post/save/<doc>` | Replay this session's edits onto the source XML |
 | `post/revert/<doc>` | Forget unsaved edits and reload the document from disk on next use |

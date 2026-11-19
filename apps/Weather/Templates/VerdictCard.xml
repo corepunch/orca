@@ -1,0 +1,20 @@
+<!-- The verdict now: a tone-coloured tile with the word and score, then the
+     temperature and sky. Bound to the "now" WeatherRow. -->
+<StackView Spacing="12" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+  <TextBlock Name="NowSpot" Text="{Binding DataContext/Note}" FontSize="18" class="wx-accent" IgnoreHitTest="true"/>
+  <Grid Columns="auto 1fr" Spacing="16" IgnoreHitTest="true">
+    <StackView Name="VerdictTile" Width="132" Height="132" Padding="12" Spacing="0" JustifyContent="End"
+               class="wx-tile" IgnoreHitTest="true">
+      <TextBlock Name="NowScore" Text="{Binding DataContext/ScoreText}" FontSize="20" class="wx-tile-ink" IgnoreHitTest="true"/>
+      <TextBlock Name="NowVerdict" Text="{Binding DataContext/Title}" FontSize="34" class="wx-tile-ink" IgnoreHitTest="true"/>
+    </StackView>
+    <StackView Spacing="4" JustifyContent="Center" IgnoreHitTest="true">
+      <Grid Columns="auto 1fr" Spacing="8" IgnoreHitTest="true">
+        <VectorView Name="NowIcon" Source="{Binding DataContext/Icon}" Width="40" Height="40" class="wx-ink"/>
+        <TextBlock Name="NowTemp" Text="{Binding DataContext/Value}" FontSize="56" class="wx-ink" IgnoreHitTest="true"/>
+      </Grid>
+      <TextBlock Name="NowSky" Text="{Binding DataContext/Detail}" FontSize="16" WordWrap="true" class="wx-dim"
+                 IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+</StackView>

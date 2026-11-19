@@ -30,6 +30,11 @@ SDK_PATH := $(shell xcrun --sdk $(SDK) --show-sdk-path)
 CC := xcrun --sdk $(SDK) clang
 MIN_FLAG := $(if $(filter iphoneos,$(SDK)),-miphoneos-version-min,-mios-simulator-version-min)=$(IOS_MIN)
 FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I$(DEPS)/include/libxml2
+ifeq ($(V),1)
+Q :=
+else
+Q := @
+endif
 include tools/mobile/third_party.mk
 # Metal is the renderer; RENDERER=gl builds the OpenGL ES one.
 RENDERER ?= metal
@@ -55,9 +60,9 @@ endif
 LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts
 .PHONY: app dependencies generated settings run install list-devices
 generated:
-	$(MAKE) ARCH=$(shell uname -m) modules
+	$(Q)$(MAKE) --no-print-directory ARCH=$(shell uname -m) modules
 dependencies:
-	python3 tools/ios/dependencies.py --sdk $(SDK) --arch $(ARCH) --minimum $(IOS_MIN) --build-dir "$(BUILD_DIR)"
+	$(Q)python3 tools/ios/dependencies.py --sdk $(SDK) --arch $(ARCH) --minimum $(IOS_MIN) --build-dir "$(BUILD_DIR)"
 $(DEPS_STAMP): dependencies
 settings:
 	@mkdir -p "$(ROOT)/include" "$(ROOT)/obj"
@@ -71,7 +76,8 @@ define unity
 $(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings tools/ios/Makefile $(VENDOR_HEADERS) | generated dependencies
 	@mkdir -p "$$(@D)"
 	@find $(2) -name '*.c' | sort | sed 's/.*/#include "&"/' > "$(ROOT)/obj/$(1).c"
-	$(CC) $(CFLAGS) -c "$(ROOT)/obj/$(1).c" -o "$$@"
+	@echo "  CC      $(2)"
+	$(Q)$(CC) $(CFLAGS) -c "$(ROOT)/obj/$(1).c" -o "$$@"
 endef
 $(foreach module,$(MODULES),$(eval $(call unity,$(module),source/$(module))))
 $(foreach plugin,$(PLUGINS),$(eval $(call unity,plugin_$(plugin),plugins/$(plugin))))
@@ -80,10 +86,12 @@ $(ROOT)/obj/source/renderer/metal/gl_metal.o: source/renderer/metal/gl_metal.m $
 	$(CC) $(OBJCFLAGS) -fobjc-arc -c "$<" -o "$@"
 $(ROOT)/obj/%.o: %.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
 	@mkdir -p "$(@D)"
-	$(CC) $(OBJCFLAGS) -c "$<" -o "$@"
+	@echo "  OBJC    $<"
+	$(Q)$(CC) $(OBJCFLAGS) -c "$<" -o "$@"
 $(ROOT)/obj/%.o: %.c $(ROOT)/settings tools/ios/Makefile | dependencies generated
 	@mkdir -p "$(@D)"
-	$(CC) $(CFLAGS) -c "$<" -o "$@"
+	@echo "  CC      $<"
+	$(Q)$(CC) $(CFLAGS) -c "$<" -o "$@"
 ifeq ($(SDK),iphonesimulator)
 # Simulators refuse entitlements in ad hoc signatures. Like Xcode, link the
 # app identity into the binary, where the simulator Keychain reads it.
@@ -95,18 +103,19 @@ simulated:
 $(SIMULATED): simulated
 endif
 $(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(DEPS_STAMP) $(SIMULATED)
-	$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
+	@echo "  LD      $(@F)"
+	$(Q)$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
 app: $(ROOT)/Orca
-	python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)"
+	$(Q)python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)"
 ifeq ($(SDK),iphonesimulator)
-	python3 tools/ios/sign.py --simulator "$(BUNDLE)"
+	$(Q)python3 tools/ios/sign.py --simulator "$(BUNDLE)"
 endif
 run: app
 	@test "$(SDK)" = iphonesimulator || { echo 'Use SDK=iphonesimulator for run'; exit 1; }
-	python3 tools/ios/deploy.py --simulator --bundle "$(BUNDLE)" --device-type "$(DEVICE_TYPE)" $(if $(DEVICE),--device "$(DEVICE)")
+	$(Q)python3 tools/ios/deploy.py --simulator --bundle "$(BUNDLE)" --device-type "$(DEVICE_TYPE)" $(if $(DEVICE),--device "$(DEVICE)")
 install: app
 	@test "$(SDK)" = iphoneos -a "$(ARCH)" = arm64 || { echo 'Use SDK=iphoneos ARCH=arm64 for install'; exit 1; }
-	python3 tools/ios/deploy.py --bundle "$(BUNDLE)" --device-type "$(DEVICE_TYPE)" $(if $(DEVICE),--device "$(DEVICE)") $(if $(TEAM),--team "$(TEAM)") $(if $(PROFILE),--profile "$(PROFILE)")
+	$(Q)python3 tools/ios/deploy.py --bundle "$(BUNDLE)" --device-type "$(DEVICE_TYPE)" $(if $(DEVICE),--device "$(DEVICE)") $(if $(TEAM),--team "$(TEAM)") $(if $(PROFILE),--profile "$(PROFILE)")
 list-devices:
 	xcrun devicectl list devices
 	xcrun simctl list devices available
