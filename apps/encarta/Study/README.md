@@ -12,7 +12,7 @@ described there as boxes, spheres and upright cylinders; edit `build_scene()`
 and run the script again.
 
 ```sh
-python3 apps/encarta/Tools/build_study.py            # meshes, XML, full lightmap (about 15 minutes)
+python3 apps/encarta/Tools/build_study.py            # meshes, XML, full lightmap (about 7 minutes on four cores)
 python3 apps/encarta/Tools/build_study.py --draft    # the same with a quick, noisy lightmap
 python3 apps/encarta/Tools/build_study.py --no-bake  # meshes and XML only, keep the lightmap
 ```

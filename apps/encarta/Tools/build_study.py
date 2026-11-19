@@ -781,7 +781,7 @@ def main():
     ap.add_argument("--natural-earth", metavar="DIR",
                     help="folder with ne_110m_land.geojson and ne_110m_lakes.geojson, to redraw the globe")
     ap.add_argument("--no-bake", action="store_true", help="rewrite meshes and XML, keep the lightmap")
-    ap.add_argument("--paths", type=int, default=32, help="bounce paths per texel")
+    ap.add_argument("--paths", type=int, default=16, help="bounce paths per texel")
     ap.add_argument("--size", type=int, default=1024, help="lightmap size in texels")
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     args = ap.parse_args()
