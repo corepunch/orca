@@ -284,4 +284,23 @@ for name in pairs(timings) do
     end
 end
 
+-- The Study: the baked 3D room, opened with -url=/study.
+require "orca.SceneKit"
+app:activate_route("/study")
+local study = app.screen
+assert(study.Name == "Study" and study:findChild("StudyCamera", true), "the Study has its camera")
+local materials = 0
+for name in assert(fs.readTextFile("encarta/Study/Scene.xml")):gmatch('Material="encarta/Study/Materials/(%w+)"') do
+    local mesh = assert(fs.readTextFile("encarta/Study/Meshes/Study_" .. name .. ".mesh"), name)
+    assert(mesh:sub(1, 4) == "MESH", name .. " must be a mesh file")
+    local material = assert(fs.readTextFile("encarta/Study/Materials/" .. name .. ".xml"), name)
+    assert(material:find('Baked.Lightmap="encarta/Study/Textures/lightmap.png"', 1, true), name .. " uses the lightmap")
+    local texture = material:match('Baked.Albedo="([^"]+)"')
+    assert(fs.readTextFile(texture), texture)
+    materials = materials + 1
+end
+assert(materials >= 5, "the Study scene lists its meshes")
+assert(fs.readTextFile("encarta/Study/Textures/lightmap.png"):sub(2, 4) == "PNG", "the lightmap is baked")
+app:activate_route("/")
+
 print("PASS: Encarta question wall, illustrated bookshelf and reader, offline recordings and synchronized highlights")

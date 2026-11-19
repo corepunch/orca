@@ -4,7 +4,7 @@ WindowWidth = 1024
 WindowHeight = 768
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
-EnginePlugins = { { Name = "orca.UIKit" } }
+EnginePlugins = { { Name = "orca.UIKit" }, { Name = "orca.SceneKit" } }
 ThemeLibrary = {
     { Key = "night", Value = "#0F1A30" },
     { Key = "night-raised", Value = "#1E2C4D" },
