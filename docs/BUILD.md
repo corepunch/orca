@@ -25,6 +25,10 @@ Lua, LZ4, FreeType, libpng, libjpeg and zlib are built from submodules:
   own. The engine, plugins and Lua-only tests all use that copy.
 - LZ4 is compiled into `liborca` from the `libs/lz4` submodule.
 - FreeType, libpng, libjpeg and zlib are built from their `libs/` submodules.
+- glslang and SPIRV-Cross (`libs/glslang`, `libs/SPIRV-Cross`) translate GLSL
+  to MSL for the Metal renderer on macOS and iOS, and for
+  `make test-glsl-msl` everywhere. Apple builds use Metal; `RENDERER=gl`
+  builds OpenGL instead. See [Metal renderer](METAL.md).
 
 MoonScript is optional and is not bundled. To run `.moon` programs, install it
 with LuaRocks for Lua 5.4 and point `LUA_PATH` and `LUA_CPATH` at that tree.

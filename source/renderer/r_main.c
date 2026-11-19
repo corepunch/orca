@@ -957,6 +957,10 @@ R_BeginFrame(struct color color)
   
   axGetSize(&size);
   axBeginPaint();
+#if ORCA_METAL
+  GLMTL_BeginFrame();
+  R_BindDefaultFramebuffer();
+#endif
 
   tr.drawCalls = tr.glCalls = 0;
   R_SetDefaultPipelineState(size.width, size.height);
@@ -989,7 +993,11 @@ R_EndFrame(void)
     }
   }
 
+#if ORCA_METAL
+  GLMTL_Present();
+#else
   glFlush();
+#endif
 
   axEndPaint();
 

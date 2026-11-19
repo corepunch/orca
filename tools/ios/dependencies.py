@@ -9,6 +9,7 @@ import shlex
 import shutil
 import subprocess
 import tempfile
+from concurrent.futures import ThreadPoolExecutor
 
 
 SOURCES = {
@@ -34,6 +35,49 @@ FREETYPE_SOURCES = ('base/ftbase.c', 'base/ftinit.c', 'base/ftsystem.c', 'base/f
                     'psnames/psnames.c', 'pshinter/pshinter.c', 'sfnt/sfnt.c', 'smooth/smooth.c',
                     'raster/raster.c')
 ROOT = Path(__file__).resolve().parents[2]
+# GLSL to MSL translation for the Metal renderer: glslang, SPIRV-Cross and
+# source/renderer/metal/glsl_msl.cpp, listed in tools/shaders/shaders.mk.
+SHADER_SUBMODULES = ('libs/glslang', 'libs/SPIRV-Cross')
+
+
+def build_shaders(sdk, prefix, root, flags):
+    """libglslmsl.a, with its own stamp so editing the translator rebuilds only it."""
+    for folder in SHADER_SUBMODULES:
+        if not (ROOT / folder / 'CMakeLists.txt').is_file():
+            raise SystemExit('Missing ' + folder + '. Run: git submodule update --init ' + folder)
+    output = root / 'dependency-build' / 'shaders'
+    config = subprocess.check_output(['make', '-s', '--no-print-directory', '-f', 'tools/shaders/shaders.mk',
+                                      'SHADER_GEN=' + str(output / 'include'), 'shader-config'],
+                                     cwd=ROOT, text=True).splitlines()
+    version, sources = config[0].split(), config[1].split()
+    own = [ROOT / 'tools/shaders/shaders.mk', ROOT / 'source/renderer/metal/glsl_msl.cpp',
+           ROOT / 'source/renderer/metal/glsl_msl.h']
+    stamp = prefix / 'shaders.json'
+    settings = json.dumps({'flags': flags, 'sources': sources, 'own': hashlib.sha256(
+        b''.join(path.read_bytes() for path in own)).hexdigest(), 'pinned': [
+        subprocess.check_output(['git', '-C', str(ROOT / folder), 'rev-parse', 'HEAD'], text=True).strip()
+        for folder in SHADER_SUBMODULES]}, sort_keys=True)
+    library = prefix / 'lib/libglslmsl.a'
+    if stamp.exists() and stamp.read_text() == settings and library.is_file():
+        return
+    info = output / 'include/glslang/build_info.h'
+    info.parent.mkdir(parents=True, exist_ok=True)
+    template = (ROOT / 'libs/glslang/build_info.h.tmpl').read_text()
+    for key, value in zip(('@major@', '@minor@', '@patch@', '@flavor@'), version + ['']):
+        template = template.replace(key, value)
+    info.write_text(template)
+    compiler = subprocess.check_output(['xcrun', '--sdk', sdk, '--find', 'clang++'], text=True).strip()
+    includes = ['-I' + str(output / 'include'), '-I' + str(ROOT / 'libs/glslang'), '-I' + str(ROOT / 'libs/SPIRV-Cross')]
+    def compile_one(rel):
+        obj = output / (rel[:-4].replace('/', '_') + '.o')
+        run(compiler, *flags, '-std=c++17', '-w', *includes, '-c', ROOT / rel, '-o', obj)
+        return obj
+    print('Building GLSL to MSL translation', flush=True)
+    with ThreadPoolExecutor(max_workers=min(os.cpu_count() or 2, 8)) as pool:
+        objects = list(pool.map(compile_one, sources))
+    library.unlink(missing_ok=True)
+    run('xcrun', '--sdk', sdk, 'ar', 'rcs', library, *objects)
+    stamp.write_text(settings)
 
 
 def run(*args, cwd=None, env=None):
@@ -91,6 +135,8 @@ def main():
     flags = ['-arch', args.arch, '-isysroot', sdk, minimum + args.minimum, '-O2', '-g']
     lua_config = Path(__file__).resolve().with_name('lua_config.h')
     stamp = prefix / 'settings.json'
+    (prefix / 'lib').mkdir(parents=True, exist_ok=True)
+    build_shaders(args.sdk, prefix, root, flags)
     lua, lz4 = submodule('lua'), submodule('lz4')
     revision = hashlib.sha256(b''.join(path.read_bytes() for folder in (lua, lz4)
                                        for path in sorted(folder.glob('*.[ch]')))).hexdigest()

@@ -7,7 +7,10 @@
 
 #include <renderer/renderer.h>
 
-#if __APPLE__
+#if ORCA_METAL
+// Apple builds render with Metal through an OpenGL ES 3 layer.
+#include "metal/gl_metal.h"
+#elif __APPLE__
 //#define GL_SILENCE_DEPRECATION
 #include <TargetConditionals.h>
 #if !TARGET_OS_IPHONE && !TARGET_IPHONE_SIMULATOR
@@ -59,6 +62,18 @@
   {                                                                            \
     (width), (height)                                                          \
   }
+
+// The window's framebuffer. With OpenGL the platform owns and binds it; the
+// Metal layer's framebuffer 0 is the drawable of the window's CAMetalLayer.
+static inline void
+R_BindDefaultFramebuffer(void)
+{
+#if ORCA_METAL
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#else
+  axBindFramebuffer();
+#endif
+}
 
 #define WINDOWS_TABLE "__windows"
 
@@ -274,6 +289,13 @@ extern struct shader_desc shader_roundedbox;
 extern struct shader_desc shader_blur_h;
 extern struct shader_desc shader_blur_v;
 extern struct shader_desc shader_backdrop_blur;
+
+#define SHADER_MAX_TEXTS 256
+#define SHADER_TEXT_LENGTH 256
+
+uint32_t
+Shader_AssembleSource(struct shader_desc const* def, bool_t vertex,
+                      char texts[][SHADER_TEXT_LENGTH], lpcString_t *codes);
 
 // Gives a fragment-only Shader the built-in UI vertex stage (shader_ui): its
 // source, attributes, varyings and engine uniforms after the first

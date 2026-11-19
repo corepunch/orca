@@ -11,7 +11,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -38,7 +38,8 @@
 "$(inherited)",
 "ORCA_IOS=1",
 "ORCA_STATIC=1",
-"GL_SILENCE_DEPRECATION",
+"ORCA_METAL=1",
+"AX_METAL=1",
 );
 "OTHER_CFLAGS" = (
 "$(inherited)",
@@ -61,7 +62,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -88,7 +89,8 @@
 "$(inherited)",
 "ORCA_IOS=1",
 "ORCA_STATIC=1",
-"GL_SILENCE_DEPRECATION",
+"ORCA_METAL=1",
+"AX_METAL=1",
 );
 "OTHER_CFLAGS" = (
 "$(inherited)",
@@ -129,6 +131,8 @@
 "-ljpeg",
 "-lcurl",
 "-lxml2",
+"-lglslmsl",
+"-lc++",
 "-lz",
 "-liconv",
 "-lm",
@@ -137,7 +141,7 @@
 "-framework",
 "Foundation",
 "-framework",
-"OpenGLES",
+"Metal",
 "-framework",
 "QuartzCore",
 "-framework",
@@ -188,6 +192,8 @@
 "-ljpeg",
 "-lcurl",
 "-lxml2",
+"-lglslmsl",
+"-lc++",
 "-lz",
 "-liconv",
 "-lm",
@@ -196,7 +202,7 @@
 "-framework",
 "Foundation",
 "-framework",
-"OpenGLES",
+"Metal",
 "-framework",
 "QuartzCore",
 "-framework",
@@ -527,6 +533,19 @@
 "COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
+"91420C919F835AFC97D07FA9" = {
+"isa" = "PBXFileReference";
+"path" = "metal_renderer.m";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.objc";
+};
+"C1EA729A5F61C0391394A1FE" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "91420C919F835AFC97D07FA9";
+"settings" = {
+"COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\" -fobjc-arc";
+};
+};
 "45666D976BAB316D970EC459" = {
 "isa" = "PBXShellScriptBuildPhase";
 "buildActionMask" = 2147483647;
@@ -561,6 +580,7 @@
 "$(DERIVED_FILE_DIR)/u_platform_unix.c",
 "$(DERIVED_FILE_DIR)/ios_runtime.m",
 "$(DERIVED_FILE_DIR)/native_modules.m",
+"$(DERIVED_FILE_DIR)/metal_renderer.m",
 );
 "runOnlyForDeploymentPostprocessing" = 0;
 "alwaysOutOfDate" = 1;
@@ -591,6 +611,7 @@
 "67655E313DB73FD02ECE5C4A",
 "B3DB704ABC167581963A98C6",
 "5297588D925865098767F1D7",
+"C1EA729A5F61C0391394A1FE",
 );
 "runOnlyForDeploymentPostprocessing" = 0;
 };
@@ -717,6 +738,7 @@
 "children" = (
 "4A1D7E190E4DE5E974329025",
 "BCBE196513D59F88F4B8718C",
+"91420C919F835AFC97D07FA9",
 );
 "sourceTree" = "<group>";
 };

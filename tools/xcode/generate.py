@@ -9,7 +9,7 @@ import plistlib
 import re
 import xml.etree.ElementTree as ET
 
-from common import ROOT, configuration, unity_sources, url_types, write
+from common import METAL_UNIT, ROOT, configuration, unity_sources, url_types, write
 from pbxproj import load
 
 
@@ -148,7 +148,7 @@ def generate(args, app):
                                 '$(DERIVED_FILE_DIR)/dependencies/include',
                                 '$(ORCA_ROOT)', '$(DERIVED_FILE_DIR)/dependencies/include/libxml2'],
         'LIBRARY_SEARCH_PATHS': ['$(inherited)', '$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib'],
-        'GCC_PREPROCESSOR_DEFINITIONS': ['$(inherited)', 'ORCA_IOS=1', 'ORCA_STATIC=1', 'GL_SILENCE_DEPRECATION'],
+        'GCC_PREPROCESSOR_DEFINITIONS': ['$(inherited)', 'ORCA_IOS=1', 'ORCA_STATIC=1', 'ORCA_METAL=1', 'AX_METAL=1'],
         'OTHER_CFLAGS': ['$(inherited)', '-Wno-deprecated-declarations'],
         'PRODUCT_NAME': name, 'PRODUCT_BUNDLE_IDENTIFIER': 'org.orca.' + name,
         'MARKETING_VERSION': '1.0', 'CURRENT_PROJECT_VERSION': '1',
@@ -163,10 +163,11 @@ def generate(args, app):
         overrides['PRODUCT_BUNDLE_IDENTIFIER'] = args.bundle_id
     root_configs = project.configurations('project', common, overrides)
     target_name = name + '-ios'
-    frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
+    frameworks = ('UIKit', 'Foundation', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'AVFoundation', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
                   'UserNotifications', 'AuthenticationServices', 'Contacts')
-    linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
+    linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lglslmsl',
+              '-lc++', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
     target_settings = {
@@ -192,8 +193,11 @@ def generate(args, app):
             plugin_references.append(ref)
         else:
             engine_references.append(ref)
+        flags = ('-idirafter' if objc else '-I') + ' "$(DERIVED_FILE_DIR)/generated"'
+        if filename == METAL_UNIT:
+            flags += ' -fobjc-arc'
         sources.append(project.add('source/' + filename, 'PBXBuildFile', fileRef=ref, settings={
-            'COMPILER_FLAGS': ('-idirafter' if objc else '-I') + ' "$(DERIVED_FILE_DIR)/generated"'}))
+            'COMPILER_FLAGS': flags}))
     prepare = project.add('prepare', 'PBXShellScriptBuildPhase', buildActionMask=2147483647,
         name='Prepare ORCA sources and dependencies', shellPath='/bin/sh',
         shellScript='set -eu\n/bin/sh "$ORCA_ROOT/tools/xcode/python.sh" "$ORCA_ROOT/tools/xcode/build.py" prepare\n',

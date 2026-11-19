@@ -279,10 +279,12 @@ The renderer prepends a version preamble to every GLSL shader at load time:
 
 | Platform | Preamble |
 |---|---|
-| Desktop (OpenGL 3.3) | `#version 330 core` |
-| WebGL 2 / QNX | `#version 300 es` |
+| Desktop (OpenGL 3.3), macOS Metal | `#version 330 core` |
+| WebGL 2 / QNX / iOS | `#version 300 es` |
 
-This is handled in `source/renderer/r_shader.c`. Add `__EMSCRIPTEN__` or `__QNX__` guards there when adding platform-specific shader features.
+This is handled by `Shader_AssembleSource` in `source/renderer/r_shader.c`. Add `__EMSCRIPTEN__` or `__QNX__` guards there when adding platform-specific shader features.
+On Apple platforms the assembled GLSL is translated to MSL when the program
+links; see [Metal renderer](METAL.md).
 
 ---
 

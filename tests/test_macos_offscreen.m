@@ -1,5 +1,10 @@
 #import <AppKit/AppKit.h>
+#if ORCA_METAL
+// Links liborca's OpenGL ES layer, so the surface is cleared and read on Metal.
+#include <source/renderer/metal/gl_metal.h>
+#else
 #import <OpenGL/gl3.h>
+#endif
 #include <libs/platform/platform.h>
 #include <stdio.h>
 

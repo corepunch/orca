@@ -77,6 +77,7 @@ nav:
   - Developer Notes:
     - Way of Working: way-of-working.md
     - Renderer Internals: renderer-internals.md
+    - Metal Renderer: METAL.md
     - Lua Scripting: lua-scripting.md
     - Style System: styling.md
     - CSS Compatibility: css-compatibility.md
