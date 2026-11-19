@@ -10,6 +10,39 @@ on its own.
 - Covers (append to Mars, Volcanoes, Magnets, Seeds, and Heart): Use case: illustration-story. Asset type: bookshelf cover and illustrated reader art. Encarta, a children's offline encyclopedia for ages 6–10. Landscape 3:2, fill the frame without borders; keep the key subject in the center with breathing room inside the edges. Sophisticated digitally hand-painted natural history editorial illustration, visible soft gouache brushwork, deliberate shapes, clear readable silhouette, rich but natural color, tactile paper grain. No writing, numbers, branding, watermarks, border, or split panel. Not a mascot or photorealism.
 - Diagrams (before the subject prompt): Use case: scientific-educational. Asset type: interior question page infographic for Encarta, an encyclopedia for ages 6–10. Landscape 3:2, the whole diagram in frame with comfortable 8% padding; soft paper tone and refined hand-painted gouache surface texture with clean edges and clear visual hierarchy. Make all exactly specified labels large, simple and highly legible. Do not add words, signs, legends, captions, borders, numbers, or signatures unless specified.
 
+## The study
+
+`Images/study.jpg` is the home screen: a desk against a wooden wall, 16:10 at
+1600×1000. The current file is a flat vector placeholder, not a painting.
+Buttons are laid over the picture by a grid in `Screens/Library.xml`, so a
+replacement must keep each object inside its cell, or the grid's tracks must
+change with it. Positions are fractions of the picture's width and height:
+
+| Object | Category | Left to right | Top to bottom |
+| --- | --- | --- | --- |
+| Arched night window with a telescope | Space | 0 to 0.30 | 0 to 0.66 |
+| Old books with a small pyramid | Long Ago | 0.30 to 0.41 | 0.24 to 0.66 |
+| Globe on a stand | Earth | 0.41 to 0.60 | 0.24 to 0.66 |
+| Potted sprout | Plants | 0.60 to 0.70 | 0.24 to 0.66 |
+| Framed body chart on the wall | Your Body | 0.70 to 1 | 0 to 0.34 |
+| Flask | Science | 0.70 to 0.815 | 0.34 to 0.66 |
+| Aquarium | Animals | 0.815 to 1 | 0.34 to 0.66 |
+
+The desk top runs across at 0.66. Below it, the desk front has closed drawers
+left and right and a dark, empty recess in the middle (0.35 to 0.65 wide),
+where the app lays today's question. The app draws every name plate, so the
+picture carries no writing. Leave the wall above the globe plain: the question
+bubble opens there.
+
+Prompt for a painted replacement: Use case: illustration-story. Asset type:
+home screen scene for Encarta, a children's offline encyclopedia for ages
+6–10. Landscape 16:10, straight-on view of an explorer's wooden desk against a
+warm plank wall, laid out exactly as the table above. Sophisticated digitally
+hand-painted natural history editorial illustration, visible soft gouache
+brushwork, deliberate shapes, clear readable silhouettes, rich but natural
+color, tactile paper grain, warm lamplight. No writing, numbers, labels,
+branding, watermarks, border, people, or mascots.
+
 ## Subject prompts
 
 ### moon.jpg

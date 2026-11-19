@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One of the three pictures in a hunt. -->
+<Button class="choice">
+    <StackView IgnoreHitTest="true">
+        <ImageView Name="Art" Stretch="UniformToFill" AspectRatio="1.25" IgnoreHitTest="true" class="choice-art"/>
+        <TextBlock Name="Title" class="choice-title" IgnoreHitTest="true"/>
+    </StackView>
+</Button>

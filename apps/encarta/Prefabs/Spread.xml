@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One opening of the book: a page to read and a page to look at. Side by
+     side on a wide screen. On a narrow or an upright one they stack, so the
+     picture fills the width under the text, and the spread scrolls if it must. -->
+<StackView OverflowY="Scroll" Visible="false" class="spread">
+    <Grid Name="Pages" AlignItems="Start" class="pages">
+        <BindingExpression Target="Grid.Columns">IF(AND(STEP(760, {Screen.Width}), STEP({Screen.Height}, {Screen.Width})), "1fr 1fr", "1fr")</BindingExpression>
+        <StackView Name="TextPage" class="page">
+            <TextBlock Name="Kicker" class="kicker"/>
+            <TextBlock Name="Title" HighlightColor="$sun-light" class="question" WordWrap="true"/>
+            <TextBlock Name="Running" Visible="false" class="running" WordWrap="true"/>
+            <StackView Name="Paragraphs" class="paragraphs"/>
+        </StackView>
+        <StackView Name="SidePage" class="page">
+            <StackView Name="SectionMedia" Visible="false" class="media">
+                <Node2D Name="Picture">
+                    <ImageView Name="SectionImage" Stretch="UniformToFill" AspectRatio="1.5" IgnoreHitTest="true" class="media-image"/>
+                </Node2D>
+                <StackView Name="SpotNote" Visible="false" class="spot-note">
+                    <TextBlock Name="SpotTitle" class="spot-title" WordWrap="true"/>
+                    <TextBlock Name="SpotText" class="spot-text" WordWrap="true"/>
+                </StackView>
+                <TextBlock Name="SectionCaption" class="hint" WordWrap="true"/>
+            </StackView>
+            <StackView Name="Wow" Visible="false" class="callout wow">
+                <TextBlock class="callout-tag wow-tag">WOW!</TextBlock>
+                <TextBlock Name="WowText" class="callout-text" WordWrap="true"/>
+            </StackView>
+            <StackView Name="Try" Visible="false" class="callout try">
+                <TextBlock class="callout-tag try-tag">TRY THIS</TextBlock>
+                <TextBlock Name="TryText" class="callout-text" WordWrap="true"/>
+            </StackView>
+            <Button Name="Related" Visible="false" class="link-card">
+                <StackView IgnoreHitTest="true" class="link-copy">
+                    <TextBlock class="callout-tag link-tag" IgnoreHitTest="true">SEE ALSO</TextBlock>
+                    <TextBlock Name="RelatedText" class="link-text" WordWrap="true" IgnoreHitTest="true"/>
+                </StackView>
+            </Button>
+            <Button Name="NextUp" Visible="false" class="link-card">
+                <StackView IgnoreHitTest="true" class="link-copy">
+                    <TextBlock Name="NextUpTag" class="callout-tag link-tag" IgnoreHitTest="true">NEXT QUESTION</TextBlock>
+                    <TextBlock Name="NextUpText" class="link-text" WordWrap="true" IgnoreHitTest="true"/>
+                </StackView>
+            </Button>
+        </StackView>
+    </Grid>
+</StackView>

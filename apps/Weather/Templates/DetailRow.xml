@@ -1,0 +1,6 @@
+<!-- One reading of the details block: label left, value right. -->
+<Grid Columns="1fr auto" Spacing="12" Height="24" IgnoreHitTest="true">
+  <TextBlock Text="{Binding DataContext/Title}" FontSize="16" class="wx-dim" IgnoreHitTest="true"/>
+  <TextBlock Name="DetailValue" Text="{Binding DataContext/Value}" FontSize="16" TextHorizontalAlignment="Right"
+             class="wx-ink" IgnoreHitTest="true"/>
+</Grid>

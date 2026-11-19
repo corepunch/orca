@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- One question in an object's bubble. -->
+<Button class="bubble-item">
+    <StackView IgnoreHitTest="true">
+        <TextBlock Name="Label" class="bubble-question" WordWrap="true" IgnoreHitTest="true"/>
+    </StackView>
+</Button>

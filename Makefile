@@ -706,6 +706,7 @@ HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
+HEADLESS_LUA_TESTS += test-chart
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
@@ -733,6 +734,7 @@ APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome test-editor-tabs test-encarta
+APP_LUA_TESTS += test-weather
 HEADLESS_LUA_TESTS += test-editor-projects
 CHAT_STRESS_ROWS ?= 1000
 OCTOPUS_STRESS_ROWS ?= 1000
@@ -787,8 +789,12 @@ $(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lu
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
 .PHONY: test-encarta
 $(eval $(call LUA_TEST_RULE,test-encarta,tests/test_encarta.lua,unite))
+.PHONY: test-weather
+$(eval $(call LUA_TEST_RULE,test-weather,tests/test_weather.lua,unite copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
+.PHONY: test-chart
+$(eval $(call LUA_TEST_RULE,test-chart,tests/test_chart.lua,unite))
 
 .PHONY: test-chat-polling
 test-chat-polling: unite
