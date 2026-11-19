@@ -251,7 +251,7 @@ Treat samples as references for specific mechanisms, not complete standards.
 | --- | --- | --- |
 | [Adventure shell](../../apps/Adventure/Screens/Adventures.xml) | XML shell, tab bindings, native page navigation | Its play controller also constructs message rows manually; this is not the preferred collection ownership pattern. |
 | [Banking app](../../apps/Banking/App.moon) | `Application`, separate views/layout, authentication routing | Banking was migrated to Widget/Application in commit `2071831f`; its old routing plugin was removed. |
-| [Weather kit](../../apps/WeatherKit/README.md) | One XML panorama, scope and provider shared by several apps; each app is a scoring profile | Profiles are Lua tables; spots are fixed lists, with no search or device location yet. |
+| [Weather app](../../apps/Weather/README.md) | A Panorama hub that opens Pivot detail pages; the hub's scope survives a visit; one cached request per place feeds both | Places are a fixed list, with no search or device location yet. |
 | [Example package](../../apps/Example/package.lua) | Semantic theme values, CSS, resources, and reusable presentation | Its dark/violet palette is one app design, not a universal ORCA theme. |
 | [Chat app](../../apps/chat/App.lua) | A Lua service adapter, working app states, and a native portrait preview | Its application shell remains Lua; message and photo rows use XML templates with typed, retained ItemsSource records. |
 

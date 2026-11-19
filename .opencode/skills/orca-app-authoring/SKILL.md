@@ -19,9 +19,8 @@ documents rather than duplicating them in skills.
   Both presentation paths use the same ORCA runtime.
 - Select a relevant sample by mechanism. Banking uses the current
   Widget/Application pattern; Adventure demonstrates native page navigation;
-  Example demonstrates themes and CSS; WeatherKit shows several apps
-  (Weather, Fishing, Surf) sharing one XML page, scope and provider through
-  per-app profiles. Do not copy an entire sample or treat
+  Example demonstrates themes and CSS; Weather shows a Panorama hub
+  that opens Pivot detail pages, with one cached request feeding both. Do not copy an entire sample or treat
   the chat prototype's single app module as the standard.
 
 Author pages, templates and scenes in XML.

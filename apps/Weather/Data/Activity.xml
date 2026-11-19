@@ -1,0 +1,15 @@
+<!-- One activity at one place: the verdict and why, the hours, the week and
+     the conditions it watches. Place and activity come from the route. -->
+<DataScope Name="Activity" Schema="Weather/Data/Weather.Schema.xml">
+  <Query Name="Report" Entity="WeatherRow" Operation="activity" Require="PlaceId ActivityId" Poll="1800000"
+         Description="The activity's verdicts and conditions at the place.">
+    <Param Name="PlaceId" Type="string" Route="PlaceId"/>
+    <Param Name="ActivityId" Type="string" Route="ActivityId"/>
+  </Query>
+  <View Name="Now" Source="Report" Filter="nowRows"/>
+  <View Name="Reasons" Source="Report" Filter="reasonRows"/>
+  <View Name="Hours" Source="Report" Filter="hourRows"/>
+  <View Name="Days" Source="Report" Filter="dayRows"/>
+  <View Name="Conditions" Source="Report" Filter="metricRows"/>
+  <Handler Name="GoBack" Function="goBack"/>
+</DataScope>

@@ -1,0 +1,11 @@
+<!-- The place now, after Amazing Weather: a huge temperature beside the sky,
+     then feels like, the condition and the wind. -->
+<StackView Spacing="2" JustifyContent="Start" IgnoreHitTest="true">
+  <Grid Columns="auto 1fr" Spacing="16" IgnoreHitTest="true">
+    <TextBlock Name="HubTemp" Text="{Binding DataContext/Value}" FontSize="96" class="wx-ink" IgnoreHitTest="true"/>
+    <VectorView Name="HubIcon" Source="{Binding DataContext/Icon}" Width="56" Height="56" class="wx-ink"/>
+  </Grid>
+  <TextBlock Name="HubFeels" Text="{Binding DataContext/Detail}" FontSize="18" class="wx-ink" IgnoreHitTest="true"/>
+  <TextBlock Name="HubSky" Text="{Binding DataContext/Title}" FontSize="28" class="wx-ink" IgnoreHitTest="true"/>
+  <TextBlock Name="HubWind" Text="{Binding DataContext/Note}" FontSize="16" class="wx-accent" IgnoreHitTest="true"/>
+</StackView>

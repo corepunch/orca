@@ -1,0 +1,10 @@
+<!-- One day of Amazing Weather's five-day strip: an underlined lowercase
+     weekday, the sky, high, low and the chance of rain. -->
+<StackView Width="64" Spacing="4" JustifyContent="Start" AlignItems="Center" IgnoreHitTest="true">
+  <TextBlock Name="StripWeekday" Text="{Binding DataContext/Title}" FontSize="20" class="wx-ink" IgnoreHitTest="true"/>
+  <StackView Width="56" Height="2" class="wx-rule" IgnoreHitTest="true"/>
+  <VectorView Source="{Binding DataContext/Icon}" Width="28" Height="28" class="wx-ink"/>
+  <TextBlock Name="StripHigh" Text="{Binding DataContext/Value}" FontSize="18" class="wx-ink" IgnoreHitTest="true"/>
+  <TextBlock Text="{Binding DataContext/Detail}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+  <TextBlock Text="{Binding DataContext/Note}" FontSize="13" class="wx-accent" IgnoreHitTest="true"/>
+</StackView>

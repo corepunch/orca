@@ -5,14 +5,18 @@ One process per app: the app runs offscreen in server mode
 (`orca -server=true`), this script talks to it over the editor's request
 protocol (plugins/EditorKit/server.c) and saves PNG snapshots. Between
 shots it can set properties on any node, such as a Pivot or Panorama
-`SelectedIndex`, so one run captures every section of a screen.
+`SelectedIndex`, or post a message such as a tap, so one run captures every
+section of a screen and the pages behind it.
 
-  python3 tools/capture.py apps/Fishing --wait 'Now*' \\
-      --shot now=app/ForecastPage/WeatherPanorama?SelectedIndex=0 \\
-      --shot hourly=app/ForecastPage/WeatherPanorama?SelectedIndex=1 \\
-      --strip build/captures/Fishing.png
+  python3 tools/capture.py apps/Weather --wait 'Now*' \\
+      --shot now=app/HubPage/HubPanorama?SelectedIndex=0 \\
+      --shot good-for=app/HubPage/HubPanorama?SelectedIndex=1 \\
+      --strip build/captures/Weather.png
 
-Paths start with a document: `app` is the running Application's screen
+A shot's steps are separated by `;`: `PATH?Prop=value&...` sets properties,
+`PATH!Message.Name` posts a message (`!Node.LeftButtonUp` taps), and a
+step that is just a glob waits for a matching node. `doc/**/NAME` finds a
+node by name (a glob) anywhere in the tree. Paths start with a document: `app` is the running Application's screen
 (StartupViewController apps); an XML screen is addressed by its resource
 path, as in the editor. Without --shot, one snapshot of the whole screen
 is taken. Output goes to --out (default build/captures/<app>/<label>.png).
@@ -75,6 +79,34 @@ def wait_for(server, name, timeout):
             return
         time.sleep(0.2)
     raise RuntimeError(f'{name} did not appear within {timeout} s')
+
+
+def resolve(server, path):
+    """Expands `doc/**/NAME` (NAME may be a glob) to the full path of the
+    first matching node in the document's tree; other paths pass through."""
+    if '/**/' not in path:
+        return path
+    doc, _, pattern = path.partition('/**/')
+    response = server.request(f'get/scene-hierarchy/{quote_path(doc)}')
+    if response.get('status') != 'success':
+        raise RuntimeError(f'{doc}: {(response.text or "").strip()}')
+
+    def search(element, trail):
+        for child in element:
+            name = child.get('name') or ''
+            here = trail + [name]
+            if fnmatch.fnmatchcase(name, pattern):
+                return here
+            found = search(child, here)
+            if found:
+                return found
+        return None
+
+    roots = list(response)
+    found = search(roots[0], []) if roots else None
+    if not found:
+        raise RuntimeError(f'No node matches {path}')
+    return '/'.join([doc] + found)
 
 
 def read_png(path):
@@ -143,9 +175,10 @@ def write_strip(paths, out, gap=16):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('app', help='Project folder, e.g. apps/Fishing')
-    parser.add_argument('--shot', action='append', default=[], metavar='LABEL[=PATH?Prop=value&...]',
-                        help='Set properties on a node, then snapshot (repeatable)')
+    parser.add_argument('app', help='Project folder, e.g. apps/Weather')
+    parser.add_argument('--shot', action='append', default=[], metavar='LABEL[=STEP;STEP...]',
+                        help='Run steps (PATH?Prop=value, PATH!Message, or a node glob to wait for), '
+                             'then snapshot (repeatable)')
     parser.add_argument('--wait', metavar='NAME', help='Wait until a node whose name matches this glob exists')
     parser.add_argument('--timeout', type=float, default=30, help='Seconds to wait for --wait (default 30)')
     parser.add_argument('--settle', type=float, default=0.6, help='Seconds to let a change animate (default 0.6)')
@@ -173,11 +206,19 @@ def main():
             wait_for(server, args.wait, args.timeout)
         for shot in args.shot or ['screen']:
             label, _, setter = shot.partition('=')
-            if setter:
-                path, _, query = setter.partition('?')
-                response = server.request(f'put/node/{quote_path(path)}?{query}')
+            for step in filter(None, setter.split(';')):
+                if '?' in step:
+                    path, _, query = step.partition('?')
+                    line = f'put/node/{quote_path(resolve(server, path))}?{query}'
+                elif '!' in step:
+                    path, _, message = step.partition('!')
+                    line = f'post/message/{quote_path(resolve(server, path))}?name={urllib.parse.quote(message)}'
+                else:
+                    wait_for(server, step, args.timeout)
+                    continue
+                response = server.request(line)
                 if response.get('status') != 'success':
-                    raise RuntimeError(f'{label}: {path}: {(response.text or "").strip()}')
+                    raise RuntimeError(f'{label}: {step}: {(response.text or "").strip()}')
                 time.sleep(args.settle)
             file = out / f'{label}.png'
             response = server.request(f'get/snapshot/app?width={width}&height={height}&file={urllib.parse.quote(str(file))}')

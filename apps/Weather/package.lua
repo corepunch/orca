@@ -1,16 +1,13 @@
--- Weather: the everyday profile over the shared weather kit (../WeatherKit).
--- Fishing, Surf and the other activity apps are siblings of this one.
+-- Weather: one forecast per place, read by every activity that fits it
+-- (outdoors, fishing, surf, sailing, hiking, garden, stars). See README.md.
 Name = "Weather"
 StartupViewController = "Weather/App"
 StartupRoute = "/"
 WindowWidth = 390
 WindowHeight = 844
-ProjectReferences = {
-    { Name = "WeatherKit", Path = "../WeatherKit" },
-}
 EnginePlugins = { { Name = "orca.UIKit" } }
 ThemeLibrary = {
-    { Key = "accent", Value = "#0050EF" },
+    { Key = "accent", Value = "#1BA1E2" },
 }
 SystemMessages = {
     { Message = "WindowClosed", Command = "return" },

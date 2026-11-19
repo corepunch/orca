@@ -1,10 +1,11 @@
 # Weather: one app for every activity (design proposal)
 
-Status: **proposal, not built.** Today there are seven apps on
-[WeatherKit](../WeatherKit/README.md): Weather, Fishing, Surf, Sailing,
-Hiking, Garden and Stargazing. This document describes merging them into
-one Windows Phone–style weather app, and records the references behind
-that design. Historical facts, other apps' patterns and our own decisions
+Status: **built** (place hub, good for, activity pages, places). Live tiles,
+choosing which activities to follow, the hourly traffic-light row and units
+are not built yet. The seven single-activity apps that came before
+(Weather, Fishing, Surf, Sailing, Hiking, Garden, Stargazing on a shared
+WeatherKit) were folded into this one app. This document records the
+references behind the design. Historical facts, other apps' patterns and our own decisions
 are kept apart.
 
 ## References
@@ -86,7 +87,7 @@ Places (Pivot, as in Amazing Weather)   ← swipe: Lake Tahoe · Ocean Beach · 
      good for       one row per followed activity: verdict + best window   → tap
      hourly · week  everyday weather
  └─ Activity page (separate page, Back returns)
-     Pivot: now · hourly · week · conditions   (today's WeatherKit panorama, ≤ 4 items)
+     Pivot: now · hourly · week · conditions   (≤ 4 items)
 ```
 
 **Recommendation:** use one Panorama per place, with the places as a list or

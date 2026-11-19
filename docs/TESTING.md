@@ -51,6 +51,23 @@ process connection and nested XML data against a rendered local project, includi
 structural edits, filters and project-file changes. It requires a renderer and
 stays outside `test-headless`.
 
+## Screenshots of a running app
+
+`tools/capture.py` runs an app offscreen in server mode, once, and saves PNG
+snapshots driven from outside: it waits for a node (a glob, such as a data
+row), sets properties between shots and can stitch the shots into a strip.
+
+```bash
+P=app/HubPage/HubPanorama
+python3 tools/capture.py apps/Weather --wait 'Now*' \
+    --shot "now=$P?SelectedIndex=0" --shot "hourly=$P?SelectedIndex=1" \
+    --strip build/captures/Weather.png
+```
+
+Snapshots render at the package's window size in points (1x). They show the
+app's real data, so a networked app needs its service; headless assertions
+stay the regression check.
+
 ## Editor Preview startup
 
 `make test-startup-render-mode` checks the shared startup policy for both screen

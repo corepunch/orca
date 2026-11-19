@@ -1,0 +1,38 @@
+<!-- One activity at one place over Data/Activity.xml: a Pivot of four views
+     (the WP limit) with a back button. The app titles it "fishing · lake
+     tahoe" and gives the page the activity's class for its accent. -->
+<Grid Name="ActivityPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+  <Pivot Name="ActivityPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
+         ContentInsetAdjustment="Always" class="wx-ink">
+    <PivotItem Name="VerdictSection" Header="now">
+      <StackView Name="VerdictBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+        <Grid Name="ReportLoading" Height="96" IgnoreHitTest="true">
+          <BindingExpression Target="Visible">AND({DataContext/Report/ShowLoading}, NOT({DataContext/Report/HasItems}))</BindingExpression>
+          <ActivityIndicator class="wx-dim"/>
+        </Grid>
+        <StackView Name="ReportFailed" Visible="{Binding DataContext/Report/ShowError}" Spacing="8" JustifyContent="Start">
+          <TextBlock Name="ReportError" Text="{Binding DataContext/Report/ErrorMessage}" FontSize="18" WordWrap="true"
+                     class="wx-poor" IgnoreHitTest="true"/>
+          <Button Name="RetryReport" Click="Report.Retry" Height="44" BorderWidth="0" FontSize="20"
+                  TextHorizontalAlignment="Left" class="wx-link">try again</Button>
+        </StackView>
+        <ItemsStack Name="VerdictItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Now"
+                    ItemsSource="{Binding DataContext/Now/Items}" ItemTemplate="Weather/Templates/VerdictCard"/>
+        <ItemsStack Name="ReasonItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="Reason"
+                    ItemsSource="{Binding DataContext/Reasons/Items}" ItemTemplate="Weather/Templates/ReasonRow"/>
+      </StackView>
+    </PivotItem>
+    <PivotItem Name="ActivityHours" Header="hourly">
+      <ItemsStack Name="HourItems" Spacing="6" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Hour"
+                  ItemsSource="{Binding DataContext/Hours/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+    </PivotItem>
+    <PivotItem Name="ActivityDays" Header="week">
+      <ItemsStack Name="DayItems" Spacing="10" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Day"
+                  ItemsSource="{Binding DataContext/Days/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+    </PivotItem>
+    <PivotItem Name="ActivityConditions" Header="conditions">
+      <ItemsStack Name="ConditionItems" Spacing="16" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Condition"
+                  ItemsSource="{Binding DataContext/Conditions/Items}" ItemTemplate="Weather/Templates/MetricRow"/>
+    </PivotItem>
+  </Pivot>
+</Grid>

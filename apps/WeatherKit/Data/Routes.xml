@@ -1,4 +1,0 @@
-<!-- One screen: the forecast panorama. -->
-<Routes>
-  <Route Path="/" Name="ForecastPage" Page="WeatherKit/Pages/Forecast" Scope="WeatherKit/Data/Forecast.xml"/>
-</Routes>

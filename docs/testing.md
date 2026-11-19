@@ -58,10 +58,10 @@ snapshots driven from outside: it waits for a node (a glob, such as a data
 row), sets properties between shots and can stitch the shots into a strip.
 
 ```bash
-P=app/ForecastPage/WeatherPanorama
-python3 tools/capture.py apps/Fishing --wait 'Now*' \
+P=app/HubPage/HubPanorama
+python3 tools/capture.py apps/Weather --wait 'Now*' \
     --shot "now=$P?SelectedIndex=0" --shot "hourly=$P?SelectedIndex=1" \
-    --strip build/captures/Fishing.png
+    --strip build/captures/Weather.png
 ```
 
 Snapshots render at the package's window size in points (1x). They show the

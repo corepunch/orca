@@ -1808,6 +1808,17 @@ SV_CMD(GET, snapshot)
   return ok ? NULL : "Can't write snapshot";
 }
 
+/* post/message/<path>?name=Node.LeftButtonUp: queue a message on a node, as
+   Lua's node:post(name) and a real tap do, so tools can drive an app. */
+void OBJ_post(lua_State* L, struct Object *self, lpcString_t message);
+SV_CMD(POST, message)
+{
+  REQUIRE(struct Object *, object, find_object(L, endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(lpcString_t, name, SV_ARG("name"), "Missing `name` argument");
+  OBJ_post(L, object, name);
+  return NULL;
+}
+
 static xmlNodePtr
 child_named(xmlNodePtr parent, lpcString_t name, size_t len)
 {
@@ -2072,6 +2083,7 @@ struct {
   { "duplicate/", ROUTE(POST, duplicate) },
   { "layout/", ROUTE(GET, layout) },
   { "snapshot/", ROUTE(GET, snapshot) },
+  { "message/", ROUTE(POST, message) },
 };
 
 /* Return the next request line from stdin, keeping partial reads and any
