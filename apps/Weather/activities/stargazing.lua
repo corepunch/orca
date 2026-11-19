@@ -73,4 +73,10 @@ function Stargazing.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Stargazing.charts = {
+    { title = "clouds %", kind = "column", min = 0, max = 100, value = function(hour) return hour.cloud or 0 end },
+    { title = "humidity %", kind = "line", min = 0, max = 100, value = function(hour) return hour.humidity or 0 end },
+}
+
 return Stargazing

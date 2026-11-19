@@ -26,6 +26,13 @@
 .fair .wx-tone { color: #f0a30a; }
 .poor .wx-tone { color: #e51400; }
 
+/* Charts: gridlines take the chart's colour at 20% opacity, labels are dim,
+   the first series is in the accent and a second one white. */
+.wx-chart { color: #ffffff; }
+.chart-label { color: #9a9a9a; }
+.wx-series { color: var(--accent); }
+.wx-series-2 { color: #ffffff; }
+
 /* An activity page carries its activity's class (Lua sets it); its accent
    replaces the app accent. Keep in step with activities.lua. */
 .outdoors .wx-accent { color: #1BA1E2; }
@@ -33,33 +40,40 @@
 .outdoors .good .wx-tile { background-color: #1BA1E2; }
 .outdoors .good .wx-bar { background-color: #1BA1E2; }
 .outdoors .good .wx-tone { color: #1BA1E2; }
+.outdoors .wx-series { color: #1BA1E2; }
 .fishing .wx-accent { color: #60A917; }
 .fishing .wx-link { color: #60A917; }
 .fishing .good .wx-tile { background-color: #60A917; }
 .fishing .good .wx-bar { background-color: #60A917; }
 .fishing .good .wx-tone { color: #60A917; }
+.fishing .wx-series { color: #60A917; }
 .surf .wx-accent { color: #00ABA9; }
 .surf .wx-link { color: #00ABA9; }
 .surf .good .wx-tile { background-color: #00ABA9; }
 .surf .good .wx-bar { background-color: #00ABA9; }
 .surf .good .wx-tone { color: #00ABA9; }
+.surf .wx-series { color: #00ABA9; }
 .sailing .wx-accent { color: #6A00FF; }
 .sailing .wx-link { color: #6A00FF; }
 .sailing .good .wx-tile { background-color: #6A00FF; }
 .sailing .good .wx-bar { background-color: #6A00FF; }
 .sailing .good .wx-tone { color: #6A00FF; }
+.sailing .wx-series { color: #6A00FF; }
 .hiking .wx-accent { color: #C46A2B; }
 .hiking .wx-link { color: #C46A2B; }
 .hiking .good .wx-tile { background-color: #C46A2B; }
 .hiking .good .wx-bar { background-color: #C46A2B; }
 .hiking .good .wx-tone { color: #C46A2B; }
+.hiking .wx-series { color: #C46A2B; }
 .garden .wx-accent { color: #008A00; }
 .garden .wx-link { color: #008A00; }
 .garden .good .wx-tile { background-color: #008A00; }
 .garden .good .wx-bar { background-color: #008A00; }
 .garden .good .wx-tone { color: #008A00; }
+.garden .wx-series { color: #008A00; }
 .stargazing .wx-accent { color: #AA00FF; }
 .stargazing .wx-link { color: #AA00FF; }
 .stargazing .good .wx-tile { background-color: #AA00FF; }
 .stargazing .good .wx-bar { background-color: #AA00FF; }
 .stargazing .good .wx-tone { color: #AA00FF; }
+.stargazing .wx-series { color: #AA00FF; }

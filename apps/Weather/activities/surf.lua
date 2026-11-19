@@ -87,4 +87,10 @@ function Surf.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Surf.charts = {
+    { title = "swell m", kind = "column", value = function(hour) return hour.swellHeight or hour.waveHeight or 0 end },
+    { title = "wind m/s", kind = "line", value = function(hour) return hour.wind or 0 end },
+}
+
 return Surf

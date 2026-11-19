@@ -21,5 +21,11 @@
     <Column Name="ScoreText" Type="string" Computed="scoreText" DependsOn="Score" Description="The score as shown, 0 to 100."/>
     <Column Name="Icon" Type="string" Source="icon" Default=""/>
     <Column Name="Activity" Type="string" Source="activity" Default="" Description="The activity a row opens."/>
+    <Column Name="Short" Type="string" Source="short" Default="" Description="A short category label for charts and the verdict band (&quot;06&quot;); empty between ticks."/>
+    <Column Name="Temp" Type="float" Source="temp" Default="0" Description="Air temperature, °C, for charts."/>
+    <Column Name="Wind" Type="float" Source="wind" Default="0" Description="Wind, m/s, for charts."/>
+    <Column Name="RainChance" Type="float" Source="rain_chance" Default="0" Description="Chance of rain, %, for charts."/>
+    <Column Name="Metric1" Type="float" Source="metric1" Default="0" Description="The activity's first chart value."/>
+    <Column Name="Metric2" Type="float" Source="metric2" Default="0" Description="The activity's second chart value."/>
   </Entity>
 </Schema>

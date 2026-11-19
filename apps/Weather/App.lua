@@ -57,8 +57,25 @@ local App = Application:extend {
         self.activityScope = scope
         page.StateClasses = self.activity.id
         page:findChild("ActivityPivot", true).Title = self.activity.title .. " · " .. self.place.title
+        self:configureCharts(page, self.activity.charts or {})
         scope:activate()
         return self:screenFor(page)
+    end,
+
+    -- The "today" charts follow the activity: a title, columns or a line,
+    -- and an optional fixed range (percentages run 0 to 100).
+    configureCharts = function(self, page, charts)
+        for index, name in ipairs { "A", "B" } do
+            local spec, chart = charts[index], page:findChild("Chart" .. name, true)
+            chart.Visible = spec ~= nil
+            if spec then
+                local columns, line = chart:findChild("Chart" .. name .. "Columns"), chart:findChild("Chart" .. name .. "Line")
+                columns.Visible, line.Visible = spec.kind ~= "line", spec.kind == "line"
+                local shown = spec.kind == "line" and line or columns
+                shown.Title = spec.title
+                chart.Minimum, chart.Maximum = spec.min or 0 / 0, spec.max or 0 / 0
+            end
+        end
     end,
 
     selectedPlace = function(self)

@@ -267,8 +267,15 @@ check(text("GoodFortahoe:activity:fishing", "ActivityName") == "fishing"
     .. text("GoodFortahoe:activity:fishing", "ActivityWhy"))
 check(text("GoodFortahoe:activity:stargazing", "ActivityWhy"):find("^best 19") ~= nil,
     "Stars wait for tonight: " .. text("GoodFortahoe:activity:stargazing", "ActivityWhy"))
-check(text("Hourtahoe:hour:2026-11-18T06:00", "When") == "now" and find("Hourtahoe:hour:2026-11-19T05:00"),
-    "Twenty-four hours from now")
+-- Hourly is charts first, as in Amazing Weather: temperature with wind, then rain.
+local hourRows = app.hubScope:member("Hours").items:count()
+check(hourRows == 24, "The hourly charts plot twenty-four hours: " .. hourRows)
+check(find("TempChart").CategoryPath == "Short" and find("TempColumns").ValuePath == "Temp"
+    and find("WindLine").ValuePath == "Wind" and find("RainChart").Maximum == 100, "Hub charts plot temperature, wind and rain")
+local tickRow = app.store:get("WeatherRow", "tahoe:hour:2026-11-18T06:00")
+check(tickRow and tickRow.values.Short == "06" and tickRow.values.Temp == 10 and tickRow.values.RainChance == 10,
+    "Hour rows carry chart numbers and a tick every three hours")
+check(app.store:get("WeatherRow", "tahoe:hour:2026-11-18T07:00").values.Short == "", "No tick between")
 check(text("Daytahoe:day:2026-11-20", "Verdict") == "11° / 7°" or text("Daytahoe:day:2026-11-20", "Verdict"):find("/"),
     "Days show high and low")
 check(text("Daytahoe:day:2026-11-19", "Why"):find(" for ") ~= nil, "Days name their best activity: "
@@ -287,11 +294,22 @@ check(math.abs(tile.R - 0x60 / 255) < 0.02 and math.abs(tile.G - 0xA9 / 255) < 0
 check(text("Reasontahoe:fishing:reason:1", "ReasonText"):find("Dawn"), "Reasons list why")
 check(text("Daytahoe:fishing:day:2026-11-20", "Verdict") == "poor", "A thunderstorm day is poor fishing")
 check(text("Conditiontahoe:fishing:metric:1", "MetricValue") == "1018 hPa", "Conditions show pressure")
+-- Today: a 24-hour verdict band and the two charts fishing watches.
+check(find("Bandtahoe:fishing:hour:2026-11-18T06:00").StateClasses == "good"
+    and find("Bandtahoe:fishing:hour:2026-11-19T05:00"), "The band colours twenty-four hours by verdict")
+check(find("ChartALine").Visible and not find("ChartAColumns").Visible and find("ChartALine").Title == "pressure hPa",
+    "Fishing charts pressure as a line")
+check(find("ChartBColumns").Visible and find("ChartBColumns").Title == "wind m/s", "and wind as columns")
+local fishingHour = app.store:get("WeatherRow", "tahoe:fishing:hour:2026-11-18T06:00")
+check(fishingHour and math.abs(fishingHour.values.Metric1 - 1018.2) < 0.01 and fishingHour.values.Metric2 == 3,
+    "Hour rows carry the activity's chart values")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
 check(app.screen == hub and not app.activityScope, "Back returns to the same hub and closes the activity")
 press("GoodFortahoe:activity:stargazing")
 check(text("Nowtahoe:stargazing:now:now", "NowSpot") == "Lake Tahoe · from 19:00", "The stars card shows tonight")
+check(find("ChartA").Minimum == 0 and find("ChartA").Maximum == 100 and find("ChartAColumns").Title == "clouds %",
+    "Percent charts run from 0 to 100")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
 

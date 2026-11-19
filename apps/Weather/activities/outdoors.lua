@@ -48,4 +48,10 @@ function Weather.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Weather.charts = {
+    { title = "temperature °C", kind = "column", value = function(hour) return hour.temp or 0 end },
+    { title = "chance of rain %", kind = "column", min = 0, max = 100, value = function(hour) return hour.rainChance or 0 end },
+}
+
 return Weather

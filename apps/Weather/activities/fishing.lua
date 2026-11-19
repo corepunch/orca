@@ -74,4 +74,10 @@ function Fishing.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Fishing.charts = {
+    { title = "pressure hPa", kind = "line", value = function(hour) return hour.pressure or 0 end },
+    { title = "wind m/s", kind = "column", value = function(hour) return hour.wind or 0 end },
+}
+
 return Fishing

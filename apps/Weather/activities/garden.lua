@@ -82,4 +82,10 @@ function Garden.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Garden.charts = {
+    { title = "air °C", kind = "line", value = function(hour) return hour.temp or 0 end },
+    { title = "rain mm", kind = "column", min = 0, value = function(hour) return hour.rain or 0 end },
+}
+
 return Garden

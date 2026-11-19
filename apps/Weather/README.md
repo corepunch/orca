@@ -26,17 +26,21 @@ activity is a lens over the same forecast: it rates every hour **good**,
 - **good for**: one row per activity that fits the place. Each row shows its
   verdict in colour and its best window today, or tomorrow once today's has
   passed, with the reason that matters most. Tap a row to open that activity.
-- **hourly**: the next 24 hours.
+- **hourly**: charts first, as in Amazing Weather: the next 24 hours of
+  temperature (columns) with wind (a line), then the chance of rain.
 - **week**: every day, with its best activity and window.
 - **places**: tap one to see its hub from the start.
 
 **An activity page** (`Pages/Activity.xml`) is a Pivot titled "fishing · lake
 tahoe", with four views:
 
-- **now**: a verdict tile with the score, plus the reasons;
-- **hourly**;
-- **week**: each day's best window;
-- **conditions**: the readings the activity watches.
+- **now**: a verdict tile with the score, the reasons, then the conditions the
+  activity watches;
+- **today**: a 24-hour verdict band (one cell per hour in its tone) and the
+  two charts the activity names in `charts` (pressure and wind for fishing,
+  swell and wind for surf, clouds and humidity for stars);
+- **hourly**: the hour-by-hour list, one swipe further, as in Amazing Weather;
+- **week**: each day's best window.
 
 Tap the title line or swipe in from the left edge to go back. The page uses
 the activity's accent colour.
@@ -74,8 +78,9 @@ fetch the marine forecast. If that request fails, the rest still shows.
    - Call `card:add(points, "the reason a person would give")` for each rule.
    - Call `card:cap(limit, reason)` for anything that rules the hour out,
      such as lightning or the dark.
-2. Write `note(hour)` (the line under each hour) and `metrics(hour, forecast)`
-   (the conditions view). `Report.pressure`, `Report.wind`, `Report.sun` and
+2. Write `note(hour)` (the line under each hour), `metrics(hour, forecast)`
+   (the conditions) and `charts`: two `{ title, kind = "line" | "column",
+   min, max, value = function(hour) }` for the "today" view. `Report.pressure`, `Report.wind`, `Report.sun` and
    `Report.moon` are ready-made.
 3. Optional:
    - `needsMarine` adds the sea fields to each hour: `swellHeight`,

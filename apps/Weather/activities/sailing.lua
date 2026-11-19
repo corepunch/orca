@@ -73,4 +73,10 @@ function Sailing.metrics(hour, forecast)
     }
 end
 
+-- The two charts on the activity's "today" view, over the next 24 hours.
+Sailing.charts = {
+    { title = "wind m/s", kind = "column", value = function(hour) return hour.wind or 0 end },
+    { title = "gusts m/s", kind = "line", value = function(hour) return hour.gust or 0 end },
+}
+
 return Sailing

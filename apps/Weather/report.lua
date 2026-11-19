@@ -87,10 +87,13 @@ function Report.rows(activity, place, forecast)
     for index = forecast.now, math.min(#hours, forecast.now + HOURS_SHOWN - 1) do
         local hour = hours[index]
         local rated = rate(activity, hour, forecast)
+        local charts = activity.charts or {}
         add("hour", hour.time, {
             title = index == forecast.now and "now" or Sky.clock(hour.time), value = rated.word,
             detail = activity.note(hour, forecast), score = rated.score, tone = rated.verdict,
-            icon = Sky.icon(hour.code, hour.isDay),
+            icon = Sky.icon(hour.code, hour.isDay), short = Report.tick(hour),
+            metric1 = charts[1] and charts[1].value(hour, forecast) or 0,
+            metric2 = charts[2] and charts[2].value(hour, forecast) or 0,
         })
     end
     for _, day in ipairs(forecast.days) do
@@ -169,6 +172,7 @@ function Report.hub(place, forecast, activities)
     for index = forecast.now, math.min(#hours, forecast.now + HOURS_SHOWN - 1) do
         local hour = hours[index]
         add("hour", hour.time, {
+            short = Report.tick(hour), temp = hour.temp or 0, wind = hour.wind or 0, rain_chance = hour.rainChance or 0,
             title = index == forecast.now and "now" or Sky.clock(hour.time), value = Score.fmt(hour.temp, "°"),
             detail = ("%s · rain %s · wind %s"):format(Sky.describe(hour.code), Score.fmt(hour.rainChance, "%"),
                 Score.fmt(hour.wind, " m/s")),
@@ -191,6 +195,12 @@ function Report.hub(place, forecast, activities)
         })
     end
     return rows
+end
+
+-- The hour as a chart tick ("06") every three hours, empty between.
+function Report.tick(hour)
+    local h = Sky.hour(hour.time)
+    return h and h % 3 == 0 and hour.time:sub(12, 13) or ""
 end
 
 -- Conditions most activities show: pressure and its trend, sun times, the moon.

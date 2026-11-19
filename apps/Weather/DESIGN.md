@@ -1,8 +1,8 @@
 # Weather: one app for every activity (design proposal)
 
-Status: **built** (place hub, good for, activity pages, places). Live tiles,
-choosing which activities to follow, the hourly traffic-light row and units
-are not built yet. The seven single-activity apps that came before
+Status: **built** (place hub, good for, activity pages, places, charts first
+for hourly, a verdict band per activity). Live tiles, choosing which
+activities to follow and units are not built yet. The seven single-activity apps that came before
 (Weather, Fishing, Surf, Sailing, Hiking, Garden, Stargazing on a shared
 WeatherKit) were folded into this one app. This document records the
 references behind the design. Historical facts, other apps' patterns and our own decisions
