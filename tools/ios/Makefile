@@ -19,6 +19,8 @@ BUNDLE_ID ?= org.orca.chat
 DISPLAY_NAME ?= ORCA Chat
 DEVICE ?=
 DEVICE_TYPE ?= iPhone
+# EDITION=<key> bundles one of the project's package.lua `Editions`.
+EDITION ?=
 TEAM ?=
 PROFILE ?=
 BUILD_DIR ?= build/ios
@@ -106,7 +108,7 @@ $(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(
 	@echo "  LD      $(@F)"
 	$(Q)$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
 app: $(ROOT)/Orca
-	$(Q)python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)"
+	$(Q)python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)" $(if $(EDITION),--edition "$(EDITION)")
 ifeq ($(SDK),iphonesimulator)
 	$(Q)python3 tools/ios/sign.py --simulator "$(BUNDLE)"
 endif

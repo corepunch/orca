@@ -1,8 +1,11 @@
 -- The places the app forecasts for, and what each is good for. Activities
 -- whose rules need it get the facts: `facing` (degrees from the shore toward
 -- the water) for surf and sailing, `lake` for water without sea swell.
--- "outdoors" applies everywhere and is not listed.
-return {
+-- "outdoors" applies everywhere and is not listed. An edition keeps only
+-- the places that offer its activity.
+local Activities = require "Weather/activities"
+
+local all = {
     { id = "san-francisco", title = "San Francisco", region = "California", lat = 37.7749, lon = -122.4194,
         activities = { "garden" } },
     { id = "ocean-beach", title = "Ocean Beach", region = "San Francisco", lat = 37.76, lon = -122.52, facing = 270,
@@ -61,3 +64,12 @@ return {
     { id = "atacama", title = "San Pedro de Atacama", region = "Chile", lat = -22.91, lon = -68.20,
         activities = { "stargazing" } },
 }
+
+if not Activities.edition then return all end
+local places = {}
+for _, place in ipairs(all) do
+    for _, id in ipairs(place.activities or {}) do
+        if id == Activities.edition then places[#places + 1] = place; break end
+    end
+end
+return places

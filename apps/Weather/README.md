@@ -115,6 +115,24 @@ build/bin/orca apps/Weather
 make test-weather
 ```
 
+### Editions: one app per activity
+
+The same source also builds as a single-activity app. An edition keeps
+everyday "outdoors" and its activity, only the places that offer it, and the
+activity's accent on the hub. `package.lua` lists the editions under
+`Editions`: fishing, surf, sailing, hiking, garden and stargazing.
+
+```bash
+make iphone APP=weather EDITION=surf     # "Surfers' Weather", org.orca.weather.surf
+make ipad APP=weather EDITION=fishing    # "Fishers' Weather"
+ORCA_EDITION=surf build/bin/orca apps/Weather
+```
+
+The iOS bundler checks the key against `Editions`, writes `build.lua` into
+the bundled project and names the app after the edition. Each edition has its
+own bundle id, so it installs beside the full app. Without `EDITION`, every
+activity is in.
+
 `make test-weather` runs `build/bin/orca -test=tests/test_weather.lua`.
 
 ```bash

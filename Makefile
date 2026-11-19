@@ -478,7 +478,7 @@ endif
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
 # APP=<name> selects apps/<name>; without it, tools/ios/Makefile builds Chat.
 .PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools android
-IOS_APP = $(if $(APP),PROJECT="$(or $(PROJECT),apps/$(APP))" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$(APP))" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $(APP))")
+IOS_APP = $(if $(APP),PROJECT="$(or $(PROJECT),apps/$(APP))" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$(APP)$(if $(EDITION),.$(EDITION)))" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $(APP))")
 ios:
 	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos $(IOS_APP) app
 
@@ -504,12 +504,13 @@ android:
 
 %-ios: ios-deploy-force
 	@test -f "$(or $(PROJECT),apps/$*)/package.lua" || { echo 'Expected an ORCA project at $(or $(PROJECT),apps/$*); set PROJECT=<directory> containing package.lua.'; exit 1; }
-	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*)" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
+	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile SDK=iphoneos PROJECT="$(or $(PROJECT),apps/$*)" BUNDLE_ID="$(or $(BUNDLE_ID),org.orca.$*$(if $(EDITION),.$(EDITION)))" DISPLAY_NAME="$(or $(DISPLAY_NAME),ORCA $*)" EDITION="$(EDITION)" DEVICE_TYPE="$(or $(DEVICE_TYPE),auto)" install
 
 ios-devices:
 	$(Q)$(MAKE) --no-print-directory -f tools/ios/Makefile list-devices
 
 # make iphone|ipad APP=<name>: build, sign, install and launch apps/<name>
+# (EDITION=<key> for one of its package.lua `Editions`, e.g. APP=weather EDITION=surf)
 # on your device named by IPHONE_DEVICE or IPAD_DEVICE (UDID or name, e.g.
 # exported in ~/.zshrc). DEVICE=<UDID-or-name> overrides it.
 .PHONY: iphone ipad

@@ -20,7 +20,7 @@ def load_tool(name):
     return module
 
 
-deploy, sign = load_tool('deploy'), load_tool('sign')
+deploy, sign, bundle = load_tool('deploy'), load_tool('sign'), load_tool('bundle')
 
 
 def physical_device(identifier, kind='iPhone', reality='physical', name=None):
@@ -328,6 +328,22 @@ class BundleTests(unittest.TestCase):
                 self.assertFalse(target.exists())
         self.assertTrue((self.project / 'package.lua').is_file())
         self.assertTrue((self.root / 'share/orca/startup.lua').is_file())
+
+
+class EditionTests(unittest.TestCase):
+    def test_weather_declares_an_edition_per_activity(self):
+        names = bundle.editions(ROOT / 'apps/weather')
+        self.assertEqual(names['surf'], "Surfers' Weather")
+        self.assertEqual(names['fishing'], "Fishers' Weather")
+        for key in names:
+            self.assertTrue((ROOT / 'apps/weather/activities' / (key + '.lua')).is_file(), key)
+
+    def test_stamp_writes_build_lua_and_rejects_unknown_editions(self):
+        with tempfile.TemporaryDirectory() as target:
+            self.assertEqual(bundle.stamp_edition(ROOT / 'apps/weather', target, 'surf'), "Surfers' Weather")
+            self.assertIn('edition = "surf"', (Path(target) / 'build.lua').read_text())
+            with self.assertRaises(ValueError):
+                bundle.stamp_edition(ROOT / 'apps/weather', target, 'bowling')
 
 
 if __name__ == '__main__':

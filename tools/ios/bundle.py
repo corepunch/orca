@@ -83,6 +83,23 @@ def url_schemes(project):
     return schemes
 
 
+def editions(project):
+    """{key: name} from a literal `Editions = { { Key = "k", Name = "n" }, ... }` in package.lua."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^Editions\s*=\s*\{(.*?)^\}', package.read_text() if package.is_file() else '',
+                      re.MULTILINE | re.DOTALL)
+    return dict(re.findall(r'Key\s*=\s*"([a-z0-9-]+)"\s*,\s*Name\s*=\s*"([^"]+)"', match[1])) if match else {}
+
+
+def stamp_edition(project, target, key):
+    """Write <target>/build.lua naming the edition; return its display name."""
+    names = editions(project)
+    if key not in names:
+        raise ValueError('Unknown edition ' + repr(key) + '; package.lua declares: ' + (', '.join(names) or 'none'))
+    (Path(target) / 'build.lua').write_text('-- Written by tools/ios/bundle.py --edition.\nreturn { edition = "%s" }\n' % key)
+    return names[key]
+
+
 def url_types(project):
     """CFBundleURLTypes for links the application opens, such as sign-in callbacks."""
     schemes = url_schemes(project)
@@ -112,6 +129,7 @@ def main():
     parser.add_argument('--sdk', choices=('iphoneos', 'iphonesimulator'), required=True)
     for name in ('identifier', 'minimum', 'display-name'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--edition', help='an `Editions` key from package.lua; its Name becomes the display name')
     args = parser.parse_args()
     project = args.project.resolve()
     if not project.is_dir() or not (project / 'package.lua').is_file():
@@ -132,13 +150,14 @@ def main():
     shutil.copy2(binary, bundle / 'Orca')
     shutil.copytree(share, bundle / 'share', ignore=resource_filter)
     copy_project(project, bundle / 'project')
+    display_name = stamp_edition(project, bundle / 'project', args.edition) if args.edition else args.display_name
     if (project / 'PrivacyInfo.xcprivacy').is_file():
         shutil.copy2(project / 'PrivacyInfo.xcprivacy', bundle / 'PrivacyInfo.xcprivacy')
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
                     'UIInterfaceOrientationLandscapeRight']
     info = {
         'CFBundleIdentifier': args.identifier, 'CFBundleExecutable': 'Orca',
-        'CFBundleName': args.display_name, 'CFBundleDisplayName': args.display_name,
+        'CFBundleName': display_name, 'CFBundleDisplayName': display_name,
         'CFBundleDevelopmentRegion': 'en', 'CFBundleInfoDictionaryVersion': '6.0',
         'CFBundlePackageType': 'APPL', 'CFBundleShortVersionString': '1.0', 'CFBundleVersion': '1',
         'UIDeviceFamily': [1, 2], 'MinimumOSVersion': args.minimum,

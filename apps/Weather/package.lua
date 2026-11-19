@@ -5,6 +5,16 @@ StartupViewController = "Weather/App"
 StartupRoute = "/"
 WindowWidth = 390
 WindowHeight = 844
+-- One-activity builds: make iphone APP=weather EDITION=surf installs
+-- "Surfers' Weather" as org.orca.weather.surf (see activities.lua).
+Editions = {
+    { Key = "fishing", Name = "Fishers' Weather" },
+    { Key = "surf", Name = "Surfers' Weather" },
+    { Key = "sailing", Name = "Sailors' Weather" },
+    { Key = "hiking", Name = "Hikers' Weather" },
+    { Key = "garden", Name = "Gardeners' Weather" },
+    { Key = "stargazing", Name = "Stargazers' Weather" },
+}
 EnginePlugins = { { Name = "orca.UIKit" } }
 ThemeLibrary = {
     { Key = "accent", Value = "#1BA1E2" },

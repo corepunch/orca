@@ -352,5 +352,22 @@ for _, place in ipairs(Places) do
     end
 end
 
+-- An edition (EDITION=surf bundles Weather/build.lua) keeps everyday
+-- outdoors and its activity, at the places that offer it.
+local MODULES = { "Weather/build", "Weather/activities", "Weather/places" }
+local saved = {}
+for _, name in ipairs(MODULES) do saved[name] = package.loaded[name]; package.loaded[name] = nil end
+package.loaded["Weather/build"] = { edition = "surf" }
+local SurfActivities, SurfPlaces = require "Weather/activities", require "Weather/places"
+check(SurfActivities.edition == "surf" and #SurfActivities.list == 2 and SurfActivities.list[1].id == "outdoors"
+    and SurfActivities.byId.surf and not SurfActivities.byId.fishing, "A surf edition rates outdoors and surf")
+check(#SurfPlaces > 0 and #SurfPlaces < #Places, "A surf edition keeps fewer places")
+for _, place in ipairs(SurfPlaces) do
+    local ids = {}
+    for _, activity in ipairs(SurfActivities.at(place)) do ids[#ids + 1] = activity.id end
+    check(table.concat(ids, ",") == "outdoors,surf", place.id .. " offers surf in the surf edition")
+end
+for _, name in ipairs(MODULES) do package.loaded[name] = saved[name] end
+
 orca.async = savedAsync
 print(("PASS: weather (%d checks)"):format(checks))

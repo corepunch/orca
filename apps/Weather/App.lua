@@ -47,6 +47,8 @@ local App = Application:extend {
         if path == "/" then
             if not self.hubScreen then
                 self.hubPage, self.hubScope = self.routes:open("/", self, options)
+                -- An edition's hub wears its activity's accent.
+                if Activities.edition then self.hubPage.StateClasses = Activities.edition end
                 self.hubScreen = self:screenFor(self.hubPage)
             end
             self.hubScope:activate()
