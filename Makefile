@@ -702,6 +702,7 @@ HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
+HEADLESS_LUA_TESTS += test-chart
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
 HEADLESS_LUA_TESTS += test-collection-observers test-message-payload
@@ -788,6 +789,8 @@ $(eval $(call LUA_TEST_RULE,test-encarta,tests/test_encarta.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-weather,tests/test_weather.lua,unite copyshare))
 
 $(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
+.PHONY: test-chart
+$(eval $(call LUA_TEST_RULE,test-chart,tests/test_chart.lua,unite))
 
 .PHONY: test-chat-polling
 test-chat-polling: unite

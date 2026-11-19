@@ -390,6 +390,27 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
   Set `ContentInsetAdjustment="Always"` on an edge-to-edge panorama to keep
   its title below the iPhone safe area. Generated parts carry
   `panorama-title` and `panorama-header`.
+- `Chart` with `LineSeries` and `ColumnSeries` children, after the WPF
+  Toolkit and the Windows Phone toolkit charts. The chart's `ItemsSource`
+  holds one record per category; `CategoryPath` names the field labelled
+  under the plot (WPF's `IndependentValuePath`), and each series'
+  `ValuePath` names its number (`DependentValuePath`). The value axis fits
+  every visible series with 1, 2 or 5 × 10ⁿ intervals, includes zero under
+  columns, and yields to `Minimum`, `Maximum` and `Interval`. Value labels
+  sit on the right and categories underneath, thinned automatically or by
+  `LabelInterval`; a series with a `Title` joins the legend above the plot.
+  Gridlines take the chart's `color` at 20% opacity, each series its own
+  `color`, and generated labels the `chart-label` class. Lines are drawn
+  as rounded strokes `StrokeThickness` wide, so they keep their width on
+  every renderer. `apps/Weather` uses it for its hourly and "today" views:
+
+  ```xml
+  <Chart Height="190" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short">
+    <ColumnSeries ValuePath="Temp" Title="temperature °C" class="wx-series"/>
+    <LineSeries ValuePath="Wind" Title="wind m/s" class="wx-series-2"/>
+  </Chart>
+  ```
+
 - `ApplicationBar` with `ApplicationBarIconButton` (`IconUri`, `Text`,
   `IsEnabled`, `Click`) and `ApplicationBarMenuItem` (`Text`, `IsEnabled`,
   `Click`). Collapsed, it shows plain 28-point glyph buttons, without the

@@ -1079,6 +1079,85 @@
         <field name="_drawnFrame" type="uint32">Engine frame that last drew the dots; the animation stops when the indicator is no longer drawn</field>
       </fields>
     </class>
+    <class name="Chart" parent="Node2D">
+      <summary>Cartesian chart of one or more series over a shared category axis, after the WPF Toolkit and Windows Phone toolkit charts</summary>
+      <details>ItemsSource is a collection of DataObject records, one per category (an hour, a day); CategoryPath names the record field shown under the plot. Authored children are series (LineSeries, ColumnSeries): each reads its ValuePath from the same records and draws in its own Foreground. The chart computes a value axis with round intervals that covers every series, unless Minimum, Maximum or Interval fix it; ColumnSeries always include zero. It draws horizontal gridlines in Foreground at 20% opacity and generates its labels as TextBlocks styled by the "chart-label" class: values on the right, as in Amazing Weather's charts, and categories underneath, thinned by LabelInterval or automatically so they never overlap. Series with a Title add a legend line, a swatch and the title, above the plot. Membership changes in ItemsSource redraw the chart; field changes of retained records show on the next paint. Height defaults to 160 points.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.Destroy"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="DataObject.CollectionChanged"/>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
+        <handle message="Node2D.ForegroundContent"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="ItemsSource" type="DataObject" pointer="true">The records to plot, one per category</property>
+        <property name="CategoryPath" type="string">Record field whose text labels each category along the bottom</property>
+        <property name="Minimum" type="float" default="NAN">Lowest value on the value axis; unset fits the data</property>
+        <property name="Maximum" type="float" default="NAN">Highest value on the value axis; unset fits the data</property>
+        <property name="Interval" type="float" default="NAN">Distance between value gridlines; unset picks 1, 2 or 5 times a power of ten for about four lines</property>
+        <property name="LabelInterval" type="int" default="0">Label every Nth category; 0 picks the smallest step whose labels do not overlap</property>
+        <property name="ShowGridLines" type="bool" default="true">Draw a horizontal line at each value interval</property>
+      </properties>
+      <fields>
+        <field name="_observedSource" type="Object" pointer="true">Owned reference to the collection observed for membership changes</field>
+        <field name="_valueLabels" type="Object" pointer="true" fixed-array="16">Generated value-axis labels, top to bottom</field>
+        <field name="_categoryLabels" type="Object" pointer="true" fixed-array="48">Generated category labels, one per category up to 48</field>
+        <field name="_legendLabels" type="Object" pointer="true" fixed-array="8">Generated legend titles, one per series</field>
+        <field name="_legendX" type="float" fixed-array="8">Left of each legend swatch, from the chart's layout origin</field>
+        <field name="_legendY" type="float" fixed-array="8">Top of each legend swatch, from the chart's layout origin</field>
+        <field name="_min" type="float">Value at the bottom of the plot</field>
+        <field name="_max" type="float">Value at the top of the plot</field>
+        <field name="_step" type="float">Value between gridlines</field>
+        <field name="_count" type="int">Categories in the last layout</field>
+        <field name="_plotLeft" type="float">Plot area, in the chart's coordinates</field>
+        <field name="_plotTop" type="float"/>
+        <field name="_plotWidth" type="float"/>
+        <field name="_plotHeight" type="float"/>
+        <field name="_started" type="bool"/>
+      </fields>
+    </class>
+    <class name="ChartSeries" parent="Node2D">
+      <summary>Base of the series a Chart plots; it is laid over the chart and drawn in its Foreground</summary>
+      <details>A series reads ValuePath from each record of its parent Chart's ItemsSource. Records without a number in that field leave a gap. Title names the series in the chart's legend. Use LineSeries or ColumnSeries.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+      </handles>
+      <properties>
+        <property name="ValuePath" type="string">Numeric (int or float) record field to plot</property>
+        <property name="Title" type="string">Legend text; empty leaves the series out of the legend</property>
+      </properties>
+    </class>
+    <class name="LineSeries" parent="ChartSeries">
+      <summary>Series drawn as a line through the centre of each category</summary>
+      <details>Segments are rounded strokes StrokeThickness points wide, so joins stay smooth at any angle. Markers draw a dot on each value.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node2D.ForegroundContent"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="StrokeThickness" type="float" default="2">Line width in points</property>
+        <property name="ShowMarkers" type="bool" default="false">Draw a dot on each value</property>
+      </properties>
+    </class>
+    <class name="ColumnSeries" parent="ChartSeries">
+      <summary>Series drawn as one column per category, rising from zero or from the axis minimum</summary>
+      <details>Columns take ColumnWidth of each category's width, centred. Several ColumnSeries in one chart overlap; give the later ones a narrower ColumnWidth to show both.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node2D.ForegroundContent"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="ColumnWidth" type="float" default="0.6">Share of each category's width a column fills, 0 to 1</property>
+      </properties>
+    </class>
     <class name="PageControl" parent="Node2D">
       <summary>Row of dots showing how many pages there are and which one is current</summary>
       <details>After UIKit's UIPageControl. Each page is an 8-point dot; the current page is a 24-point pill drawn in Foreground, and the others use PageIndicatorColor, or Foreground at 30% opacity when it is unset. The control measures the row of dots and is 26 points tall, centered in its slot. A tap on the left or right half moves one page toward that side, as do the Left and Right keys; both set CurrentPage, so bind it to a PageHost, a scroll position or any page source. PageControl only shows the position: the pages themselves belong to their own container.</details>
