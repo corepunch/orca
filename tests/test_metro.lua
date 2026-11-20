@@ -586,6 +586,91 @@ local function test_panorama()
   print("PASS: test_panorama")
 end
 
+local function test_panorama_drag_continuity()
+  for _, direction in ipairs { -1, 1 } do
+    for _, firstDelta in ipairs { 12, 15 } do
+      local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+      local panorama = screen + ui.Panorama { Title = "People" }
+      local recent = panorama + ui.PanoramaItem { Header = "Recent" }
+      local clicked = 0
+      local row = recent + ui.Button { Height = 200, Click = function () clicked = clicked + 1 end }
+      local _ = panorama + ui.PanoramaItem { Header = "All" }
+      layout(screen)
+      local start = recent.ActualX
+      local x, y = origin(row)
+      x, y = x + 150, y + 100
+      orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+      for _, distance in ipairs { 1, 5, 11, firstDelta, firstDelta + 1, firstDelta + 2, firstDelta + 1 } do
+        orca.system.dispatchMessage {
+          target = screen, message = "LeftButtonDragged", x = x + direction * distance, y = y,
+        }
+        layout(screen)
+        test.expect_eq(recent.ActualX, start + direction * math.max(distance - 12, 0),
+          "Panorama consumes slop, then follows each point of motion and reversal without a jump")
+      end
+      local beforeRelease = recent.ActualX
+      orca.system.dispatchMessage {
+        target = screen, message = "LeftButtonUp", x = x + direction * (firstDelta + 1), y = y,
+      }
+      layout(screen)
+      test.expect_eq(recent.ActualX, beforeRelease, "Settling starts from the final drag position")
+      pump(screen)
+      layout(screen)
+      test.expect_eq(panorama.SelectedIndex, 0, "A small smooth drag does not change sections")
+      test.expect_eq(recent.ActualX, start, "A small drag settles back to its starting position")
+      test.expect_eq(clicked, 0, "A recognized drag does not click the row")
+      tap(screen, row)
+      test.expect_eq(clicked, 1, "Rows remain tappable after the drag")
+    end
+  end
+  print("PASS: test_panorama_drag_continuity")
+end
+
+local function test_panorama_swipe_threshold()
+  for _, direction in ipairs { -1, 1 } do
+    for _, distance in ipairs { 47, 48 } do
+      local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+      local panorama = screen + ui.Panorama { Title = "People" }
+      for _, header in ipairs { "Recent", "All", "New" } do
+        local _ = panorama + ui.PanoramaItem { Header = header }
+      end
+      layout(screen)
+      swipe(screen, 200, 400, direction * distance)
+      test.expect_eq(panorama.SelectedIndex, distance < 48 and 0 or direction < 0 and 1 or 2,
+        "Consuming gesture slop preserves the 48-point physical swipe threshold in both directions")
+    end
+  end
+  print("PASS: test_panorama_swipe_threshold")
+end
+
+local function test_panorama_interrupt_settling()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local panorama = screen + ui.Panorama { Title = "People" }
+  local recent = panorama + ui.PanoramaItem { Header = "Recent" }
+  local _ = panorama + ui.PanoramaItem { Header = "All" }
+  layout(screen)
+  panorama.SelectedIndex = 1
+  layout(screen)
+  local start = recent.ActualX
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = 200, y = 400 }
+  for _, distance in ipairs { 12, 13, 14 } do
+    orca.system.dispatchMessage {
+      target = screen, message = "LeftButtonDragged", x = 200 - distance, y = 400,
+    }
+    layout(screen)
+    test.expect_eq(recent.ActualX, start - (distance - 12),
+      "Grabbing a settling panorama preserves its visible position and follows the finger")
+  end
+  panorama:send("Object.Animate")
+  layout(screen)
+  test.expect_eq(recent.ActualX, start - 2, "A pending animation cannot move the panorama under the finger")
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 186, y = 400 }
+  layout(screen)
+  test.expect_eq(recent.ActualX, start - 2, "Releasing an interrupted animation stays continuous")
+  pump(screen)
+  print("PASS: test_panorama_interrupt_settling")
+end
+
 local function test_panorama_wide_sections()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local changes, clicked = 0, 0
@@ -786,6 +871,9 @@ test_pivot_transitions()
 test_application_bar()
 test_application_bar_overflow_target()
 test_panorama()
+test_panorama_drag_continuity()
+test_panorama_swipe_threshold()
+test_panorama_interrupt_settling()
 test_panorama_wide_sections()
 test_panorama_wide_center()
 test_panorama_programmatic_skip()

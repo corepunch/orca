@@ -146,6 +146,7 @@ HANDLER(Panorama, Object, PropertyChanged)
 
 HANDLER(Panorama, Object, Animate)
 {
+  if (pPanorama->_dragging) return TRUE;
   pPanorama->_progress = MIN(Metro_Elapsed(pPanorama->_animStart), 1);
   OBJ_SetDirty(hObject);
   if (pPanorama->_progress < 1) OBJ_RequestAnimate(hObject);
@@ -237,8 +238,11 @@ HANDLER(Panorama, Node, LeftButtonDragged)
   float dy = pLeftButtonDragged->y - pPanorama->_pressY;
   if (!pPanorama->_dragging) {
     if (fabsf(dx) < METRO_DRAG_START || fabsf(dx) < fabsf(dy) * 1.5f) return FALSE;
+    // Consume gesture slop without discarding the visible settling position.
+    float offset = pPanorama->_offsetFrom * (1 - Metro_Ease(pPanorama->_progress));
+    pPanorama->_offsetFrom = offset - copysignf(METRO_DRAG_START, dx);
     pPanorama->_dragging = TRUE;
-    pPanorama->_progress = 1;
+    pPanorama->_progress = 0;
     for (int i = 0; i < count; i++) GetNode2D(items[i])->IgnoreHitTest = TRUE;
   }
   pPanorama->_dragX = dx;
@@ -255,15 +259,17 @@ HANDLER(Panorama, Node, LeftButtonUp)
   struct Object *items[PANORAMA_MAX_ITEMS];
   int count = Panorama_Items(hObject, items);
   for (int i = 0; i < count; i++) GetNode2D(items[i])->IgnoreHitTest = FALSE;
-  float dx = pPanorama->_dragX;
+  bool_t swipe = fabsf(pPanorama->_dragX) >= METRO_SWIPE;
+  float dx = pPanorama->_dragX + pPanorama->_offsetFrom;
+  pPanorama->_dragX = dx;
   float viewport = Node2D_GetRect(GetNode2D(hObject)).width;
   float step = viewport;
   float end = count ? Panorama_End(items[pPanorama->SelectedIndex], viewport) : 0;
   float oldOffset = pPanorama->_sectionOffset;
-  if (fabsf(dx) >= METRO_SWIPE && (dx < 0 ? oldOffset < end : oldOffset > 0)) {
+  if (swipe && (dx < 0 ? oldOffset < end : oldOffset > 0)) {
     pPanorama->_sectionOffset = dx < 0 ? MIN(oldOffset + step, end) : MAX(oldOffset - step, 0);
     Panorama_AnimateTo(hObject, pPanorama, dx + pPanorama->_sectionOffset - oldOffset);
-  } else if (fabsf(dx) >= METRO_SWIPE && count > 1) {
+  } else if (swipe && count > 1) {
     int32_t next = (pPanorama->SelectedIndex + (dx < 0 ? 1 : count - 1)) % count;
     Metro_SetProperty(hObject, ID_Panorama_SelectedIndex, &next);
     if (dx > 0) {

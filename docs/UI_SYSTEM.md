@@ -386,6 +386,9 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
   and `SelectionChanged` refer to sections, so panning within a wide section
   keeps the same selection. This follows the original
   [Windows Phone wide-section contract](https://learn.microsoft.com/en-us/previous-versions/windows/apps/ff941126(v=vs.105)).
+  Horizontal drags consume the 12-point gesture threshold instead of jumping
+  by that distance, then track the finger one-to-one. Grabbing a settling
+  panorama continues from its visible position instead of snapping to a section.
   Use a normal `Grid` inside the item for portrait or photo matrices.
   Set `ContentInsetAdjustment="Always"` on an edge-to-edge panorama to keep
   its title below the iPhone safe area. Generated parts carry
