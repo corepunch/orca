@@ -1,19 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
 <Node3D Name="Abyss">
-  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Abyss/Assets/Cabinet" Material="encarta/Rooms/Abyss/Assets/Finish" />
+  <Model3D Name="Steel" Mesh="encarta/Rooms/Abyss/Meshes/Steel" Material="encarta/Rooms/Abyss/Materials/Steel"/>
+  <Model3D Name="Copper" Mesh="encarta/Rooms/Abyss/Meshes/Copper" Material="encarta/Rooms/Abyss/Materials/Copper"/>
+  <Model3D Name="Sea" Mesh="encarta/Rooms/Abyss/Meshes/Sea" Material="encarta/Rooms/Abyss/Materials/Sea"/>
+  <Model3D Name="Hull" Mesh="encarta/Rooms/Abyss/Meshes/Hull" Material="encarta/Rooms/Abyss/Materials/Hull"/>
+  <Model3D Name="Bulb2" Mesh="encarta/Rooms/Abyss/Meshes/Bulb2" Material="encarta/Rooms/Abyss/Materials/Bulb2"/>
+  <Model3D Name="Brass" Mesh="encarta/Rooms/Abyss/Meshes/Brass" Material="encarta/Rooms/Abyss/Materials/Brass"/>
+  <Model3D Name="Paint" Mesh="encarta/Rooms/Abyss/Meshes/Paint" Material="encarta/Rooms/Abyss/Materials/Paint"/>
+  <Model3D Name="Flesh" Mesh="encarta/Rooms/Abyss/Meshes/Flesh" Material="encarta/Rooms/Abyss/Materials/Flesh"/>
+  <Model3D Name="Globe" Mesh="encarta/Rooms/Abyss/Meshes/Globe" Material="encarta/Rooms/Abyss/Materials/Globe"/>
+  <Model3D Name="Leaf" Mesh="encarta/Rooms/Abyss/Meshes/Leaf" Material="encarta/Rooms/Abyss/Materials/Leaf"/>
+  <Model3D Name="Black" Mesh="encarta/Rooms/Abyss/Meshes/Black" Material="encarta/Rooms/Abyss/Materials/Black"/>
+  <Model3D Name="Ammonite" Mesh="encarta/Rooms/Abyss/Meshes/Ammonite" Material="encarta/Rooms/Abyss/Materials/Ammonite"/>
+  <Model3D Name="Bulb" Mesh="encarta/Rooms/Abyss/Meshes/Bulb" Material="encarta/Rooms/Abyss/Materials/Bulb"/>
   <Node3D Name="DrawerLeftUpper">
-    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftUpper_Hull" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Hull" Material="encarta/Rooms/Abyss/Materials/Hull"/>
+    <Model3D Name="DrawerLeftUpper_Labels" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Labels" Material="encarta/Rooms/Abyss/Materials/Labels"/>
+    <Model3D Name="DrawerLeftUpper_Copper" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Copper" Material="encarta/Rooms/Abyss/Materials/Copper"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightUpper">
-    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightUpper_Hull" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Hull" Material="encarta/Rooms/Abyss/Materials/Hull"/>
+    <Model3D Name="DrawerRightUpper_Labels" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Labels" Material="encarta/Rooms/Abyss/Materials/Labels"/>
+    <Model3D Name="DrawerRightUpper_Copper" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Copper" Material="encarta/Rooms/Abyss/Materials/Copper"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerLeftLower">
-    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftLower_Hull" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Hull" Material="encarta/Rooms/Abyss/Materials/Hull"/>
+    <Model3D Name="DrawerLeftLower_Labels" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Labels" Material="encarta/Rooms/Abyss/Materials/Labels"/>
+    <Model3D Name="DrawerLeftLower_Copper" Mesh="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Copper" Material="encarta/Rooms/Abyss/Materials/Copper"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightLower">
-    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightLower_Hull" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Hull" Material="encarta/Rooms/Abyss/Materials/Hull"/>
+    <Model3D Name="DrawerRightLower_Labels" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Labels" Material="encarta/Rooms/Abyss/Materials/Labels"/>
+    <Model3D Name="DrawerRightLower_Copper" Mesh="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Copper" Material="encarta/Rooms/Abyss/Materials/Copper"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
 </Node3D>

@@ -1,19 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
 <Node3D Name="Science">
-  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Science/Assets/Cabinet" Material="encarta/Rooms/Science/Assets/Finish" />
+  <Model3D Name="Lacquer" Mesh="encarta/Rooms/Science/Meshes/Lacquer" Material="encarta/Rooms/Science/Materials/Lacquer"/>
+  <Model3D Name="Paint" Mesh="encarta/Rooms/Science/Meshes/Paint" Material="encarta/Rooms/Science/Materials/Paint"/>
+  <Model3D Name="Enamel" Mesh="encarta/Rooms/Science/Meshes/Enamel" Material="encarta/Rooms/Science/Materials/Enamel"/>
+  <Model3D Name="Night" Mesh="encarta/Rooms/Science/Meshes/Night" Material="encarta/Rooms/Science/Materials/Night"/>
+  <Model3D Name="Brass" Mesh="encarta/Rooms/Science/Meshes/Brass" Material="encarta/Rooms/Science/Materials/Brass"/>
+  <Model3D Name="DarkWood" Mesh="encarta/Rooms/Science/Meshes/DarkWood" Material="encarta/Rooms/Science/Materials/DarkWood"/>
+  <Model3D Name="Black" Mesh="encarta/Rooms/Science/Meshes/Black" Material="encarta/Rooms/Science/Materials/Black"/>
+  <Model3D Name="Flesh" Mesh="encarta/Rooms/Science/Meshes/Flesh" Material="encarta/Rooms/Science/Materials/Flesh"/>
+  <Model3D Name="Globe" Mesh="encarta/Rooms/Science/Meshes/Globe" Material="encarta/Rooms/Science/Materials/Globe"/>
+  <Model3D Name="Butterfly" Mesh="encarta/Rooms/Science/Meshes/Butterfly" Material="encarta/Rooms/Science/Materials/Butterfly"/>
+  <Model3D Name="Leaf" Mesh="encarta/Rooms/Science/Meshes/Leaf" Material="encarta/Rooms/Science/Materials/Leaf"/>
+  <Model3D Name="Ammonite" Mesh="encarta/Rooms/Science/Meshes/Ammonite" Material="encarta/Rooms/Science/Materials/Ammonite"/>
+  <Model3D Name="Bulb" Mesh="encarta/Rooms/Science/Meshes/Bulb" Material="encarta/Rooms/Science/Materials/Bulb"/>
   <Node3D Name="DrawerLeftUpper">
-    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Science/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Science/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftUpper_Lacquer" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Lacquer" Material="encarta/Rooms/Science/Materials/Lacquer"/>
+    <Model3D Name="DrawerLeftUpper_Labels" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Labels" Material="encarta/Rooms/Science/Materials/Labels"/>
+    <Model3D Name="DrawerLeftUpper_Brass" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Brass" Material="encarta/Rooms/Science/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightUpper">
-    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Science/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Science/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightUpper_Lacquer" Mesh="encarta/Rooms/Science/Meshes/DrawerRightUpper_Lacquer" Material="encarta/Rooms/Science/Materials/Lacquer"/>
+    <Model3D Name="DrawerRightUpper_Labels" Mesh="encarta/Rooms/Science/Meshes/DrawerRightUpper_Labels" Material="encarta/Rooms/Science/Materials/Labels"/>
+    <Model3D Name="DrawerRightUpper_Brass" Mesh="encarta/Rooms/Science/Meshes/DrawerRightUpper_Brass" Material="encarta/Rooms/Science/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerLeftLower">
-    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Science/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Science/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftLower_Lacquer" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftLower_Lacquer" Material="encarta/Rooms/Science/Materials/Lacquer"/>
+    <Model3D Name="DrawerLeftLower_Labels" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftLower_Labels" Material="encarta/Rooms/Science/Materials/Labels"/>
+    <Model3D Name="DrawerLeftLower_Brass" Mesh="encarta/Rooms/Science/Meshes/DrawerLeftLower_Brass" Material="encarta/Rooms/Science/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightLower">
-    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Science/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Science/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightLower_Lacquer" Mesh="encarta/Rooms/Science/Meshes/DrawerRightLower_Lacquer" Material="encarta/Rooms/Science/Materials/Lacquer"/>
+    <Model3D Name="DrawerRightLower_Labels" Mesh="encarta/Rooms/Science/Meshes/DrawerRightLower_Labels" Material="encarta/Rooms/Science/Materials/Labels"/>
+    <Model3D Name="DrawerRightLower_Brass" Mesh="encarta/Rooms/Science/Meshes/DrawerRightLower_Brass" Material="encarta/Rooms/Science/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
 </Node3D>

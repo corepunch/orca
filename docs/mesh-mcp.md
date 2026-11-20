@@ -61,7 +61,9 @@ scene.export_scene("apps/MyApp", "Table")
 | `modify_object` | Changes transform, colour, name or type parameters. Omitted values stay. |
 | `duplicate_object` | Copies an object, optionally to a new location. |
 | `delete_object` | Removes an object. |
-| `set_material` | Creates or updates a material (colour, texture) and assigns it; or tints one object. |
+| `set_material` | Creates or updates a material (colour, texture, `emission`) and assigns it; or tints one object. |
+| `add_light` | Adds a `point`, `spot`, `area` or `sun` light for a lightmap bake. |
+| `add_group` | Declares a group, a `Node3D` that objects join with `group`, and extra XML to put in it. |
 | `execute_code` | Runs Python with `scene`, `np` and `math` in scope, for loops and computed placement. |
 | `get_viewport_screenshot` | Renders a preview PNG. By default the camera frames the whole scene. |
 | `export_scene` | Writes the `.mesh` files and XML into a project. |
@@ -97,12 +99,53 @@ the project's `EnginePlugins` must list `orca.SceneKit`.
 - By default each object keeps its own mesh and its `LayoutTransform`, so it
   can be moved or animated in the engine.
 - `"merge": true` bakes the transforms into the vertices and joins objects
-  that share a material. Each `Model3D` compiles its own shader, so merge
-  scenes with many static parts.
+  that share a material and group. Each `Model3D` compiles its own shader, so
+  merge scenes with many static parts.
+- An object with a `group` is exported inside that group's `Node3D`, with
+  whatever XML `add_group` gave it, so a drawer's parts and its
+  `AnimationPlayer` move as one.
 - An object's `color` is stored as vertex colour and multiplied by its
   material's colour and texture. A texture is an asset path such as
   `MyApp/Textures/oak.jpg`; UVs run 0 to 1 across each cube face and around
   round shapes, and repeat beyond that.
+
+## Baked light
+
+`export_scene` with `"lightmap": {...}` lights the scene the way a renderer
+would and stores the result in a texture, so the engine draws it with no
+runtime lights:
+
+```python
+scene.set_material(material_name="Bulb", color="#FFE2A8", emission=6)
+scene.add_light("Lamp", "point", location=[0.5, 1.8, -0.3], color="#FFD08A", power=90, size=0.06)
+scene.add_light("Window", "area", location=[0, 1.2, 2], direction=[0, -0.3, -1], power=200, size=[2, 1])
+scene.export_scene("apps/MyApp", "Room", lightmap={"size": 2048, "samples": 384})
+```
+
+It needs Blender (`ORCA_BLENDER`, else `/Applications/Blender.app` or
+`blender` on the path). `tools/mesh_bake.py` runs inside it: Smart UV Project
+lays out a second UV set over the whole scene, and Cycles path traces the
+light arriving at every texel, direct and bounced, coloured by the surfaces
+it bounced off. The export then merges objects by material and group, splits
+vertices along the new UV seams and writes:
+
+```
+  Meshes/*.mesh     ... plus UV1, the lightmap coordinate
+  Lit.xml           shader: texture × vertex colour × (lightmap + Glow)
+  Lightmap.xml      the lightmap image asset
+  lightmap.png      light / 4, sRGB-encoded (LIGHTMAP_RANGE)
+```
+
+Lights are in watts (a sun's strength is in W/m²); `direction` is where a
+spot, area or sun light points. An emissive material lights the scene in the
+bake with its `emission` strength and, in the engine, shows its own colour
+at full brightness however dark its corner (`Lit.Glow`, at most 1). Other `lightmap` keys:
+`bounces` (4), `margin` in texels (6), `angle` for UV islands (66),
+`ambient` `[r, g, b]` world light (black), `smooth` blur passes (1).
+
+The first bake on a machine compiles Cycles' GPU kernels, which can take
+several minutes. Moving geometry needs a new bake; a drawer that slides keeps
+the light it had when closed.
 
 ## Preview and engine
 
@@ -114,8 +157,7 @@ does not draw textures.
 
 - No bevels, booleans, modifiers or curves: only the primitives and raw
   meshes above.
-- No lightmaps. `apps/encarta/Tools/build_study.py` bakes one for its own
-  room and does not use this tool yet.
+- Light is baked or fixed: there are no runtime lights or shadows.
 - No animation export; animate the exported `Model3D` nodes in XML.
 
 Test with `make test-mesh-mcp`.

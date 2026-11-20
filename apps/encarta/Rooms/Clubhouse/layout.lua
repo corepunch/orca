@@ -1,12 +1,15 @@
+-- Written by Tools/build_rooms.py from the models: each exhibit's
+-- centre and size, and each drawer front's left, top, right and
+-- bottom, as fractions of the camera's front panel.
 return {
     subjects = {
-        space = { 0.1388, 0.1432, 0.2155, 0.2035 },
-        earth = { 0.0898, 0.3743, 0.1685, 0.2735 },
-        animals = { 0.3184, 0.4586, 0.1450, 0.1400 },
-        plants = { 0.8930, 0.3467, 0.1782, 0.2201 },
-        science = { 0.7434, 0.4102, 0.1250, 0.2035 },
-        ['your-body'] = { 0.3470, 0.1506, 0.1222, 0.1685 },
-        ['long-ago'] = { 0.5515, 0.1961, 0.2479, 0.1823 },
+        space = { 0.1238, 0.0849, 0.1834, 0.1471 },
+        animals = { 0.2750, 0.5303, 0.1967, 0.1809 },
+        ["your-body"] = { 0.3484, 0.1931, 0.1192, 0.1636 },
+        earth = { 0.0877, 0.5558, 0.1104, 0.3855 },
+        plants = { 0.8546, 0.2460, 0.2583, 0.2917 },
+        science = { 0.7423, 0.5704, 0.1042, 0.3586 },
+        ["long-ago"] = { 0.5516, 0.4605, 0.2200, 0.3735 },
     },
     drawers = {
         OpenPassport = { 0.0414, 0.7845, 0.2666, 0.9475 },

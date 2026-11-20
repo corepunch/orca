@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
+<Library>
+  <Mesh Name="Plaster" Source="encarta/Rooms/Nature/Meshes/Plaster.mesh"/>
+  <Mesh Name="DarkWood" Source="encarta/Rooms/Nature/Meshes/DarkWood.mesh"/>
+  <Mesh Name="Oak" Source="encarta/Rooms/Nature/Meshes/Oak.mesh"/>
+  <Mesh Name="Brass" Source="encarta/Rooms/Nature/Meshes/Brass.mesh"/>
+  <Mesh Name="Leaf" Source="encarta/Rooms/Nature/Meshes/Leaf.mesh"/>
+  <Mesh Name="StarChart" Source="encarta/Rooms/Nature/Meshes/StarChart.mesh"/>
+  <Mesh Name="Globe" Source="encarta/Rooms/Nature/Meshes/Globe.mesh"/>
+  <Mesh Name="Butterfly" Source="encarta/Rooms/Nature/Meshes/Butterfly.mesh"/>
+  <Mesh Name="Paint" Source="encarta/Rooms/Nature/Meshes/Paint.mesh"/>
+  <Mesh Name="Ammonite" Source="encarta/Rooms/Nature/Meshes/Ammonite.mesh"/>
+  <Mesh Name="HeartPicture" Source="encarta/Rooms/Nature/Meshes/HeartPicture.mesh"/>
+  <Mesh Name="Black" Source="encarta/Rooms/Nature/Meshes/Black.mesh"/>
+  <Mesh Name="Crystal" Source="encarta/Rooms/Nature/Meshes/Crystal.mesh"/>
+  <Mesh Name="Terracotta" Source="encarta/Rooms/Nature/Meshes/Terracotta.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Oak" Source="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Oak.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Labels" Source="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Labels.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Brass" Source="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Brass.mesh"/>
+  <Mesh Name="DrawerRightUpper_Oak" Source="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Oak.mesh"/>
+  <Mesh Name="DrawerRightUpper_Labels" Source="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Labels.mesh"/>
+  <Mesh Name="DrawerRightUpper_Brass" Source="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Brass.mesh"/>
+  <Mesh Name="DrawerLeftLower_Oak" Source="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Oak.mesh"/>
+  <Mesh Name="DrawerLeftLower_Labels" Source="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Labels.mesh"/>
+  <Mesh Name="DrawerLeftLower_Brass" Source="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Brass.mesh"/>
+  <Mesh Name="DrawerRightLower_Oak" Source="encarta/Rooms/Nature/Meshes/DrawerRightLower_Oak.mesh"/>
+  <Mesh Name="DrawerRightLower_Labels" Source="encarta/Rooms/Nature/Meshes/DrawerRightLower_Labels.mesh"/>
+  <Mesh Name="DrawerRightLower_Brass" Source="encarta/Rooms/Nature/Meshes/DrawerRightLower_Brass.mesh"/>
+  <Mesh Name="Bulb" Source="encarta/Rooms/Nature/Meshes/Bulb.mesh"/>
+</Library>

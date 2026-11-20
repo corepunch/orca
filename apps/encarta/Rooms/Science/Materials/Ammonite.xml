@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Ammonite" Shader="encarta/Rooms/Science/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Textures/ammonite.jpg" Lit.Lightmap="encarta/Rooms/Science/Lightmap" Lit.Glow="0"/>

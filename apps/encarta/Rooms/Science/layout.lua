@@ -1,15 +1,16 @@
+-- Written by Tools/build_rooms.py from the models: each exhibit's
+-- centre and size, and each drawer front's left, top, right and
+-- bottom, as fractions of the camera's front panel.
 return {
-    -- Exhibit centers and sizes in the frontal cabinet artwork.
     subjects = {
-        space = { 0.1664, 0.1354, 0.2818, 0.1915 },
-        earth = { 0.4955, 0.3108, 0.3557, 0.4926 },
-        science = { 0.0977, 0.4705, 0.1512, 0.3297 },
-        animals = { 0.8160, 0.1275, 0.2327, 0.1906 },
-        plants = { 0.7448, 0.3913, 0.1250, 0.3039 },
-        ["your-body"] = { 0.2445, 0.3932, 0.1298, 0.3076 },
-        ["long-ago"] = { 0.8988, 0.4632, 0.1623, 0.3149 },
+        space = { 0.2274, 0.1993, 0.1272, 0.2001 },
+        animals = { 0.8203, 0.1297, 0.1339, 0.1540 },
+        ["your-body"] = { 0.2430, 0.3813, 0.0904, 0.1688 },
+        earth = { 0.5000, 0.3088, 0.2924, 0.3631 },
+        plants = { 0.7504, 0.4127, 0.2082, 0.1609 },
+        science = { 0.1069, 0.4987, 0.0886, 0.2288 },
+        ["long-ago"] = { 0.8853, 0.4605, 0.1215, 0.1239 },
     },
-    -- Edges of each movable enamel front, inset from the brass cabinet frame.
     drawers = {
         OpenPassport = { 0.0152, 0.6878, 0.2583, 0.9079 },
         OpenHunt = { 0.2686, 0.6878, 0.4952, 0.9079 },

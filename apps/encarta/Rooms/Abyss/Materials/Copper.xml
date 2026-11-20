@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Copper" Shader="encarta/Rooms/Abyss/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Abyss/white.png" Lit.Lightmap="encarta/Rooms/Abyss/Lightmap" Lit.Glow="0"/>

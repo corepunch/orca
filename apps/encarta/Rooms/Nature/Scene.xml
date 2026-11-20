@@ -1,19 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
 <Node3D Name="Nature">
-  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Nature/Assets/Cabinet" Material="encarta/Rooms/Nature/Assets/Finish" />
+  <Model3D Name="Plaster" Mesh="encarta/Rooms/Nature/Meshes/Plaster" Material="encarta/Rooms/Nature/Materials/Plaster"/>
+  <Model3D Name="DarkWood" Mesh="encarta/Rooms/Nature/Meshes/DarkWood" Material="encarta/Rooms/Nature/Materials/DarkWood"/>
+  <Model3D Name="Oak" Mesh="encarta/Rooms/Nature/Meshes/Oak" Material="encarta/Rooms/Nature/Materials/Oak"/>
+  <Model3D Name="Brass" Mesh="encarta/Rooms/Nature/Meshes/Brass" Material="encarta/Rooms/Nature/Materials/Brass"/>
+  <Model3D Name="Leaf" Mesh="encarta/Rooms/Nature/Meshes/Leaf" Material="encarta/Rooms/Nature/Materials/Leaf"/>
+  <Model3D Name="StarChart" Mesh="encarta/Rooms/Nature/Meshes/StarChart" Material="encarta/Rooms/Nature/Materials/StarChart"/>
+  <Model3D Name="Globe" Mesh="encarta/Rooms/Nature/Meshes/Globe" Material="encarta/Rooms/Nature/Materials/Globe"/>
+  <Model3D Name="Butterfly" Mesh="encarta/Rooms/Nature/Meshes/Butterfly" Material="encarta/Rooms/Nature/Materials/Butterfly"/>
+  <Model3D Name="Paint" Mesh="encarta/Rooms/Nature/Meshes/Paint" Material="encarta/Rooms/Nature/Materials/Paint"/>
+  <Model3D Name="Ammonite" Mesh="encarta/Rooms/Nature/Meshes/Ammonite" Material="encarta/Rooms/Nature/Materials/Ammonite"/>
+  <Model3D Name="HeartPicture" Mesh="encarta/Rooms/Nature/Meshes/HeartPicture" Material="encarta/Rooms/Nature/Materials/HeartPicture"/>
+  <Model3D Name="Black" Mesh="encarta/Rooms/Nature/Meshes/Black" Material="encarta/Rooms/Nature/Materials/Black"/>
+  <Model3D Name="Crystal" Mesh="encarta/Rooms/Nature/Meshes/Crystal" Material="encarta/Rooms/Nature/Materials/Crystal"/>
+  <Model3D Name="Terracotta" Mesh="encarta/Rooms/Nature/Meshes/Terracotta" Material="encarta/Rooms/Nature/Materials/Terracotta"/>
+  <Model3D Name="Bulb" Mesh="encarta/Rooms/Nature/Meshes/Bulb" Material="encarta/Rooms/Nature/Materials/Bulb"/>
   <Node3D Name="DrawerLeftUpper">
-    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Nature/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Nature/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftUpper_Oak" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Oak" Material="encarta/Rooms/Nature/Materials/Oak"/>
+    <Model3D Name="DrawerLeftUpper_Labels" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Labels" Material="encarta/Rooms/Nature/Materials/Labels"/>
+    <Model3D Name="DrawerLeftUpper_Brass" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftUpper_Brass" Material="encarta/Rooms/Nature/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightUpper">
-    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Nature/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Nature/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightUpper_Oak" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Oak" Material="encarta/Rooms/Nature/Materials/Oak"/>
+    <Model3D Name="DrawerRightUpper_Labels" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Labels" Material="encarta/Rooms/Nature/Materials/Labels"/>
+    <Model3D Name="DrawerRightUpper_Brass" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightUpper_Brass" Material="encarta/Rooms/Nature/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerLeftLower">
-    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Nature/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Nature/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftLower_Oak" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Oak" Material="encarta/Rooms/Nature/Materials/Oak"/>
+    <Model3D Name="DrawerLeftLower_Labels" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Labels" Material="encarta/Rooms/Nature/Materials/Labels"/>
+    <Model3D Name="DrawerLeftLower_Brass" Mesh="encarta/Rooms/Nature/Meshes/DrawerLeftLower_Brass" Material="encarta/Rooms/Nature/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightLower">
-    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Nature/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Nature/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightLower_Oak" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightLower_Oak" Material="encarta/Rooms/Nature/Materials/Oak"/>
+    <Model3D Name="DrawerRightLower_Labels" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightLower_Labels" Material="encarta/Rooms/Nature/Materials/Labels"/>
+    <Model3D Name="DrawerRightLower_Brass" Mesh="encarta/Rooms/Nature/Meshes/DrawerRightLower_Brass" Material="encarta/Rooms/Nature/Materials/Brass"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
 </Node3D>

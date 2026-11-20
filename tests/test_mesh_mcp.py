@@ -82,6 +82,44 @@ class SceneTest(unittest.TestCase):
             t = Scene(); t.load_scene(os.path.join(d, "s.json"))
             self.assertEqual(t.get_scene_info(), s.get_scene_info())
 
+    def test_groups_lights_and_lightmap_export(self):
+        import numpy as np
+        s = Scene()
+        s.set_material(material_name="Bulb", color="#FFE0A0", emission=6)
+        s.create_object("cube", "Base", material="Bulb")
+        s.add_group("Drawer", '<AnimationPlayer Name="Slide"/>')
+        s.create_object("cube", "Front", location=[0, 0, 1], group="Drawer")
+        s.add_light("Lamp", "point", location=[0, 2, 0], power=50)
+        with self.assertRaises(ToolError):
+            s.add_light("Bad", "laser")
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "package.lua"), "w") as f:
+                f.write('Name = "Demo"\n')
+            r = s.export_scene(d, "Room")
+            with open(os.path.join(r["folder"], "Scene.xml")) as f:
+                xml = f.read()
+            self.assertIn('<Node3D Name="Drawer">\n    <Model3D Name="Front"', xml)
+            self.assertIn('    <AnimationPlayer Name="Slide"/>\n  </Node3D>', xml)
+
+            # The bake itself needs Blender; stand in for it with a flat lightmap.
+            def fake_bake(project_dir, project, out, meshes, opts):
+                mesh_mcp._encode_light(np.full((8, 8, 3), 2.0, np.float32)).save(os.path.join(out, "lightmap.png"))
+                return meshes, [np.full((len(m[1]), 2), 0.5, np.float32) for m in meshes], {}
+            s._bake = fake_bake
+            r = s.export_scene(d, "Lit", lightmap={"size": 8})
+            m = mesh_mcp.read_mesh(os.path.join(r["folder"], "Meshes", "Drawer_Default.mesh"))
+            self.assertEqual(m["uv1"].shape, m["uv0"].shape)
+            with open(os.path.join(r["folder"], "Materials", "Bulb.xml")) as f:
+                material = f.read()
+            self.assertIn('Shader="Demo/Models/Lit/Lit"', material)
+            self.assertIn('Lit.Lightmap="Demo/Models/Lit/Lightmap" Lit.Glow="1"', material)
+            self.assertTrue(os.path.exists(os.path.join(r["folder"], "Lit.xml")))
+            from PIL import Image
+            self.assertEqual(Image.open(os.path.join(r["folder"], "lightmap.png")).getpixel((0, 0))[0], 188)   # light 2 is half of LIGHTMAP_RANGE, sRGB-encoded
+            t = Scene()
+            s.save_scene(os.path.join(d, "s.json")); t.load_scene(os.path.join(d, "s.json"))
+            self.assertEqual((list(t.lights), t.groups), (["Lamp"], {"Drawer": '<AnimationPlayer Name="Slide"/>'}))
+
     def test_screenshot_draws_the_object(self):
         s = Scene()
         s.create_object("sphere", color="#FF0000")

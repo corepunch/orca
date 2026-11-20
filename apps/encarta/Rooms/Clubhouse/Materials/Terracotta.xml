@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Terracotta" Shader="encarta/Rooms/Clubhouse/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Clubhouse/white.png" Lit.Lightmap="encarta/Rooms/Clubhouse/Lightmap" Lit.Glow="0"/>

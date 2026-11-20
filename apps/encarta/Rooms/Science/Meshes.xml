@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
+<Library>
+  <Mesh Name="Lacquer" Source="encarta/Rooms/Science/Meshes/Lacquer.mesh"/>
+  <Mesh Name="Paint" Source="encarta/Rooms/Science/Meshes/Paint.mesh"/>
+  <Mesh Name="Enamel" Source="encarta/Rooms/Science/Meshes/Enamel.mesh"/>
+  <Mesh Name="Night" Source="encarta/Rooms/Science/Meshes/Night.mesh"/>
+  <Mesh Name="Brass" Source="encarta/Rooms/Science/Meshes/Brass.mesh"/>
+  <Mesh Name="DarkWood" Source="encarta/Rooms/Science/Meshes/DarkWood.mesh"/>
+  <Mesh Name="Black" Source="encarta/Rooms/Science/Meshes/Black.mesh"/>
+  <Mesh Name="Flesh" Source="encarta/Rooms/Science/Meshes/Flesh.mesh"/>
+  <Mesh Name="Globe" Source="encarta/Rooms/Science/Meshes/Globe.mesh"/>
+  <Mesh Name="Butterfly" Source="encarta/Rooms/Science/Meshes/Butterfly.mesh"/>
+  <Mesh Name="Leaf" Source="encarta/Rooms/Science/Meshes/Leaf.mesh"/>
+  <Mesh Name="Ammonite" Source="encarta/Rooms/Science/Meshes/Ammonite.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Lacquer" Source="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Lacquer.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Labels" Source="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Labels.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Brass" Source="encarta/Rooms/Science/Meshes/DrawerLeftUpper_Brass.mesh"/>
+  <Mesh Name="DrawerRightUpper_Lacquer" Source="encarta/Rooms/Science/Meshes/DrawerRightUpper_Lacquer.mesh"/>
+  <Mesh Name="DrawerRightUpper_Labels" Source="encarta/Rooms/Science/Meshes/DrawerRightUpper_Labels.mesh"/>
+  <Mesh Name="DrawerRightUpper_Brass" Source="encarta/Rooms/Science/Meshes/DrawerRightUpper_Brass.mesh"/>
+  <Mesh Name="DrawerLeftLower_Lacquer" Source="encarta/Rooms/Science/Meshes/DrawerLeftLower_Lacquer.mesh"/>
+  <Mesh Name="DrawerLeftLower_Labels" Source="encarta/Rooms/Science/Meshes/DrawerLeftLower_Labels.mesh"/>
+  <Mesh Name="DrawerLeftLower_Brass" Source="encarta/Rooms/Science/Meshes/DrawerLeftLower_Brass.mesh"/>
+  <Mesh Name="DrawerRightLower_Lacquer" Source="encarta/Rooms/Science/Meshes/DrawerRightLower_Lacquer.mesh"/>
+  <Mesh Name="DrawerRightLower_Labels" Source="encarta/Rooms/Science/Meshes/DrawerRightLower_Labels.mesh"/>
+  <Mesh Name="DrawerRightLower_Brass" Source="encarta/Rooms/Science/Meshes/DrawerRightLower_Brass.mesh"/>
+  <Mesh Name="Bulb" Source="encarta/Rooms/Science/Meshes/Bulb.mesh"/>
+</Library>

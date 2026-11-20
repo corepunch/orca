@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Plaster" Shader="encarta/Rooms/Nature/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Textures/plaster.jpg" Lit.Lightmap="encarta/Rooms/Nature/Lightmap" Lit.Glow="0"/>

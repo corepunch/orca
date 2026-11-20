@@ -12,7 +12,11 @@ on its own.
 
 ## The study
 
-The four room menus use original 4:3 ImageGen artwork projected onto sculpted surfaces and movable drawer meshes. Each source painting is stored as `Rooms/<room>/room.jpg`, alongside the exhibit and drawer coordinates in `layout.lua`. Run `python3 apps/encarta/Tools/build_rooms.py` to rebuild the meshes. The original modeled study has a separate [scene and texture guide](Study/README.md).
+The four themed rooms are 3D models with baked light, built by
+`Tools/build_rooms.py` with [`tools/mesh_mcp.py`](../../docs/mesh-mcp.md):
+see [the rooms guide](Rooms/README.md). The room picker's `Rooms/<room>/room.jpg`
+cards are captures of those models. The original modeled study has a separate
+[scene and texture guide](Study/README.md).
 
 ### Earlier illustrated menu concept
 

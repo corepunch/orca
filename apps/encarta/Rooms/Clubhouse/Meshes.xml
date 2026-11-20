@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
+<Library>
+  <Mesh Name="Wall" Source="encarta/Rooms/Clubhouse/Meshes/Wall.mesh"/>
+  <Mesh Name="Floor" Source="encarta/Rooms/Clubhouse/Meshes/Floor.mesh"/>
+  <Mesh Name="Oak" Source="encarta/Rooms/Clubhouse/Meshes/Oak.mesh"/>
+  <Mesh Name="Planks" Source="encarta/Rooms/Clubhouse/Meshes/Planks.mesh"/>
+  <Mesh Name="Rug" Source="encarta/Rooms/Clubhouse/Meshes/Rug.mesh"/>
+  <Mesh Name="Black" Source="encarta/Rooms/Clubhouse/Meshes/Black.mesh"/>
+  <Mesh Name="Paint" Source="encarta/Rooms/Clubhouse/Meshes/Paint.mesh"/>
+  <Mesh Name="Fabric" Source="encarta/Rooms/Clubhouse/Meshes/Fabric.mesh"/>
+  <Mesh Name="Tiles" Source="encarta/Rooms/Clubhouse/Meshes/Tiles.mesh"/>
+  <Mesh Name="Fire" Source="encarta/Rooms/Clubhouse/Meshes/Fire.mesh"/>
+  <Mesh Name="Ember" Source="encarta/Rooms/Clubhouse/Meshes/Ember.mesh"/>
+  <Mesh Name="Globe" Source="encarta/Rooms/Clubhouse/Meshes/Globe.mesh"/>
+  <Mesh Name="Brass" Source="encarta/Rooms/Clubhouse/Meshes/Brass.mesh"/>
+  <Mesh Name="Window" Source="encarta/Rooms/Clubhouse/Meshes/Window.mesh"/>
+  <Mesh Name="Terracotta" Source="encarta/Rooms/Clubhouse/Meshes/Terracotta.mesh"/>
+  <Mesh Name="Leaf" Source="encarta/Rooms/Clubhouse/Meshes/Leaf.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Paint" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftUpper_Paint.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Labels" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftUpper_Labels.mesh"/>
+  <Mesh Name="DrawerRightUpper_Paint" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightUpper_Paint.mesh"/>
+  <Mesh Name="DrawerRightUpper_Labels" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightUpper_Labels.mesh"/>
+  <Mesh Name="DrawerLeftLower_Paint" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftLower_Paint.mesh"/>
+  <Mesh Name="DrawerLeftLower_Labels" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftLower_Labels.mesh"/>
+  <Mesh Name="DrawerRightLower_Paint" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightLower_Paint.mesh"/>
+  <Mesh Name="DrawerRightLower_Labels" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightLower_Labels.mesh"/>
+</Library>

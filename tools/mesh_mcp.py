@@ -197,8 +197,9 @@ def _vec3(value, what):
 # ---------------------------------------------------------------- .mesh files
 
 
-def write_mesh(path, pos, nrm, uv, color, faces):
-    """Write one ORCA .mesh: header, indices, one submesh, then vertex streams."""
+def write_mesh(path, pos, nrm, uv, color, faces, uv1=None):
+    """Write one ORCA .mesh: header, indices, one submesh, then vertex streams.
+    uv1, when given, is the lightmap's texture coordinate."""
     pos, nrm, uv = (np.ascontiguousarray(a, F) for a in (pos, nrm, uv))
     idx = np.ascontiguousarray(faces, np.uint32).ravel()
     helper = np.where((np.abs(nrm[:, 1]) > 0.99)[:, None], [1.0, 0, 0], [0, 1.0, 0])
@@ -208,6 +209,8 @@ def write_mesh(path, pos, nrm, uv, color, faces):
     FLOAT32, UINT8_NORMALIZED = 2, 3 | 64
     streams = [(0, FLOAT32, pos), (1, FLOAT32, nrm), (3, FLOAT32, np.cross(nrm, tan).astype(F)),
                (2, FLOAT32, tan.astype(F)), (4, UINT8_NORMALIZED, col), (5, FLOAT32, uv)]
+    if uv1 is not None:
+        streams.append((6, FLOAT32, np.ascontiguousarray(uv1, F)))
     with open(path, "wb") as f:
         f.write(b"MESH" + struct.pack("<4I", len(pos), len(idx), 1, len(streams)))
         f.write(idx.tobytes() + struct.pack("<2I", 0, len(idx)))
@@ -265,6 +268,68 @@ void main() {
 """
 
 
+LIGHTMAP_RANGE = 4.0   # a lightmap texel of 1.0 is this much light
+
+LIT_SHADER = """<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. Texture times vertex colour times the
+     baked light: the scene needs no runtime lights. UV0 repeats the texture,
+     UV1 addresses the lightmap. Glow makes a surface shine by itself. -->
+<Shader Name="Lit">
+  <Shader.Uniforms>
+    <PropertyType Name="Albedo" DataType="Object" TypeString="Texture"/>
+    <PropertyType Name="Lightmap" DataType="Object" TypeString="Texture"/>
+    <PropertyType Name="Glow" DataType="Float" DefaultValue="0"/>
+  </Shader.Uniforms>
+  <VertexShader>
+in vec3 a_position; in vec2 a_texcoord0; in vec2 a_texcoord1; in vec4 a_color;
+out vec2 v_uv0; out vec2 v_uv1; out vec3 v_tint;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_uv0 = a_texcoord0; v_uv1 = a_texcoord1;
+  v_tint = pow(a_color.rgb, vec3(2.2));
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+  </VertexShader>
+  <FragmentShader Out="FragColor">
+in vec2 v_uv0; in vec2 v_uv1; in vec3 v_tint;
+void main() {
+  vec3 light = texture(Lightmap, v_uv1).rgb * %(range)s + vec3(Glow);
+  vec3 c = texture(Albedo, fract(v_uv0)).rgb * v_tint * light;
+  c = c / (1.0 + 0.45 * c);          // a soft shoulder keeps bright pools coloured
+  FragColor = vec4(c * 1.3, 1.0);
+}
+  </FragmentShader>
+</Shader>
+""" % {"range": "%.1f" % LIGHTMAP_RANGE}
+
+LIGHT_TYPES = ("point", "spot", "area", "sun")
+BLENDER_APPS = ("/Applications/Blender.app/Contents/MacOS/Blender", "blender")
+
+
+def _blender():
+    import shutil
+    for candidate in ([os.environ["ORCA_BLENDER"]] if os.environ.get("ORCA_BLENDER") else []) + list(BLENDER_APPS):
+        if os.path.isfile(candidate) or shutil.which(candidate):
+            return candidate
+    raise ToolError("baking needs Blender; set ORCA_BLENDER to its executable")
+
+
+def _encode_light(light):
+    """Linear light to an 8-bit sRGB image holding light / LIGHTMAP_RANGE."""
+    v = np.clip(light / LIGHTMAP_RANGE, 0, 1)
+    v = np.where(v <= 0.0031308, v * 12.92, 1.055 * np.power(v, 1 / 2.4) - 0.055)
+    return Image.fromarray(np.round(v * 255).astype(np.uint8), "RGB")
+
+
+def _smooth_light(light, passes):
+    """A light blur that hides the bake's remaining grain. Gutters are already
+    filled by Blender's margin, so neighbouring islands blur into their own pad."""
+    for _ in range(passes):
+        a = np.pad(light, ((1, 1), (1, 1), (0, 0)), mode="edge")
+        light = (a[1:-1, 1:-1] * 4 + a[:-2, 1:-1] + a[2:, 1:-1] + a[1:-1, :-2] + a[1:-1, 2:]) / 8
+    return light
+
+
 # ---------------------------------------------------------------- scene
 
 
@@ -276,7 +341,9 @@ class Scene:
 
     def __init__(self):
         self.objects = {}      # name -> dict, in creation order
-        self.materials = {}    # name -> {"color": "#RRGGBB", "texture": path or None}
+        self.materials = {}    # name -> {"color": "#RRGGBB", "texture": path or None, "emission": 0}
+        self.lights = {}       # name -> light for bake_lightmap
+        self.groups = {}       # name -> extra XML inside the group's Node3D
 
     # ---- queries
 
@@ -285,7 +352,7 @@ class Scene:
         return {"up_axis": "Y", "units": "metres", "object_count": len(self.objects),
                 "objects": [{k: o[k] for k in ("name", "type", "location", "rotation", "scale", "material")}
                             for o in self.objects.values()],
-                "materials": self.materials}
+                "materials": self.materials, "lights": list(self.lights.values()), "groups": self.groups}
 
     def get_object_info(self, name):
         """Everything about one object, with its vertex and triangle counts and world bounding box."""
@@ -297,10 +364,11 @@ class Scene:
     # ---- editing
 
     def create_object(self, type="cube", name=None, location=(0, 0, 0), rotation=(0, 0, 0), scale=(1, 1, 1),
-                      color="#CCCCCC", material=None, **params):
+                      color="#CCCCCC", material=None, group=None, **params):
         """Add a primitive. Each fits a 1 m box before scaling, so scale is its size in metres.
         Extra arguments by type: segments (round shapes), top_radius (cone, 0..0.5),
-        minor_radius (torus), vertices/faces/uvs/smooth (mesh)."""
+        minor_radius (torus), vertices/faces/uvs/smooth (mesh). group puts the object in a
+        named Node3D of the exported prefab, so the group can move as one."""
         if type not in PRIMITIVES:
             raise ToolError("unknown type %r; use one of %s" % (type, ", ".join(PRIMITIVES)))
         if name is None:
@@ -314,17 +382,23 @@ class Scene:
             raise ToolError("no material named %r; create it with set_material" % material)
         obj = dict(name=name, type=type, location=_vec3(location, "location"), rotation=_vec3(rotation, "rotation"),
                    scale=_vec3(scale, "scale"), color=parse_color(color), material=material, params=params)
+        if group:
+            obj["group"] = group
         primitive(type, params)   # fail now on bad parameters, not at export
         self.objects[name] = obj
         return self.get_object_info(name)
 
-    def modify_object(self, name, location=None, rotation=None, scale=None, color=None, new_name=None, **params):
+    def modify_object(self, name, location=None, rotation=None, scale=None, color=None, new_name=None,
+                      group=None, **params):
         """Change an object's transform, colour, name or type parameters. Omitted values stay."""
         o = self._get(name)
         if location is not None: o["location"] = _vec3(location, "location")
         if rotation is not None: o["rotation"] = _vec3(rotation, "rotation")
         if scale is not None: o["scale"] = _vec3(scale, "scale")
         if color is not None: o["color"] = parse_color(color)
+        if group is not None:
+            if group: o["group"] = group
+            else: o.pop("group", None)
         if params:
             merged = dict(o["params"], **params)
             primitive(o["type"], merged)
@@ -340,7 +414,7 @@ class Scene:
         """Copy an object, optionally to a new location."""
         o = self._get(name)
         return self.create_object(o["type"], new_name, location or o["location"], o["rotation"], o["scale"],
-                                  o["color"], o["material"], **json.loads(json.dumps(o["params"])))
+                                  o["color"], o["material"], o.get("group"), **json.loads(json.dumps(o["params"])))
 
     def delete_object(self, name):
         """Remove an object."""
@@ -348,10 +422,11 @@ class Scene:
         del self.objects[name]
         return {"deleted": name}
 
-    def set_material(self, object_name=None, material_name=None, color=None, texture=None):
+    def set_material(self, object_name=None, material_name=None, color=None, texture=None, emission=None):
         """Create or update a material and, if object_name is given, assign it.
         texture is an ORCA asset path such as 'encarta/Study/Textures/oak.jpg';
-        it is multiplied by color. With only object_name and color, tints that object."""
+        it is multiplied by color. emission (0 by default) makes the surface glow: in a
+        lightmap bake it also lights the scene. With only object_name and color, tints that object."""
         if material_name is None:
             if object_name is None or color is None:
                 raise ToolError("give material_name, or object_name with color")
@@ -360,13 +435,34 @@ class Scene:
         mat = self.materials.setdefault(material_name, {"color": "#FFFFFF", "texture": None})
         if color is not None: mat["color"] = parse_color(color)
         if texture is not None: mat["texture"] = texture or None
+        if emission is not None: mat["emission"] = float(emission)
         if object_name is not None:
             self._get(object_name)["material"] = material_name
         return {"material": material_name, **mat, "assigned_to": object_name}
 
+    def add_light(self, name, type="point", location=(0, 2, 0), direction=(0, -1, 0), color="#FFFFFF",
+                  power=100.0, size=(0.1, 0.1), angle=60.0):
+        """Add or replace a light for bake_lightmap (the engine draws no runtime lights).
+        type is point, spot, area or sun; power is in watts (sun: strength); direction is
+        where the light faces; size is the radius of a point or spot, or [width, height]
+        of an area light; angle is a spot's cone in degrees."""
+        if type not in LIGHT_TYPES:
+            raise ToolError("unknown light type %r; use one of %s" % (type, ", ".join(LIGHT_TYPES)))
+        size = [float(size)] * 2 if isinstance(size, (int, float)) else [float(v) for v in size][:2]
+        self.lights[name] = dict(name=name, type=type, location=_vec3(location, "location"),
+                                 direction=_vec3(direction, "direction"), color=parse_color(color),
+                                 power=float(power), size=size, angle=float(angle))
+        return {"light": name, "count": len(self.lights)}
+
+    def add_group(self, name, xml=""):
+        """Declare a group (a Node3D in the exported prefab) and extra XML to put inside it,
+        such as an AnimationPlayer. Objects join it with create_object(group=...)."""
+        self.groups[name] = xml
+        return {"group": name}
+
     def clear_scene(self):
-        """Delete every object and material."""
-        self.objects, self.materials = {}, {}
+        """Delete every object, material, light and group."""
+        self.objects, self.materials, self.lights, self.groups = {}, {}, {}, {}
         return {"object_count": 0}
 
     def execute_code(self, code):
@@ -382,7 +478,8 @@ class Scene:
     def save_scene(self, path):
         """Save the editable scene as JSON."""
         with open(path, "w") as f:
-            json.dump({"objects": list(self.objects.values()), "materials": self.materials}, f, indent=1)
+            json.dump({"objects": list(self.objects.values()), "materials": self.materials,
+                       "lights": list(self.lights.values()), "groups": self.groups}, f, indent=1)
         return {"saved": path, "object_count": len(self.objects)}
 
     def load_scene(self, path):
@@ -391,14 +488,20 @@ class Scene:
             data = json.load(f)
         self.objects = {o["name"]: o for o in data["objects"]}
         self.materials = data.get("materials", {})
+        self.lights = {l["name"]: l for l in data.get("lights", [])}
+        self.groups = data.get("groups", {})
         return {"loaded": path, "object_count": len(self.objects)}
 
-    def export_scene(self, project_dir, name="Model", folder="Models", merge=False):
+    def export_scene(self, project_dir, name="Model", folder="Models", merge=False, lightmap=None):
         """Write the scene into an ORCA project as <folder>/<name>/: binary .mesh files,
         Meshes.xml, materials, a shader and Scene.xml, a Node3D prefab to load with
         <PrefabView3D Prefab="<Project>/<folder>/<name>/Scene"/>.
         merge=false keeps one mesh and one movable Model3D per object;
-        merge=true bakes transforms and joins objects that share a material."""
+        merge=true bakes transforms and joins objects that share a material and group.
+        lightmap={"size": 1024, "samples": 256} merges, then has Blender's Cycles path trace
+        the scene's lights (add_light, emissive materials) into a lightmap the shader multiplies
+        in; other keys: bounces (4), margin in texels (6), angle for the UV islands (66),
+        ambient [r, g, b] world light (black), smooth blur passes (1)."""
         if not self.objects:
             raise ToolError("the scene is empty")
         project = _project_name(project_dir)
@@ -406,48 +509,134 @@ class Scene:
         os.makedirs(os.path.join(out, "Meshes"), exist_ok=True)
         os.makedirs(os.path.join(out, "Materials"), exist_ok=True)
         base = "%s/%s/%s" % (project, folder.replace(os.sep, "/"), name)
-        with open(os.path.join(out, "Solid.xml"), "w") as f:
-            f.write(SHADER)
         Image.new("RGB", (4, 4), "white").save(os.path.join(out, "white.png"))
         used = {}
         for o in self.objects.values():
             used.setdefault(o["material"] or "Default", []).append(o)
-        for mat in used:
-            m = self.materials.get(mat, {})
-            with open(os.path.join(out, "Materials", _safe(mat) + ".xml"), "w") as f:
-                f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Material Name="%s" Shader="%s/Solid" BlendMode="Opaque"'
-                        ' Solid.Albedo="%s"/>\n' % (_safe(mat), base, m.get("texture") or base + "/white.png"))
-        meshes, nodes, triangles = [], [], 0
+        lit = lightmap is not None
+        merge = merge or lit
+        meshes, nodes = [], []      # meshes: (mesh, pos, nrm, uv, tint, faces, material); nodes: (node, mesh, mat, obj, group)
         if merge:
-            for mat, objs in used.items():
-                parts = [self._world(o) + (o,) for o in objs]
-                pos, nrm, uv, faces = _join([p[:4] for p in parts])
-                tint = np.concatenate([np.tile(self._tint(o), (len(p), 1)) for p, _, _, _, o in parts])
-                meshes.append((_safe(mat), pos, nrm, uv, tint, faces))
-                nodes.append((_safe(mat), _safe(mat), mat, None))
+            keys = {}
+            for o in self.objects.values():
+                keys.setdefault((o.get("group"), o["material"] or "Default"), []).append(o)
+            for (group, mat), objs in keys.items():
+                parts = [self._world(o) for o in objs]
+                pos, nrm, uv, faces = _join(parts)
+                tint = np.concatenate([np.tile(self._tint(o), (len(p[0]), 1)) for p, o in zip(parts, objs)])
+                mesh = _safe((group + "_" if group else "") + mat)
+                meshes.append((mesh, pos, nrm, uv, tint, faces, mat))
+                nodes.append((mesh, mesh, mat, None, group))
         else:
             for o in self.objects.values():
                 pos, nrm, uv, faces = primitive(o["type"], o["params"])
-                meshes.append((_safe(o["name"]), pos, nrm, uv, np.tile(self._tint(o), (len(pos), 1)), faces))
-                nodes.append((_safe(o["name"]), _safe(o["name"]), o["material"] or "Default", o))
+                meshes.append((_safe(o["name"]), pos, nrm, uv, np.tile(self._tint(o), (len(pos), 1)), faces,
+                               o["material"] or "Default"))
+                nodes.append((_safe(o["name"]), _safe(o["name"]), o["material"] or "Default", o, o.get("group")))
+        uv1s, stats = [None] * len(meshes), {}
+        if lit:
+            meshes, uv1s, stats = self._bake(project_dir, project, out, meshes, dict(lightmap))
+            with open(os.path.join(out, "Lit.xml"), "w") as f:
+                f.write(LIT_SHADER)
+            with open(os.path.join(out, "Lightmap.xml"), "w") as f:
+                f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Image Name="Lightmap" Source="%s/lightmap.png"'
+                        ' MinificationFilter="Linear" MagnificationFilter="Linear"/>\n' % base)
+        else:
+            with open(os.path.join(out, "Solid.xml"), "w") as f:
+                f.write(SHADER)
+        for mat in used:
+            m = self.materials.get(mat, {})
+            texture = m.get("texture") or base + "/white.png"
+            with open(os.path.join(out, "Materials", _safe(mat) + ".xml"), "w") as f:
+                if lit:
+                    f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Material Name="%s" Shader="%s/Lit" BlendMode="Opaque"'
+                            ' Lit.Albedo="%s" Lit.Lightmap="%s/Lightmap" Lit.Glow="%g"/>\n'
+                            % (_safe(mat), base, texture, base, min(m.get("emission", 0), 1.0)))
+                else:
+                    f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Material Name="%s" Shader="%s/Solid" BlendMode="Opaque"'
+                            ' Solid.Albedo="%s"/>\n' % (_safe(mat), base, texture))
         lib = ['<?xml version="1.0" encoding="UTF-8"?>', "<!-- Written by tools/mesh_mcp.py. -->", "<Library>"]
-        for mesh, pos, nrm, uv, tint, faces in meshes:
-            write_mesh(os.path.join(out, "Meshes", mesh + ".mesh"), pos, nrm, uv, tint, faces)
+        triangles = 0
+        for (mesh, pos, nrm, uv, tint, faces, _), uv1 in zip(meshes, uv1s):
+            write_mesh(os.path.join(out, "Meshes", mesh + ".mesh"), pos, nrm, uv, tint, faces, uv1)
             lib.append('  <Mesh Name="%s" Source="%s/Meshes/%s.mesh"/>' % (mesh, base, mesh))
             triangles += len(faces)
         xml = ['<?xml version="1.0" encoding="UTF-8"?>', "<!-- Written by tools/mesh_mcp.py. -->",
                '<Node3D Name="%s">' % _safe(name)]
-        for node, mesh, mat, o in nodes:
-            tr = "" if o is None else ' LayoutTransform="%s"' % "  ".join(
-                " ".join("%g" % round(c, 5) for c in o[k]) for k in ("location", "rotation", "scale"))
-            xml.append('  <Model3D Name="%s" Mesh="%s/Meshes/%s" Material="%s/Materials/%s"%s/>'
-                       % (node, base, mesh, base, _safe(mat), tr))
+        groups = list(dict.fromkeys([g for *_, g in nodes if g] + list(self.groups)))
+        for group in [None] + groups:
+            indent = "  " if group is None else "    "
+            lines = []
+            for node, mesh, mat, o, g in nodes:
+                if g != group:
+                    continue
+                tr = "" if o is None else ' LayoutTransform="%s"' % "  ".join(
+                    " ".join("%g" % round(c, 5) for c in o[k]) for k in ("location", "rotation", "scale"))
+                lines.append('%s<Model3D Name="%s" Mesh="%s/Meshes/%s" Material="%s/Materials/%s"%s/>'
+                             % (indent, node, base, mesh, base, _safe(mat), tr))
+            if group is None:
+                xml += lines
+            else:
+                extra = [indent + line.strip() for line in self.groups.get(group, "").splitlines() if line.strip()]
+                xml += ['  <Node3D Name="%s">' % _safe(group)] + lines + extra + ["  </Node3D>"]
         with open(os.path.join(out, "Meshes.xml"), "w") as f:
             f.write("\n".join(lib + ["</Library>"]) + "\n")
         with open(os.path.join(out, "Scene.xml"), "w") as f:
             f.write("\n".join(xml + ["</Node3D>"]) + "\n")
-        return {"prefab": base + "/Scene", "folder": out, "meshes": len(meshes), "triangles": triangles,
-                "use": '<PrefabView3D Prefab="%s/Scene"/>' % base}
+        return dict({"prefab": base + "/Scene", "folder": out, "meshes": len(meshes), "triangles": triangles,
+                     "use": '<PrefabView3D Prefab="%s/Scene"/>' % base}, **stats)
+
+    def _bake(self, project_dir, project, out, meshes, opts):
+        """Bake with Blender, then split each mesh's vertices along the lightmap's seams."""
+        import subprocess
+        import tempfile
+        import time
+        size = int(opts.get("size", 1024))
+        names = list(dict.fromkeys(m[6] for m in meshes))
+        materials = []
+        for mat in names:
+            m = self.materials.get(mat, {})
+            # The vertex tint already carries the material's colour (see _tint).
+            spec = {"name": _safe(mat), "color": [1.0, 1.0, 1.0],
+                    "emission": m.get("emission", 0.0), "roughness": 0.7}
+            if m.get("texture"):
+                spec["texture_file"] = os.path.abspath(_asset_file(project_dir, project, m["texture"]))
+            materials.append(spec)
+        base, chunks = 0, []
+        for mesh, pos, nrm, uv, tint, faces, mat in meshes:
+            chunks.append((pos, nrm, uv, tint, faces + base, np.full(len(faces), names.index(mat), np.int32)))
+            base += len(pos)
+        cat = lambda i: np.concatenate([c[i] for c in chunks])
+        meta = {"size": size, "samples": int(opts.get("samples", 256)), "bounces": int(opts.get("bounces", 4)),
+                "margin": int(opts.get("margin", 6)), "angle": float(opts.get("angle", 66)),
+                "ambient": list(opts.get("ambient", [0, 0, 0])), "materials": materials,
+                "lights": [dict(l, color=[c ** 2.2 for c in _rgb(l["color"])]) for l in self.lights.values()]}
+        with tempfile.TemporaryDirectory() as tmp:
+            job, result = os.path.join(tmp, "job.npz"), os.path.join(tmp, "result.npz")
+            np.savez(job, meta=json.dumps(meta), position=cat(0).astype(F), normal=cat(1).astype(F),
+                     uv0=cat(2).astype(F), color=cat(3).astype(F), faces=cat(4).astype(np.int32), material=cat(5))
+            script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mesh_bake.py")
+            started = time.time()
+            run = subprocess.run([_blender(), "-b", "--factory-startup", "--python-exit-code", "1",
+                                  "--python", script, "--", job, result], capture_output=True, text=True)
+            if run.returncode != 0 or not os.path.exists(result):
+                raise ToolError("Blender bake failed:\n" + (run.stdout + run.stderr)[-3000:])
+            data = np.load(result)
+            uv1, light = data["uv1"], data["light"]
+        light = _smooth_light(light, int(opts.get("smooth", 1)))
+        _encode_light(light).save(os.path.join(out, "lightmap.png"))
+        split, uv1s, first = [], [], 0
+        for mesh, pos, nrm, uv, tint, faces, mat in meshes:
+            corners = uv1[first:first + len(faces)].reshape(-1, 2)
+            first += len(faces)
+            key = np.concatenate([faces.reshape(-1, 1).astype(np.float64), np.round(corners * 2 ** 20)], 1)
+            uniq, index, inverse = np.unique(key, axis=0, return_index=True, return_inverse=True)
+            vertex = uniq[:, 0].astype(np.int64)
+            split.append((mesh, pos[vertex], nrm[vertex], uv[vertex], tint[vertex],
+                          inverse.reshape(-1, 3), mat))
+            uv1s.append(corners[index])
+        return split, uv1s, {"lightmap": "%d px" % size, "bake_seconds": round(time.time() - started, 1),
+                             "blender": run.stdout.strip().splitlines()[-2:] if run.stdout else []}
 
     # ---- preview
 
@@ -535,6 +724,12 @@ def _safe(name):
     return "".join(c if c.isalnum() or c == "_" else "_" for c in name)
 
 
+def _asset_file(project_dir, project, asset):
+    """The file behind an ORCA asset path: '<project>/a/b.jpg' is project_dir/a/b.jpg."""
+    head, _, rest = asset.partition("/")
+    return os.path.join(project_dir, rest) if head == project else asset
+
+
 def _project_name(project_dir):
     """The asset prefix: Name from package.lua, else the folder name."""
     try:
@@ -564,18 +759,26 @@ TOOLS = {
     "get_object_info": ({"name": _STR}, ["name"]),
     "create_object": (dict({"type": {"type": "string", "enum": list(PRIMITIVES)}, "name": _STR, "location": _V3,
                             "rotation": dict(_V3, description="degrees, applied X then Y then Z"),
-                            "scale": dict(_V3, description="size in metres"), "color": _COLOR, "material": _STR},
+                            "scale": dict(_V3, description="size in metres"), "color": _COLOR, "material": _STR,
+                            "group": _STR},
                            **_OBJECT_PARAMS), []),
     "modify_object": (dict({"name": _STR, "location": _V3, "rotation": _V3, "scale": _V3, "color": _COLOR,
-                            "new_name": _STR}, **_OBJECT_PARAMS), ["name"]),
+                            "new_name": _STR, "group": _STR}, **_OBJECT_PARAMS), ["name"]),
     "duplicate_object": ({"name": _STR, "new_name": _STR, "location": _V3}, ["name"]),
     "delete_object": ({"name": _STR}, ["name"]),
-    "set_material": ({"object_name": _STR, "material_name": _STR, "color": _COLOR, "texture": _STR}, []),
+    "set_material": ({"object_name": _STR, "material_name": _STR, "color": _COLOR, "texture": _STR,
+                      "emission": _NUM}, []),
     "execute_code": ({"code": _STR}, ["code"]),
     "get_viewport_screenshot": ({"max_size": {"type": "integer"}, "camera": _V3, "target": _V3, "fov": _NUM,
                                  "path": dict(_STR, description="save here instead of returning the image")}, []),
     "export_scene": ({"project_dir": dict(_STR, description="an ORCA project folder, e.g. apps/encarta"),
-                      "name": _STR, "folder": _STR, "merge": _BOOL}, ["project_dir"]),
+                      "name": _STR, "folder": _STR, "merge": _BOOL,
+                      "lightmap": {"type": "object", "description": "bake light: {size, samples, bounces, ambient}"}},
+                     ["project_dir"]),
+    "add_light": ({"name": _STR, "type": {"type": "string", "enum": list(LIGHT_TYPES)}, "location": _V3,
+                   "direction": _V3, "color": _COLOR, "power": _NUM,
+                   "size": {"description": "radius, or [width, height] of an area light"}, "angle": _NUM}, ["name"]),
+    "add_group": ({"name": _STR, "xml": _STR}, ["name"]),
     "save_scene": ({"path": _STR}, ["path"]),
     "load_scene": ({"path": _STR}, ["path"]),
     "clear_scene": ({}, []),

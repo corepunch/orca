@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Window" Shader="encarta/Rooms/Clubhouse/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Textures/sunny-day.jpg" Lit.Lightmap="encarta/Rooms/Clubhouse/Lightmap" Lit.Glow="1"/>

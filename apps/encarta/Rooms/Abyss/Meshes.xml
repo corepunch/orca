@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
+<Library>
+  <Mesh Name="Steel" Source="encarta/Rooms/Abyss/Meshes/Steel.mesh"/>
+  <Mesh Name="Copper" Source="encarta/Rooms/Abyss/Meshes/Copper.mesh"/>
+  <Mesh Name="Sea" Source="encarta/Rooms/Abyss/Meshes/Sea.mesh"/>
+  <Mesh Name="Hull" Source="encarta/Rooms/Abyss/Meshes/Hull.mesh"/>
+  <Mesh Name="Bulb2" Source="encarta/Rooms/Abyss/Meshes/Bulb2.mesh"/>
+  <Mesh Name="Brass" Source="encarta/Rooms/Abyss/Meshes/Brass.mesh"/>
+  <Mesh Name="Paint" Source="encarta/Rooms/Abyss/Meshes/Paint.mesh"/>
+  <Mesh Name="Flesh" Source="encarta/Rooms/Abyss/Meshes/Flesh.mesh"/>
+  <Mesh Name="Globe" Source="encarta/Rooms/Abyss/Meshes/Globe.mesh"/>
+  <Mesh Name="Leaf" Source="encarta/Rooms/Abyss/Meshes/Leaf.mesh"/>
+  <Mesh Name="Black" Source="encarta/Rooms/Abyss/Meshes/Black.mesh"/>
+  <Mesh Name="Ammonite" Source="encarta/Rooms/Abyss/Meshes/Ammonite.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Hull" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Hull.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Labels" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Labels.mesh"/>
+  <Mesh Name="DrawerLeftUpper_Copper" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftUpper_Copper.mesh"/>
+  <Mesh Name="DrawerRightUpper_Hull" Source="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Hull.mesh"/>
+  <Mesh Name="DrawerRightUpper_Labels" Source="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Labels.mesh"/>
+  <Mesh Name="DrawerRightUpper_Copper" Source="encarta/Rooms/Abyss/Meshes/DrawerRightUpper_Copper.mesh"/>
+  <Mesh Name="DrawerLeftLower_Hull" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Hull.mesh"/>
+  <Mesh Name="DrawerLeftLower_Labels" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Labels.mesh"/>
+  <Mesh Name="DrawerLeftLower_Copper" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftLower_Copper.mesh"/>
+  <Mesh Name="DrawerRightLower_Hull" Source="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Hull.mesh"/>
+  <Mesh Name="DrawerRightLower_Labels" Source="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Labels.mesh"/>
+  <Mesh Name="DrawerRightLower_Copper" Source="encarta/Rooms/Abyss/Meshes/DrawerRightLower_Copper.mesh"/>
+  <Mesh Name="Bulb" Source="encarta/Rooms/Abyss/Meshes/Bulb.mesh"/>
+</Library>

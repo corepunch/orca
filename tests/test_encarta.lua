@@ -720,6 +720,27 @@ for model in assert(fs.readTextFile("encarta/Study/Scene.xml")):gmatch("<Model3D
     models = models + 1
 end
 assert(models >= 5, "the Study scene lists its meshes")
+-- The themed rooms are modeled too, each lit by its own baked lightmap, and
+-- each drawer is a group that slides as one.
+for _, id in ipairs({ "Nature", "Science", "Clubhouse", "Abyss" }) do
+    local folder = "encarta/Rooms/" .. id
+    local scene = assert(fs.readTextFile(folder .. "/Scene.xml"), id)
+    local count = 0
+    for model in scene:gmatch("<Model3D%s+([^>]+)>") do
+        local meshPath = assert(model:match('Mesh="([^"]+)"'))
+        assert(assert(fs.readTextFile(meshPath .. ".mesh"), meshPath):sub(1, 4) == "MESH")
+        local materialPath = assert(model:match('Material="([^"]+)"'))
+        local material = assert(fs.readTextFile(materialPath .. ".xml"), materialPath)
+        assert(material:find('Lit.Lightmap="' .. folder .. '/Lightmap"', 1, true), materialPath .. " uses the room's lightmap")
+        count = count + 1
+    end
+    assert(count >= 10, id .. " lists its meshes")
+    assert(fs.readTextFile(folder .. "/lightmap.png"), id .. " has its baked light")
+    for _, group in ipairs({ "DrawerLeftUpper", "DrawerRightUpper", "DrawerLeftLower", "DrawerRightLower" }) do
+        local body = assert(scene:match('<Node3D Name="' .. group .. '">(.-)</Node3D>'), id .. " " .. group)
+        assert(body:find("<Model3D", 1, true) and body:find('Clip="encarta/Study/DrawerSlide"', 1, true), id .. " " .. group .. " slides")
+    end
+end
 local lighting = assert(fs.readTextFile("encarta/Study/Lighting.xml"))
 local lightmap = assert(lighting:match('Source="([^"]+)"'))
 assert(fs.readTextFile(lightmap):sub(2, 4) == "PNG", "the lightmap is baked")

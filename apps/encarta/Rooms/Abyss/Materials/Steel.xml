@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Steel" Shader="encarta/Rooms/Abyss/Lit" BlendMode="Opaque" Lit.Albedo="encarta/Rooms/Textures/steel.jpg" Lit.Lightmap="encarta/Rooms/Abyss/Lightmap" Lit.Glow="0"/>

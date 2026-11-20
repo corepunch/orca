@@ -1,19 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Written by tools/mesh_mcp.py. -->
 <Node3D Name="Clubhouse">
-  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Clubhouse/Assets/Cabinet" Material="encarta/Rooms/Clubhouse/Assets/Finish" />
+  <Model3D Name="Wall" Mesh="encarta/Rooms/Clubhouse/Meshes/Wall" Material="encarta/Rooms/Clubhouse/Materials/Wall"/>
+  <Model3D Name="Floor" Mesh="encarta/Rooms/Clubhouse/Meshes/Floor" Material="encarta/Rooms/Clubhouse/Materials/Floor"/>
+  <Model3D Name="Oak" Mesh="encarta/Rooms/Clubhouse/Meshes/Oak" Material="encarta/Rooms/Clubhouse/Materials/Oak"/>
+  <Model3D Name="Planks" Mesh="encarta/Rooms/Clubhouse/Meshes/Planks" Material="encarta/Rooms/Clubhouse/Materials/Planks"/>
+  <Model3D Name="Rug" Mesh="encarta/Rooms/Clubhouse/Meshes/Rug" Material="encarta/Rooms/Clubhouse/Materials/Rug"/>
+  <Model3D Name="Black" Mesh="encarta/Rooms/Clubhouse/Meshes/Black" Material="encarta/Rooms/Clubhouse/Materials/Black"/>
+  <Model3D Name="Paint" Mesh="encarta/Rooms/Clubhouse/Meshes/Paint" Material="encarta/Rooms/Clubhouse/Materials/Paint"/>
+  <Model3D Name="Fabric" Mesh="encarta/Rooms/Clubhouse/Meshes/Fabric" Material="encarta/Rooms/Clubhouse/Materials/Fabric"/>
+  <Model3D Name="Tiles" Mesh="encarta/Rooms/Clubhouse/Meshes/Tiles" Material="encarta/Rooms/Clubhouse/Materials/Tiles"/>
+  <Model3D Name="Fire" Mesh="encarta/Rooms/Clubhouse/Meshes/Fire" Material="encarta/Rooms/Clubhouse/Materials/Fire"/>
+  <Model3D Name="Ember" Mesh="encarta/Rooms/Clubhouse/Meshes/Ember" Material="encarta/Rooms/Clubhouse/Materials/Ember"/>
+  <Model3D Name="Globe" Mesh="encarta/Rooms/Clubhouse/Meshes/Globe" Material="encarta/Rooms/Clubhouse/Materials/Globe"/>
+  <Model3D Name="Brass" Mesh="encarta/Rooms/Clubhouse/Meshes/Brass" Material="encarta/Rooms/Clubhouse/Materials/Brass"/>
+  <Model3D Name="Window" Mesh="encarta/Rooms/Clubhouse/Meshes/Window" Material="encarta/Rooms/Clubhouse/Materials/Window"/>
+  <Model3D Name="Terracotta" Mesh="encarta/Rooms/Clubhouse/Meshes/Terracotta" Material="encarta/Rooms/Clubhouse/Materials/Terracotta"/>
+  <Model3D Name="Leaf" Mesh="encarta/Rooms/Clubhouse/Meshes/Leaf" Material="encarta/Rooms/Clubhouse/Materials/Leaf"/>
   <Node3D Name="DrawerLeftUpper">
-    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Clubhouse/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Clubhouse/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftUpper_Paint" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerLeftUpper_Paint" Material="encarta/Rooms/Clubhouse/Materials/Paint"/>
+    <Model3D Name="DrawerLeftUpper_Labels" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerLeftUpper_Labels" Material="encarta/Rooms/Clubhouse/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightUpper">
-    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Clubhouse/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Clubhouse/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightUpper_Paint" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerRightUpper_Paint" Material="encarta/Rooms/Clubhouse/Materials/Paint"/>
+    <Model3D Name="DrawerRightUpper_Labels" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerRightUpper_Labels" Material="encarta/Rooms/Clubhouse/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerLeftLower">
-    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Clubhouse/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Clubhouse/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerLeftLower_Paint" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerLeftLower_Paint" Material="encarta/Rooms/Clubhouse/Materials/Paint"/>
+    <Model3D Name="DrawerLeftLower_Labels" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerLeftLower_Labels" Material="encarta/Rooms/Clubhouse/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
   <Node3D Name="DrawerRightLower">
-    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Clubhouse/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Clubhouse/Assets/Finish" />
-    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+    <Model3D Name="DrawerRightLower_Paint" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerRightLower_Paint" Material="encarta/Rooms/Clubhouse/Materials/Paint"/>
+    <Model3D Name="DrawerRightLower_Labels" Mesh="encarta/Rooms/Clubhouse/Meshes/DrawerRightLower_Labels" Material="encarta/Rooms/Clubhouse/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
   </Node3D>
 </Node3D>
