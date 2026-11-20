@@ -100,17 +100,55 @@ function Report.age(forecast, now)
     return { title = title, detail = detail, tone = forecast.stale and "poor" or old and "fair" or "info", score = 0 }
 end
 
--- An activity's cards (`cards(forecast, place, clock)`), added as "card"
--- rows. `clock` is the time now; it may be nil.
-local function addCards(add, activity, forecast, place, clock, kind)
+-- A card's actions as row fields: `actions = { { id, text }, … }` (or one
+-- `action = { id, text }`), at most three, each a link on the card that
+-- calls `activity.act(id, context)`.
+local ACTIONS = 3
+local function actionFields(card, fields)
+    local list = card.actions or (card.action and { card.action }) or {}
+    for index = 1, math.min(ACTIONS, #list) do
+        local action = list[index]
+        fields["action" .. index] = action.id or action[1]
+        fields["action" .. index .. "_text"] = action.text or action[2] or ""
+    end
+    return fields
+end
+Report.actionFields = actionFields
+
+-- How urgent a card is on the hub: its `rank`, else its tone (warnings and
+-- poor answers first).
+local TONE_RANK = { poor = 1, fair = 2, good = 3, info = 4 }
+local function urgency(card) return card.rank or TONE_RANK[card.tone or "info"] or 4 end
+Report.HUB_CARDS = 3
+
+-- An activity's cards (`cards(forecast, place, clock, where)`), added as
+-- "card" rows. `where` is "hub" or "activity"; a card with `hub = false`
+-- stays on the activity page. `limit` keeps only the most urgent few, in
+-- the order the activity gave them. `clock` is the time now; it may be nil.
+local function addCards(add, activity, forecast, place, clock, kind, where, limit)
     if not (activity and activity.cards) then return end
-    for index, card in ipairs(activity.cards(forecast, place, clock) or {}) do
-        add(kind or "card", tostring(card.id or index), {
+    local list = {}
+    for index, card in ipairs(activity.cards(forecast, place, clock, where or "activity") or {}) do
+        if not (where == "hub" and card.hub == false) then list[#list + 1] = { card = card, index = index } end
+    end
+    if limit and #list > limit then
+        table.sort(list, function(a, b)
+            local ua, ub = urgency(a.card), urgency(b.card)
+            if ua ~= ub then return ua < ub end
+            return a.index < b.index
+        end)
+        for index = #list, limit + 1, -1 do list[index] = nil end
+        table.sort(list, function(a, b) return a.index < b.index end)
+    end
+    for _, entry in ipairs(list) do
+        local card = entry.card
+        add(kind or "card", tostring(card.id or entry.index), actionFields(card, {
             title = card.title or "", value = card.value or "", detail = card.detail or "", tone = card.tone or "info",
             icon = card.icon or "", activity = activity.id, score = 0,
-        })
+        }))
     end
 end
+Report.addCards = addCards
 
 -- A chart's value for an hour, in the user's units.
 local function chartValue(chart, hour, forecast)
@@ -189,7 +227,9 @@ function Report.hub(place, forecast, activities, clock, lead)
     -- temperature as compact "answer" rows, so it stays on top.
     local everyday = lead and lead.id == "outdoors"
     for _, activity in ipairs(activities) do
-        if activity == lead and not everyday then addCards(add, activity, forecast, place, clock) end
+        if activity == lead and not everyday then
+            addCards(add, activity, forecast, place, clock, "card", "hub", Report.HUB_CARDS)
+        end
     end
     local yesterday = Report.yesterday(forecast)
     local gusts = (now.gust or 0) >= (now.wind or 0) + 3 and ", gusts " .. Units.wind(now.gust) or ""
@@ -199,7 +239,7 @@ function Report.hub(place, forecast, activities, clock, lead)
         note = ("wind %s %s%s · uv %s"):format(Units.wind(now.wind), Sky.compass(now.windDir), gusts, Score.fmt(now.uv)),
         score = 0, tone = "info",
     })
-    if everyday then addCards(add, lead, forecast, place, clock, "answer") end
+    if everyday then addCards(add, lead, forecast, place, clock, "answer", "hub") end
     add("age", "age", Report.age(forecast, clock))
     local day = now.day or {}
     local moon = Sky.moon(forecast.epoch)

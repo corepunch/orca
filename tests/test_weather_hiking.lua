@@ -249,9 +249,12 @@ check(loaded and loaded.missing["hiking-points"] and not loaded.hours[loaded.now
 F.checkEdition("hiking")
 net.answers["elevation=1960"] = function() return { point(1960), point(2968) } end
 local ui = F.launch { places = { tahoe }, net = net, storageName = "hiking-page" }
-check(ui.text("Cardtahoe:card:warning", "CardValue") == "winter storm warning"
-    and ui.has("Cardtahoe:card:storm") and ui.has("Cardtahoe:card:turnaround"), "The hub opens on hiking's answers")
+-- I2: the hub keeps the three most urgent answers, the warning first.
+check(ui.text("Cardtahoe:card:warning", "CardValue") == "winter storm warning" and ui.cards()[1] == "Cardtahoe:card:warning"
+    and ui.has("Cardtahoe:card:storm") and #ui.cards() == 3, "The hub opens on hiking's answers: " .. table.concat(ui.cards(), " "))
 ui.open("tahoe", "hiking")
+check(ui.has("Cardtahoe:hiking:card:warning") and ui.has("Cardtahoe:hiking:card:storm") and #ui.cards() > 3,
+    "Every answer stays on the activity page")
 check(ui.text("Cardtahoe:hiking:card:points", "CardValue") == "5° · 5°"
     and ui.text("Cardtahoe:hiking:card:turnaround", "CardValue"):find("^turn by"), "The activity page shows the answers")
 ui.back()

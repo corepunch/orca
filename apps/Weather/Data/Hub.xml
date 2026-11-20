@@ -21,4 +21,5 @@
   <Handler Name="OpenDay" Function="openDay"/>
   <Handler Name="ChoosePlace" Function="choosePlace"/>
   <Handler Name="OpenSettings" Function="openSettings"/>
+  <Handler Name="CardAction" Function="cardAction"/>
 </DataScope>

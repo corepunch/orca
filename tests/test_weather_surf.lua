@@ -275,25 +275,43 @@ do
     store:save("forecast-bondi", raw)
     local ui = F.launch { places = Places, net = net, storage = store }
     local id = Places[1].id
-    check(ui.text("Card" .. id .. ":card:dawn", "CardValue"):find("^first light"), "The hub opens on dawn patrol")
-    check(ui.has("Card" .. id .. ":card:setup"), "A first run asks for the surfer's level")
-    check(ui.text("Card" .. id .. ":card:best-break", "CardValue") == "bondi",
-        "The best break today is another saved break: " .. ui.text("Card" .. id .. ":card:best-break", "CardDetail"))
-    check(ui.text("Card" .. id .. ":card:outlook", "CardTitle") ~= "", "The outlook card is on the hub")
+    -- I2: at most three cards on the hub, the first-run setup first (`rank`).
+    local cards = ui.cards()
+    check(#cards == 3 and cards[1] == "Card" .. id .. ":card:setup", "A first run asks for the surfer's level first: "
+        .. table.concat(cards, " "))
+    check(ui.has("Card" .. id .. ":card:dawn") and ui.text("Card" .. id .. ":card:dawn", "CardValue"):find("^first light"),
+        "The hub shows dawn patrol")
     local outlook
     for _, url in ipairs(net.requests) do outlook = outlook or url:find("ncep_gfswave025") end
     check(outlook, "The outlook is fetched with the forecast")
-    ui.press("OpenSettings")
-    local row = "Settingsettings:surf:level"
-    check(ui.text(row, "SettingValue") == "not set" and ui.text(row, "SettingTitle") == "your level",
-        "Settings show the level is not set")
-    ui.find(row):findChild("SettingChange", true):send("Node.LeftButtonUp")
+    -- I3: the setup card's links choose the level in one tap.
+    local setup = ui.find("Card" .. id .. ":card:setup")
+    check(setup:findChild("CardAction1", true).Text == "beginner" and setup:findChild("CardAction3", true).Visible,
+        "The setup card offers the three levels")
+    setup:findChild("CardAction1", true):send("Node.LeftButtonUp")
     ui.settle()
     check(Surf.level() == "beginner" and select(2, Surf.level()), "A tap chooses beginner")
+    check(not ui.has("Card" .. id .. ":card:setup") and not ui.has("Card" .. id .. ":card:log"),
+        "Once chosen, the setup card goes away; the session log stays off the hub")
+    ui.press("OpenSettings")
+    check(ui.text("Settingsettings:surf:level", "SettingValue") == "beginner", "Settings show the level chosen")
     ui.back("SettingsPivot")
-    check(not ui.has("Card" .. id .. ":card:setup"), "Once chosen, the setup card goes away")
     ui.open(id, "surf")
-    check(ui.text("Card" .. id .. ":surf:card:dawn", "CardValue"):find("^first light"), "The activity page shows the cards")
+    check(ui.text("Card" .. id .. ":surf:card:dawn", "CardValue"):find("^first light")
+        and ui.text("Card" .. id .. ":surf:card:best-break", "CardValue") == "bondi" and ui.has("Card" .. id .. ":surf:card:outlook"),
+        "The activity page shows every card; the best break today is another saved break")
+    -- I3: one tap logs the session in the current hour's conditions.
+    local Logbook = require "Weather/editions/surf/logbook"
+    local before = #Logbook.sessions()
+    local log = "Card" .. id .. ":surf:card:log"
+    check(ui.text(log, "CardValue") == "how was it?" and ui.find(log):findChild("CardAction2", true).Text == "fair",
+        "The page asks how the session was")
+    ui.find(log):findChild("CardAction1", true):send("Node.LeftButtonUp")
+    ui.settle()
+    check(#Logbook.sessions() == before + 1 and Logbook.sessions()[before + 1].rating == "good"
+        and Logbook.sessions()[before + 1].place == id, "One tap logs a good session here")
+    check(ui.text(log, "CardValue") == "saved" and ui.text(log, "CardDetail"):find("^saved a good session at"),
+        "The card says what it saved: " .. ui.text(log, "CardDetail"))
     ui.back()
     ui.app.hubScope:dispose()
 end

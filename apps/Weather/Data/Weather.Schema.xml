@@ -1,8 +1,9 @@
 <!-- What the weather app shows. Every report row is a WeatherRow; Kind tells
      the section (now, age, card, detail, strip, activity, hour, day, reason,
      metric, and setting or about on the settings page),
-     Tone the verdict (good, fair, poor, info) that colours it, and Activity
-     which activity a "good for" row opens. -->
+     Tone the verdict (good, fair, poor, info) that colours it, Activity
+     which activity a "good for" row opens, and Action1–3 what a card's
+     links ask that activity to do. -->
 <Schema>
   <Entity Name="WeatherPlace" Key="Id" ObjectName="Id" Description="A place the app forecasts for.">
     <Column Name="Id" Type="string" Source="id"/>
@@ -30,6 +31,15 @@
     <Column Name="Metric2" Type="float" Source="metric2" Default="0" Description="The activity's second chart value."/>
     <Column Name="Setting" Type="string" Source="setting" Default="" Description="The setting a row changes (&quot;units/wind&quot;)."/>
     <Column Name="Stepper" Type="bool" Source="stepper" Default="false" Description="A number setting: less and more buttons."/>
+    <Column Name="Action1" Type="string" Source="action1" Default="" Description="A card's first action (`activity.act`)."/>
+    <Column Name="ActionText1" Type="string" Source="action1_text" Default="" Description="Its link text."/>
+    <Column Name="Action2" Type="string" Source="action2" Default="" Description="A card's second action."/>
+    <Column Name="ActionText2" Type="string" Source="action2_text" Default="" Description="Its link text."/>
+    <Column Name="Action3" Type="string" Source="action3" Default="" Description="A card's third action."/>
+    <Column Name="ActionText3" Type="string" Source="action3_text" Default="" Description="Its link text."/>
+    <Column Name="HasActions" Type="bool" Computed="hasActions" DependsOn="Action1" Description="The card has a link to act on."/>
+    <Column Name="HasAction2" Type="bool" Computed="hasAction2" DependsOn="Action2" Description="It has a second."/>
+    <Column Name="HasAction3" Type="bool" Computed="hasAction3" DependsOn="Action3" Description="It has a third."/>
     <Column Name="HasIcon" Type="bool" Computed="hasIcon" DependsOn="Icon" Description="The row has an icon to show."/>
     <Column Name="HasNote" Type="bool" Computed="hasNote" DependsOn="Note" Description="The row has a note to show."/>
     <Column Name="HasDetail" Type="bool" Computed="hasDetail" DependsOn="Detail" Description="The row has a detail line."/>

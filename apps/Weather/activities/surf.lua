@@ -417,19 +417,50 @@ function Surf.outlookCard(forecast)
             confidence, why) }
 end
 
--- First run (SU9): ask for the level until it is chosen.
+-- First run (SU9): ask for the level until it is chosen, one tap on the
+-- card (or in settings). It leads the hub until then.
 function Surf.setupCard()
     local _, chosen = Surf.level()
     if chosen then return nil end
-    return { id = "setup", title = "your level", value = "not set yet", tone = "info",
-        detail = "choose it in settings so big days are rated for you; until then, for an intermediate" }
+    return { id = "setup", title = "your level", value = "not set yet", tone = "info", rank = 0,
+        detail = "so big days are rated for you; until then, for an intermediate",
+        actions = { { "level:beginner", "beginner" }, { "level:intermediate", "intermediate" },
+            { "level:advanced", "advanced" } } }
+end
+
+-- The session log (SU10) in one tap: how was it, for the hour just
+-- surfed? On the activity page only (`hub = false`); the card says what
+-- was saved.
+local logged = {}
+function Surf.logCard(place)
+    local last = place and logged[place.id]
+    local count = 0
+    for _, entry in ipairs(Logbook.sessions()) do if place and entry.place == place.id then count = count + 1 end end
+    local detail = last and ("saved a %s session at %s · %d here in your log"):format(last.rating,
+        Units.clock(last.time), count) or "one tap saves the hour's waves, wind and tide; your log stays on this phone"
+    return { id = "log", title = "log a session", value = last and "saved" or "how was it?", detail = detail,
+        tone = last and last.rating or "info", hub = false,
+        actions = { { "log:good", "good" }, { "log:fair", "fair" }, { "log:poor", "poor" } } }
+end
+
+-- A card's link: "level:<level>" chooses the level, "log:<rating>" logs
+-- the current hour at the place.
+function Surf.act(id, context)
+    local level = id:match("^level:(%a+)$")
+    if level and LEVELS[level] then Settings.set("surf", "level", level); return end
+    local rating = id:match("^log:(%a+)$")
+    local forecast = context.forecast
+    if not (rating and forecast and context.place) then return nil end
+    local entry = Surf.log(context.place, forecast, forecast.hours[forecast.now], rating)
+    if entry then logged[context.place.id] = entry end
 end
 
 function Surf.cards(forecast, place)
     local cards = {}
     for _, card in ipairs {
-        Surf.dawnPatrol(forecast) or false, Surf.waterCard(forecast) or false, Surf.tideCard(forecast) or false,
-        Surf.bestBreakCard(forecast, place) or false, Surf.outlookCard(forecast) or false, Surf.setupCard() or false,
+        Surf.setupCard() or false, Surf.dawnPatrol(forecast) or false, Surf.waterCard(forecast) or false,
+        Surf.tideCard(forecast) or false, Surf.bestBreakCard(forecast, place) or false,
+        Surf.outlookCard(forecast) or false, Surf.logCard(place),
     } do
         if card then cards[#cards + 1] = card end
     end

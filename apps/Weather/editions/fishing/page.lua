@@ -89,12 +89,7 @@ function Page.provider(options)
     end
 
     return {
-        computed = {
-            scoreText = function(values) return ("%d"):format(math.floor(values.Score or 0)) end,
-            hasIcon = function(values) return (values.Icon or "") ~= "" end,
-            hasNote = function(values) return (values.Note or "") ~= "" end,
-            hasDetail = function(values) return (values.Detail or "") ~= "" end,
-        },
+        computed = require("Weather/provider").computed,
         filters = { statusRows = kind("status"), readingRows = kind("reading"), entryRows = kind("entry"),
             patternRows = kind("pattern"), waterRows = kind("water") },
         handlers = {

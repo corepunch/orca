@@ -254,13 +254,14 @@ net.answers["latitude=39%.09&longitude=%-120%.04"] = function()
     return answer
 end
 local ui = F.launch { places = Places, storage = store, net = net, clock = function() return F.NOW + 8 * 3600 end }
-check(ui.has("Cardtahoe:card:tonight") and ui.has("Cardtahoe:card:darkness"), "The hub opens on tonight's cards")
+check(ui.cards()[1] == "Cardtahoe:card:tonight" and #ui.cards() <= 3,
+    "The hub opens on tonight's cards: " .. table.concat(ui.cards(), " "))
 check(store:load(RedMode.FILE).lat == Places[1].lat, "The last place is kept for the next launch")
 ui.open(Places[1].id, "stargazing")
 check(ui.app.hubPage.StateClasses == "stargazing night", "The hub follows the dark")
 check(Stargazing.stylesheet == RedMode.NIGHT, "New pages open in the red sheet")
-check(ui.has("Card" .. Places[1].id .. ":stargazing:card:tonight") and ui.has("Card" .. Places[1].id .. ":stargazing:card:moon"),
-    "The activity page shows tonight's cards")
+check(ui.has("Card" .. Places[1].id .. ":stargazing:card:tonight") and ui.has("Card" .. Places[1].id .. ":stargazing:card:moon")
+    and ui.has("Card" .. Places[1].id .. ":stargazing:card:darkness"), "The activity page shows all of tonight's cards")
 ui.back()
 ui.press("OpenSettings")
 Settings.set("stargazing", "redmode", "off")

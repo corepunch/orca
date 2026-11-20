@@ -279,22 +279,15 @@ check(Fishing.page.link == "log a catch" and Fishing.page.path == "/fishing/log"
 Log.use(nil)
 local appStore = ui.app.storage
 appStore:remove(Log.FILE)
-ui.app.place = LAKE
-local Routes = require "orca.data.routes"
-local wentBack = false
-local provider = Fishing.page.provider { forecastFor = ui.app.provider.forecastFor, places = { LAKE, COAST },
-    place = function() return ui.app.place end, clock = function() return F.NOW end,
-    back = function() wentBack = true end }
-local page, scope = Routes.load(Fishing.page.routes):open(Fishing.page.path, ui.app, { provider = provider, host = ui.app.host })
-local screen = ui.app:screenFor(page)
-scope:activate()
-local core = require "orca.core"
-local function settle()
-    for _ = 1, 3 do core.flushQueue(); core.advanceFrame(); core.runAllPrograms(screen); core.flushQueue() end
-    screen:UpdateLayout(390, 844)
-end
-local function press(name) page:findChild(name, true):send("Node.LeftButtonUp"); settle() end
-settle()
+-- I3: the fishing page links to the log, which the app routes to.
+ui.press("Placelake")
+ui.open("lake", "fishing")
+check(ui.find("OpenActivityPage").Visible and ui.find("OpenActivityPage").Text == "log a catch",
+    "The fishing page links to its log")
+ui.press("OpenActivityPage")
+check(ui.has("FishingLogPivot") and ui.find("FishingLogPage").StateClasses:find("fishing"), "The link opens the log")
+local page = ui.app.screen
+local settle, press = ui.settle, ui.press
 check(page:findChild("NoEntries", true).Visible, "An empty log says it stays on the phone")
 press("LogCatch")
 check(#Log.entries() == 1 and Log.entries()[1].place == "lake", "One tap logs a catch at the place")
@@ -314,10 +307,10 @@ press("ExportLog")
 check(io.open(appStore.dir .. "/fishing-log.csv", "r+b") ~= nil, "Export from the page")
 check(page:findChild("Waterlake", true) ~= nil or page:findChild("Waterwaters:lake", true) ~= nil,
     "The waters view lists the places")
-page:findChild("FishingLogPivot", true):post("Pivot.BackRequested")
-settle()
-check(wentBack, "Back leaves the log")
-scope:dispose()
+ui.back("FishingLogPivot")
+check(ui.has("ActivityPivot") and ui.find("ActivityPivot").Title:find("Test Lake"), "Back returns to the fishing page")
+ui.back()
+check(ui.app.screen == ui.app.hubScreen, "and from there to the hub")
 Log.setReading("lake", nil)
 ui.app.hubScope:dispose()
 

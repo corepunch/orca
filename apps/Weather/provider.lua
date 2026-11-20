@@ -19,6 +19,17 @@ Forecast.userAgent = Activities.appName:gsub("[^%w]", "") .. "/1.0 (ORCA)"
 
 local function kind(name) return function(record) return record.values.Kind == name end end
 
+-- The schema's computed columns, for every store over it.
+Provider.computed = {
+    scoreText = function(values) return ("%d"):format(math.floor(values.Score or 0)) end,
+    hasIcon = function(values) return (values.Icon or "") ~= "" end,
+    hasNote = function(values) return (values.Note or "") ~= "" end,
+    hasDetail = function(values) return (values.Detail or "") ~= "" end,
+    hasActions = function(values) return (values.Action1 or "") ~= "" end,
+    hasAction2 = function(values) return (values.Action2 or "") ~= "" end,
+    hasAction3 = function(values) return (values.Action3 or "") ~= "" end,
+}
+
 function Provider.new(places, options)
     options = options or {}
     local byId, cache = {}, {}
@@ -78,12 +89,7 @@ function Provider.new(places, options)
 
     provider = {
         places = places,
-        computed = {
-            scoreText = function(values) return ("%d"):format(math.floor(values.Score or 0)) end,
-            hasIcon = function(values) return (values.Icon or "") ~= "" end,
-            hasNote = function(values) return (values.Note or "") ~= "" end,
-            hasDetail = function(values) return (values.Detail or "") ~= "" end,
-        },
+        computed = Provider.computed,
         filters = {
             nowRows = kind("now"), detailRows = kind("detail"), stripRows = kind("strip"), activityRows = kind("activity"),
             reasonRows = kind("reason"), hourRows = kind("hour"), dayRows = kind("day"), metricRows = kind("metric"),
@@ -123,7 +129,7 @@ function Provider.new(places, options)
             settings = function() return Provider.settingsRows() end,
         },
     }
-    provider.forecastFor = forecastFor
+    provider.forecastFor, provider.clock = forecastFor, clock
     return provider
 end
 

@@ -277,6 +277,29 @@ check(steppedUrl:find("&forecast_minutely_15=12&past_minutely_15=0", 1, true)
     and steppedUrl:find("&models=best_match,gfs_seamless,icon_seamless", 1, true), "They go into the main call: " .. steppedUrl)
 for activity, saved in pairs(declared) do activity.fields, activity.sources = saved[1], saved[2] end
 
+-- I2: an edition's cards know where they show; the hub keeps the three most
+-- urgent (by `rank`, else poor and warnings first), in the activity's order.
+local wheres = {}
+local lens = setmetatable({ id = "lens", cards = function(_, _, _, where)
+    wheres[#wheres + 1] = where
+    return { { id = "a", tone = "good" }, { id = "b", tone = "info" }, { id = "c", tone = "poor" },
+        { id = "d", tone = "fair", hub = false }, { id = "e", tone = "fair" }, { id = "f", tone = "info", rank = 0,
+        actions = { { "go", "go" }, { id = "stay", text = "stay" } } } }
+end }, { __index = Activities.byId.outdoors })
+local lensForecast = Forecast.parse(weather(39.09), nil, NOW, tahoe)
+local hubCards = {}
+for _, row in ipairs(Report.hub(tahoe, lensForecast, { lens }, NOW, lens)) do
+    if row.kind == "card" then hubCards[#hubCards + 1] = row.id:match("[^:]+$") end
+end
+check(table.concat(hubCards, ",") == "c,e,f" and wheres[1] == "hub", "The hub keeps three cards: " .. table.concat(hubCards, ","))
+local pageCards, actionRow = {}, nil
+for _, row in ipairs(Report.rows(lens, tahoe, lensForecast, NOW)) do
+    if row.kind == "card" then pageCards[#pageCards + 1] = row.id:match("[^:]+$"); actionRow = row end
+end
+check(table.concat(pageCards, ",") == "a,b,c,d,e,f" and wheres[2] == "activity", "The page keeps every card")
+check(actionRow.action1 == "go" and actionRow.action2_text == "stay" and actionRow.action3 == nil,
+    "A card's actions become its links")
+
 -- The app over a few places, with every navigation step a real control event.
 local Places = require "Weather/places"
 local Outdoors = Activities.byId.outdoors

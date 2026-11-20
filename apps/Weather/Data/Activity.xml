@@ -14,4 +14,6 @@
   <View Name="Days" Source="Report" Filter="dayRows"/>
   <View Name="Conditions" Source="Report" Filter="metricRows"/>
   <Handler Name="GoBack" Function="goBack"/>
+  <Handler Name="CardAction" Function="cardAction"/>
+  <Handler Name="OpenActivityPage" Function="openActivityPage"/>
 </DataScope>

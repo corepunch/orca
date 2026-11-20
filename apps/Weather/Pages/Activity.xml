@@ -24,6 +24,9 @@
         <!-- The activity's big answers (`cards`) come before the reasons. -->
         <ItemsStack Name="CardItems" Spacing="14" JustifyContent="Start" ItemNamePrefix="Card"
                     ItemsSource="{Binding DataContext/Cards/Items}" ItemTemplate="Weather/Templates/CardRow"/>
+        <!-- The activity's own page (`activity.page`), when it has one. -->
+        <Button Name="OpenActivityPage" Click="OpenActivityPage" Visible="false" Height="44" BorderWidth="0" FontSize="20"
+                TextHorizontalAlignment="Left" class="wx-link">more</Button>
         <ItemsStack Name="ReasonItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="Reason"
                     ItemsSource="{Binding DataContext/Reasons/Items}" ItemTemplate="Weather/Templates/ReasonRow"/>
         <TextBlock Text="conditions" FontSize="26" MarginTop="10" class="wx-ink" IgnoreHitTest="true"/>

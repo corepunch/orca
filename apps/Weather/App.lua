@@ -76,11 +76,27 @@ App = Application:extend {
         handlers.changeSetting = function(scope, params) return self:changeSetting(scope, params.item, 1) end
         handlers.lowerSetting = function(scope, params) return self:changeSetting(scope, params.item, -1) end
         handlers.goBack = function() return self:goBack() end
+        handlers.cardAction = function(scope, params) return self:cardAction(scope, params.item, params.sender) end
+        handlers.openActivityPage = function()
+            local page = self.activity and self.activity.page
+            if not page then return end
+            self.pageReturn = "/activity"
+            return self:activate_route(page.path)
+        end
         self.store = data.Store.new { schema = data.schema("Weather/Data/Weather.Schema.xml"), scope = "weather",
             computed = self.provider.computed }
         self.routes = Routes.load("Weather/Data/Routes.xml")
         for _, route in ipairs(self.routes.list) do
             self:match(route.path, route.path, function(app) return app:open(route.path) end)
+        end
+        -- An activity's own page (`activity.page`): its routes, opened with its provider.
+        for _, activity in ipairs(Activities.list) do
+            if activity.page then
+                local routes = Routes.load(activity.page.routes)
+                for _, route in ipairs(routes.list) do
+                    self:match(route.path, route.path, function(app) return app:openActivityPage(activity, routes, route.path) end)
+                end
+            end
         end
     end,
 
@@ -137,9 +153,51 @@ App = Application:extend {
             page.StateClasses = self.activity.id
             page:findChild("ActivityPivot", true).Title = self:activityTitle(self.activity, self.place)
             self:configureCharts(page, self.activity.charts or {})
+            local link, own = page:findChild("OpenActivityPage", true), self.activity.page
+            link.Visible = own ~= nil
+            if own then link.Text = own.link end
         end
         scope:activate()
         return self:screenFor(page)
+    end,
+
+    -- An activity's own page, over the provider it makes from the app's:
+    -- the place's forecast, every place, the place shown, the clock and Back.
+    openActivityPage = function(self, activity, routes, path)
+        if self.activityScope then self.activityScope:dispose(); self.activityScope = nil end
+        if self.hubScope then self.hubScope:deactivate() end
+        local provider = activity.page.provider { forecastFor = self.provider.forecastFor, places = self.places,
+            place = function() return self.place end, clock = self.provider.clock,
+            back = function() return self:activate_route(self.pageReturn or "/activity") end }
+        local page, scope = routes:open(path, self, { provider = provider, store = self.store, host = self.host })
+        self.activityScope = scope
+        page.StateClasses = activity.id
+        scope:activate()
+        return self:screenFor(page)
+    end,
+
+    -- A card's link: its activity acts (`activity.act(id, context)`) at the
+    -- place shown. A returned path opens that route (settings, the
+    -- activity's own page); otherwise the cards redraw from the forecast
+    -- the app already has.
+    cardAction = function(self, scope, record, sender)
+        local values = record and record.values
+        local activity = values and Activities.byId[values.Activity]
+        local index = sender and tostring(sender.Name or ""):match("(%d)$") or "1"
+        local id = values and values["Action" .. index]
+        local onHub = scope == self.hubScope
+        local place = onHub and self:selectedPlace() or self.place
+        if not (activity and activity.act and id and id ~= "" and place) then return end
+        local forecast = self.provider.forecastFor(place.id, nil, not onHub and activity or nil)
+        local path = activity.act(id, { place = place, forecast = forecast, clock = self.provider.clock(),
+            where = onHub and "hub" or "activity", card = values.Id })
+        if type(path) == "string" then
+            self.activity, self.place = activity, place
+            if onHub then self.backPath, self.pageReturn = nil, "/" else self.pageReturn = "/activity" end
+            return self:activate_route(path)
+        end
+        self.provider.redrawing = true
+        scope:member("Report"):refresh { force = true }
     end,
 
     -- "fishing · Lake Tahoe"; an edition's own activity says the app's name

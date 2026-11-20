@@ -199,6 +199,15 @@ function Fixture.launch(options)
     function ui.text(row, child) return ui.find(row):findChild(child, true).Text end
     function ui.press(name) ui.find(name):send("Node.LeftButtonUp"); ui.settle() end
     function ui.back(pivot) ui.find(pivot or "ActivityPivot"):post("Pivot.BackRequested"); ui.settle() end
+    -- The names of the card rows on screen ("Cardtahoe:card:frost"), in order.
+    function ui.cards()
+        local list, node = {}, ui.find("CardItems"):getFirstChild()
+        while node do
+            if node.Visible ~= false then list[#list + 1] = node.Name end
+            node = node:getNext()
+        end
+        return list
+    end
     -- Opens an activity from the selected place's "good for" row.
     function ui.open(placeId, activityId) ui.press("GoodFor" .. placeId .. ":activity:" .. activityId) end
     ui.settle()
