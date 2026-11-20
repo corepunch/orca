@@ -1,3 +1,4 @@
+@import "rooms.css";
 /* An explorer's study: a wooden desk, cream paper, category colors. */
 
 /* ---------- library ---------- */
@@ -80,35 +81,53 @@
 .count { font-size: 13; font-weight: bold; letter-spacing: 1.2; color: var(--sand); text-vertical-align: center; }
 .empty { font-size: 18; color: var(--sand); }
 
-/* the study: a picture with clear buttons over its objects */
-.room { border-radius: 16; overflow: hidden; background-color: var(--wood-raised); }
-.room-art { border-radius: 16; }
-.object { padding: 0 0 8; border-radius: 14; background-color: #00000000; }
-.object:hover, .object:focus { background-color: #FFF8E733; }
-.object.object-on, .object.object-on:hover { background-color: #FFF8E74D; ring: 0 3 var(--sun); }
-.plate {
-  padding: 4 12;
-  border-radius: 6;
-  border: 2 solid var(--paper-line);
-  font-family: Noto Serif;
-  font-size: 16;
-  font-weight: bold;
-  background-color: var(--paper);
+/* The field desk. Transparent targets leave the modeled exhibits visible. */
+.study-header {
+  padding: 3 22 5;
+  background-color: #163C39;
+  border-bottom: 2 solid #AB915D;
 }
-.plate-animals { color: var(--animals); }
-.plate-space { color: var(--space); }
-.plate-earth { color: var(--earth); }
-.plate-science { color: var(--science); }
-.plate-plants { color: var(--plants); }
-.plate-your-body { color: var(--your-body); }
-.plate-long-ago { color: var(--long-ago); }
-.postcard { margin-left: 14; margin-right: 14; padding: 10; border-radius: 8; background-color: var(--paper); }
-.postcard:hover, .postcard:focus { ring: 0 3 var(--sun); }
-.postcard-art { border-radius: 4; }
-.postcard-copy { gap: 2; }
-.postcard-tag { font-size: 11; font-weight: bold; letter-spacing: 1.4; color: var(--animals); }
-.postcard-question { font-family: Noto Serif; font-size: 17; line-height: 21; font-weight: bold; color: var(--ink); }
-.bubble { padding: 10 12 12 18; gap: 6; border-radius: 18; border: 2 solid var(--paper-line); background-color: var(--paper); }
+.study-imprint { font-size: 12; line-height: 16; font-weight: bold; letter-spacing: 3; color: #E8C98B; }
+.study-title { font-family: Noto Serif; font-size: 27; line-height: 32; font-weight: bold; color: #FFF4D8; }
+.study-search {
+  min-height: 44; padding: 0 18; border: 1 solid #B5A471; border-radius: 5;
+  font-size: 16; font-weight: bold; color: #FFF4D8; background-color: #234D47;
+}
+.study-search:hover, .study-search:focus { background-color: #326252; ring: 0 2 #E8C98B; }
+.specimen, .desk-drawer { padding: 0; border: 0 solid #00000000; border-radius: 5; background-color: #00000000; }
+.specimen-label {
+  margin: auto auto 0; padding: 3 7; border: 1 solid #C9AD70; border-radius: 3;
+  font-family: Noto Serif; font-size: 16; line-height: 21; font-weight: bold;
+  color: #FFF3D4; background-color: #19423D;
+}
+.specimen:hover, .specimen:focus, .specimen.object-on, .desk-drawer:hover, .desk-drawer:focus {
+  background-color: #FFF1C71A; ring: 0 2 #E6C785;
+}
+.field-postcard {
+  padding: 5 22; background-color: #F1E4C5; border-top: 3 solid #AD8B4C;
+  border-radius: 0; color: #25514B;
+}
+.field-postcard:hover, .field-postcard:focus { background-color: #FFF0CC; }
+.field-eyebrow { font-size: 11; line-height: 17; font-weight: bold; letter-spacing: 2; color: #70572F; }
+.field-question { font-family: Noto Serif; font-size: 18; line-height: 23; font-weight: bold; color: #193D39; }
+.postcard-art { color: #FFFFFF; border: 2 solid #AD8B4C; border-radius: 3; }
+.bubble {
+  padding: 10 14 16; gap: 6; border-radius: 8; border: 2 solid #AB915D;
+  background-color: #FFF8E7;
+}
+/* The plaques and window trim use the materials of the selected room. */
+.nature-room .study-header { background-color: #263B2D; }
+.nature-room .specimen-label { background-color: #F4E5C1; color: #443521; border-color: #976F40; }
+.science-room .study-header { background-color: #313C39; border-color: #C8A66F; }
+.science-room .specimen-label { background-color: #F7ECCF; color: #59382B; border-color: #9C7947; }
+.clubhouse-room .study-header { background-color: #346669; border-color: #E4B885; }
+.clubhouse-room .study-imprint { color: #FFE9AD; }
+.clubhouse-room .study-search { background-color: #FAE8C7; color: #254A4C; border-color: #DAAF7D; border-radius: 14; }
+.clubhouse-room .specimen-label { background-color: #FFF0C8; color: #543928; border-color: #93693D; border-radius: 10; }
+.abyss-room .study-header { background-color: #182F44; border-color: #C39869; }
+.abyss-room .study-search { background-color: #25495E; }
+.abyss-room .specimen-label { background-color: #13384B; color: #FFF0CE; border-color: #CE975A; }
+.drawer-hint { font-size: 17; line-height: 23; color: #4B4538; }
 .bubble-title { font-family: Noto Serif; font-size: 22; font-weight: bold; color: var(--ink); text-vertical-align: center; }
 .bubble-close { padding: 0; border-radius: 22; color: var(--muted); background-color: #00000000; }
 .bubble-close:hover { background-color: var(--paper-line); }
@@ -127,10 +146,6 @@
   background-color: var(--sun);
 }
 .bubble-all:hover, .bubble-all:active { background-color: var(--sun-light); }
-
-.drawer { border-radius: 8; background-color: #00000000; }
-.drawer:hover, .drawer:focus { background-color: #FFF8E71F; ring: 0 3 var(--sun); }
-.drawer-plate { color: var(--ink); }
 
 /* ---------- question hunt and passport ---------- */
 .hunt-body { padding: 0 20 20; }
@@ -306,3 +321,33 @@
 .chip-plants.chip-on, .chip-plants.chip-on:hover { color: var(--cream); background-color: var(--plants); border-color: var(--plants); }
 .chip-your-body.chip-on, .chip-your-body.chip-on:hover { color: var(--cream); background-color: var(--your-body); border-color: var(--your-body); }
 .chip-long-ago.chip-on, .chip-long-ago.chip-on:hover { color: var(--cream); background-color: var(--long-ago); border-color: var(--long-ago); }
+.cat-history { background-color: var(--history); }
+.cat-time-machine { background-color: var(--time-machine); }
+.chip-history { border-color: var(--history); }
+.chip-history.chip-on, .chip-history.chip-on:hover { color: var(--cream); background-color: var(--history); border-color: var(--history); }
+
+/* ---------- home: the ask box and the wings ---------- */
+/* The ask box looks like a field, not a button: a child sees where to type. */
+.home-ask {
+  min-height: 52; padding: 0 18; border: 2 solid #E8C98B; border-radius: 26;
+  background-color: #FFF8E7; color: #2A1E10;
+}
+.home-ask:hover, .home-ask:focus { background-color: #FFFFFF; ring: 0 3 #F6C83A; }
+.home-ask-icon { color: #6E5D46; }
+.home-ask-text { font-size: 19; line-height: 24; color: #5C4B35; }
+.home-dock {
+  background-color: #F1E4C5; border-top: 3 solid #AD8B4C;
+}
+.wings { padding: 8 12 8 22; }
+.wing {
+  min-height: 56; padding: 6 16 6 12; border-radius: 10; border: 0 solid #00000000;
+  color: #FFF8E7; background-color: var(--time-machine);
+}
+.wing:hover, .wing:focus { ring: 0 3 #F6C83A; }
+.wing:active { opacity: 0.85; }
+.wing-history { background-color: var(--history); }
+.wing-icon { color: #FFF8E7; }
+.wing-name { font-family: Noto Serif; font-size: 19; line-height: 23; font-weight: bold; color: #FFF8E7; }
+.wing-detail { font-size: 13; line-height: 17; color: #FFE9C2; }
+.home-dock .field-postcard { border-top: 0 solid #00000000; background-color: #00000000; }
+.home-dock .field-postcard:hover, .home-dock .field-postcard:focus { background-color: #FFF0CC; }

@@ -4,10 +4,24 @@
   <Mesh Name="Study_Floor" Source="encarta/Study/Meshes/Study_Floor.mesh"/>
   <Mesh Name="Study_Paint" Source="encarta/Study/Meshes/Study_Paint.mesh"/>
   <Mesh Name="Study_Planks" Source="encarta/Study/Meshes/Study_Planks.mesh"/>
+  <Mesh Name="Study_Wall" Source="encarta/Study/Meshes/Study_Wall.mesh"/>
   <Mesh Name="Study_Dark" Source="encarta/Study/Meshes/Study_Dark.mesh"/>
   <Mesh Name="Study_Sky" Source="encarta/Study/Meshes/Study_Sky.mesh"/>
   <Mesh Name="Study_Oak" Source="encarta/Study/Meshes/Study_Oak.mesh"/>
+  <Mesh Name="Study_DrawerLeftLowerOak" Source="encarta/Study/Meshes/Study_DrawerLeftLowerOak.mesh"/>
+  <Mesh Name="Study_DrawerLeftLowerPaint" Source="encarta/Study/Meshes/Study_DrawerLeftLowerPaint.mesh"/>
+  <Mesh Name="Study_DrawerLeftLowerLabels" Source="encarta/Study/Meshes/Study_DrawerLeftLowerLabels.mesh"/>
+  <Mesh Name="Study_DrawerLeftUpperOak" Source="encarta/Study/Meshes/Study_DrawerLeftUpperOak.mesh"/>
+  <Mesh Name="Study_DrawerLeftUpperPaint" Source="encarta/Study/Meshes/Study_DrawerLeftUpperPaint.mesh"/>
+  <Mesh Name="Study_DrawerLeftUpperLabels" Source="encarta/Study/Meshes/Study_DrawerLeftUpperLabels.mesh"/>
+  <Mesh Name="Study_DrawerRightLowerOak" Source="encarta/Study/Meshes/Study_DrawerRightLowerOak.mesh"/>
+  <Mesh Name="Study_DrawerRightLowerPaint" Source="encarta/Study/Meshes/Study_DrawerRightLowerPaint.mesh"/>
+  <Mesh Name="Study_DrawerRightLowerLabels" Source="encarta/Study/Meshes/Study_DrawerRightLowerLabels.mesh"/>
+  <Mesh Name="Study_DrawerRightUpperOak" Source="encarta/Study/Meshes/Study_DrawerRightUpperOak.mesh"/>
+  <Mesh Name="Study_DrawerRightUpperPaint" Source="encarta/Study/Meshes/Study_DrawerRightUpperPaint.mesh"/>
+  <Mesh Name="Study_DrawerRightUpperLabels" Source="encarta/Study/Meshes/Study_DrawerRightUpperLabels.mesh"/>
   <Mesh Name="Study_Globe" Source="encarta/Study/Meshes/Study_Globe.mesh"/>
+  <Mesh Name="Study_BookSpines" Source="encarta/Study/Meshes/Study_BookSpines.mesh"/>
   <Mesh Name="Study_Octopus" Source="encarta/Study/Meshes/Study_Octopus.mesh"/>
   <Mesh Name="Study_Heart" Source="encarta/Study/Meshes/Study_Heart.mesh"/>
 </Library>

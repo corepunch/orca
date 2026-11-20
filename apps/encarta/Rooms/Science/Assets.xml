@@ -1,0 +1,9 @@
+<Library>
+  <Image Name="Art" Source="encarta/Rooms/Science/room.jpg" MagnificationFilter="Linear" MinificationFilter="Linear" />
+  <Material RoomSurface.Art="encarta/Rooms/Science/Assets/Art" RoomSurface.Cards="encarta/Rooms/LabelCards" Name="Finish" Shader="encarta/Rooms/RoomSurface" BlendMode="Opaque" />
+  <Mesh Name="Cabinet" Source="encarta/Rooms/Science/Meshes/Cabinet.mesh" />
+  <Mesh Name="DrawerLeftUpperTray" Source="encarta/Rooms/Science/Meshes/DrawerLeftUpperTray.mesh" />
+  <Mesh Name="DrawerRightUpperTray" Source="encarta/Rooms/Science/Meshes/DrawerRightUpperTray.mesh" />
+  <Mesh Name="DrawerLeftLowerTray" Source="encarta/Rooms/Science/Meshes/DrawerLeftLowerTray.mesh" />
+  <Mesh Name="DrawerRightLowerTray" Source="encarta/Rooms/Science/Meshes/DrawerRightLowerTray.mesh" />
+</Library>

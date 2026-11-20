@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Node2D Name="RoomPicker" Visible="false" class="room-picker">
+    <Grid Name="Gallery" Rows="auto 1fr" Spacing="16" ContentInsetAdjustment="Always" class="room-picker-page">
+        <Grid Name="GalleryHeader" Columns="1fr auto auto" Spacing="16" AlignItems="Center" class="room-picker-bar">
+            <TextBlock class="room-picker-heading">Choose a room</TextBlock>
+            <Button Name="ChooseOriginal" Text="Original study" class="room-picker-original"/>
+            <Button Name="PickerClose" Text="Close" class="room-picker-close"/>
+        </Grid>
+        <Grid Name="RoomCards" Rows="1fr 1fr" Columns="1fr 1fr" Spacing="16">
+            <Button Name="ChooseNature" class="room-picker-card">
+                <Grid Rows="1fr auto" IgnoreHitTest="true">
+                    <ImageView Src="encarta/Rooms/Nature/room.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
+                    <Grid Columns="1fr auto" Spacing="8" AlignItems="Center" class="room-picker-caption" IgnoreHitTest="true">
+                        <TextBlock class="room-picker-name" WordWrap="true" IgnoreHitTest="true">The Specimen Cabinet</TextBlock>
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="19" Height="19" class="room-picker-arrow" IgnoreHitTest="true"/>
+                    </Grid>
+                </Grid>
+            </Button>
+            <Button Name="ChooseScience" class="room-picker-card">
+                <Grid Rows="1fr auto" IgnoreHitTest="true">
+                    <ImageView Src="encarta/Rooms/Science/room.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
+                    <Grid Columns="1fr auto" Spacing="8" AlignItems="Center" class="room-picker-caption" IgnoreHitTest="true">
+                        <TextBlock class="room-picker-name" WordWrap="true" IgnoreHitTest="true">The Inventor’s Planetarium</TextBlock>
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="19" Height="19" class="room-picker-arrow" IgnoreHitTest="true"/>
+                    </Grid>
+                </Grid>
+            </Button>
+            <Button Name="ChooseClubhouse" class="room-picker-card">
+                <Grid Rows="1fr auto" IgnoreHitTest="true">
+                    <ImageView Src="encarta/Rooms/Clubhouse/room.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
+                    <Grid Columns="1fr auto" Spacing="8" AlignItems="Center" class="room-picker-caption" IgnoreHitTest="true">
+                        <TextBlock class="room-picker-name" WordWrap="true" IgnoreHitTest="true">The Clubhouse</TextBlock>
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="19" Height="19" class="room-picker-arrow" IgnoreHitTest="true"/>
+                    </Grid>
+                </Grid>
+            </Button>
+            <Button Name="ChooseAbyss" class="room-picker-card">
+                <Grid Rows="1fr auto" IgnoreHitTest="true">
+                    <ImageView Src="encarta/Rooms/Abyss/room.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
+                    <Grid Columns="1fr auto" Spacing="8" AlignItems="Center" class="room-picker-caption" IgnoreHitTest="true">
+                        <TextBlock class="room-picker-name" WordWrap="true" IgnoreHitTest="true">The Deep-Sea Station</TextBlock>
+                        <VectorView Source="encarta/Icons/chevron-right.svg" Width="19" Height="19" class="room-picker-arrow" IgnoreHitTest="true"/>
+                    </Grid>
+                </Grid>
+            </Button>
+        </Grid>
+    </Grid>
+</Node2D>

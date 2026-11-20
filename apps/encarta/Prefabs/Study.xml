@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Node2D Name="Study">
+    <Node2D Name="RoomContents">
+        <Viewport3D Name="Viewport" IgnoreHitTest="true">
+            <Scene Name="Scene" Camera="StudyCamera">
+                <Camera Name="StudyCamera" Fov="42" FovType="Yfov" ZNear="0.2" ZFar="30"
+                        LayoutTransform="0 1.62 3.75  -7.5 0 0  1 1 1">
+                    <!-- Fit the same 4:3 field desk in both iPad orientations. -->
+                    <BindingExpression Target="Camera.FovType">IF(STEP({Screen.Height} * 1.333333, {Screen.Width}), "Yfov", "Xfov")</BindingExpression>
+                    <BindingExpression Target="Camera.Fov">IF(STEP({Screen.Height} * 1.333333, {Screen.Width}), 42, 54.209)</BindingExpression>
+                </Camera>
+                <Camera Name="ExhibitCamera" Fov="42" FovType="Yfov" ZNear="0.18" ZFar="30"
+                        LayoutTransform="0 0 4  0 0 0  1 1 1">
+                    <BindingExpression Target="Camera.FovType">IF(STEP({Screen.Height} * 1.125, {Screen.Width}), "Yfov", "Xfov")</BindingExpression>
+                    <BindingExpression Target="Camera.Fov">IF(STEP({Screen.Height} * 1.125, {Screen.Width}), 42, 46.71392)</BindingExpression>
+                </Camera>
+                <Node3D Name="Room"/>
+            </Scene>
+        </Viewport3D>
+
+        <!-- Hit areas are registered to the camera in Scripts/Study.lua. -->
+        <Button Name="Object_space" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Space" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_animals" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Animals" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_your-body" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Your Body" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_earth" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Earth" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_plants" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Plants" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_science" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Science" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="Object_long-ago" MarginBottom="auto" MarginRight="auto" class="specimen">
+            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
+                <TextBlock class="specimen-label" Text="Long Ago" IgnoreHitTest="true"/>
+            </StackView>
+        </Button>
+        <Button Name="OpenPassport" MarginBottom="auto" MarginRight="auto" class="desk-drawer"/>
+        <Button Name="OpenHunt" MarginBottom="auto" MarginRight="auto" class="desk-drawer"/>
+        <Button Name="DeskQuestions" MarginBottom="auto" MarginRight="auto" class="desk-drawer"/>
+        <Button Name="DeskBookshelf" MarginBottom="auto" MarginRight="auto" class="desk-drawer"/>
+
+        <Button Name="PulledDrawer" Visible="false" MarginBottom="auto" MarginRight="auto" class="desk-drawer"/>
+
+        <!-- The header asks first: a child who knows what they want types it
+             here, a child who does not taps an exhibit below. -->
+        <Grid Name="StudyHeader" Columns="auto 1fr auto" Spacing="14" AlignItems="Center" SafeAreaEdge="Top" ContentInsetAdjustment="Always" class="study-header">
+            <StackView>
+                <TextBlock class="study-imprint">ENCARTA</TextBlock>
+                <TextBlock Name="StudyTitle" class="study-title">The Explorer’s Study</TextBlock>
+            </StackView>
+            <Button Name="StudySearch" class="home-ask">
+                <StackView Direction="Horizontal" AlignItems="Center" Spacing="10" VerticalAlignment="Center" IgnoreHitTest="true">
+                    <VectorView Source="encarta/Icons/search.svg" Width="22" Height="22" class="home-ask-icon" IgnoreHitTest="true"/>
+                    <TextBlock Text="What do you want to know?" class="home-ask-text" IgnoreHitTest="true"/>
+                </StackView>
+            </Button>
+            <Button Name="OpenRooms" Text="Rooms" class="study-search"/>
+        </Grid>
+
+        <!-- Below the room: the wings that have no exhibit (the Time Machine,
+             History, …) and today's question. Side by side on a wide screen;
+             on an upright one the wings get a row of their own. -->
+        <Grid Name="HomeDock" SafeAreaEdge="Bottom" ContentInsetAdjustment="Always" class="home-dock">
+            <BindingExpression Target="Grid.Columns">IF(STEP({Screen.Height}, {Screen.Width}), "auto 1fr", "1fr")</BindingExpression>
+            <BindingExpression Target="Grid.Rows">IF(STEP({Screen.Height}, {Screen.Width}), "auto", "auto auto")</BindingExpression>
+            <!-- Scripts/Library.lua adds a wing per tour and per category without an
+                 exhibit, and sets one column per wing. -->
+            <Grid Name="Wings" Spacing="10" class="wings"/>
+            <Button Name="Postcard" class="field-postcard">
+                <Grid Columns="48px 1fr auto" AlignItems="Center" Spacing="16" IgnoreHitTest="true">
+                    <ImageView Name="PostcardImage" Width="48" Height="40" Stretch="UniformToFill" IgnoreHitTest="true" class="postcard-art"/>
+                    <StackView IgnoreHitTest="true">
+                        <TextBlock class="field-eyebrow" IgnoreHitTest="true">TODAY’S QUESTION</TextBlock>
+                        <TextBlock Name="PostcardQuestion" class="field-question" WordWrap="true" IgnoreHitTest="true"/>
+                    </StackView>
+                    <VectorView Source="encarta/Icons/chevron-right.svg" Width="28" Height="28" IgnoreHitTest="true"/>
+                </Grid>
+            </Button>
+        </Grid>
+
+        <StackView Name="Bubble" Visible="false" HorizontalAlignment="Center" VerticalAlignment="Center" class="bubble">
+            <Grid Columns="1fr auto" AlignItems="Center">
+                <TextBlock Name="BubbleTitle" class="bubble-title"/>
+                <Button Name="BubbleClose" Width="44" Height="44" class="bubble-close">
+                    <VectorView Source="encarta/Icons/x.svg" Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                </Button>
+            </Grid>
+            <StackView Name="BubbleList" class="bubble-list"/>
+            <Button Name="BubbleAll" class="bubble-all"/>
+        </StackView>
+        <StackView Name="DrawerNote" Visible="false" HorizontalAlignment="Center" VerticalAlignment="Center" class="bubble">
+            <Grid Columns="1fr auto" AlignItems="Center">
+                <TextBlock Name="DrawerTitle" class="bubble-title"/>
+                <Button Name="DrawerClose" Width="44" Height="44" class="bubble-close">
+                    <VectorView Source="encarta/Icons/x.svg" Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
+                </Button>
+            </Grid>
+            <TextBlock Name="DrawerHint" WordWrap="true" class="drawer-hint"/>
+            <Button Name="DrawerEnter" class="bubble-all"/>
+        </StackView>
+    </Node2D>
+</Node2D>

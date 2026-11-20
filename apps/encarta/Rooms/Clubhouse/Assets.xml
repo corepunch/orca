@@ -1,0 +1,9 @@
+<Library>
+  <Image Name="Art" Source="encarta/Rooms/Clubhouse/room.jpg" MagnificationFilter="Linear" MinificationFilter="Linear" />
+  <Material RoomSurface.Art="encarta/Rooms/Clubhouse/Assets/Art" RoomSurface.Cards="encarta/Rooms/LabelCards" Name="Finish" Shader="encarta/Rooms/RoomSurface" BlendMode="Opaque" />
+  <Mesh Name="Cabinet" Source="encarta/Rooms/Clubhouse/Meshes/Cabinet.mesh" />
+  <Mesh Name="DrawerLeftUpperTray" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftUpperTray.mesh" />
+  <Mesh Name="DrawerRightUpperTray" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightUpperTray.mesh" />
+  <Mesh Name="DrawerLeftLowerTray" Source="encarta/Rooms/Clubhouse/Meshes/DrawerLeftLowerTray.mesh" />
+  <Mesh Name="DrawerRightLowerTray" Source="encarta/Rooms/Clubhouse/Meshes/DrawerRightLowerTray.mesh" />
+</Library>

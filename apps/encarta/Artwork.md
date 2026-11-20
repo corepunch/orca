@@ -12,11 +12,11 @@ on its own.
 
 ## The study
 
-`Images/study.jpg` is the home screen: a desk against a wooden wall, 16:10 at
-1600×1000. The current file is a flat vector placeholder, not a painting.
-Buttons are laid over the picture by a grid in `Screens/Library.xml`, so a
-replacement must keep each object inside its cell, or the grid's tracks must
-change with it. Positions are fractions of the picture's width and height:
+The four room menus use original 4:3 ImageGen artwork projected onto sculpted surfaces and movable drawer meshes. Each source painting is stored as `Rooms/<room>/room.jpg`, alongside the exhibit and drawer coordinates in `layout.lua`. Run `python3 apps/encarta/Tools/build_rooms.py` to rebuild the meshes. The original modeled study has a separate [scene and texture guide](Study/README.md).
+
+### Earlier illustrated menu concept
+
+The original `Images/study.jpg` placeholder and its painting brief used a 1600×1000 desk illustration. The positions below refer to that illustration.
 
 | Object | Category | Left to right | Top to bottom |
 | --- | --- | --- | --- |
@@ -130,3 +130,21 @@ Use case: scientific-educational. A single landscape 3:2 labeled diagram for Enc
 ### earth-cover.jpg
 
 Use case: illustration-story. Digital hand-painted gouache for Encarta, a children's encyclopedia. A 3:2 landscape cover showing one striking large Earth from space with a single small wedge removed from lower right to hint at the hidden layers below. Recognizable blue oceans, olive green continents and thin wispy clouds above a vast indigo background, orange and red concentric colors on the exposed slice. Gentle texture, crisp shapes that read at thumbnail size, soft blue light around the globe. Center the whole globe with room around it to allow cover cropping. The large uncut surface should read as Earth immediately. No labels, writing, leader lines, arrows, diagram marks, neighboring planets, or border. A sophisticated illustrated science book.
+
+## History paintings still to make
+
+The three History articles ship without art and show the History icon on
+their covers until these exist. Append the second shared cover instruction.
+Keep the subject calm and wondrous: no wounded people, no blood.
+
+### castles.jpg
+
+A stone castle on a green hill at morning: moat with a lowered drawbridge, raised portcullis, round towers with narrow arrow slits; a squire leads a horse across the bridge while a knight in plate armor stands at the gate.
+
+### napoleon.jpg
+
+Napoleon Bonaparte in his gray coat and bicorne hat on a white horse, looking across muddy rolling fields under clearing rain clouds near Waterloo in June 1815; distant lines of soldiers in blue and red, a farmhouse on a ridge.
+
+### civil-war.jpg
+
+A Union drummer boy in a blue uniform and a family walking toward freedom along a country road in 1865, a small Union camp with tents behind them, warm sunrise light; hopeful, not violent.

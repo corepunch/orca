@@ -6,6 +6,7 @@
   <Shader.Uniforms>
     <PropertyType Name="Albedo" DataType="Object" TypeString="Texture"/>
     <PropertyType Name="Lightmap" DataType="Object" TypeString="Texture"/>
+    <PropertyType Name="ClothAtlas" DataType="Float" DefaultValue="0"/>
   </Shader.Uniforms>
   <VertexShader>
 in vec3 a_position; in vec2 a_texcoord0; in vec2 a_texcoord1; in vec4 a_color;
@@ -19,9 +20,27 @@ void main() {
   </VertexShader>
   <FragmentShader Out="FragColor">
 in vec2 v_uv0; in vec2 v_uv1; in vec3 v_tint;
+vec3 clothLevel(float level, float spine) {
+  float scale = exp2(-level);
+  vec2 uv = vec2(v_uv0.x, v_uv0.y * 0.5) * scale;
+  // Clamp within this book's strip at both levels, even when just one texel wide.
+  vec2 halfTexel = vec2(0.5 / 256.0);
+  uv = clamp(uv, vec2(spine / 8.0, 0.0) * scale + halfTexel,
+                  vec2((spine + 1.0) / 8.0, 0.5) * scale - halfTexel);
+  return texture(Albedo, uv + vec2(0.0, 1.0 - scale)).rgb;
+}
 void main() {
   vec3 light = texture(Lightmap, v_uv1).rgb * 4.0;   // the bake's LIGHTMAP_RANGE
-  vec3 c = texture(Albedo, fract(v_uv0)).rgb * v_tint * light;
+  vec3 albedo;
+  if (ClothAtlas > 0.5) {
+    vec2 texel = v_uv0 * vec2(256.0, 128.0);
+    float lod = clamp(log2(max(max(length(dFdx(texel)), length(dFdy(texel))), 1.0)), 0.0, 5.0);
+    float spine = floor(v_uv0.x * 8.0);
+    albedo = mix(clothLevel(floor(lod), spine), clothLevel(ceil(lod), spine), fract(lod));
+  } else {
+    albedo = texture(Albedo, fract(v_uv0)).rgb;
+  }
+  vec3 c = albedo * v_tint * light;
   c = c / (1.0 + 0.45 * c);          // soft shoulder so the lamp's pool keeps its colour
   FragColor = vec4(c * 1.3, 1.0);
 }

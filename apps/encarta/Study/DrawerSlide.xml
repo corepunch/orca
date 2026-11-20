@@ -1,0 +1,8 @@
+<AnimationClip Name="DrawerSlide" Mode="PlayOnce" StartTime="0" StopTime="0.3">
+    <AnimationCurve Path="../." Property="LayoutTransformTranslation">
+        <AnimationCurve.Keyframes>
+            <Keyframe Time="0" Value="0 0 0 0"/>
+            <Keyframe Time="0.3" Value="0 0 0.46 0"/>
+        </AnimationCurve.Keyframes>
+    </AnimationCurve>
+</AnimationClip>

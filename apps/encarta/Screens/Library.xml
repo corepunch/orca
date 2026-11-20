@@ -2,7 +2,7 @@
 <Screen Name="Encarta" Width="1024" Height="768" ResizeMode="CanResize"
     RespectSafeArea="false" Appearance="Dark" ClearColor="$wood"
     StyleSheet="encarta/Styles/app.css">
-    <Node2D>
+    <Node2D Name="LibraryRoot">
         <StackView Name="LibraryScroll" OverflowY="Scroll" class="library">
             <Grid Columns="auto 1fr auto" Spacing="18" AlignItems="Center" class="top">
                 <TextBlock class="wordmark">Encarta</TextBlock>
@@ -15,121 +15,13 @@
                         <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
                     </Button>
                 </Grid>
-                <Grid Columns="auto auto auto" Spacing="4" class="views">
-                    <Button Name="ShowStudy" Text="Study" class="view"/>
+                <Grid Columns="auto auto auto auto" Spacing="4" class="views">
+                    <Button Name="ShowStudy" Text="Home" class="view"/>
                     <Button Name="ShowWall" Text="Questions" class="view"/>
+                    <Button Name="ShowTime" Text="Time Machine" class="view"/>
                     <Button Name="ShowShelf" Text="Bookshelf" class="view"/>
                 </Grid>
             </Grid>
-            <!-- The explorer's study: one picture, with a grid of clear buttons
-                 laid over it. The grid's tracks follow the picture: the wall
-                 above the desk, split into the window, the middle and the
-                 right, and the desk front below. Each object's button fills
-                 its cell and carries the name plate at its foot. -->
-            <Node2D Name="Study" AspectRatio="1.6" class="room">
-                <ImageView Name="StudyArt" Src="encarta/Images/study.jpg" Stretch="Fill" IgnoreHitTest="true" class="room-art"/>
-                <Grid Name="StudyMap" Rows="412fr 213fr">
-                    <Grid Columns="300fr 400fr 300fr">
-                        <Button Name="Object_space" class="object">
-                            <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                <TextBlock Text="Space" class="plate plate-space" IgnoreHitTest="true"/>
-                            </StackView>
-                        </Button>
-                        <Grid Rows="150fr 262fr">
-                            <Node2D/>
-                            <Grid Columns="110fr 190fr 100fr">
-                            <Button Name="Object_long-ago" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Long Ago" class="plate plate-long-ago" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            <Button Name="Object_earth" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Earth" class="plate plate-earth" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            <Button Name="Object_plants" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Plants" class="plate plate-plants" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            </Grid>
-                        </Grid>
-                        <Grid Rows="215fr 197fr">
-                            <Button Name="Object_your-body" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Your Body" class="plate plate-your-body" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            <Grid Columns="115fr 185fr">
-                            <Button Name="Object_science" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Science" class="plate plate-science" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            <Button Name="Object_animals" class="object">
-                                <StackView JustifyContent="End" AlignItems="Center" IgnoreHitTest="true">
-                                    <TextBlock Text="Animals" class="plate plate-animals" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Button>
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                    <!-- The top drawer on each side opens the passport and the hunt. -->
-                    <Grid Columns="350fr 300fr 350fr">
-                        <Grid Columns="36fr 290fr 24fr">
-                            <Node2D/>
-                            <Grid Rows="44fr 68fr 14fr 68fr 19fr">
-                                <Node2D/>
-                                <Button Name="OpenPassport" class="drawer">
-                                    <StackView JustifyContent="Center" AlignItems="Center" IgnoreHitTest="true">
-                                        <TextBlock Text="My Passport" class="plate drawer-plate" IgnoreHitTest="true"/>
-                                    </StackView>
-                                </Button>
-                                <Node2D/>
-                                <Node2D/>
-                                <Node2D/>
-                            </Grid>
-                            <Node2D/>
-                        </Grid>
-                        <Button Name="Postcard" MarginTop="auto" MarginBottom="auto" class="postcard">
-                            <Grid Columns="72px 1fr" Spacing="12" AlignItems="Center" IgnoreHitTest="true">
-                                <ImageView Name="PostcardImage" Stretch="UniformToFill" AspectRatio="1" IgnoreHitTest="true" class="postcard-art"/>
-                                <StackView IgnoreHitTest="true" class="postcard-copy">
-                                    <TextBlock class="postcard-tag" IgnoreHitTest="true">TODAY’S QUESTION</TextBlock>
-                                    <TextBlock Name="PostcardQuestion" class="postcard-question" WordWrap="true" IgnoreHitTest="true"/>
-                                </StackView>
-                            </Grid>
-                        </Button>
-                        <Grid Columns="24fr 290fr 36fr">
-                            <Node2D/>
-                            <Grid Rows="44fr 68fr 14fr 68fr 19fr">
-                                <Node2D/>
-                                <Button Name="OpenHunt" class="drawer">
-                                    <StackView JustifyContent="Center" AlignItems="Center" IgnoreHitTest="true">
-                                        <TextBlock Text="Question Hunt" class="plate drawer-plate" IgnoreHitTest="true"/>
-                                    </StackView>
-                                </Button>
-                                <Node2D/>
-                                <Node2D/>
-                                <Node2D/>
-                            </Grid>
-                            <Node2D/>
-                        </Grid>
-                    </Grid>
-                </Grid>
-                <!-- Tapping an object opens its questions here, over the wall. -->
-                <StackView Name="Bubble" Visible="false" Width="400" MarginLeft="auto" MarginRight="auto" MarginTop="14" MarginBottom="auto" class="bubble">
-                    <Grid Columns="1fr auto" AlignItems="Center">
-                        <TextBlock Name="BubbleTitle" class="bubble-title"/>
-                        <Button Name="BubbleClose" Width="44" Height="44" class="bubble-close">
-                            <VectorView Source="encarta/Icons/x.svg" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" IgnoreHitTest="true"/>
-                        </Button>
-                    </Grid>
-                    <StackView Name="BubbleList" class="bubble-list"/>
-                    <Button Name="BubbleAll" class="bubble-all"/>
-                </StackView>
-            </Node2D>
             <StackView Name="Categories" Direction="Horizontal" class="chips"/>
             <Node2D Name="Featured" Height="176" class="feature">
                 <ImageView Name="FeaturedImage" Src="encarta/Images/octopus.jpg" Stretch="UniformToFill" IgnoreHitTest="true"/>
@@ -151,7 +43,7 @@
                 <TextBlock Name="ResultCount" class="count"/>
             </Grid>
             <TextBlock Name="EmptyResults" Visible="false" class="empty" WordWrap="true">
-                Nothing yet. Try a word like “moon”, “rain”, or “animals”.
+                Nothing yet. Try “moon”, “castles”, “Napoleon” or “civil war”, or open the Time Machine.
             </TextBlock>
             <Grid Name="Topics" Spacing="12">
                 <BindingExpression Target="Grid.Columns">IF(STEP(1100, {Screen.Width}), "1fr 1fr 1fr 1fr 1fr", IF(STEP(700, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr"))</BindingExpression>
@@ -227,13 +119,13 @@
                  lies across the top, its stamps in two rows, with the hunt
                  below it. -->
             <Grid Name="HuntBody" Spacing="20" ContentInsetAdjustment="Always" class="hunt-body">
-                <BindingExpression Target="Grid.Columns">IF(STEP({Screen.Height}, {Screen.Width}), "2fr 3fr", "1fr")</BindingExpression>
-                <BindingExpression Target="Grid.Rows">IF(STEP({Screen.Height}, {Screen.Width}), "1fr", "auto 1fr")</BindingExpression>
+                <BindingExpression Target="Grid.Columns">IF(AND({HuntCard/Visible}, STEP({Screen.Height}, {Screen.Width})), "2fr 3fr", "1fr")</BindingExpression>
+                <BindingExpression Target="Grid.Rows">IF({HuntCard/Visible}, IF(STEP({Screen.Height}, {Screen.Width}), "1fr", "auto 1fr"), "1fr")</BindingExpression>
                 <StackView Name="Passport" OverflowY="Scroll" class="passport">
                     <TextBlock class="passport-title">Explorer’s Passport</TextBlock>
                     <TextBlock Name="PassportHint" class="hint" WordWrap="true"/>
                     <Grid Name="Stamps" Spacing="12" class="stamps">
-                        <BindingExpression Target="Grid.Columns">IF(STEP({Screen.Height}, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr")</BindingExpression>
+                        <BindingExpression Target="Grid.Columns">IF({../../HuntCard/Visible}, IF(STEP({Screen.Height}, {Screen.Width}), "1fr 1fr 1fr 1fr", "1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr"), "1fr 1fr 1fr 1fr 1fr")</BindingExpression>
                     </Grid>
                 </StackView>
                 <StackView Name="HuntCard" OverflowY="Scroll" class="hunt-card">
@@ -260,10 +152,10 @@
                 <Button Name="HuntBack" class="back">
                     <StackView Direction="Horizontal" AlignItems="Center" Spacing="8" VerticalAlignment="Center" IgnoreHitTest="true">
                         <VectorView Source="encarta/Icons/chevron-left.svg" Width="20" Height="20" IgnoreHitTest="true"/>
-                        <TextBlock Text="Study" IgnoreHitTest="true"/>
+                        <TextBlock Text="Home" IgnoreHitTest="true"/>
                     </StackView>
                 </Button>
-                <TextBlock class="crumb-title">Question Hunt</TextBlock>
+                <TextBlock Name="HuntTitle" class="crumb-title">Question Hunt</TextBlock>
                 <TextBlock Name="StampCount" class="stamp-count"/>
             </Grid>
         </Node2D>

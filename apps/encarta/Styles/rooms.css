@@ -1,0 +1,50 @@
+.room-picker { background-color: #112B2A; }
+.room-picker-page { padding: 16 24 24; }
+.room-picker-bar { padding: 0 0 12; border-bottom: 1 solid #657569; }
+.room-picker-heading {
+  font-family: Noto Serif;
+  font-size: 34;
+  line-height: 44;
+  font-weight: bold;
+  color: #FFF2D4;
+}
+.room-picker-close, .room-picker-original {
+  min-height: 44;
+  padding: 0 14;
+  border-radius: 4;
+  font-size: 16;
+  font-weight: bold;
+  color: #E9D5A4;
+  background-color: #112B2A;
+}
+.room-picker-close { border: 1 solid #91886A; }
+.room-picker-close:hover, .room-picker-original:hover,
+.room-picker-close:focus, .room-picker-original:focus {
+  background-color: #2E4C46;
+  ring: 0 2 #F0CF88;
+}
+.room-picker-card {
+  padding: 0;
+  border: 1 solid #A59670;
+  border-radius: 6;
+  overflow: hidden;
+  background-color: #203C38;
+}
+.room-picker-card:hover, .room-picker-card:focus {
+  border-color: #FFDE91;
+  ring: 0 2 #FFDE91;
+}
+.room-picker-card:active { border-color: #FFFFFF; }
+.room-picker-caption {
+  padding: 9 16 11;
+  border-top: 1 solid #A59670;
+  background-color: #203C38;
+}
+.room-picker-name {
+  font-family: Noto Serif;
+  font-size: 21;
+  line-height: 27;
+  font-weight: bold;
+  color: #FFF2D4;
+}
+.room-picker-arrow { color: #E9D5A4; }

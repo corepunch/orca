@@ -21,7 +21,7 @@ import sys
 from multiprocessing import Pool
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(APP, "Study")
@@ -39,6 +39,9 @@ MATERIALS = {
     "Sky": ("night_sky.jpg", None),
     "Octopus": ("../../Images/Thumbs/octopus.jpg", None),
     "Heart": ("../../Images/Thumbs/heart.jpg", None),
+    "Wall": ("naturalists-wall.jpg", None),
+    "BookSpines": ("cloth-bindings.jpg", None),
+    "Labels": ("drawer-labels.png", None),
     "Paint": ("white.png", None),      # flat colours come from vertex colour
 }
 
@@ -64,6 +67,7 @@ def box(lo, hi, mat="Paint", color="#FFFFFF", density=96, skip="", emit=None,
     prims.append(dict(kind="box", lo=np.array(lo, F), hi=np.array(hi, F), mat=mat,
                       color=srgb(color), density=density, skip=skip.split(), emit=emit,
                       fit=fit, rot=rot, trace=trace))
+    return len(prims) - 1
 
 
 def sphere(center, radius, mat="Paint", color="#FFFFFF", density=128, tilt=0.0, spin=0.0):
@@ -78,6 +82,64 @@ def cylinder(base, radius, height, mat="Paint", color="#FFFFFF", density=128, to
                       h=height, mat=mat, color=srgb(color), density=density, emit=emit, trace=trace, caps=caps))
 
 
+DRAWERS = {
+    "DrawerLeftUpper": "My Passport",
+    "DrawerLeftLower": "Questions",
+    "DrawerRightUpper": "Question Hunt",
+    "DrawerRightLower": "Bookshelf",
+}
+
+
+def drawer_fittings(group, x0, x1, y0, y1, front, pedestal, desktop):
+    """Use nearby baked surfaces to light the drawer contents when pulled open."""
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    def part(lo, hi, mat="Paint", color="#FFFFFF", skip="y-"):
+        pi = box(lo, hi, mat, color=color, skip=skip, trace=False)
+        prims[pi].update(group=group, probes=(pedestal, desktop, front))
+        return prims[pi]
+
+    # A shallow tray, with lips on all sides and a felt lining.
+    left, right = x0 + 0.085, x1 - 0.085
+    part((left, y0 + .012, -.64), (right, y0 + .036, .005), "Oak", skip="")
+    part((left, y0 + .036, -.64), (left + .027, y1 - .068, .005), "Oak")
+    part((right - .027, y0 + .036, -.64), (right, y1 - .068, .005), "Oak")
+    part((left + .027, y0 + .036, -.64), (right - .027, y1 - .068, -.615), "Oak")
+    part((left + .027, y0 + .036, -.615), (right - .027, y0 + .039, -.002), color="#345D51")
+    part((left, y0 + .036, -.012), (right, y1 - .009, .003), "Oak")
+
+    # Brass card holder, paper and a pair of screw heads.
+    part((cx - .392, cy - .049, .022), (cx + .392, cy + .109, .036), color="#C4974D")
+    part((cx - .373, cy - .036, .036), (cx + .373, cy + .096, .038),
+         "Labels", skip="x- x+ y- y+ z-")["label"] = list(DRAWERS).index(group)
+    for sx in (-1, 1):
+        x = cx + sx * .382
+        part((x - .004, cy + .024, .036), (x + .004, cy + .036, .041), color="#F5CC76")
+        x = cx + sx * .118
+        part((x - .018, cy - .097, .022), (x + .018, cy - .072, .056), color="#A16E26")
+
+    if group.endswith("Upper"):
+        part((left + .029, y0 + .039, -.614), (right - .029, y1 - .09, -.014), color="#385F50")
+    if group == "DrawerLeftUpper":
+        # Leather field journal with page block, spine, gold rules and elastic.
+        x, y, z = cx - .23, y1 - .09, -.37
+        part((x, y, z), (x + .46, y + .023, z + .31), color="#D4B67F")
+        part((x - .006, y + .023, z - .006), (x + .466, y + .035, z + .316), color="#338478")
+        part((x - .006, y + .034, z - .006), (x + .043, y + .04, z + .316), color="#194C48")
+        part((x + .375, y + .035, z - .006), (x + .396, y + .041, z + .316), color="#DD9D43")
+        for i, w in enumerate((.19, .14)):
+            part((x + .09, y + .035, z + .14 + i * .036),
+                 (x + .09 + w, y + .038, z + .152 + i * .036), color="#ECD691")
+    elif group == "DrawerRightUpper":
+        # A stepped stack of brightly tabbed question cards.
+        for i, color in enumerate(("#C85D49", "#E4A944", "#63ADA0")):
+            x, y, z = cx - .285 + i * .107, y1 - .085 + i * .009, -.38 + i * .031
+            part((x, y, z), (x + .34, y + .014, z + .243), color="#FFF0CA")
+            part((x, y + .014, z), (x + .34, y + .018, z + .039), color=color)
+            for line, w in enumerate((.17, .215)):
+                part((x + .036, y + .014, z + .08 + line * .041),
+                     (x + .036 + w, y + .018, z + .088 + line * .041), color="#78674F")
+
+
 def build_scene():
     rng = np.random.default_rng(7)
     X0, X1, Z0, Z1, H = -3.0, 3.0, -2.2, 4.2, 3.0
@@ -89,6 +151,7 @@ def build_scene():
     box((X1, 0, Z0), (X1 + 0.1, H, Z1), "Planks", density=40, skip="x+ y- y+ z- z+")
     box((X0, 0, Z1), (X1, H, Z1 + 0.1), "Planks", density=12, skip="x- x+ y- y+ z+")
     T = 0.14  # wall thickness, so the window has a reveal
+    wall_start = len(prims)
     box((X0, 0, Z0 - T), (WX0, H, Z0), "Planks", density=64, skip="x- y- y+ z-")
     box((WX1, 0, Z0 - T), (X1, H, Z0), "Planks", density=64, skip="x+ y- y+ z-")
     box((WX0, 0, Z0 - T), (WX1, WY0, Z0), "Planks", density=64, skip="x- x+ y- z-")
@@ -97,6 +160,8 @@ def build_scene():
     # Window: sky, frame and glazing bars.
     box((WX0 - 0.3, WY0 - 0.3, Z0 - 0.5), (WX1 + 0.3, WY1 + 0.3, Z0 - 0.45), "Sky", density=24,
         skip="x- x+ y- y+ z-", emit=SKY_EMIT, fit="z+")
+    for panel in prims[wall_start:wall_start + 4]:
+        panel["mural"] = True
     f = 0.07
     box((WX0 - f, WY0 - f, Z0 - 0.02), (WX0, WY1 + f, Z0 + 0.04), "Dark", skip="z-")
     box((WX1, WY0 - f, Z0 - 0.02), (WX1 + f, WY1 + f, Z0 + 0.04), "Dark", skip="z-")
@@ -108,16 +173,29 @@ def build_scene():
 
     # Desk: a top on two pedestals, two drawers each, facing the camera.
     DY, DZ0, DZ1 = 0.76, -1.15, 0.0
-    box((-1.65, DY, DZ0 - 0.04), (1.65, DY + 0.06, DZ1 + 0.05), "Oak", density=140)
+    desktop = box((-1.65, DY, DZ0 - 0.04), (1.65, DY + 0.06, DZ1 + 0.05), "Oak", density=140)
     for side in (-1, 1):
         x0, x1 = sorted((side * 0.55, side * 1.58))
-        box((x0, 0.06, DZ0), (x1, DY, DZ1), "Oak", skip="y+", rot=True)
+        pedestal = box((x0, 0.06, DZ0), (x1, DY, DZ1), "Oak", skip="y+", rot=True)
+        prims[pedestal]["carcase"] = True
         box((x0 + 0.04, 0, DZ0 + 0.04), (x1 - 0.04, 0.06, DZ1 - 0.04), "Dark", skip="y- y+")   # plinth
-        for y0, y1 in ((0.13, 0.42), (0.45, 0.72)):
-            box((x0 + 0.06, y0, DZ1), (x1 - 0.06, y1, DZ1 + 0.022), "Oak", skip="z-", density=160)
+        for row, y0, y1 in (("Lower", 0.13, 0.42), ("Upper", 0.45, 0.72)):
+            group = "Drawer" + ("Left" if side < 0 else "Right") + row
+            front = box((x0 + 0.06, y0, DZ1), (x1 - 0.06, y1, DZ1 + 0.022), "Oak", skip="z-", density=160)
+            prims[front]["group"] = group
             cx = (x0 + x1) / 2
             box((cx - 0.13, (y0 + y1) / 2 - 0.012, DZ1 + 0.022), (cx + 0.13, (y0 + y1) / 2 + 0.012, DZ1 + 0.05),
                 color="#D8A63A", skip="z-", density=200)                                         # brass pull
+            prims[-1].update(group=group, offset=(0, -.084, .012))
+            drawer_fittings(group, x0, x1, y0, y1, front, pedestal, desktop)
+        # At render time two stiles and three rails surround the open cavities.
+        # The full pedestal stays in the room bake as a closed-state proxy.
+        for ax, bx, ay, by in ((x0, x0 + .064, .06, DY), (x1 - .064, x1, .06, DY),
+                               (x0 + .064, x1 - .064, .06, .135),
+                               (x0 + .064, x1 - .064, .417, .454),
+                               (x0 + .064, x1 - .064, .716, DY)):
+            rail = box((ax, ay, -.09), (bx, by, DZ1), "Oak", trace=False, rot=True)
+            prims[rail]["probes"] = (pedestal, desktop, pedestal)
     box((-0.55, 0.3, DZ0), (0.55, DY, DZ0 + 0.03), "Oak", skip="x- x+ y+", rot=True)             # modesty panel
 
     # Globe on a brass stand, tilted like the real Earth.
@@ -135,6 +213,7 @@ def build_scene():
     cylinder((lx, DY + 0.085, lz), 0.014, 0.42, color="#C9932F", caps=False)
     cylinder((lx, DY + 0.06 + 0.40, lz), 0.19, 0.19, color="#F2C14E", top_radius=0.09, caps=False,
              emit=np.array([1.0, 0.74, 0.38], F) * 1.9, trace=False)
+    prims[-1]["shade"] = True
 
     # Things on the desk: a stack of books, an open notebook, a plant.
     y = DY + 0.06
@@ -152,6 +231,8 @@ def build_scene():
     for dx, dy, dz, r, c in ((0, 0.13, 0, 0.1, "#5E8F1E"), (-0.09, 0.08, 0.03, 0.075, "#6FA02A"),
                              (0.09, 0.09, -0.02, 0.08, "#4F7C17"), (0.02, 0.2, 0.04, 0.065, "#78AD32")):
         sphere((px + dx, DY + 0.2 + dy, pz + dz), r, color=c, density=110)
+        # The original leaf masses still cast the room's soft plant shadows.
+        prims[-1]["fern"] = (px, DY + .19, pz) if dx == 0 else False
 
     # Bookshelf against the back wall, right of the window.
     SX0, SX1, SZ1, SH = 0.75, 2.55, Z0 + 0.36, 2.3
@@ -166,6 +247,9 @@ def build_scene():
     for row, sy in enumerate(shelves[:4]):
         x, gap = SX0 + 0.07, shelves[row + 1] - 0.04 - sy
         stop = SX1 - 0.07 - (0.45 if row in (1, 3) else 0)
+        # Matching encyclopedia volumes, interrupted by a short field guide.
+        sets = ((4, .83), (3, .76), (1, .63), (5, .87), (3, .79), (4, .84))
+        series, volume, previous = row, 0, None
         while x < stop - 0.03:
             w = float(rng.uniform(0.035, 0.075))
             h = float(rng.uniform(0.62, 0.92)) * gap
@@ -174,11 +258,25 @@ def build_scene():
                 break
             box((x, sy, Z0 + 0.03), (x + w, sy + h, Z0 + 0.03 + d), color=palette[int(rng.integers(len(palette)))],
                 skip="y- z-", density=110)
+            count, height = sets[series % len(sets)]
+            # Meet the next book at the same X and depth. Subpixel slivers of
+            # the dark shelf between bindings flicker as the camera moves.
+            prims[-1].update(spine=(series * 3 + row) % 8, book_right=F(x + (w + .004)),
+                             book_height=gap * (height + (h / gap - .76) * .08),
+                             cloth_tone=.97 + .025 * math.cos(volume * 2.4))
+            if previous is not None:
+                prims[-1]["x-"] = previous["book_height"]
+                previous["x+"] = prims[-1]["book_height"]
+            previous = prims[-1]
+            volume += 1
+            if volume == count:
+                series, volume = series + 1, 0
             x += w + 0.004
         if row == 1:   # a small pyramid of blocks: Long Ago
             for i, s in enumerate((0.3, 0.2, 0.1)):
                 box((stop + 0.24 - s / 2, sy + i * 0.075, Z0 + 0.19 - s / 2),
                     (stop + 0.24 + s / 2, sy + (i + 1) * 0.075, Z0 + 0.19 + s / 2), color="#E0B05A", skip="y-", density=120)
+                prims[-1]["pyramid"] = True
         if row == 3:
             sphere((stop + 0.24, sy + 0.13, Z0 + 0.2), 0.13, color="#E9DCC0", density=110)
 
@@ -426,6 +524,8 @@ _tracer = None
 def _bake_chunk(args):
     global _tracer
     if _tracer is None:
+        if not prims:  # Spawned workers start without the parent's room geometry.
+            build_scene()
         _tracer = Tracer()
     pos, n, seed, paths, bounces = args
     return _tracer.irradiance(pos, n, seed, paths, bounces)
@@ -509,7 +609,9 @@ class MeshBuilder:
         n = nrm.reshape(-1, 3)
         self.pos.append(pos.reshape(-1, 3)); self.nrm.append(n); self.tan.append(tan)
         self.bin.append(np.cross(n, tan)); self.uv0.append(uv0.reshape(-1, 2)); self.uv1.append(uv1.reshape(-1, 2))
-        c = np.empty((rows * cols, 4), np.uint8); c[:, :3] = np.round(np.array(color) * 255); c[:, 3] = 255
+        c = np.empty((rows * cols, 4), np.uint8)
+        c[:, :3] = np.round(np.broadcast_to(color, pos.shape).reshape(-1, 3) * 255)
+        c[:, 3] = 255
         self.col.append(c)
         r, q = np.mgrid[0:rows - 1, 0:cols - 1]
         a = (base + r * cols + q).ravel(); b = a + 1; d = a + cols; e = d + 1
@@ -530,28 +632,126 @@ class MeshBuilder:
         return len(pos), len(idx) // 3
 
 
+def build_fern(mb, base, chart, size):
+    """Arch each frond away from the pot, then fold paired leaflets along its stem."""
+    rng = np.random.default_rng(81)
+    base = np.array(base, F)
+    up = np.array((0, 1, 0), F)
+    def blade(pos, color):
+        # Share the spherical foliage probe. Normals choose shaded and lit sides.
+        n = np.cross(np.gradient(pos, axis=0), np.gradient(pos, axis=1))
+        n /= np.maximum(np.linalg.norm(n, axis=-1, keepdims=True), 1e-8)
+        n *= np.where(n[..., 1:2] < 0, -1, 1)
+        u = np.arctan2(-n[..., 2], n[..., 0]) / (2 * math.pi) % 1
+        v = np.arcsin(np.clip(n[..., 1], -1, 1)) / math.pi + .5
+        uv1 = np.stack([(chart["x"] + .5 + u * (chart["w"] - 1)) / size,
+                        1 - (chart["y"] + .5 + v * (chart["h"] - 1)) / size], -1)
+        mb.grid(pos, n, np.full(pos.shape[:2] + (2,), .5, F), uv1, color, (1, 0, 0))
+
+    for i in range(10):
+        angle = i * 2.4
+        radial = np.array((math.cos(angle), 0, math.sin(angle)), F)
+        lateral = np.cross(radial, up)
+        length = rng.uniform(.16, .295)
+        height = rng.uniform(.15, .34)
+        tint = srgb(("#4E8235", "#559746", "#689B48", "#4B8136", "#819940")[i % 5])
+        def stem(t):
+            return base + radial * length * t + up * (height * t + .095 * math.sin(math.pi * t))
+
+        strip = np.array([[stem(t) - lateral * .0025, stem(t) + lateral * .0025]
+                          for t in np.linspace(0, 1, 12)], F)
+        blade(strip, srgb("#8FAD50"))
+        for t in np.linspace(.18, .93, 8):
+            reach = .079 * (1 - t * .64)
+            for sign in (-1, 1):
+                start = stem(t)
+                end = stem(min(t + .11, 1)) + lateral * sign * reach + up * .021
+                cross = radial * .014 * (1 - t * .5)
+                pts = []
+                for s in (0, .42, .72, 1):
+                    mid = start * (1 - s) + end * s
+                    bulge = math.sin(math.pi * s)
+                    points = [mid - cross * bulge, mid + up * .009 * bulge, mid + cross * bulge]
+                    pts.append(points)
+                blade(np.array(pts, F), tint)
+
+
+def lamp_shade(p, s, t):
+    """A fluted amber shade, with a brass crown and a rolled rim around the hem."""
+    angle = s * (2 * math.pi)
+    flutes = np.cos(20 * angle)
+    bulge = np.sin(math.pi * t)
+    r = p["r"] * (1 - t) + p["r1"] * t - .026 * bulge + .004 * flutes * bulge
+    r += .008 * np.exp(-((t - .036) / .024) ** 2)
+    pos = p["c"] + np.stack([r * np.cos(angle), t * p["h"], -r * np.sin(angle)], -1)
+    band = np.array([srgb(col) for _, col in SHADE_BANDS])
+    rgb = np.stack([np.interp(t, [at for at, _ in SHADE_BANDS], component) for component in band.T], -1)
+    gleam = .84 + .13 * np.cos(angle + .65) + .04 * flutes * bulge
+    return pos, np.clip(rgb * gleam[..., None], 0, 1)
+
+
+SHADE_BANDS = [(0, "#604426"), (.024, "#DEB05C"), (.046, "#B9873E"), (.069, "#644930"),
+               (.084, "#F5C679"), (.18, "#E7B466"), (.48, "#D9A05C"), (.78, "#C28B4E"),
+               (.87, "#B48045"), (.89, "#846035"), (.94, "#CA9E55"), (1, "#886736")]
+
+
 def build_meshes(charts, size):
     builders = {}
+    probes = {(c["prim"], c["face"]): c for c in charts if c["kind"] == "quad" and "x" in c}
+    cloth = Image.open(os.path.join(OUT, "Textures", MATERIALS["BookSpines"][0])).convert("RGB")
+    cloth_colors = np.array(cloth.resize((8, 1), Image.Resampling.BOX), F)[0] / 255
     for c in charts:
         p = prims[c["prim"]]
-        mb = builders.setdefault(p["mat"], MeshBuilder())
-        scale = MATERIALS[p["mat"]][1]
+        face = c.get("face")
+        if face == "z+" and p.get("carcase"):
+            continue
+        mat = p["mat"]
+        if face == "z+" and p.get("mural"):
+            mat = "Wall"
+        elif face == "z+" and "spine" in p:
+            mat = "BookSpines"
+        mb = builders.setdefault((p.get("group", ""), mat), MeshBuilder())
+        if "fern" in p:
+            if p["fern"]:
+                build_fern(mb, p["fern"], c, size)
+            continue
+        scale = MATERIALS[mat][1]
         if c["kind"] == "quad":
             rows = cols = 2
         elif c["kind"] == "sphere":
             rows, cols = 25, 49
         elif c["kind"] == "ring":
             rows, cols = 9, 65
+        elif p.get("shade"):
+            rows, cols = len(SHADE_BANDS), 81
         else:
             rows, cols = (2, 33) if c["kind"] == "cylside" else (2, 2)
-        t, s = np.meshgrid(np.linspace(0, 1, rows, dtype=F), np.linspace(0, 1, cols, dtype=F), indexing="ij")
+        heights = np.array([at for at, _ in SHADE_BANDS], F) if p.get("shade") else np.linspace(0, 1, rows, dtype=F)
+        t, s = np.meshgrid(heights, np.linspace(0, 1, cols, dtype=F), indexing="ij")
         pos, nrm = chart_surface(c, s, t)
-        # Keep lightmap samples half a texel inside the chart so charts never bleed.
-        u1 = (c["x"] + 0.5 + s * (c["w"] - 1)) / size
-        v1 = 1 - (c["y"] + 0.5 + t * (c["h"] - 1)) / size   # the engine puts image row 0 at v = 1
+        light_chart, ls, lt = c, s, t
+        if "probes" in p:
+            # Drawer inserts are shaded as exposed to the room. Their tops
+            # sample the desktop and their uprights sample the nearest case.
+            side, top, front = p["probes"]
+            probe = {"x": (side, face), "y": (top, face), "z": (front, "z+")}[face[0]]
+            light_chart = probes[probe]
+            ua, va = light_chart["ua"], light_chart["va"]
+            ls = np.clip((pos[..., ua] - light_chart["o"][ua]) / light_chart["du"][ua], 0, 1)
+            lt = np.clip((pos[..., va] - light_chart["o"][va]) / light_chart["dv"][va], 0, 1)
+        # Keep samples half a texel inside the chart; image row zero is v = 1.
+        u1 = (light_chart["x"] + 0.5 + ls * (light_chart["w"] - 1)) / size
+        v1 = 1 - (light_chart["y"] + 0.5 + lt * (light_chart["h"] - 1)) / size
         uv1 = np.stack([u1, v1], -1)
         if c["kind"] == "quad":
-            if p["fit"] == c["face"]:
+            if mat == "Wall":
+                uv0 = np.stack([(pos[..., 0] + 3) / 6, pos[..., 1] / 3], -1)
+            elif mat == "Labels":
+                uv0 = np.stack([s, 1 - (p["label"] + 1 - t) / len(DRAWERS)], -1)
+            elif mat == "BookSpines":
+                # Inset each edge a little to keep the neighboring cloth off this spine.
+                uv0 = np.stack([(p["spine"] + .025 + s * .95) / 8, .01 + t * .98], -1)
+            elif p["fit"] == c["face"]:
                 uv0 = np.stack([s, t], -1)                     # whole picture, upright
             elif scale:
                 uw = np.stack([pos[..., c["ua"]], pos[..., c["va"]]], -1) / scale
@@ -560,16 +760,44 @@ def build_meshes(charts, size):
                 uv0 = np.stack([s, t], -1) * 0 + 0.5
             tangent = c["du"] / max(np.linalg.norm(c["du"]), 1e-6)
             flip = float(np.dot(np.cross(c["du"], c["dv"]), c["n"])) < 0
-            mb.grid(pos, nrm, uv0, uv1, p["color"], tangent, flip)
+            if "offset" in p:
+                pos = pos + np.array(p["offset"], F)
+            color = p["color"]
+            if "spine" in p:
+                # Keep every original lightmap chart while leveling a set's tops and fore edges.
+                lo = p["lo"]
+                neighbor = p.get(face, 0)
+                if neighbor >= p["book_height"]:
+                    continue
+                pos[..., 0] = np.where(pos[..., 0] > lo[0], p["book_right"], lo[0])
+                pos[..., 1] = lo[1] + np.where(pos[..., 1] > lo[1], p["book_height"], neighbor)
+                pos[..., 2] = np.where(pos[..., 2] > lo[2], lo[2] + .25, lo[2])
+                color = np.full(3, p["cloth_tone"]) if mat == "BookSpines" else cloth_colors[p["spine"]]
+            if p.get("pyramid"):
+                # Each baked block covers two receding limestone courses.
+                center = (p["lo"] + p["hi"]) * .5
+                for course in (0, 1):
+                    stone = pos.copy()
+                    stone[..., 1] = (pos[..., 1] - p["lo"][1]) * .5 + (center if course else p["lo"])[1]
+                    if course:
+                        shrink = 1 - .05 / (p["hi"][0] - p["lo"][0])
+                        for axis in (0, 2):
+                            stone[..., axis] = center[axis] + (stone[..., axis] - center[axis]) * shrink
+                    mb.grid(stone, nrm, uv0, uv1, color, tangent, flip)
+            else:
+                mb.grid(pos, nrm, uv0, uv1, color, tangent, flip)
         elif c["kind"] == "cylcap":
             cap(mb, p, c, size)
         else:
             uv0 = np.stack([s, t], -1) if p["mat"] == "Globe" else np.full(pos.shape[:2] + (2,), 0.5, F)
-            mb.grid(pos, nrm, uv0, uv1, p["color"], (1, 0, 0), flip=False)
+            color = p["color"]
+            if p.get("shade"):
+                pos, color = lamp_shade(p, s, t)
+            mb.grid(pos, nrm, uv0, uv1, color, (1, 0, 0), flip=False)
     stats = {}
     os.makedirs(os.path.join(OUT, "Meshes"), exist_ok=True)
-    for name, mb in builders.items():
-        stats[name] = mb.write(os.path.join(OUT, "Meshes", "Study_%s.mesh" % name))
+    for (group, mat), mb in builders.items():
+        stats[group, mat] = mb.write(os.path.join(OUT, "Meshes", f"Study_{group}{mat}.mesh"))
     return stats
 
 
@@ -588,6 +816,36 @@ def cap(mb, p, c, size):
 
 
 # ---------------------------------------------------------------- generated textures
+
+
+def draw_labels():
+    width, height = 640, 112
+    atlas = Image.new("RGB", (width, height * len(DRAWERS)), "#FFF1C9")
+    draw = ImageDraw.Draw(atlas)
+    font_path = os.path.join(APP, "../../share/fonts/NotoSerif/NotoSerif-Bold.ttf")
+    font = ImageFont.truetype(font_path, 72)
+    for row, label in enumerate(DRAWERS.values()):
+        x0, y0, x1, y1 = draw.textbbox((0, 0), label, font=font)
+        x = (width - x1 - x0) / 2
+        y = row * height + (height - y1 - y0) / 2
+        draw.text((x, y), label, font=font, fill="#302114")
+    atlas.save(os.path.join(OUT, "Textures", "drawer-labels.png"))
+
+
+def write_cloth_mips():
+    """Pack prefiltered levels below one another; JPEG uploads provide only level zero."""
+    tex = os.path.join(OUT, "Textures")
+    base = Image.open(os.path.join(tex, MATERIALS["BookSpines"][0])).convert("RGB").resize((256, 128), Image.Resampling.LANCZOS)
+    atlas = Image.new("RGB", (256, 256))
+    x = (np.arange(32, dtype=F) + .5) / 32
+    rounding = 1 - .23 * (2 * x - 1) ** 2 + .04 * np.exp(-((x - .33) / .21) ** 2)
+    for i in range(8):
+        pixels = np.array(base.crop((32 * i, 0, 32 * (i + 1), 128)), F)
+        strip = Image.fromarray(np.clip(pixels * rounding[None, :, None], 0, 255).astype(np.uint8))
+        for level in range(6):
+            w, h = 32 >> level, 128 >> level
+            atlas.paste(strip.resize((w, h), Image.Resampling.LANCZOS), (i * w, h))
+    atlas.save(os.path.join(tex, "cloth-levels.png"))
 
 
 def make_textures(natural_earth):
@@ -730,6 +988,7 @@ SHADER = """<?xml version="1.0" encoding="UTF-8"?>
   <Shader.Uniforms>
     <PropertyType Name="Albedo" DataType="Object" TypeString="Texture"/>
     <PropertyType Name="Lightmap" DataType="Object" TypeString="Texture"/>
+    <PropertyType Name="ClothAtlas" DataType="Float" DefaultValue="0"/>
   </Shader.Uniforms>
   <VertexShader>
 in vec3 a_position; in vec2 a_texcoord0; in vec2 a_texcoord1; in vec4 a_color;
@@ -743,9 +1002,27 @@ void main() {
   </VertexShader>
   <FragmentShader Out="FragColor">
 in vec2 v_uv0; in vec2 v_uv1; in vec3 v_tint;
+vec3 clothLevel(float level, float spine) {
+  float scale = exp2(-level);
+  vec2 uv = vec2(v_uv0.x, v_uv0.y * 0.5) * scale;
+  // Clamp within this book's strip at both levels, even when just one texel wide.
+  vec2 halfTexel = vec2(0.5 / 256.0);
+  uv = clamp(uv, vec2(spine / 8.0, 0.0) * scale + halfTexel,
+                  vec2((spine + 1.0) / 8.0, 0.5) * scale - halfTexel);
+  return texture(Albedo, uv + vec2(0.0, 1.0 - scale)).rgb;
+}
 void main() {
   vec3 light = texture(Lightmap, v_uv1).rgb * %(range)s;   // the bake's LIGHTMAP_RANGE
-  vec3 c = texture(Albedo, fract(v_uv0)).rgb * v_tint * light;
+  vec3 albedo;
+  if (ClothAtlas > 0.5) {
+    vec2 texel = v_uv0 * vec2(256.0, 128.0);
+    float lod = clamp(log2(max(max(length(dFdx(texel)), length(dFdy(texel))), 1.0)), 0.0, 5.0);
+    float spine = floor(v_uv0.x * 8.0);
+    albedo = mix(clothLevel(floor(lod), spine), clothLevel(ceil(lod), spine), fract(lod));
+  } else {
+    albedo = texture(Albedo, fract(v_uv0)).rgb;
+  }
+  vec3 c = albedo * v_tint * light;
   c = c / (1.0 + 0.45 * c);          // soft shoulder so the lamp's pool keeps its colour
   FragColor = vec4(c * 1.3, 1.0);
 }
@@ -754,22 +1031,45 @@ void main() {
 """
 
 
-def write_xml(stats, camera):
+def write_xml(stats):
     os.makedirs(os.path.join(OUT, "Materials"), exist_ok=True)
     with open(os.path.join(OUT, "Baked.xml"), "w") as f:
         f.write(SHADER % dict(range=LIGHTMAP_RANGE))
+    with open(os.path.join(OUT, "Lighting.xml"), "w") as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<Image Name="Lighting" Source="encarta/Study/Textures/lightmap.png" '
+                'MinificationFilter="Linear" MagnificationFilter="Linear"/>\n')
+    with open(os.path.join(OUT, "ClothBindings.xml"), "w") as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n'
+                '<Image Name="ClothBindings" Source="encarta/Study/Textures/cloth-levels.png" '
+                'MinificationFilter="Linear" MagnificationFilter="Linear"/>\n')
     lib = ['<?xml version="1.0" encoding="UTF-8"?>', "<!-- Generated by Tools/build_study.py. -->", "<Library>"]
     scene = ['<?xml version="1.0" encoding="UTF-8"?>', "<!-- Generated by Tools/build_study.py. -->",
              '<Node3D Name="Study">']
-    for name in stats:
+    for group, mat in stats:
+        name = group + mat
         lib.append('  <Mesh Name="Study_%s" Source="encarta/Study/Meshes/Study_%s.mesh"/>' % (name, name))
+    for name in dict.fromkeys(mat for _, mat in stats):
         tex = MATERIALS[name][0]
         tex = "encarta/Images/Thumbs/" + os.path.basename(tex) if tex.startswith("..") else "encarta/Study/Textures/" + tex
+        cloth_atlas = ""
+        if name == "BookSpines":
+            tex = "encarta/Study/ClothBindings"
+            cloth_atlas = ' Baked.ClothAtlas="1"'
         with open(os.path.join(OUT, "Materials", name + ".xml"), "w") as f:
             f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Material Name="%s" Shader="encarta/Study/Baked" BlendMode="Opaque"\n'
-                    '          Baked.Albedo="%s" Baked.Lightmap="encarta/Study/Textures/lightmap.png"/>\n' % (name, tex))
-        scene.append('  <Model3D Name="%s" Mesh="encarta/Study/Meshes/Study_%s" Material="encarta/Study/Materials/%s"/>'
-                     % (name, name, name))
+                    '          Baked.Albedo="%s" Baked.Lightmap="encarta/Study/Lighting"%s/>\n' % (name, tex, cloth_atlas))
+    for group in ["", *DRAWERS]:
+        if group:
+            scene.append(f'  <Node3D Name="{group}">')
+        indent = "    " if group else "  "
+        for model_group, mat in stats:
+            if model_group == group:
+                scene.append(f'{indent}<Model3D Name="{group}{mat}" Mesh="encarta/Study/Meshes/Study_{group}{mat}" '
+                             f'Material="encarta/Study/Materials/{mat}"/>')
+        if group:
+            scene.append('    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>')
+            scene.append("  </Node3D>")
     lib.append("</Library>"); scene.append("</Node3D>")
     open(os.path.join(OUT, "Meshes.xml"), "w").write("\n".join(lib) + "\n")
     open(os.path.join(OUT, "Scene.xml"), "w").write("\n".join(scene) + "\n")
@@ -781,26 +1081,31 @@ def main():
     ap.add_argument("--natural-earth", metavar="DIR",
                     help="folder with ne_110m_land.geojson and ne_110m_lakes.geojson, to redraw the globe")
     ap.add_argument("--no-bake", action="store_true", help="rewrite meshes and XML, keep the lightmap")
+    ap.add_argument("--keep-textures", action="store_true", help="keep existing wood, globe and sky textures")
     ap.add_argument("--paths", type=int, default=16, help="bounce paths per texel")
     ap.add_argument("--size", type=int, default=1024, help="lightmap size in texels")
     ap.add_argument("--jobs", type=int, default=os.cpu_count())
     args = ap.parse_args()
-    make_textures(args.natural_earth)
+    if not args.keep_textures:
+        make_textures(args.natural_earth)
+    draw_labels()
+    write_cloth_mips()
     build_scene()
     charts = make_charts()
+    room_charts = [c for c in charts if "probes" not in prims[c["prim"]]]
     scale = 1.0      # shrink every chart evenly until the atlas holds them all
-    while not pack(charts, args.size, scale):
+    while not pack(room_charts, args.size, scale):
         scale *= 0.95
     print("%d primitives, %d charts, texel density x%.2f" % (len(prims), len(charts), scale))
     if not args.no_bake:
-        light, mask, _ = bake(charts, args.size, 8 if args.draft else args.paths, 1 if args.draft else 2, args.jobs)
-        light = denoise_and_pad(light, mask, charts)
+        light, mask, _ = bake(room_charts, args.size, 8 if args.draft else args.paths, 1 if args.draft else 2, args.jobs)
+        light = denoise_and_pad(light, mask, room_charts)
         enc = np.clip(light / LIGHTMAP_RANGE, 0, 1) ** (1 / 2.2)
         Image.fromarray((enc * 255 + 0.5).astype(np.uint8)).save(os.path.join(OUT, "Textures", "lightmap.png"))
     stats = build_meshes(charts, args.size)
-    write_xml(stats, None)
-    for name, (v, t) in stats.items():
-        print("  %-8s %5d vertices %5d triangles" % (name, v, t))
+    write_xml(stats)
+    for (group, mat), (v, t) in stats.items():
+        print("  %-8s %5d vertices %5d triangles" % (group + mat, v, t))
 
 
 if __name__ == "__main__":

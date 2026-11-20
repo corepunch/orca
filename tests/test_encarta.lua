@@ -3,6 +3,7 @@ local core = require "orca.core"
 local fs = require "orca.filesystem"
 require "orca.UIKit"
 require "orca.renderer"
+require "orca.SceneKit"
 
 local project = fs.init("apps/encarta")
 local orca = require "orca"
@@ -50,40 +51,132 @@ local search = control("Search")
 local function count(node) local n = 0 for _ in node.children do n = n + 1 end return n end
 core.flushQueue()
 layout(1024, 768)
-assert(library.Visible and not reader.Visible)
-
--- The library opens in the study: one picture with a clear button over each
--- object, one object per category.
 local study, bubble = control("Study"), control("Bubble")
-local function left(node) local x = 0 while node and node ~= view do x, node = x + node.ActualX, node.parent end return x end
-local function top(node) local y = 0 while node and node ~= view do y, node = y + node.ActualY, node.parent end return y end
-assert(study.Visible and not shelf.Visible, "the study opens first")
-assert(not control("Categories").Visible and not control("Featured").Visible)
-assert(wall.Visible and count(wall) == 15 and control("CatalogTitle").Text == "Big questions" and top(wall) > top(study) + study.ActualHeight,
-    "the wall of questions runs under the study")
--- On an upright iPad the questions fill the space below the desk.
-layout(1024, 1366)
-assert(top(study) + study.ActualHeight < 800 and top(control("Open_mars", wall)) < 1366, "question cards show under the study when the screen is tall")
-layout(1024, 768)
-assert(control("ShowStudy").BackgroundColor.R > 0.9 and control("ShowWall").BackgroundColor.R < 0.5)
-assert(math.abs(study.ActualWidth / study.ActualHeight - 1.6) < 0.01 and study.ActualWidth > 900, "the study keeps its picture's proportions")
-assert(control("StudyArt").ActualWidth == study.ActualWidth and control("StudyArt").ActualHeight == study.ActualHeight)
-assert(top(study) + study.ActualHeight <= 768, "the study fits the screen without scrolling")
-for _, name in ipairs({ "animals", "space", "earth", "science", "plants", "your-body", "long-ago" }) do
-    local object = control("Object_" .. name)
-    assert(object.ActualWidth >= 88 and object.ActualHeight >= 88, name .. " is easy to tap")
+local function left(node)
+    local x = 0
+    while node and node ~= view do x, node = x + node.ActualX, node.parent end
+    return x
 end
--- The grid follows the picture: the window on the left third, the globe in
--- the middle, the aquarium at the right edge, all standing on the desk.
-local earth, space, animals = control("Object_earth"), control("Object_space"), control("Object_animals")
-local desk = top(study) + study.ActualHeight * 412 / 625
-assert(left(space) == left(study) and math.abs(space.ActualWidth - study.ActualWidth * 0.3) < 1)
-assert(math.abs(left(earth) + earth.ActualWidth / 2 - left(study) - study.ActualWidth * 0.505) < 1, "the globe's button sits on the globe")
-assert(math.abs(left(animals) + animals.ActualWidth - left(study) - study.ActualWidth) < 1)
-assert(math.abs(top(earth) + earth.ActualHeight - desk) < 1 and math.abs(top(space) + space.ActualHeight - desk) < 1, "objects stand on the desk")
-local postcard = control("Postcard")
-assert(top(postcard) > desk and control("PostcardQuestion").Text == "How does an octopus hide?"
-    and control("PostcardImage").Src == "encarta/Images/Thumbs/octopus.jpg", "today's question lies in the desk")
+local function top(node)
+    local y = 0
+    while node and node ~= view do y, node = y + node.ActualY, node.parent end
+    return y
+end
+local function touch(message, x, y)
+    orca.system.dispatchMessage { target = view, message = message, x = x, y = y }
+    core.flushQueue()
+end
+local function tap(x, y)
+    touch("LeftButtonDown", x, y)
+    touch("LeftButtonUp", x, y)
+end
+local function tapOn(node)
+    tap(left(node) + node.ActualWidth / 2, top(node) + node.ActualHeight / 2)
+end
+
+-- The normal launch mounts the populated room behind the touch controls.
+assert(study.Visible and not library.Visible and not reader.Visible, "the study is the main menu")
+local viewport = control("Viewport", study)
+local camera = control("StudyCamera", viewport)
+local room = control("Room", viewport)
+local function finishSlide(groupName, opening)
+    local group = control(groupName, viewport)
+    local slide = control("Slide", group)
+    assert(opening and slide.Speed > 0 or not opening and slide.Speed < 0, groupName .. " slides in the requested direction")
+    -- Pose the last animation frame and deliver the player's normal end tick.
+    if slide.Playing then
+        slide.CurrentTime = opening and slide.Clip.StopTime or slide.Clip.StartTime
+        slide:send("Object.Animate")
+        slide:send("Object.Animate")
+    end
+    assert(not slide.Playing and math.abs(group.LayoutTransformTranslation.Z - (opening and 0.46 or 0)) < 0.01,
+        groupName .. " moves its geometry")
+end
+do
+    local title, picker = control("StudyTitle"), control("RoomPicker")
+    local note = control("DrawerNote")
+    local function openPicker()
+        tapOn(control("OpenRooms"))
+        layout(1024, 768)
+        assert(picker.Visible, "Rooms opens the room picker")
+    end
+    local function choose(name)
+        tapOn(control("Choose" .. name, picker))
+        layout(1024, 768)
+        assert(study.Visible and not picker.Visible and not bubble.Visible and not note.Visible,
+            "changing rooms clears the previous selection")
+    end
+    assert(title.Text == "The Specimen Cabinet" and count(room) == 1 and room:findChild("Nature"),
+        "new explorers start in the specimen cabinet")
+    openPicker()
+    tapOn(control("PickerClose"))
+    layout(1024, 768)
+    assert(not picker.Visible and title.Text == "The Specimen Cabinet", "dismissing Rooms leaves the cabinet in place")
+    for _, variant in ipairs({
+        { "Clubhouse", "The Clubhouse", "animals", "Animals", true },
+        { "Nature", "The Specimen Cabinet", "earth", "Earth" },
+        { "Science", "The Inventor’s Planetarium", "space", "Space" },
+        { "Abyss", "The Deep-Sea Station", "science", "Science", true },
+    }) do
+        openPicker()
+        choose(variant[1])
+        assert(title.Text == variant[2] and count(room) == 1 and room:findChild(variant[1]),
+            "one scene is mounted for " .. variant[1])
+        local width, height = 1024, 768
+        if variant[5] then width, height = 768, 1024 end
+        layout(width, height)
+        local bounds = require("encarta/Rooms/" .. variant[1] .. "/layout").subjects[variant[3]]
+        local scale = math.min(width / 864, height / 768)
+        -- Tap the pictured specimen in the camera's 864 x 648 art plane.
+        tap(width / 2 + (80 + 864 * bounds[1] - 512) * scale,
+            height / 2 + (64 + 648 * bounds[2] - 384) * scale)
+        assert(bubble.Visible and control("BubbleTitle").Text == variant[4], "tap a subject in " .. variant[1])
+        layout(1024, 768)
+        tapOn(control("BubbleClose"))
+        layout(1024, 768)
+        tapOn(control("DeskQuestions"))
+        layout(1024, 768)
+        assert(note.Visible and not bubble.Visible, "the questions drawer opens in " .. variant[1])
+        finishSlide("DrawerLeftLower", true)
+        tapOn(control("DrawerEnter"))
+        layout(1024, 768)
+        assert(library.Visible and wall.Visible and not study.Visible)
+        tapOn(control("ShowStudy"))
+        layout(1024, 768)
+        assert(study.Visible and title.Text == variant[2] and not note.Visible, "return to the room you explored")
+        assert(control("DrawerLeftLower", room).LayoutTransformTranslation.Z < 0.01, "return closes the drawer")
+        tapOn(control("Object_" .. variant[3]))
+        layout(1024, 768)
+        assert(bubble.Visible)
+    end
+    openPicker()
+    choose("Original")
+end
+assert(count(room) == 1 and control("Globe", room), "the original populated study can be revisited")
+for _, size in ipairs({ {1024, 768}, {768, 1024} }) do
+    local width, height = table.unpack(size)
+    layout(width, height)
+    assert(study.ActualWidth == width and study.ActualHeight == height, "the study fills the window")
+    assert(camera.FovType == (width > height and "Yfov" or "Xfov"), "the camera fits the desk to the shorter dimension")
+    for _, category in ipairs({ "Animals", "Space", "Earth", "Science", "Plants", "Your Body", "Long Ago" }) do
+        local object = control("Object_" .. category:lower():gsub(" ", "-"), study)
+        assert(object.ActualWidth >= 44 and object.ActualHeight >= 44, category .. " is easy to tap")
+        if category == "Earth" then
+            -- Aim at the globe itself in the fitted 4:3 composition.
+            local scale = math.min(width / 1024, height / 768)
+            tap(width / 2 - 236 * scale, height / 2 - 38 * scale)
+        else
+            tapOn(object)
+        end
+        assert(bubble.Visible and control("BubbleTitle").Text == category, category .. " responds to a tap at " .. width .. "x" .. height)
+        layout(width, height)
+        tapOn(control("BubbleClose"))
+        assert(not bubble.Visible)
+        layout(width, height)
+    end
+end
+layout(1024, 768)
+assert(control("PostcardQuestion").Text == "How does an octopus hide?", "today’s question appears on the desk")
 
 -- Tapping an object opens a bubble with a few of its questions.
 assert(not bubble.Visible)
@@ -100,7 +193,7 @@ click("Object_earth")
 click("Bubble_volcanoes")
 assert(reader.Visible and control("ArticleTitle").Text == "Volcanoes", "a question in the bubble opens its article")
 click("Back")
-assert(library.Visible and study.Visible, "Back returns to the study")
+assert(study.Visible and not library.Visible, "Back returns to the study")
 click("Object_space")
 click("BubbleAll")
 assert(wall.Visible and not study.Visible and not bubble.Visible and control("CatalogTitle").Text == "Space" and count(wall) == 3,
@@ -110,37 +203,57 @@ click("ShowStudy")
 click("Postcard")
 assert(reader.Visible and control("ArticleTitle").Text == "Octopuses", "the postcard opens today's question")
 click("Back")
--- The top drawers open the passport and the hunt.
-local huntDrawer, hunt = control("OpenHunt"), control("Hunt")
-assert(math.abs(left(huntDrawer) - left(study) - study.ActualWidth * 0.674) < 1 and math.abs(huntDrawer.ActualWidth - study.ActualWidth * 0.29) < 1
-    and math.abs(top(huntDrawer) - top(study) - study.ActualHeight * 456 / 625) < 1 and huntDrawer.ActualHeight >= 44, "the hunt's button covers the top right drawer")
-assert(math.abs(left(control("OpenPassport")) - left(study) - study.ActualWidth * 0.036) < 1, "the passport's covers the top left one")
-click("OpenHunt")
+-- Drawer contents stay in the room until the child chooses to go inside.
+local hunt, drawerNote = control("Hunt"), control("DrawerNote")
+for _, drawer in ipairs({ { "DeskQuestions", wall, "DrawerLeftLower" }, { "DeskBookshelf", shelf, "DrawerRightLower" } }) do
+    layout(768, 1024)
+    tapOn(control(drawer[1]))
+    layout(768, 1024)
+    assert(drawerNote.Visible and study.Visible and not library.Visible, "the drawer opens in the study")
+    finishSlide(drawer[3], true)
+    tapOn(control(drawer[1] == "DeskQuestions" and "PulledDrawer" or "DrawerClose"))
+    assert(not drawerNote.Visible, "a drawer can be closed without leaving the room")
+    finishSlide(drawer[3], false)
+    layout(768, 1024)
+    tapOn(control(drawer[1]))
+    layout(768, 1024)
+    finishSlide(drawer[3], true)
+    tapOn(control("DrawerEnter"))
+    assert(library.Visible and drawer[2].Visible and not study.Visible, drawer[1] .. " opens its collection")
+    click("ShowStudy")
+    assert(control(drawer[3], viewport).LayoutTransformTranslation.Z < 0.01, "the drawer is closed on return")
+end
+layout(1024, 768)
+tapOn(control("OpenHunt"))
+layout(1024, 768)
+assert(study.Visible and drawerNote.Visible and not hunt.Visible)
+finishSlide("DrawerRightUpper", true)
+tapOn(control("DrawerEnter"))
 layout(1024, 768)
 assert(hunt.Visible and not library.Visible and not reader.Visible)
 local passport, card, stamps = control("Passport"), control("HuntCard"), control("Stamps")
 assert(left(card) > left(passport) + passport.ActualWidth and card.ActualWidth > passport.ActualWidth, "the passport sits beside the hunt")
-assert(control("StampCount").Text == "0 of 15 stamps" and count(stamps) == 15)
+assert(control("StampCount").Text == "0 of 18 stamps" and count(stamps) == 18)
 local blank = control("Stamp_octopus")
 assert(control("Blank", blank).Visible and not control("Art", blank).Visible and math.abs(blank.ActualWidth - blank.ActualHeight) < 1, "an unearned stamp is a round question mark")
 -- A hunt is a riddle and three pictures; the first is for the first article.
 local choices = control("Choices")
 assert(control("HuntQuestion").Text == "Which animal can squeeze through any hole its beak fits through?")
 assert(control("HuntKicker").Text == "HUNT  ·  ANIMALS" and count(choices) == 3 and control("HuntHint").Text == "Pick a picture.")
-assert(control("Art", control("Choice_octopus")).Src == "encarta/Images/Thumbs/octopus.jpg" and control("Title", control("Choice_dinosaurs")).Text == "Dinosaurs")
-assert(control("Choice_magnets").ActualHeight >= 88 and not control("HuntFeedback").Visible and not control("HuntActions").Visible)
-click("Choice_dinosaurs")
+assert(control("Art", control("Choice_octopus")).Src == "encarta/Images/Thumbs/octopus.jpg" and control("Title", control("Choice_sun")).Text == "The Sun")
+assert(control("Choice_heart").ActualHeight >= 88 and not control("HuntFeedback").Visible and not control("HuntActions").Visible)
+click("Choice_sun")
 assert(control("HuntHint").Text == "Not this one. Try another picture." and not control("HuntFeedback").Visible
-    and control("StampCount").Text == "0 of 15 stamps", "a wrong pick costs nothing")
+    and control("StampCount").Text == "0 of 18 stamps", "a wrong pick costs nothing")
 click("Choice_octopus")
 layout(1024, 768)
 assert(control("HuntFeedback").Visible and control("HuntFeedbackTitle").Text == "Yes! New stamp" and control("HuntReveal").Text:match("no bones"))
-assert(control("StampCount").Text == "1 of 15 stamps" and control("HuntActions").Visible)
+assert(control("StampCount").Text == "1 of 18 stamps" and control("HuntActions").Visible)
 local earned = control("Stamp_octopus")
 assert(control("Art", earned).Visible and control("Art", earned).Src == "encarta/Images/Thumbs/octopus.jpg" and not control("Blank", earned).Visible)
 assert(earned.BackgroundColor.R > 0.8 and earned.BackgroundColor.B < 0.3, "an earned stamp wears its category colour")
 assert(card.ScrollHeight <= card.ActualHeight + 1 and passport.ScrollHeight <= passport.ActualHeight + 1, "the hunt and the passport fit the screen")
-click("Choice_dinosaurs")
+click("Choice_sun")
 assert(control("HuntHint").Text == "You found it!", "a solved hunt ignores further picks")
 -- On an upright iPad the passport lies across the top, above the hunt.
 layout(1024, 1366)
@@ -151,7 +264,7 @@ layout(1024, 768)
 click("NextHunt")
 assert(control("HuntQuestion").Text == "Where have only twelve people ever walked?" and not control("HuntFeedback").Visible, "the next hunt is the next unstamped article")
 click("Choice_moon")
-assert(control("StampCount").Text == "2 of 15 stamps" and control("ReadHuntedText").Text == "Read “Why does the Moon change shape?”")
+assert(control("StampCount").Text == "2 of 18 stamps" and control("ReadHuntedText").Text == "Read “Why does the Moon change shape?”")
 click("ReadHunted")
 assert(reader.Visible and not hunt.Visible and control("ArticleTitle").Text == "The Moon", "the hunt leads into its article")
 click("Back")
@@ -162,7 +275,7 @@ local leave = control("HuntBack")
 orca.system.dispatchMessage { target = view, message = "LeftButtonDown", x = left(leave) + 20, y = top(leave) + 20 }
 orca.system.dispatchMessage { target = view, message = "LeftButtonUp", x = left(leave) + 20, y = top(leave) + 20 }
 core.flushQueue()
-assert(library.Visible and study.Visible and not hunt.Visible, "the hunt's way back answers a tap")
+assert(study.Visible and not library.Visible and not hunt.Visible, "the hunt's way back answers a tap")
 -- Reading an article to its last spread earns its stamp too, and stamps are
 -- kept on disk.
 app.libraryController:openArticle("heart")
@@ -170,7 +283,12 @@ assert(not app.libraryController.passport:has("heart"))
 app.libraryController:setPage(#app.libraryController.spreads)
 click("Back")
 click("OpenPassport")
-assert(hunt.Visible and control("StampCount").Text == "3 of 15 stamps" and control("Art", control("Stamp_heart")).Visible)
+assert(study.Visible and drawerNote.Visible)
+finishSlide("DrawerLeftUpper", true)
+click("DrawerEnter")
+layout(1024, 768)
+assert(not card.Visible and passport.ActualWidth > 900 and control("HuntTitle").Text == "My Passport", "the passport drawer opens the stamp collection")
+assert(hunt.Visible and control("StampCount").Text == "3 of 18 stamps" and control("Art", control("Stamp_heart")).Visible)
 assert(control("HuntQuestion").Text:match("cloud drops"), "an unsolved hunt waits for you")
 local kept = require("encarta/Scripts/Passport").open(passportPath)
 assert(kept.count == 3 and kept:has("octopus") and kept:has("moon") and kept:has("heart") and not kept:has("water"), "stamps survive a restart")
@@ -178,7 +296,9 @@ assert(not kept:add("moon") and kept.count == 3, "a stamp is earned once")
 click("HuntBack")
 layout(1024, 768)
 
--- Typing a question leaves the study for the wall, where results show.
+-- Search in the study opens the catalogue and filters its questions.
+tapOn(control("StudySearch"))
+assert(library.Visible and wall.Visible)
 search.Text = "moon"
 core.flushQueue()
 assert(wall.Visible and not study.Visible and control("Categories").Visible and control("ResultCount").Text == "1 ARTICLE")
@@ -186,7 +306,7 @@ click("ClearSearch")
 assert(wall.Visible, "clearing the search stays on the wall")
 layout(1024, 768)
 
-assert(control("ResultCount").Text == "15 ARTICLES" and count(wall) == 15 and wall.Visible and not shelf.Visible)
+assert(control("ResultCount").Text == "18 ARTICLES" and count(wall) == 18 and wall.Visible and not shelf.Visible)
 assert(control("CatalogTitle").Text == "Big questions")
 local card = control("Open_mars", wall)
 assert(card.ActualWidth > 200 and math.abs(card.ActualWidth / card.ActualHeight - 1.4) < 0.02, "four landscape question cards per row")
@@ -204,7 +324,7 @@ assert(background.B > 0.5 and background.R < 0.3, "space cards resolve the packa
 assert(control("ShowWall").BackgroundColor.R > 0.9, "the question wall starts selected")
 click("ShowShelf")
 assert(control("ShowWall").BackgroundColor.R < 0.5 and control("ShowShelf").BackgroundColor.R > 0.9, "only the chosen view is highlighted")
-assert(shelf.Visible and not wall.Visible and count(shelf) == 15)
+assert(shelf.Visible and not wall.Visible and count(shelf) == 18)
 assert(control("CatalogTitle").Text == "On the shelf")
 local octopusCover, moonCover = control("Cover_octopus", shelf), control("Cover_moon", shelf)
 assert(control("Art", octopusCover).Visible and not control("Icon", octopusCover).Visible, "art replaces the icon")
@@ -217,7 +337,7 @@ click("Category_space")
 assert(count(shelf) == 3 and control("CatalogTitle").Text == "Space" and not control("Featured").Visible)
 click("Category_all")
 click("ShowWall")
-assert(count(wall) == 15 and control("Featured").Visible)
+assert(count(wall) == 18 and control("Featured").Visible)
 
 search.Text = "  SPACE moon  "
 core.flushQueue()
@@ -240,16 +360,7 @@ local function shown()
     end
     return found
 end
-local function screenTop(node)
-    local top = 0
-    while node and node ~= view do top, node = top + node.ActualY, node.parent end
-    return top
-end
-local function screenLeft(node)
-    local left = 0
-    while node and node ~= view do left, node = left + node.ActualX, node.parent end
-    return left
-end
+local screenTop, screenLeft = top, left
 -- The current question is the one whose bookmark is painted sun yellow on
 -- the next frame.
 local function current()
@@ -351,19 +462,11 @@ assert(shown() == spread(1) and not control("PrevPage").Visible)
 
 -- Real touches, sent through hit testing: a sideways swipe turns the page,
 -- and so does a tap on a page's outer margin.
-local function touch(message, x, y)
-    orca.system.dispatchMessage { target = view, message = message, x = x, y = y }
-    core.flushQueue()
-end
 local function swipe(x1, y1, x2, y2)
     touch("LeftButtonDown", x1, y1)
     touch("LeftButtonDragged", (x1 + x2) / 2, (y1 + y2) / 2)
     touch("LeftButtonDragged", x2, y2)
     touch("LeftButtonUp", x2, y2)
-end
-local function tap(x, y)
-    touch("LeftButtonDown", x, y)
-    touch("LeftButtonUp", x, y)
 end
 local midX, midY = screenLeft(book) + book.ActualWidth * 0.3, screenTop(book) + book.ActualHeight * 0.6
 swipe(midX, midY, midX + 200, midY)
@@ -385,7 +488,6 @@ assert(shown() == spread(3) and current() == 2, "after a swipe, taps reach the p
 tap(screenLeft(book) + 20, midY)
 assert(shown() == spread(2), "a tap on the left margin turns back")
 -- The bar and the bookmarks answer real taps too: nothing lies over them.
-local function tapOn(node) tap(screenLeft(node) + node.ActualWidth / 2, screenTop(node) + node.ActualHeight / 2) end
 tapOn(control("Step3"))
 assert(shown() == spread(5) and current() == 3, "a bookmark answers a tap")
 tapOn(control("Back"))
@@ -454,6 +556,33 @@ assert(control("EmptyResults").Visible and control("ResultCount").Text == "0 ART
 assert(control("ClearSearch").Visible, "Clear appears once there is something to clear")
 click("ClearSearch")
 assert(control("Featured").Visible and not control("EmptyResults").Visible and not control("ClearSearch").Visible)
+
+-- Search reads a child's sentence: filler words drop out, and plurals and
+-- small slips still match.
+local function results(text)
+    search.Text = text
+    core.flushQueue()
+    local ids = {}
+    for card in wall.children do ids[#ids + 1] = card.Name:gsub("^Open_", "") end
+    table.sort(ids)
+    return table.concat(ids, " ")
+end
+assert(results("I want to know about the US civil war") == "civil-war")
+assert(results("battle of Napoleon in Waterloo") == "napoleon")
+assert(results("napolean") == "napoleon", "one slip in a long word still finds it")
+assert(results("knights and castles") == "castles")
+assert(results("dinosaur") == "dinosaurs")
+local h = results("history"); assert(h == "castles civil-war dinosaurs napoleon", h)
+click("ClearSearch")
+
+-- The Time Machine puts everything that happened at a time in order.
+click("ShowTime")
+local order = {}
+for card in wall.children do order[#order + 1] = card.Name:gsub("^Open_", "") end
+assert(table.concat(order, " ") == "dinosaurs pyramids castles napoleon civil-war", table.concat(order, " "))
+assert(control("CatalogTitle").Text == "Time Machine: oldest first" and control("ShowTime").BackgroundColor.R > 0.9)
+assert(control("Title", control("Open_napoleon", wall)).Text:match("^1815"), "a time card shows when")
+click("ShowWall")
 click("OpenFeatured")
 assert(control("ArticleTitle").Text == "Octopuses")
 assert(part("SectionImage", 1).Src == "encarta/Images/octopus.jpg")
@@ -524,7 +653,7 @@ for _, article in ipairs(require "encarta/Content/Articles") do
         if spot then spot:send("Node.LeftButtonUp") end
         layout(1024, 768)
         local art, image = spread(n):findChild("Picture", true), article.sections[reading.spreads[n].section].image or article.image
-        for i, at in ipairs(reading.spreads[n].page == 1 and image.spots or {}) do
+        for i, at in ipairs(reading.spreads[n].page == 1 and image and image.spots or {}) do
             local mark = control("Spot" .. i, spread(n))
             local x = (screenLeft(mark) + mark.ActualWidth / 2 - screenLeft(art)) / art.ActualWidth
             local y = (screenTop(mark) + mark.ActualHeight / 2 - screenTop(art)) / art.ActualHeight
@@ -541,16 +670,17 @@ local function checkArtwork(path)
     assert(bytes:sub(1, 2) == string.char(0xff, 0xd8), path .. " must be a bundled JPEG")
 end
 for _, article in ipairs(require "encarta/Content/Articles") do
-    assert(article.question and article.image.caption ~= "", article.id)
+    -- A new article may wait for its painting; its cover is then its icon.
+    assert(article.question and (not article.image or article.image.caption ~= ""), article.id)
     assert(#article.hunt == 2 and article.hunt[1]:sub(-1) == "?" and article.hunt[2] ~= "", article.id .. " has a riddle and its fact")
-    checkArtwork(article.image.path)
+    if article.image then checkArtwork(article.image.path) end
     if article.cover then checkArtwork(article.cover) end
     assert(not article.related or article.related ~= article.id and (function()
         for _, other in ipairs(require "encarta/Content/Articles") do
             if other.id == article.related then return true end
         end
     end)(), article.id .. " names a related article that exists")
-    for _, spot in ipairs(article.image.spots or {}) do
+    for _, spot in ipairs(article.image and article.image.spots or {}) do
         assert(spot[1] > 0 and spot[1] < 1 and spot[2] > 0 and spot[2] < 1 and spot[3] ~= "" and spot[4] ~= "", article.id)
     end
     for _, section in ipairs(article.sections) do
@@ -571,24 +701,55 @@ for name in pairs(timings) do
     end
 end
 
--- The Study: the baked 3D room, opened with -url=/study.
-require "orca.SceneKit"
-app:activate_route("/study")
-local study = app.screen
-assert(study.Name == "Study" and study:findChild("StudyCamera", true), "the Study has its camera")
-local materials = 0
-for name in assert(fs.readTextFile("encarta/Study/Scene.xml")):gmatch('Material="encarta/Study/Materials/(%w+)"') do
-    local mesh = assert(fs.readTextFile("encarta/Study/Meshes/Study_" .. name .. ".mesh"), name)
-    assert(mesh:sub(1, 4) == "MESH", name .. " must be a mesh file")
-    local material = assert(fs.readTextFile("encarta/Study/Materials/" .. name .. ".xml"), name)
-    assert(material:find('Baked.Lightmap="encarta/Study/Textures/lightmap.png"', 1, true), name .. " uses the lightmap")
+-- Follow the assets actually assigned to each model, including drawer
+-- pieces which share the cabinet's materials.
+local models = 0
+for model in assert(fs.readTextFile("encarta/Study/Scene.xml")):gmatch("<Model3D%s+([^>]+)>") do
+    local meshPath = assert(model:match('Mesh="([^"]+)"'))
+    local mesh = assert(fs.readTextFile(meshPath .. ".mesh"), meshPath)
+    assert(mesh:sub(1, 4) == "MESH", meshPath .. " must be a mesh file")
+    local materialPath = assert(model:match('Material="([^"]+)"'))
+    local material = assert(fs.readTextFile(materialPath .. ".xml"), materialPath)
+    assert(material:find('Baked.Lightmap="encarta/Study/Lighting"', 1, true), materialPath .. " uses the lightmap")
     local texture = material:match('Baked.Albedo="([^"]+)"')
+    if not texture:match("%.%w+$") then
+        local image = assert(fs.readTextFile(texture .. ".xml"), texture)
+        texture = assert(image:match('Source="([^"]+)"'))
+    end
     assert(fs.readTextFile(texture), texture)
-    materials = materials + 1
+    models = models + 1
 end
-assert(materials >= 5, "the Study scene lists its meshes")
-assert(fs.readTextFile("encarta/Study/Textures/lightmap.png"):sub(2, 4) == "PNG", "the lightmap is baked")
-app:activate_route("/")
+assert(models >= 5, "the Study scene lists its meshes")
+local lighting = assert(fs.readTextFile("encarta/Study/Lighting.xml"))
+local lightmap = assert(lighting:match('Source="([^"]+)"'))
+assert(fs.readTextFile(lightmap):sub(2, 4) == "PNG", "the lightmap is baked")
+
+click("ShowStudy")
+click("OpenRooms")
+click("ChooseAbyss")
+assert(room:findChild("Abyss"))
+app:activate_route("/study")
+assert(app.screen == view and study.Visible and not library.Visible and room:findChild("Study"),
+    "the study URL opens the original interactive room")
 
 os.remove(passportPath)
-print("PASS: Encarta study, baked 3D Study room, question hunt and passport, question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")
+-- The home screen has wings for what has no exhibit: the Time Machine and
+-- History. Each opens its books, and every wing is a big target.
+click("ShowStudy")
+layout(1024, 768)
+local timeWing, historyWing = control("Wing_time-machine"), control("Wing_history")
+assert(timeWing.ActualHeight >= 56 and historyWing.ActualHeight >= 56, "wings are big targets")
+assert(control("WingDetail", historyWing).Text == "3 books")
+assert(not view:findChild("Wing_animals", true), "a subject with an exhibit has no wing")
+assert(control("StudySearch").ActualHeight >= 52 and control("StudySearch").ActualWidth > 300, "the ask box is wide")
+click("Wing_history")
+assert(wall.Visible and control("CatalogTitle").Text == "History" and count(wall) == 3)
+click("ShowStudy")
+click("Wing_time-machine")
+assert(wall.Visible and control("CatalogTitle").Text:match("^Time Machine") and count(wall) == 5)
+click("ShowStudy")
+layout(834, 1194)
+assert(math.abs(timeWing.ActualWidth - historyWing.ActualWidth) < 1 and timeWing.ActualWidth > 300, "upright, the wings share a row")
+layout(1024, 768)
+
+print("PASS: Encarta room picker, four themed rooms, original 3D study, question hunt and passport, question wall, illustrated bookshelf, paged book reader, offline recordings and synchronized highlights")

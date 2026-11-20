@@ -1,0 +1,35 @@
+<Shader Name="RoomSurface">
+  <Shader.Uniforms>
+    <PropertyType Name="Art" DataType="Object" TypeString="Texture"/>
+    <PropertyType Name="Cards" DataType="Object" TypeString="Texture"/>
+  </Shader.Uniforms>
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+in vec4 a_color;
+uniform mat4 u_modelViewProjectionTransform;
+out vec3 v_uvq;
+out vec3 v_color;
+void main() {
+  // The reference camera is four metres in front of the cabinet.
+  float q = 4.0 - a_position.z;
+  v_uvq = vec3(a_texcoord0 * q, q);
+  v_color = pow(a_color.rgb, vec3(2.2));
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+  </VertexShader>
+  <FragmentShader Out="FragColor"><![CDATA[
+in vec3 v_uvq;
+in vec3 v_color;
+void main() {
+  vec2 uv = v_uvq.xy / v_uvq.z;
+  vec3 surface = vec3(1.0);
+  if (uv.x >= 2.0) {
+    surface = texture(Cards, vec2(uv.x - 2.0, uv.y)).rgb;
+  } else if (uv.x >= 0.0) {
+    surface = texture(Art, uv).rgb;
+  }
+  FragColor = vec4(surface * v_color, 1.0);
+}
+  ]]></FragmentShader>
+</Shader>

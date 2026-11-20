@@ -1,0 +1,9 @@
+<Library>
+  <Image Name="Art" Source="encarta/Rooms/Abyss/room.jpg" MagnificationFilter="Linear" MinificationFilter="Linear" />
+  <Material RoomSurface.Art="encarta/Rooms/Abyss/Assets/Art" RoomSurface.Cards="encarta/Rooms/LabelCards" Name="Finish" Shader="encarta/Rooms/RoomSurface" BlendMode="Opaque" />
+  <Mesh Name="Cabinet" Source="encarta/Rooms/Abyss/Meshes/Cabinet.mesh" />
+  <Mesh Name="DrawerLeftUpperTray" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftUpperTray.mesh" />
+  <Mesh Name="DrawerRightUpperTray" Source="encarta/Rooms/Abyss/Meshes/DrawerRightUpperTray.mesh" />
+  <Mesh Name="DrawerLeftLowerTray" Source="encarta/Rooms/Abyss/Meshes/DrawerLeftLowerTray.mesh" />
+  <Mesh Name="DrawerRightLowerTray" Source="encarta/Rooms/Abyss/Meshes/DrawerRightLowerTray.mesh" />
+</Library>

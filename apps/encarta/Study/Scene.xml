@@ -4,10 +4,36 @@
   <Model3D Name="Floor" Mesh="encarta/Study/Meshes/Study_Floor" Material="encarta/Study/Materials/Floor"/>
   <Model3D Name="Paint" Mesh="encarta/Study/Meshes/Study_Paint" Material="encarta/Study/Materials/Paint"/>
   <Model3D Name="Planks" Mesh="encarta/Study/Meshes/Study_Planks" Material="encarta/Study/Materials/Planks"/>
+  <Model3D Name="Wall" Mesh="encarta/Study/Meshes/Study_Wall" Material="encarta/Study/Materials/Wall"/>
   <Model3D Name="Dark" Mesh="encarta/Study/Meshes/Study_Dark" Material="encarta/Study/Materials/Dark"/>
   <Model3D Name="Sky" Mesh="encarta/Study/Meshes/Study_Sky" Material="encarta/Study/Materials/Sky"/>
   <Model3D Name="Oak" Mesh="encarta/Study/Meshes/Study_Oak" Material="encarta/Study/Materials/Oak"/>
   <Model3D Name="Globe" Mesh="encarta/Study/Meshes/Study_Globe" Material="encarta/Study/Materials/Globe"/>
+  <Model3D Name="BookSpines" Mesh="encarta/Study/Meshes/Study_BookSpines" Material="encarta/Study/Materials/BookSpines"/>
   <Model3D Name="Octopus" Mesh="encarta/Study/Meshes/Study_Octopus" Material="encarta/Study/Materials/Octopus"/>
   <Model3D Name="Heart" Mesh="encarta/Study/Meshes/Study_Heart" Material="encarta/Study/Materials/Heart"/>
+  <Node3D Name="DrawerLeftUpper">
+    <Model3D Name="DrawerLeftUpperOak" Mesh="encarta/Study/Meshes/Study_DrawerLeftUpperOak" Material="encarta/Study/Materials/Oak"/>
+    <Model3D Name="DrawerLeftUpperPaint" Mesh="encarta/Study/Meshes/Study_DrawerLeftUpperPaint" Material="encarta/Study/Materials/Paint"/>
+    <Model3D Name="DrawerLeftUpperLabels" Mesh="encarta/Study/Meshes/Study_DrawerLeftUpperLabels" Material="encarta/Study/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
+  </Node3D>
+  <Node3D Name="DrawerLeftLower">
+    <Model3D Name="DrawerLeftLowerOak" Mesh="encarta/Study/Meshes/Study_DrawerLeftLowerOak" Material="encarta/Study/Materials/Oak"/>
+    <Model3D Name="DrawerLeftLowerPaint" Mesh="encarta/Study/Meshes/Study_DrawerLeftLowerPaint" Material="encarta/Study/Materials/Paint"/>
+    <Model3D Name="DrawerLeftLowerLabels" Mesh="encarta/Study/Meshes/Study_DrawerLeftLowerLabels" Material="encarta/Study/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
+  </Node3D>
+  <Node3D Name="DrawerRightUpper">
+    <Model3D Name="DrawerRightUpperOak" Mesh="encarta/Study/Meshes/Study_DrawerRightUpperOak" Material="encarta/Study/Materials/Oak"/>
+    <Model3D Name="DrawerRightUpperPaint" Mesh="encarta/Study/Meshes/Study_DrawerRightUpperPaint" Material="encarta/Study/Materials/Paint"/>
+    <Model3D Name="DrawerRightUpperLabels" Mesh="encarta/Study/Meshes/Study_DrawerRightUpperLabels" Material="encarta/Study/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
+  </Node3D>
+  <Node3D Name="DrawerRightLower">
+    <Model3D Name="DrawerRightLowerOak" Mesh="encarta/Study/Meshes/Study_DrawerRightLowerOak" Material="encarta/Study/Materials/Oak"/>
+    <Model3D Name="DrawerRightLowerPaint" Mesh="encarta/Study/Meshes/Study_DrawerRightLowerPaint" Material="encarta/Study/Materials/Paint"/>
+    <Model3D Name="DrawerRightLowerLabels" Mesh="encarta/Study/Meshes/Study_DrawerRightLowerLabels" Material="encarta/Study/Materials/Labels"/>
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide"/>
+  </Node3D>
 </Node3D>

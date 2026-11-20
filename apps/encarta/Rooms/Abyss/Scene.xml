@@ -1,0 +1,19 @@
+<Node3D Name="Abyss">
+  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Abyss/Assets/Cabinet" Material="encarta/Rooms/Abyss/Assets/Finish" />
+  <Node3D Name="DrawerLeftUpper">
+    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerRightUpper">
+    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerLeftLower">
+    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerRightLower">
+    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Abyss/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Abyss/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+</Node3D>

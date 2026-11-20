@@ -1,0 +1,19 @@
+<Node3D Name="Science">
+  <Model3D Name="Cabinet" Mesh="encarta/Rooms/Science/Assets/Cabinet" Material="encarta/Rooms/Science/Assets/Finish" />
+  <Node3D Name="DrawerLeftUpper">
+    <Model3D Name="DrawerLeftUpperTray" Mesh="encarta/Rooms/Science/Assets/DrawerLeftUpperTray" Material="encarta/Rooms/Science/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerRightUpper">
+    <Model3D Name="DrawerRightUpperTray" Mesh="encarta/Rooms/Science/Assets/DrawerRightUpperTray" Material="encarta/Rooms/Science/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerLeftLower">
+    <Model3D Name="DrawerLeftLowerTray" Mesh="encarta/Rooms/Science/Assets/DrawerLeftLowerTray" Material="encarta/Rooms/Science/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+  <Node3D Name="DrawerRightLower">
+    <Model3D Name="DrawerRightLowerTray" Mesh="encarta/Rooms/Science/Assets/DrawerRightLowerTray" Material="encarta/Rooms/Science/Assets/Finish" />
+    <AnimationPlayer Name="Slide" Clip="encarta/Study/DrawerSlide" />
+  </Node3D>
+</Node3D>

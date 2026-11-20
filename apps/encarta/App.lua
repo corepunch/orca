@@ -8,6 +8,9 @@ return Application:extend {
     __init = function(self, openAudio, passportPath)
         Application.__init(self)
         self.library = assert(fs.loadObject("encarta/Screens/Library"))
+        local home = assert(fs.loadObject("encarta/Prefabs/Study"))
+        home:addChild(assert(fs.loadObject("encarta/Prefabs/RoomPicker")))
+        self.library:findChild("LibraryRoot"):addChild(home)
         self.libraryController = Library.mount(self.library, openAudio, passportPath)
     end,
     run = function(self)
@@ -16,9 +19,9 @@ return Application:extend {
         return result
     end,
     ["/"] = function(self) return self.library end,
-    -- The 3D room planned as the home screen. Preview: orca apps/encarta -url=/study
     ["/study"] = function(self)
-        self.study = self.study or assert(fs.loadObject("encarta/Screens/Study"))
-        return self.study
+        self.libraryController:showStudy()
+        self.libraryController.study:selectRoom("Original")
+        return self.library
     end,
 }

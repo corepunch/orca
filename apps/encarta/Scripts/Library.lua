@@ -3,6 +3,7 @@ local ui = require "orca.UIKit"
 local articles = require "encarta/Content/Articles"
 local ReadAloud = require "encarta/Scripts/ReadAloud"
 local Passport = require "encarta/Scripts/Passport"
+local Study = require "encarta/Scripts/Study"
 local Hunt = require "encarta/Scripts/Hunt"
 
 local Controller = {}
@@ -72,36 +73,92 @@ function Controller:cover(article)
     return cover
 end
 
+-- Search reads a child's sentence. Filler words ("I want to know about
+-- the…") are dropped; every other word must match a word of the article: its
+-- start ("dino"), its singular ("castles"), or the word with one slip in a
+-- longer word ("napolean", two slips from eight letters).
+local FILLER = {}
+for word in ([[a about an and are at can could did do does find for from i
+    in is it know learn me my of on please show tell the to wanna want was
+    were what when where which who why how you]]):gmatch("%a+") do FILLER[word] = true end
+
+local function slips(a, b, limit)
+    if math.abs(#a - #b) > limit then return limit + 1 end
+    local previous = {}
+    for j = 0, #b do previous[j] = j end
+    for i = 1, #a do
+        local row, best = { [0] = i }, i
+        for j = 1, #b do
+            local cost = a:byte(i) == b:byte(j) and 0 or 1
+            row[j] = math.min(previous[j] + 1, row[j - 1] + 1, previous[j - 1] + cost)
+            best = math.min(best, row[j])
+        end
+        if best > limit then return limit + 1 end
+        previous = row
+    end
+    return previous[#b]
+end
+
+local function wordMatches(word, words)
+    local stem = #word > 3 and word:gsub("e?s$", "") or word
+    local limit = #word >= 8 and 2 or #word >= 5 and 1 or 0
+    for _, candidate in ipairs(words) do
+        if candidate:sub(1, #word) == word or candidate:sub(1, #stem) == stem then return true end
+        if limit > 0 and slips(word, candidate, limit) <= limit then return true end
+    end
+    return false
+end
+
+local searchWords = {}
+local function articleWords(article)
+    if searchWords[article] then return searchWords[article] end
+    local parts = { article.title, article.question, article.category, article.keywords }
+    for _, section in ipairs(article.sections) do parts[#parts + 1] = section[1] end
+    local words = {}
+    for word in table.concat(parts, " "):lower():gsub("’", "'"):gmatch("[%w']+") do words[#words + 1] = word end
+    searchWords[article] = words
+    return words
+end
+
 local function matches(article, query, category)
     if category and article.category ~= category then return false end
-    local terms = table.concat({ article.title, article.question, article.category, article.keywords }, " "):lower()
-    for word in query:gmatch("%S+") do
-        if not terms:find(word, 1, true) then return false end
+    local words = articleWords(article)
+    for word in query:gsub("’", "'"):gmatch("[%w']+") do
+        if not FILLER[word] and not wordMatches(word, words) then return false end
     end
     return true
 end
 
+-- The Time Machine lists everything that happened at a time, oldest first.
+local timeline = {}
+for _, article in ipairs(articles) do
+    if article.era then timeline[#timeline + 1] = article end
+end
+table.sort(timeline, function(a, b) return a.era.year < b.era.year end)
+
 function Controller:refresh()
     local view = self.view
     local wall, shelf = control(view, "Topics"), control(view, "Shelf")
+    local study = self.mode == "study"
+    self:setReaderVisible(self.current ~= nil)
+    wall.Visible, shelf.Visible = self.mode == "wall" or self.mode == "time", self.mode == "shelf"
+    control(view, "Categories").Visible = not study
+    control(view, "Featured").Visible = not study and self.query == "" and not self.category
+    if study then return end
+
     clear(wall)
     clear(shelf)
-    local count = 0
-    for _, article in ipairs(articles) do
+    local count, time = 0, self.mode == "time"
+    for _, article in ipairs(time and timeline or articles) do
         if matches(article, self.query, self.category) then
             count = count + 1
-            wall:addChild(self:card(article))
+            local card = self:card(article)
+            if time then control(card, "Title").Text = article.era.label .. "  ·  " .. article.title end
+            wall:addChild(card)
             shelf:addChild(self:cover(article))
         end
     end
-    local study = self.mode == "study"
-    -- The wall of questions also runs under the study: on an upright screen it
-    -- fills the space below the desk, on a wide one it is a scroll away.
-    wall.Visible, shelf.Visible = self.mode ~= "shelf", self.mode == "shelf"
-    control(view, "Study").Visible = study
-    control(view, "Categories").Visible = not study
-    control(view, "Featured").Visible = not study and self.query == "" and not self.category
-    local title = self.mode == "shelf" and "On the shelf" or "Big questions"
+    local title = self.mode == "shelf" and "On the shelf" or time and "Time Machine: oldest first" or "Big questions"
     if self.query ~= "" then title = "Search results"
     elseif self.category then title = self.category end
     control(view, "CatalogTitle").Text = title
@@ -130,8 +187,9 @@ end
 -- The library has three views: the study, the wall of questions and the
 -- bookshelf.
 function Controller:setMode(mode)
+    self.study:closeDrawer(true)
     self.mode = mode
-    for name, button in pairs({ study = "ShowStudy", wall = "ShowWall", shelf = "ShowShelf" }) do
+    for name, button in pairs({ study = "ShowStudy", wall = "ShowWall", shelf = "ShowShelf", time = "ShowTime" }) do
         control(self.view, button).StateClasses = name == mode and "view-on" or ""
     end
     control(self.view, "ClearSearch").Visible = self.query ~= ""
@@ -152,6 +210,7 @@ function Controller:closeBubble()
 end
 
 function Controller:openBubble(category, object)
+    self.study:closeDrawer(false)
     self:closeBubble()
     local view, list = self.view, control(self.view, "BubbleList")
     clear(list)
@@ -180,11 +239,49 @@ function Controller:openBubble(category, object)
     control(view, "Bubble").Visible = true
 end
 
-function Controller:addObjects()
-    for _, category in ipairs(categories) do
-        local object = control(self.view, "Object_" .. slug(category))
-        object.Click = function() self:openBubble(category, object) end
+-- A wing below the room opens what has no exhibit of its own: the Time
+-- Machine, and each category without an object in the room.
+local function booksIn(category)
+    local n = 0
+    for _, article in ipairs(articles) do
+        if not category or article.category == category then n = n + 1 end
     end
+    return n
+end
+
+function Controller:addWing(name, iconName, detail, open)
+    local wing = prefab("Wing")
+    wing.Name = "Wing_" .. slug(name)
+    wing.StyleClass = "wing wing-" .. slug(name)
+    control(wing, "WingIcon").Source = "encarta/Icons/" .. iconName .. ".svg"
+    control(wing, "WingName").Text = name
+    control(wing, "WingDetail").Text = detail
+    wing.Click = open
+    control(self.view, "Wings"):addChild(wing)
+end
+
+local function books(n) return n == 1 and "1 book" or n .. " books" end
+
+function Controller:addObjects()
+    self:addWing("Time Machine", "time-machine", ("%s, oldest first"):format(books(#timeline)), function()
+        self:setCategory(nil)
+        self:setMode("time")
+    end)
+    for _, category in ipairs(categories) do
+        local object = self.view:findChild("Object_" .. slug(category), true)
+        if object then
+            object.Click = function() self:openBubble(category, object) end
+        else
+            self:addWing(category, slug(category), books(booksIn(category)), function()
+                self:setCategory(category)
+                self:setMode("wall")
+            end)
+        end
+    end
+    local wings, columns = control(self.view, "Wings"), {}
+    for _ in wings.children do columns[#columns + 1] = "1fr" end
+    assert(wings:attachPropertyProgram("Grid.Columns", ('IF(STEP({Screen.Height}, {Screen.Width}), "%s", "%s")')
+        :format((table.concat(columns, " "):gsub("1fr", "auto")), table.concat(columns, " ")), "Expression", true))
     local featured = byID[FEATURED]
     control(self.view, "PostcardQuestion").Text = featured.question
     control(self.view, "PostcardImage").Src = thumbnail(featured.cover or featured.image.path)
@@ -207,6 +304,15 @@ end
 -- `passportPath` says where stamps are kept; the app's own folder if absent.
 function Controller.mount(view, openAudio, passportPath)
     local self = setmetatable({ view = view, history = {}, query = "", mode = "study", home = "LibraryScroll" }, { __index = Controller })
+    self.study = Study.mount(control(view, "Study"), function(destination)
+        if destination == "hunt" or destination == "passport" then
+            self:openHunt(destination)
+        else
+            self:setMode(destination)
+        end
+    end)
+    self.study:wireControls(function() self:closeBubble() end)
+    self.study:selectRoom("Nature")
     self.passport = Passport.open(passportPath)
     self.hunt = Hunt.new(view, articles, self.passport, function(id) self:openArticle(id) end)
     self.readAloud = ReadAloud.new(view, openAudio)
@@ -222,10 +328,15 @@ function Controller.mount(view, openAudio, passportPath)
     search.onTextChanged = function(_, text) self:filter(text) end
     for name, action in pairs({
         ClearSearch = self.clearQuery, OpenFeatured = self.openFeatured,
-        ShowStudy = function() self:setMode("study") end,
+        ShowStudy = self.showStudy,
         ShowWall = function() self:setMode("wall") end, ShowShelf = function() self:setMode("shelf") end,
+        ShowTime = function() self:setMode("time") end,
         Postcard = self.openFeatured, BubbleClose = self.closeBubble,
-        OpenPassport = self.openHunt, OpenHunt = self.openHunt, HuntBack = self.closeHunt,
+        StudySearch = function()
+            self:setMode("wall")
+            search:setFocus()
+        end,
+        HuntBack = self.closeHunt,
         Back = self.goBack,
         PrevPage = function() self:turnTo(self.page - 1) end,
         NextPage = function() self:turnTo(self.page + 1) end,
@@ -233,6 +344,15 @@ function Controller.mount(view, openAudio, passportPath)
         control(view, name).Click = function() action(self) end
     end
     return self
+end
+
+function Controller:showStudy()
+    self.readAloud:stop()
+    self.current, self.history, self.home = nil, {}, "LibraryScroll"
+    self:setMode("study")
+    if self.query ~= "" then self:clearQuery() end
+    if self.category then self:setCategory(nil) end
+    if control(self.view, "Search"):isFocused() then control(self.view, "StudySearch"):setFocus() end
 end
 
 function Controller:clearQuery()
@@ -496,14 +616,20 @@ end
 -- The reader covers whichever screen it was opened from: the library or the
 -- hunt.
 function Controller:setReaderVisible(visible)
-    for _, name in ipairs({ "LibraryScroll", "Hunt" }) do
-        control(self.view, name).Visible = not visible and name == self.home
-    end
+    local library = not visible and self.home == "LibraryScroll"
+    control(self.view, "LibraryScroll").Visible = library and self.mode ~= "study"
+    control(self.view, "Study").Visible = library and self.mode == "study"
+    control(self.view, "Hunt").Visible = not visible and self.home == "Hunt"
     control(self.view, "Reader").Visible = visible
-    if not visible and self.home == "Hunt" then self.hunt:show() end
+    if not visible and self.home == "Hunt" then
+        if control(self.view, "HuntCard").Visible then self.hunt:show() else self.hunt:refreshPassport() end
+    end
 end
 
-function Controller:openHunt()
+function Controller:openHunt(destination)
+    control(self.view, "HuntTitle").Text = destination == "passport" and "My Passport" or "Question Hunt"
+    control(self.view, "HuntCard").Visible = destination ~= "passport"
+    self.study:closeDrawer(true)
     self:closeBubble()
     self.home = "Hunt"
     self:setReaderVisible(false)
@@ -526,6 +652,8 @@ function Controller:showArticle()
 end
 
 function Controller:openArticle(id)
+    self.study:closeDrawer(true)
+    self:closeBubble()
     if self.current then
         self.current.page = self.page
         table.insert(self.history, self.current)
