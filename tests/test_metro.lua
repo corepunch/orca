@@ -774,8 +774,78 @@ local function test_pivot_content_padding()
   print("PASS: test_pivot_content_padding")
 end
 
+-- On an edge-to-edge iPhone screen a Panorama keeps its title below the notch
+-- and lets its sections reach the home indicator: a scrolling section draws
+-- under it but scrolls its content clear of it. With ExtendBodyBehindHeader
+-- the sections in view also start at the top, under a bar behind the title
+-- and headers, and their content rests one page padding below that bar.
+local function test_panorama_safe_area()
+  local TOP, BOTTOM, PADDING = 47, 34, 20
+  for _, extend in ipairs { false, true } do
+    local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize", RespectSafeArea = false,
+      SafeAreaTop = TOP, SafeAreaBottom = BOTTOM }
+    local panorama = screen + ui.Panorama { Title = "Weather", ExtendBodyBehindHeader = extend }
+    local lists, firsts, lasts = {}, {}, {}
+    for _, header in ipairs { "now", "week" } do
+      local item = panorama + ui.PanoramaItem { Name = header, Header = header }
+      local list = item + ui.StackView { Overflow = "hidden scroll", JustifyContent = "Start" }
+      for i = 1, 30 do
+        local row = list + ui.Node2D { Height = 40 }
+        if i == 1 then firsts[#firsts + 1] = row end
+        if i == 30 then lasts[#lasts + 1] = row end
+      end
+      lists[#lists + 1] = list
+    end
+    layout(screen)
+    local mode = extend and "behind the header" or "below the header"
+    local bar, title = children(panorama, "Node2D")[1], children(panorama, "TextBlock")[1]
+    local order = {}
+    local index, child = 0, panorama:getFirstChild()
+    while child do
+      index = index + 1
+      order[child.className] = order[child.className] or index
+      child = child:getNext()
+    end
+    test.expect(bar and title and order.PanoramaItem < order.Node2D and order.Node2D < order.TextBlock,
+      "The bar draws over the sections and under the title (" .. mode .. ")")
+    test.expect(title.ActualY >= TOP - 14 - 0.5, "The title keeps clear of the top safe area (" .. mode .. "): " .. title.ActualY)
+    test.expect_eq(bar.Visible, extend, "Only a body behind the header shows the bar (" .. mode .. ")")
+    local header = children(panorama, "TextBlock")[2]
+    local headerBottom = header.ActualY + header.ActualHeight
+    for i, list in ipairs(lists) do
+      local item = list:getParent()
+      if item.Visible then
+        local _, itemY = origin(item)
+        local _, listY = origin(list)
+        local _, rowY = origin(firsts[i])
+        test.expect(math.abs(listY + list.ActualHeight - 844) < 1,
+          "A section reaches the bottom edge (" .. mode .. "): " .. listY + list.ActualHeight)
+        test.expect_eq(list.AdjustedContentInsetBottom, BOTTOM, "Its content scrolls clear of the home indicator (" .. mode .. ")")
+        -- Positions ignore the scroll offset, which reaches ActualHeight - ScrollHeight.
+        local _, lastY = origin(lasts[i])
+        local endY = lastY + 40 + list.ActualHeight - list.ScrollHeight
+        test.expect(math.abs(endY - (844 - BOTTOM)) < 1,
+          "Scrolled to its end, the content ends at the home indicator (" .. mode .. "): " .. endY)
+        if extend then
+          local barBottom = bar.ActualY + bar.ActualHeight
+          test.expect(itemY < 1, "A section in view starts under the bar: " .. itemY)
+          test.expect(barBottom > headerBottom, "The bar covers the section headers")
+          test.expect(math.abs(rowY - (barBottom + PADDING)) < 1,
+            "Content rests one page padding below the bar: " .. rowY - barBottom)
+        else
+          test.expect(itemY >= headerBottom, "A section starts below its header: " .. itemY)
+          test.expect_eq(list.AdjustedContentInsetTop, 0, "The header consumes the top safe area")
+          test.expect(math.abs(rowY - itemY) < 1, "Content starts at the section's top")
+        end
+      end
+    end
+  end
+  print("PASS: test_panorama_safe_area")
+end
+
 test_pivot()
 test_pivot_content_padding()
+test_panorama_safe_area()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_wide_headers()

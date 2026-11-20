@@ -7,6 +7,8 @@
 #define PANORAMA_HEADER_SIZE   36.0f
 #define PANORAMA_HEADER_TOP    -4.0f
 #define PANORAMA_CONTENT_TOP   12.0f
+#define PANORAMA_BAR_BOTTOM    8.0f    // header line to the bar's bottom edge when sections extend behind it
+#define PANORAMA_BODY_TOP      20.0f   // the bar's bottom edge to the content: the page's top padding, as in a Pivot
 #define PANORAMA_ITEM_WIDTH    0.875f  // of the panorama width; the next section peeks in
 #define PANORAMA_PARALLAX      0.6f    // title travel relative to its overflow
 #define PANORAMA_MAX_ITEMS     32
@@ -34,6 +36,14 @@ static int
 Panorama_Sync(struct Object *hObject, struct Panorama *pPanorama, struct Object **items)
 {
   int count = Panorama_Items(hObject, items);
+  // The bar precedes the title and headers, so it draws over the sections
+  // and under them.
+  if (!pPanorama->_bar) {
+    pPanorama->_bar = OBJ_Create(ID_Node2D);
+    _SendMessage(pPanorama->_bar, StyleController, AddClass, .ClassName = "panorama-bar");
+    OBJ_AddChild(hObject, pPanorama->_bar);
+  }
+  Metro_Show(pPanorama->_bar, pPanorama->ExtendBodyBehindHeader, 1);
   if (!pPanorama->_title) {
     pPanorama->_title = Metro_CreateText(hObject, ID_TextBlock, "panorama-title", PANORAMA_TITLE_SIZE, FALSE);
     GetNode2D(pPanorama->_title)->IgnoreHitTest = TRUE;
@@ -102,6 +112,7 @@ HANDLER(Panorama, Object, Create)
 
 HANDLER(Panorama, Object, Destroy)
 {
+  OBJ_ReleaseRef(pPanorama->_bar);
   OBJ_ReleaseRef(pPanorama->_title);
   return FALSE;
 }
@@ -157,6 +168,7 @@ HANDLER(Panorama, Node2D, MeasureOverride)
   struct Object *items[PANORAMA_MAX_ITEMS];
   int count = Panorama_Sync(hObject, pPanorama, items);
   float itemWidth = pMeasureOverride->Width * PANORAMA_ITEM_WIDTH;
+  float gap = pPanorama->ExtendBodyBehindHeader ? PANORAMA_BAR_BOTTOM + PANORAMA_BODY_TOP : PANORAMA_CONTENT_TOP;
   float top = (Metro_Measure(pPanorama->_title, 4096, 4096)).height + PANORAMA_TITLE_TOP, height = 0;
   for (int i = 0; i < count; i++) {
     float header = (Metro_Measure(GetPanoramaItem(items[i])->_header, 4096, 4096)).height;
@@ -168,7 +180,7 @@ HANDLER(Panorama, Node2D, MeasureOverride)
     if (item->Orientation == kDirectionHorizontal)
       size = Metro_Measure(items[i], MAX(item->_width - METRO_INSET, 0),
         MAX(pMeasureOverride->Height - top - header, 0));
-    height = MAX(height, header + PANORAMA_HEADER_TOP + PANORAMA_CONTENT_TOP + size.height);
+    height = MAX(height, header + PANORAMA_HEADER_TOP + gap + size.height);
   }
   return Layout_Return(pMeasureOverride, pMeasureOverride->Width, top + height);
 }
@@ -185,15 +197,30 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
   if (count) pPanorama->_sectionOffset = MIN(pPanorama->_sectionOffset,
     Panorama_End(items[pPanorama->SelectedIndex], w));
 
-  // The title scrolls through its overflow more slowly than the sections.
+  // The title scrolls through its overflow more slowly than the sections and
+  // keeps clear of the top safe area, like a navigation bar.
+  struct Node2D *node = GetNode2D(hObject);
+  float safeTop = MAX(y, node->_safeArea.x);
   struct Size title = Metro_Measure(pPanorama->_title, 4096, 4096);
   float travel = MAX(title.width - w * PANORAMA_PARALLAX, 0);
   float range = count ? MAX(total - MIN(Panorama_Width(items[count - 1], w), w), 0) : 0;
   float position = range > 0 ? (selected + pPanorama->_sectionOffset - offset) / range : 0;
-  Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * position, y + PANORAMA_TITLE_TOP,
+  Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * position, safeTop + PANORAMA_TITLE_TOP,
     title.width, title.height);
 
-  float top = y + PANORAMA_TITLE_TOP + title.height;
+  // Sections extending behind the header start at the top and take the bar
+  // plus the page's top padding as their top safe area; otherwise the header
+  // consumes it. The bottom safe area reaches them either way.
+  float top = safeTop + PANORAMA_TITLE_TOP + title.height, strip = 0;
+  for (int i = 0; i < count; i++)
+    strip = MAX(strip, (Metro_Measure(GetPanoramaItem(items[i])->_header, 4096, 4096)).height);
+  float barY = top + PANORAMA_HEADER_TOP + strip + PANORAMA_BAR_BOTTOM;
+  bool_t extend = pPanorama->ExtendBodyBehindHeader;
+  node->_safeArea.x = extend ? barY + PANORAMA_BODY_TOP : 0;
+  node->_barInset.x = extend ? barY : 0;
+  float frameWidth = Node2D_GetFrame(node, kBox3FieldWidth);
+  Metro_Measure(pPanorama->_bar, frameWidth, barY);
+  Metro_Arrange(pPanorama->_bar, 0, 0, frameWidth, barY);
   for (int i = 0; i < count; i++) {
     struct Object *header = GetPanoramaItem(items[i])->_header;
     float distance = Panorama_Position(items, count, i, w) - selected;
@@ -211,7 +238,7 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
     if (!near) continue;
     struct Size size = Metro_Measure(header, 4096, 4096);
     Metro_Arrange(header, x + left, top + PANORAMA_HEADER_TOP, size.width, size.height);
-    float contentY = top + PANORAMA_HEADER_TOP + size.height + PANORAMA_CONTENT_TOP;
+    float contentY = extend ? y : top + PANORAMA_HEADER_TOP + size.height + PANORAMA_CONTENT_TOP;
     Metro_Arrange(items[i], x + left, contentY, contentWidth, MAX(y + h - contentY, 0));
   }
   return Layout_Return(pArrangeOverride, w, h);

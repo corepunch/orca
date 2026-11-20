@@ -1478,7 +1478,7 @@
     </class>
     <class name="Panorama" parent="Node2D">
       <summary>Windows Phone panorama: a wide title over horizontally scrolling sections</summary>
-      <details>Lays PanoramaItem children side by side under an oversized Title that scrolls at a slower rate (parallax). Swiping moves between sections and wraps from the last back to the first. Each section gets a generated header. Style the generated parts with the "panorama-title" and "panorama-header" CSS classes.</details>
+      <details>Lays PanoramaItem children side by side under an oversized Title that scrolls at a slower rate (parallax). Swiping moves between sections and wraps from the last back to the first. Each section gets a generated header. The title keeps clear of the top safe area, like a navigation bar; the bottom safe area reaches the sections, so a scrolling section scrolls clear of the home indicator while drawing under it. Style the generated parts with the "panorama-title", "panorama-header" and "panorama-bar" CSS classes.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
@@ -1494,8 +1494,10 @@
       <properties>
         <property name="Title" type="string">Large panorama title, displayed in lowercase</property>
         <property name="SelectedIndex" type="int">Index of the section currently in view</property>
+        <property name="ExtendBodyBehindHeader" type="bool">When true, the sections in view extend under the title and section headers, which become a top bar: scrolling content rests 20 points below it and scrolls under it. Style the bar behind them with the "panorama-bar" CSS class.</property>
       </properties>
       <fields>
+        <field name="_bar" type="Object" pointer="true">Generated bar behind the title and headers when the sections extend behind them (private)</field>
         <field name="_title" type="Object" pointer="true">Generated title TextBlock (private)</field>
         <field name="_pressX" type="float">Pointer x at press (private)</field>
         <field name="_pressY" type="float">Pointer y at press (private)</field>

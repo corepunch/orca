@@ -215,7 +215,11 @@ is inset, as `adjustedContentInset` insets it on iOS.
 - A node that insets its content consumes the safe area: its children see none.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which
-  becomes a top bar styled by the generated `pivot-bar` part. A `BackIcon`
+  becomes a top bar styled by the generated `pivot-bar` part. Metro headers
+  in our apps use this frosted bar by default (Chat, Octopus, Weather): set
+  `ExtendBodyBehindHeader = true` on the `Pivot` or `Panorama` of an
+  edge-to-edge screen (`RespectSafeArea = false`) and give each page a
+  scrolling body; no `ContentInsetAdjustment` is needed. A `BackIcon`
   puts a back glyph in a ring (the `pivot-back` part) before the title, which
   moves right to make room: tapping the title line, or swiping in from the
   left edge, fires `BackRequested`, so a page needs no row for its back
@@ -387,9 +391,17 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
   keeps the same selection. This follows the original
   [Windows Phone wide-section contract](https://learn.microsoft.com/en-us/previous-versions/windows/apps/ff941126(v=vs.105)).
   Use a normal `Grid` inside the item for portrait or photo matrices.
-  Set `ContentInsetAdjustment="Always"` on an edge-to-edge panorama to keep
-  its title below the iPhone safe area. Generated parts carry
-  `panorama-title` and `panorama-header`.
+  On an edge-to-edge screen the title keeps clear of the top safe area and
+  the bottom inset reaches the sections, so a scrolling section draws under
+  the home indicator and scrolls its content clear of it. As on a `Pivot`,
+  `ExtendBodyBehindHeader = true` extends the sections in view under the
+  title and section headers, which become a top bar styled by the generated
+  `panorama-bar` part: scrolling content rests 20 points (the page padding)
+  below the bar and scrolls under it, while the title keeps its parallax.
+  Without it the headers consume the top inset. Generated parts carry
+  `panorama-title`, `panorama-header` and `panorama-bar`; style both bars
+  with one rule, `.pivot-bar, .panorama-bar`. `tests/test_metro.lua`
+  (`test_panorama_safe_area`) pins the insets.
 - `Chart` with `LineSeries` and `ColumnSeries` children, after the WPF
   Toolkit and the Windows Phone toolkit charts. The chart's `ItemsSource`
   holds one record per category; `CategoryPath` names the field labelled
