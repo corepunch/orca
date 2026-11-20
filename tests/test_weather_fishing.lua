@@ -96,7 +96,8 @@ do
 end
 
 -- FI1: water temperature, from the best source and always labelled.
-check(Fishing.needsMarine == "optional", "Fishing asks for the sea when there is one, and stands without it")
+check(Fishing.needsMarine(COAST) == "optional" and not Fishing.needsMarine(LAKE),
+    "Fishing asks for the sea when there is one, and stands without it; a lake does not ask")
 check(Activities.request(LAKE).pastDays == 2, "Fishing asks for two past days")
 local sea = Water.at(F.hour { seaTemp = 13.5 }, { spot = COAST })
 check(sea and sea.kind == "sea" and sea.temp == 13.5 and sea.source:find("marine model"), "A coast reads the sea surface")

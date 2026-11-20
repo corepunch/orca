@@ -13,6 +13,10 @@ local Provider = {}
 
 local CACHE_SECONDS = 10 * 60
 
+-- The app's name as a generic User-Agent ("HikersWeather/1.0 (ORCA)"):
+-- no person, no contact, no device.
+Forecast.userAgent = Activities.appName:gsub("[^%w]", "") .. "/1.0 (ORCA)"
+
 local function kind(name) return function(record) return record.values.Kind == name end end
 
 function Provider.new(places, options)
@@ -25,32 +29,45 @@ function Provider.new(places, options)
 
     local function marine(place) return Activities.needsMarine(place) and "optional" end
 
-    -- The forecast saved on the device for a place, as of now, or nil.
+    -- The forecast saved on the device for a place, as of now, and its
+    -- answers; nil when there is none or it no longer reaches now.
     local function saved(place, now)
         local raw = storage and storage:load("forecast-" .. place.id)
-        local forecast = raw and Forecast.restore(raw, place, Activities.request(place), now)
+        local forecast = raw and Forecast.restore(raw, place, Activities.request(place, "all"), now)
         if forecast then forecast.spot = place end
-        return forecast
+        return forecast, forecast and raw
     end
 
-    -- The place's forecast, from the cache while it is fresh. When the
-    -- network fails, the last copy (in memory, else on the device) stands in.
-    local function forecastFor(placeId, refresh)
+    -- The place's forecast, from the cache while it is fresh. A request
+    -- asks for the lead activity's optional sources; `activity` (a page
+    -- that opened) adds its own, fetched on top of the cached forecast. When
+    -- the network fails, the last copy (in memory, else on the device)
+    -- stands in.
+    local function forecastFor(placeId, refresh, activity)
         local place = byId[placeId]
         if not place then return nil, { code = "no_place", message = "Choose a place first." } end
         local cached = cache[placeId]
         local now = clock()
-        if cached and not refresh and now - cached.at < CACHE_SECONDS then return cached.forecast, nil, place end
-        local forecast, err, raw = Forecast.load(place, marine(place), options.fetch, now, Activities.request(place))
+        local request = Activities.request(place, activity)
+        if cached and not refresh and now - cached.at < CACHE_SECONDS then
+            local more = Forecast.unasked(request, cached.raw)
+            if #more > 0 and cached.raw and not cached.forecast.stale then
+                Forecast.extend(cached.forecast, place, more, options.fetch, cached.raw)
+                if storage then storage:save("forecast-" .. place.id, cached.raw) end
+            end
+            return cached.forecast, nil, place
+        end
+        local forecast, err, raw = Forecast.load(place, marine(place), options.fetch, now, request)
         if not forecast then
-            local last = cached and cached.forecast or saved(place, now)
+            local last, lastRaw = cached and cached.forecast, cached and cached.raw
+            if not last then last, lastRaw = saved(place, now) end
             if not last then return nil, { code = "network", message = err } end
             last.stale = true
-            cache[placeId] = { forecast = last, at = cached and cached.at or now - CACHE_SECONDS }
+            cache[placeId] = { forecast = last, raw = lastRaw, at = cached and cached.at or now - CACHE_SECONDS }
             return last, nil, place
         end
         forecast.spot = place
-        cache[placeId] = { forecast = forecast, at = now }
+        cache[placeId] = { forecast = forecast, raw = raw, at = now }
         if storage then storage:save("forecast-" .. place.id, raw) end
         return forecast, nil, place
     end
@@ -99,7 +116,7 @@ function Provider.new(places, options)
             activity = function(params)
                 local activity = Activities.byId[params.ActivityId]
                 if not activity then return nil, { code = "no_activity", message = "Unknown activity." } end
-                local forecast, err, place = forecastFor(params.PlaceId)
+                local forecast, err, place = forecastFor(params.PlaceId, nil, activity)
                 if not forecast then return nil, err end
                 return Report.rows(activity, place, forecast, clock())
             end,

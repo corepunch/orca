@@ -21,9 +21,9 @@ local Log = require "Weather/editions/fishing/log"
 
 local Fishing = {
     id = "fishing", title = "fishing",
-    -- The sea surface and waves where there is sea; a lake's answer has none
-    -- and the forecast stands without it.
-    needsMarine = "optional",
+    -- The sea surface and waves where there is sea, and the forecast stands
+    -- without them; a lake does not ask.
+    needsMarine = function(place) return not (place and place.lake) and "optional" end,
     -- Two past days for the barometer's history and fronts (FI2).
     fields = { pastDays = 2 },
 }

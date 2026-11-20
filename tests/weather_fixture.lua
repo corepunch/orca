@@ -131,13 +131,14 @@ function Fixture.marine()
     } }
 end
 
--- A fake network: `net.fetch(url)` answers from the synthetic week and
--- records each URL in `net.requests`. Set `net.failing` (everything) or
+-- A fake network: `net.fetch(url, options)` answers from the synthetic week
+-- and records each URL in `net.requests` (its options in `net.options`). Set `net.failing` (everything) or
 -- `net.marineFailing`; `net.answers[pattern] = fn(url)` adds other hosts.
 function Fixture.network()
-    local net = { requests = {}, failing = false, marineFailing = false, answers = {} }
-    function net.fetch(url)
+    local net = { requests = {}, options = {}, failing = false, marineFailing = false, answers = {} }
+    function net.fetch(url, options)
         net.requests[#net.requests + 1] = url
+        net.options[#net.requests] = options
         if net.failing or (net.marineFailing and url:find("marine%-api")) then
             return nil, "No connection to the forecast service."
         end

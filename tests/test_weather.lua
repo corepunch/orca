@@ -202,6 +202,26 @@ check(past.today == 3 and past.days[3].uv_index_max == 3 and #Report.daysAhead(p
 check(past.hours[1].soil_temperature_6cm == 4.5, "An unknown column lands under its API name")
 check(#past.quarters == 2 and past.quarters[2].precipitation == 0.4 and past.quarters[2].epoch == NOW + 900,
     "Quarter hours carry their time")
+-- Several models in the main call: the best match reads as the plain column.
+local several = weather(1, {})
+several.hourly.temperature_2m_best_match, several.hourly.temperature_2m = several.hourly.temperature_2m, nil
+several.hourly.temperature_2m_gfs_seamless = F.series(#several.hourly.time, function() return -3 end)
+several.daily.temperature_2m_max_best_match, several.daily.temperature_2m_max = several.daily.temperature_2m_max, nil
+local modelled = Forecast.parse(several, nil, NOW, { lat = 1, lon = 2 })
+check(modelled.hours[modelled.now].temp == weather(1, {}).hourly.temperature_2m[modelled.now]
+    and modelled.hours[1].temperature_2m_gfs_seamless == -3 and modelled.days[1].max == 15,
+    "The best match keeps the plain names; other models land under theirs")
+-- I4: every request names the app, sends no cookies, and a source adds headers.
+local seen = {}
+local alerting = { id = "alerts", optional = true, headers = { Accept = "application/geo+json" },
+    url = function() return "https://api.weather.gov/alerts/active?point=1,2" end, parse = function() end }
+Forecast.load({ lat = 1, lon = 2 }, false, function(url, options)
+    seen[#seen + 1] = options
+    return weather(1) end, NOW, { sources = { alerting } })
+check(#seen == 2 and seen[1].nocookies and seen[1].headers["User-Agent"] == Forecast.userAgent
+    and seen[2].headers.Accept == "application/geo+json" and seen[2].headers["User-Agent"] == Forecast.userAgent
+    and not Forecast.userAgent:find("@"), "Requests carry a generic User-Agent and a source's own headers")
+check(Forecast.userAgent == "Weather/1.0 (ORCA)", "The full app's User-Agent is its name: " .. Forecast.userAgent)
 local airQuality = { id = "air", optional = true,
     url = function(spot, forecast) return forecast.url("airQuality", "latitude=" .. spot.lat) end,
     parse = function(json, forecast) forecast.aqi = json.aqi end }
@@ -234,10 +254,27 @@ for _, activity in ipairs(Activities.list) do activity.fields, activity.sources 
 Activities.byId.fishing.fields = { hourly = { "soil_temperature_6cm" }, pastDays = 2 }
 Activities.byId.hiking.fields = { hourly = { "soil_temperature_6cm", "snow_depth" }, pastDays = 3, forecastDays = 10 }
 Activities.byId.fishing.sources, Activities.byId.hiking.sources = { airQuality }, { airQuality }
-local merged = Activities.request(tahoe)
+local merged = Activities.request(tahoe, "all")
 check(table.concat(merged.hourly, ",") == "soil_temperature_6cm,snow_depth" and merged.pastDays == 3
     and merged.forecastDays == 10 and #merged.sources == 1 and only(merged.hourly, "snow_depth"),
     "One request merges the activities at a place")
+-- I1: an optional source comes only from the lead (outdoors here) and the
+-- activity whose page is open; a required one always.
+local tides = { id = "tides", url = function() return nil end, parse = function() end }
+Activities.byId.fishing.sources, Activities.byId.hiking.sources = { airQuality }, { tides }
+check(#Activities.request(tahoe).sources == 1 and Activities.request(tahoe).sources[1] == tides,
+    "The hub asks only for required sources and the lead's")
+check(#Activities.request(tahoe, "fishing").sources == 2 and #Activities.request(tahoe, Activities.byId.fishing).sources == 2,
+    "An open activity page adds its optional sources")
+Activities.byId.hiking.fields = { minutely15 = { "precipitation" }, minutely15Steps = 8,
+    models = function(place) return { "gfs_seamless", place.lake and "icon_seamless" or nil } end }
+Activities.byId.fishing.fields = { minutely15Steps = 12, models = { "gfs_seamless" } }
+local stepped = Activities.request(tahoe)
+check(stepped.minutely15Steps == 12 and table.concat(stepped.models, ",") == "gfs_seamless,icon_seamless",
+    "Quarter-hour steps and weather models merge")
+local steppedUrl = Forecast.urls(tahoe, false, stepped)
+check(steppedUrl:find("&forecast_minutely_15=12&past_minutely_15=0", 1, true)
+    and steppedUrl:find("&models=best_match,gfs_seamless,icon_seamless", 1, true), "They go into the main call: " .. steppedUrl)
 for activity, saved in pairs(declared) do activity.fields, activity.sources = saved[1], saved[2] end
 
 -- The app over a few places, with every navigation step a real control event.
@@ -276,6 +313,11 @@ local hub = app.screen
 check(find("HubPanorama").Title == "Lake Tahoe", "The hub is titled with the place")
 check(requests[1] == forecasts()[1] and forecasts()[1]:find("latitude=39.09") and forecasts()[1]:find("v1/forecast"),
     "The place's forecast comes first")
+-- I1: a lake asks no marine forecast, and the hub only outdoors' own sources
+-- (air and warnings at a US place), not the other activities'.
+check(#forecasts() == 1 and #requests == 3 and requests[2]:find("air%-quality") and requests[3]:find("api.weather.gov"),
+    "The hub asks for three things at Lake Tahoe: " .. table.concat(requests, " "))
+check(requests[1]:find("&forecast_minutely_15=12", 1, true), "The nowcast asks for three hours of quarter hours")
 check(text("Nowtahoe:now:now", "HubTemp") == "10°" and text("Nowtahoe:now:now", "HubSky") == "partly cloudy"
     and text("Nowtahoe:now:now", "HubFeels") == "feels like 9°", "Now shows temperature, sky and feels like")
 check(text("Detailtahoe:detail:1", "DetailValue") == "70%" and text("Detailtahoe:detail:6", "DetailValue") == "06:45",
@@ -340,7 +382,16 @@ local hubRequests = #requests
 press("GoodFortahoe:activity:fishing")
 check(app.screen ~= hub and find("ActivityPivot").Title == "fishing · Lake Tahoe", "Fishing opens its own page")
 check(find("ActivityPage").StateClasses == "fishing", "The page carries the activity's accent class")
-check(#requests == hubRequests, "Opening an activity reuses the place's forecast")
+-- I1: the page adds only fishing's own optional sources; the forecast stays.
+local added = {}
+for index = hubRequests + 1, #requests do added[#added + 1] = requests[index] end
+check(#forecasts() == 1 and not table.concat(added, " "):find("v1/forecast%?latitude=39.09&longitude=%-120.04&hourly=temperature"),
+    "Opening an activity reuses the place's forecast: " .. table.concat(added, " "))
+local fishingSources = 0
+for _, source in ipairs(Activities.byId.fishing.sources or {}) do
+    if source.url(F.PLACES[1], Forecast) then fishingSources = fishingSources + 1 end
+end
+check(#added == fishingSources, "and asks for fishing's own sources: " .. #added)
 check(text("Nowtahoe:fishing:now:now", "NowVerdict") == "good" and text("Nowtahoe:fishing:now:now", "NowSpot") == "Lake Tahoe",
     "The verdict card shows the activity's verdict")
 local tile = find("Nowtahoe:fishing:now:now"):findChild("VerdictTile", true).BackgroundColor

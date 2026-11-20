@@ -208,8 +208,9 @@ local air = {
     end,
 }
 
--- api.weather.gov needs no key; the native client sends its own
--- User-Agent. An answer without `features` is not "no warnings".
+-- api.weather.gov needs no key but answers 403 without a User-Agent, which
+-- every request carries (Forecast.requestOptions). An answer without
+-- `features` is not "no warnings".
 local alerts = {
     id = "hiking-alerts", optional = true,
     url = function(spot)
@@ -217,6 +218,7 @@ local alerts = {
         if not (peak and peak.nws) then return nil end
         return ("https://api.weather.gov/alerts/active?point=%.4f,%.4f"):format(peak.top.lat, peak.top.lon)
     end,
+    headers = { Accept = "application/geo+json" },
     parse = function(json, forecast)
         local features = assert(type(json.features) == "table" and json.features, "no alert list")
         local list = {}

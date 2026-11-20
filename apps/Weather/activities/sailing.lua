@@ -20,7 +20,9 @@ local Tides = require "Weather/editions/sailing/tides"
 local Rank = require "Weather/editions/sailing/rank"
 
 local Sailing = {
-    id = "sailing", title = "sailing", needsMarine = "optional",
+    id = "sailing", title = "sailing",
+    -- Waves and the sea level on a coast; a lake has neither, so it does not ask.
+    needsMarine = function(place) return not (place and place.lake) and "optional" end,
     settings = Profile.settings,
     sources = { Models.source, Tides.source, Rank.source(function() return Profile.current().range end) },
 }

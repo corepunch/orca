@@ -8,7 +8,10 @@
 -- (`fields`) and extra requests (`sources`). A column the parser does not
 -- name lands on the hour or day under its API name
 -- (`hour.soil_temperature_6cm`); minutely_15 columns land on
--- `forecast.quarters`.
+-- `forecast.quarters`. With `models`, the main call asks several weather
+-- models at once: the best match keeps the plain names and every other
+-- model's columns land under their suffixed API names
+-- (`hour.wind_speed_10m_gfs_seamless`).
 local Sky = require "Weather/sky"
 local Forecast = {}
 
@@ -75,19 +78,38 @@ local function query(spot, fields, request)
 end
 
 -- The forecast URL and, when needed, the marine URL. `request` is optional.
+-- Quarter hours stop after `minutely15Steps` steps from now, so a rain
+-- nowcast does not pull 16 days of them.
 function Forecast.urls(spot, needsMarine, request)
     request = request or {}
     local fields = "hourly=" .. names(HOURLY, request.hourly) .. "&daily=" .. names(DAILY, request.daily)
     if request.minutely15 and #request.minutely15 > 0 then
         fields = fields .. "&minutely_15=" .. table.concat(request.minutely15, ",")
+        if request.minutely15Steps then
+            fields = fields .. "&forecast_minutely_15=" .. request.minutely15Steps .. "&past_minutely_15=0"
+        end
+    end
+    if request.models and #request.models > 0 then
+        fields = fields .. "&models=best_match," .. table.concat(request.models, ",")
     end
     return Forecast.url("forecast", query(spot, fields, request)),
         needsMarine and Forecast.url("marine", query(spot, "hourly=" .. names(MARINE, request.marine), request)) or nil
 end
 
-function Forecast.networkFetch(url)
+-- Every request names the app (a generic User-Agent with no contact:
+-- api.weather.gov answers 403 without one) and sends no cookies. `extra`
+-- adds a source's own headers (a table, or a function of the spot).
+Forecast.userAgent = "Weather/1.0 (ORCA)"
+function Forecast.requestOptions(extra, spot)
+    local headers = { ["User-Agent"] = Forecast.userAgent }
+    if type(extra) == "function" then extra = extra(spot) end
+    for name, value in pairs(extra or {}) do headers[name] = value end
+    return { headers = headers, nocookies = true }
+end
+
+function Forecast.networkFetch(url, options)
     local network = require "orca.network"
-    local ok, response = pcall(network.fetch, url)
+    local ok, response = pcall(network.fetch, url, options or Forecast.requestOptions())
     if not ok or (type(response) ~= "userdata" and type(response) ~= "table") then
         return nil, "No connection to the forecast service."
     end
@@ -109,6 +131,19 @@ end
 Forecast.plausible = plausible
 
 local function column(block, name, index) return block and block[name] and block[name][index] end
+
+-- A several-model answer names the best match's columns `<name>_best_match`;
+-- they become the plain columns every rule reads.
+local function bestMatch(block)
+    if type(block) ~= "table" then return block end
+    local renamed = {}
+    for name, values in pairs(block) do
+        local plain = type(name) == "string" and name:match("^(.+)_best_match$")
+        if plain and block[plain] == nil then renamed[plain] = values end
+    end
+    for name, values in pairs(renamed) do block[name], block[name .. "_best_match"] = values, nil end
+    return block
+end
 
 -- Copies one row of a block: named columns to their field, the rest under
 -- their API name.
@@ -135,7 +170,8 @@ end
 -- `spot` (optional) gives the latitude and longitude when the response
 -- has none.
 function Forecast.parse(weather, marine, epoch, spot)
-    local h, d = weather.hourly or {}, weather.daily or {}
+    local h, d = bestMatch(weather.hourly) or {}, bestMatch(weather.daily) or {}
+    bestMatch(weather.minutely_15)
     local m = marine and marine.hourly
     local marineAt = {}
     for index, time in ipairs(m and m.time or {}) do marineAt[time] = index end
@@ -191,27 +227,49 @@ function Forecast.parse(weather, marine, epoch, spot)
 end
 
 -- Runs a request's extra sources over a parsed forecast. `fetch` nil means
--- replay: `raw.sources` holds the answers saved earlier.
-local function runSources(forecast, spot, request, fetch, raw)
-    for _, source in ipairs(request and request.sources or {}) do
+-- replay: `raw.sources` holds the answers saved earlier, and a source never
+-- asked for (`raw.asked`) is left out. `lenient` (a page adding its sources
+-- later) never fails the forecast.
+local function asked(raw, id) return raw.asked and raw.asked[id] or raw.sources and raw.sources[id] ~= nil end
+local function runSources(forecast, spot, sources, fetch, raw, lenient)
+    raw.sources, raw.asked = raw.sources or {}, raw.asked or {}
+    for _, source in ipairs(sources or {}) do
         local json, err
         if fetch then
             local url = source.url(spot, Forecast)
-            if url then json, err = fetch(url) end
+            if url then json, err = fetch(url, Forecast.requestOptions(source.headers, spot)) end
+            raw.asked[source.id] = true
             if json then raw.sources[source.id] = json end
-        else
-            json = raw.sources and raw.sources[source.id]
+        elseif asked(raw, source.id) then
+            json = raw.sources[source.id]
             err = json == nil and "not saved" or nil
         end
         if json then
             local ok, problem = pcall(source.parse, json, forecast)
             if not ok then forecast.missing[source.id] = tostring(problem) end
         elseif err then
-            if not source.optional and fetch then return nil, err end
+            if not source.optional and fetch and not lenient then return nil, err end
             forecast.missing[source.id] = err
         end
     end
     return forecast
+end
+
+-- The sources of `request` that `raw` has not asked yet.
+function Forecast.unasked(request, raw)
+    local list = {}
+    for _, source in ipairs(request and request.sources or {}) do
+        if not (raw and asked(raw, source.id)) then list[#list + 1] = source end
+    end
+    return list
+end
+
+-- Adds sources to a forecast already made (an activity page asks for its
+-- own); their answers join `raw`. Returns how many it fetched.
+function Forecast.extend(forecast, spot, sources, fetch, raw)
+    if #sources == 0 then return 0 end
+    runSources(forecast, spot, sources, fetch or Forecast.networkFetch, raw, true)
+    return #sources
 end
 
 -- Fetches and parses. Returns the forecast, nil and the decoded answers
@@ -220,16 +278,17 @@ function Forecast.load(spot, needsMarine, fetch, epoch, request)
     fetch = fetch or Forecast.networkFetch
     epoch = epoch or os.time()
     local weatherUrl, marineUrl = Forecast.urls(spot, needsMarine, request)
-    local weather, err = fetch(weatherUrl)
+    local weather, err = fetch(weatherUrl, Forecast.requestOptions())
     if not weather then return nil, err end
     local marine
     if marineUrl then
         -- "optional": waves help but the forecast stands without them.
-        marine, err = fetch(marineUrl)
+        marine, err = fetch(marineUrl, Forecast.requestOptions())
         if not marine and needsMarine ~= "optional" then return nil, err end
     end
-    local raw = { at = epoch, weather = weather, marine = marine, sources = {} }
-    local forecast, sourceErr = runSources(Forecast.parse(weather, marine, epoch, spot), spot, request, fetch, raw)
+    local raw = { at = epoch, weather = weather, marine = marine, sources = {}, asked = {} }
+    local forecast, sourceErr = runSources(Forecast.parse(weather, marine, epoch, spot), spot,
+        request and request.sources, fetch, raw)
     if not forecast then return nil, sourceErr end
     return forecast, nil, raw
 end
@@ -241,7 +300,7 @@ function Forecast.restore(raw, spot, request, epoch)
     local forecast = Forecast.parse(raw.weather, raw.marine, epoch, spot)
     if not forecast.current then return nil end
     forecast.updated = raw.at or epoch
-    return runSources(forecast, spot, request, nil, raw)
+    return runSources(forecast, spot, request and request.sources, nil, raw)
 end
 
 return Forecast

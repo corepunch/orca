@@ -56,10 +56,18 @@ function Activities.at(place)
     return result
 end
 
+-- Whether an activity reads the sea at a place: `needsMarine` is a value
+-- or a function of the place (a lake has no waves to ask for).
+function Activities.marineFor(activity, place)
+    local need = activity.needsMarine
+    if type(need) == "function" then need = need(place) end
+    return need
+end
+
 -- Whether any of a place's activities reads the sea.
 function Activities.needsMarine(place)
     for _, activity in ipairs(Activities.at(place)) do
-        if activity.needsMarine then return true end
+        if Activities.marineFor(activity, place) then return true end
     end
     return false
 end
@@ -72,22 +80,34 @@ end
 
 -- What one forecast request for a place must ask for: the union of its
 -- activities' `fields` (hourly, daily, minutely15 and marine columns, the
--- most pastDays and forecastDays) and their `sources`, one per id.
-function Activities.request(place)
-    local request = { hourly = {}, daily = {}, minutely15 = {}, marine = {}, sources = {} }
-    local seen, sources = {}, {}
+-- most pastDays, forecastDays and minutely15Steps, the weather `models`)
+-- and their `sources`, one per id. Every required source comes along, but
+-- an optional one only from the lead activity and from `focus`, the
+-- activity whose page is open (an activity or its id; "all" lists every
+-- source, as replaying a saved forecast needs).
+function Activities.request(place, focus)
+    local request = { hourly = {}, daily = {}, minutely15 = {}, marine = {}, models = {}, sources = {} }
+    local seen, sources, lead = {}, {}, Activities.lead()
+    local function wanted(activity, source)
+        return not source.optional or focus == "all" or activity == lead or activity == focus or activity.id == focus
+    end
     for _, activity in ipairs(Activities.at(place)) do
         local fields = activity.fields or {}
-        for _, block in ipairs { "hourly", "daily", "minutely15", "marine" } do
-            for _, name in ipairs(fields[block] or {}) do
+        local models = fields.models
+        if type(models) == "function" then models = models(place) end
+        for _, block in ipairs { "hourly", "daily", "minutely15", "marine", "models" } do
+            for _, name in ipairs(block == "models" and models or fields[block] or {}) do
                 local key = block .. ":" .. name
                 if not seen[key] then seen[key] = true; table.insert(request[block], name) end
             end
         end
-        if fields.pastDays then request.pastDays = math.max(request.pastDays or 0, fields.pastDays) end
-        if fields.forecastDays then request.forecastDays = math.max(request.forecastDays or 0, fields.forecastDays) end
+        for _, name in ipairs { "pastDays", "forecastDays", "minutely15Steps" } do
+            if fields[name] then request[name] = math.max(request[name] or 0, fields[name]) end
+        end
         for _, source in ipairs(activity.sources or {}) do
-            if not sources[source.id] then sources[source.id] = true; table.insert(request.sources, source) end
+            if not sources[source.id] and wanted(activity, source) then
+                sources[source.id] = true; table.insert(request.sources, source)
+            end
         end
     end
     return request

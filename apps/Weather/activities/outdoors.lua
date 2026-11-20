@@ -16,6 +16,7 @@ local Weather = {
         daily = { "precipitation_hours", "uv_index_max", "wind_gusts_10m_max", "apparent_temperature_max",
             "apparent_temperature_min" },
         minutely15 = { "precipitation", "snowfall" },
+        minutely15Steps = 12, -- the next three hours are all the nowcast reads
         pastDays = 1, -- "4° colder than yesterday"
         forecastDays = 16, -- days 8 and on say "less certain"
     },
@@ -158,6 +159,7 @@ Weather.alertSource = {
         if not Weather.nwsCovers(spot) then return nil end
         return ("https://api.weather.gov/alerts/active?point=%.4f,%.4f"):format(spot.lat, spot.lon)
     end,
+    headers = { Accept = "application/geo+json" },
     -- An answer without `features` is not "no warnings": it fails the source.
     parse = function(json, forecast)
         local features = assert(type(json.features) == "table" and json.features, "no alert list")
