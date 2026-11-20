@@ -43,7 +43,7 @@ def url_types(project):
 
 
 # Kept identical to tools/ios/bundle.py.
-CAPABILITIES = ('location',)
+CAPABILITIES = ('location', 'background-refresh')
 LOCATION_USAGE = ('Finds where you are, only when you ask, to show the weather there. '
                   'Apple names the place; your position is not shared with anyone else.')
 
@@ -59,11 +59,16 @@ def capabilities(project):
     return names
 
 
-def capability_info(project):
+def capability_info(project, identifier):
     """Info.plist keys for the capabilities a project asks for, and only those."""
     names, info = capabilities(project), {}
     if 'location' in names:
         info['NSLocationWhenInUseUsageDescription'] = LOCATION_USAGE
+    if 'background-refresh' in names:
+        # orca.notifications.scheduleRefresh submits "<bundle id>.refresh",
+        # which runs the project's background.lua.
+        info['UIBackgroundModes'] = ['fetch']
+        info['BGTaskSchedulerPermittedIdentifiers'] = [identifier + '.refresh']
     return info
 
 

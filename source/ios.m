@@ -348,6 +348,8 @@ static uint32_t animation_time(void *context)
 {
   (void)application; (void)options;
   Notifications_AppleInitialize();
+  // BGTaskScheduler needs its launch handlers before launch finishes.
+  Notifications_AppleRegisterRefresh();
   return YES;
 }
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)token

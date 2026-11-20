@@ -259,7 +259,7 @@ Default units in tests are metric (region "NL").
 
 Not built yet:
 
-- notifications and live tiles (wave 4).
+- live tiles (wave 4).
 
 `F.storage` empties the saved places (`places`) too, so every launch starts
 on the first run; `ui.choose(id)` taps a place row.
@@ -273,6 +273,38 @@ names the fix with the system geocoder and shows it like a search result
 saves it as any found place, with its country. Denied, unsupported, no fix
 or no name each give one calm line; search always stays. Tests pass
 `location` (a stand-in module) to `F.launch`.
+
+**Notifications** (`alerts.lua`, N2). Off until the user turns them on
+(settings, "notifications" under the activities); turning them on asks the
+system once. They are for the home place only: at most one of each kind a
+day, never in quiet hours (22:00 to 07:00 by default; an alert due then
+waits for their end, or is dropped when that is too late to help), and each
+kind has its own switch. The kinds, each where its activity is in the app:
+
+| Kind | Activity | Said | Rule |
+| --- | --- | --- | --- |
+| `rain` | outdoors | 30 min before | dry now, ≥ 60 % and ≥ 0.3 mm in the next 3 h |
+| `brief` | outdoors | 07:00 | the day's high and low, rain, what to bring (off by default) |
+| `frost` | garden | 17:00 | tonight ≤ 0.5 °C, or ≤ 2 °C (likely) / ≤ 4 °C (possible) clear and calm |
+| `storm` | hiking | 3 h before | the first daylight hour with codes 95–99, or CAPE ≥ 1000 J/kg and ≥ 40 % (an estimate) |
+| `wind` | sailing | 19:00 the evening before, or 3 h before | two good hours in a row by Sailing's own rating |
+| `dawn` | surf | 20:00 | Surfers' dawn-patrol card is good for tomorrow |
+| `clear` | stargazing | 2 h before | two dark hours (sun 12° down) under 20 % cloud |
+
+```lua
+Alerts.candidates(forecast, place, now)  -- { kind, title, body, at, before } per rule
+Alerts.plan(candidates, { now, offset, setting, delivered })  -- what to deliver, ids "<kind>:<date>"
+Alerts.sync(forecast, place, { now, storage, notifier })  -- plan and (re)schedule; storage "alerts"
+Alerts.refresh { home, fetch, now, storage, notifier }    -- the background hook's work
+```
+
+An activity may add its own (`activity.alerts(forecast, place, now)`,
+items with a `kind` from `Alerts.KINDS`). The app syncs whenever the home
+place's fresh forecast is drawn. `background.lua` is the background refresh
+(iOS `BGAppRefreshTask`, best effort): without screens it loads the home
+place's forecast and syncs again. Tests pass `notifier` (a stand-in for
+`orca.notifications`) to `F.launch`; `tests/test_weather_alerts.lua` checks
+every rule, the plan and the hook.
 
 ## Extension points for editions
 

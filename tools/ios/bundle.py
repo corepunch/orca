@@ -84,7 +84,7 @@ def url_schemes(project):
 
 
 # Kept identical to tools/xcode/common.py, which the Xcode generator imports.
-CAPABILITIES = ('location',)
+CAPABILITIES = ('location', 'background-refresh')
 LOCATION_USAGE = ('Finds where you are, only when you ask, to show the weather there. '
                   'Apple names the place; your position is not shared with anyone else.')
 
@@ -100,11 +100,16 @@ def capabilities(project):
     return names
 
 
-def capability_info(project):
+def capability_info(project, identifier):
     """Info.plist keys for the capabilities a project asks for, and only those."""
     names, info = capabilities(project), {}
     if 'location' in names:
         info['NSLocationWhenInUseUsageDescription'] = LOCATION_USAGE
+    if 'background-refresh' in names:
+        # orca.notifications.scheduleRefresh submits "<bundle id>.refresh",
+        # which runs the project's background.lua.
+        info['UIBackgroundModes'] = ['fetch']
+        info['BGTaskSchedulerPermittedIdentifiers'] = [identifier + '.refresh']
     return info
 
 
@@ -203,7 +208,7 @@ def main():
     }
     info.update(compile_assets(project, bundle, args.sdk, args.minimum))
     info.update(url_types(project))
-    info.update(capability_info(project))
+    info.update(capability_info(project, args.identifier))
     languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')
                        if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))
     if languages:

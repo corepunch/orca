@@ -165,7 +165,7 @@ def generate(args, app):
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'AVFoundation', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
-                  'UserNotifications', 'AuthenticationServices', 'Contacts', 'CoreLocation')
+                  'UserNotifications', 'AuthenticationServices', 'Contacts', 'CoreLocation', 'BackgroundTasks')
     linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lglslmsl',
               '-lc++', '-lz', '-liconv', '-lm']
     for framework in frameworks:
@@ -256,7 +256,7 @@ def generate(args, app):
     display_name = args.display_name or 'ORCA ' + name.replace('-', ' ').title()
     info = info_plist(display_name, launch_screen.stem if launch_screen.is_file() else None)
     info.update(url_types(app_dir))
-    info.update(capability_info(app_dir))
+    info.update(capability_info(app_dir, '$(PRODUCT_BUNDLE_IDENTIFIER)'))
     if languages:
         info['CFBundleLocalizations'] = languages
     write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info).decode())

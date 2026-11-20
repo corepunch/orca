@@ -188,7 +188,11 @@ Provider.ABOUT = {
 -- The settings page: the shared units, each activity's own settings and
 -- "about" (WeatherRow, Kind "setting" or "about").
 function Provider.settingsRows()
-    local rows = Settings.rows(Activities.list)
+    -- Each activity's settings, then the notifications (alerts.lua).
+    local groups = {}
+    for _, activity in ipairs(Activities.list) do groups[#groups + 1] = activity end
+    groups[#groups + 1] = require("Weather/alerts").settingsGroup
+    local rows = Settings.rows(groups)
     for index, about in ipairs(Provider.ABOUT) do
         rows[#rows + 1] = { id = "settings:about:" .. index, kind = "about", order = #rows + 1, title = about[1],
             detail = about[2], tone = "info", score = 0 }

@@ -16,8 +16,9 @@ Editions = {
     { Key = "stargazing", Name = "Stargazers' Weather" },
 }
 -- Native features the bundle declares (tools/ios/bundle.py): "use my
--- location" adds the when-in-use usage string, nothing more.
-Capabilities = { "location" }
+-- location" adds the when-in-use usage string; background refresh lets iOS
+-- run background.lua now and then to plan the notifications again.
+Capabilities = { "location", "background-refresh" }
 EnginePlugins = { { Name = "orca.UIKit" } }
 ThemeLibrary = {
     { Key = "accent", Value = "#1BA1E2" },

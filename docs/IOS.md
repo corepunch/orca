@@ -290,6 +290,34 @@ Capabilities = { "location" }
 - `location`: `NSLocationWhenInUseUsageDescription`, with generic wording.
   `orca.location.supported()` is false without it, so a project that does not
   ask never shows a prompt.
+- `background-refresh`: `UIBackgroundModes = fetch` and
+  `BGTaskSchedulerPermittedIdentifiers = <bundle id>.refresh`, for
+  `orca.notifications.scheduleRefresh`.
+
+### Local notifications and background refresh
+
+`orca.notifications.requestLocalAuthorization()` asks for alerts and sound
+without registering with APNs; `poll()` then returns `authorized` or an
+error with `permission_denied`. `scheduleLocal { id, title, body, at }`
+schedules one at a Unix time (the same id replaces it) and
+`cancelLocal(id)` removes one, or every local one without an id; their
+identifiers are prefixed `orca.local.` so remote notifications are never
+touched. A local notification shown while the app is open appears as a
+banner.
+
+`scheduleRefresh(seconds)` submits a `BGAppRefreshTaskRequest`. When iOS
+runs it (when and whether is the system's choice; never on the simulator,
+rarely in Low Power Mode), the project's `background.lua`, which returns a
+function, runs in a Lua state of its own: no screens and no engine objects,
+so it cannot disturb the suspended application. `orca.network`,
+`orca.notifications`, plain `io` and stand-ins for `orca.core` (the region
+functions only) and `orca.filesystem` (`fileExists`, `makeDirectory`) are
+available, and `require "<package Name>/x"` loads the project's `x.lua`. The
+function is resumed every 100 ms until it returns (false marks the task
+failed) or the system expires it; the next refresh is asked for three hours
+on either way. Debug it in Xcode with
+`e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"<bundle id>.refresh"]`
+on a device.
 
 ### Location
 

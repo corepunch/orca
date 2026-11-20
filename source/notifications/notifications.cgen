@@ -23,6 +23,26 @@
       <details>While the application is in the foreground, a notification for another conversation shows as a banner with sound; one for the active conversation stays silent because the open thread refreshes itself. Opening a conversation also removes its delivered notifications from the notification center.</details>
       <returns type="nresults">True.</returns>
     </function>
+    <function name="RequestLocalAuthorization" lua="true">
+      <summary>Asks to show alerts with sound for local notifications, without registering with APNs.</summary>
+      <details>Returns true when queued, or nil and an error string when unsupported. The system asks once; later calls answer at once. Poll returns an event of type authorized, or error with code permission_denied. Call it only from an explicit user action, such as switching notifications on.</details>
+      <returns type="nresults">True when queued, or nil and an error string.</returns>
+    </function>
+    <function name="ScheduleLocal" lua="true">
+      <summary>Schedules a local notification: { id, title, body, at }.</summary>
+      <details>`at` is Unix seconds; a time already past shows in about a second. `id` (letters, digits, `-`, `_`, `.` and `:`, at most 96 bytes) names it, so scheduling the same id again replaces it. Title and body are plain text, at most 256 and 1024 bytes. Delivered only when the person allowed notifications. Returns true when handed to the system, or nil and an error string.</details>
+      <returns type="nresults">True, or nil and an error string.</returns>
+    </function>
+    <function name="CancelLocal" lua="true">
+      <summary>Cancels a scheduled local notification by id, or every one this module scheduled when called without an id.</summary>
+      <details>Also removes a delivered one with that id from Notification Center. Remote notifications are never touched. Returns true, or nil and an error string when unsupported.</details>
+      <returns type="nresults">True, or nil and an error string.</returns>
+    </function>
+    <function name="ScheduleRefresh" lua="true">
+      <summary>Asks iOS for a background refresh no sooner than the given number of seconds.</summary>
+      <details>Submits a BGAppRefreshTaskRequest named after the bundle identifier with a .refresh suffix; the bundle must permit it (package.lua `Capabilities = { "background-refresh" }`) and carry a project background.lua returning a function. When iOS runs the task, that function runs in a Lua state of its own without screens or engine objects (orca.network, orca.notifications and a region-only orca.core are available), resumed until it returns or the system expires it. The system decides whether and when; it may never run, for example in Low Power Mode. Returns true when submitted, or nil and an error string.</details>
+      <returns type="nresults">True, or nil and an error string.</returns>
+    </function>
     <function name="Poll" lua="true">
       <summary>Dequeues one native notification event on the Lua thread.</summary>
       <details>Returns nil when empty. Events have type token (token), received or open (conversationId, messageId, userId), or error (code, message). Error codes include permission_denied, authorization_failed, registration_failed, invalid_token and unsupported. Notification payload identifiers are untrusted routing hints and must be authorized by the application. Open events survive startup before Lua initialization. Platform callbacks never access Lua.</details>
