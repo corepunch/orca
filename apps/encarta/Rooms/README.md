@@ -8,16 +8,17 @@ lights.
 
 [`Tools/build_rooms.py`](../Tools/build_rooms.py) builds them with
 [`tools/mesh_mcp.py`](../../../docs/mesh-mcp.md): primitives, tubes and a few
-hand-built meshes (fern fronds, ammonite spirals, curtains). Blender's Cycles
-bakes each room's lamps, windows and glowing things into a 2048 px lightmap.
+hand-built meshes (fern fronds, ammonite spirals, curtains). The tool bakes
+each room's lamps, windows and glowing things into a 2048 px lightmap, with
+shadows and two bounces of light (`tools/mesh_light.py`).
 
 ```sh
-uv run --with numpy --with pillow python apps/encarta/Tools/build_rooms.py            # all four, a few minutes each
-uv run --with numpy --with pillow python apps/encarta/Tools/build_rooms.py Abyss --draft   # one room, quick and noisy
+uv run --with numpy --with pillow --with xatlas python apps/encarta/Tools/build_rooms.py              # all four
+uv run --with numpy --with pillow --with xatlas python apps/encarta/Tools/build_rooms.py Abyss --draft  # one room, about two minutes
 ```
 
-It needs Blender (`ORCA_BLENDER`, or `/Applications/Blender.app`). The
-first bake on a machine also compiles Cycles' GPU kernels.
+It needs only Python with numpy and Pillow; xatlas packs the lightmap
+tighter when it is installed.
 
 | Path | Contents |
 | --- | --- |

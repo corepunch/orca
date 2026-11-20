@@ -119,15 +119,25 @@ runtime lights:
 scene.set_material(material_name="Bulb", color="#FFE2A8", emission=6)
 scene.add_light("Lamp", "point", location=[0.5, 1.8, -0.3], color="#FFD08A", power=90, size=0.06)
 scene.add_light("Window", "area", location=[0, 1.2, 2], direction=[0, -0.3, -1], power=200, size=[2, 1])
-scene.export_scene("apps/MyApp", "Room", lightmap={"size": 2048, "samples": 384})
+scene.export_scene("apps/MyApp", "Room", lightmap={"size": 2048})
 ```
 
-It needs Blender (`ORCA_BLENDER`, else `/Applications/Blender.app` or
-`blender` on the path). `tools/mesh_bake.py` runs inside it: Smart UV Project
-lays out a second UV set over the whole scene, and Cycles path traces the
-light arriving at every texel, direct and bounced, coloured by the surfaces
-it bounced off. The export then merges objects by material and group, splits
-vertices along the new UV seams and writes:
+The bake is plain numpy, in `tools/mesh_light.py`:
+
+1. **Atlas.** A second UV set packs the whole scene into one texture. With
+   [xatlas](https://pypi.org/project/xatlas/) installed (MIT, a small wheel)
+   it segments and packs the charts; without it, triangles that face the same
+   way are grouped, projected flat and shelf-packed.
+2. **Direct light.** Every texel gets its position and normal by
+   rasterizing the triangles in lightmap space. Each light, and each of the
+   3 × 3 samples of an area light, renders a cube shadow map; filtered depth
+   comparisons give soft-edged shadows.
+3. **Radiosity.** The light that lit surfaces reflect, and what emissive
+   surfaces give off, is gathered into virtual point lights chosen by power
+   (256, then 128). Each casts its own shadow map and lights what faces it:
+   two bounces of coloured, shadowed indirect light.
+
+It writes:
 
 ```
   Meshes/*.mesh     ... plus UV1, the lightmap coordinate
@@ -137,15 +147,15 @@ vertices along the new UV seams and writes:
 ```
 
 Lights are in watts (a sun's strength is in W/m²); `direction` is where a
-spot, area or sun light points. An emissive material lights the scene in the
-bake with its `emission` strength and, in the engine, shows its own colour
-at full brightness however dark its corner (`Lit.Glow`, at most 1). Other `lightmap` keys:
-`bounces` (4), `margin` in texels (6), `angle` for UV islands (66),
-`ambient` `[r, g, b]` world light (black), `smooth` blur passes (1).
+spot, area or sun light points. An emissive material lights the scene with
+its `emission` strength and, in the engine, shows its own colour at full
+brightness however dark its corner (`Lit.Glow`, at most 1). Other
+`lightmap` keys: `bounces` (2), `vpls` (256), `shadow` resolution per cube
+face (512), `area_samples` (9), `ambient` `[r, g, b]`, `exposure` (1),
+`smooth` blur passes (1), `log` (a function for progress lines).
 
-The first bake on a machine compiles Cycles' GPU kernels, which can take
-several minutes. Moving geometry needs a new bake; a drawer that slides keeps
-the light it had when closed.
+Moving geometry needs a new bake; a drawer that slides keeps the light it
+had when closed.
 
 ## Preview and engine
 

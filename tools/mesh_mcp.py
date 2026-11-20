@@ -303,17 +303,6 @@ void main() {
 """ % {"range": "%.1f" % LIGHTMAP_RANGE}
 
 LIGHT_TYPES = ("point", "spot", "area", "sun")
-BLENDER_APPS = ("/Applications/Blender.app/Contents/MacOS/Blender", "blender")
-
-
-def _blender():
-    import shutil
-    for candidate in ([os.environ["ORCA_BLENDER"]] if os.environ.get("ORCA_BLENDER") else []) + list(BLENDER_APPS):
-        if os.path.isfile(candidate) or shutil.which(candidate):
-            return candidate
-    raise ToolError("baking needs Blender; set ORCA_BLENDER to its executable")
-
-
 def _encode_light(light):
     """Linear light to an 8-bit sRGB image holding light / LIGHTMAP_RANGE."""
     v = np.clip(light / LIGHTMAP_RANGE, 0, 1)
@@ -323,7 +312,7 @@ def _encode_light(light):
 
 def _smooth_light(light, passes):
     """A light blur that hides the bake's remaining grain. Gutters are already
-    filled by Blender's margin, so neighbouring islands blur into their own pad."""
+    filled by the bake, so a chart's edge blurs only with its own padding."""
     for _ in range(passes):
         a = np.pad(light, ((1, 1), (1, 1), (0, 0)), mode="edge")
         light = (a[1:-1, 1:-1] * 4 + a[:-2, 1:-1] + a[2:, 1:-1] + a[1:-1, :-2] + a[1:-1, 2:]) / 8
@@ -498,10 +487,11 @@ class Scene:
         <PrefabView3D Prefab="<Project>/<folder>/<name>/Scene"/>.
         merge=false keeps one mesh and one movable Model3D per object;
         merge=true bakes transforms and joins objects that share a material and group.
-        lightmap={"size": 1024, "samples": 256} merges, then has Blender's Cycles path trace
-        the scene's lights (add_light, emissive materials) into a lightmap the shader multiplies
-        in; other keys: bounces (4), margin in texels (6), angle for the UV islands (66),
-        ambient [r, g, b] world light (black), smooth blur passes (1)."""
+        lightmap={"size": 1024} merges, then bakes the scene's lights (add_light) and glowing
+        materials into a lightmap the shader multiplies in (tools/mesh_light.py: shadow-mapped
+        direct light and radiosity bounces); other keys: bounces (2), vpls (256 virtual lights
+        for the first bounce), shadow (512 px per cube face), area_samples (9), ambient
+        [r, g, b], exposure (1), smooth blur passes (1)."""
         if not self.objects:
             raise ToolError("the scene is empty")
         project = _project_name(project_dir)
@@ -587,43 +577,34 @@ class Scene:
                      "use": '<PrefabView3D Prefab="%s/Scene"/>' % base}, **stats)
 
     def _bake(self, project_dir, project, out, meshes, opts):
-        """Bake with Blender, then split each mesh's vertices along the lightmap's seams."""
-        import subprocess
-        import tempfile
+        """Bake with mesh_light.py, then split each mesh's vertices along the lightmap's seams."""
         import time
+        from mesh_light import bake
         size = int(opts.get("size", 1024))
-        names = list(dict.fromkeys(m[6] for m in meshes))
-        materials = []
-        for mat in names:
-            m = self.materials.get(mat, {})
-            # The vertex tint already carries the material's colour (see _tint).
-            spec = {"name": _safe(mat), "color": [1.0, 1.0, 1.0],
-                    "emission": m.get("emission", 0.0), "roughness": 0.7}
-            if m.get("texture"):
-                spec["texture_file"] = os.path.abspath(_asset_file(project_dir, project, m["texture"]))
-            materials.append(spec)
+        means = {}
+        for mat in dict.fromkeys(m[6] for m in meshes):
+            texture = self.materials.get(mat, {}).get("texture")
+            if texture:
+                with Image.open(_asset_file(project_dir, project, texture)) as im:
+                    means[mat] = (np.asarray(im.convert("RGB").resize((16, 16)), F) / 255) ** 2.2
+                means[mat] = means[mat].mean(axis=(0, 1))
+            else:
+                means[mat] = np.ones(3, F)
         base, chunks = 0, []
         for mesh, pos, nrm, uv, tint, faces, mat in meshes:
-            chunks.append((pos, nrm, uv, tint, faces + base, np.full(len(faces), names.index(mat), np.int32)))
+            # The vertex tint already carries the material's colour (see _tint).
+            albedo = np.clip(tint ** 2.2 * means[mat], 0, 0.95)
+            glow = self.materials.get(mat, {}).get("emission", 0.0)
+            chunks.append((pos, nrm, albedo, albedo * glow, faces + base))
             base += len(pos)
         cat = lambda i: np.concatenate([c[i] for c in chunks])
-        meta = {"size": size, "samples": int(opts.get("samples", 256)), "bounces": int(opts.get("bounces", 4)),
-                "margin": int(opts.get("margin", 6)), "angle": float(opts.get("angle", 66)),
-                "ambient": list(opts.get("ambient", [0, 0, 0])), "materials": materials,
-                "lights": [dict(l, color=[c ** 2.2 for c in _rgb(l["color"])]) for l in self.lights.values()]}
-        with tempfile.TemporaryDirectory() as tmp:
-            job, result = os.path.join(tmp, "job.npz"), os.path.join(tmp, "result.npz")
-            np.savez(job, meta=json.dumps(meta), position=cat(0).astype(F), normal=cat(1).astype(F),
-                     uv0=cat(2).astype(F), color=cat(3).astype(F), faces=cat(4).astype(np.int32), material=cat(5))
-            script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mesh_bake.py")
-            started = time.time()
-            run = subprocess.run([_blender(), "-b", "--factory-startup", "--python-exit-code", "1",
-                                  "--python", script, "--", job, result], capture_output=True, text=True)
-            if run.returncode != 0 or not os.path.exists(result):
-                raise ToolError("Blender bake failed:\n" + (run.stdout + run.stderr)[-3000:])
-            data = np.load(result)
-            uv1, light = data["uv1"], data["light"]
-        light = _smooth_light(light, int(opts.get("smooth", 1)))
+        lights = [dict(l, color=[c ** 2.2 for c in _rgb(l["color"])]) for l in self.lights.values()]
+        started = time.time()
+        uv1, light = bake(cat(0), cat(1), cat(2), cat(3), cat(4), lights, size=size,
+                          bounces=int(opts.get("bounces", 2)), vpls=int(opts.get("vpls", 256)),
+                          ambient=opts.get("ambient", (0, 0, 0)), shadow_res=int(opts.get("shadow", 512)),
+                          area_samples=int(opts.get("area_samples", 9)), log=opts.get("log", lambda *a: None))
+        light = _smooth_light(light * float(opts.get("exposure", 1.0)), int(opts.get("smooth", 1)))
         _encode_light(light).save(os.path.join(out, "lightmap.png"))
         split, uv1s, first = [], [], 0
         for mesh, pos, nrm, uv, tint, faces, mat in meshes:
@@ -635,8 +616,7 @@ class Scene:
             split.append((mesh, pos[vertex], nrm[vertex], uv[vertex], tint[vertex],
                           inverse.reshape(-1, 3), mat))
             uv1s.append(corners[index])
-        return split, uv1s, {"lightmap": "%d px" % size, "bake_seconds": round(time.time() - started, 1),
-                             "blender": run.stdout.strip().splitlines()[-2:] if run.stdout else []}
+        return split, uv1s, {"lightmap": "%d px" % size, "bake_seconds": round(time.time() - started, 1)}
 
     # ---- preview
 
@@ -773,7 +753,7 @@ TOOLS = {
                                  "path": dict(_STR, description="save here instead of returning the image")}, []),
     "export_scene": ({"project_dir": dict(_STR, description="an ORCA project folder, e.g. apps/encarta"),
                       "name": _STR, "folder": _STR, "merge": _BOOL,
-                      "lightmap": {"type": "object", "description": "bake light: {size, samples, bounces, ambient}"}},
+                      "lightmap": {"type": "object", "description": "bake light: {size, bounces, vpls, ambient, exposure}"}},
                      ["project_dir"]),
     "add_light": ({"name": _STR, "type": {"type": "string", "enum": list(LIGHT_TYPES)}, "location": _V3,
                    "direction": _V3, "color": _COLOR, "power": _NUM,

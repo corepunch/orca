@@ -2,17 +2,17 @@
 """Model Encarta's four themed rooms in 3D and bake their light.
 
 Each room is built from primitives with tools/mesh_mcp.py, lit by lamps,
-windows and glowing things, and baked by Blender's Cycles into a lightmap
-(see docs/mesh-mcp.md). The script also paints the procedural textures and
+windows and glowing things, and baked into a lightmap with shadows and two
+bounces of light (tools/mesh_light.py; see docs/mesh-mcp.md). The script also paints the procedural textures and
 writes each room's layout.lua: the exhibit and drawer rectangles the app
 uses for its labels and hit areas, measured by projecting the models through
 the room camera.
 
-    uv run --with numpy --with pillow python apps/encarta/Tools/build_rooms.py [Nature Science Clubhouse Abyss]
-    ... --draft      quick, noisy bake to check a layout (64 samples, 1024 px)
+    uv run --with numpy --with pillow --with xatlas python apps/encarta/Tools/build_rooms.py [Nature Science Clubhouse Abyss]
+    ... --draft      quick bake to check a layout (1024 px, 64 virtual lights)
     ... --textures   repaint only the shared textures
 
-Needs Blender (ORCA_BLENDER, or /Applications/Blender.app).
+Needs numpy and Pillow; xatlas, when installed, packs the lightmap tighter.
 """
 import argparse
 import math
@@ -410,10 +410,11 @@ def microscope(room, base, s, body="Brass", body_color="#FFFFFF", dark="Black"):
     room.box((x, y + 0.27 * s, z), (0.24 * s, 0.025 * s, 0.2 * s), dark, tile=1)
     room.ring((x, y + 0.16 * s, z + 0.02 * s), 0.035 * s, 0.01 * s, body, body_color, rotation=(70, 0, 0), segments=20)
     tilt = 15
-    room.cylinder((x - 0.02 * s, y + 0.34 * s, z), 0.035 * s, 0.42 * s, body, body_color, rotation=(0, 0, tilt), segments=16)
+    room.cylinder((x - 0.02 * s, y + 0.34 * s, z), 0.055 * s, 0.42 * s, body, body_color, rotation=(0, 0, tilt), segments=20)
     room.cylinder((x + 0.02 * s, y + 0.3 * s, z), 0.02 * s, 0.06 * s, dark, segments=12)
     top = (x - 0.02 * s - math.sin(math.radians(tilt)) * 0.42 * s, y + 0.34 * s + math.cos(math.radians(tilt)) * 0.42 * s, z)
-    room.cylinder((top[0] - 0.01 * s, top[1] - 0.02 * s, z), 0.026 * s, 0.1 * s, dark, rotation=(0, 0, tilt), segments=12)
+    room.cylinder((top[0] - 0.01 * s, top[1] - 0.03 * s, z), 0.04 * s, 0.12 * s, dark, rotation=(0, 0, tilt), segments=16)
+    room.cylinder((x + 0.02 * s, y + 0.28 * s, z), 0.045 * s, 0.05 * s, body, body_color, segments=16)
     room.ring((x + 0.15 * s, y + 0.42 * s, z + 0.04 * s), 0.04 * s, 0.018 * s, body, body_color, rotation=(0, 90, 0), segments=20)
 
 
@@ -712,8 +713,9 @@ def clubhouse(room, layout):
         p = hub + (math.cos(a) * 0.25, -0.18 - 0.06 * (k % 2), math.sin(a) * 0.25)
         room.tube([hub + (math.cos(a) * 0.25, 0, math.sin(a) * 0.25), p], 0.004, "Black", sides=5, caps=False)
         room.ellipsoid(tuple(p), (s, s, s), "Paint", col)
-    m = at(.06, .12, -0.45)
-    room.add("torus", m, (0.24, 0.24, 0.24), "Paint", "#F2C640", (90, 0, 0), minor_radius=0.18, segments=32)
+    m = np.array(at(.06, .12, -0.45))
+    arc = [m + (math.cos(a) * 0.1, math.sin(a) * 0.1, 0) for a in np.linspace(math.radians(110), math.radians(250), 24)]
+    room.tube(arc, [0.006 + 0.04 * math.sin(t * math.pi) for t in np.linspace(0, 1, 24)], "Paint", "#F2C640", sides=14)
     room.tag = "your-body"
     shelf = at(.35, .27, -0.75)
     room.box(shelf, (0.5, 0.04, 0.24), "Oak", "#C08850")
@@ -743,7 +745,8 @@ def clubhouse(room, layout):
                       top=0.002, segments=4)
     for sx in (-0.1, 0.1):
         room.cylinder(tuple(d + (sx, -0.0, 0.03)), 0.03, 0.06, "Paint", "#4C9640")
-    # The fireplace under the mantel.
+    # The fireplace under the mantel belongs to the room, not the exhibit.
+    room.tag = None
     fx, fy, fz = at(.55, .58, -0.82)
     room.box((fx, fy, fz), (0.95, 0.5, 0.2), "Tiles", tile=0.25)
     room.box((fx, fy - 0.04, fz + 0.101), (0.52, 0.36, 0.002), "Black")
@@ -895,7 +898,6 @@ def abyss(room, layout):
     room.tag = "science"
     microscope(room, at(.72, .62, -0.4), 0.95, body="Brass")
     room.cylinder(at(.84, .63, -0.3), 0.07, 0.12, "Copper")
-    room.ring(at(.84, .55, -0.3), 0.08, 0.02, "Brass", rotation=(90, 0, 0))
     room.tag = "long-ago"
     d = at(.92, .5, -0.4)
     room.cylinder((d[0], d[1] - 0.14, d[2]), 0.18, 0.05, "Brass")

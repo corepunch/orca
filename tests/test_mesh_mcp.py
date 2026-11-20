@@ -120,6 +120,27 @@ class SceneTest(unittest.TestCase):
             s.save_scene(os.path.join(d, "s.json")); t.load_scene(os.path.join(d, "s.json"))
             self.assertEqual((list(t.lights), t.groups), (["Lamp"], {"Drawer": '<AnimationPlayer Name="Slide"/>'}))
 
+    def test_numpy_bake_casts_shadows(self):
+        import numpy as np
+        import mesh_light
+        s = Scene()
+        s.create_object("plane", "Open", location=[-1, 0, 0], scale=[1, 1, 1])
+        s.create_object("plane", "Shaded", location=[1, 0, 0], scale=[1, 1, 1])
+        s.create_object("cube", "Roof", location=[1, 0.6, 0], scale=[1.4, 0.05, 1.4])
+        parts = [s._world(o) for o in s.objects.values()]
+        pos, nrm, _, faces = mesh_mcp._join(parts)
+        albedo = np.full_like(pos, 0.5)
+        light = {"type": "point", "location": [0, 2, 0], "direction": [0, -1, 0], "color": [1, 1, 1],
+                 "power": 100.0, "size": [0.05, 0.05], "angle": 60}
+        uv1, lightmap = mesh_light.bake(pos, nrm, albedo, np.zeros_like(pos), faces, [light], size=128,
+                                        vpls=16, shadow_res=128, jobs=2, log=lambda *a: None)
+        self.assertTrue((uv1 >= 0).all() and (uv1 <= 1).all())
+        def floor(index):            # mean light over a floor's two triangles
+            texel = (uv1[2 * index:2 * index + 2].mean(1) * [128, 128]).astype(int)
+            return lightmap[127 - texel[:, 1], texel[:, 0]].mean()
+        self.assertGreater(floor(0), 4 * floor(1), "the roof shades the floor under it")
+        self.assertGreater(floor(1), 0, "light bounces in under the roof")
+
     def test_screenshot_draws_the_object(self):
         s = Scene()
         s.create_object("sphere", color="#FF0000")
