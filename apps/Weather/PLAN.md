@@ -1,0 +1,313 @@
+# Weather apps: product plan
+
+One source tree, seven App Store apps. The full **Weather** app is for
+everyone. Six editions each serve one activity: **Fishers'**, **Surfers'**,
+**Sailors'**, **Hikers'**, **Gardeners'** and **Stargazers' Weather**
+(`EDITION=<key>`, see [README](README.md#editions-one-app-per-activity)).
+The editions share the forecast and the Metro look. Beyond that they may
+differ as much as their users do.
+
+The research behind every item is in [Research/](Research/). Each file holds
+the competitors, the public complaints, a persona and 100 user stories:
+
+| App | Persona | Research |
+| --- | --- | --- |
+| Weather | Maya, a commuter parent; Sam, a weekend generalist | [weather.md](Research/weather.md) |
+| Fishers' | a weekend lake and shore angler | [fishing.md](Research/fishing.md) |
+| Surfers' | a dawn-patrol intermediate surfer | [surf.md](Research/surf.md) |
+| Sailors' | a kiter and a dinghy sailor | [sailing.md](Research/sailing.md) |
+| Hikers' | a day hiker and a mountaineer | [hiking.md](Research/hiking.md) |
+| Gardeners' | Margaret (UK allotment); Dan (US lawn and beds) | [garden.md](Research/garden.md) |
+| Stargazers' | a visual observer and an astrophotographer | [stargazing.md](Research/stargazing.md) |
+
+Story numbers below (`S12`) refer to the app's own research file.
+
+## 0. Decisions before launch (not code)
+
+1. **Open-Meteo licence.** Every research file found the same blocker. The
+   free API is for non-commercial use only. Its terms count an app with a
+   subscription or ads as commercial, and free use is capped at about 10,000
+   calls a day. A paid app needs the commercial API (its own host and an API
+   key). Ensemble data needs the Professional tier. Ask Open-Meteo whether a
+   free app with no ads counts. `forecast.lua` keeps the base URL and key in
+   one place for this reason (F4).
+2. **Business model.** Across all seven markets the loudest complaint is the
+   same: features that were free moved behind a paywall, and ads cover the
+   forecast. Recommended: no ads, no account, no tracking, and an honest
+   one-off or small yearly price. Never take away something that was free.
+3. **Attribution.** Show "Weather data by Open-Meteo.com" plus the sources
+   Open-Meteo names (on the settings page, F3).
+4. **Tides and observations.** Open-Meteo's sea level is about 8 km and "not
+   for coastal navigation". Exact tides need NOAA (free, US only) or a paid
+   global source. Decide per edition. Until then, label them "approximate".
+
+## 1. Principles (from "what we must avoid")
+
+- **A verdict with its reasons, always.** Never a bare number, and never a
+  wall of numbers without a verdict.
+- **Honest wording.** Say "estimate" for heuristics such as seeing, breaking
+  height, storm clock and blight, and "approximate" for coarse data. Present
+  lore as lore: the solunar effect has no evidence behind it.
+- **Safety is never paywalled.** That covers thunder, gale, frost, darkness
+  and cold water.
+- **Calm notifications.** At most one a day per kind, with quiet hours, and
+  each kind can be switched off.
+- **Private by default.** Places, logs and profiles stay on the device, can
+  be exported, and are never shared or put on a public map. No spot-burning.
+- **Works offline.** Show the last forecast with its age, never silently stale.
+- **Units the user reads:** knots for wind sports; °F, mph and inches in the
+  US. The rules stay metric inside; only what is shown is converted.
+
+## 2. How the work is split
+
+```text
+Wave 1  Foundation (one agent)        shared modules and extension points, F1–F9
+Wave 2  Seven agents in parallel      one per app, each in its own files only
+Wave 3  Places (one agent)            search, saved places, place editor
+Wave 4  Native iOS (engine)           location, local notifications, widgets
+```
+
+**File ownership in wave 2.** Each edition agent owns these and edits nothing
+else:
+
+- `activities/<key>.lua`
+- `editions/<key>/` (new modules, templates, pages, data)
+- `tests/test_weather_<key>.lua`
+
+The Weather agent owns `activities/outdoors.lua`, `report.lua`,
+`Pages/Hub.xml`, `Data/Hub.xml`, `Templates/HubNow.xml` and
+`tests/test_weather.lua`. Anything shared that an edition needs goes through
+the extension points below. If one is missing, write the need into this file
+under "Requests to the foundation" instead of editing shared files.
+
+**Running and committing.** Build once (`make unite`). Run a single test
+directly: `build/bin/orca -test=tests/test_weather_<key>.lua`. Commit only
+your own paths: `git add <paths> && git commit -m … -- <paths>`. Retry if git
+reports `index.lock`. Never stage other people's files: the checkout has
+unrelated `apps/encarta` work in progress.
+
+## 3. Wave 1: foundation (F1–F9)
+
+These modules let every edition grow without touching shared files.
+
+- **F1 `storage.lua`, local files.** `Storage.load(name)` and
+  `Storage.save(name, table)` keep plain Lua tables. Writes are atomic (a
+  temporary file, then rename). Reads go through `load(text, name, "t", {})`,
+  so a file can hold no code. Location: `$HOME/Library/Application
+  Support/<Name>/` on iOS and macOS, with one folder per edition so editions
+  never share files. `options.dir` overrides it for tests. Values are strings,
+  numbers, booleans and nested tables only.
+- **F2 `units.lua` and `settings.lua`.**
+  - Settings are stored with F1 and cover units, the clock, and each
+    activity's own values.
+  - Units cover temperature (°C/°F), wind (m/s, km/h, mph, kn, Bft), height
+    (m/ft), rain (mm/in), pressure (hPa/inHg) and the clock (24 h/12 h).
+  - The defaults come from the edition and the region: Sailors' uses knots;
+    a US region uses °F, mph and inches.
+  - The functions are `Units.temp(c)`, `Units.wind(ms)`, `Units.gust(ms, gust)`
+    (shown as "18 g 26"), `Units.height(m)`, `Units.rain(mm)`,
+    `Units.pressure(hpa)`, `Units.clock("06:00")` and `Units.label(kind)`.
+  - Every existing activity's display text and chart titles move to `Units`
+    in this step, so wave 2 starts with units done.
+- **F3 settings page.** A `/settings` route with a Pivot, built from
+  declarations rather than written by hand:
+  - shared units and clock;
+  - each activity's `settings` list:
+    `{ key, title, kind = "choice" | "number" | "toggle", options, default, min, max, step }`,
+    read with `Settings.get(activityId, key)`;
+  - an "about" item with the data attribution.
+  - It opens from a "settings" link at the end of the hub's places section.
+- **F4 forecast extension points.** An activity may declare
+  `fields = { hourly = {…}, daily = {…}, minutely15 = {…}, pastDays = n, forecastDays = n }`.
+  `forecast.lua` merges the fields of the edition's activities into one
+  request. Any column it does not know lands on the hour or day under its API
+  name (for example `hour.soil_temperature_6cm`). Past hours keep their
+  order, and `forecast.now` still points at the current hour.
+  An activity may also declare
+  `sources = { { id, url = function(spot) … end, optional = true, parse = function(json, forecast) … end } }`
+  for extra requests such as air quality, NOAA SWPC Kp or NOAA tides. The base
+  URLs and an optional API key live in one table (decision 0.1).
+- **F5 offline forecast.** The provider saves the last decoded forecast per
+  place with F1. When the network fails it uses that copy and sets
+  `forecast.stale = true`. Both pages show "updated 2 h ago" (a `kind =
+  "age"` row) and say clearly when the forecast is old. It starts from the
+  saved copy, then refreshes.
+- **F6 sun position.** `Sky.sunAltitude(epoch, lat, lon)` and
+  `Sky.twilight(date, lat, lon, offset)` return civil, nautical and
+  astronomical dawn and dusk, or `nil` when the sun never gets low enough
+  (summer at high latitude). `Score.twilight` uses them. Hiking, stargazing,
+  surf, fishing and garden all depend on this.
+- **F7 cards.** An activity may provide `cards(forecast, place)`, a list of
+  `{ id, title, value, detail, tone, icon }`. These are big answers such as
+  "tonight", "frost tonight", "storm clock", "tides" or "water this week".
+  Cards appear on the activity's "now" view above the reasons, with a new
+  `Templates/CardRow.xml`. In an edition, the edition activity's cards also
+  lead the hub's first section, so Gardeners' opens on "frost tonight", not
+  on generic weather.
+- **F8 test harness.** Move the synthetic forecast, fake fetch and clock from
+  `tests/test_weather.lua` into `tests/weather_fixture.lua`. Add Makefile
+  rules `test-weather-<key>` for the six editions and add them to
+  `APP_LUA_TESTS`. Start each edition's test file with the activity checks
+  that exist today.
+- **F9 activity page title line.** When there is room, show the edition name
+  instead of "weather" (for example "surfers' weather"). Keep Back.
+
+**Done when:** `make test-weather` and all six `test-weather-<key>` pass, and
+every edition still builds and runs on desktop with `ORCA_EDITION=<key>`.
+
+## 4. Wave 2: per-app backlogs
+
+Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
+"Native" means it needs wave 4.
+
+### Weather (full app): `outdoors.lua`, hub
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| W1 | Next-hour rain: "rain starts in about 20 min" | P0 | M | `minutely_15`. Real 15-minute data only in North America and Central Europe; elsewhere it is interpolated, so the wording softens there |
+| W2 | Today in one line, plus what to bring (umbrella, coat, sunscreen) | P0 | S | add daily `precipitation_hours`, `uv_index_max`, `wind_gusts_10m_max`, `apparent_temperature_max/min` |
+| W3 | Air quality and pollen in the outdoors verdict | P1 | S–M | Air Quality API as an F4 source. Pollen is Europe only, in season, 4 days |
+| W4 | "4° colder than yesterday" | P1 | S | `pastDays = 1` |
+| W5 | Tap a day to see its hours; 14–16 days with "less certain" beyond day 7 | P1 | S–M | `forecastDays = 16` |
+| W6 | Everyday lenses: run, cycle, dog walk, picnic, laundry | P1 | M | new activities, full app only |
+| W7 | Choose and order the "good for" activities | P1 | M | an F3 setting |
+| W8 | Comfort setting ("I run cold") | P2 | S | an outdoors setting |
+| W9 | An hourly "good for" traffic-light row on the hub | P2 | S | DESIGN.md already proposes it |
+| W10 | Official severe weather warnings (US NWS, MeteoAlarm, Canada) | P1 | M–L | F4 source; check the MeteoAlarm licence |
+| W11 | Accessibility: VoiceOver labels, Dynamic Type, contrast | P1 | M | check what the engine supports |
+| W12 | Rain radar | P2 | L | needs a paid provider; RainViewer's free API was cut back in 2025 |
+
+### Fishers' Weather: `fishing.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| FI1 | Water temperature: sea from marine data, big lakes from `soil_temperature_0cm` over water cells, or the user's own reading | P0 | S–M | today fishing never asks for marine data |
+| FI2 | Pressure history and fronts: 48 h back and 24 h ahead, "front passes ~14:00" | P0 | S–M | `pastDays = 2` |
+| FI3 | Honest scoring: rules worded as anglers' experience, moon off by default with a toggle | P0 | S | the current solunar wording reads as fact |
+| FI4 | Safety: wind builds later, wind onto or off the bank (`facing`), dawn fog, cold water, swell cap for rock anglers | P0 | S–M | |
+| FI5 | Tides for coastal places: NOAA in the US, approximate Open-Meteo sea level elsewhere, with station and distance; tide stage in the score | P1 | L | decision 0.4 |
+| FI6 | Private catch log: two taps, offline, saves the hour's conditions, free CSV export | P1 | L | F1; `editions/fishing/log.lua` |
+| FI7 | "Your best conditions", learned from the log | P2 | M | after FI6 |
+| FI8 | Real moonrise and moonset, major and minor periods shown as tradition | P1 | S | daily `moonrise`/`moonset` |
+| FI9 | Species profiles (bass, trout, pike, carp, sea bass) that change the rules | P2 | M | an F3 setting |
+| FI10 | Compare my waters: the best place this morning | P1 | M | provider |
+| FI11 | River flow and level from Open-Meteo flood data | P2 | M | F4 source |
+| FI12 | Link to local fishing rules | P2 | S | per place |
+
+### Surfers' Weather: `surf.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| SU1 | Several swells shown apart (primary and secondary swell, wind sea), plus peak period | P0 | S–M | marine `secondary_swell_*`, `wind_wave_*` |
+| SU2 | Estimated breaking height in body words (knee, waist, head high), labelled "estimate" | P0 | S | |
+| SU3 | A profile per break: swell window, best wind, size range, best tide | P0 | M | `places.lua` fields; an F3 setting for skill |
+| SU4 | Dawn-patrol card: first light, the first good hour tomorrow | P0 | S | F6, F7 |
+| SU5 | Tides: times, a curve, and each break's best tide in the rating | P1 | M–L | decision 0.4 |
+| SU6 | Best break today among my breaks | P1 | M | provider |
+| SU7 | 16-day outlook with a confidence word | P1 | M | check whether marine data goes past 8 days |
+| SU8 | Water-quality warning after heavy rain (runoff) | P1 | S | `pastDays` rain sum |
+| SU9 | Skill level and a short first-run setup | P1 | S | F3 |
+| SU10 | Session log with a one-tap rating, later personal tuning | P2 | M | F1 |
+| SU11 | Wind drawn against the beach | P2 | S | |
+
+### Sailors' Weather: `sailing.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| SA1 | Knots first, with gusts as "18 g 26" | P0 | S | done by F2; check every string |
+| SA2 | Rider profile: sport, level, wind range, kite and sail sizes; "rig the 9 m" | P0 | M | an F3 setting; replaces the fixed 3/5/11/15 m/s |
+| SA3 | Gust realism: squalls from `cape` and pressure trend, direction shifts, lulls | P0 | S | |
+| SA4 | Model agreement: "sure / likely / uncertain" per hour, plus a model strip | P1 | M | `models=`; don't hard-code model names (HRRR and NAM retire November 2026) |
+| SA5 | Sea-breeze hint: an afternoon onshore build on sunny days | P1 | S–M | |
+| SA6 | Tides and wind-against-tide hours | P1 | M | decision 0.4 |
+| SA7 | "Where should I go this weekend": rank my spots | P1 | M | provider |
+| SA8 | Safe direction sector per spot (offshore danger for kites) | P0 | S | `places.lua` |
+| SA9 | Live stations and buoys against the forecast | P2 | L | NOAA NDBC, METAR |
+| SA10 | Gale and storm warnings at saved spots | P1 | M | with W10 |
+
+### Hikers' Weather: `hiking.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| HI1 | Summit and trailhead side by side, from one multi-point request; fix the valley coordinates | P0 | S–M | `editions/hiking/places`; F4 |
+| HI2 | Ridge wind at summit height from pressure levels | P0 | M | `wind_speed_850/700/600hPa` + geopotential |
+| HI3 | Storm clock: the first likely thunder hour and "be off the summit by", labelled "estimate" | P0 | M | `cape`, `lifted_index`, codes 95–99 |
+| HI4 | Daylight budget: first and last light, daylight left, turnaround from start time and hike length | P0 | S–M | F6; an F3 setting |
+| HI5 | Trail conditions: snow depth, last 72 h of snow and rain, freeze–thaw, heat, UV | P1 | S | `pastDays = 3`, `snow_depth` |
+| HI6 | Model confidence and 16 days | P1 | M | |
+| HI7 | Official warnings and avalanche bulletin links | P1 | M | with W10 |
+| HI8 | Smoke and air quality on the trail | P2 | S | Air Quality source |
+
+### Gardeners' Weather: `garden.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| GA1 | Tonight's frost with ground frost: "possible" from 4 °C and "likely" from 2 °C on clear, calm nights | P0 | M | today it only warns at air ≤ 1 °C |
+| GA2 | Weekly water balance: rain against evaporation over the last and next 7 days; "water / skip / rain coming"; L/m² | P0 | M | `pastDays = 7`, daily ET0 |
+| GA3 | Soil temperature at sowing depth, 7-day trend, "warm enough to sow" for common crops, lawn trigger | P0 | M | `soil_temperature_6cm/18cm`; `editions/garden/crops.lua` |
+| GA4 | Job windows: spray, mow, plant out, feed, harvest before bad weather | P0 | M | cards |
+| GA5 | Garden-first hub: frost tonight, water this week, best time today | P0 | S | F7 |
+| GA6 | Potato blight (Hutton criteria) and mildew risk | P1 | S | |
+| GA7 | Heat, gust, hail and snow warnings for plants | P1 | S | |
+| GA8 | Root-zone moisture instead of 0–1 cm | P1 | S | `soil_moisture_3_to_9cm`, `9_to_27cm` |
+| GA9 | Local frost dates with 10/50/90 % odds, and hardiness zone | P1 | M | historical API once, cached with F1 |
+| GA10 | Growing degree days since a date | P2 | M | |
+| GA11 | Plot settings: frost pocket, soil type, what I protect | P1 | M | F3 |
+| GA12 | 16 days | P2 | S | |
+| GA13 | Moon gardening, optional and labelled as tradition | P2 | S | |
+
+### Stargazers' Weather: `stargazing.lua`
+
+| ID | Feature | Pri | Size | Notes |
+| --- | --- | --- | --- | --- |
+| ST1 | Real darkness (astronomical, nautical, civil); "no full darkness tonight" | P0 | S–M | F6; replaces "90 min after sunset" |
+| ST2 | Real moonrise and moonset, moon height per hour, moon-free dark window | P0 | S–M | daily `moonrise/moonset/moon_phase`; height computed locally |
+| ST3 | Tonight as one night, dusk to dawn, not split at midnight | P0 | S–M | |
+| ST4 | High cloud and haze rated apart from clear; aerosols | P0 | S–M | `cloud_cover_high`; Air Quality AOD as an F4 source |
+| ST5 | Dew and frost on the optics: "dew heaters from 23:00" | P0 | S | |
+| ST6 | Red night mode that switches on at dusk, with no white flash | P0 | M | `editions/stargazing/night.css` and a state class; also check the launch screen |
+| ST7 | Model agreement: "chance of clear" | P1 | M | `models=` |
+| ST8 | Seeing and transparency, labelled "estimate" | P1 | M–L | jet stream, lapse rate; `editions/stargazing/seeing.lua` |
+| ST9 | Aurora chance from Kp, the oval, darkness, cloud and latitude | P1 | M | NOAA SWPC as an F4 source |
+| ST10 | Night-long chart from dusk to dawn: cloud layers, moon height, darkness | P1 | M | |
+| ST11 | Fog and low-cloud risk | P1 | S | `boundary_layer_height` |
+| ST12 | Meteor showers (a yearly table) and planets up tonight | P2 | S/M | |
+| ST13 | Deep-sky and planet scores shown apart | P2 | S | after ST8 |
+| ST14 | Bortle class per curated site | P2 | S | check the licence |
+
+## 5. Wave 3: places (one agent)
+
+| ID | Feature | Pri | Size |
+| --- | --- | --- | --- |
+| P1 | Place search through the Open-Meteo Geocoding API (name or postcode, with country) | P0 | M |
+| P2 | Saved places with F1: add, remove, reorder, home first; the curated places become suggestions | P0 | M |
+| P3 | Place editor for what an activity needs: a shore-facing compass, lake or sea, summit height, safe sector, break profile | P0 | M |
+| P4 | Activities that fit a place are guessed from its kind and confirmed by the user | P1 | S |
+| P5 | Compare saved places for one activity ("best place today") as a shared view that SU6, SA7 and FI10 use | P1 | M |
+
+## 6. Wave 4: native iOS (engine work)
+
+| ID | Feature | Pri | Size |
+| --- | --- | --- | --- |
+| N1 | Device location with approximate accuracy accepted, Lua API `orca.location`; reverse geocoding through `CLGeocoder` | P0 | M |
+| N2 | Local notifications and background refresh (`BGAppRefreshTask`), Lua API for scheduling; alert rules in Lua (`alerts.lua`) | P1 | L |
+| N3 | Home and lock-screen widgets: a WidgetKit extension reading a snapshot the app writes into an App Group | P1 | L |
+| N4 | Dark launch screen for Stargazers' (no white flash) | P0 | S |
+| N5 | Live Activity for rain, Apple Watch | P2 | L |
+
+## 7. Status
+
+Each agent updates its own rows here: `done` with the commit, or `blocked:
+why`.
+
+| Wave | Status |
+| --- | --- |
+| Research | done (Research/*.md) |
+| 1 Foundation | not started |
+| 2 Apps | not started |
+| 3 Places | not started |
+| 4 Native | not started |
+
+## Requests to the foundation
+
+Edition agents add needs here instead of editing shared files.
