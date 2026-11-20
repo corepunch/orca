@@ -1,5 +1,5 @@
 // The OpenGL ES 3.0 subset used by the ORCA renderer, implemented on Metal.
-// See gl_metal.h and docs/METAL.md. Compiled with ARC.
+// See metal.h and docs/METAL.md. Compiled with ARC.
 //
 // Model:
 // - GL objects are Objective-C objects in per-kind name tables.
@@ -16,7 +16,7 @@
 //   the command stream, so draws before and after it see OpenGL's order.
 
 #if !__has_feature(objc_arc)
-#error gl_metal.m must be compiled with -fobjc-arc
+#error metal.m must be compiled with -fobjc-arc
 #endif
 
 #import <Metal/Metal.h>
@@ -28,8 +28,9 @@
 #include <string.h>
 
 #include <libs/platform/platform.h>
-#include "gl_metal.h"
+#include "metal.h"
 #include "glsl_msl.h"
+#include "r_msl_shaders.h"
 
 #define MAX_TEXTURE_UNITS 16
 #define MAX_VERTEX_ATTRIBS GLSL_MSL_MAX_ATTRIBUTES
@@ -139,8 +140,8 @@ typedef struct
   GLMShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  struct glsl_msl_program const *preset_refl;  // set before glLinkProgram; not freed
-  struct glsl_msl_program const *refl;         // points to preset_refl after link
+  NSString *name;                          // set by glProgramLabel before glLinkProgram
+  struct glsl_msl_program const *refl;     // looked up by name in glLinkProgram
   id<MTLFunction> functions[GLSL_MSL_STAGES];
   uint8_t *data[GLSL_MSL_STAGES];
   GLint units[GLSL_MSL_MAX_UNIFORMS];
@@ -153,6 +154,7 @@ typedef struct
 - (void)reset
 {
   refl = NULL;
+  name = nil;
   for (int s = 0; s < GLSL_MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
@@ -1360,26 +1362,54 @@ static id<MTLFunction> compile_stage(GLMProgram *p, int stage, NSMutableString *
   return [library newFunctionWithName:@(p->refl->entry[stage])];
 }
 
-void glSetMSLReflection(GLuint program, struct glsl_msl_program const *refl)
+static struct { char const *name; struct glsl_msl_program const *refl; } const k_builtin_shaders[] = {
+  { "Default Shader",      &k_refl_default      },
+  { "UI Shader",           &k_refl_ui           },
+  { "Charset Shader",      &k_refl_charset      },
+  { "Cinematic Shader",    &k_refl_cinematic    },
+  { "Ninepatch Shader",    &k_refl_ninepatch    },
+  { "Vertex Color Shader", &k_refl_vertexcolor  },
+  { "Error Shader",        &k_refl_error        },
+  { "Button Shader",       &k_refl_button       },
+  { "Rounded Box Shader",  &k_refl_roundedbox   },
+  { "Blur H Shader",       &k_refl_blur_h       },
+  { "Blur V Shader",       &k_refl_blur_v       },
+  { "Backdrop Blur Shader",&k_refl_backdrop_blur},
+};
+
+static struct glsl_msl_program const *
+lookup_msl_refl(NSString *name)
+{
+  if (!name) return NULL;
+  char const *s = name.UTF8String;
+  for (size_t i = 0; i < sizeof(k_builtin_shaders)/sizeof(*k_builtin_shaders); i++)
+    if (!strcmp(k_builtin_shaders[i].name, s)) return k_builtin_shaders[i].refl;
+  return NULL;
+}
+
+void glProgramLabel(GLuint program, char const *name)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
-  if (p) p->preset_refl = refl;
+  if (p) p->name = name ? @(name) : nil;
 }
 
 void glLinkProgram(GLuint program)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !ensure_device()) return set_error(GL_INVALID_VALUE);
+  NSString *name = p->name;
   [p reset];
+  p->name = name;
   if (!p->pipelines) p->pipelines = [NSMutableDictionary new];
   static uint32_t serial;
   p->serial = ++serial;
   NSMutableString *log = [NSMutableString string];
-  if (!p->preset_refl) {
-    p->log = @"no MSL reflection: use glSetMSLReflection before glLinkProgram, or add lang=\"msl\" to the Shader XML";
+  p->refl = lookup_msl_refl(p->name);
+  if (!p->refl) {
+    p->log = [NSString stringWithFormat:@"%@: no MSL reflection; add lang=\"msl\" to the Shader XML or use a named builtin",
+              p->name ?: @"(unnamed program)"];
     return;
   }
-  p->refl = p->preset_refl;
   int ok = YES;
   for (int s = 0; ok && s < GLSL_MSL_STAGES; s++) {
     p->functions[s] = compile_stage(p, s, log);

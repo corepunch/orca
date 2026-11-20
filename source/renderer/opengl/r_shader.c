@@ -283,7 +283,7 @@ static GLuint _CreateGLProgram(struct shader_desc* def)
   R_Call(glAttachShader, program, vertexShader);
   R_Call(glAttachShader, program, fragmentShader);
 #if ORCA_METAL
-  if (def->MetalReflection) glSetMSLReflection(program, def->MetalReflection);
+  glProgramLabel(program, def->Name);
 #endif
   R_Call(glLinkProgram, program);
   R_Call(glGetProgramiv, program, GL_LINK_STATUS, &success);

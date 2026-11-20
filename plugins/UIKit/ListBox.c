@@ -215,11 +215,11 @@ ListBox_SetItemSelected(struct Object *item, bool_t selected)
   if (!item) return;
 
   uint32_t flags = OBJ_GetFlags(item);
-  flags = selected ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
+  uint32_t updated = selected ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
+  if (flags == updated) return;
 
-  OBJ_SetFlags(item, flags);
+  OBJ_SetFlags(item, updated);
   OBJ_SetDirty(item);
-  _SendMessage(item, StyleController, ThemeChanged, .recursive = TRUE);
 }
 
 static void

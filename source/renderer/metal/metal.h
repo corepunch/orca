@@ -2,17 +2,16 @@
 #define __GL_METAL_H__
 
 // The OpenGL ES 3.0 subset the ORCA renderer calls, implemented on Metal by
-// gl_metal.m. Apple builds with ORCA_METAL include this header instead of a
+// metal.m. Apple builds with ORCA_METAL include this header instead of a
 // system OpenGL header and link no OpenGL framework, so a call outside the
 // subset fails to link instead of silently doing nothing.
 //
 // Differences from OpenGL ES that the renderer relies on are documented in
-// docs/METAL.md. GLSL is translated to MSL when a program links.
+// docs/METAL.md. Programs use hand-written MSL shaders with pre-computed
+// reflection; see source/renderer/metal/r_msl_shaders.h.
 
 #include <stddef.h>
 #include <stdint.h>
-#include "glsl_msl.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -290,9 +289,9 @@ void glDeleteProgram(GLuint program);
 void glAttachShader(GLuint program, GLuint shader);
 void glDetachShader(GLuint program, GLuint shader);
 void glLinkProgram(GLuint program);
-// Set pre-compiled MSL reflection on a program before glLinkProgram. The
-// pointer must remain valid for the program's lifetime.
-void glSetMSLReflection(GLuint program, struct glsl_msl_program const *refl);
+// Label a program with its shader name so glLinkProgram can find its MSL
+// reflection. Call before glLinkProgram.
+void glProgramLabel(GLuint program, char const *name);
 void glUseProgram(GLuint program);
 void glGetProgramiv(GLuint program, GLenum pname, GLint *params);
 void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);

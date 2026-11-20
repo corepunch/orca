@@ -1,7 +1,7 @@
 #import <AppKit/AppKit.h>
 #if ORCA_METAL
 #import <QuartzCore/CAMetalLayer.h>
-#include <source/ref_metal/gl_metal.h>
+#include <source/renderer/metal/metal.h>
 typedef NSView RetinaView;
 #else
 #import <OpenGL/gl3.h>

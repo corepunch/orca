@@ -9,7 +9,7 @@
 
 #if ORCA_METAL
 // Apple builds render with Metal through an OpenGL ES 3 layer.
-#include "../ref_metal/gl_metal.h"
+#include "../metal/metal.h"
 #elif __APPLE__
 //#define GL_SILENCE_DEPRECATION
 #include <TargetConditionals.h>
@@ -274,10 +274,6 @@ struct shader_desc
   struct uniform_def Shared[MAX_SHADER_UNIFORMS];
   lpcString_t VertexShader;
   lpcString_t FragmentShader;
-#if ORCA_METAL
-  // Hand-written MSL with pre-computed reflection; set by r_msl_shaders.h.
-  const struct glsl_msl_program *MetalReflection;
-#endif
 };
 
 extern struct shader_desc shader_default;

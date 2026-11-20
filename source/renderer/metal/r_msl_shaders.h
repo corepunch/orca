@@ -1,6 +1,5 @@
 // Hand-written Metal Shading Language shaders for all built-in ORCA shaders,
-// with pre-computed reflection tables. Included once by r_builtin_shaders.c
-// (for the MetalReflection pointers) and by gl_metal.m (for init).
+// with pre-computed reflection tables. Included by metal.m.
 //
 // Layout rules: float4x4 = 64B, float3x3 = 48B (3×16B cols), float4 = 16B,
 // float3 = 16B slot / packed_float3 = 12B slot, float2 = 8B, float = 4B.
