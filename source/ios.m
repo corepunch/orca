@@ -22,7 +22,6 @@
 #include <float.h>
 #include <unistd.h>
 #include "ios_scroll.h"
-#include "ios_animation.h"
 #include <source/core/animation.h>
 #include "notifications/notifications_native.h"
 #include "signin/signin_native.h"
@@ -158,6 +157,12 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   [(OrcaSceneDelegate *)delegate wake];
 }
 
+static uint32_t animation_time(void *context)
+{
+  (void)context;
+  return (uint32_t)(uint64_t)(CACurrentMediaTime() * 1000);
+}
+
 @implementation OrcaSceneDelegate
 - (void)wake
 {
@@ -165,14 +170,13 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   if (_stepping || !_active || !_displayLink.paused) return;
   ios_begin_message_frame();
   if (ios_messages_ready()) {
-    ORCA_IOS_PauseAnimationClock(FALSE);
+    ANIM_SetPaused(FALSE);
     _displayLink.paused = NO;
   }
 }
 
 - (void)stop
 {
-  ORCA_IOS_ClearAnimationClock();
   ORCA_IOS_ClearScrollViews();
   if (_wakeObserver) {
     CFRunLoopRemoveObserver(CFRunLoopGetMain(), _wakeObserver, kCFRunLoopCommonModes);
@@ -199,7 +203,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
     NSLog(@"ORCA: cannot open project at %@", project);
     return NO;
   }
-  ORCA_IOS_PauseAnimationClock(FALSE);
+  ANIM_SetPaused(FALSE);
   _booted = NO;
   _lua = luaL_newstate();
   if (!_lua) return NO;
@@ -247,13 +251,12 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   ios_begin_message_frame();
   // Nothing changed: draw nothing and sleep until the next message.
   if (_booted && !ios_messages_ready()) {
-    ORCA_IOS_PauseAnimationClock(TRUE);
+    ANIM_SetPaused(TRUE);
     _displayLink.paused = YES;
     _stepping = NO;
     return;
   }
   _booted = YES;
-  ORCA_IOS_SyncAnimationClock();
   ANIM_BeginFrame();
   double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int nresults = 0;
@@ -281,7 +284,6 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
     BOOL reload = status == LUA_OK && lua_type(_coroutine, -1) == LUA_TSTRING;
     if (status != LUA_OK) NSLog(@"ORCA: %s", lua_tostring(_coroutine, -1));
     if (reload) {
-      ORCA_IOS_ClearAnimationClock();
       ORCA_IOS_ClearScrollViews();
       lua_close(_lua);
       _lua = _coroutine = NULL;
@@ -300,6 +302,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   // A link that launched the app, such as an emailed sign-in link, waits for Lua.
   for (UIOpenURLContext *context in options.URLContexts) Signin_AppleOpenURL(context.URL);
   if (![scene isKindOfClass:[UIWindowScene class]] || ![self start]) return;
+  ANIM_SetClock(animation_time, NULL);
   _displayLink = [[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)] retain];
   // Ask for the panel's full rate on ProMotion devices; iPhones also need
   // CADisableMinimumFrameDurationOnPhone in Info.plist, or they stay at 60 Hz.
@@ -313,7 +316,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
-  ORCA_IOS_PauseAnimationClock(TRUE);
+  ANIM_SetPaused(TRUE);
   ORCA_IOS_ClearScrollViews();
   axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
   _active = NO;
@@ -323,7 +326,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)sceneDidBecomeActive:(UIScene *)scene
 {
-  ORCA_IOS_PauseAnimationClock(FALSE);
+  ANIM_SetPaused(FALSE);
   axPostMessageW(NULL, ID_Window_Activated, 0, NULL);
   _active = YES;
   _displayLink.paused = NO;
