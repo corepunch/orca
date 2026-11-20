@@ -1,32 +1,21 @@
--- The weather app (apps/Weather). The sky helpers and each activity's rules
--- are checked on hand-built hours; then the app runs on a synthetic
--- Open-Meteo forecast through its real pages, scopes and templates: the
--- place hub, an activity page, Back, and switching places.
-local orca = require "orca"
-orca.init()
-local fs = require "orca.filesystem"
-local core = require "orca.core"
-require "orca.UIKit"
-require("orca.renderer").init(390, 844, true)
-fs.init("apps/Weather")
-require("orca.core.startup").load_plugins()
+-- The weather app (apps/Weather): the shared modules and the full app. The
+-- sky, storage, units, settings and forecast parsing are checked directly;
+-- then the app runs on a synthetic Open-Meteo forecast through its real
+-- pages, scopes and templates: the place hub, an activity page, Back,
+-- switching places, settings and an offline start. Each activity's own
+-- rules are in tests/test_weather_<activity>.lua; the shared harness is
+-- tests/weather_fixture.lua.
+local F = dofile("tests/weather_fixture.lua").init()
+local check, NOW = F.check, F.NOW
 local Lint = require "orca.data.lint"
-local savedAsync = orca.async
-orca.async = function(fn, ...) return fn(...) end
-local checks = 0
-local function check(value, message) assert(value, message); checks = checks + 1 end
 
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
-local Fishing = require "Weather/activities/fishing"
-local Surf = require "Weather/activities/surf"
-local Sailing = require "Weather/activities/sailing"
-local Hiking = require "Weather/activities/hiking"
-local Garden = require "Weather/activities/garden"
-local Stargazing = require "Weather/activities/stargazing"
 local Forecast = require "Weather/forecast"
-
-local NOW = 1794981600 -- 2026-11-18 06:00 UTC, a Wednesday
+local Storage = require "Weather/storage"
+local Units = require "Weather/units"
+local Settings = require "Weather/settings"
+local Report = require "Weather/report"
 
 -- Sky
 check(Sky.moon(1795531980).name == "full moon", "2026-11-24 is a full moon")
@@ -42,157 +31,121 @@ check(Sky.icon(0, false):find("/moon%.svg$") and Sky.icon(2, false):find("/cloud
 check(Sky.isSnow(75) and not Sky.isSnow(65) and Sky.isHeavy(75), "Snow codes")
 check(Sky.compass(0) == "N" and Sky.compass(225) == "SW" and Sky.compass(350) == "N", "Compass points")
 
--- A day hour by hour; `tweak(hour, index)` changes conditions.
-local function hour(fields)
-    local h = { time = "2026-11-18T07:00", date = "2026-11-18", temp = 12, feels = 11, code = 2, wind = 3, gust = 6,
-        windDir = 90, pressure = 1015, pressureTrend = -1, cloud = 50, rainChance = 10, isDay = true, uv = 1,
-        day = { date = "2026-11-18", sunrise = "2026-11-18T06:45", sunset = "2026-11-18T17:00" } }
-    for k, v in pairs(fields or {}) do h[k] = v end
-    return h
+-- The sun (F6), against NOAA's solar calculator: Greenwich at the June
+-- solstice's solar noon stands at 90 - 51.48 + 23.44 = 61.96 degrees.
+check(Sky.epochOf("2026-11-18") == NOW - 6 * 3600 and Sky.epochOf("2000-01-01") == 946684800, "Dates to epochs")
+check(math.abs(Sky.sunAltitude(Sky.epochOf("2026-06-21") + 12 * 3600 + 2 * 60, 51.4779, 0) - 61.96) < 0.05,
+    "Solar noon at Greenwich in June")
+check(Sky.sunAltitude(Sky.epochOf("2026-06-21"), 51.4779, 0) < -14, "Midnight is dark at Greenwich")
+local function minutes(iso) return Sky.minutes(iso) end
+local function near(iso, hhmm, tolerance)
+    local h, m = hhmm:match("(%d+):(%d+)")
+    return iso and math.abs(minutes(iso) - (tonumber(h) * 60 + tonumber(m))) <= (tolerance or 3)
 end
-local forecast = { epoch = NOW }
-local function verdict(profile, fields, spot)
-    forecast.spot = spot
-    return profile.rate(hour(fields), forecast):result()
-end
+local london = Sky.twilight("2026-11-18", 51.5074, -0.1278, 0)
+-- NOAA: London 18 Nov 2026 sunrise 07:25, sunset 16:06, civil dusk 16:45.
+check(near(london.sunrise, "07:25") and near(london.sunset, "16:06") and near(london.civil.dusk, "16:45")
+    and london.astronomical.dawn < london.nautical.dawn and london.nautical.dawn < london.civil.dawn,
+    "London's November sunrise, sunset and twilights: " .. london.sunrise .. " " .. london.sunset)
+local newYork = Sky.twilight("2026-11-18", 40.7128, -74.006, -5 * 3600)
+check(near(newYork.sunrise, "06:47") and near(newYork.sunset, "16:35"), "New York, in local time: " .. newYork.sunrise)
+local midsummer = Sky.twilight("2026-06-21", 51.5074, -0.1278, 3600)
+check(near(midsummer.sunrise, "04:43") and near(midsummer.sunset, "21:21") and midsummer.nautical
+    and midsummer.astronomical == nil, "No full darkness over London at midsummer")
+local tromso = Sky.twilight("2026-06-21", 69.65, 18.96, 7200)
+check(tromso.polar == "day" and tromso.civil == nil and tromso.sunrise == nil, "Midnight sun in Tromsø")
+local polarNight = Sky.twilight("2026-12-21", 69.65, 18.96, 3600)
+check(polarNight.polar == "night" and polarNight.sunrise == nil and polarNight.civil.dawn ~= nil,
+    "Polar night still has a civil twilight at noon")
+local dusky = F.hour { time = "2026-11-18T17:00", day = { date = "2026-11-18", sunrise = "2026-11-18T07:25",
+    sunset = "2026-11-18T16:06", twilight = london } }
+check(Score.twilight(dusky) == 54 and math.abs(Score.twilight(dusky, "civil") - 15) <= 3
+    and Score.twilight(F.hour { day = { twilight = midsummer } }, "astronomical") == math.huge,
+    "Score.twilight measures to sunset or to a twilight's edge")
+check(Score.darkness { sunAltitude = 10 } == "day" and Score.darkness { sunAltitude = -3 } == "civil"
+    and Score.darkness { sunAltitude = -15 } == "astronomical" and Score.darkness { sunAltitude = -30 } == "night"
+    and Score.darkness {} == nil, "How dark the sky is")
 
--- Fishing
-local dawn = verdict(Fishing)
-check(dawn.verdict == "good", "Dawn, light breeze and slowly falling pressure is good fishing: " .. dawn.score)
-check(dawn.reasons[1].text:find("Dawn"), "The strongest reason leads: " .. dawn.reasons[1].text)
-check(verdict(Fishing, { code = 95 }).verdict == "poor", "Thunder means poor fishing")
-check(verdict(Fishing, { pressureTrend = 2.5, time = "2026-11-18T12:00", cloud = 0, uv = 7 }).verdict == "poor",
-    "Rising pressure under a bright noon sun is poor")
-check(verdict(Fishing, { wind = 13, gust = 20 }).score <= 35, "Gusts cap the score")
+-- Storage (F1): plain tables, atomic writes, no code.
+local scratch = F.storage("storage")
+local sample = { name = "Lake \"Tahoe\"\nshore", count = 3, ratio = 0.1, on = true, off = false, list = { 1, 2, [4] = 4 },
+    nested = { deep = { [10] = "ten", ["with space"] = -2.5 } }, skipped = function() end }
+check(scratch:save("sample", sample), "A table saves")
+local loaded = scratch:load("sample")
+check(loaded.name == sample.name and loaded.count == 3 and math.type(loaded.count) == "integer" and loaded.ratio == 0.1
+    and loaded.on and loaded.off == false and loaded.list[4] == 4 and loaded.list[3] == nil
+    and loaded.nested.deep[10] == "ten" and loaded.nested.deep["with space"] == -2.5 and loaded.skipped == nil,
+    "and loads back as it was")
+check(not io.open(scratch:path("sample") .. ".tmp", "r+b"), "No temporary file is left behind")
+check(Storage.serialize { b = 1, a = 2 } == "return {\n  a = 2,\n  b = 1,\n}\n", "The same table writes the same text")
+check(Storage.deserialize("return os.exit()") == nil and Storage.deserialize("return { x = print }").x == nil,
+    "A file can hold no code")
+check(Storage.deserialize("while true do end return {}") == nil, "nor run forever")
+check(Storage.deserialize("return 5") == nil and scratch:load("missing") == nil, "Only tables load")
+check(not scratch:save("../escape", {}) and not scratch:save("a/b", {}), "Names stay inside the folder")
+check(scratch:remove("sample") and scratch:load("sample") == nil, "Files can be removed")
+check(Storage.new { name = "Surfers' Weather" }.dir:find("Surfers' Weather$"), "Each edition has its own folder")
 
--- Surf
-local beach = { facing = 270 }
-local clean = { swellHeight = 1.5, swellPeriod = 12, swellDir = 280, windDir = 90, wind = 4 }
-check(verdict(Surf, clean, beach).verdict == "good", "Offshore wind on a long-period swell is good surf")
-check(verdict(Surf, { swellHeight = 1.5, swellPeriod = 12, swellDir = 280, windDir = 270, wind = 9 }, beach).verdict ~= "good",
-    "The same swell blown out onshore is not")
-check(verdict(Surf, { swellHeight = 0.2, swellPeriod = 6, swellDir = 280 }, beach).verdict == "poor", "Flat is poor")
-check(verdict(Surf, { swellHeight = 1.5, swellPeriod = 12, swellDir = 280, isDay = false }, beach).score <= 30,
-    "Dark caps the score")
-check(verdict(Surf, { swellHeight = 1.5, swellPeriod = 12, swellDir = 90, windDir = 90, wind = 4 }, beach).score
-    < verdict(Surf, clean, beach).score, "Swell pointed away from the beach scores lower")
+-- Units (F2): metric inside, converted only in what is shown.
+check(Units.regionOf("en-US") == "US" and Units.regionOf("en_GB.UTF-8") == "GB" and Units.regionOf("zh-Hant-TW") == "TW"
+    and Units.regionOf("en") == nil and Units.regionOf(nil) == nil, "Regions from language tags")
+local us, uk, sailors = Units.defaults(nil, "US"), Units.defaults(nil, "GB"), Units.defaults("sailing", "US")
+check(us.temp == "f" and us.wind == "mph" and us.rain == "in" and us.clock == "12" and uk.temp == "c" and uk.wind == "mph"
+    and sailors.wind == "kn" and sailors.temp == "f" and Units.defaults(nil, nil).wind == "ms", "Defaults by region and edition")
+Units.use {}
+check(Units.temp(12.4) == "12°" and Units.wind(5) == "5 m/s" and Units.gust(5, 7.2) == "5 g 7 m/s" and Units.height(1.46) == "1.5 m"
+    and Units.height(2200) == "2200 m" and Units.rain(2) == "2.0 mm" and Units.pressure(1013.2) == "1013 hPa"
+    and Units.pressure(-1, 1) == "-1.0 hPa" and Units.distance(20) == "20 km" and Units.clock("2026-11-18T06:00") == "06:00"
+    and Units.span("2026-11-18T06:00", "2026-11-18T08:00") == "06–08h" and Units.temp(nil) == "—", "Metric text")
+Units.use { temp = "f", wind = "kmh", height = "ft", rain = "in", pressure = "inhg", distance = "mi", clock = "12" }
+check(Units.temp(10) == "50°" and Units.tempDelta(5) == "9°" and Units.wind(5) == "18 km/h" and Units.gust(5, 7.2) == "18 g 26 km/h"
+    and Units.height(1.5) == "4.9 ft" and Units.rain(2) == "0.08 in" and Units.pressure(1013.25) == "29.92 inHg"
+    and Units.distance(20) == "12 mi" and Units.clock("06:05") == "6:05 am" and Units.clock("00:00") == "12:00 am"
+    and Units.clock("13:00") == "1:00 pm" and Units.span("x T06:00", "x T08:00") == "6–8 am"
+    and Units.span("x T11:00", "x T13:00") == "11 am–1 pm", "Imperial text and a 12-hour clock")
+check(Units.label("temp") == "°F" and Units.label("percent") == "%" and Units.value("wind", 10) == 36
+    and Units.value("percent", 40) == 40, "Chart labels and values")
+Units.use { wind = "kn" }
+check(Units.wind(10) == "19 kn" and Units.gust(9.26, 13.4) == "18 g 26 kn", "Knots for wind sports")
+Units.use { wind = "bft" }
+check(Units.wind(5) == "3 Bft" and Units.wind(0.2) == "0 Bft" and Units.wind(40) == "12 Bft", "Beaufort forces")
+Units.use { wind = "nonsense" }
+check(Units.current("wind") == "ms", "An unknown unit falls back to metric")
 
--- Sailing and kitesurf
-local shore = { facing = 270 }
-local breeze = { wind = 8, gust = 9.5, windDir = 0 }
-check(verdict(Sailing, breeze, shore).verdict == "good", "A steady cross-shore 8 m/s is good sailing")
-check(verdict(Sailing, { wind = 8, gust = 9.5, windDir = 90 }, shore).score <= 30, "Offshore wind is capped")
-check(verdict(Sailing, { wind = 1.5, gust = 2 }, shore).verdict == "poor", "No wind is poor")
-check(verdict(Sailing, { wind = 18, gust = 25 }, shore).score <= 20, "A gale is capped")
-check(verdict(Sailing, { wind = 8, gust = 14, windDir = 0 }, shore).score < verdict(Sailing, breeze, shore).score,
-    "Gusty wind scores lower than steady wind")
-check(Sailing.windTo({ windDir = 90 }, shore) == "offshore" and Sailing.windTo({ windDir = 270 }, shore) == "onshore",
-    "Wind relative to the shore")
-
--- Hiking
-check(verdict(Hiking, { feels = 14, cloud = 10 }).verdict == "good", "Mild, clear and calm is good hiking")
-check(verdict(Hiking, { code = 96 }).verdict == "poor", "Thunder is poor hiking")
-check(verdict(Hiking, { gust = 25 }).score <= 30, "Knock-down gusts are capped")
-check(verdict(Hiking, { visibility = 500 }).score < verdict(Hiking).score, "Fog lowers the score")
-forecast.elevation = 3000
-local icy = Hiking.rate(hour { freezingLevel = 2500 }, forecast):result()
-forecast.elevation = nil
-local saysIce = false
-for _, reason in ipairs(icy.reasons) do saysIce = saysIce or reason.text:find("ice") ~= nil end
-check(saysIce, "A freezing level below the spot warns of ice")
-
--- Garden
-check(verdict(Garden, { time = "2026-11-18T11:00", temp = 16, wind = 2 }).verdict == "good",
-    "A mild, calm, dry hour is good for the garden")
-check(verdict(Garden, { temp = -2, soilTemp = -1 }).score < 45, "Frozen ground is poor")
-check(verdict(Garden, { code = 63 }).score < verdict(Garden).score, "Rain lowers the score")
-local frostAhead = { epoch = NOW, hours = { { epoch = NOW + 3600 * 5, temp = -1 } } }
-local frosty = Garden.rate(hour { epoch = NOW }, frostAhead):result()
-local warns = false
-for _, reason in ipairs(frosty.reasons) do warns = warns or reason.text:find("Frost") ~= nil end
-check(warns, "Frost in the next hours is a reason")
-local metrics = Garden.metrics(hour { epoch = NOW }, { epoch = NOW, hours = {
-    { epoch = NOW + 3600, temp = 0.5, et0 = 0.3, rain = 0 }, { epoch = NOW + 7200, temp = 3, et0 = 0.3, rain = 0 },
-    { epoch = NOW + 3600 * 30, temp = -9, et0 = 5, rain = 0 } } })
-check(metrics[1].value == "frost risk" and metrics[1].note == "lowest in 24 h: 1°", "Frost looks 24 hours ahead only")
-check(metrics[2].value == "no", "Little water loss needs no watering: " .. metrics[2].note)
-
--- Stargazing
-local night = { time = "2026-11-18T23:00", isDay = false, cloud = 0, humidity = 50, epoch = 1794207720 + 11 * 3600 }
-check(verdict(Stargazing, night).verdict == "good", "A clear night near new moon is good stargazing")
-check(verdict(Stargazing, { isDay = true, cloud = 0 }).score <= 5, "Daylight is capped")
-check(verdict(Stargazing, { time = "2026-11-18T18:00", isDay = false, cloud = 0 }).score <= 35, "Twilight is capped")
-check(verdict(Stargazing, { time = "2026-11-18T23:00", isDay = false, cloud = 90, epoch = night.epoch }).verdict == "poor",
-    "Clouds are poor")
-local fullNight = { time = "2026-11-25T00:00", isDay = false, cloud = 0, humidity = 50, epoch = 1795531980 + 9 * 3600 }
-check(verdict(Stargazing, fullNight).score < verdict(Stargazing, night).score, "A full moon overhead dims the sky")
+-- Settings (F2): declarations, defaults by region, stored with Storage.
+local settingsStore = F.storage("settings")
+local probe = { id = "probe", title = "probe", settings = {
+    { key = "mode", title = "mode", kind = "choice", default = "b", options = { "a", "b", { "c", "see" } } },
+    { key = "on", title = "on", kind = "toggle", default = true },
+    { key = "size", title = "size", kind = "number", default = 5, min = 1, max = 9, step = 2,
+        format = function(v) return v .. " m" end },
+} }
+Settings.register(probe)
+Settings.init { storage = settingsStore, region = "US" }
+check(Settings.get("units", "temp") == "f" and Units.temp(10) == "50°", "A US region starts in Fahrenheit")
+check(Settings.get("probe", "mode") == "b" and Settings.get("probe", "on") == true and Settings.get("probe", "size") == 5,
+    "An activity's settings start at their defaults")
+check(Settings.step("probe", "mode") and Settings.get("probe", "mode") == "c" and Settings.text("probe", "mode") == "see"
+    and Settings.step("probe", "mode") and Settings.get("probe", "mode") == "a", "Choices cycle")
+check(Settings.step("probe", "on") and Settings.get("probe", "on") == false and Settings.text("probe", "on") == "off",
+    "Toggles flip, false included")
+check(Settings.step("probe", "size", -1) and Settings.get("probe", "size") == 3 and Settings.set("probe", "size", 40)
+    and Settings.get("probe", "size") == 9 and Settings.text("probe", "size") == "9 m", "Numbers step and clamp")
+check(not Settings.set("probe", "mode", "z") and not Settings.set("probe", "missing", 1), "Unknown values are refused")
+local revision = Settings.revision()
+Settings.set("units", "wind", "kn")
+check(Settings.revision() > revision and Units.wind(10) == "19 kn", "Changing a unit applies it")
+Settings.init { storage = settingsStore, region = "NL" }
+check(Settings.get("units", "wind") == "kn" and Settings.get("units", "temp") == "c" and Settings.get("probe", "on") == false,
+    "Saved choices come back; the rest follow the region")
+local probeRows = Settings.rows { probe }
+check(#probeRows == 10 and probeRows[1].setting == "units/temp" and probeRows[8].note == "probe"
+    and probeRows[10].stepper and probeRows[10].value == "9 m", "Rows for the settings page")
+settingsStore:remove("settings")
+Settings.init { region = "NL" }
 
 -- A synthetic week from Open-Meteo, the shape the forecast API returns.
-local function series(n, fn) local t = {} for i = 1, n do t[i] = fn(i - 1) end return t end
-local function iso(i) return ("2026-11-%02dT%02d:00"):format(18 + i // 24, i % 24) end
-local function weather(lat)
-    local hours = 7 * 24
-    return {
-        utc_offset_seconds = 0, latitude = lat, elevation = 1200,
-        hourly = {
-            time = series(hours, iso),
-            temperature_2m = series(hours, function(i) return 8 + (i % 24) / 3 end),
-            apparent_temperature = series(hours, function(i) return 7 + (i % 24) / 3 end),
-            weather_code = series(hours, function(i) return i // 24 == 2 and 95 or 2 end),
-            wind_speed_10m = series(hours, function() return 3 end),
-            wind_gusts_10m = series(hours, function() return 6 end),
-            wind_direction_10m = series(hours, function() return 90 end),
-            pressure_msl = series(hours, function(i) return 1020 - i * 0.3 end),
-            cloud_cover = series(hours, function() return 50 end),
-            precipitation_probability = series(hours, function() return 10 end),
-            precipitation = series(hours, function() return 0 end),
-            relative_humidity_2m = series(hours, function() return 70 end),
-            visibility = series(hours, function() return 20000 end),
-            uv_index = series(hours, function() return 1 end),
-            is_day = series(hours, function(i) return (i % 24 >= 7 and i % 24 <= 16) and 1 or 0 end),
-            dew_point_2m = series(hours, function() return 3 end),
-            cloud_cover_low = series(hours, function() return 20 end),
-            cloud_cover_mid = series(hours, function() return 20 end),
-            cloud_cover_high = series(hours, function() return 10 end),
-            freezing_level_height = series(hours, function() return 2200 end),
-            cape = series(hours, function() return 50 end),
-            soil_moisture_0_to_1cm = series(hours, function() return 0.3 end),
-            soil_temperature_0cm = series(hours, function() return 6 end),
-            et0_fao_evapotranspiration = series(hours, function() return 0.1 end),
-        },
-        daily = {
-            time = series(7, function(d) return ("2026-11-%02d"):format(18 + d) end),
-            weather_code = series(7, function(d) return d == 2 and 95 or 2 end),
-            temperature_2m_max = series(7, function() return 15 end),
-            temperature_2m_min = series(7, function() return 7 end),
-            precipitation_probability_max = series(7, function() return 10 end),
-            precipitation_sum = series(7, function() return 0 end),
-            wind_speed_10m_max = series(7, function() return 5 end),
-            sunrise = series(7, function(d) return ("2026-11-%02dT06:45"):format(18 + d) end),
-            sunset = series(7, function(d) return ("2026-11-%02dT17:00"):format(18 + d) end),
-        },
-    }
-end
-local function marine()
-    local hours = 7 * 24
-    return { hourly = {
-        time = series(hours, iso),
-        wave_height = series(hours, function() return 1.8 end), wave_period = series(hours, function() return 11 end),
-        wave_direction = series(hours, function() return 280 end),
-        swell_wave_height = series(hours, function() return 1.5 end),
-        swell_wave_period = series(hours, function() return 13 end),
-        swell_wave_direction = series(hours, function() return 280 end),
-        sea_surface_temperature = series(hours, function() return 13.5 end),
-    } }
-end
-local requests = {}
-local failing, marineFailing = false, false
-local function fetch(url)
-    requests[#requests + 1] = url
-    if failing or (marineFailing and url:find("marine%-api")) then return nil, "No connection to the forecast service." end
-    if url:find("marine%-api") then return marine() end
-    return weather(tonumber(url:match("latitude=([%-%d%.]+)")))
-end
+local weather, marine = F.weather, F.marine
 
 -- Hours carry their UTC time; the extra fields arrive on every hour.
 local parsed = Forecast.parse(weather(1), marine(), NOW + 1800)
@@ -213,38 +166,87 @@ check(not surfLoad and surfErr == "down", "Surf needs the marine forecast")
 local sailLoad = Forecast.load({ lat = 1, lon = 1 }, "optional", function(url)
     if url:find("marine%-api") then return nil, "down" end return weather(1) end, NOW)
 check(sailLoad and not sailLoad.hasMarine, "Sailing goes on without waves")
+local sunny = Forecast.parse(weather(39.09), nil, NOW, { lat = 39.09, lon = -120.04 })
+check(sunny.days[1].twilight and sunny.days[1].twilight.civil.dawn and sunny.hours[sunny.now].sunAltitude < 0
+    and sunny.hours[sunny.now + 12].sunAltitude ~= nil, "Each day gets its twilights and each hour the sun's height")
+
+-- Forecast extension points (F4): extra columns, past days, quarter hours,
+-- extra sources and one table of endpoints.
+local request = { hourly = { "soil_temperature_6cm" }, daily = { "uv_index_max" }, minutely15 = { "precipitation" },
+    marine = { "secondary_swell_wave_height" }, pastDays = 2, forecastDays = 16 }
+local weatherUrl, marineUrl = Forecast.urls({ lat = 1, lon = 2 }, true, request)
+check(weatherUrl:find("^https://api%.open%-meteo%.com/v1/forecast%?latitude=1&longitude=2")
+    and weatherUrl:find("et0_fao_evapotranspiration,soil_temperature_6cm&", 1, true) and weatherUrl:find("sunset,uv_index_max", 1, true)
+    and weatherUrl:find("minutely_15=precipitation", 1, true) and weatherUrl:find("forecast_days=16", 1, true)
+    and weatherUrl:find("past_days=2", 1, true) and marineUrl:find("secondary_swell_wave_height", 1, true),
+    "A request asks for its activities' columns: " .. weatherUrl)
+Forecast.endpoints.apiKey = "secret"
+local keyed = Forecast.urls({ lat = 1, lon = 2 }, false)
+check(keyed:find("^https://customer%-api%.open%-meteo%.com/") and keyed:find("&apikey=secret$"), "A key moves to the customer host")
+Forecast.endpoints.apiKey = nil
+local function pastWeek()
+    local base = Sky.epochOf("2026-11-16")
+    local function at(i) return os.date("!%Y-%m-%dT%H:00", base + i * 3600) end
+    local w = weather(1, {})
+    w.hourly = { time = F.series(96, at), temperature_2m = F.series(96, function(i) return i end),
+        soil_temperature_6cm = F.series(96, function() return 4.5 end) }
+    w.daily = { time = { "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19" }, uv_index_max = { 1, 2, 3, 4 } }
+    w.minutely_15 = { time = { "2026-11-18T06:00", "2026-11-18T06:15" }, precipitation = { 0, 0.4 } }
+    return w
+end
+local past = Forecast.parse(pastWeek(), nil, NOW, { lat = 1, lon = 2 })
+check(past.now == 55 and past.hours[past.now].temp == 54 and past.hours[1].epoch == NOW - 54 * 3600
+    and past.hours[1].time == "2026-11-16T00:00", "Past hours keep their order before now")
+check(past.today == 3 and past.days[3].uv_index_max == 3 and #Report.daysAhead(past) == 2
+    and Report.daysAhead(past)[1].date == "2026-11-18", "Past days stay out of the days ahead")
+check(past.hours[1].soil_temperature_6cm == 4.5, "An unknown column lands under its API name")
+check(#past.quarters == 2 and past.quarters[2].precipitation == 0.4 and past.quarters[2].epoch == NOW + 900,
+    "Quarter hours carry their time")
+local airQuality = { id = "air", optional = true,
+    url = function(spot, forecast) return forecast.url("airQuality", "latitude=" .. spot.lat) end,
+    parse = function(json, forecast) forecast.aqi = json.aqi end }
+local sourced, _, raw = Forecast.load({ lat = 1, lon = 2 }, false, function(url)
+    if url:find("air%-quality") then return { aqi = 12 } end return weather(1) end, NOW, { sources = { airQuality } })
+check(sourced.aqi == 12 and raw.sources.air.aqi == 12 and raw.weather, "A source adds its answer")
+local missing = Forecast.load({ lat = 1, lon = 2 }, false, function(url)
+    if url:find("air%-quality") then return nil, "down" end return weather(1) end, NOW, { sources = { airQuality } })
+check(missing and missing.missing.air == "down", "An optional source may fail")
+local needed = { id = "tides", url = function() return "https://tides.example/x" end, parse = function() end }
+check(Forecast.load({ lat = 1, lon = 2 }, false, function(url)
+    if url:find("tides") then return nil, "down" end return weather(1) end, NOW, { sources = { needed } }) == nil,
+    "A required source must answer")
+local restored = Forecast.restore(raw, { lat = 1, lon = 2 }, { sources = { airQuality } }, NOW + 3 * 3600)
+check(restored.updated == NOW and restored.hours[restored.now].time == "2026-11-18T09:00" and restored.aqi == 12,
+    "A saved answer replays as of a later hour")
+check(Forecast.restore(raw, { lat = 1, lon = 2 }, nil, NOW + 9 * 86400) == nil, "A copy that no longer reaches now is dropped")
+local Activities = require "Weather/activities"
+local tahoe = F.PLACES[1]
+Activities.byId.fishing.fields = { hourly = { "soil_temperature_6cm" }, pastDays = 2 }
+Activities.byId.hiking.fields = { hourly = { "soil_temperature_6cm", "snow_depth" }, pastDays = 3, forecastDays = 10 }
+Activities.byId.hiking.sources = { airQuality }
+local merged = Activities.request(tahoe)
+check(table.concat(merged.hourly, ",") == "soil_temperature_6cm,snow_depth" and merged.pastDays == 3
+    and merged.forecastDays == 10 and #merged.sources == 1, "One request merges the activities at a place")
+Activities.byId.fishing.fields, Activities.byId.hiking.fields, Activities.byId.hiking.sources = nil, nil, nil
 
 -- The app over a few places, with every navigation step a real control event.
-local Activities = require "Weather/activities"
 local Places = require "Weather/places"
-local testPlaces = {
-    { id = "tahoe", title = "Lake Tahoe", region = "California", lat = 39.09, lon = -120.04, lake = true, facing = 90,
-        activities = { "fishing", "hiking", "stargazing" } },
-    { id = "ocean-beach", title = "Ocean Beach", region = "San Francisco", lat = 37.76, lon = -122.52, facing = 270,
-        activities = { "surf" } },
-    { id = "bondi", title = "Bondi", region = "Sydney", lat = -33.89, lon = 151.28, facing = 110, activities = { "surf" } },
-}
-for _, page in ipairs { { "Weather/Pages/Hub", "Weather/Data/Hub.xml" }, { "Weather/Pages/Activity", "Weather/Data/Activity.xml" } } do
+local Outdoors = Activities.byId.outdoors
+for _, page in ipairs { { "Weather/Pages/Hub", "Weather/Data/Hub.xml" }, { "Weather/Pages/Activity", "Weather/Data/Activity.xml" },
+        { "Weather/Pages/Settings", "Weather/Data/Settings.xml" } } do
     local problems = Lint.page(page[1], page[2])
     check(#problems == 0, Lint.format(problems))
 end
-requests = {}
-local App = require "Weather/App"
-local app = App { places = testPlaces, fetch = fetch, clock = function() return NOW end }
-app:activate_route("/")
-local function settle()
-    for _ = 1, 3 do
-        core.flushQueue()
-        core.advanceFrame()
-        core.runAllPrograms(app.screen)
-        core.flushQueue()
-    end
-    app.screen:UpdateLayout(390, 844)
+-- In the full app everyday outdoors leads the hub with its cards (F7).
+Outdoors.cards = function(_, place)
+    return { { id = "today", title = "today", value = "a mild day", detail = "dry until " .. place.title .. "'s evening",
+        tone = "good" } }
 end
-local function find(name) return assert(app.screen:findChild(name, true), "Missing " .. name) end
-local function text(row, child) return find(row):findChild(child, true).Text end
-local function press(name) find(name):send("Node.LeftButtonUp"); settle() end
-settle()
+local net = F.network()
+local requests = net.requests
+local store = F.storage("app", F.PLACES)
+local ui = F.launch { net = net, storage = store }
+local app, find, text, press, settle = ui.app, ui.find, ui.text, ui.press, ui.settle
 local hub = app.screen
 
 -- The hub: Amazing Weather's now page, what the place is good for, the week.
@@ -281,6 +283,12 @@ check(text("Daytahoe:day:2026-11-20", "Verdict") == "11° / 7°" or text("Daytah
 check(text("Daytahoe:day:2026-11-19", "Why"):find(" for ") ~= nil, "Days name their best activity: "
     .. text("Daytahoe:day:2026-11-19", "Why"))
 check(find("Placetahoe") and find("Placebondi"), "Places are listed")
+-- Cards lead the hub; the age row follows the conditions (F5, F7).
+check(text("Cardtahoe:card:today", "CardValue") == "a mild day" and find("Cardtahoe:card:today").StateClasses == "good"
+    and not find("Cardtahoe:card:today"):findChild("CardIcon", true).Visible, "The lead activity's cards open the hub")
+check(text("Agetahoe:age:age", "AgeText") == "updated just now" and not find("Agetahoe:age:age"):findChild("AgeWarning", true).Visible,
+    "A fresh forecast says when it was updated")
+check(find("TempColumns").Title == "temperature °C" and find("WindLine").Title == "wind m/s", "Hub charts name their units")
 
 -- An activity page reuses the hub's forecast and goes back to the same hub.
 press("GoodFortahoe:activity:fishing")
@@ -306,6 +314,11 @@ check(fishingHour and math.abs(fishingHour.values.Metric1 - 1018.2) < 0.01 and f
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
 check(app.screen == hub and not app.activityScope, "Back returns to the same hub and closes the activity")
+press("GoodFortahoe:activity:outdoors")
+check(text("Cardtahoe:outdoors:card:today", "CardTitle") == "today" and find("Agetahoe:outdoors:age:age"),
+    "An activity page shows its cards and the forecast's age")
+find("ActivityPivot"):post("Pivot.BackRequested")
+settle()
 press("GoodFortahoe:activity:stargazing")
 check(text("Nowtahoe:stargazing:now:now", "NowSpot") == "Lake Tahoe · from 19:00", "The stars card shows tonight")
 check(find("ChartA").Minimum == 0 and find("ChartA").Maximum == 100 and find("ChartAColumns").Title == "clouds %",
@@ -335,11 +348,65 @@ press("GoodForbondi:activity:surf")
 check(text("Hourbondi:surf:hour:2026-11-18T08:00", "Verdict") ~= "good", "Wind and swell depend on the beach")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
-failing = true
+net.failing = true
 press("RefreshReport")
 check(find("Nowbondi:now:now") and not find("ReportFailed").Visible, "A failed refresh keeps the last report")
-failing = false
+check(text("Agebondi:age:age", "AgeWarning"):find("^offline") and find("Agebondi:age:age").StateClasses == "poor",
+    "and says it is offline")
+net.failing = false
+
+-- Settings (F3): units from declarations, each activity's own, and about.
+local Fishing = Activities.byId.fishing
+Fishing.settings = {
+    { key = "moon", title = "moon in the score", kind = "toggle", default = false, detail = "anglers' lore, not science" },
+    { key = "depth", title = "depth", kind = "number", default = 2, min = 0, max = 3, step = 0.5 },
+}
+press("OpenSettings")
+check(find("SettingsPivot").Title == "weather" and app.screen ~= hub, "Settings open from the places section")
+local function setting(id) return "Settingsettings:" .. id end
+check(text(setting("units:temp"), "SettingTitle") == "temperature" and text(setting("units:temp"), "SettingValue") == "°C"
+    and text(setting("units:wind"), "SettingValue") == "m/s" and text(setting("units:clock"), "SettingValue") == "24-hour",
+    "Units start metric in a metric region")
+check(not find(setting("units:temp")):findChild("SettingLess", true).Visible, "Choices have no stepper")
+check(text(setting("fishing:moon"), "SettingHeading") == "fishing" and text(setting("fishing:moon"), "SettingValue") == "off"
+    and not find(setting("fishing:depth")):findChild("SettingHeading", true).Visible
+    and find(setting("fishing:depth")):findChild("SettingMore", true).Visible, "Activity settings come under their name")
+check(not find("NoActivitySettings").Visible, "The empty line hides when an activity has settings")
+check(text("Aboutsettings:about:1", "AboutTitle") == "Weather data by Open-Meteo.com", "About credits Open-Meteo")
+local function tap(row, button) find(row):findChild(button, true):send("Node.LeftButtonUp"); settle() end
+tap(setting("units:temp"), "SettingChange")
+check(text(setting("units:temp"), "SettingValue") == "°F" and Settings.get("units", "temp") == "f", "A tap picks the next unit")
+tap(setting("fishing:moon"), "SettingChange")
+tap(setting("fishing:depth"), "SettingMore")
+tap(setting("fishing:depth"), "SettingMore")
+tap(setting("fishing:depth"), "SettingMore")
+check(Settings.get("fishing", "moon") == true and Settings.get("fishing", "depth") == 3
+    and text(setting("fishing:depth"), "SettingValue") == "3", "Toggles flip; numbers step and stop at their max")
+tap(setting("fishing:depth"), "SettingLess")
+check(Settings.get("fishing", "depth") == 2.5, "less steps down")
+local stored = store:load("settings")
+check(stored and stored.units.temp == "f" and stored.fishing.moon == true, "Settings are saved at once")
+local before = #requests
+find("SettingsPivot"):post("Pivot.BackRequested")
+settle()
+check(app.screen == hub and text("Nowbondi:now:now", "HubTemp") == "50°" and find("TempColumns").Title == "temperature °F",
+    "Back on the hub, temperatures follow the new unit")
+check(#requests == before, "Redrawing for new units reuses the forecast")
+Settings.set("units", "temp", "c")
+Fishing.settings = nil
 app.hubScope:dispose()
+
+-- Offline (F5): a new start with no network shows the copy saved on the
+-- device, with its age; the saved hub rows also show while a request runs.
+net.failing = true
+local later = F.launch { net = net, storage = store, clock = function() return NOW + 2 * 3600 end }
+check(later.text("Nowtahoe:now:now", "HubTemp") == "11°" and later.text("Agetahoe:age:age", "AgeText") == "updated 2 h ago"
+    and later.text("Agetahoe:age:age", "AgeWarning"):find("offline"), "Offline, the saved forecast shows with its age")
+local savedRows = later.app.provider.caches.savedHub { PlaceId = "ocean-beach" }
+check(savedRows and #savedRows > 0, "The saved hub can show before the first request")
+net.failing = false
+later.app.hubScope:dispose()
+Outdoors.cards = nil
 
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}
@@ -369,5 +436,11 @@ for _, place in ipairs(SurfPlaces) do
 end
 for _, name in ipairs(MODULES) do package.loaded[name] = saved[name] end
 
-orca.async = savedAsync
-print(("PASS: weather (%d checks)"):format(checks))
+-- package.lua and activities.lua name the editions alike.
+local package = assert(io.open("apps/Weather/package.lua", "r+b")):read("a")
+for key, name in pairs(Activities.names) do
+    check(package:find(('{ Key = "%s", Name = "%s" }'):format(key, name), 1, true), "package.lua names " .. key)
+end
+check(Activities.appName == "Weather", "The full app is plain Weather")
+
+F.done("weather")
