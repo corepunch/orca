@@ -34,8 +34,9 @@
                     ItemsSource="{Binding DataContext/Conditions/Items}" ItemTemplate="Weather/Templates/MetricRow"/>
       </StackView>
     </PivotItem>
-    <!-- The next 24 hours at a glance: a verdict band, then the two charts the
-         activity watches (App.lua titles them and picks columns or a line). -->
+    <!-- The next 24 hours at a glance: a verdict band, then the charts (up to
+         three) the activity watches, over its `chartHours` (App.lua titles
+         them and picks columns or a line). -->
     <PivotItem Name="ActivityToday" Header="today">
       <StackView Name="TodayBody" Spacing="24" Overflow="hidden scroll" JustifyContent="Start">
         <StackView Spacing="8" JustifyContent="Start" IgnoreHitTest="true">
@@ -43,15 +44,20 @@
           <ItemsStack Name="BandItems" Direction="Horizontal" Spacing="1" JustifyContent="Start" ItemNamePrefix="Band"
                       ItemsSource="{Binding DataContext/Hours/Items}" ItemTemplate="Weather/Templates/BandCell"/>
         </StackView>
-        <Chart Name="ChartA" Height="170" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short"
+        <Chart Name="ChartA" Height="170" ItemsSource="{Binding DataContext/ChartHours/Items}" CategoryPath="Short"
                LabelInterval="1" class="wx-chart">
           <ColumnSeries Name="ChartAColumns" ValuePath="Metric1" class="wx-series"/>
           <LineSeries Name="ChartALine" ValuePath="Metric1" StrokeThickness="2.5" class="wx-series"/>
         </Chart>
-        <Chart Name="ChartB" Height="170" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short"
+        <Chart Name="ChartB" Height="170" ItemsSource="{Binding DataContext/ChartHours/Items}" CategoryPath="Short"
                LabelInterval="1" class="wx-chart">
           <ColumnSeries Name="ChartBColumns" ValuePath="Metric2" class="wx-series"/>
           <LineSeries Name="ChartBLine" ValuePath="Metric2" StrokeThickness="2.5" class="wx-series"/>
+        </Chart>
+        <Chart Name="ChartC" Height="170" ItemsSource="{Binding DataContext/ChartHours/Items}" CategoryPath="Short"
+               LabelInterval="1" class="wx-chart">
+          <ColumnSeries Name="ChartCColumns" ValuePath="Metric3" class="wx-series"/>
+          <LineSeries Name="ChartCLine" ValuePath="Metric3" StrokeThickness="2.5" class="wx-series"/>
         </Chart>
       </StackView>
     </PivotItem>

@@ -93,7 +93,7 @@ function Provider.new(places, options)
         filters = {
             nowRows = kind("now"), detailRows = kind("detail"), stripRows = kind("strip"), activityRows = kind("activity"),
             reasonRows = kind("reason"), hourRows = kind("hour"), dayRows = kind("day"), metricRows = kind("metric"),
-            cardRows = kind("card"), ageRows = kind("age"), aboutRows = kind("about"),
+            cardRows = kind("card"), chartRows = kind("chart"), ageRows = kind("age"), aboutRows = kind("about"),
             unitRows = function(record) return record.values.Kind == "setting" and record.values.Activity == Settings.UNITS end,
             activitySettingRows = function(record)
                 return record.values.Kind == "setting" and record.values.Activity ~= Settings.UNITS
@@ -117,19 +117,25 @@ function Provider.new(places, options)
                 provider.redrawing = nil
                 local forecast, err, place = forecastFor(params.PlaceId, refresh)
                 if not forecast then return nil, err end
-                return hub(place, forecast)
+                return provider.drew(hub(place, forecast), forecast)
             end,
             activity = function(params)
                 local activity = Activities.byId[params.ActivityId]
                 if not activity then return nil, { code = "no_activity", message = "Unknown activity." } end
                 local forecast, err, place = forecastFor(params.PlaceId, nil, activity)
                 if not forecast then return nil, err end
-                return Report.rows(activity, place, forecast, clock())
+                return provider.drew(Report.rows(activity, place, forecast, clock()), forecast)
             end,
-            settings = function() return Provider.settingsRows() end,
+            settings = function() return provider.drew(Provider.settingsRows()) end,
         },
     }
     provider.forecastFor, provider.clock = forecastFor, clock
+    -- A page's rows are ready: the app's `drawn(forecast)` hears of it
+    -- (the forecast, when the page shows one), then the rows go on.
+    function provider.drew(rows, forecast)
+        if provider.drawn then provider.drawn(forecast) end
+        return rows
+    end
     return provider
 end
 

@@ -66,8 +66,9 @@ App = Application:extend {
         self.provider.operations.day = function(params)
             local forecast, err, place = self.provider.forecastFor(params.PlaceId)
             if not forecast then return nil, err end
-            return Report.day(place, forecast, params.Date, Activities.at(place))
+            return self.provider.drew(Report.day(place, forecast, params.Date, Activities.at(place)), forecast)
         end
+        self.provider.drawn = function(forecast) self:restyle(forecast) end
         local handlers = self.provider.handlers
         handlers.openActivity = function(scope, params) return self:openActivity(params.item, scope) end
         handlers.openDay = function(_, params) return self:openDay(params.item) end
@@ -101,17 +102,53 @@ App = Application:extend {
     end,
 
     -- An edition may bring its own sheet (activity.stylesheet, a resource
-    -- path) that @imports Styles/weather.css and adds to it.
+    -- path, or a function returning one) that @imports Styles/weather.css
+    -- and adds to it.
     styleSheet = function(self)
         local lead = Activities.edition and Activities.byId[Activities.edition]
-        return lead and lead.stylesheet or "Weather/Styles/weather.css"
+        local sheet = lead and lead.stylesheet
+        if type(sheet) == "function" then sheet = sheet() end
+        return sheet or "Weather/Styles/weather.css"
     end,
 
     screenFor = function(self, page)
         local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             ClearColor = "#000000", StyleSheet = self:styleSheet() }
         screen:addChild(page)
+        self:dress(screen, self:pageClasses())
         return screen
+    end,
+
+    -- The edition's own page classes now (`lead.pageClasses(forecast)`,
+    -- such as red night mode's "night"), as a string; `forecast` is the one
+    -- just drawn, if any.
+    pageClasses = function(self, forecast)
+        local lead = Activities.edition and Activities.byId[Activities.edition]
+        return lead and lead.pageClasses and lead.pageClasses(forecast) or ""
+    end,
+
+    -- Puts a screen's page in `extra` classes (the ones it wore before
+    -- taken off) and the sheet of the moment. A new sheet styles only nodes
+    -- made after it, so changing the classes with it restyles the rest.
+    dress = function(self, screen, extra)
+        self.worn = self.worn or setmetatable({}, { __mode = "k" })
+        local page, old = screen:getFirstChild(), self.worn[screen] or ""
+        if not page or old == extra then return end
+        local drop, list = {}, {}
+        for name in old:gmatch("%S+") do drop[name] = true end
+        for name in (page.StateClasses or ""):gmatch("%S+") do if not drop[name] then list[#list + 1] = name end end
+        for name in extra:gmatch("%S+") do list[#list + 1] = name end
+        screen.StyleSheet = self:styleSheet()
+        page.StateClasses = table.concat(list, " ")
+        self.worn[screen] = extra
+    end,
+
+    -- A page was drawn: the hub and the screen in front follow the edition's
+    -- page classes (red mode turns on at dusk, or when the setting changes).
+    restyle = function(self, forecast)
+        local extra = self:pageClasses(forecast)
+        if self.hubScreen then self:dress(self.hubScreen, extra) end
+        if self.screen and self.screen ~= self.hubScreen then self:dress(self.screen, extra) end
     end,
 
     open = function(self, path)
@@ -224,10 +261,11 @@ App = Application:extend {
         scope:member("Settings"):refresh { force = true }
     end,
 
-    -- The "today" charts follow the activity: a title and its unit, columns
-    -- or a line, and an optional fixed range (percentages run 0 to 100).
+    -- The "today" charts follow the activity: a title, its unit and a note
+    -- ("2 days back"), columns or a line, and an optional fixed range
+    -- (percentages run 0 to 100).
     configureCharts = function(self, page, charts)
-        for index, name in ipairs { "A", "B" } do
+        for index, name in ipairs { "A", "B", "C" } do
             local spec, chart = charts[index], page:findChild("Chart" .. name, true)
             chart.Visible = spec ~= nil
             if spec then
@@ -235,7 +273,8 @@ App = Application:extend {
                 columns.Visible, line.Visible = spec.kind ~= "line", spec.kind == "line"
                 local shown = spec.kind == "line" and line or columns
                 local unit = spec.unit and Units.label(spec.unit) or ""
-                shown.Title = unit ~= "" and spec.title .. " " .. unit or spec.title
+                shown.Title = (unit ~= "" and spec.title .. " " .. unit or spec.title)
+                    .. (spec.note and " · " .. spec.note or "")
                 chart.Minimum = spec.min and Units.value(spec.unit, spec.min) or 0 / 0
                 chart.Maximum = spec.max and Units.value(spec.unit, spec.max) or 0 / 0
             end

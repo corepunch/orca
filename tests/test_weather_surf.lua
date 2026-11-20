@@ -300,6 +300,10 @@ do
     check(ui.text("Card" .. id .. ":surf:card:dawn", "CardValue"):find("^first light")
         and ui.text("Card" .. id .. ":surf:card:best-break", "CardValue") == "bondi" and ui.has("Card" .. id .. ":surf:card:outlook"),
         "The activity page shows every card; the best break today is another saved break")
+    -- I7: the week says how sure each day is; a third chart draws the tide.
+    check(ui.text("Day" .. id .. ":surf:day:2026-11-18", "Why"):find("^high confidence · best"),
+        "Days carry the outlook's confidence: " .. ui.text("Day" .. id .. ":surf:day:2026-11-18", "Why"))
+    check(ui.find("ChartC").Visible and ui.find("ChartCLine").Title == "tide (approximate) m", "A third chart draws the tide")
     -- I3: one tap logs the session in the current hour's conditions.
     local Logbook = require "Weather/editions/surf/logbook"
     local before = #Logbook.sessions()

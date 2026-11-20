@@ -10,14 +10,14 @@
                IgnoreHitTest="true"/>
     <TextBlock Name="CardDetail" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}" FontSize="14"
                WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>
-    <StackView Name="CardActions" Visible="{Binding DataContext/HasActions}" Direction="Horizontal" Spacing="24"
+    <StackView Name="CardActions" Visible="{Binding DataContext/HasActions}" Direction="Horizontal" Spacing="18"
                JustifyContent="Start">
       <Button Name="CardAction1" Click="CardAction" Text="{Binding DataContext/ActionText1}" Height="44" BorderWidth="0"
-              FontSize="20" class="wx-link"/>
+              FontSize="18" class="wx-link"/>
       <Button Name="CardAction2" Click="CardAction" Text="{Binding DataContext/ActionText2}"
-              Visible="{Binding DataContext/HasAction2}" Height="44" BorderWidth="0" FontSize="20" class="wx-link"/>
+              Visible="{Binding DataContext/HasAction2}" Height="44" BorderWidth="0" FontSize="18" class="wx-link"/>
       <Button Name="CardAction3" Click="CardAction" Text="{Binding DataContext/ActionText3}"
-              Visible="{Binding DataContext/HasAction3}" Height="44" BorderWidth="0" FontSize="20" class="wx-link"/>
+              Visible="{Binding DataContext/HasAction3}" Height="44" BorderWidth="0" FontSize="18" class="wx-link"/>
     </StackView>
   </StackView>
   <VectorView Name="CardIcon" Source="{Binding DataContext/Icon}" Visible="{Binding DataContext/HasIcon}" Width="32"

@@ -227,7 +227,8 @@ function Fixture.checkEdition(key)
     check(Activities.appName == Activities.names[key], "The edition is called " .. Activities.appName)
     local ui = Fixture.launch { places = Places, storageName = key, region = "NL" }
     local place = Places[1]
-    check(ui.find("HubPanorama").Title == place.title and ui.find("HubPage").StateClasses == key,
+    -- The edition's class; its own page classes (red mode's "night") may follow.
+    check(ui.find("HubPanorama").Title == place.title and ui.find("HubPage").StateClasses:match("^%S+") == key,
         "The edition opens on " .. place.title .. " in its accent")
     check(ui.has("GoodFor" .. place.id .. ":activity:outdoors") and ui.has("GoodFor" .. place.id .. ":activity:" .. key),
         place.title .. " is good for outdoors and " .. key)

@@ -415,10 +415,13 @@ function Fishing.metrics(hour, forecast)
     return rows
 end
 
--- The two charts on the activity's "today" view, over the next 24 hours.
+-- The two charts on the activity's "today" view: two days back and one
+-- ahead (`chartHours`), so the barometer's history shows the front.
 -- `value` is metric; `unit` (a Units kind) converts it and ends the title.
+function Fishing.chartHours(forecast) return forecast.now - 48, forecast.now + 23 end
 Fishing.charts = {
-    { title = "pressure", unit = "pressure", kind = "line", value = function(hour) return hour.pressure or 0 end },
+    { title = "pressure", note = "2 days back", unit = "pressure", kind = "line",
+        value = function(hour) return hour.pressure or 0 end },
     { title = "wind", unit = "wind", kind = "column", value = function(hour) return hour.wind or 0 end },
 }
 

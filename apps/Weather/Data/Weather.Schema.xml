@@ -29,6 +29,7 @@
     <Column Name="RainChance" Type="float" Source="rain_chance" Default="0" Description="Chance of rain, %, for charts."/>
     <Column Name="Metric1" Type="float" Source="metric1" Default="0" Description="The activity's first chart value."/>
     <Column Name="Metric2" Type="float" Source="metric2" Default="0" Description="The activity's second chart value."/>
+    <Column Name="Metric3" Type="float" Source="metric3" Default="0" Description="The activity's third chart value."/>
     <Column Name="Setting" Type="string" Source="setting" Default="" Description="The setting a row changes (&quot;units/wind&quot;)."/>
     <Column Name="Stepper" Type="bool" Source="stepper" Default="false" Description="A number setting: less and more buttons."/>
     <Column Name="Action1" Type="string" Source="action1" Default="" Description="A card's first action (`activity.act`)."/>

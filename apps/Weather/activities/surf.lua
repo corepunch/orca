@@ -467,7 +467,14 @@ function Surf.cards(forecast, place)
     return cards
 end
 
--- The two charts on the activity's "today" view, over the next 24 hours.
+-- How sure each day's swell is, on the week's rows (SU7).
+function Surf.dayNote(day, forecast)
+    local word = Outlook.confidence(forecast, day.date)
+    return word and word .. " confidence"
+end
+
+-- The charts on the activity's "today" view, over the next 24 hours: the
+-- surf, the wind and, where there is one, the tide (approximate).
 -- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Surf.charts = {
     { title = "estimated surf", unit = "height", kind = "column",
@@ -476,6 +483,7 @@ Surf.charts = {
             return surf and surf.face or 0
         end },
     { title = "wind", unit = "wind", kind = "line", value = function(hour) return hour.wind or 0 end },
+    { title = "tide (approximate)", unit = "height", kind = "line", value = function(hour) return hour[Tides.COLUMN] or 0 end },
 }
 
 return Surf

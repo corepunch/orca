@@ -277,6 +277,24 @@ check(steppedUrl:find("&forecast_minutely_15=12&past_minutely_15=0", 1, true)
     and steppedUrl:find("&models=best_match,gfs_seamless,icon_seamless", 1, true), "They go into the main call: " .. steppedUrl)
 for activity, saved in pairs(declared) do activity.fields, activity.sources = saved[1], saved[2] end
 
+-- I5: a night activity groups hours by the evening their night began
+-- (`nightOf`), and its best window runs on across midnight.
+local nightly = { id = "nightly", nightOf = function(hour)
+        local h = Sky.hour(hour.time)
+        return h < 12 and os.date("!%Y-%m-%d", Sky.epochOf(hour.date) - 86400) or hour.date
+    end,
+    rate = function(hour) return { result = function()
+        local h = Sky.hour(hour.time)
+        local good = h >= 22 or h <= 1
+        return { score = good and 90 or 20, verdict = good and "good" or "poor", reasons = {} }
+    end } end }
+local nightForecast = Forecast.parse(weather(39.09), nil, NOW, tahoe)
+local _, nightSpan, nightBest = Report.bestOfDay(nightly, nightForecast, "2026-11-18")
+check(nightSpan == Units.span("2026-11-18T22:00", "2026-11-19T01:00") and nightBest.time == "2026-11-18T22:00",
+    "Tonight's window runs across midnight: " .. tostring(nightSpan))
+local _, daySpan = Report.bestOfDay(setmetatable({ nightOf = false }, { __index = nightly }), nightForecast, "2026-11-18")
+check(daySpan == Units.span("2026-11-18T22:00", "2026-11-18T23:00"), "Without nightOf the day ends at midnight")
+
 -- I2: an edition's cards know where they show; the hub keeps the three most
 -- urgent (by `rank`, else poor and warnings first), in the activity's order.
 local wheres = {}
@@ -355,7 +373,9 @@ check(text("GoodFortahoe:activity:fishing", "ActivityName") == "fishing"
     and text("GoodFortahoe:activity:fishing", "ActivityVerdict") == "good"
     and text("GoodFortahoe:activity:fishing", "ActivityWhy"):find("^best 06"), "Fishing is good now, at dawn: "
     .. text("GoodFortahoe:activity:fishing", "ActivityWhy"))
-check(text("GoodFortahoe:activity:stargazing", "ActivityWhy"):find("^best 19") ~= nil,
+-- I5: a night is one night, so tonight's best may come after midnight.
+local starsFrom = tonumber(text("GoodFortahoe:activity:stargazing", "ActivityWhy"):match("^best (%d%d)"))
+check(starsFrom and (starsFrom >= 18 or starsFrom < 6),
     "Stars wait for tonight: " .. text("GoodFortahoe:activity:stargazing", "ActivityWhy"))
 -- Hourly is charts first, as in Amazing Weather: temperature with wind, then rain.
 local hourRows = app.hubScope:member("Hours").items:count()
@@ -425,12 +445,21 @@ check(text("Conditiontahoe:fishing:metric:1", "MetricValue") == "1018 hPa", "Con
 -- Today: a 24-hour verdict band and the two charts fishing watches.
 check(find("Bandtahoe:fishing:hour:2026-11-18T06:00").StateClasses == "good"
     and find("Bandtahoe:fishing:hour:2026-11-19T05:00"), "The band colours twenty-four hours by verdict")
-check(find("ChartALine").Visible and not find("ChartAColumns").Visible and find("ChartALine").Title == "pressure hPa",
-    "Fishing charts pressure as a line")
-check(find("ChartBColumns").Visible and find("ChartBColumns").Title == "wind m/s", "and wind as columns")
-local fishingHour = app.store:get("WeatherRow", "tahoe:fishing:hour:2026-11-18T06:00")
+check(find("ChartALine").Visible and not find("ChartAColumns").Visible
+    and find("ChartALine").Title == "pressure hPa · 2 days back", "Fishing charts pressure as a line: " .. find("ChartALine").Title)
+check(find("ChartBColumns").Visible and find("ChartBColumns").Title == "wind m/s" and not find("ChartC").Visible,
+    "and wind as columns; no third chart")
+local fishingHour = app.store:get("WeatherRow", "tahoe:fishing:chart:2026-11-18T06:00")
 check(fishingHour and math.abs(fishingHour.values.Metric1 - 1018.2) < 0.01 and fishingHour.values.Metric2 == 3,
-    "Hour rows carry the activity's chart values")
+    "Chart rows carry the activity's chart values")
+-- I5: fishing charts two days back (`chartHours`): here, every hour the
+-- synthetic week has before now (six), and the next 24.
+local chartRows = app.activityScope:member("ChartHours").items:count()
+check(chartRows == 30 and app.store:get("WeatherRow", "tahoe:fishing:chart:2026-11-18T00:00")
+    and app.store:get("WeatherRow", "tahoe:fishing:chart:2026-11-18T06:00").values.Short == "now",
+    "The chart hours follow the activity: " .. chartRows)
+check(Report.tick({ time = "2026-11-18T09:00" }, 12) == "" and Report.tick({ time = "2026-11-18T12:00" }, 12) == "12",
+    "Long charts tick every 12 h")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
 check(app.screen == hub and not app.activityScope, "Back returns to the same hub and closes the activity")

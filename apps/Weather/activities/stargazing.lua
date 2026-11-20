@@ -33,19 +33,20 @@ local REDMODE = { { "auto", "dusk to dawn" }, { "on", "always" }, { "off", "off"
 Stargazing.settings = {
     { key = "redmode", title = "red night mode", kind = "choice", default = "auto", options = REDMODE,
         detail = "red type on black keeps your eyes used to the dark",
-        -- The settings page redraws through here, so its screen turns red
-        -- (or back) as soon as the choice changes.
         format = function(value)
-            RedMode.apply()
             for _, entry in ipairs(REDMODE) do if entry[1] == value then return entry[2] end end
             return tostring(value)
         end },
 }
 
--- Every screen of the edition opens in the sheet red mode asks for.
-setmetatable(Stargazing, { __index = function(_, key)
-    if key == "stylesheet" then return RedMode.stylesheet() end
-end })
+-- Red night mode through the app's hooks: every screen opens in the sheet
+-- it asks for, and each drawn page (a forecast, or the settings after a
+-- change) tells it where and when it is, so the screens follow at dusk.
+function Stargazing.stylesheet() return RedMode.stylesheet() end
+function Stargazing.pageClasses(forecast)
+    if forecast then RedMode.follow(forecast) end
+    return RedMode.on() and "night" or ""
+end
 
 -- Whether the forecast's own day and night (`isDay`) agree with the sun
 -- computed for its place and clock. They always do for a real answer; a
@@ -219,6 +220,29 @@ function Stargazing.window(hour, forecast)
     local level = darkness(hour, forecast)
     if level then return level == "night" or level == "astronomical" end
     return not hour.isDay and Score.twilight(hour) > 90
+end
+
+-- A night belongs to the evening it began: hours before noon count for the
+-- day before, so "today" means tonight, across midnight.
+function Stargazing.nightOf(hour)
+    local h = Sky.hour(hour.time)
+    if not (h and h < 12 and hour.date) then return hour.date end
+    local start = Sky.epochOf(hour.date)
+    return start and os.date("!%Y-%m-%d", start - 86400) or hour.date
+end
+
+-- The charts run over tonight, dusk to dawn (the night going on, or the
+-- next one), not the next 24 hours.
+function Stargazing.chartHours(forecast)
+    local frame = spotOf(forecast) and Night.tonight(forecast)
+    if not (frame and frame.from) then return nil end
+    local first, last
+    for index, hour in ipairs(forecast.hours) do
+        if hour.epoch and hour.epoch + 3600 > frame.from and hour.epoch < frame.to then
+            first, last = first or index, index
+        end
+    end
+    return first, last
 end
 
 -- The card shows the first dark hour from now: tonight, or right now.
@@ -444,7 +468,6 @@ end
 -- Tonight's big answers: the verdict for the whole night, darkness, the
 -- moon, dew, fog, the sky's quality, the aurora and the next good nights.
 function Stargazing.cards(forecast)
-    RedMode.follow(forecast)
     local frame = spotOf(forecast) and Night.tonight(forecast)
     if not frame then return {} end
     if frame.polar == "day" then
@@ -502,8 +525,8 @@ function Stargazing.metrics(hour, forecast)
     return metrics
 end
 
--- The two charts on the activity's "today" view, over the next 24 hours:
--- the clouds, and how high the moon stands (0 when it is down).
+-- The two charts on the activity's "today" view, over tonight
+-- (`chartHours`): the clouds, and how high the moon stands (0 when down).
 Stargazing.charts = {
     { title = "clouds", unit = "percent", kind = "column", min = 0, max = 100, value = function(hour) return hour.cloud or 0 end },
     { title = "moon height °", kind = "line", min = 0, max = 90,

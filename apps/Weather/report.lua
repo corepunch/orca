@@ -3,7 +3,7 @@
 -- feeds every section of a page:
 --
 --   hub (Report.hub)        card, now, answer, age, detail, strip, activity ("good for"), hour, day
---   activity (Report.rows)  now, age, card, reason, hour, day, metric
+--   activity (Report.rows)  now, age, card, reason, hour, chart, day, metric
 --
 -- Every number goes through Units, so the text follows the user's units.
 local Sky = require "Weather/sky"
@@ -38,6 +38,13 @@ local function adder(rows, prefix)
     end
 end
 
+-- Whether hour b follows hour a: by their UTC times, so a window runs on
+-- across midnight (and a clock change), else by the clock.
+local function follows(a, b)
+    if a.epoch and b.epoch then return b.epoch - a.epoch == 3600 end
+    return Sky.hour(b.time) == Sky.hour(a.time) + 1
+end
+
 -- The best stretch of a list of rated hours: the run around the top score
 -- that stays within ten points of it.
 local function bestWindow(rated)
@@ -48,19 +55,30 @@ local function bestWindow(rated)
     if not top then return nil end
     local floor = rated[top].result.score - 10
     local first, last = top, top
-    while first > 1 and rated[first - 1].result.score >= floor
-        and Sky.hour(rated[first - 1].hour.time) == Sky.hour(rated[first].hour.time) - 1 do first = first - 1 end
-    while last < #rated and rated[last + 1].result.score >= floor
-        and Sky.hour(rated[last + 1].hour.time) == Sky.hour(rated[last].hour.time) + 1 do last = last + 1 end
+    while first > 1 and rated[first - 1].result.score >= floor and follows(rated[first - 1].hour, rated[first].hour) do
+        first = first - 1
+    end
+    while last < #rated and rated[last + 1].result.score >= floor and follows(rated[last].hour, rated[last + 1].hour) do
+        last = last + 1
+    end
     return rated[top], rated[first].hour, rated[last].hour
 end
+
+-- The date an hour counts for: its own, or for a night activity
+-- (`nightOf(hour, forecast)`) the evening its night began, so tonight's
+-- hours after midnight still belong to today.
+local function dateOf(activity, hour, forecast)
+    return activity.nightOf and activity.nightOf(hour, forecast) or hour.date
+end
+Report.dateOf = dateOf
 
 -- An activity's best window on a date, from now on: the top-rated hour's
 -- result and the window as text ("06–08h"), or nil when no hour counts.
 function Report.bestOfDay(activity, forecast, date)
     local now, rated = forecast.hours[forecast.now], {}
     for _, hour in ipairs(forecast.hours) do
-        if hour.date == date and hour.time >= now.time and (not activity.window or activity.window(hour, forecast)) then
+        if dateOf(activity, hour, forecast) == date and hour.time >= now.time
+            and (not activity.window or activity.window(hour, forecast)) then
             rated[#rated + 1] = { hour = hour, result = rate(activity, hour, forecast) }
         end
     end
@@ -184,21 +202,37 @@ function Report.rows(activity, place, forecast, clock)
     for index = forecast.now, math.min(#hours, forecast.now + HOURS_SHOWN - 1) do
         local hour = hours[index]
         local rated = rate(activity, hour, forecast)
-        local charts = activity.charts or {}
         add("hour", hour.time, {
             title = index == forecast.now and "now" or Units.clock(hour.time), value = rated.word,
             detail = activity.note(hour, forecast), score = rated.score, tone = rated.verdict,
             icon = Sky.icon(hour.code, hour.isDay), short = Report.tick(hour),
-            metric1 = chartValue(charts[1], hour, forecast), metric2 = chartValue(charts[2], hour, forecast),
         })
     end
+    -- The "today" charts: the next 24 hours, or the hours the activity
+    -- charts (`chartHours(forecast)` gives the first and last index:
+    -- pressure two days back, a night from dusk to dawn).
+    local first, last = forecast.now, forecast.now + HOURS_SHOWN - 1
+    if activity.chartHours then first, last = activity.chartHours(forecast) end
+    first, last = math.max(1, first or forecast.now), math.min(#hours, last or forecast.now + HOURS_SHOWN - 1)
+    local charts, step = activity.charts or {}, last - first >= 36 and 12 or 3
+    for index = first, last do
+        local hour = hours[index]
+        -- A chart that starts in the past marks where now is.
+        local tick = index == forecast.now and first < forecast.now and "now" or Report.tick(hour, step)
+        add("chart", hour.time, { short = tick, score = 0, tone = "info",
+            metric1 = chartValue(charts[1], hour, forecast), metric2 = chartValue(charts[2], hour, forecast),
+            metric3 = chartValue(charts[3], hour, forecast) })
+    end
+    -- The days; an activity's `dayNote(day, forecast)` (how sure, say)
+    -- replaces the plain "less certain".
     for index, day in ipairs(daysAhead(forecast)) do
         local best, span = Report.bestOfDay(activity, forecast, day.date)
         if best then
+            local note = activity.dayNote and activity.dayNote(day, forecast)
             add("day", day.date, {
                 title = day.date == now.date and "today" or Sky.weekday(day.date), value = best.word,
-                detail = ("%sbest %s · %s / %s · %s"):format(certainty(index), span, Units.temp(day.max),
-                    Units.temp(day.min), Sky.describe(day.code)),
+                detail = ("%sbest %s · %s / %s · %s"):format(note and note .. " · " or certainty(index), span,
+                    Units.temp(day.max), Units.temp(day.min), Sky.describe(day.code)),
                 score = best.score, tone = best.verdict, icon = Sky.icon(day.code),
             })
         end
@@ -401,10 +435,11 @@ function Report.day(place, forecast, date, activities)
     return rows
 end
 
--- The hour as a chart tick ("06") every three hours, empty between.
-function Report.tick(hour)
+-- The hour as a chart tick ("06") every `step` hours (three), empty
+-- between.
+function Report.tick(hour, step)
     local h = Sky.hour(hour.time)
-    return h and h % 3 == 0 and hour.time:sub(12, 13) or ""
+    return h and h % (step or 3) == 0 and hour.time:sub(12, 13) or ""
 end
 
 -- Conditions most activities show: pressure and its trend, sun times, the moon.

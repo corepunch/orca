@@ -5,7 +5,8 @@
 -- This file belongs to the stargazing edition.
 local F = dofile("tests/weather_fixture.lua").init { edition = "stargazing" }
 local check, verdict, says = F.check, F.verdict, F.says
-local Stargazing = require "Weather/activities/stargazing"
+-- The activities register their settings (red mode's among them).
+local Stargazing = require("Weather/activities").byId.stargazing
 local Moon = require "Weather/editions/stargazing/moon"
 local Night = require "Weather/editions/stargazing/night"
 local Seeing = require "Weather/editions/stargazing/seeing"
@@ -230,9 +231,9 @@ check(Stargazing.cards(midsummer)[1].value == "no night", "Midsummer in Lofoten:
 check(RedMode.classes("stargazing", true) == "stargazing night" and RedMode.classes("stargazing night", false) == "stargazing",
     "Night is a state class beside the edition's")
 Settings.set("stargazing", "redmode", "on")
-check(RedMode.on() and Stargazing.stylesheet == RedMode.NIGHT, "Red mode on")
+check(RedMode.on() and Stargazing.stylesheet() == RedMode.NIGHT, "Red mode on")
 Settings.set("stargazing", "redmode", "off")
-check(not RedMode.on() and Stargazing.stylesheet == RedMode.DAY, "Red mode off")
+check(not RedMode.on() and Stargazing.stylesheet() == RedMode.DAY, "Red mode off")
 Settings.set("stargazing", "redmode", "auto")
 RedMode.follow({ spot = brecon, epoch = utc("2026-11-18T12:00") })
 check(not RedMode.on(), "Auto: daylight at Brecon at noon")
@@ -259,7 +260,7 @@ check(ui.cards()[1] == "Cardtahoe:card:tonight" and #ui.cards() <= 3,
 check(store:load(RedMode.FILE).lat == Places[1].lat, "The last place is kept for the next launch")
 ui.open(Places[1].id, "stargazing")
 check(ui.app.hubPage.StateClasses == "stargazing night", "The hub follows the dark")
-check(Stargazing.stylesheet == RedMode.NIGHT, "New pages open in the red sheet")
+check(Stargazing.stylesheet() == RedMode.NIGHT, "New pages open in the red sheet")
 check(ui.has("Card" .. Places[1].id .. ":stargazing:card:tonight") and ui.has("Card" .. Places[1].id .. ":stargazing:card:moon")
     and ui.has("Card" .. Places[1].id .. ":stargazing:card:darkness"), "The activity page shows all of tonight's cards")
 ui.back()
