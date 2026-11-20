@@ -28,24 +28,37 @@ activity is a lens over the same forecast: it rates every hour **good**,
   passed, with the reason that matters most. Tap a row to open that activity.
 - **hourly**: charts first, as in Amazing Weather: the next 24 hours of
   temperature (columns) with wind (a line), then the chance of rain.
-- **week**: every day, with its best activity and window.
+- **week**: every day, with its best activity and window. Tap a day to open
+  its hours.
 - **places**: tap one to see its hub from the start. The section ends with
   a **settings** link.
 
 In an edition the hub's first section opens with the edition activity's
-cards ("frost tonight"); in the full app, with everyday outdoors' cards. A
-small line under the conditions says how old the forecast is ("updated 25
-min ago"), and says so plainly when it is the copy saved before the network
-went away.
+cards ("frost tonight"): at most three, the most urgent (warnings and poor
+answers first), and the rest stay on the activity's page. In the full app
+everyday outdoors' cards follow the temperature as compact **answers**
+(rows of Kind `answer`: official warnings, the next two hours, today in one
+line, what to bring). A small line under the conditions says how old the
+forecast is ("updated 25 min ago"), and says so plainly when it is the copy
+saved before the network went away.
+
+**A day** (`Pages/Day.xml`, route `/day`, `Report.day`) opens from the hub's
+week: the sky, high and low, each activity's `daySummary(forecast, date)`
+cards, the day's readings, what each followed activity is good for then,
+and its hours. Back returns to the hub; an activity opened from a day goes
+back to that day.
 
 **An activity page** (`Pages/Activity.xml`) is a Pivot titled "fishing · lake
 tahoe", with four views:
 
-- **now**: a verdict tile with the score, the reasons, then the conditions the
-  activity watches;
-- **today**: a 24-hour verdict band (one cell per hour in its tone) and the
-  two charts the activity names in `charts` (pressure and wind for fishing,
-  swell and wind for surf, clouds and humidity for stars);
+- **now**: a verdict tile with the score, the activity's cards (each may
+  carry links that act, such as "log a session: good"), a link to the
+  activity's own page when it has one ("log a catch"), the reasons, then the
+  conditions the activity watches;
+- **today**: a 24-hour verdict band (one cell per hour in its tone) and up
+  to three charts the activity names in `charts` (pressure two days back and
+  wind for fishing; surf, wind and the tide for surf; clouds and the moon
+  from dusk to dawn for stars);
 - **hourly**: the hour-by-hour list, one swipe further, as in Amazing Weather;
 - **week**: each day's best window.
 
@@ -57,6 +70,14 @@ titled with the app's name when it fits ("surfers' weather · Bondi").
 **units** (temperature, wind, heights, rain, pressure, distance, clock),
 **activities** (each activity's own `settings`; an edition names it after its
 activity) and **about** (the Open-Meteo attribution).
+
+Everyday outdoors' own settings: how you feel the cold (`comfort`: "I run
+cold" moves "comfortable" about 3°), and in the full app the "good for"
+order (`order`: as listed or best first) and one switch per other activity
+(`follow_<id>`). An activity with `everywhere = true` fits every place (the
+everyday lenses: run, cycle, dog walk, picnic, laundry); `followed = false`
+starts it switched off. `Report.followed(activities)` keeps the ones the
+user follows; the hub's "good for", its week and a day page list only those.
 
 Verdict colours are state classes (`good`, `fair`, `poor`) in
 `Styles/weather.css`. `good` uses the hub accent, or the activity's accent on
@@ -79,13 +100,19 @@ settings.lua       stored choices: units, clock and each activity's declared set
 storage.lua        small Lua-table files on the device, written atomically
 Data/Hub.xml       Places, PlaceList, Report and a View per hub section
 Data/Activity.xml  Report for the route's place and activity, a View per pivot item
+Data/Day.xml       Report.day for the route's place and date
 Data/Settings.xml  the settings rows, split into units, activities and about
+editions/<key>/    an edition's own modules, pages and data (its `page` routes)
 ```
 
 A place's forecast is fetched once and cached for ten minutes. The hub,
 every activity page and going back all reuse it. A pull to refresh (or the
 half-hourly poll) fetches it again. Places whose activities read the sea also
 fetch the marine forecast. If that request fails, the rest still shows. The
+hub asks only for the lead activity's optional sources (everyday outdoors in
+the full app, the edition's own otherwise); an activity page adds its own on
+top of the cached forecast, once. Every request carries a generic
+User-Agent with the app's name ("HikersWeather/1.0 (ORCA)") and no cookies. The
 last answer per place is saved on the device: the hub shows it at once on
 start while the new one loads, and uses it, marked offline, when the network
 fails.
@@ -99,8 +126,9 @@ fails.
    - Call `card:cap(limit, reason)` for anything that rules the hour out,
      such as lightning or the dark.
 2. Write `note(hour)` (the line under each hour), `metrics(hour, forecast)`
-   (the conditions) and `charts`: two `{ title, unit, kind = "line" |
-   "column", min, max, value = function(hour) }` for the "today" view.
+   (the conditions) and `charts`: two or three `{ title, unit, note, kind =
+   "line" | "column", min, max, value = function(hour) }` for the "today"
+   view (`note` follows the unit: "pressure hPa · 2 days back").
    `value` is metric; `unit` is a Units kind (`"wind"`, `"temp"`,
    `"percent"`…) that converts it and ends the title ("wind kn"). Write
    every number with `Units` (below), never with a unit in the string.
@@ -108,9 +136,20 @@ fails.
    ready-made.
 3. Optional:
    - `needsMarine` adds the sea fields to each hour: `swellHeight`,
-     `swellPeriod`, `swellDir`, `waveHeight` and `seaTemp`.
+     `swellPeriod`, `swellDir`, `waveHeight` and `seaTemp`. It may be a
+     function of the place (`not place.lake and "optional"`), so a lake asks
+     no marine forecast; `"optional"` lets the forecast stand without it.
    - `window(hour)` picks which hours count towards a day's best window.
    - `focus(forecast)` picks the hour the verdict card shows.
+   - `nightOf(hour, forecast)` groups hours by the date their night began,
+     so a night activity's "today" runs past midnight (best windows always
+     follow hours by `epoch`, across midnight).
+   - `chartHours(forecast)` returns the first and last hour index the
+     "today" charts draw (default: now and the next 23). Longer charts tick
+     every 12 hours and mark "now".
+   - `dayNote(day, forecast)`: a word for the week's day rows ("high
+     confidence"), in place of the plain "less certain" after a week.
+   - `everywhere`, `followed`: see Settings above.
 4. Register it in `activities.lua` with an accent. Add matching rules to
    `Styles/weather.css`.
 5. List it on the places in `places.lua` where it makes sense.
@@ -188,20 +227,19 @@ It gives `F.check`, `F.NOW` (2026-11-18 06:00 UTC), `F.hour(fields)` and
 `F.verdict(activity, fields, spot)` for hand-built hours, `F.says(result,
 pattern)`, `F.weather(lat, extraColumns)` and `F.marine()` (a synthetic
 week), `F.network()` (a fake fetch with `requests`, `failing`,
-`marineFailing` and `answers[pattern]`), `F.storage(name, places)` (an
-emptied scratch folder), `F.launch { places, net, clock, storage, region }`
-(the app at "/", with `find`, `has`, `text`, `press`, `back`, `open`,
+`marineFailing`, `answers[pattern]` and `options`; `F.network { placeClock =
+true }` answers each place in its own clock and longitude, as
+`F.weather(lat, extra, lon)` does), `F.storage(name, places, extra)` (a
+scratch folder emptied of the app's and editions' files, and of
+`extra(place)`), `F.launch { places, net, clock, storage, region }` (the app
+at "/", with `find`, `has`, `text`, `press`, `back`, `open`, `cards`,
 `settle`) and `F.checkEdition(key)` (the checks every edition shares).
 Default units in tests are metric (region "NL").
 
 Not built yet:
 
-- searching for a place, device location and saved places;
-- choosing which activities to follow;
-- tides;
-- live tiles;
-- the moon's real rise and set times (stars estimates them from the phase,
-  to about an hour).
+- searching for a place, device location and saved places (wave 3);
+- notifications and live tiles (wave 4).
 
 ## Extension points for editions
 
@@ -217,10 +255,19 @@ Garden.fields = { hourly = { "soil_temperature_6cm" }, daily = { "et0_fao_evapot
     minutely15 = { "precipitation" }, marine = { "secondary_swell_wave_height" }, pastDays = 7, forecastDays = 16 }
 ```
 
-`Activities.request(place)` merges the fields of every activity at the place
-into one request (columns once each, the most past and forecast days).
-Columns the parser does not name land on the hour or day under their API
-name; `marine` columns need `needsMarine`. Past hours come before
+`Activities.request(place, focus)` merges the fields of every activity at
+the place into one request (columns once each, the most past and forecast
+days). Columns the parser does not name land on the hour or day under their
+API name; `marine` columns need `needsMarine`. Two more fields:
+
+- `minutely15Steps = 12` stops the quarter hours after that many steps from
+  now (`forecast_minutely_15`), so a nowcast does not pull 16 days of them.
+- `models = { "gfs_seamless", … }` (or a function of the place) asks those
+  weather models in the main call (`models=best_match,…`). The best match
+  keeps the plain names; every other model's columns land under their
+  suffixed names (`hour.wind_speed_10m_gfs_seamless`). Open-Meteo returns
+  every column for every model, so this multiplies the answer; a separate
+  source asking a model's one or two columns is often lighter. Past hours come before
 `forecast.now` in order; past days before `forecast.today`
 (`Report.daysAhead(forecast)` skips them).
 
@@ -235,19 +282,50 @@ Hiking.sources = { { id = "air", optional = true,
 
 `url` may return nil to skip. `parse` adds what it reads to the forecast
 (hours, days or its own field). A required source that fails fails the
-forecast; an optional one is recorded in `forecast.missing[id]`. Answers are
-saved with the forecast and replayed offline. Base URLs and the API key live
-in `Forecast.endpoints` (`forecast`, `marine`, `airQuality`, `geocoding`,
-`apiKey`); build URLs with `Forecast.url(name, query)`, which switches to the
+forecast; an optional one is recorded in `forecast.missing[id]`. A required
+source is always asked; an optional one only for the lead activity (the
+hub) and for the activity whose page is open, which fetches it on top of the
+cached forecast. Rate an hour well without it. Answers are saved with the
+forecast and replayed offline. `headers = { Accept = "…" }` (or a function
+of the spot) adds request headers; every request already carries the app's
+User-Agent and no cookies (`Forecast.requestOptions`). Base URLs and the API
+key live in `Forecast.endpoints` (`forecast`, `marine`, `airQuality`,
+`geocoding`, `flood`, `archive`, `noaaTides`, `apiKey`); build URLs with
+`Forecast.url(name, query)`, which switches every Open-Meteo host to the
 commercial "customer-" host and adds `apikey` when a key is set.
 
-**`cards(forecast, place)`: big answers.** Returns a list of
+**`cards(forecast, place, clock, where)`: big answers.** Returns a list of
 `{ id, title, value, detail, tone = "good" | "fair" | "poor" | "info", icon }`
-(`icon` a path such as `Sky.icon(code)`, optional). They show on the
+(`icon` a path such as `Sky.icon(code)`, optional). `clock` is the time now
+(it may be nil); `where` is `"hub"` or `"activity"`. They show on the
 activity's "now" view between the verdict and the reasons
 (`Templates/CardRow.xml`, rows `<place>:<activity>:card:<id>`), and the
 edition activity's cards lead the hub's first section (rows
-`<place>:card:<id>`). In the full app everyday outdoors leads.
+`<place>:card:<id>`): at most three (`Report.HUB_CARDS`), the most urgent by
+`rank` (lower first) or else tone (poor, fair, good, info), shown in the
+activity's own order. `hub = false` keeps a card on the activity page. In
+the full app everyday outdoors leads, as answer rows.
+
+**Card links and `act(id, context)`.** A card may carry `actions = { {
+"log:good", "good" }, … }` (at most three) or one `action = { id, text }`;
+each shows as a link under it. A tap calls the activity's
+`act(id, { place, forecast, clock, where, card })`; a returned route path
+("/settings", the activity's page) opens; otherwise the cards redraw.
+Surfers' level setup and one-tap session log work this way.
+
+**`page`: an activity's own page.** `page = { routes = "Weather/editions/
+<key>/Data/Routes.xml", path = "/<key>/…", link = "log a catch", provider =
+function(options) … end }`. The app routes those paths, and the activity
+page shows `link`. `provider(options)` returns a data provider (operations,
+filters, handlers) over the app's store; `options` gives `forecastFor(id)`,
+`places`, `place()` (the place shown), `clock()` and `back()`.
+
+**`pageClasses(forecast)` and a `stylesheet` function.** The lead activity
+may return extra state classes for every page ("night"), and `stylesheet`
+may be a function returning the sheet. The app dresses each new screen, and
+after every drawn page (a forecast, the settings after a change) the open
+ones, swapping the classes it added before. `forecast` is the one just
+drawn, or nil. Stargazers' red night mode works this way.
 
 **`settings`: declared choices.**
 

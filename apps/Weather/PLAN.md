@@ -305,7 +305,7 @@ why`.
 | Research | done (Research/*.md) |
 | 1 Foundation | done: F1, F2, F6 in 850a5a31; F2–F5, F7, F9 in c9a8f894; F8 in 76b480de. Contracts in [README](README.md#extension-points-for-editions) |
 | 2 Apps | done. Weather W1–W10 except W11 (engine has no accessibility properties), W12 skipped: bee80f81, deca9fde, e42e0d37, 68412dba. Fishers' FI1–FI12 (FI2, FI5, FI11, FI12 partial): 0bd69837, d70eb45b. Surfers' SU1–SU11 (SU6, SU9, SU10 partial): ed5e2cfa, 9eec452e. Sailors' SA1–SA8 (SA9, SA10 skipped): 42328fd6. Hikers' HI1–HI8 (HI7 needs a User-Agent to work live): 07010bfc. Gardeners' GA1–GA9, GA11–GA13 (GA10 skipped): e8387067, b16276bd. Stargazers' ST1–ST9, ST11 (ST10 partial; ST12–ST14 skipped): 8420eb49. Tests: 880 checks pass |
-| 2.5 Integration | not started (section 8) |
+| 2.5 Integration | done: I1–I11 (section 8). I1, I4 in ee252388; I2, I3 in 5c861e16; I5–I7 in 8b7204f4; I8–I10 in f4a83259; I11 with this row. Tests: 919 checks pass |
 | 3 Places | not started |
 | 4 Native | not started |
 
@@ -314,19 +314,50 @@ why`.
 The requests the wave-2 agents could not make themselves, grouped. One agent
 owns every shared file for this wave.
 
-| ID | Change | From | Pri |
-| --- | --- | --- | --- |
-| I1 | **Fewer requests per place.** The full app merges every edition's `sources` and fields: about 9 requests per place at Tahoe, and quarter-hours for all 16 days. Fetch an activity's optional sources only for the lead activity on the hub, and for the activity whose page is open. Add `minutely15Steps` (`forecast_minutely_15`). Request `models=` in the main call when an activity asks (`fields.models`). Lakes don't ask for marine data (`needsMarine` may be a function of the place) | Weather, sailing, fishing, hiking | P0 |
-| I2 | **A calm hub.** Cards say where they show: `cards(forecast, place, clock, where)` with `where = "hub"` or `"activity"`, or a card's `hub = false`. The hub shows at most three edition cards, ranked by tone (poor and warnings first), and the rest stay on the activity page | garden, surf, sailing, hiking | P0 |
-| I3 | **Actions and edition pages.** A card or row may carry an `action` handled by `activity.act(id, …)`, and an activity may declare `page` (routes, provider, link text) that the app routes to. This wires up Fishers' log, waters and patterns (d70eb45b; see the fishing agent's diff), Surfers' one-tap session log and setup | fishing, surf | P0 |
-| I4 | **Headers for sources** (`source.headers` → `network.fetch(url, { headers })`) with a generic app User-Agent and no personal contact. This makes the NWS warnings work live for hikers and the full app (`api.weather.gov` answers 403 without one) | hiking, Weather | P0 |
-| I5 | **Night-aware days and charts:** `activity.nightOf(hour)` for grouping in `bestOfDay` and the week; `bestWindow` checks that hours follow each other by `epoch`; `activity.chartHours(forecast)` so charts can start before now (fishing pressure 48 h back, stars dusk to dawn) | stargazing, fishing | P1 |
-| I6 | **Edition page classes:** a supported `lead.pageClasses()` hook in `screenFor` and on refresh, replacing red mode's side effect through the stylesheet | stargazing | P1 |
-| I7 | `activity.dayNote(day, forecast)` on day rows (surf's confidence); a third chart slot or a tide curve | surf | P2 |
-| I8 | Endpoints table: add `flood`, `archive` and NOAA tides, so a commercial key switches every host | fishing, garden | P1 |
-| I9 | Test fixture: synthetic places carry their real `utc_offset_seconds` and longitude; `Fixture.storage` clears extra files | stargazing, garden | P1 |
-| I10 | CSS: accents for the lenses (run, cycle, dog walk, picnic, laundry); `.wx-poor` to at least 4.5:1 contrast on black | Weather | P2 |
-| I11 | README: document `/day`, answer rows, `everywhere`/`followed`, the `clock` argument to `cards`, the outdoors settings, and every hook added here | Weather | P1 |
+| ID | Change | From | Pri | Status |
+| --- | --- | --- | --- | --- |
+| I1 | **Fewer requests per place.** The full app merges every edition's `sources` and fields: about 9 requests per place at Tahoe, and quarter-hours for all 16 days. Fetch an activity's optional sources only for the lead activity on the hub, and for the activity whose page is open. Add `minutely15Steps` (`forecast_minutely_15`). Request `models=` in the main call when an activity asks (`fields.models`). Lakes don't ask for marine data (`needsMarine` may be a function of the place) | Weather, sailing, fishing, hiking | P0 | done, ee252388 (numbers below); `fields.models` is supported but no edition moved onto it, see below |
+| I2 | **A calm hub.** Cards say where they show: `cards(forecast, place, clock, where)` with `where = "hub"` or `"activity"`, or a card's `hub = false`. The hub shows at most three edition cards, ranked by tone (poor and warnings first), and the rest stay on the activity page | garden, surf, sailing, hiking | P0 | done, 5c861e16; a card may also set `rank` (Surfers' first-run setup leads with `rank = 0`) |
+| I3 | **Actions and edition pages.** A card or row may carry an `action` handled by `activity.act(id, …)`, and an activity may declare `page` (routes, provider, link text) that the app routes to. This wires up Fishers' log, waters and patterns (d70eb45b; see the fishing agent's diff), Surfers' one-tap session log and setup | fishing, surf | P0 | done, 5c861e16: Fishers' log opens from the fishing page; Surfers' level and session log are card links |
+| I4 | **Headers for sources** (`source.headers` → `network.fetch(url, { headers })`) with a generic app User-Agent and no personal contact. This makes the NWS warnings work live for hikers and the full app (`api.weather.gov` answers 403 without one) | hiking, Weather | P0 | done, ee252388: the engine already sends `headers` (and `nocookies`); every request carries "<AppName>/1.0 (ORCA)" and no cookies. Checked live: api.weather.gov answered with warnings |
+| I5 | **Night-aware days and charts:** `activity.nightOf(hour)` for grouping in `bestOfDay` and the week; `bestWindow` checks that hours follow each other by `epoch`; `activity.chartHours(forecast)` so charts can start before now (fishing pressure 48 h back, stars dusk to dawn) | stargazing, fishing | P1 | done, 8b7204f4: stargazing groups by night and charts dusk to dawn; fishing charts two days back |
+| I6 | **Edition page classes:** a supported `lead.pageClasses()` hook in `screenFor` and on refresh, replacing red mode's side effect through the stylesheet | stargazing | P1 | done, 8b7204f4: red mode moved onto `pageClasses` and a `stylesheet` function |
+| I7 | `activity.dayNote(day, forecast)` on day rows (surf's confidence); a third chart slot or a tide curve | surf | P2 | done, 8b7204f4: surf's confidence on the week, and a tide chart as the third |
+| I8 | Endpoints table: add `flood`, `archive` and NOAA tides, so a commercial key switches every host | fishing, garden | P1 | done, f4a83259: only Open-Meteo hosts move with the key |
+| I9 | Test fixture: synthetic places carry their real `utc_offset_seconds` and longitude; `Fixture.storage` clears extra files | stargazing, garden | P1 | done, f4a83259: `F.network { placeClock = true }`, `F.weather(lat, extra, lon)`, `F.storage(name, places, extra)` |
+| I10 | CSS: accents for the lenses (run, cycle, dog walk, picnic, laundry); `.wx-poor` to at least 4.5:1 contrast on black | Weather | P2 | done, f4a83259: lime, pink, taupe, olive and steel; poor text #f01a00 (4.85:1) |
+| I11 | README: document `/day`, answer rows, `everywhere`/`followed`, the `clock` argument to `cards`, the outdoors settings, and every hook added here | Weather | P1 | done (README, with this table) |
+
+**I1, requests per place.** Counted with the test fixture's fake network
+over each build's own places: the hub's refresh, then opening the place's
+first activity. Fresh storage, so nothing is replayed.
+
+| Build | Places | Hub before | Hub after | Activity page after |
+| --- | --- | --- | --- | --- |
+| Weather (full) | 34 | 5.29 | 2.65 | +1.44 |
+| Weather at Lake Tahoe | 1 | 11 | 3 | +0 (fishing at a lake) |
+| Fishers' | 6 | 2.33 | 1.67 | +0 |
+| Surfers' | 7 | 3.00 | 3.00 | +0 |
+| Sailors' | 8 | 4.12 | 3.75 | +0 |
+| Hikers' | 11 | 4.27 | 4.27 | +0 |
+| Gardeners' | 9 | 1.11 | 1.11 | +0 |
+| Stargazers' | 8 | 4.00 | 4.00 | +0 |
+
+Before, the page added nothing because the hub had fetched everything. The
+full app gains most: its hub now asks for the forecast, air quality and (in
+the US) warnings, and the other activities' sources wait for their page.
+Lakes lose the marine request (Fishers', Sailors'). An edition's lead is its
+own activity, so its sources stay on the hub; what remains is those:
+models, summit points, air and warnings (hiking), models, air and Kp
+(stars), models, tides and spot ranking (sailing), the long wave outlook
+(surf). The quarter hours shrink from 16 days to 12 steps, which lightens
+the full app's main call.
+
+Decision for the user: moving sailing's, hiking's and stargazing's model
+requests into the main call (`fields.models`) would save one request each,
+but Open-Meteo returns every column for every model, about five times the
+main answer (tens of thousands of values instead of a few hundred). They
+stay separate sources until that trade is wanted.
 
 ## Requests to the foundation
 
