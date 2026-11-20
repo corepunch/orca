@@ -12,5 +12,7 @@ Category icons are renamed after the category slug they mark.
 | `plants.svg` | `sprout` |
 | `your-body.svg` | `heart-pulse` |
 | `long-ago.svg` | `bone` |
+| `history.svg` | `landmark` |
+| `time-machine.svg` | `hourglass` (the Time Machine wing) |
 | `search.svg`, `chevron-left.svg`, `chevron-right.svg`, `circle-chevron-left.svg`, `x.svg` | same names |
 | `volume-2.svg`, `play.svg`, `pause.svg`, `square.svg`, `rotate-ccw.svg` | same names (Read aloud states) |

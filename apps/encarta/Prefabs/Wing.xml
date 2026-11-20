@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A wing of the home screen: a subject or a tour that has no exhibit in
+     the room. Its icon, its name and what is inside, all one target. -->
+<Button class="wing">
+    <Grid Columns="auto 1fr" Spacing="12" AlignItems="Center" IgnoreHitTest="true">
+        <VectorView Name="WingIcon" Width="30" Height="30" class="wing-icon" IgnoreHitTest="true"/>
+        <StackView IgnoreHitTest="true">
+            <TextBlock Name="WingName" class="wing-name" IgnoreHitTest="true"/>
+            <TextBlock Name="WingDetail" class="wing-detail" IgnoreHitTest="true"/>
+        </StackView>
+    </Grid>
+</Button>

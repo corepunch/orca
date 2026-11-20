@@ -26,6 +26,8 @@ ThemeLibrary = {
     { Key = "plants", Value = "#5E8F1E" },
     { Key = "your-body", Value = "#D13E5A" },
     { Key = "long-ago", Value = "#9A6230" },
+    { Key = "history", Value = "#A63D32" },
+    { Key = "time-machine", Value = "#2C6E8F" },
 }
 SystemMessages = {
     { Name = "WindowClosed", Command = "return" },
