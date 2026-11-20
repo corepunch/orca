@@ -1,0 +1,51 @@
+/* Red night mode (redmode.lua): deep red type on black from dusk to dawn.
+   Red light barely bleaches the rods, so eyes stay used to the dark. No
+   white, no bright fills: tiles and bars are dark red, the text dim red,
+   and everything a little dimmer than by day. Rules after the import win. */
+@import "../../Styles/weather.css";
+
+.wx-page { background-color: #000000; }
+.wx-ink { color: #c81e00; }
+.wx-dim { color: #7a1400; }
+.wx-accent { color: #e02800; }
+.wx-rule { background-color: #7a1400; }
+.wx-link { color: #e02800; }
+.wx-poor { color: #e02800; }
+.wx-tile { background-color: #260400; }
+.wx-tile-ink { color: #e02800; }
+.wx-bar { background-color: #3a0800; }
+.wx-tone { color: #c81e00; }
+
+.good .wx-tile { background-color: #5a0c00; }
+.good .wx-bar { background-color: #a01800; }
+.good .wx-tone { color: #ff3000; }
+.fair .wx-tile { background-color: #3a0800; }
+.fair .wx-bar { background-color: #6a1000; }
+.fair .wx-tone { color: #c81e00; }
+.poor .wx-tile { background-color: #260400; }
+.poor .wx-bar { background-color: #3a0800; }
+.poor .wx-tone { color: #8a1600; }
+
+.stargazing .wx-accent { color: #e02800; }
+.stargazing .wx-link { color: #e02800; }
+.stargazing .good .wx-tile { background-color: #5a0c00; }
+.stargazing .good .wx-bar { background-color: #a01800; }
+.stargazing .good .wx-tone { color: #ff3000; }
+.stargazing .wx-series { color: #c81e00; }
+.outdoors .wx-accent { color: #e02800; }
+.outdoors .wx-link { color: #e02800; }
+.outdoors .good .wx-tile { background-color: #5a0c00; }
+.outdoors .good .wx-bar { background-color: #a01800; }
+.outdoors .good .wx-tone { color: #ff3000; }
+.outdoors .wx-series { color: #c81e00; }
+
+.wx-chart { color: #7a1400; }
+.chart-label { color: #7a1400; }
+.wx-series { color: #c81e00; }
+.wx-series-2 { color: #7a1400; }
+
+.pivot-title { color: #c81e00; }
+.pivot-header { color: #c81e00; }
+.pivot-back { color: #c81e00; }
+.panorama-title { color: #c81e00; }
+.panorama-header { color: #c81e00; }
