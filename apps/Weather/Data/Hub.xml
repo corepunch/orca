@@ -1,13 +1,16 @@
 <!-- The place hub: the places, the selected place's report and one view per
-     panorama section. The report refreshes every half hour while showing. -->
+     panorama section. The report refreshes every half hour while showing,
+     and shows the copy saved on the device while the first request runs. -->
 <DataScope Name="Hub" Schema="Weather/Data/Weather.Schema.xml">
   <Query Name="Places" Entity="WeatherPlace" Operation="places" Description="Every place."/>
   <View Name="PlaceList" Source="Places" Selection="first"/>
-  <Query Name="Report" Entity="WeatherRow" Operation="hub" Require="PlaceId" Poll="1800000"
+  <Query Name="Report" Entity="WeatherRow" Operation="hub" Require="PlaceId" Poll="1800000" Cached="savedHub"
          Description="Conditions, the week and what the selected place is good for.">
     <Param Name="PlaceId" Type="string" Bind="PlaceList.Selected.Id"/>
   </Query>
+  <View Name="Cards" Source="Report" Filter="cardRows"/>
   <View Name="Now" Source="Report" Filter="nowRows"/>
+  <View Name="Age" Source="Report" Filter="ageRows"/>
   <View Name="Details" Source="Report" Filter="detailRows"/>
   <View Name="Strip" Source="Report" Filter="stripRows"/>
   <View Name="GoodFor" Source="Report" Filter="activityRows"/>
@@ -15,4 +18,5 @@
   <View Name="Days" Source="Report" Filter="dayRows"/>
   <Handler Name="OpenActivity" Function="openActivity"/>
   <Handler Name="ChoosePlace" Function="choosePlace"/>
+  <Handler Name="OpenSettings" Function="openSettings"/>
 </DataScope>

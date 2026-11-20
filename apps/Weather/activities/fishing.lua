@@ -3,6 +3,7 @@
 -- of that lore with the reason an angler would give.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Fishing = {
@@ -12,7 +13,7 @@ local Fishing = {
 function Fishing.rate(hour, forecast)
     local card = Score.card(50)
     if Sky.isStorm(hour.code) then card:cap(10, "Lightning risk: stay off the water.") end
-    if (hour.gust or 0) > 15 then card:cap(35, "Gusts over 15 m/s: unsafe in a small boat.") end
+    if (hour.gust or 0) > 15 then card:cap(35, "Gusts over " .. Units.wind(15) .. ": unsafe in a small boat.") end
 
     local trend = hour.pressureTrend or 0
     if trend <= -3 then card:add(-6, "Pressure dropping fast: a front is close.")
@@ -59,7 +60,7 @@ function Fishing.note(hour)
     local trend = hour.pressureTrend or 0
     -- Words, not arrows: the phone font has no arrow glyphs.
     local arrow = trend > 0.5 and "rising" or trend < -0.5 and "falling" or "steady"
-    return ("wind %s · %s %s · rain %s"):format(Score.fmt(hour.wind, " m/s"), Score.fmt(hour.pressure, " hPa"), arrow,
+    return ("wind %s · %s %s · rain %s"):format(Units.wind(hour.wind), Units.pressure(hour.pressure), arrow,
         Score.fmt(hour.rainChance, "%"))
 end
 
@@ -70,14 +71,15 @@ function Fishing.metrics(hour, forecast)
         Report.moon(forecast),
         Report.sun(hour),
         { label = "cloud cover", value = Score.fmt(hour.cloud, "%") },
-        { label = "air", value = Score.fmt(hour.temp, "°"), note = "feels like " .. Score.fmt(hour.feels, "°") },
+        { label = "air", value = Units.temp(hour.temp), note = "feels like " .. Units.temp(hour.feels) },
     }
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Fishing.charts = {
-    { title = "pressure hPa", kind = "line", value = function(hour) return hour.pressure or 0 end },
-    { title = "wind m/s", kind = "column", value = function(hour) return hour.wind or 0 end },
+    { title = "pressure", unit = "pressure", kind = "line", value = function(hour) return hour.pressure or 0 end },
+    { title = "wind", unit = "wind", kind = "column", value = function(hour) return hour.wind or 0 end },
 }
 
 return Fishing

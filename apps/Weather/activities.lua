@@ -2,6 +2,7 @@
 -- lens over the same forecast: rules that rate an hour good, fair or poor
 -- and say why (see README.md, "Write another activity"). `accent` colours
 -- the activity's own page; the hub keeps the app accent.
+local Settings = require "Weather/settings"
 local Activities = { list = {}, byId = {} }
 
 local ORDER = {
@@ -20,12 +21,23 @@ local function edition()
 end
 Activities.edition = edition()
 
+-- The app's name, as package.lua `Editions` gives it (tests keep the two in
+-- step): the title of the settings page, an edition's activity page and the
+-- folder its files live in.
+local NAMES = {
+    fishing = "Fishers' Weather", surf = "Surfers' Weather", sailing = "Sailors' Weather",
+    hiking = "Hikers' Weather", garden = "Gardeners' Weather", stargazing = "Stargazers' Weather",
+}
+Activities.names = NAMES
+Activities.appName = NAMES[Activities.edition] or "Weather"
+
 for _, entry in ipairs(ORDER) do
     if not Activities.edition or entry[1] == "outdoors" or entry[1] == Activities.edition then
         local activity = require("Weather/activities/" .. entry[1])
         activity.accent = entry[2]
         Activities.list[#Activities.list + 1] = activity
         Activities.byId[activity.id] = activity
+        Settings.register(activity)
     end
 end
 assert(not Activities.edition or Activities.byId[Activities.edition], "Unknown edition: " .. tostring(Activities.edition))
@@ -46,6 +58,35 @@ function Activities.needsMarine(place)
         if activity.needsMarine then return true end
     end
     return false
+end
+
+-- The activity whose cards lead the hub: the edition's own, or everyday
+-- outdoors in the full app.
+function Activities.lead()
+    return Activities.byId[Activities.edition or "outdoors"]
+end
+
+-- What one forecast request for a place must ask for: the union of its
+-- activities' `fields` (hourly, daily, minutely15 and marine columns, the
+-- most pastDays and forecastDays) and their `sources`, one per id.
+function Activities.request(place)
+    local request = { hourly = {}, daily = {}, minutely15 = {}, marine = {}, sources = {} }
+    local seen, sources = {}, {}
+    for _, activity in ipairs(Activities.at(place)) do
+        local fields = activity.fields or {}
+        for _, block in ipairs { "hourly", "daily", "minutely15", "marine" } do
+            for _, name in ipairs(fields[block] or {}) do
+                local key = block .. ":" .. name
+                if not seen[key] then seen[key] = true; table.insert(request[block], name) end
+            end
+        end
+        if fields.pastDays then request.pastDays = math.max(request.pastDays or 0, fields.pastDays) end
+        if fields.forecastDays then request.forecastDays = math.max(request.forecastDays or 0, fields.forecastDays) end
+        for _, source in ipairs(activity.sources or {}) do
+            if not sources[source.id] then sources[source.id] = true; table.insert(request.sources, source) end
+        end
+    end
+    return request
 end
 
 return Activities

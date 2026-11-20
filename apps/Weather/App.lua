@@ -1,8 +1,9 @@
 -- The weather app: a hub per place and a page per activity (DESIGN.md).
 -- The hub's page and scope live as long as the app, so its place, panorama
 -- position and scroll survive a visit to an activity; an activity page and
--- its scope are made when it opens and disposed when it closes. Data rules
--- live in the provider and activities; this file only navigates.
+-- its scope are made when it opens and disposed when it closes, and so are
+-- settings. Data rules live in the provider and activities; this file only
+-- navigates and titles.
 local ui = require "orca.UIKit"
 local Application = require "orca.core.application"
 local data = require "orca.data"
@@ -10,22 +11,38 @@ local Routes = require "orca.data.routes"
 local Provider = require "Weather/provider"
 local Activities = require "Weather/activities"
 local Places = require "Weather/places"
+local Storage = require "Weather/storage"
+local Settings = require "Weather/settings"
+local Units = require "Weather/units"
 
 local App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
 
     -- options.places, options.fetch and options.clock replace the places,
-    -- the network and the time (tests).
+    -- the network and the time; options.storage (a Storage store) or
+    -- options.storageDir the folder for files, and options.region the
+    -- region the default units come from (tests).
     __init = function(self, options)
         Application.__init(self)
         options = options or {}
         self.places = options.places or Places
         self.placesById = {}
         for _, place in ipairs(self.places) do self.placesById[place.id] = place end
-        self.provider = Provider.new(self.places, options)
-        self.provider.handlers.openActivity = function(_, params) return self:openActivity(params.item) end
-        self.provider.handlers.choosePlace = function(_, params) return self:choosePlace(params.item) end
-        self.provider.handlers.goBack = function() return self:goBack() end
+        self.storage = options.storage or (options.storageDir and Storage.new { dir = options.storageDir })
+            or Storage.default()
+        Storage.use(self.storage)
+        local region = options.region
+        if region == nil then region = Units.region() end
+        Settings.init { storage = self.storage, edition = Activities.edition, region = region }
+        self.provider = Provider.new(self.places,
+            { fetch = options.fetch, clock = options.clock, storage = self.storage })
+        local handlers = self.provider.handlers
+        handlers.openActivity = function(_, params) return self:openActivity(params.item) end
+        handlers.choosePlace = function(_, params) return self:choosePlace(params.item) end
+        handlers.openSettings = function() return self:activate_route("/settings") end
+        handlers.changeSetting = function(scope, params) return self:changeSetting(scope, params.item, 1) end
+        handlers.lowerSetting = function(scope, params) return self:changeSetting(scope, params.item, -1) end
+        handlers.goBack = function() return self:goBack() end
         self.store = data.Store.new { schema = data.schema("Weather/Data/Weather.Schema.xml"), scope = "weather",
             computed = self.provider.computed }
         self.routes = Routes.load("Weather/Data/Routes.xml")
@@ -50,22 +67,61 @@ local App = Application:extend {
                 -- An edition's hub wears its activity's accent.
                 if Activities.edition then self.hubPage.StateClasses = Activities.edition end
                 self.hubScreen = self:screenFor(self.hubPage)
+                self.hubRevision = Settings.revision()
             end
+            self:titleHubCharts()
             self.hubScope:activate()
+            -- Changed units redraw the hub from the forecast it already has.
+            if self.hubRevision ~= Settings.revision() then
+                self.hubRevision = Settings.revision()
+                self.provider.redrawing = true
+                self.hubScope:member("Report"):refresh { force = true }
+            end
             return self.hubScreen
         end
         if self.hubScope then self.hubScope:deactivate() end
         local page, scope = self.routes:open(path, self, options)
         self.activityScope = scope
-        page.StateClasses = self.activity.id
-        page:findChild("ActivityPivot", true).Title = self.activity.title .. " · " .. self.place.title
-        self:configureCharts(page, self.activity.charts or {})
+        if path == "/settings" then
+            if Activities.edition then page.StateClasses = Activities.edition end
+            page:findChild("SettingsPivot", true).Title = Activities.appName:lower()
+            local edition = Activities.byId[Activities.edition]
+            if edition then page:findChild("ActivitySettingsSection", true).Header = edition.title end
+        else
+            page.StateClasses = self.activity.id
+            page:findChild("ActivityPivot", true).Title = self:activityTitle(self.activity, self.place)
+            self:configureCharts(page, self.activity.charts or {})
+        end
         scope:activate()
         return self:screenFor(page)
     end,
 
-    -- The "today" charts follow the activity: a title, columns or a line,
-    -- and an optional fixed range (percentages run 0 to 100).
+    -- "fishing · Lake Tahoe"; an edition's own activity says the app's name
+    -- instead ("surfers' weather · Bondi") when the line has room for it.
+    activityTitle = function(self, activity, place)
+        local title = activity.title .. " · " .. place.title
+        if activity.id ~= Activities.edition then return title end
+        local named = Activities.appName:lower() .. " · " .. place.title
+        return utf8.len(named) <= 34 and named or title
+    end,
+
+    -- The hub's hourly charts, titled in the user's units.
+    titleHubCharts = function(self)
+        local function title(name, text) local node = self.hubPage:findChild(name, true); if node then node.Title = text end end
+        title("TempColumns", "temperature " .. Units.label("temp"))
+        title("WindLine", "wind " .. Units.label("wind"))
+        title("RainColumns", "chance of rain %")
+    end,
+
+    -- A setting row: step it and redraw the settings rows.
+    changeSetting = function(self, scope, record, direction)
+        local group, key = Settings.split(record and record.values.Setting)
+        if not (group and Settings.step(group, key, direction)) then return end
+        scope:member("Settings"):refresh { force = true }
+    end,
+
+    -- The "today" charts follow the activity: a title and its unit, columns
+    -- or a line, and an optional fixed range (percentages run 0 to 100).
     configureCharts = function(self, page, charts)
         for index, name in ipairs { "A", "B" } do
             local spec, chart = charts[index], page:findChild("Chart" .. name, true)
@@ -74,8 +130,10 @@ local App = Application:extend {
                 local columns, line = chart:findChild("Chart" .. name .. "Columns"), chart:findChild("Chart" .. name .. "Line")
                 columns.Visible, line.Visible = spec.kind ~= "line", spec.kind == "line"
                 local shown = spec.kind == "line" and line or columns
-                shown.Title = spec.title
-                chart.Minimum, chart.Maximum = spec.min or 0 / 0, spec.max or 0 / 0
+                local unit = spec.unit and Units.label(spec.unit) or ""
+                shown.Title = unit ~= "" and spec.title .. " " .. unit or spec.title
+                chart.Minimum = spec.min and Units.value(spec.unit, spec.min) or 0 / 0
+                chart.Maximum = spec.max and Units.value(spec.unit, spec.max) or 0 / 0
             end
         end
     end,

@@ -1,0 +1,7 @@
+<!-- A line of "about": a title and what it means. -->
+<StackView Spacing="2" JustifyContent="Start" IgnoreHitTest="true">
+  <TextBlock Name="AboutTitle" Text="{Binding DataContext/Title}" FontSize="22" WordWrap="true" class="wx-ink"
+             IgnoreHitTest="true"/>
+  <TextBlock Name="AboutDetail" Text="{Binding DataContext/Detail}" FontSize="14" WordWrap="true" class="wx-dim"
+             IgnoreHitTest="true"/>
+</StackView>

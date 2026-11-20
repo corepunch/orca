@@ -1,0 +1,22 @@
+<!-- One setting, after the Windows Phone settings list: an activity's
+     heading above its first setting, the name, and its value in the accent.
+     A tap moves to the next choice or flips a toggle; a number also has
+     "less" and "more". -->
+<StackView Spacing="4" JustifyContent="Start" IgnoreHitTest="true">
+  <TextBlock Name="SettingHeading" Text="{Binding DataContext/Note}" Visible="{Binding DataContext/HasNote}" FontSize="26"
+             MarginTop="8" class="wx-ink" IgnoreHitTest="true"/>
+  <Grid Columns="1fr auto auto" Spacing="8" IgnoreHitTest="true">
+    <Button Name="SettingChange" Height="64" Click="ChangeSetting" BorderWidth="0" class="wx-row">
+      <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
+        <TextBlock Name="SettingTitle" Text="{Binding DataContext/Title}" FontSize="22" class="wx-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="SettingValue" Text="{Binding DataContext/Value}" FontSize="16" class="wx-accent" IgnoreHitTest="true"/>
+      </StackView>
+    </Button>
+    <Button Name="SettingLess" Visible="{Binding DataContext/Stepper}" Click="LowerSetting" Height="64" BorderWidth="0"
+            FontSize="18" class="wx-link">less</Button>
+    <Button Name="SettingMore" Visible="{Binding DataContext/Stepper}" Click="ChangeSetting" Height="64" BorderWidth="0"
+            FontSize="18" class="wx-link">more</Button>
+  </Grid>
+  <TextBlock Name="SettingDetail" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}"
+             FontSize="14" WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>
+</StackView>

@@ -4,6 +4,7 @@
 -- the water plants lose to sun and wind (evapotranspiration).
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Garden = {
@@ -59,7 +60,7 @@ end
 function Garden.window(hour) return hour.isDay end
 
 function Garden.note(hour)
-    return ("%s · soil %s · rain %s"):format(Score.fmt(hour.temp, "°"), Score.fmt(hour.soilTemp, "°"),
+    return ("%s · soil %s · rain %s"):format(Units.temp(hour.temp), Units.temp(hour.soilTemp),
         Score.fmt(hour.rainChance, "%"))
 end
 
@@ -70,12 +71,12 @@ function Garden.metrics(hour, forecast)
     local frost = low and low <= 1
     return {
         { label = "frost", value = frost and "frost risk" or "no frost", tone = frost and "poor" or "good",
-            note = "lowest in 24 h: " .. Score.fmt(low, "°") },
+            note = "lowest in 24 h: " .. Units.temp(low) },
         { label = "water today?", value = need > 1 and "yes" or "no", tone = need > 1 and "fair" or "good",
-            note = need > 1 and ("plants lose about %s more than the rain gives"):format(Score.fmt(need, " mm", 1))
+            note = need > 1 and ("plants lose about %s more than the rain gives"):format(Units.rain(need))
                 or "rain covers what plants lose" },
-        { label = "rain next 24 h", value = Score.fmt(sum(next24, "rain"), " mm", 1) },
-        { label = "soil", value = Score.fmt(hour.soilTemp, "°"),
+        { label = "rain next 24 h", value = Units.rain(sum(next24, "rain")) },
+        { label = "soil", value = Units.temp(hour.soilTemp),
             note = "moisture " .. Score.fmt((hour.soilMoisture or 0) * 100, "%") .. " near the surface" },
         Report.wind(hour),
         Report.sun(hour),
@@ -83,9 +84,10 @@ function Garden.metrics(hour, forecast)
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Garden.charts = {
-    { title = "air °C", kind = "line", value = function(hour) return hour.temp or 0 end },
-    { title = "rain mm", kind = "column", min = 0, value = function(hour) return hour.rain or 0 end },
+    { title = "air", unit = "temp", kind = "line", value = function(hour) return hour.temp or 0 end },
+    { title = "rain", unit = "rain", kind = "column", min = 0, value = function(hour) return hour.rain or 0 end },
 }
 
 return Garden

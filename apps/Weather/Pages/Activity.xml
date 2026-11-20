@@ -1,6 +1,7 @@
 <!-- One activity at one place over Data/Activity.xml: a Pivot of four views
      (the WP limit: now, today, hourly, week) with a back button. The app titles it "fishing · lake
-     tahoe" and gives the page the activity's class for its accent. -->
+     tahoe" (an edition's own activity: "surfers' weather · bondi") and gives
+     the page the activity's class for its accent. -->
 <Grid Name="ActivityPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
   <Pivot Name="ActivityPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
          ContentInsetAdjustment="Always" class="wx-ink">
@@ -18,6 +19,11 @@
         </StackView>
         <ItemsStack Name="VerdictItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Now"
                     ItemsSource="{Binding DataContext/Now/Items}" ItemTemplate="Weather/Templates/VerdictCard"/>
+        <ItemsStack Name="AgeItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Age"
+                    ItemsSource="{Binding DataContext/Age/Items}" ItemTemplate="Weather/Templates/AgeRow"/>
+        <!-- The activity's big answers (`cards`) come before the reasons. -->
+        <ItemsStack Name="CardItems" Spacing="14" JustifyContent="Start" ItemNamePrefix="Card"
+                    ItemsSource="{Binding DataContext/Cards/Items}" ItemTemplate="Weather/Templates/CardRow"/>
         <ItemsStack Name="ReasonItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="Reason"
                     ItemsSource="{Binding DataContext/Reasons/Items}" ItemTemplate="Weather/Templates/ReasonRow"/>
         <TextBlock Text="conditions" FontSize="26" MarginTop="10" class="wx-ink" IgnoreHitTest="true"/>

@@ -2,6 +2,7 @@
 -- dry sky, a gentle wind and some sun make a good hour.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Weather = {
@@ -31,14 +32,14 @@ end
 function Weather.window(hour) return hour.isDay end
 
 function Weather.note(hour)
-    return ("%s · rain %s · wind %s"):format(Score.fmt(hour.temp, "°"), Score.fmt(hour.rainChance, "%"),
-        Score.fmt(hour.wind, " m/s"))
+    return ("%s · rain %s · wind %s"):format(Units.temp(hour.temp), Score.fmt(hour.rainChance, "%"),
+        Units.wind(hour.wind))
 end
 
 function Weather.metrics(hour, forecast)
     return {
-        { label = "feels like", value = Score.fmt(hour.feels, "°"), note = "air " .. Score.fmt(hour.temp, "°") },
-        { label = "rain", value = Score.fmt(hour.rainChance, "%"), note = Score.fmt(hour.rain, " mm", 1) .. " this hour" },
+        { label = "feels like", value = Units.temp(hour.feels), note = "air " .. Units.temp(hour.temp) },
+        { label = "rain", value = Score.fmt(hour.rainChance, "%"), note = Units.rain(hour.rain) .. " this hour" },
         Report.wind(hour),
         { label = "humidity", value = Score.fmt(hour.humidity, "%") },
         { label = "uv index", value = Score.fmt(hour.uv) },
@@ -49,9 +50,11 @@ function Weather.metrics(hour, forecast)
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Weather.charts = {
-    { title = "temperature °C", kind = "column", value = function(hour) return hour.temp or 0 end },
-    { title = "chance of rain %", kind = "column", min = 0, max = 100, value = function(hour) return hour.rainChance or 0 end },
+    { title = "temperature", unit = "temp", kind = "column", value = function(hour) return hour.temp or 0 end },
+    { title = "chance of rain", unit = "percent", kind = "column", min = 0, max = 100,
+        value = function(hour) return hour.rainChance or 0 end },
 }
 
 return Weather

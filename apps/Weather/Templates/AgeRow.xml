@@ -1,0 +1,7 @@
+<!-- How old the forecast is ("updated 25 min ago"), and a clear line in the
+     row's tone when it is an offline copy or old. -->
+<StackView Spacing="0" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+  <TextBlock Name="AgeText" Text="{Binding DataContext/Title}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+  <TextBlock Name="AgeWarning" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}" FontSize="16"
+             WordWrap="true" class="wx-tone" IgnoreHitTest="true"/>
+</StackView>

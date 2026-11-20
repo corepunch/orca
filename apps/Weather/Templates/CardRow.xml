@@ -1,0 +1,15 @@
+<!-- A big answer an activity gives (`cards`): "frost tonight", "storm clock",
+     "tides". A bar in the card's tone, the question small, the answer big,
+     a line of why, and an optional icon. -->
+<Grid Columns="4 1fr auto" Spacing="12" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+  <StackView class="wx-bar" IgnoreHitTest="true"/>
+  <StackView Spacing="0" JustifyContent="Start" IgnoreHitTest="true">
+    <TextBlock Name="CardTitle" Text="{Binding DataContext/Title}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+    <TextBlock Name="CardValue" Text="{Binding DataContext/Value}" FontSize="30" WordWrap="true" class="wx-tone"
+               IgnoreHitTest="true"/>
+    <TextBlock Name="CardDetail" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}" FontSize="14"
+               WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>
+  </StackView>
+  <VectorView Name="CardIcon" Source="{Binding DataContext/Icon}" Visible="{Binding DataContext/HasIcon}" Width="32"
+              Height="32" class="wx-ink"/>
+</Grid>

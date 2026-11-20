@@ -4,6 +4,7 @@
 -- offshore at one beach and blown-out onshore at the next.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Surf = {
@@ -59,8 +60,8 @@ function Surf.window(hour) return hour.isDay end
 
 function Surf.note(hour, forecast)
     local height, period = swell(hour)
-    return ("%s · %s · %s %s"):format(Score.fmt(height, " m", 1), Score.fmt(period, " s"),
-        windTo(hour, forecast.spot or {}), Score.fmt(hour.wind, " m/s"))
+    return ("%s · %s · %s %s"):format(Units.height(height, 1), Score.fmt(period, " s"),
+        windTo(hour, forecast.spot or {}), Units.wind(hour.wind))
 end
 
 local function wetsuit(temp)
@@ -77,20 +78,22 @@ function Surf.metrics(hour, forecast)
     local wind = Report.wind(hour)
     wind.note = windTo(hour, forecast.spot or {}) .. " · " .. wind.note
     return {
-        { label = "swell", value = Score.fmt(height, " m", 1) .. " · " .. Score.fmt(period, " s"),
+        { label = "swell", value = Units.height(height, 1) .. " · " .. Score.fmt(period, " s"),
             note = "from " .. Sky.compass(direction) },
-        { label = "waves", value = Score.fmt(hour.waveHeight, " m", 1), note = "wind sea and swell together" },
+        { label = "waves", value = Units.height(hour.waveHeight, 1), note = "wind sea and swell together" },
         wind,
-        { label = "water", value = Score.fmt(hour.seaTemp, "°"), note = wetsuit(hour.seaTemp) },
+        { label = "water", value = Units.temp(hour.seaTemp), note = wetsuit(hour.seaTemp) },
         Report.sun(hour),
         Report.moon(forecast),
     }
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Surf.charts = {
-    { title = "swell m", kind = "column", value = function(hour) return hour.swellHeight or hour.waveHeight or 0 end },
-    { title = "wind m/s", kind = "line", value = function(hour) return hour.wind or 0 end },
+    { title = "swell", unit = "height", kind = "column",
+        value = function(hour) return hour.swellHeight or hour.waveHeight or 0 end },
+    { title = "wind", unit = "wind", kind = "line", value = function(hour) return hour.wind or 0 end },
 }
 
 return Surf

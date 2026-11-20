@@ -1,0 +1,25 @@
+<!-- Settings over Data/Settings.xml, built from declarations: the shared
+     units and clock, each activity's own `settings`, and "about" with the
+     data attribution. A Pivot with Back, like an activity page; the app
+     titles it with the app's name. -->
+<Grid Name="SettingsPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+  <Pivot Name="SettingsPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
+         ContentInsetAdjustment="Always" class="wx-ink">
+    <PivotItem Name="UnitsSection" Header="units">
+      <ItemsStack Name="UnitItems" Spacing="6" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Setting"
+                  ItemsSource="{Binding DataContext/Units/Items}" ItemTemplate="Weather/Templates/SettingRow"/>
+    </PivotItem>
+    <PivotItem Name="ActivitySettingsSection" Header="activities">
+      <StackView Name="ActivitySettingsBody" Spacing="6" Overflow="hidden scroll" JustifyContent="Start">
+        <TextBlock Name="NoActivitySettings" Text="nothing to set here yet" Visible="{Binding DataContext/ActivitySettings/IsEmpty}"
+                   FontSize="18" class="wx-dim" IgnoreHitTest="true"/>
+        <ItemsStack Name="ActivitySettingItems" Spacing="6" JustifyContent="Start" ItemNamePrefix="Setting"
+                    ItemsSource="{Binding DataContext/ActivitySettings/Items}" ItemTemplate="Weather/Templates/SettingRow"/>
+      </StackView>
+    </PivotItem>
+    <PivotItem Name="AboutSection" Header="about">
+      <ItemsStack Name="AboutItems" Spacing="18" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="About"
+                  ItemsSource="{Binding DataContext/About/Items}" ItemTemplate="Weather/Templates/AboutRow"/>
+    </PivotItem>
+  </Pivot>
+</Grid>

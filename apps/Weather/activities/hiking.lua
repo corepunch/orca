@@ -4,6 +4,7 @@
 -- for each spot's own height, so a summit gets summit weather.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Hiking = {
@@ -47,20 +48,20 @@ end
 function Hiking.window(hour) return hour.isDay end
 
 function Hiking.note(hour)
-    return ("%s · gusts %s · rain %s"):format(Score.fmt(hour.feels, "°"), Score.fmt(hour.gust, " m/s"),
+    return ("%s · gusts %s · rain %s"):format(Units.temp(hour.feels), Units.wind(hour.gust),
         Score.fmt(hour.rainChance, "%"))
 end
 
 function Hiking.metrics(hour, forecast)
     local height = forecast.elevation
     return {
-        { label = "height", value = Score.fmt(height, " m"), note = "the forecast is for this height" },
-        { label = "freezing level", value = Score.fmt(hour.freezingLevel, " m"),
+        { label = "height", value = Units.height(height, 0), note = "the forecast is for this height" },
+        { label = "freezing level", value = Units.height(hour.freezingLevel, 0),
             note = (height and hour.freezingLevel and hour.freezingLevel < height) and "below you: ice likely"
                 or "above you" },
-        { label = "feels like", value = Score.fmt(hour.feels, "°"), note = "air " .. Score.fmt(hour.temp, "°") },
+        { label = "feels like", value = Units.temp(hour.feels), note = "air " .. Units.temp(hour.temp) },
         Report.wind(hour),
-        { label = "visibility", value = Score.fmt((hour.visibility or 0) / 1000, " km"), note = Sky.describe(hour.code) },
+        { label = "visibility", value = Units.distance((hour.visibility or 0) / 1000), note = Sky.describe(hour.code) },
         { label = "storm energy", value = Score.fmt(hour.cape, " J/kg"),
             note = (hour.cape or 0) >= 1000 and "thunder likely" or (hour.cape or 0) >= 300 and "some risk" or "low" },
         Report.sun(hour),
@@ -68,9 +69,11 @@ function Hiking.metrics(hour, forecast)
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Hiking.charts = {
-    { title = "feels like °C", kind = "line", value = function(hour) return hour.feels or hour.temp or 0 end },
-    { title = "chance of rain %", kind = "column", min = 0, max = 100, value = function(hour) return hour.rainChance or 0 end },
+    { title = "feels like", unit = "temp", kind = "line", value = function(hour) return hour.feels or hour.temp or 0 end },
+    { title = "chance of rain", unit = "percent", kind = "column", min = 0, max = 100,
+        value = function(hour) return hour.rainChance or 0 end },
 }
 
 return Hiking

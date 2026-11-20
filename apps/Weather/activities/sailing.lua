@@ -5,6 +5,7 @@
 -- degrees toward the water); lakes have no waves to read.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Sailing = {
@@ -55,28 +56,29 @@ end
 function Sailing.window(hour) return hour.isDay end
 
 function Sailing.note(hour, forecast)
-    return ("%s gusts %s · %s %s"):format(Score.fmt(hour.wind, " m/s"), Score.fmt(hour.gust), windTo(hour, forecast.spot or {}),
+    return ("%s · %s %s"):format(Units.gust(hour.wind, hour.gust), windTo(hour, forecast.spot or {}),
         Sky.compass(hour.windDir))
 end
 
 function Sailing.metrics(hour, forecast)
     local spot, ratio = forecast.spot or {}, gustiness(hour)
     return {
-        { label = "wind", value = Score.fmt(hour.wind, " m/s") .. " " .. Sky.compass(hour.windDir),
-            note = ("%s · about %d knots"):format(windTo(hour, spot), math.floor((hour.wind or 0) * 1.944 + 0.5)) },
-        { label = "gusts", value = Score.fmt(hour.gust, " m/s"),
+        { label = "wind", value = Units.gust(hour.wind, hour.gust) .. " " .. Sky.compass(hour.windDir),
+            note = windTo(hour, spot) .. " · wind, then gusts" },
+        { label = "gusts", value = Units.wind(hour.gust),
             note = ratio >= 1.35 and "gusty" or "steady" },
-        { label = "waves", value = spot.lake and "lake" or Score.fmt(hour.waveHeight, " m", 1),
+        { label = "waves", value = spot.lake and "lake" or Units.height(hour.waveHeight),
             note = spot.lake and "no sea swell" or "period " .. Score.fmt(hour.wavePeriod, " s") },
-        { label = "water", value = Score.fmt(hour.seaTemp, "°"), note = "air " .. Score.fmt(hour.temp, "°") },
+        { label = "water", value = Units.temp(hour.seaTemp), note = "air " .. Units.temp(hour.temp) },
         Report.sun(hour),
     }
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Sailing.charts = {
-    { title = "wind m/s", kind = "column", value = function(hour) return hour.wind or 0 end },
-    { title = "gusts m/s", kind = "line", value = function(hour) return hour.gust or 0 end },
+    { title = "wind", unit = "wind", kind = "column", value = function(hour) return hour.wind or 0 end },
+    { title = "gusts", unit = "wind", kind = "line", value = function(hour) return hour.gust or 0 end },
 }
 
 return Sailing

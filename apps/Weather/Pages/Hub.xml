@@ -1,6 +1,8 @@
 <!-- The place hub over Data/Hub.xml: a Panorama titled with the place, after
      Bing Weather's hub and Amazing Weather's "now" page (DESIGN.md). Each
-     "good for" row opens that activity's page; "places" switches place. -->
+     "good for" row opens that activity's page; "places" switches place and
+     ends with the "settings" link. App.lua titles the hourly charts in the
+     user's units. -->
 <Grid Name="HubPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
   <Panorama Name="HubPanorama" Title="{Binding DataContext/PlaceList/Selected/Title}" ContentInsetAdjustment="Always"
             class="wx-ink">
@@ -16,8 +18,13 @@
           <Button Name="RetryReport" Click="Report.Retry" Height="44" BorderWidth="0" FontSize="20"
                   TextHorizontalAlignment="Left" class="wx-link">try again</Button>
         </StackView>
+        <!-- An edition leads with its activity's big answers ("frost tonight"). -->
+        <ItemsStack Name="CardItems" Spacing="14" JustifyContent="Start" ItemNamePrefix="Card"
+                    ItemsSource="{Binding DataContext/Cards/Items}" ItemTemplate="Weather/Templates/CardRow"/>
         <ItemsStack Name="NowItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Now"
                     ItemsSource="{Binding DataContext/Now/Items}" ItemTemplate="Weather/Templates/HubNow"/>
+        <ItemsStack Name="AgeItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Age"
+                    ItemsSource="{Binding DataContext/Age/Items}" ItemTemplate="Weather/Templates/AgeRow"/>
         <ItemsStack Name="DetailItems" Spacing="2" JustifyContent="Start" ItemNamePrefix="Detail"
                     ItemsSource="{Binding DataContext/Details/Items}" ItemTemplate="Weather/Templates/DetailRow"/>
         <ItemsStack Name="StripItems" Direction="Horizontal" Spacing="4" JustifyContent="Start" ItemNamePrefix="Strip"
@@ -51,8 +58,12 @@
                   ItemsSource="{Binding DataContext/Days/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
     </PanoramaItem>
     <PanoramaItem Name="PlacesSection" Header="places">
-      <ItemsStack Name="PlaceItems" Spacing="12" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Place"
-                  ItemsSource="{Binding DataContext/PlaceList/Items}" ItemTemplate="Weather/Templates/PlaceRow"/>
+      <StackView Name="PlacesBody" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">
+        <ItemsStack Name="PlaceItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Place"
+                    ItemsSource="{Binding DataContext/PlaceList/Items}" ItemTemplate="Weather/Templates/PlaceRow"/>
+        <Button Name="OpenSettings" Click="OpenSettings" Height="44" BorderWidth="0" FontSize="20"
+                TextHorizontalAlignment="Left" class="wx-link">settings</Button>
+      </StackView>
     </PanoramaItem>
   </Panorama>
 </Grid>

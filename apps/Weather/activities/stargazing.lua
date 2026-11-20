@@ -4,6 +4,7 @@
 -- night, unlike every other profile.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
+local Units = require "Weather/units"
 local Report = require "Weather/report"
 
 local Stargazing = {
@@ -55,7 +56,7 @@ function Stargazing.window(hour) return not hour.isDay and Score.twilight(hour) 
 function Stargazing.note(hour, forecast)
     local moon = moonAt(hour, forecast)
     return ("clouds %s · moon %s · %s"):format(Score.fmt(hour.cloud, "%"), moon.up and "up" or "down",
-        Score.fmt(hour.temp, "°"))
+        Units.temp(hour.temp))
 end
 
 function Stargazing.metrics(hour, forecast)
@@ -66,17 +67,19 @@ function Stargazing.metrics(hour, forecast)
                 Score.fmt(hour.cloudHigh, "%")) },
         { label = "moon", value = moon.name, note = Score.fmt(moon.lit * 100, "% lit · ") .. (moon.up and "about up now"
             or "about below the horizon") },
-        { label = "humidity", value = Score.fmt(hour.humidity, "%"), note = "dew point " .. Score.fmt(hour.dewPoint, "°") },
-        { label = "visibility", value = Score.fmt((hour.visibility or 0) / 1000, " km") },
+        { label = "humidity", value = Score.fmt(hour.humidity, "%"), note = "dew point " .. Units.temp(hour.dewPoint) },
+        { label = "visibility", value = Units.distance((hour.visibility or 0) / 1000) },
         Report.wind(hour),
         Report.sun(hour),
     }
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
+-- `value` is metric; `unit` (a Units kind) converts it and ends the title.
 Stargazing.charts = {
-    { title = "clouds %", kind = "column", min = 0, max = 100, value = function(hour) return hour.cloud or 0 end },
-    { title = "humidity %", kind = "line", min = 0, max = 100, value = function(hour) return hour.humidity or 0 end },
+    { title = "clouds", unit = "percent", kind = "column", min = 0, max = 100, value = function(hour) return hour.cloud or 0 end },
+    { title = "humidity", unit = "percent", kind = "line", min = 0, max = 100,
+        value = function(hour) return hour.humidity or 0 end },
 }
 
 return Stargazing
