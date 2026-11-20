@@ -30,8 +30,10 @@ activity is a lens over the same forecast: it rates every hour **good**,
   temperature (columns) with wind (a line), then the chance of rain.
 - **week**: every day, with its best activity and window. Tap a day to open
   its hours.
-- **places**: tap one to see its hub from the start. The section ends with
-  a **settings** link.
+- **places**: my places (the first is home; each has **edit**), **add a
+  place**, then the suggestions (each has **keep**) and a **settings** link.
+  Tap a place to see its hub from the start. On the first run nothing is
+  saved, so the hub opens on the first suggestion.
 
 In an edition the hub's first section opens with the edition activity's
 cards ("frost tonight"): at most three, the most urgent (warnings and poor
@@ -66,6 +68,17 @@ Tap the title line or swipe in from the left edge to go back. The page uses
 the activity's accent colour. In an edition, the edition's own activity is
 titled with the app's name when it fits ("surfers' weather · Bondi").
 
+**Add a place** (`Pages/Search.xml`, route `/search`) searches a name or a
+postcode and lists what each result is and where ("peak · Valais,
+Switzerland"); before a search it lists the suggestions. Offline it says so
+and still finds the app's own places. A result opens **the place editor**
+(`Pages/Place.xml`, route `/place`): where the place is, its kind (town,
+coast, lake, river, mountain), in the full app a "good for" switch per
+activity, and each of its activities' own fields. Rows step like settings.
+A new place has "save this place" and "save as home"; a saved one "make this
+home", "move up", "move down" and "remove" (a second tap confirms; its
+saved forecast goes too). Changes to a saved place are kept at once.
+
 **Settings** (`Pages/Settings.xml`) is a Pivot built from declarations:
 **units** (temperature, wind, heights, rain, pressure, distance, clock),
 **activities** (each activity's own `settings`; an edition names it after its
@@ -87,7 +100,11 @@ its page.
 
 ```text
 App.lua            navigation: the hub stays alive; an activity page and settings open and close
-places.lua         every place and what it is good for (facing, lake, …)
+places.lua         the curated places and what each is good for (facing, lake, …): the suggestions
+myplaces.lua       my places: saved per edition, home first; drafts, guesses and the editor's fields
+search.lua         place search through Open-Meteo's geocoding
+placepages.lua     the place rows, the search and the place editor (operations and handlers)
+compare.lua        compare my places for one activity
 activities.lua     the activities in hub order, their accents, edition names, merged requests
 activities/*.lua   one file per activity: rate, note, metrics, charts, window, focus, cards, …
 provider.lua       places; hub, activity and settings rows; one cached and one saved forecast per place
@@ -102,6 +119,8 @@ Data/Hub.xml       Places, PlaceList, Report and a View per hub section
 Data/Activity.xml  Report for the route's place and activity, a View per pivot item
 Data/Day.xml       Report.day for the route's place and date
 Data/Settings.xml  the settings rows, split into units, activities and about
+Data/Search.xml    search results, notes and the suggestions
+Data/Place.xml     the place editor's facts, fields and links
 editions/<key>/    an edition's own modules, pages and data (its `page` routes)
 ```
 
@@ -152,7 +171,9 @@ fails.
    - `everywhere`, `followed`: see Settings above.
 4. Register it in `activities.lua` with an accent. Add matching rules to
    `Styles/weather.css`.
-5. List it on the places in `places.lua` where it makes sense.
+5. List it on the places in `places.lua` where it makes sense, add it to
+   the guesses in `myplaces.lua` (`GOOD_FOR`), and declare `placeFields`
+   if it needs facts about a place (below).
 6. Add checks to `tests/test_weather_<id>.lua` (see "Tests" below).
 
 An hour has these fields:
@@ -238,8 +259,11 @@ Default units in tests are metric (region "NL").
 
 Not built yet:
 
-- searching for a place, device location and saved places (wave 3);
+- device location (wave 4: the hook is `MyPlaces.fromLocation`);
 - notifications and live tiles (wave 4).
+
+`F.storage` empties the saved places (`places`) too, so every launch starts
+on the first run; `ui.choose(id)` taps a place row.
 
 ## Extension points for editions
 
@@ -365,7 +389,7 @@ name>/<name>.lua`, one folder per edition. Writes are atomic; reads run with
 no environment and an instruction budget, so a file holds data, never code.
 Names are letters, digits, `-`, `_` and `.`. `Storage.new { dir = … }` makes a
 store elsewhere; the app uses the one tests pass (`Storage.use`). Already
-taken: `settings`, `forecast-<place id>`.
+taken: `settings`, `places`, `forecast-<place id>`.
 
 **`Sky.sunAltitude(epoch, lat, lon)` and `Sky.twilight(date, lat, lon,
 offset)`.** The sun's height in degrees (NOAA's algorithm, no refraction)
@@ -383,4 +407,80 @@ The forecast puts them on `day.twilight` and `hour.sunAltitude`.
 "Weather/editions/<key>/style.css"`. Every screen of that edition then uses
 it. The sheet starts with `@import "../../Styles/weather.css";` and adds
 to it, for example a red night theme under a state class the edition sets.
+
+## Places
+
+**My places** (`myplaces.lua`). The saved places are kept with Storage
+(`places`, one file per edition), in the user's order; the first is home.
+The curated places (`places.lua`) are suggestions: a kept suggestion stores
+only its id and what the user changed, so the editions' tables keyed by id
+(peaks, spots, breaks, rules) still find it. A found place stores its names,
+coordinates, height and country too. Its id is stable: `geo-<GeoNames id>`
+from search, `at-<lat>_<lon>` from a location, with `-2`… when taken. Every
+per-place file (`forecast-<id>`, logs) and the files keyed by coordinates
+(`climate-…`, `stargazing-place`) work for it unchanged.
+
+```lua
+MyPlaces.mine()                -- saved places, or the suggestions before any is saved
+MyPlaces.all()                 -- saved places, then the suggestions (the hub's list)
+MyPlaces.find(id)              -- a saved or curated place
+MyPlaces.add(draftOrId, home)  -- save a draft, or keep a suggestion by id
+MyPlaces.set(id, key, value)   -- the user's own value (`place.own` lists them)
+MyPlaces.move(id, delta), MyPlaces.makeHome(id), MyPlaces.remove(id)
+MyPlaces.fromResult(json)      -- a draft from a geocoding result
+MyPlaces.fromLocation(lat, lon, name, region)  -- wave 4's hook: a draft at a device fix
+```
+
+A resolved place is a plain table: the curated or found fields, the user's
+values on top, `kind`, and `lake` or `river` from the kind the user chose.
+
+**Guessed activities** (`MyPlaces.guess(kind, elevation, population)`). The
+kind comes from the result's GeoNames feature code (a beach or bay is a
+coast; `LK` a lake; `STM` a river; `MT`, `PK` a mountain), else from the
+edition (surf and sailing: a coast; hiking: a mountain), else a town. A coast
+is good for surf, sailing and fishing, a lake for fishing and sailing, a
+river for fishing, a mountain for hiking, a town for the garden; from 1000 m
+hiking too, and the stars except in a city over 200,000 people. The editor
+shows the guess to confirm, and changing the kind guesses again. In an
+edition a place is added for the edition's activity.
+
+**`placeFields`: what an activity needs to know about a place.** The editor
+lists the fields of every activity the place offers, under its name; a key
+two activities declare (`facing`) shows once.
+
+```lua
+Surf.placeFields = {
+    { key = "facing", title = "the shore faces", kind = "compass", needed = "not set: …" },
+    { key = "breakTide", title = "best tide", kind = "choice", options = { { "all", "any tide" }, … },
+        default = function(place) return Breaks.of(place).tide end },
+}
+```
+
+`kind` is `"compass"` (eight points, less and more turn it), `"choice"`,
+`"toggle"` or `"number"` (`min`, `max`, `step`, `start` for the first tap,
+`format`). `default` is a value or a function of the place; `needed` replaces
+the detail while there is no value. The value lands on the place under its
+key. Today: surf (`facing`, `breakLevel`, `breakTide`), sailing (`facing`,
+`safeFrom`, `safeTo`), fishing (`facing`) and hiking (`summit`,
+`trailhead`). `Breaks.of`, `Spots.sector` and the hiking `Sources.peak` read
+the user's values first, then their tables, then a guess from `facing`.
+The provider rates a cached forecast again when an edit leaves its requests
+the same, so turning a shore asks nothing.
+
+**`compare.lua`: compare my places for one activity.**
+`Compare.places(activity)` lists my places offering it,
+`Compare.saved(place, epoch)` replays the forecast kept on the device (no
+request), and `Compare.rank(entries, best, { tie })` rates entries with
+`best(entry)` (`{ result, span, hour, later }`) and sorts them: sooner, then
+higher, then the tie-break or the title; places whose forecast failed come
+last. Surfers' best break (`Surf.compare`, `Surf.others`), Sailors' weekend
+(`Rank.near`, `Rank.rank`) and Fishers' waters (`editions/fishing/compare.lua`)
+use it. None asks more than before: surf uses saved forecasts, sailing one
+multi-point request, fishing the cached forecast per water on its own page.
+
+**Search** (`search.lua`). `Search.run(text, fetch)` asks
+`Forecast.url("geocoding", "name=…&count=10&language=en&format=json")`, so a
+commercial key moves it with the rest; it sends only what was typed.
+`Search.known(text)` finds the app's own places (accents folded), which
+offline search falls back to.
 

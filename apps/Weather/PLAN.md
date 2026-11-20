@@ -277,13 +277,13 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 
 ## 5. Wave 3: places (one agent)
 
-| ID | Feature | Pri | Size |
-| --- | --- | --- | --- |
-| P1 | Place search through the Open-Meteo Geocoding API (name or postcode, with country) | P0 | M |
-| P2 | Saved places with F1: add, remove, reorder, home first; the curated places become suggestions | P0 | M |
-| P3 | Place editor for what an activity needs: a shore-facing compass, lake or sea, summit height, safe sector, break profile | P0 | M |
-| P4 | Activities that fit a place are guessed from its kind and confirmed by the user | P1 | S |
-| P5 | Compare saved places for one activity ("best place today") as a shared view that SU6, SA7 and FI10 use | P1 | M |
+| ID | Feature | Pri | Size | Status |
+| --- | --- | --- | --- | --- |
+| P1 | Place search through the Open-Meteo Geocoding API (name or postcode, with country) | P0 | M | done, 2277736e: offline it finds the app's own places |
+| P2 | Saved places with F1: add, remove, reorder, home first; the curated places become suggestions | P0 | M | done, 2277736e: the first run shows the suggestions |
+| P3 | Place editor for what an activity needs: a shore-facing compass, lake or sea, summit height, safe sector, break profile | P0 | M | done, 2277736e: activities declare `placeFields`; no rename yet |
+| P4 | Activities that fit a place are guessed from its kind and confirmed by the user | P1 | S | done, 2277736e |
+| P5 | Compare saved places for one activity ("best place today") as a shared view that SU6, SA7 and FI10 use | P1 | M | done, 93063191: a shared helper (`compare.lua`), not a new page |
 
 ## 6. Wave 4: native iOS (engine work)
 
@@ -306,7 +306,7 @@ why`.
 | 1 Foundation | done: F1, F2, F6 in 850a5a31; F2–F5, F7, F9 in c9a8f894; F8 in 76b480de. Contracts in [README](README.md#extension-points-for-editions) |
 | 2 Apps | done. Weather W1–W10 except W11 (engine has no accessibility properties), W12 skipped: bee80f81, deca9fde, e42e0d37, 68412dba. Fishers' FI1–FI12 (FI2, FI5, FI11, FI12 partial): 0bd69837, d70eb45b. Surfers' SU1–SU11 (SU6, SU9, SU10 partial): ed5e2cfa, 9eec452e. Sailors' SA1–SA8 (SA9, SA10 skipped): 42328fd6. Hikers' HI1–HI8 (HI7 needs a User-Agent to work live): 07010bfc. Gardeners' GA1–GA9, GA11–GA13 (GA10 skipped): e8387067, b16276bd. Stargazers' ST1–ST9, ST11 (ST10 partial; ST12–ST14 skipped): 8420eb49. Tests: 880 checks pass |
 | 2.5 Integration | done: I1–I11 (section 8). I1, I4 in ee252388; I2, I3 in 5c861e16; I5–I7 in 8b7204f4; I8–I10 in f4a83259; I11 with this row. Tests: 919 checks pass |
-| 3 Places | not started |
+| 3 Places | done: P1–P4 in 2277736e, P5 in 93063191 (section 5). Device location is wave 4's: `MyPlaces.fromLocation(lat, lon, name, region)` makes the draft. Tests: 991 checks pass |
 | 4 Native | not started |
 
 ## 8. Wave 2.5: integration (one agent, shared files)
@@ -374,3 +374,14 @@ Notes from the foundation:
   when the app bundle declares localizations without a region it can be
   only "en", which falls back to metric. Wave 4 may want the device region
   (`NSLocale.current.region`) exposed to Lua.
+
+Notes from wave 3 (places):
+
+- Postcodes are matched worldwide: "10115" finds New York before Berlin.
+  Open-Meteo takes `countryCode=`; passing the device region (wave 4's
+  `NSLocale.current.region`, see above) would fix it.
+- The geocoder cannot tell a seaside town from an inland one, and has no
+  shore direction: a found coast asks the user for its facing. A reverse
+  lookup of the nearest coastline would need another data source.
+- Renaming a place (hiking S65) and a context menu on place rows (Windows
+  Phone's long press) are not built; the editor's links do the rest.
