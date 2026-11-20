@@ -303,7 +303,7 @@ why`.
 | Wave | Status |
 | --- | --- |
 | Research | done (Research/*.md) |
-| 1 Foundation | not started |
+| 1 Foundation | done: F1, F2, F6 in 850a5a31; F2–F5, F7, F9 in c9a8f894; F8 in 76b480de. Contracts in [README](README.md#extension-points-for-editions) |
 | 2 Apps | not started |
 | 3 Places | not started |
 | 4 Native | not started |
@@ -311,3 +311,15 @@ why`.
 ## Requests to the foundation
 
 Edition agents add needs here instead of editing shared files.
+
+Notes from the foundation:
+
+- Reading a file outside the bundle needs `io.open(path, "r+b")`: ORCA's
+  `io.open` wrapper serves plain `"r"`/`"rb"` reads from its package file
+  system, which may not see the file. `Storage` already does this.
+- F9's "when there is room" is a character budget (34, the app name and the
+  place), not a measured width.
+- The region for default units comes from `core.getPreferredLanguage()`;
+  when the app bundle declares localizations without a region it can be
+  only "en", which falls back to metric. Wave 4 may want the device region
+  (`NSLocale.current.region`) exposed to Lua.
