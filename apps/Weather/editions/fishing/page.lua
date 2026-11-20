@@ -4,18 +4,15 @@
 -- "patterns" (what my catches share, FI7). Rows are WeatherRows, so the
 -- shared templates show them.
 --
+-- The activity declares it as `Fishing.page`; the app opens the route with
 --   Page.provider { forecastFor = provider.forecastFor, places = places,
 --       place = function() return app.place end, clock = os.time, back = function() … end }
 local Sky = require "Weather/sky"
 local Units = require "Weather/units"
-local Settings = require "Weather/settings"
 local Fishing = require "Weather/activities/fishing"
 local Log = require "Weather/editions/fishing/log"
 local Compare = require "Weather/editions/fishing/compare"
 local Page = {}
-
-Page.ROUTES = "Weather/editions/fishing/Data/Routes.xml"
-Page.PATH = "/fishing/log"
 
 local function kind(name) return function(record) return record.values.Kind == name end end
 
@@ -157,8 +154,6 @@ function Page.provider(options)
                 return rows
             end,
         },
-        -- Settings change the words (units, species): a revision for the page to compare.
-        revision = Settings.revision,
     }
 end
 

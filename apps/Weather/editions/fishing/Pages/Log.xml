@@ -7,8 +7,10 @@
          ContentInsetAdjustment="Always" class="wx-ink">
     <PivotItem Name="LogSection" Header="log">
       <StackView Name="LogBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
-        <Grid Columns="1fr 1fr" Spacing="12" StateClasses="good">
-          <Button Name="LogCatch" Click="LogCatch" Height="96" BorderWidth="0" FontSize="26" class="wx-tile wx-tile-ink">caught one</Button>
+        <Grid Columns="1fr 1fr" Spacing="12">
+          <StackView StateClasses="good">
+            <Button Name="LogCatch" Click="LogCatch" Height="96" BorderWidth="0" FontSize="26" class="wx-tile wx-tile-ink">caught one</Button>
+          </StackView>
           <Button Name="LogSkunk" Click="LogSkunk" Height="96" BorderWidth="0" FontSize="26" class="wx-bar wx-tile-ink">no fish</Button>
         </Grid>
         <ItemsStack Name="StatusItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Status"

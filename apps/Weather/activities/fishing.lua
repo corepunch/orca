@@ -28,6 +28,12 @@ local Fishing = {
     fields = { pastDays = 2 },
 }
 
+-- The edition's own page: the private catch log, my waters and patterns
+-- (editions/fishing/page.lua). Opening it needs the app to route there; see
+-- the request in PLAN.md's "Requests to the foundation".
+Fishing.page = { routes = "Weather/editions/fishing/Data/Routes.xml", path = "/fishing/log", link = "log a catch",
+    provider = function(options) return require("Weather/editions/fishing/page").provider(options) end }
+
 Fishing.sources = Tides.sources()
 Fishing.sources[#Fishing.sources + 1] = River.source
 

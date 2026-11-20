@@ -241,6 +241,8 @@ check(Fishing.water(coastForecast.hours[coastForecast.now], coastForecast).kind 
 Log.setReading("coast", nil)
 
 -- FI7: patterns from the angler's own catches, once there are enough.
+check(Page.entryRow(Log.entries()[1], 1).detail:find("^Test Coast · .*hPa falling · wind 3 m/s · water 14°"),
+    "An entry row lists its saved conditions: " .. Page.entryRow(Log.entries()[1], 1).detail)
 check(not Log.patterns().ready, "One catch is not a pattern")
 for index = 1, Log.PATTERN_MINIMUM do
     Log.add(coastForecast, COAST, { kind = index % 3 == 0 and "skunk" or "catch" }, F.NOW)
@@ -272,16 +274,17 @@ asked = table.concat(net.requests, "\n")
 check(asked:find("marine%-api[^\n]*latitude=24.92") and asked:find("sea_level_height_msl"), "A coast asks for the sea and the tide")
 check(ui.has("Cardcoast:card:tides"), "The coast's hub has a tide card")
 
+check(Fishing.page.link == "log a catch" and Fishing.page.path == "/fishing/log", "Fishing declares its log page")
 Log.use(nil)
 local appStore = ui.app.storage
 appStore:remove(Log.FILE)
 ui.app.place = LAKE
 local Routes = require "orca.data.routes"
 local wentBack = false
-local provider = Page.provider { forecastFor = ui.app.provider.forecastFor, places = { LAKE, COAST },
+local provider = Fishing.page.provider { forecastFor = ui.app.provider.forecastFor, places = { LAKE, COAST },
     place = function() return ui.app.place end, clock = function() return F.NOW end,
     back = function() wentBack = true end }
-local page, scope = Routes.load(Page.ROUTES):open(Page.PATH, ui.app, { provider = provider, host = ui.app.host })
+local page, scope = Routes.load(Fishing.page.routes):open(Fishing.page.path, ui.app, { provider = provider, host = ui.app.host })
 local screen = ui.app:screenFor(page)
 scope:activate()
 local core = require "orca.core"
