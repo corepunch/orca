@@ -8,6 +8,9 @@ local Activities = { list = {}, byId = {} }
 local ORDER = {
     { "outdoors", "#1BA1E2" }, { "fishing", "#60A917" }, { "surf", "#00ABA9" }, { "sailing", "#6A00FF" },
     { "hiking", "#C46A2B" }, { "garden", "#008A00" }, { "stargazing", "#AA00FF" },
+    -- Everyday lenses, full app only (`everywhere`: they fit every place).
+    { "run", "#1BA1E2" }, { "cycle", "#1BA1E2" }, { "dogwalk", "#1BA1E2" }, { "picnic", "#1BA1E2" },
+    { "laundry", "#1BA1E2" },
 }
 
 -- An edition is a one-activity build of this app: EDITION=surf bundles a
@@ -42,12 +45,13 @@ for _, entry in ipairs(ORDER) do
 end
 assert(not Activities.edition or Activities.byId[Activities.edition], "Unknown edition: " .. tostring(Activities.edition))
 
--- The activities a place offers, in hub order; everyday "outdoors" fits everywhere.
+-- The activities a place offers, in hub order; everyday "outdoors" and the
+-- `everywhere` lenses fit every place.
 function Activities.at(place)
     local wanted, result = { outdoors = true }, {}
     for _, id in ipairs(place.activities or {}) do wanted[id] = true end
     for _, activity in ipairs(Activities.list) do
-        if wanted[activity.id] then result[#result + 1] = activity end
+        if wanted[activity.id] or activity.everywhere then result[#result + 1] = activity end
     end
     return result
 end

@@ -33,7 +33,7 @@ local function offerFollowing()
     for _, activity in ipairs(Activities.list) do
         if activity.id ~= "outdoors" then
             list[#list + 1] = { key = "follow_" .. activity.id, title = "good for " .. activity.title, kind = "toggle",
-                default = true }
+                default = activity.followed ~= false }
         end
     end
 end
@@ -106,6 +106,8 @@ App = Application:extend {
                 self.hubPage, self.hubScope = self.routes:open("/", self, options)
                 -- An edition's hub wears its activity's accent.
                 if Activities.edition then self.hubPage.StateClasses = Activities.edition end
+                local lead = Activities.lead()
+                if lead then self.hubPage:findChild("HubBandTitle", true).Text = lead.title .. ", next 24 hours" end
                 self.hubScreen = self:screenFor(self.hubPage)
                 self.hubRevision = Settings.revision()
             end

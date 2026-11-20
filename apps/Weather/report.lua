@@ -255,15 +255,18 @@ function Report.hub(place, forecast, activities, clock, lead)
         end)
     end
     for _, entry in ipairs(goodFor) do add("activity", entry.id, entry.fields) end
+    -- The next hours; each takes the lead activity's verdict for the hourly
+    -- section's traffic-light band (W9).
     for index = forecast.now, math.min(#hours, forecast.now + HOURS_SHOWN - 1) do
         local hour = hours[index]
+        local rated = lead and rate(lead, hour, forecast)
         add("hour", hour.time, {
             short = Report.tick(hour), temp = Units.value("temp", hour.temp or 0), wind = Units.value("wind", hour.wind or 0),
             rain_chance = hour.rainChance or 0,
             title = index == forecast.now and "now" or Units.clock(hour.time), value = Units.temp(hour.temp),
             detail = ("%s · rain %s · wind %s"):format(Sky.describe(hour.code), Score.fmt(hour.rainChance, "%"),
                 Units.wind(hour.wind)),
-            icon = Sky.icon(hour.code, hour.isDay), score = 0, tone = "info",
+            icon = Sky.icon(hour.code, hour.isDay), score = rated and rated.score or 0, tone = rated and rated.verdict or "info",
         })
     end
     -- The week: each day's best activity and window.
@@ -286,13 +289,14 @@ function Report.hub(place, forecast, activities, clock, lead)
 end
 
 -- The activities the user follows (W7): an "outdoors" setting
--- `follow_<id>` switches each off; everyday outdoors always stays.
+-- `follow_<id>` switches each on or off (lenses with `followed = false`
+-- start off); everyday outdoors always stays.
 function Report.followed(activities)
     local list = {}
     for _, activity in ipairs(activities) do
-        if activity.id == "outdoors" or Settings.get("outdoors", "follow_" .. activity.id) ~= false then
-            list[#list + 1] = activity
-        end
+        local follow = Settings.get("outdoors", "follow_" .. activity.id)
+        if follow == nil then follow = activity.followed ~= false end
+        if activity.id == "outdoors" or follow then list[#list + 1] = activity end
     end
     return list
 end

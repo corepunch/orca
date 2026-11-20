@@ -45,6 +45,13 @@
     <!-- Charts first, as in Amazing Weather: the next 24 hours at a glance. -->
     <PanoramaItem Name="HoursSection" Header="hourly">
       <StackView Name="HoursBody" Spacing="28" Overflow="hidden scroll" JustifyContent="Start">
+        <!-- Clear Outside's traffic-light row: the lead activity's verdict per
+             hour (App.lua names it). The words are on its page's hourly list. -->
+        <StackView Name="HubBand" Spacing="8" JustifyContent="Start" IgnoreHitTest="true">
+          <TextBlock Name="HubBandTitle" Text="next 24 hours" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+          <ItemsStack Name="HubBandItems" Direction="Horizontal" Spacing="1" JustifyContent="Start" ItemNamePrefix="Band"
+                      ItemsSource="{Binding DataContext/Hours/Items}" ItemTemplate="Weather/Templates/BandCell"/>
+        </StackView>
         <Chart Name="TempChart" Height="190" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short"
                LabelInterval="1" class="wx-chart">
           <ColumnSeries Name="TempColumns" ValuePath="Temp" Title="temperature °C" class="wx-series"/>

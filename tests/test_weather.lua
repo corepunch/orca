@@ -301,6 +301,9 @@ local tickRow = app.store:get("WeatherRow", "tahoe:hour:2026-11-18T06:00")
 check(tickRow and tickRow.values.Short == "06" and tickRow.values.Temp == 10 and tickRow.values.RainChance == 10,
     "Hour rows carry chart numbers and a tick every three hours")
 check(app.store:get("WeatherRow", "tahoe:hour:2026-11-18T07:00").values.Short == "", "No tick between")
+check(find("HubBandTitle").Text == "outdoors, next 24 hours" and find("Bandtahoe:hour:2026-11-18T06:00")
+    and tickRow.values.Tone ~= "info" and find("Bandtahoe:hour:2026-11-18T06:00").StateClasses == tickRow.values.Tone,
+    "The hourly section opens with outdoors' verdict band")
 check(text("Daytahoe:day:2026-11-20", "Verdict") == "11° / 7°" or text("Daytahoe:day:2026-11-20", "Verdict"):find("/"),
     "Days show high and low")
 check(text("Daytahoe:day:2026-11-19", "Why"):find(" for ") ~= nil, "Days name their best activity: "
@@ -614,6 +617,27 @@ check(conditions.pollen.value == "—" and conditions.pollen.note:find("Europe o
 
 check(Outdoors.sources[1] == air, "The full app asks for the air; an edition keeps to its own requests")
 
+-- Official warnings (W10) from the US National Weather Service.
+local alerts = Outdoors.alertSource
+check(alerts.url(F.PLACES[1]):find("^https://api%.weather%.gov/alerts/active%?point=39%.0900,%-120%.0400")
+    and alerts.url(BERLIN) == nil and Outdoors.isoEpoch("2026-11-18T14:00:00-08:00") == NOW + 16 * 3600,
+    "US places ask the NWS")
+local warned = Forecast.parse(weather(39.09), nil, NOW)
+warned.offset = -8 * 3600
+alerts.parse({ features = {
+    { properties = { event = "Wind Advisory", severity = "Moderate", ends = "2026-11-18T14:00:00-08:00",
+        senderName = "NWS Reno NV" } },
+    { properties = { event = "Winter Storm Warning", severity = "Severe", expires = "2026-11-19T18:00:00-08:00" } },
+    { properties = { event = "Gone", severity = "Severe", ends = "2026-11-17T18:00:00-08:00" } },
+    { properties = { event = "Test Message", status = "Test" } },
+} }, warned)
+local warnings = Outdoors.warningCards(warned, NOW)
+check(#warnings == 2 and warnings[1].value == "winter storm warning" and warnings[1].tone == "poor"
+    and warnings[1].detail == "until thu 19 18:00 · National Weather Service"
+    and warnings[2].value == "wind advisory" and warnings[2].tone == "fair", "Warnings in force lead, the severe first")
+check(Outdoors.cards(warned, F.PLACES[1], NOW)[1].id == "warning-1", "ahead of every other answer")
+check(not pcall(alerts.parse, { title = "busy" }, warned), "An answer without a list is not \"no warnings\"")
+
 -- Choose and order "good for" (W7): a switch per activity and the order.
 local function goodFor(rows)
     local list = {}
@@ -622,8 +646,8 @@ local function goodFor(rows)
 end
 local tahoeWeek = Forecast.parse(weather(39.09), nil, NOW, F.PLACES[1])
 local tahoeActivities = Activities.at(F.PLACES[1])
-check(goodFor(Report.hub(F.PLACES[1], tahoeWeek, tahoeActivities, NOW)) == "outdoors,fishing,hiking,stargazing",
-    "Every activity at first, in hub order")
+check(goodFor(Report.hub(F.PLACES[1], tahoeWeek, tahoeActivities, NOW)) == "outdoors,fishing,hiking,stargazing,run,cycle",
+    "The place's activities and the run and cycle lenses at first, in hub order")
 check(Settings.set("outdoors", "follow_hiking", false) and Settings.set("outdoors", "order", "best"), "Switch one off, best first")
 local chosen = goodFor(Report.hub(F.PLACES[1], tahoeWeek, tahoeActivities, NOW))
 check(not chosen:find("hiking") and chosen:find("stargazing$"), "Hidden ones go, tonight's stars wait at the end: " .. chosen)
@@ -633,6 +657,24 @@ check(settingsRows["settings:outdoors:follow_hiking"].value == "off" and setting
     == "best first" and settingsRows["settings:outdoors:comfort"].note == "outdoors", "Settings list them under outdoors")
 Settings.set("outdoors", "follow_hiking", true)
 Settings.set("outdoors", "order", "listed")
+
+-- Everyday lenses (W6): every place, full app only; three start switched off.
+local Lens = Activities.byId
+check(Lens.run.everywhere and Lens.laundry and #Activities.at(F.PLACES[2]) == 7, "Lenses fit every place")
+check(Settings.set("outdoors", "follow_picnic", true)
+    and goodFor(Report.hub(F.PLACES[2], tahoeWeek, Activities.at(F.PLACES[2]), NOW)):find("picnic"), "and can be followed")
+Settings.set("outdoors", "follow_picnic", false)
+check(F.says(F.verdict(Lens.run, { feels = 27, dewPoint = 20 }), "Muggy") and F.verdict(Lens.run, { feels = 12 }).verdict
+    == "good", "Run: cool is good, muggy heat is not")
+check(F.verdict(Lens.run, { aqi = 170, aqiScale = "us" }).score < F.verdict(Lens.run, {}).score, "and poor air counts")
+check(F.verdict(Lens.cycle, { wind = 3, gust = 18 }).score <= 30 and F.says(F.verdict(Lens.cycle, { code = 61 }), "Wet roads"),
+    "Cycle: gusts and wet roads")
+check(F.verdict(Lens.dogwalk, { temp = 31 }).score <= 30 and F.verdict(Lens.dogwalk, { code = 51 }).verdict ~= "poor",
+    "Dog walk: hot paws matter, drizzle hardly")
+check(F.verdict(Lens.picnic, { isDay = false }).verdict == "poor" and F.verdict(Lens.picnic, { feels = 22, cloud = 10 })
+    .verdict == "good", "Picnic: warm, sunny daylight")
+check(F.verdict(Lens.laundry, { humidity = 50, wind = 4, cloud = 20, et0 = 0.4 }).verdict == "good"
+    and F.verdict(Lens.laundry, { code = 63 }).score <= 10, "Laundry: breezy and dry, never in rain")
 
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}
