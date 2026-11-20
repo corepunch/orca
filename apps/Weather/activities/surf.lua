@@ -14,6 +14,7 @@ local Breaks = require "Weather/editions/surf/breaks"
 local Waves = require "Weather/editions/surf/waves"
 local Tides = require "Weather/editions/surf/tides"
 local Outlook = require "Weather/editions/surf/outlook"
+local Logbook = require "Weather/editions/surf/logbook"
 
 local Surf = {
     id = "surf", title = "surf", needsMarine = true,
@@ -123,6 +124,8 @@ function Surf.rate(hour, forecast)
                 Sky.compass(train.direction), Breaks.windowText(profile.window)))
         end
         if hour.oneModel then card:note("Far ahead: one wave model only, low confidence.") end
+        local logged = spot.id and Logbook.summary(Logbook.similar(spot.id, Surf.conditions(hour, forecast, surf)))
+        if logged then card:note(capital(logged) .. ".") end
     end
     if profile.level == "advanced" and level == "beginner" then
         card:cap(55, "This break is for experienced surfers: try a gentler beach.")
@@ -158,6 +161,20 @@ function Surf.rate(hour, forecast)
 end
 
 function Surf.window(hour) return light(hour) end
+
+-- What the rules read in an hour, as the log keeps it (SU10).
+function Surf.conditions(hour, forecast, surf)
+    local profile = Breaks.of(forecast.spot)
+    surf = surf or Waves.surf(hour, profile)
+    local tide = Tides.at(forecast, hour)
+    return { face = surf and math.floor(surf.face * 10 + 0.5) / 10, period = surf and surf.train.period,
+        wind = (hour.wind or 0) < 2 and "glassy" or windTo(hour, profile), tide = tide and tide.word }
+end
+
+-- Logs a session in the forecast's conditions with a one-tap rating.
+function Surf.log(place, forecast, hour, rating)
+    return Logbook.add(place, hour, rating, Surf.conditions(hour, forecast))
+end
 
 -- The verdict card shows the current hour, or first light when it is dark.
 function Surf.focus(forecast)
@@ -242,6 +259,15 @@ local function describe(hour, forecast)
         tide and ", " .. tide.word .. " tide " .. (tide.rising and "rising" or "falling") or "")
 end
 
+-- The wind drawn against the beach (SU11): the sea at the top, the shore
+-- at the bottom, the arrow where the wind blows to. Pointing up, out to sea,
+-- is offshore. nil without a wind direction.
+function Surf.windIcon(hour, profile)
+    if not (hour.windDir and profile.wind) then return nil end
+    local turn = math.floor((hour.windDir - profile.wind) % 360 / 45 + 0.5) % 8 * 45
+    return "Weather/editions/surf/wind/" .. turn .. ".svg"
+end
+
 -- Dawn patrol (SU4): first light and the first good hour. Before today's
 -- first light it is about this morning, after it about tomorrow.
 function Surf.dawnPatrol(forecast)
@@ -272,6 +298,7 @@ function Surf.dawnPatrol(forecast)
         detail = pick and ("%s from %s: %s"):format(pick.result.word, Units.clock(pick.hour.time),
             describe(pick.hour, forecast)) or "no good hour: the whole day rates poor",
         tone = pick and pick.result.verdict or "poor",
+        icon = pick and Surf.windIcon(pick.hour, Breaks.of(forecast.spot)),
     }
 end
 

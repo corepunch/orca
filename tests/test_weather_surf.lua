@@ -226,6 +226,41 @@ do
     check(Surf.fields.pastDays >= 3, "Surf asks for three past days")
 end
 
+-- SU10: a session log with a one-tap rating, on this device only.
+do
+    local Storage = require "Weather/storage"
+    local Logbook = require "Weather/editions/surf/logbook"
+    local store = F.storage("surf-log")
+    store:remove(Logbook.NAME)
+    Storage.use(store)
+    local f = forecastAt(F.NOW)
+    check(not Surf.log(spot, f, f.hours[f.now + 1], "epic"), "A rating is good, fair or poor")
+    local entry = Surf.log(spot, f, f.hours[f.now + 1], "good")
+    Surf.log(spot, f, f.hours[f.now + 2], "good")
+    check(entry and entry.face and entry.wind == "offshore" and entry.place == spot.id, "A session keeps its conditions")
+    check(#store:load(Logbook.NAME).sessions == 2, "The log is saved at once")
+    check(says(Report.rate(Surf, f.hours[f.now + 3], f), "2 sessions like this in your log, all good"),
+        "Like conditions recall the log")
+    local elsewhere = forecastAt(F.NOW, nil, nil, { id = "elsewhere", lat = 43.67, lon = 0, facing = 270 })
+    check(not says(Report.rate(Surf, elsewhere.hours[elsewhere.now + 3], elsewhere), "your log"),
+        "Another break has its own log")
+    check(Logbook.summary { { rating = "good" }, { rating = "poor" }, { rating = "poor" } }
+        == "3 sessions like this in your log, mostly poor", "The summary counts the ratings")
+end
+
+-- SU11: the wind drawn against the beach.
+do
+    local west = Breaks.of(beach)
+    check(Surf.windIcon({ windDir = 90 }, west):find("/0%.svg$") and Surf.windIcon({ windDir = 270 }, west):find("/180%.svg$")
+        and Surf.windIcon({ windDir = 0 }, west):find("/270%.svg$"), "Offshore points out to sea, onshore at the shore")
+    for turn = 0, 315, 45 do
+        local file = io.open("apps/Weather/editions/surf/wind/" .. turn .. ".svg", "r")
+        check(file, "There is a drawing for " .. turn .. "°")
+        if file then file:close() end
+    end
+    check(Surf.dawnPatrol(forecastAt(F.NOW)).icon:find("wind/0%.svg$"), "The dawn card draws the wind on the beach")
+end
+
 -- The edition on its own places, with the cards on the hub and the page.
 F.checkEdition("surf")
 do
