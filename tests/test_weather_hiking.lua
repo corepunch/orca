@@ -245,6 +245,33 @@ loaded = Forecast.load(tahoe, false, net.fetch, F.NOW, request)
 check(loaded and loaded.missing["hiking-points"] and not loaded.hours[loaded.now].top
     and Hiking.rate(loaded.hours[loaded.now], loaded), "Without the points the place's own forecast still rates")
 
+-- Wave 3: the heights a hiker sets in the place editor come before the
+-- table; a place found by search needs both, and a US one gets warnings.
+do
+    local MyPlaces = require "Weather/myplaces"
+    MyPlaces.init { curated = require "Weather/places" }
+    local draft = MyPlaces.fromResult({ id = 5706152, name = "Matterhorn", latitude = 41.81074, longitude = -115.37534,
+        elevation = 3250, feature_code = "MT", country_code = "US", country = "United States", admin1 = "Nevada" })
+    local found = MyPlaces.resolveDraft(draft)
+    check(table.concat(found.activities, ",") == "hiking" and found.summit == 3250 and Sources.peak(found) == nil,
+        "A found peak in Hikers' Weather is for hiking; with no trailhead yet it asks no points")
+    local field = MyPlaces.field(found, "trailhead")
+    MyPlaces.apply(draft, MyPlaces.next(found, field, 1))
+    found = MyPlaces.resolveDraft(draft)
+    local peak = Sources.peak(found)
+    check(peak and peak.top.elevation == 3250 and peak.start.elevation == 500 and peak.top.lat == found.lat and peak.nws,
+        "Both heights make the two points, at the place itself; a US place has warnings")
+    check(byId["hiking-points"].url(found, Forecast):find("elevation=500,3250", 1, true)
+        and byId["hiking-alerts"].url(found):find("api.weather.gov", 1, true), "and asks for them")
+    local id = MyPlaces.add("tahoe")
+    MyPlaces.set(id, "summit", 3000)
+    local own = Sources.peak(MyPlaces.find("tahoe"))
+    check(own.top.elevation == 3000 and own.top.name == "Mount Tallac" and own.start.elevation == 1960
+        and own.avalanche and Peaks.tahoe.top.elevation == 2968, "A curated peak keeps its table under the user's height")
+    check(MyPlaces.text(MyPlaces.find("tahoe"), "trailhead") == "1960 m", "The editor shows the table's height as the default")
+    MyPlaces.init { curated = require "Weather/places" }
+end
+
 -- The edition, then its activity page on the recorded answers.
 F.checkEdition("hiking")
 net.answers["elevation=1960"] = function() return { point(1960), point(2968) } end

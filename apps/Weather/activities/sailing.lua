@@ -26,6 +26,20 @@ local Sailing = {
     settings = Profile.settings,
     sources = { Models.source, Tides.source, Rank.source(function() return Profile.current().range end) },
 }
+-- What the place editor asks of a spot (P3); Spots.sector reads the safe
+-- sector the user set before its table.
+Sailing.placeFields = {
+    { key = "facing", title = "the shore faces", kind = "compass",
+        detail = "from the beach out over the water: wind from behind you is offshore",
+        needed = "not set: tap to choose where the water is, so offshore wind can be told" },
+    { key = "safeFrom", title = "safe wind from", kind = "compass",
+        default = function(place) local sector = Spots.sector(place); return sector and sector.from end,
+        detail = "the safe sector runs clockwise from here: wind that brings you back to the beach" },
+    { key = "safeTo", title = "safe wind to", kind = "compass",
+        default = function(place) local sector = Spots.sector(place); return sector and sector.to end,
+        detail = "ask the local school or club: these are estimates" },
+}
+
 Sailing.Profile, Sailing.Spots, Sailing.Models, Sailing.Tides, Sailing.Rank = Profile, Spots, Models, Tides, Rank
 
 local GALE = 17.2 -- m/s, Beaufort 8, for every profile

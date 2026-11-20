@@ -1,0 +1,8 @@
+<!-- A place search found, or one the app suggests: its name and what and
+     where it is ("lake · Bavaria, Germany"). Tapping opens the editor. -->
+<Button Height="64" Click="ChooseResult" BorderWidth="0" class="wx-row">
+  <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
+    <TextBlock Name="ResultTitle" Text="{Binding DataContext/Title}" FontSize="26" class="wx-ink" IgnoreHitTest="true"/>
+    <TextBlock Name="ResultLine" Text="{Binding DataContext/Line}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+  </StackView>
+</Button>

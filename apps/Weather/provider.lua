@@ -130,6 +130,45 @@ function Provider.new(places, options)
         },
     }
     provider.forecastFor, provider.clock = forecastFor, clock
+
+    -- The places changed (one added, removed or reordered): the list the
+    -- operations read and the lookup by id.
+    function provider.setPlaces(list)
+        places, provider.places = list, list
+        for id in pairs(byId) do byId[id] = nil end
+        for _, place in ipairs(list) do byId[place.id] = place end
+    end
+
+    -- Everything one forecast for a place asks, as text: the main and marine
+    -- URLs and each source's.
+    local function requestKey(place)
+        local request = Activities.request(place, "all")
+        local main, sea = Forecast.urls(place, marine(place), request)
+        local parts = { main, sea or "" }
+        for _, source in ipairs(request.sources) do
+            local ok, url = pcall(source.url, place, Forecast)
+            parts[#parts + 1] = source.id .. "=" .. tostring(ok and url or "")
+        end
+        return table.concat(parts, "\n")
+    end
+
+    -- A place's facts changed in the editor. When its requests stay the
+    -- same, the cached forecast is rated again from the same answers (no
+    -- request); otherwise it is dropped and the next page fetches it.
+    function provider.placeChanged(place)
+        local old = byId[place.id]
+        byId[place.id] = place
+        local cached = cache[place.id]
+        if not cached then return end
+        if not (old and cached.raw) or requestKey(old) ~= requestKey(place) then cache[place.id] = nil; return end
+        local again = Forecast.restore(cached.raw, place, Activities.request(place, "all"), clock())
+        if not again then cache[place.id] = nil; return end
+        again.spot, again.stale = place, cached.forecast.stale
+        cached.forecast = again
+    end
+
+    -- A removed place: nothing of it stays in memory.
+    function provider.forget(id) cache[id] = nil; byId[id] = nil end
     -- A page's rows are ready: the app's `drawn(forecast)` hears of it
     -- (the forecast, when the page shows one), then the rows go on.
     function provider.drew(rows, forecast)

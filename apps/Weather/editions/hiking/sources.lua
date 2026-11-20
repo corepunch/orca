@@ -14,12 +14,29 @@ local Sky = require "Weather/sky"
 local Peaks = require "Weather/editions/hiking/peaks"
 local Sources = {}
 
--- A place's two points: its own `top` and `start` (a place the user made),
--- else the edition's table.
+-- A place's two points: its own `top` and `start`, else the heights the
+-- user set in the place editor (`summit`, `trailhead`) over the edition's
+-- table, else the table. A found place needs both heights; both points are
+-- then the place itself, asked at the two heights. A US place gets its
+-- official warnings.
 function Sources.peak(spot)
     if not spot then return nil end
     if spot.top and spot.start then return spot end
-    return Peaks[spot.id]
+    local known = Peaks[spot.id]
+    if not (spot.summit or spot.trailhead) then return known end
+    if not known and not (spot.summit and spot.trailhead) then return nil end
+    local peak = {}
+    for key, value in pairs(known or {}) do peak[key] = value end
+    local function point(base, name, elevation)
+        local p = { name = base and base.name or name, lat = base and base.lat or spot.lat, lon = base and base.lon or spot.lon,
+            elevation = base and base.elevation }
+        if elevation then p.elevation = elevation end
+        return p
+    end
+    peak.top = point(known and known.top, "the top", spot.summit)
+    peak.start = point(known and known.start, "the trailhead", spot.trailhead)
+    if not known then peak.nws = spot.country == "US" or nil end
+    return peak
 end
 
 local function utc(epoch) return os.date("!%Y-%m-%dT%H:00", epoch) end

@@ -13,7 +13,9 @@
 --            mouth or storm drains nearby); nil when that is not known
 --
 -- These are starter profiles from public surf guides, not surveys: a local
--- will know better, and a later version lets people tune them.
+-- will know better, so the place editor lets people tune them (P3): a
+-- place's own `breakLevel` and `breakTide`, and a `facing` the user set
+-- (`place.own.facing`), come before the table.
 local Sky = require "Weather/sky"
 local Breaks = {}
 
@@ -50,16 +52,34 @@ Breaks.list = {
         exposure = 0.9, runoff = 10 },
 }
 
--- A break's profile, or one guessed from the beach's facing when there is
--- none: open 60° either side of it, offshore straight off the land.
-function Breaks.of(spot)
-    spot = spot or {}
-    local known = spot.id and Breaks.list[spot.id]
-    if known then return known end
-    local facing = spot.facing
+-- A profile guessed from the beach's facing: open 60° either side of it,
+-- offshore straight off the land.
+local function guessed(facing)
     return { window = facing and { (facing - 60) % 360, (facing + 60) % 360 }, wind = facing and (facing + 180) % 360,
         size = { 0.5, 2.5 }, tide = "all", level = "intermediate", exposure = 1.0, guessed = true }
 end
+
+-- A break's profile: the user's own values first (level, tide, and a
+-- facing they set, which moves the window), then the table, then a guess
+-- from the beach's facing.
+function Breaks.of(spot)
+    spot = spot or {}
+    local known = spot.id and Breaks.list[spot.id]
+    local own = spot.own or {}
+    if not (own.facing or spot.breakLevel or spot.breakTide) then return known or guessed(spot.facing) end
+    local profile = {}
+    for key, value in pairs(known or guessed(spot.facing)) do profile[key] = value end
+    if own.facing then
+        local turned = guessed(own.facing)
+        profile.window, profile.wind = turned.window, turned.wind
+    end
+    profile.level = Breaks.LEVELS[spot.breakLevel] and spot.breakLevel or profile.level
+    profile.tide = Breaks.TIDE[spot.breakTide] and spot.breakTide or profile.tide
+    profile.own = true
+    return profile
+end
+
+Breaks.LEVELS = { beginner = true, intermediate = true, advanced = true }
 
 -- Whether a bearing lies in a clockwise window, and how far outside it is.
 function Breaks.outside(window, bearing)

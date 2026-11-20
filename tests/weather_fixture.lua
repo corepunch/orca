@@ -163,7 +163,7 @@ function Fixture.network(options)
 end
 
 -- The files the app and its editions keep, besides each place's forecast.
-Fixture.FILES = { "settings", "garden-frost", "fishing-log", "surf-sessions", "stargazing-place" }
+Fixture.FILES = { "settings", "places", "garden-frost", "fishing-log", "surf-sessions", "stargazing-place" }
 
 -- A scratch folder for Storage, emptied of the files the app writes:
 -- Fixture.FILES, each place's forecast and, with `extra(place)`, a file
@@ -217,6 +217,8 @@ function Fixture.launch(options)
     function ui.has(name) return app.screen:findChild(name, true) ~= nil end
     function ui.text(row, child) return ui.find(row):findChild(child, true).Text end
     function ui.press(name) ui.find(name):send("Node.LeftButtonUp"); ui.settle() end
+    -- Taps a place row of the hub's places section (saved or suggested).
+    function ui.choose(id) ui.find("Place" .. id):findChild("PlaceChoose", true):send("Node.LeftButtonUp"); ui.settle() end
     function ui.back(pivot) ui.find(pivot or "ActivityPivot"):post("Pivot.BackRequested"); ui.settle() end
     -- The names of the card rows on screen ("Cardtahoe:card:frost"), in order.
     function ui.cards()

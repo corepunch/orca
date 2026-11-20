@@ -1,0 +1,13 @@
+<!-- The place editor: one query of rows for the place being edited or the
+     draft being added (App.lua keeps which), split into where it is, its
+     fields and the links. -->
+<DataScope Name="Place" Schema="Weather/Data/Weather.Schema.xml">
+  <Query Name="Place" Entity="WeatherRow" Operation="placeEditor" Description="The place's facts, fields and links."/>
+  <View Name="Info" Source="Place" Filter="aboutRows"/>
+  <View Name="Fields" Source="Place" Filter="fieldRows"/>
+  <View Name="Actions" Source="Place" Filter="placeActionRows"/>
+  <Handler Name="ChangeSetting" Function="changeField"/>
+  <Handler Name="LowerSetting" Function="lowerField"/>
+  <Handler Name="PlaceAction" Function="placeAction"/>
+  <Handler Name="GoBack" Function="goBack"/>
+</DataScope>

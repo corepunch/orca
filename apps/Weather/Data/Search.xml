@@ -1,0 +1,15 @@
+<!-- Add a place: a search through Open-Meteo's geocoding, run when asked
+     (Search.lua), and the places the app suggests. Notes say when nothing
+     was found or the network is away. -->
+<DataScope Name="Search" Schema="Weather/Data/Weather.Schema.xml">
+  <Query Name="Results" Entity="WeatherPlace" Operation="searchPlaces" Require="Query" AutoLoad="false"
+         Description="Places found for a name or a postcode, and the app's own that match.">
+    <Param Name="Query" Type="string"/>
+  </Query>
+  <View Name="Found" Source="Results" Filter="resultRows"/>
+  <View Name="Notes" Source="Results" Filter="noteRows"/>
+  <Query Name="Suggested" Entity="WeatherPlace" Operation="suggestedPlaces" Description="Curated places not saved yet."/>
+  <Handler Name="RunSearch" Function="runSearch"/>
+  <Handler Name="ChooseResult" Function="chooseResult"/>
+  <Handler Name="GoBack" Function="goBack"/>
+</DataScope>

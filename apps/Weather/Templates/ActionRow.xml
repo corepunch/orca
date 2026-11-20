@@ -1,0 +1,3 @@
+<!-- One of the place editor's links: save, make home, move, remove. -->
+<Button Name="ActionLink" Text="{Binding DataContext/Title}" Click="PlaceAction" Height="48" BorderWidth="0"
+        FontSize="20" TextHorizontalAlignment="Left" class="wx-link"/>

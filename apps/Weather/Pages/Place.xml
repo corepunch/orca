@@ -1,0 +1,19 @@
+<!-- The place editor over Data/Place.xml: where the place is, its kind,
+     what it is good for and what each of its activities needs (declared by
+     the activities, `placeFields`), then save, home, move and remove. Rows
+     step like settings: a tap moves on, less and more step back and on. -->
+<Grid Name="PlacePage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+  <Pivot Name="PlacePivot" Title="place" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack" IsLocked="true"
+         ContentInsetAdjustment="Always" class="wx-ink">
+    <PivotItem Name="PlaceSection" Header="place">
+      <StackView Name="PlaceBody" Spacing="6" Overflow="hidden scroll" JustifyContent="Start">
+        <ItemsStack Name="PlaceInfoItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="Info"
+                    ItemsSource="{Binding DataContext/Info/Items}" ItemTemplate="Weather/Templates/AboutRow"/>
+        <ItemsStack Name="PlaceFieldItems" Spacing="6" JustifyContent="Start" ItemNamePrefix="Field"
+                    ItemsSource="{Binding DataContext/Fields/Items}" ItemTemplate="Weather/Templates/SettingRow"/>
+        <ItemsStack Name="PlaceActionItems" Spacing="0" JustifyContent="Start" MarginTop="12" ItemNamePrefix="Action"
+                    ItemsSource="{Binding DataContext/Actions/Items}" ItemTemplate="Weather/Templates/ActionRow"/>
+      </StackView>
+    </PivotItem>
+  </Pivot>
+</Grid>

@@ -260,6 +260,27 @@ local ranked = Compare.rank(Fishing, { COAST, LAKE, { id = "x", title = "X", act
 check(#ranked == 2 and ranked[1].place.id == "lake" and ranked[1].label == "this morning"
     and ranked[2].result.score <= 35, "The calm lake ranks above the gale-swept coast")
 
+-- Wave 3: a river the angler found is a river for the forecast (flow from
+-- the flood API), and my waters compare the saved places.
+do
+    local MyPlaces = require "Weather/myplaces"
+    MyPlaces.init { curated = { LAKE, COAST } }
+    local draft = MyPlaces.fromResult({ id = 2950158, name = "Spree", latitude = 52.52, longitude = 13.40, feature_code = "STM",
+        country_code = "DE", country = "Germany", admin1 = "Berlin" })
+    local river = MyPlaces.resolveDraft(draft)
+    check(river.river and not river.lake and table.concat(river.activities, ",") == "fishing"
+        and River.url(river):find("flood%-api") and not Tides.noaaUrl(river), "A found river asks for its flow, not the tide")
+    check(not Activities.needsMarine(river), "A river asks no sea: requests per place do not grow")
+    local id = MyPlaces.add(draft)
+    MyPlaces.add("lake")
+    local mine = Compare.rank(Fishing, MyPlaces.mine(), function(placeId) return placeId == "lake" and calm or gale end)
+    check(#mine == 2 and mine[1].place.id == "lake" and mine[2].place.id == id, "My waters rank the saved places")
+    MyPlaces.set(id, "kind", "lake")
+    check(MyPlaces.find(id).lake and not MyPlaces.find(id).river and not Activities.needsMarine(MyPlaces.find(id)),
+        "Changing the kind to a lake drops the sea")
+    MyPlaces.init { curated = require "Weather/places" }
+end
+
 -- The edition on its own places, then the log page as the app would open it.
 F.checkEdition("fishing")
 local net = F.network()
@@ -270,7 +291,7 @@ local ui = F.launch { places = { LAKE, COAST }, net = net, storageName = "fishin
 local asked = table.concat(net.requests, "\n")
 check(asked:find("past_days=2") and not asked:find("sea_level_height_msl"), "A lake asks for past days, no tide")
 check(ui.has("Cardlake:card:water") and ui.has("Cardlake:card:front"), "The lake's hub leads with water and pressure")
-ui.press("Placecoast")
+ui.choose("coast")
 asked = table.concat(net.requests, "\n")
 check(asked:find("marine%-api[^\n]*latitude=24.92") and asked:find("sea_level_height_msl"), "A coast asks for the sea and the tide")
 check(ui.has("Cardcoast:card:tides"), "The coast's hub has a tide card")
@@ -280,7 +301,7 @@ Log.use(nil)
 local appStore = ui.app.storage
 appStore:remove(Log.FILE)
 -- I3: the fishing page links to the log, which the app routes to.
-ui.press("Placelake")
+ui.choose("lake")
 ui.open("lake", "fishing")
 check(ui.find("OpenActivityPage").Visible and ui.find("OpenActivityPage").Text == "log a catch",
     "The fishing page links to its log")

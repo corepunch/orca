@@ -327,7 +327,8 @@ check(actionRow.action1 == "go" and actionRow.action2_text == "stay" and actionR
 local Places = require "Weather/places"
 local Outdoors = Activities.byId.outdoors
 for _, page in ipairs { { "Weather/Pages/Hub", "Weather/Data/Hub.xml" }, { "Weather/Pages/Activity", "Weather/Data/Activity.xml" },
-        { "Weather/Pages/Settings", "Weather/Data/Settings.xml" }, { "Weather/Pages/Day", "Weather/Data/Day.xml" } } do
+        { "Weather/Pages/Settings", "Weather/Data/Settings.xml" }, { "Weather/Pages/Day", "Weather/Data/Day.xml" },
+        { "Weather/Pages/Search", "Weather/Data/Search.xml" }, { "Weather/Pages/Place", "Weather/Data/Place.xml" } } do
     local problems = Lint.page(page[1], page[2])
     check(#problems == 0, Lint.format(problems))
 end
@@ -490,7 +491,7 @@ settle()
 
 -- Another place: its hub from the first section, with the sea for surf.
 find("HubPanorama").SelectedIndex = 4
-press("Placeocean-beach")
+ui.choose("ocean-beach")
 check(find("HubPanorama").Title == "Ocean Beach" and find("HubPanorama").SelectedIndex == 0,
     "Choosing a place shows its hub from the start")
 check(forecasts()[#forecasts()]:find("marine%-api") and forecasts()[#forecasts()]:find("latitude=37.76"),
@@ -505,7 +506,7 @@ check(text("Hourocean-beach:surf:hour:2026-11-18T08:00", "Why"):find("offshore")
 check(text("Conditionocean-beach:surf:metric:4", "MetricValue") == "14°", "Water temperature")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
-press("Placebondi")
+ui.choose("bondi")
 press("GoodForbondi:activity:surf")
 -- Bondi faces east: the same east wind is onshore and the westerly swell misses it.
 check(text("Hourbondi:surf:hour:2026-11-18T08:00", "Verdict") ~= "good", "Wind and swell depend on the beach")
@@ -791,6 +792,170 @@ check(F.verdict(Lens.picnic, { isDay = false }).verdict == "poor" and F.verdict(
     .verdict == "good", "Picnic: warm, sunny daylight")
 check(F.verdict(Lens.laundry, { humidity = 50, wind = 4, cloud = 20, et0 = 0.4 }).verdict == "good"
     and F.verdict(Lens.laundry, { code = 63 }).score <= 10, "Laundry: breezy and dry, never in rain")
+
+-- Places (wave 3): search through Open-Meteo's geocoding (recorded
+-- answers, no network), saving, editing, reordering and removing.
+local MyPlaces = require "Weather/myplaces"
+local Search = require "Weather/search"
+-- Recorded from geocoding-api.open-meteo.com (November 2026), trimmed.
+local GEO = {
+    matterhorn = { results = {
+        { id = 2659729, name = "Matterhorn", latitude = 45.97641, longitude = 7.65861, elevation = 4478.0,
+            feature_code = "MT", country_code = "CH", timezone = "Europe/Zurich", country = "Switzerland", admin1 = "Valais" },
+        { id = 6637692, name = "Matterhorn", latitude = -77.66667, longitude = 162.45, elevation = 1600.0,
+            feature_code = "MT", country_code = "AQ", timezone = "Antarctica/McMurdo" },
+    }, generationtime_ms = 0.18 },
+    ["10115"] = { results = {
+        { id = 5128581, name = "New York", latitude = 40.71427, longitude = -74.00597, elevation = 10.0,
+            feature_code = "PPL", country_code = "US", timezone = "America/New_York", population = 8804190,
+            postcodes = { "10001", "10114", "10115", "10116" }, country = "United States", admin1 = "New York" },
+    }, generationtime_ms = 0.37 },
+    hossegor = { results = {
+        { id = 3013139, name = "Hossegor", latitude = 43.69, longitude = -1.37, elevation = 19.0, feature_code = "PPL",
+            country_code = "FR", timezone = "Europe/Paris", country = "France", admin1 = "New Aquitaine", admin2 = "Landes" },
+    }, generationtime_ms = 0.13 },
+    nothing = { generationtime_ms = 0.1 },
+}
+local function geocoding(url)
+    local name = url:match("[?&]name=([^&]+)")
+    return GEO[name and name:lower()] or GEO.nothing
+end
+
+check(Search.url("Zürich 8001"):find("^https://geocoding%-api%.open%-meteo%.com/v1/search%?name=Z%%C3%%BCrich%%208001&count=10")
+    and not Search.url("x y"):find("apikey"), "Search asks Open-Meteo's geocoding, encoded")
+Forecast.endpoints.apiKey = "KEY"
+check(Search.url("bondi"):find("^https://customer%-geocoding%-api%.open%-meteo%.com/") and Search.url("bondi"):find("&apikey=KEY$"),
+    "An API key moves search to the commercial host")
+Forecast.endpoints.apiKey = nil
+check(Search.clean("  b ") == nil and Search.clean(" Lake  Garda ") == "Lake Garda", "Too short a search is not sent")
+local peak = MyPlaces.fromResult(GEO.matterhorn.results[1], "matterhorn")
+check(peak.id == "geo-2659729" and peak.base.region == "Valais, Switzerland" and peak.own.kind == "mountain"
+    and peak.own.summit == 4478 and table.concat(peak.base.activities, ",") == "hiking,stargazing",
+    "A peak is guessed a mountain for hiking and the stars, its height the top")
+local function guessed(code, elevation, population)
+    return table.concat(MyPlaces.guess(MyPlaces.FEATURE[code] or "town", elevation, population), ",")
+end
+check(guessed("BCH") == "surf,sailing,fishing,stargazing" and guessed("LK") == "fishing,sailing,stargazing"
+    and guessed("STM") == "fishing" and guessed("PPL", 1600) == "garden,stargazing,hiking"
+    and guessed("PPL", 10, 8000000) == "garden", "Coast, lake, river, height and city light guess the activities")
+local lake = MyPlaces.resolveDraft(MyPlaces.fromResult({ id = 1, name = "Tegernsee", latitude = 47.71, longitude = 11.76,
+    feature_code = "LK" }))
+check(lake.lake and not lake.river and lake.kind == "lake" and lake.draft, "A lake is a lake for the forecast")
+check(MyPlaces.fromResult(GEO["10115"].results[1], "10115").base.postcode == "10115", "A postcode found is kept to show")
+local here = MyPlaces.fromLocation(51.5, -0.12)
+check(here and here.id == "at-51.500_-0.120" and here.base.located and here.own.kind == "town",
+    "Device location has its hook (wave 4): a draft at the fix")
+
+local placeNet = F.network()
+placeNet.answers["geocoding%-api"] = geocoding
+local placeStore = F.storage("places", F.PLACES, function(place) return "forecast-geo-" .. place.id end)
+placeStore:remove("forecast-geo-2659729")
+local pui = F.launch { net = placeNet, storage = placeStore }
+local function child(row, name) return pui.find(row):findChild(name, true) end
+local function tap(row, name) child(row, name):send("Node.LeftButtonUp"); pui.settle() end
+-- First run: the curated places are suggestions, the first one shown.
+check(#MyPlaces.saved() == 0 and pui.find("HubPanorama").Title == "Lake Tahoe" and pui.find("NoPlaces").Visible
+    and child("Placetahoe", "PlaceLink").Text == "keep", "The first run shows the suggestions, useful at once")
+pui.press("AddPlace")
+check(pui.find("SearchPivot").Title == "weather" and pui.has("Suggestedtahoe") and not pui.has("Resulttahoe"),
+    "Add a place lists the suggestions too")
+pui.find("SearchInput").Text = "Matterhorn"
+pui.press("RunSearch")
+check(placeNet.requests[#placeNet.requests]:find("geocoding%-api%.open%-meteo%.com/v1/search%?name=Matterhorn"),
+    "Search asks for what was typed")
+check(child("Resultgeo-2659729", "ResultLine").Text == "mountain · Valais, Switzerland"
+    and child("Resultgeo-6637692", "ResultLine").Text == "mountain", "Results say what and where each place is")
+pui.press("Resultgeo-2659729")
+check(pui.find("PlacePivot").Title == "Matterhorn" and pui.find("PlaceSection").Header == "new place"
+    and child("Fieldplace:field:kind", "SettingValue").Text == "a mountain or a trail"
+    and child("Fieldplace:field:for:hiking", "SettingValue").Text == "yes"
+    and child("Fieldplace:field:for:garden", "SettingValue").Text == "no"
+    and child("Fieldplace:field:summit", "SettingValue").Text == "4478 m"
+    and child("Fieldplace:field:trailhead", "SettingValue").Text == "not set", "The editor shows the guess to confirm")
+check(child("Fieldplace:field:summit", "SettingHeading").Text == "hiking" and not pui.has("Fieldplace:field:facing"),
+    "Hiking's own fields follow, under its name; no shore for a mountain")
+tap("Fieldplace:field:trailhead", "SettingMore")
+tap("Fieldplace:field:trailhead", "SettingMore")
+check(child("Fieldplace:field:trailhead", "SettingValue").Text == "550 m", "A height steps from a start")
+tap("Fieldplace:field:for:garden", "SettingChange")
+tap("Fieldplace:field:for:garden", "SettingChange")
+check(child("Fieldplace:field:for:garden", "SettingValue").Text == "no", "An activity switches on and off")
+check(#MyPlaces.saved() == 0, "Nothing is saved before save")
+pui.press("Actionplace:action:save")
+check(MyPlaces.saved()[1].id == "geo-2659729" and pui.find("HubPanorama").Title == "Matterhorn"
+    and pui.find("HubPanorama").SelectedIndex == 0 and pui.has("GoodForgeo-2659729:activity:hiking"),
+    "Saving shows the new place's hub, good for hiking")
+local saved = placeStore:load("places")
+check(saved and saved.places[1].id == "geo-2659729" and saved.places[1].own.trailhead == 550
+    and saved.places[1].base.lat == 45.97641, "The place is saved on the device")
+check(placeNet.requests[#placeNet.requests]:find("latitude=45.97641"), "and its forecast was asked")
+local asked = #placeNet.requests
+pui.open("geo-2659729", "hiking")
+check(table.concat(placeNet.requests, "\n", asked + 1):find("elevation=550,4478"),
+    "Hiking asks the trailhead and the top at the heights given")
+pui.back()
+check(placeStore:load("forecast-geo-2659729"), "Its forecast is kept for offline")
+-- Keep a suggestion, make it home, turn its shore.
+check(child("Placegeo-2659729", "PlaceLine").Text == "home · Valais, Switzerland", "The first place is home")
+tap("Placebondi", "PlaceLink")
+check(MyPlaces.saved()[2].id == "bondi" and child("Placebondi", "PlaceLink").Text == "edit" and not pui.find("NoPlaces").Visible
+    and pui.find("PlaceItems"):findChild("Placebondi", true), "Keep makes a suggestion my place")
+tap("Placebondi", "PlaceLink")
+check(pui.find("PlaceSection").Header == "edit place" and pui.has("Actionplace:action:home")
+    and not pui.has("Actionplace:action:down") and child("Fieldplace:field:facing", "SettingValue").Text == "E (110°)",
+    "A saved place has its links; Bondi's shore faces east")
+pui.press("Actionplace:action:home")
+check(MyPlaces.saved()[1].id == "bondi" and not pui.has("Actionplace:action:home") and pui.has("Actionplace:action:down"),
+    "Make home moves it first")
+local before = #placeNet.requests
+tap("Fieldplace:field:facing", "SettingMore")
+local bondi = MyPlaces.find("bondi")
+check(child("Fieldplace:field:facing", "SettingValue").Text == "SE (135°)" and bondi.facing == 135 and bondi.own.facing == 135,
+    "The compass turns a step")
+check(placeStore:load("places").places[1].own.facing == 135 and placeStore:load("places").places[1].curated
+    and not placeStore:load("places").places[1].base, "A kept suggestion stores only what the user changed")
+pui.back("PlacePivot")
+check(child("Placebondi", "PlaceLine").Text == "home · Sydney" and #placeNet.requests == before,
+    "Back on the hub, Bondi is home; a new facing asks nothing new")
+-- Reorder and remove.
+tap("Placegeo-2659729", "PlaceLink")
+pui.press("Actionplace:action:up")
+check(MyPlaces.saved()[1].id == "geo-2659729", "Move up reorders")
+pui.press("Actionplace:action:down")
+check(MyPlaces.saved()[2].id == "geo-2659729", "and move down")
+pui.press("Actionplace:action:remove")
+check(pui.find("Actionplace:action:remove").Text == "tap again to remove Matterhorn" and #MyPlaces.saved() == 2,
+    "Remove asks for a second tap")
+pui.press("Actionplace:action:remove")
+check(#MyPlaces.saved() == 1 and not placeStore:load("forecast-geo-2659729") and pui.find("HubPanorama").Title == "Bondi"
+    and not pui.has("Placegeo-2659729"), "Removing forgets the place and its forecast")
+-- Offline, and nothing found.
+pui.press("AddPlace")
+placeNet.failing = true
+pui.find("SearchInput").Text = "lake"
+pui.press("RunSearch")
+check(pui.find("Notenote").Text:find("No connection") and pui.has("Resulttahoe"),
+    "Offline, search says so and still finds the app's own places")
+pui.find("SearchInput").Text = "qwxz"
+pui.press("RunSearch")
+check(pui.find("Notenote").Text:find("search needs the network") and not pui.has("Resulttahoe"),
+    "and says what still works")
+placeNet.failing = false
+pui.press("RunSearch")
+check(pui.find("Notenote").Text:find("Nothing found for “qwxz”"), "Nothing found says so")
+pui.find("SearchInput").Text = "10115"
+pui.press("RunSearch")
+check(child("Resultgeo-5128581", "ResultLine").Text == "town · 10115 · United States", "A postcode finds its town")
+pui.press("Resultgeo-5128581")
+check(child("Fieldplace:field:for:stargazing", "SettingValue").Text == "no", "A big city is not guessed for the stars")
+pui.press("Actionplace:action:save-home")
+check(MyPlaces.saved()[1].id == "geo-5128581" and MyPlaces.saved()[2].id == "bondi", "Save as home puts it first")
+pui.app.hubScope:dispose()
+-- The next launch keeps them, in order.
+local again = F.launch { net = placeNet, storage = placeStore }
+check(again.find("HubPanorama").Title == "New York" and #MyPlaces.saved() == 2 and again.has("Placebondi"),
+    "Saved places come back on the next launch")
+again.app.hubScope:dispose()
 
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}

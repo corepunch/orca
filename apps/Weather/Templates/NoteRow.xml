@@ -1,0 +1,2 @@
+<!-- A line about the search: nothing found, or offline. -->
+<TextBlock Name="NoteText" Text="{Binding DataContext/Title}" FontSize="16" WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>

@@ -1,4 +1,5 @@
-<!-- What the weather app shows. Every report row is a WeatherRow; Kind tells
+<!-- What the weather app shows. A WeatherPlace is a row of a place list: the
+     hub's own and suggested places, or a search result. Every report row is a WeatherRow; Kind tells
      the section (now, age, card, detail, strip, activity, hour, day, reason,
      metric, and setting or about on the settings page),
      Tone the verdict (good, fair, poor, info) that colours it, Activity
@@ -9,6 +10,11 @@
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="Title" Type="string" Source="title"/>
     <Column Name="Region" Type="string" Source="region" Default=""/>
+    <Column Name="Kind" Type="string" Source="kind" Default="mine"
+            Description="mine (saved), suggestion (curated, not saved), result (found by search) or note."/>
+    <Column Name="Line" Type="string" Source="line" Default="" Description="The row's second line (&quot;home · California&quot;)."/>
+    <Column Name="Link" Type="string" Source="link" Default="" Description="The row's link: edit or keep."/>
+    <Column Name="HasLink" Type="bool" Computed="hasLink" DependsOn="Link" Description="The row has a link."/>
   </Entity>
   <Entity Name="WeatherRow" Key="Id" ObjectName="Id" Description="One line of a report.">
     <Column Name="Id" Type="string" Source="id"/>

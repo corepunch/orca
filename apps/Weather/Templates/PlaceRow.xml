@@ -1,7 +1,12 @@
-<!-- A place; tapping it shows its hub. -->
-<Button Height="64" Click="ChoosePlace" BorderWidth="0" class="wx-row">
-  <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
-    <TextBlock Name="PlaceTitle" Text="{Binding DataContext/Title}" FontSize="26" class="wx-ink" IgnoreHitTest="true"/>
-    <TextBlock Text="{Binding DataContext/Region}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
-  </StackView>
-</Button>
+<!-- A place: tapping it shows its hub. A saved place has an "edit" link, a
+     suggestion a "keep" link that saves it. -->
+<Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
+  <Button Name="PlaceChoose" Height="64" Click="ChoosePlace" BorderWidth="0" class="wx-row">
+    <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
+      <TextBlock Name="PlaceTitle" Text="{Binding DataContext/Title}" FontSize="26" class="wx-ink" IgnoreHitTest="true"/>
+      <TextBlock Name="PlaceLine" Text="{Binding DataContext/Line}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+    </StackView>
+  </Button>
+  <Button Name="PlaceLink" Visible="{Binding DataContext/HasLink}" Text="{Binding DataContext/Link}" Click="PlaceLink"
+          Height="64" BorderWidth="0" FontSize="18" class="wx-link"/>
+</Grid>

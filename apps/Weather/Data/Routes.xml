@@ -1,4 +1,5 @@
-<!-- The place hub, the page of one activity or one day there, and settings. -->
+<!-- The place hub, the page of one activity or one day there, settings,
+     adding a place and the place editor. -->
 <Routes>
   <Route Path="/" Name="HubPage" Page="Weather/Pages/Hub" Scope="Weather/Data/Hub.xml"/>
   <Route Path="/activity" Name="ActivityPage" Page="Weather/Pages/Activity" Scope="Weather/Data/Activity.xml">
@@ -10,4 +11,6 @@
     <Param Name="Date" From="date"/>
   </Route>
   <Route Path="/settings" Name="SettingsPage" Page="Weather/Pages/Settings" Scope="Weather/Data/Settings.xml"/>
+  <Route Path="/search" Name="SearchPage" Page="Weather/Pages/Search" Scope="Weather/Data/Search.xml"/>
+  <Route Path="/place" Name="PlacePage" Page="Weather/Pages/Place" Scope="Weather/Data/Place.xml"/>
 </Routes>

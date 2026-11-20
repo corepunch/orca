@@ -28,6 +28,19 @@ local function hourText(v)
     return Units.clock(("%02d:%02d"):format(h, math.floor((v - h) * 60 + 0.5)))
 end
 
+-- What the place editor asks of a hike (P3): the heights where it starts and
+-- tops out. Sources.peak reads them before the edition's table.
+local function height(value) return value and Units.height(value, 0) or "not set" end
+local function peakHeight(which)
+    return function(place) local peak = Sources.peak(place); return peak and peak[which] and peak[which].elevation end
+end
+Hiking.placeFields = {
+    { key = "summit", title = "height of the top", kind = "number", min = 0, max = 8850, step = 50, start = 1500,
+        format = height, default = peakHeight("top"), detail = "with the trailhead's height, the top and the start get their own forecast" },
+    { key = "trailhead", title = "height of the trailhead", kind = "number", min = 0, max = 6000, step = 50, start = 500,
+        format = height, default = peakHeight("start"), detail = "where you set off" },
+}
+
 -- The planned hike, for the turnaround (HI4).
 Hiking.settings = {
     { key = "start", title = "start time", kind = "number", default = 8, min = 3, max = 14, step = 0.5,

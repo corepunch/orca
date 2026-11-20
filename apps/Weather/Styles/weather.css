@@ -111,3 +111,8 @@
 .laundry .good .wx-bar { background-color: #6E8094; }
 .laundry .good .wx-tone { color: #6E8094; }
 .laundry .wx-series { color: #6E8094; }
+
+/* The Windows Phone text box on the dark theme: light grey with black type,
+   white with an accent border while typing. */
+.wx-input { background-color: #bfbfbf; color: #000000; border-color: #bfbfbf; placeholder-color: #666666; }
+.wx-input:focus { background-color: #ffffff; border-color: var(--accent); }

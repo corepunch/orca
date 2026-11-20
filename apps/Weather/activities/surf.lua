@@ -40,6 +40,20 @@ Surf.settings = {
         format = function(value) return LEVELS[value] and value or "not set" end },
 }
 
+-- What the place editor asks of a break (P3); Breaks.of reads them first.
+Surf.placeFields = {
+    { key = "facing", title = "the shore faces", kind = "compass",
+        detail = "from the beach out to sea: the wind from behind you is offshore",
+        needed = "not set: tap to choose where the sea is, so wind and swell can be read" },
+    { key = "breakLevel", title = "the break suits", kind = "choice",
+        options = { { "beginner", "beginners" }, { "intermediate", "intermediate surfers" }, { "advanced", "advanced surfers" } },
+        default = function(place) return Breaks.of(place).level end },
+    { key = "breakTide", title = "best tide", kind = "choice",
+        options = { { "all", "any tide" }, { "low", "low" }, { "low-mid", "low to mid" }, { "mid", "mid" },
+            { "mid-high", "mid to high" }, { "high", "high" } },
+        default = function(place) return Breaks.of(place).tide end },
+}
+
 function Surf.level()
     local value = Settings.get("surf", "level")
     return LEVELS[value] and value or "intermediate", LEVELS[value] ~= nil

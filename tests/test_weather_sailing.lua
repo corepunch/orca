@@ -213,6 +213,29 @@ check(weekend and weekend.value == "Lake Garda" and weekend.tone == "good" and w
     "Lake Garda wins the weekend")
 Rank.places = nil
 
+-- Wave 3: a safe sector the rider sets comes before the table.
+do
+    local MyPlaces = require "Weather/myplaces"
+    local Places = require "Weather/places"
+    MyPlaces.init { curated = Places }
+    MyPlaces.add("bodensee")
+    local draft = MyPlaces.fromResult({ id = 2878044, name = "Lindau", latitude = 47.55, longitude = 9.68, feature_code = "LK",
+        country_code = "DE", country = "Germany", admin1 = "Bavaria" })
+    local lindau = MyPlaces.resolveDraft(draft)
+    check(lindau.lake and table.concat(lindau.activities, ",") == "sailing" and Spots.sector(lindau) == nil,
+        "A found lake is for sailing; no shore, no sector yet")
+    MyPlaces.apply(draft, "facing", 180)
+    MyPlaces.apply(draft, "safeFrom", 135)
+    local id = MyPlaces.add(draft)
+    local sector = Spots.sector(MyPlaces.find(id))
+    check(sector.own and sector.from == 135 and sector.to == 280, "The rider's start of the sector, the shore's end")
+    MyPlaces.set("bodensee", "safeTo", 300)
+    local constance = Spots.sector(MyPlaces.find("bodensee"))
+    check(constance.from == 90 and constance.to == 300 and select(2, Spots.sector(MyPlaces.find("bodensee"))):find("north shore"),
+        "A curated spot keeps its table under the rider's change")
+    MyPlaces.init { curated = Places }
+end
+
 -- The cards: what to rig, any danger, and how sure.
 local storm = parsed { weather_code = function(i) return i == 9 and 95 or 2 end,
     wind_speed_10m = function() return 9.26 end, wind_gusts_10m = function() return 10 end,

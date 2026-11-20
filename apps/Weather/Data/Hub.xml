@@ -1,9 +1,12 @@
-<!-- The place hub: the places, the selected place's report and one view per
+<!-- The place hub: the places (saved, then suggested), the selected place's report and one view per
      panorama section. The report refreshes every half hour while showing,
      and shows the copy saved on the device while the first request runs. -->
 <DataScope Name="Hub" Schema="Weather/Data/Weather.Schema.xml">
-  <Query Name="Places" Entity="WeatherPlace" Operation="places" Description="Every place."/>
+  <Query Name="Places" Entity="WeatherPlace" Operation="places"
+         Description="The saved places in the user's order, home first, then the suggestions."/>
   <View Name="PlaceList" Source="Places" Selection="first"/>
+  <View Name="MyPlaces" Source="Places" Filter="minePlaces"/>
+  <View Name="Suggestions" Source="Places" Filter="suggestedPlaces"/>
   <Query Name="Report" Entity="WeatherRow" Operation="hub" Require="PlaceId" Poll="1800000" Cached="savedHub"
          Description="Conditions, the week and what the selected place is good for.">
     <Param Name="PlaceId" Type="string" Bind="PlaceList.Selected.Id"/>
@@ -21,5 +24,7 @@
   <Handler Name="OpenDay" Function="openDay"/>
   <Handler Name="ChoosePlace" Function="choosePlace"/>
   <Handler Name="OpenSettings" Function="openSettings"/>
+  <Handler Name="PlaceLink" Function="placeLink"/>
+  <Handler Name="AddPlace" Function="addPlace"/>
   <Handler Name="CardAction" Function="cardAction"/>
 </DataScope>

@@ -319,4 +319,59 @@ do
     ui.back()
     ui.app.hubScope:dispose()
 end
+-- Wave 3: a beach the surfer found, saved for surf (the edition's activity),
+-- its shore set in the editor, flowing through the surf rules.
+do
+    local MyPlaces = require "Weather/myplaces"
+    local net = F.network()
+    -- Recorded from Open-Meteo's geocoding (November 2026), trimmed.
+    net.answers["geocoding%-api"] = function()
+        return { results = { { id = 3018384, name = "Plage des Estagnots", latitude = 43.69, longitude = -1.44,
+            elevation = 4, feature_code = "BCH", country_code = "FR", timezone = "Europe/Paris", country = "France",
+            admin1 = "New Aquitaine" } } }
+    end
+    local store = F.storage("surf-places", Places)
+    store:remove("forecast-geo-3018384")
+    local ui = F.launch { places = Places, net = net, storage = store }
+    local function child(row, name) return ui.find(row):findChild(name, true) end
+    local function tap(row, name, times) for _ = 1, times or 1 do child(row, name):send("Node.LeftButtonUp"); ui.settle() end end
+    ui.press("AddPlace")
+    ui.find("SearchInput").Text = "estagnots"
+    ui.press("RunSearch")
+    check(child("Resultgeo-3018384", "ResultLine").Text == "beach · New Aquitaine, France", "A beach is found")
+    ui.press("Resultgeo-3018384")
+    check(ui.find("PlacePage").StateClasses:find("surf") and not ui.has("Fieldplace:field:for:surf")
+        and child("Fieldplace:field:kind", "SettingValue").Text == "a coast or a beach"
+        and child("Fieldplace:field:facing", "SettingValue").Text == "not set"
+        and child("Fieldplace:field:facing", "SettingDetail").Text:find("^not set: tap"),
+        "In Surfers' Weather a place is added for surf, its shore to confirm")
+    check(child("Fieldplace:field:facing", "SettingHeading").Text == "surf"
+        and child("Fieldplace:field:breakLevel", "SettingValue").Text == "intermediate surfers",
+        "Surf's own fields: the shore, who the break suits, the tide")
+    tap("Fieldplace:field:facing", "SettingLess", 2)
+    check(child("Fieldplace:field:facing", "SettingValue").Text == "W (270°)", "The shore turns to face west")
+    tap("Fieldplace:field:breakLevel", "SettingChange")
+    ui.press("Actionplace:action:save")
+    local place = MyPlaces.find("geo-3018384")
+    check(ui.find("HubPanorama").Title == "Plage des Estagnots" and ui.has("GoodForgeo-3018384:activity:surf")
+        and table.concat(place.activities, ",") == "surf", "Saved, it is good for surf")
+    local profile = Breaks.of(place)
+    check(profile.window[1] == 210 and profile.window[2] == 330 and profile.wind == 90 and profile.level == "advanced",
+        "The break's profile comes from what the user set")
+    check(table.concat(net.requests, "\n"):find("marine%-api[^\n]*latitude=43.69"), "A coast asks for the sea")
+    ui.open("geo-3018384", "surf")
+    check(ui.text("Hourgeo-3018384:surf:hour:2026-11-18T08:00", "Why"):find("offshore"),
+        "The east wind is offshore on a west-facing beach")
+    ui.back()
+    child("Placebondi", "PlaceLink"):send("Node.LeftButtonUp")
+    ui.settle()
+    local own = MyPlaces.find("bondi")
+    check(Breaks.of(own) == Breaks.list.bondi, "A break the user has not changed keeps its table")
+    MyPlaces.set("bondi", "breakTide", "low")
+    check(Breaks.of(MyPlaces.find("bondi")).tide == "low" and Breaks.of(MyPlaces.find("bondi")).window[1] == 40,
+        "The user's tide comes first; the table keeps the rest")
+    check(MyPlaces.fromResult({ id = 3032797, name = "Biarritz", latitude = 43.48, longitude = -1.56, feature_code = "PPL" })
+        .own.kind == "coast", "In Surfers' Weather a town found is guessed a coast")
+    ui.app.hubScope:dispose()
+end
 F.done("weather-surf")

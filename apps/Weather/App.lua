@@ -3,7 +3,8 @@
 -- position and scroll survive a visit to an activity; an activity page and
 -- its scope are made when it opens and disposed when it closes, and so are
 -- settings. Data rules live in the provider and activities; this file only
--- navigates and titles.
+-- navigates and titles. The places pages' rows live in placepages.lua and
+-- the saved places in myplaces.lua.
 local ui = require "orca.UIKit"
 local Application = require "orca.core.application"
 local data = require "orca.data"
@@ -11,6 +12,8 @@ local Routes = require "orca.data.routes"
 local Provider = require "Weather/provider"
 local Activities = require "Weather/activities"
 local Places = require "Weather/places"
+local MyPlaces = require "Weather/myplaces"
+local PlacePages = require "Weather/placepages"
 local Storage = require "Weather/storage"
 local Settings = require "Weather/settings"
 local Units = require "Weather/units"
@@ -41,19 +44,19 @@ end
 App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
 
-    -- options.places, options.fetch and options.clock replace the places,
-    -- the network and the time; options.storage (a Storage store) or
+    -- options.places (the suggested places), options.fetch and
+    -- options.clock replace the curated places, the network and the time; options.storage (a Storage store) or
     -- options.storageDir the folder for files, and options.region the
     -- region the default units come from (tests).
     __init = function(self, options)
         Application.__init(self)
         options = options or {}
-        self.places = options.places or Places
-        self.placesById = {}
-        for _, place in ipairs(self.places) do self.placesById[place.id] = place end
         self.storage = options.storage or (options.storageDir and Storage.new { dir = options.storageDir })
             or Storage.default()
         Storage.use(self.storage)
+        self.fetch = options.fetch
+        MyPlaces.init { storage = self.storage, curated = options.places or Places }
+        self:listPlaces()
         local region = options.region
         if region == nil then region = Units.region() end
         offerFollowing()
@@ -69,6 +72,7 @@ App = Application:extend {
             return self.provider.drew(Report.day(place, forecast, params.Date, Activities.at(place)), forecast)
         end
         self.provider.drawn = function(forecast) self:restyle(forecast) end
+        PlacePages.install(self)
         local handlers = self.provider.handlers
         handlers.openActivity = function(scope, params) return self:openActivity(params.item, scope) end
         handlers.openDay = function(_, params) return self:openDay(params.item) end
@@ -163,9 +167,16 @@ App = Application:extend {
                 if lead then self.hubPage:findChild("HubBandTitle", true).Text = lead.title .. ", next 24 hours" end
                 self.hubScreen = self:screenFor(self.hubPage)
                 self.hubRevision = Settings.revision()
+                self.placesRevision = MyPlaces.revision()
             end
             self:titleCharts(self.hubPage)
             self.hubScope:activate()
+            -- Places added, removed, moved or edited: the lists, the place to
+            -- show and its report, redrawn from the forecast already here.
+            if self.placesRevision ~= MyPlaces.revision() then
+                self.placesRevision = MyPlaces.revision()
+                self:showPlaces()
+            end
             -- Changed units redraw the hub from the forecast it already has.
             if self.hubRevision ~= Settings.revision() then
                 self.hubRevision = Settings.revision()
@@ -182,6 +193,14 @@ App = Application:extend {
             page:findChild("SettingsPivot", true).Title = Activities.appName:lower()
             local edition = Activities.byId[Activities.edition]
             if edition then page:findChild("ActivitySettingsSection", true).Header = edition.title end
+        elseif path == "/search" then
+            if Activities.edition then page.StateClasses = Activities.edition end
+            page:findChild("SearchPivot", true).Title = Activities.appName:lower()
+        elseif path == "/place" then
+            if Activities.edition then page.StateClasses = Activities.edition end
+            local place, draft = self:editedPlace()
+            page:findChild("PlacePivot", true).Title = place and place.title or "place"
+            page:findChild("PlaceSection", true).Header = draft and "new place" or "edit place"
         elseif path == "/day" then
             if Activities.edition then page.StateClasses = Activities.edition end
             page:findChild("DayPivot", true).Title = Sky.weekday(self.date) .. " · " .. self.place.title
@@ -203,7 +222,7 @@ App = Application:extend {
     openActivityPage = function(self, activity, routes, path)
         if self.activityScope then self.activityScope:dispose(); self.activityScope = nil end
         if self.hubScope then self.hubScope:deactivate() end
-        local provider = activity.page.provider { forecastFor = self.provider.forecastFor, places = self.places,
+        local provider = activity.page.provider { forecastFor = self.provider.forecastFor, places = MyPlaces.mine(),
             place = function() return self.place end, clock = self.provider.clock,
             back = function() return self:activate_route(self.pageReturn or "/activity") end }
         local page, scope = routes:open(path, self, { provider = provider, store = self.store, host = self.host })
@@ -311,6 +330,117 @@ App = Application:extend {
         if not record then return end
         self.hubScope:member("PlaceList"):select(record)
         self.hubPage:findChild("HubPanorama", true).SelectedIndex = 0
+    end,
+
+    -- Every place the hub lists (saved, then suggested) and the lookup.
+    listPlaces = function(self)
+        self.places = MyPlaces.all()
+        self.placesById = {}
+        for _, place in ipairs(self.places) do self.placesById[place.id] = place end
+        if self.provider then self.provider.setPlaces(self.places) end
+    end,
+
+    -- The hub after a change: its place lists, then the place to show
+    -- (`self.showPlace`, else the one shown, else the first) and its report.
+    showPlaces = function(self)
+        local places, list = self.hubScope:member("Places"), self.hubScope:member("PlaceList")
+        local wanted = self.showPlace or (list.selected and list.selected.key)
+        if self.showPlace then self.hubPage:findChild("HubPanorama", true).SelectedIndex = 0 end
+        self.showPlace = nil
+        if not (wanted and self.placesById[wanted]) then wanted = nil end
+        -- The list refreshes when the query has loaded (later, on a device):
+        -- pick the place once it is there, then redraw its report.
+        local stop
+        stop = list:listen(function()
+            if wanted and not list.items:find(wanted) then return end
+            stop()
+            if wanted then list:select(wanted) end
+            self.provider.redrawing = true
+            self.hubScope:member("Report"):refresh { force = true }
+        end)
+        places:refresh { force = true }
+    end,
+
+    openSearch = function(self)
+        self.backPath = nil
+        return self:activate_route("/search")
+    end,
+
+    -- The place being edited and whether it is a draft (not saved yet).
+    editedPlace = function(self)
+        local editing = self.editing
+        if not editing then return nil end
+        if editing.draft then return MyPlaces.resolveDraft(editing.draft), true end
+        return MyPlaces.find(editing.id), false
+    end,
+
+    editPlace = function(self, id, from)
+        self.editing, self.backPath = { id = id }, from ~= "/" and from or nil
+        return self:activate_route("/place")
+    end,
+
+    editDraft = function(self, draft, from)
+        self.editing, self.backPath = { draft = draft }, from ~= "/" and from or nil
+        return self:activate_route("/place")
+    end,
+
+    -- A suggestion's "keep": it joins the saved places; the hub stays where
+    -- it is.
+    keepPlace = function(self, id)
+        if not MyPlaces.add(id) then return end
+        self:listPlaces()
+        self.placesRevision = MyPlaces.revision()
+        self:showPlaces()
+    end,
+
+    -- One tap on an editor row: a draft keeps the value until it is saved;
+    -- a saved place stores it at once and its forecast is rated again.
+    changeField = function(self, scope, record, direction)
+        local place, draft = self:editedPlace()
+        local field = place and MyPlaces.field(place, record and record.values.Setting)
+        if not field then return end
+        local key, value = MyPlaces.next(place, field, direction)
+        if draft then MyPlaces.apply(self.editing.draft, key, value)
+        else
+            MyPlaces.set(place.id, key, value)
+            self:listPlaces()
+            self.provider.placeChanged(MyPlaces.find(place.id))
+        end
+        self.editing.confirmRemove = nil
+        scope:member("Place"):refresh { force = true }
+    end,
+
+    -- The editor's links: save a draft (as home), make home, move, remove
+    -- (a second tap confirms). Saving or removing returns to the hub.
+    placeAction = function(self, scope, id)
+        local place, draft = self:editedPlace()
+        if not place then return end
+        if id == "save" or id == "save-home" then
+            local saved = MyPlaces.isSaved(place.id) and place.id or MyPlaces.add(self.editing.draft, id == "save-home")
+            self.editing, self.showPlace = nil, saved
+            self:listPlaces()
+            self.backPath = nil
+            return self:activate_route("/")
+        end
+        if draft then return end
+        if id == "remove" then
+            if not self.editing.confirmRemove then
+                self.editing.confirmRemove = true
+                return scope:member("Place"):refresh { force = true }
+            end
+            MyPlaces.remove(place.id)
+            self.provider.forget(place.id)
+            self.editing = nil
+            self:listPlaces()
+            self.backPath = nil
+            return self:activate_route("/")
+        end
+        if id == "home" then MyPlaces.makeHome(place.id)
+        elseif id == "up" then MyPlaces.move(place.id, -1)
+        elseif id == "down" then MyPlaces.move(place.id, 1) end
+        self.editing.confirmRemove = nil
+        self:listPlaces()
+        scope:member("Place"):refresh { force = true }
     end,
 
     goBack = function(self)

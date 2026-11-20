@@ -28,15 +28,21 @@ Spots.byId = {
 -- cross-onshore and cross-shore, but not cross-offshore.
 local HALF = 100
 
--- The safe sector for a place: its own, else one around its shore's facing,
--- else nil (nothing known).
+-- The safe sector for a place: the one the user set in the place editor
+-- (`safeFrom`, `safeTo`), else the table's, else one around its shore's
+-- facing, else nil (nothing known).
 function Spots.sector(place)
-    local own = place and Spots.byId[place.id]
-    if own and own.safe then return own.safe, own.note end
-    if place and place.facing then
-        return { from = (place.facing - HALF) % 360, to = (place.facing + HALF) % 360, derived = true }
+    local known = place and Spots.byId[place.id]
+    local base, note
+    if known and known.safe then base, note = known.safe, known.note
+    elseif place and place.facing then
+        base = { from = (place.facing - HALF) % 360, to = (place.facing + HALF) % 360, derived = true }
     end
-    return nil
+    if place and (place.safeFrom or place.safeTo) then
+        return { from = place.safeFrom or (base and base.from) or 0, to = place.safeTo or (base and base.to) or 0,
+            own = true }, note
+    end
+    return base, note
 end
 
 -- Whether a wind from `direction` falls in a sector (clockwise from..to).

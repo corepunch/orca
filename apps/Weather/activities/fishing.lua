@@ -22,8 +22,8 @@ local Log = require "Weather/editions/fishing/log"
 local Fishing = {
     id = "fishing", title = "fishing",
     -- The sea surface and waves where there is sea, and the forecast stands
-    -- without them; a lake does not ask.
-    needsMarine = function(place) return not (place and place.lake) and "optional" end,
+    -- without them; a lake or a river does not ask.
+    needsMarine = function(place) return not (place and (place.lake or place.river)) and "optional" end,
     -- Two past days for the barometer's history and fronts (FI2).
     fields = { pastDays = 2 },
 }
@@ -35,6 +35,13 @@ Fishing.page = { routes = "Weather/editions/fishing/Data/Routes.xml", path = "/f
 
 Fishing.sources = Tides.sources()
 Fishing.sources[#Fishing.sources + 1] = River.source
+
+-- What the place editor asks of a water (P3). Lake, river or coast is the
+-- place's kind.
+Fishing.placeFields = {
+    { key = "facing", title = "the shore faces", kind = "compass",
+        detail = "from where you stand out over the water: wind onto the bank pushes food in" },
+}
 
 Fishing.settings = {
     { key = "from", title = "I fish from", kind = "choice", default = "shore",
