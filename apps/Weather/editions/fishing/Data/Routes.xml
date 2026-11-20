@@ -1,0 +1,8 @@
+<!-- The fishers' log, opened from the fishing page at its place. The app
+     opens it with the edition's own provider (editions/fishing/page.lua). -->
+<Routes>
+  <Route Path="/fishing/log" Name="FishingLogPage" Page="Weather/editions/fishing/Pages/Log"
+         Scope="Weather/editions/fishing/Data/Log.xml">
+    <Param Name="PlaceId" From="place.id"/>
+  </Route>
+</Routes>

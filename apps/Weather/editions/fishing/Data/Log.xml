@@ -1,0 +1,23 @@
+<!-- The fishers' log: the entries with their conditions, the water reading
+     and the patterns at one place, and every place compared. Stored on the
+     device only (editions/fishing/log.lua). -->
+<DataScope Name="FishingLog" Schema="Weather/Data/Weather.Schema.xml">
+  <Query Name="Log" Entity="WeatherRow" Operation="fishingLog" Require="PlaceId"
+         Description="The log, the water reading and the patterns.">
+    <Param Name="PlaceId" Type="string" Route="PlaceId"/>
+  </Query>
+  <View Name="Status" Source="Log" Filter="statusRows"/>
+  <View Name="Reading" Source="Log" Filter="readingRows"/>
+  <View Name="Entries" Source="Log" Filter="entryRows"/>
+  <View Name="Patterns" Source="Log" Filter="patternRows"/>
+  <Query Name="Waters" Entity="WeatherRow" Operation="fishingWaters" Description="Every fishing place, best first."/>
+  <View Name="WaterList" Source="Waters" Filter="waterRows"/>
+  <Handler Name="LogCatch" Function="logCatch"/>
+  <Handler Name="LogSkunk" Function="logSkunk"/>
+  <Handler Name="UndoLog" Function="undoLog"/>
+  <Handler Name="ExportLog" Function="exportLog"/>
+  <Handler Name="WarmerWater" Function="warmerWater"/>
+  <Handler Name="CoolerWater" Function="coolerWater"/>
+  <Handler Name="ClearWater" Function="clearWater"/>
+  <Handler Name="GoBack" Function="goBack"/>
+</DataScope>

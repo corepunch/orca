@@ -1,0 +1,44 @@
+<!-- The fishers' log over Data/Log.xml, a Pivot with Back like an activity
+     page. "log": one big tap saves a catch with the hour's conditions,
+     another a blank; the water reading; the entries; undo and export.
+     "waters": every place compared. "patterns": what the catches share. -->
+<Grid Name="FishingLogPage" Rows="1fr" ContentInsetAdjustment="Always" StateClasses="fishing" class="wx-page">
+  <Pivot Name="FishingLogPivot" Title="fishers' log" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
+         ContentInsetAdjustment="Always" class="wx-ink">
+    <PivotItem Name="LogSection" Header="log">
+      <StackView Name="LogBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+        <Grid Columns="1fr 1fr" Spacing="12" StateClasses="good">
+          <Button Name="LogCatch" Click="LogCatch" Height="96" BorderWidth="0" FontSize="26" class="wx-tile wx-tile-ink">caught one</Button>
+          <Button Name="LogSkunk" Click="LogSkunk" Height="96" BorderWidth="0" FontSize="26" class="wx-bar wx-tile-ink">no fish</Button>
+        </Grid>
+        <ItemsStack Name="StatusItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Status"
+                    ItemsSource="{Binding DataContext/Status/Items}" ItemTemplate="Weather/Templates/AboutRow"/>
+        <ItemsStack Name="ReadingItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Reading"
+                    ItemsSource="{Binding DataContext/Reading/Items}" ItemTemplate="Weather/Templates/MetricRow"/>
+        <Grid Columns="auto auto auto 1fr" Spacing="16">
+          <Button Name="CoolerWater" Click="CoolerWater" Height="44" BorderWidth="0" FontSize="20" class="wx-link">cooler</Button>
+          <Button Name="WarmerWater" Click="WarmerWater" Height="44" BorderWidth="0" FontSize="20" class="wx-link">warmer</Button>
+          <Button Name="ClearWater" Click="ClearWater" Height="44" BorderWidth="0" FontSize="20" class="wx-link">clear</Button>
+        </Grid>
+        <TextBlock Text="entries" FontSize="26" MarginTop="6" class="wx-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="NoEntries" Text="nothing logged yet: your log stays on this phone"
+                   Visible="{Binding DataContext/Entries/IsEmpty}" FontSize="16" WordWrap="true" class="wx-dim"
+                   IgnoreHitTest="true"/>
+        <ItemsStack Name="EntryItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="Entry"
+                    ItemsSource="{Binding DataContext/Entries/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+        <Grid Columns="auto auto 1fr" Spacing="16">
+          <Button Name="UndoLog" Click="UndoLog" Height="44" BorderWidth="0" FontSize="20" class="wx-link">undo last</Button>
+          <Button Name="ExportLog" Click="ExportLog" Height="44" BorderWidth="0" FontSize="20" class="wx-link">export csv</Button>
+        </Grid>
+      </StackView>
+    </PivotItem>
+    <PivotItem Name="WatersSection" Header="waters">
+      <ItemsStack Name="WaterItems" Spacing="10" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Water"
+                  ItemsSource="{Binding DataContext/WaterList/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+    </PivotItem>
+    <PivotItem Name="PatternsSection" Header="patterns">
+      <ItemsStack Name="PatternItems" Spacing="18" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Pattern"
+                  ItemsSource="{Binding DataContext/Patterns/Items}" ItemTemplate="Weather/Templates/AboutRow"/>
+    </PivotItem>
+  </Pivot>
+</Grid>
