@@ -14,6 +14,8 @@ local Places = require "Weather/places"
 local Storage = require "Weather/storage"
 local Settings = require "Weather/settings"
 local Units = require "Weather/units"
+local Report = require "Weather/report"
+local Sky = require "Weather/sky"
 
 local App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
@@ -36,10 +38,17 @@ local App = Application:extend {
         Settings.init { storage = self.storage, edition = Activities.edition, region = region }
         self.provider = Provider.new(self.places,
             { fetch = options.fetch, clock = options.clock, storage = self.storage })
-        -- The full app's hub rows that the shared provider does not filter.
+        -- The hub's everyday answers and the day page, which the shared
+        -- provider does not know.
         self.provider.filters.answerRows = function(record) return record.values.Kind == "answer" end
+        self.provider.operations.day = function(params)
+            local forecast, err, place = self.provider.forecastFor(params.PlaceId)
+            if not forecast then return nil, err end
+            return Report.day(place, forecast, params.Date, Activities.at(place))
+        end
         local handlers = self.provider.handlers
-        handlers.openActivity = function(_, params) return self:openActivity(params.item) end
+        handlers.openActivity = function(scope, params) return self:openActivity(params.item, scope) end
+        handlers.openDay = function(_, params) return self:openDay(params.item) end
         handlers.choosePlace = function(_, params) return self:choosePlace(params.item) end
         handlers.openSettings = function() return self:activate_route("/settings") end
         handlers.changeSetting = function(scope, params) return self:changeSetting(scope, params.item, 1) end
@@ -78,7 +87,7 @@ local App = Application:extend {
                 self.hubScreen = self:screenFor(self.hubPage)
                 self.hubRevision = Settings.revision()
             end
-            self:titleHubCharts()
+            self:titleCharts(self.hubPage)
             self.hubScope:activate()
             -- Changed units redraw the hub from the forecast it already has.
             if self.hubRevision ~= Settings.revision() then
@@ -96,6 +105,10 @@ local App = Application:extend {
             page:findChild("SettingsPivot", true).Title = Activities.appName:lower()
             local edition = Activities.byId[Activities.edition]
             if edition then page:findChild("ActivitySettingsSection", true).Header = edition.title end
+        elseif path == "/day" then
+            if Activities.edition then page.StateClasses = Activities.edition end
+            page:findChild("DayPivot", true).Title = Sky.weekday(self.date) .. " · " .. self.place.title
+            self:titleCharts(page)
         else
             page.StateClasses = self.activity.id
             page:findChild("ActivityPivot", true).Title = self:activityTitle(self.activity, self.place)
@@ -114,9 +127,9 @@ local App = Application:extend {
         return utf8.len(named) <= 34 and named or title
     end,
 
-    -- The hub's hourly charts, titled in the user's units.
-    titleHubCharts = function(self)
-        local function title(name, text) local node = self.hubPage:findChild(name, true); if node then node.Title = text end end
+    -- A page's hourly charts (the hub's, a day's), titled in the user's units.
+    titleCharts = function(self, page)
+        local function title(name, text) local node = page:findChild(name, true); if node then node.Title = text end end
         title("TempColumns", "temperature " .. Units.label("temp"))
         title("WindLine", "wind " .. Units.label("wind"))
         title("RainColumns", "chance of rain %")
@@ -152,13 +165,24 @@ local App = Application:extend {
         return selected and self.placesById[selected.key]
     end,
 
-    -- A "good for" row: open its activity at the selected place.
-    openActivity = function(self, record)
+    -- A "good for" row: open its activity at the selected place. From a
+    -- day page, Back returns to that day.
+    openActivity = function(self, record, scope)
         local activity = record and Activities.byId[record.values.Activity]
         local place = self:selectedPlace()
         if not (activity and place) then return end
         self.activity, self.place = activity, place
+        self.backPath = scope and scope ~= self.hubScope and "/day" or nil
         return self:activate_route("/activity")
+    end,
+
+    -- A day of the hub's week: open its hours.
+    openDay = function(self, record)
+        local date = record and record.values.Id:match(":day:(.+)$")
+        local place = self:selectedPlace()
+        if not (date and place) then return end
+        self.date, self.place, self.backPath = date, place, nil
+        return self:activate_route("/day")
     end,
 
     -- A place row: show its hub from the first section.
@@ -168,7 +192,11 @@ local App = Application:extend {
         self.hubPage:findChild("HubPanorama", true).SelectedIndex = 0
     end,
 
-    goBack = function(self) return self:activate_route("/") end,
+    goBack = function(self)
+        local path = self.backPath or "/"
+        self.backPath = nil
+        return self:activate_route(path)
+    end,
 }
 
 return App

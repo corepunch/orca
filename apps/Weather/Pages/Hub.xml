@@ -1,8 +1,8 @@
 <!-- The place hub over Data/Hub.xml: a Panorama titled with the place, after
      Bing Weather's hub and Amazing Weather's "now" page (DESIGN.md). Each
-     "good for" row opens that activity's page; "places" switches place and
-     ends with the "settings" link. App.lua titles the hourly charts in the
-     user's units. -->
+     "good for" row opens that activity's page and a day of the week its
+     hours; "places" switches place and ends with the "settings" link.
+     App.lua titles the hourly charts in the user's units. -->
 <Grid Name="HubPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
   <Panorama Name="HubPanorama" Title="{Binding DataContext/PlaceList/Selected/Title}" ContentInsetAdjustment="Always"
             class="wx-ink">
@@ -58,7 +58,7 @@
     </PanoramaItem>
     <PanoramaItem Name="DaysSection" Header="week">
       <ItemsStack Name="DayItems" Spacing="10" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Day"
-                  ItemsSource="{Binding DataContext/Days/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+                  ItemsSource="{Binding DataContext/Days/Items}" ItemTemplate="Weather/Templates/HubDayRow"/>
     </PanoramaItem>
     <PanoramaItem Name="PlacesSection" Header="places">
       <StackView Name="PlacesBody" Spacing="12" Overflow="hidden scroll" JustifyContent="Start">

@@ -1,0 +1,10 @@
+<!-- The head of a day page: the sky's icon beside high and low, the sky in
+     words, and the chance of rain ("less certain" beyond a week). -->
+<StackView Spacing="2" JustifyContent="Start" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+  <Grid Columns="auto 1fr" Spacing="16" IgnoreHitTest="true">
+    <TextBlock Name="DayTemps" Text="{Binding DataContext/Value}" FontSize="56" class="wx-ink" IgnoreHitTest="true"/>
+    <VectorView Name="DayIcon" Source="{Binding DataContext/Icon}" Width="48" Height="48" class="wx-ink"/>
+  </Grid>
+  <TextBlock Name="DaySky" Text="{Binding DataContext/Title}" FontSize="28" class="wx-ink" IgnoreHitTest="true"/>
+  <TextBlock Name="DayRain" Text="{Binding DataContext/Detail}" FontSize="16" class="wx-accent" IgnoreHitTest="true"/>
+</StackView>

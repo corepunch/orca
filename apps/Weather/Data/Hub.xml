@@ -18,6 +18,7 @@
   <View Name="Hours" Source="Report" Filter="hourRows"/>
   <View Name="Days" Source="Report" Filter="dayRows"/>
   <Handler Name="OpenActivity" Function="openActivity"/>
+  <Handler Name="OpenDay" Function="openDay"/>
   <Handler Name="ChoosePlace" Function="choosePlace"/>
   <Handler Name="OpenSettings" Function="openSettings"/>
 </DataScope>

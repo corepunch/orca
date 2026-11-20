@@ -14,6 +14,10 @@ local Report = {}
 local HOURS_SHOWN = 24
 local REASONS_SHOWN = 4
 local STRIP_DAYS = 5
+-- Beyond a week the models drift apart: later days say "less certain".
+local CERTAIN_DAYS = 7
+local function certainty(index) return index > CERTAIN_DAYS and "less certain · " or "" end
+Report.certainty = certainty
 
 local function rate(activity, hour, forecast)
     local result = activity.rate(hour, forecast):result()
@@ -149,13 +153,13 @@ function Report.rows(activity, place, forecast, clock)
             metric1 = chartValue(charts[1], hour, forecast), metric2 = chartValue(charts[2], hour, forecast),
         })
     end
-    for _, day in ipairs(daysAhead(forecast)) do
+    for index, day in ipairs(daysAhead(forecast)) do
         local best, span = Report.bestOfDay(activity, forecast, day.date)
         if best then
             add("day", day.date, {
                 title = day.date == now.date and "today" or Sky.weekday(day.date), value = best.word,
-                detail = ("best %s · %s / %s · %s"):format(span, Units.temp(day.max), Units.temp(day.min),
-                    Sky.describe(day.code)),
+                detail = ("%sbest %s · %s / %s · %s"):format(certainty(index), span, Units.temp(day.max),
+                    Units.temp(day.min), Sky.describe(day.code)),
                 score = best.score, tone = best.verdict, icon = Sky.icon(day.code),
             })
         end
@@ -248,7 +252,7 @@ function Report.hub(place, forecast, activities, clock, lead)
         })
     end
     -- The week: each day's best activity and window.
-    for _, d in ipairs(ahead) do
+    for index, d in ipairs(ahead) do
         local top
         for _, activity in ipairs(activities) do
             local best, span = Report.bestOfDay(activity, forecast, d.date)
@@ -258,9 +262,69 @@ function Report.hub(place, forecast, activities, clock, lead)
         add("day", d.date, {
             title = d.date == today and "today" or Sky.weekday(d.date),
             value = Units.temp(d.max) .. " / " .. Units.temp(d.min),
-            detail = top and ("%s for %s · %s"):format(top.best.word, top.activity.title, top.span) or Sky.describe(d.code),
+            detail = certainty(index) .. (top and ("%s for %s · %s"):format(top.best.word, top.activity.title, top.span)
+                or Sky.describe(d.code)),
             score = top and top.best.score or 0, tone = top and top.best.verdict or "info", icon = Sky.icon(d.code),
         })
+    end
+    return rows
+end
+
+-- One day of a place, opened from the hub's week: the sky, high and low,
+-- the day in one line (an activity's `daySummary(forecast, date)`), its
+-- readings, what each activity is good for then, and its hours.
+function Report.day(place, forecast, date, activities)
+    local rows = {}
+    local add = adder(rows, place.id .. ":" .. date)
+    local now = forecast.hours[forecast.now]
+    local index, day
+    for i, d in ipairs(daysAhead(forecast)) do
+        if d.date == date then index, day = i, d end
+    end
+    if not (now and day) then return rows end
+    add("now", "day", {
+        title = Sky.describe(day.code), value = Units.temp(day.max) .. " / " .. Units.temp(day.min),
+        icon = Sky.icon(day.code), detail = certainty(index) .. "rain " .. Score.fmt(day.rainChance, "%"),
+        note = date == now.date and "today" or Sky.weekday(date), score = 0,
+        tone = index > CERTAIN_DAYS and "fair" or "info",
+    })
+    for _, activity in ipairs(activities) do
+        for i, card in ipairs(activity.daySummary and activity.daySummary(forecast, date) or {}) do
+            add("card", tostring(card.id or i), { title = card.title or "", value = card.value or "",
+                detail = card.detail or "", tone = card.tone or "info", activity = activity.id, score = 0 })
+        end
+    end
+    local details = {
+        { "rain", Units.rain(day.rain) .. (day.precipitation_hours and (" in %s h"):format(Score.fmt(day.precipitation_hours)) or "") },
+        { "wind", Units.wind(day.windMax) .. (day.wind_gusts_10m_max and ", gusts " .. Units.wind(day.wind_gusts_10m_max) or "") },
+        { "uv index", Score.fmt(day.uv_index_max) },
+        { "sunrise", Units.clock(day.sunrise) }, { "sunset", Units.clock(day.sunset) },
+    }
+    for i, detail in ipairs(details) do
+        add("detail", tostring(i), { title = detail[1], value = detail[2], score = 0, tone = "info" })
+    end
+    for _, activity in ipairs(activities) do
+        local best, span, hour = Report.bestOfDay(activity, forecast, date)
+        if best then
+            local reason = best.reasons[1]
+            add("activity", activity.id, {
+                title = activity.title, value = best.word, activity = activity.id, score = best.score, tone = best.verdict,
+                detail = ("best %s%s"):format(span, reason and " · " .. reason.text or ""),
+                icon = Sky.icon(hour.code, hour.isDay),
+            })
+        end
+    end
+    for _, hour in ipairs(forecast.hours) do
+        if hour.date == date then
+            add("hour", hour.time, {
+                short = Report.tick(hour), temp = Units.value("temp", hour.temp or 0),
+                wind = Units.value("wind", hour.wind or 0), rain_chance = hour.rainChance or 0,
+                title = Units.clock(hour.time), value = Units.temp(hour.temp),
+                detail = ("%s · rain %s · wind %s"):format(Sky.describe(hour.code), Score.fmt(hour.rainChance, "%"),
+                    Units.wind(hour.wind)),
+                icon = Sky.icon(hour.code, hour.isDay), score = 0, tone = "info",
+            })
+        end
     end
     return rows
 end

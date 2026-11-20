@@ -16,6 +16,7 @@ local Weather = {
             "apparent_temperature_min" },
         minutely15 = { "precipitation", "snowfall" },
         pastDays = 1, -- "4° colder than yesterday"
+        forecastDays = 16, -- days 8 and on say "less certain"
     },
 }
 
@@ -223,6 +224,21 @@ end
 function Weather.today(forecast)
     if not forecast.hours[forecast.now] then return {} end
     local hours, title, day = wakingHours(forecast)
+    return Weather.summary(hours, day, title)
+end
+
+-- A whole day's waking hours in one line and what to bring (the day page).
+function Weather.daySummary(forecast, date)
+    local hours, day = {}, nil
+    for _, hour in ipairs(forecast.hours) do
+        local h = Sky.hour(hour.time) or 0
+        if hour.date == date and h >= 7 and h <= 22 then hours[#hours + 1] = hour; day = hour.day end
+    end
+    return Weather.summary(hours, day, "the day")
+end
+
+-- The line and the things to bring for a list of hours (`day` its day).
+function Weather.summary(hours, day, title)
     if #hours == 0 then return {} end
     day = day or {}
     local list = runs(hours)

@@ -1,0 +1,17 @@
+<!-- One day at one place, opened from the hub's week: its head, the day in
+     one line, its readings, what each activity is good for then, and its
+     hours. Place and date come from the route. -->
+<DataScope Name="Day" Schema="Weather/Data/Weather.Schema.xml">
+  <Query Name="Report" Entity="WeatherRow" Operation="day" Require="PlaceId Date" Poll="1800000"
+         Description="The day's sky, verdicts and hours at the place.">
+    <Param Name="PlaceId" Type="string" Route="PlaceId"/>
+    <Param Name="Date" Type="string" Route="Date"/>
+  </Query>
+  <View Name="Head" Source="Report" Filter="nowRows"/>
+  <View Name="Cards" Source="Report" Filter="cardRows"/>
+  <View Name="Details" Source="Report" Filter="detailRows"/>
+  <View Name="GoodFor" Source="Report" Filter="activityRows"/>
+  <View Name="Hours" Source="Report" Filter="hourRows"/>
+  <Handler Name="OpenActivity" Function="openActivity"/>
+  <Handler Name="GoBack" Function="goBack"/>
+</DataScope>

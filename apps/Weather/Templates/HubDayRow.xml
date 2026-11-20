@@ -1,0 +1,17 @@
+<!-- A day of the hub's week: when, the sky, high and low, and its best
+     activity and window in that verdict's tone. Tapping opens the day. -->
+<Button Click="OpenDay" BorderWidth="0" class="wx-row">
+  <Grid Columns="4 auto 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+    <StackView class="wx-bar" IgnoreHitTest="true"/>
+    <VectorView Source="{Binding DataContext/Icon}" Width="28" Height="28" class="wx-ink"/>
+    <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">
+      <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
+        <TextBlock Name="When" Text="{Binding DataContext/Title}" FontSize="22" class="wx-ink" IgnoreHitTest="true"/>
+        <TextBlock Name="Verdict" Text="{Binding DataContext/Value}" FontSize="20" TextHorizontalAlignment="Right"
+                   class="wx-tone" IgnoreHitTest="true"/>
+      </Grid>
+      <TextBlock Name="Why" Text="{Binding DataContext/Detail}" FontSize="14" WordWrap="true" class="wx-dim"
+                 IgnoreHitTest="true"/>
+    </StackView>
+  </Grid>
+</Button>

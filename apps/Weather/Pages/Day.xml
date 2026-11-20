@@ -1,0 +1,47 @@
+<!-- One day over Data/Day.xml, after Bing Weather's day detail: a Pivot
+     titled "fri 20 · lake tahoe" (App.lua) with the day and its hours.
+     A "good for" row opens that activity; Back returns. -->
+<Grid Name="DayPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+  <Pivot Name="DayPivot" Title="day" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
+         ContentInsetAdjustment="Always" class="wx-ink">
+    <PivotItem Name="DaySection" Header="day">
+      <StackView Name="DayBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+        <Grid Name="ReportLoading" Height="96" IgnoreHitTest="true">
+          <BindingExpression Target="Visible">AND({DataContext/Report/ShowLoading}, NOT({DataContext/Report/HasItems}))</BindingExpression>
+          <ActivityIndicator class="wx-dim"/>
+        </Grid>
+        <StackView Name="ReportFailed" Visible="{Binding DataContext/Report/ShowError}" Spacing="8" JustifyContent="Start">
+          <TextBlock Name="ReportError" Text="{Binding DataContext/Report/ErrorMessage}" FontSize="18" WordWrap="true"
+                     class="wx-poor" IgnoreHitTest="true"/>
+          <Button Name="RetryReport" Click="Report.Retry" Height="44" BorderWidth="0" FontSize="20"
+                  TextHorizontalAlignment="Left" class="wx-link">try again</Button>
+        </StackView>
+        <ItemsStack Name="HeadItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Head"
+                    ItemsSource="{Binding DataContext/Head/Items}" ItemTemplate="Weather/Templates/DayHead"/>
+        <ItemsStack Name="CardItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Card"
+                    ItemsSource="{Binding DataContext/Cards/Items}" ItemTemplate="Weather/Templates/HubAnswer"/>
+        <ItemsStack Name="DetailItems" Spacing="2" JustifyContent="Start" ItemNamePrefix="Detail"
+                    ItemsSource="{Binding DataContext/Details/Items}" ItemTemplate="Weather/Templates/DetailRow"/>
+        <TextBlock Text="good for" FontSize="26" MarginTop="10" class="wx-ink" IgnoreHitTest="true"/>
+        <ItemsStack Name="GoodForItems" Spacing="10" JustifyContent="Start" ItemNamePrefix="GoodFor"
+                    ItemsSource="{Binding DataContext/GoodFor/Items}" ItemTemplate="Weather/Templates/GoodForRow"/>
+      </StackView>
+    </PivotItem>
+    <!-- The day's hours: charts first, as on the hub, then the list. -->
+    <PivotItem Name="DayHours" Header="hourly">
+      <StackView Name="DayHoursBody" Spacing="24" Overflow="hidden scroll" JustifyContent="Start">
+        <Chart Name="TempChart" Height="170" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short"
+               LabelInterval="1" class="wx-chart">
+          <ColumnSeries Name="TempColumns" ValuePath="Temp" Title="temperature °C" class="wx-series"/>
+          <LineSeries Name="WindLine" ValuePath="Wind" Title="wind m/s" class="wx-series-2"/>
+        </Chart>
+        <Chart Name="RainChart" Height="130" ItemsSource="{Binding DataContext/Hours/Items}" CategoryPath="Short"
+               LabelInterval="1" Minimum="0" Maximum="100" Interval="25" class="wx-chart">
+          <ColumnSeries Name="RainColumns" ValuePath="RainChance" Title="chance of rain %" class="wx-series"/>
+        </Chart>
+        <ItemsStack Name="HourItems" Spacing="6" JustifyContent="Start" ItemNamePrefix="Hour"
+                    ItemsSource="{Binding DataContext/Hours/Items}" ItemTemplate="Weather/Templates/ForecastRow"/>
+      </StackView>
+    </PivotItem>
+  </Pivot>
+</Grid>

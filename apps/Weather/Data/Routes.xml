@@ -1,9 +1,13 @@
-<!-- The place hub, the page of one activity there, and settings. -->
+<!-- The place hub, the page of one activity or one day there, and settings. -->
 <Routes>
   <Route Path="/" Name="HubPage" Page="Weather/Pages/Hub" Scope="Weather/Data/Hub.xml"/>
   <Route Path="/activity" Name="ActivityPage" Page="Weather/Pages/Activity" Scope="Weather/Data/Activity.xml">
     <Param Name="PlaceId" From="place.id"/>
     <Param Name="ActivityId" From="activity.id"/>
+  </Route>
+  <Route Path="/day" Name="DayPage" Page="Weather/Pages/Day" Scope="Weather/Data/Day.xml">
+    <Param Name="PlaceId" From="place.id"/>
+    <Param Name="Date" From="date"/>
   </Route>
   <Route Path="/settings" Name="SettingsPage" Page="Weather/Pages/Settings" Scope="Weather/Data/Settings.xml"/>
 </Routes>

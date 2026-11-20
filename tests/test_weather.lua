@@ -244,7 +244,7 @@ for activity, saved in pairs(declared) do activity.fields, activity.sources = sa
 local Places = require "Weather/places"
 local Outdoors = Activities.byId.outdoors
 for _, page in ipairs { { "Weather/Pages/Hub", "Weather/Data/Hub.xml" }, { "Weather/Pages/Activity", "Weather/Data/Activity.xml" },
-        { "Weather/Pages/Settings", "Weather/Data/Settings.xml" } } do
+        { "Weather/Pages/Settings", "Weather/Data/Settings.xml" }, { "Weather/Pages/Day", "Weather/Data/Day.xml" } } do
     local problems = Lint.page(page[1], page[2])
     check(#problems == 0, Lint.format(problems))
 end
@@ -314,6 +314,24 @@ check(text("Agetahoe:age:age", "AgeText") == "updated just now" and not find("Ag
     "A fresh forecast says when it was updated")
 check(find("TempColumns").Title == "temperature °C" and find("WindLine").Title == "wind m/s", "Hub charts name their units")
 
+-- A day of the week opens its hours (W5), and Back comes home.
+press("Daytahoe:day:2026-11-20")
+check(app.screen ~= hub and find("DayPivot").Title == "fri 20 · Lake Tahoe", "A day opens its own page")
+check(text("Headtahoe:2026-11-20:now:day", "DayTemps") == "15° / 7°" and text("Headtahoe:2026-11-20:now:day", "DaySky")
+    == "thunderstorm" and text("Cardtahoe:2026-11-20:card:today", "AnswerValue") == "thunderstorms all day; up to 15°",
+    "The day's sky and its line: " .. text("Cardtahoe:2026-11-20:card:today", "AnswerValue"))
+check(app.activityScope:member("Hours").items:count() == 24 and find("TempColumns").Title == "temperature °C"
+    and text("Hourtahoe:2026-11-20:hour:2026-11-20T13:00", "Verdict") == "12°", "and all of its hours")
+check(text("GoodFortahoe:2026-11-20:activity:fishing", "ActivityVerdict") == "poor"
+    and text("GoodFortahoe:2026-11-20:activity:outdoors", "ActivityVerdict") == "poor", "A thunderstorm day is good for nothing")
+check(text("Detailtahoe:2026-11-20:detail:5", "DetailValue") == "17:00", "The day's readings")
+press("GoodFortahoe:2026-11-20:activity:outdoors")
+check(find("ActivityPivot").Title == "outdoors · Lake Tahoe", "A day's activity opens its page")
+ui.back()
+check(find("DayPivot") and app.activityScope, "and Back returns to the day")
+ui.back("DayPivot")
+check(app.screen == hub and not app.activityScope, "then to the hub")
+
 -- An activity page reuses the hub's forecast and goes back to the same hub.
 local hubRequests = #requests
 press("GoodFortahoe:activity:fishing")
@@ -362,9 +380,9 @@ check(find("GoodForocean-beach:activity:surf") and not app.screen:findChild("Goo
     "Ocean Beach is good for surf, not fishing")
 press("GoodForocean-beach:activity:surf")
 -- Ocean Beach faces west; the synthetic wind is from the east: offshore.
-check(text("Hourocean-beach:surf:hour:2026-11-18T08:00", "Verdict") == "good", "Offshore 1.5 m at 13 s is good surf")
-check(text("Hourocean-beach:surf:hour:2026-11-18T06:00", "Verdict") == "poor", "But not in the dark")
-check(text("Hourocean-beach:surf:hour:2026-11-18T08:00", "Why") == "1.5 m · 13 s · offshore 3 m/s", "Hours say swell and wind")
+-- Surf's own verdicts are checked in tests/test_weather_surf.lua.
+check(text("Hourocean-beach:surf:hour:2026-11-18T06:00", "Verdict") == "poor", "No surf in the dark")
+check(text("Hourocean-beach:surf:hour:2026-11-18T08:00", "Why"):find("offshore"), "Hours say the wind on the beach")
 check(text("Conditionocean-beach:surf:metric:4", "MetricValue") == "14°", "Water temperature")
 find("ActivityPivot"):post("Pivot.BackRequested")
 settle()
@@ -498,6 +516,33 @@ check(gale.bring.value == "a hood, a warm coat, hat and gloves" and gale.bring.d
     "Gales call for a hood: " .. gale.bring.value)
 local evening = answers(everyday(BERLIN, nil, nil, NOW + 15 * 3600))
 check(evening.today.title == "tomorrow", "Late in the evening the line is about tomorrow")
+-- Sixteen days (W5): after a week the days say they are less certain.
+local function fortnight(days)
+    local w = weather(1)
+    for name, values in pairs(w.hourly) do
+        for i = #values + 1, days * 24 do values[i] = name == "time" and F.iso(i - 1) or values[i - 24] end
+    end
+    for name, values in pairs(w.daily) do
+        for d = #values + 1, days do
+            values[d] = name == "time" and ("2026-11-%02d"):format(17 + d)
+                or (name == "sunrise" or name == "sunset") and values[d - 1]:gsub("11%-%d%d", ("11-%02d"):format(17 + d))
+                or values[d - 1]
+        end
+    end
+    return w
+end
+local long = Forecast.parse(fortnight(10), nil, NOW)
+long.spot = F.PLACES[1]
+local hubRows = {}
+for _, row in ipairs(Report.hub(F.PLACES[1], long, { Outdoors }, NOW)) do hubRows[row.id] = row end
+check(Outdoors.fields.forecastDays == 16 and hubRows["tahoe:day:2026-11-24"].detail:find("^good for outdoors")
+    and hubRows["tahoe:day:2026-11-25"].detail:find("^less certain · good for outdoors"),
+    "Days after the first week are less certain: " .. hubRows["tahoe:day:2026-11-25"].detail)
+local dayRows = {}
+for _, row in ipairs(Report.day(F.PLACES[1], long, "2026-11-26", { Outdoors })) do dayRows[row.id] = row end
+check(dayRows["tahoe:2026-11-26:now:day"].detail:find("^less certain") and dayRows["tahoe:2026-11-26:now:day"].tone == "fair",
+    "and so does their page")
+
 -- Yesterday (W4): `pastDays = 1` brings the same hour a day earlier.
 local function withYesterday(change)
     local w = weather(1)
