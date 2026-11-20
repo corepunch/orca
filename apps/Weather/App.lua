@@ -36,6 +36,8 @@ local App = Application:extend {
         Settings.init { storage = self.storage, edition = Activities.edition, region = region }
         self.provider = Provider.new(self.places,
             { fetch = options.fetch, clock = options.clock, storage = self.storage })
+        -- The full app's hub rows that the shared provider does not filter.
+        self.provider.filters.answerRows = function(record) return record.values.Kind == "answer" end
         local handlers = self.provider.handlers
         handlers.openActivity = function(_, params) return self:openActivity(params.item) end
         handlers.choosePlace = function(_, params) return self:choosePlace(params.item) end

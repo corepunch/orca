@@ -1,0 +1,13 @@
+<!-- An everyday answer under the temperature on the full app's hub: "next 2
+     hours", "today", "bring". A bar in the answer's tone, the question small,
+     the answer in a sentence and a line of why. -->
+<Grid Columns="4 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+  <StackView class="wx-bar" IgnoreHitTest="true"/>
+  <StackView Spacing="0" JustifyContent="Start" IgnoreHitTest="true">
+    <TextBlock Name="AnswerTitle" Text="{Binding DataContext/Title}" FontSize="14" class="wx-dim" IgnoreHitTest="true"/>
+    <TextBlock Name="AnswerValue" Text="{Binding DataContext/Value}" FontSize="20" WordWrap="true" class="wx-ink"
+               IgnoreHitTest="true"/>
+    <TextBlock Name="AnswerDetail" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}"
+               FontSize="14" WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>
+  </StackView>
+</Grid>

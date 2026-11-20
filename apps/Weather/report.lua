@@ -2,7 +2,7 @@
 -- WeatherRow (Data/Weather.Schema.xml) told apart by Kind, so one request
 -- feeds every section of a page:
 --
---   hub (Report.hub)        card, now, age, detail, strip, activity ("good for"), hour, day
+--   hub (Report.hub)        card, now, answer, age, detail, strip, activity ("good for"), hour, day
 --   activity (Report.rows)  now, age, card, reason, hour, day, metric
 --
 -- Every number goes through Units, so the text follows the user's units.
@@ -72,6 +72,16 @@ local function daysAhead(forecast)
 end
 Report.daysAhead = daysAhead
 
+-- Now against this time yesterday ("4° colder than yesterday"), from a
+-- forecast with `pastDays`; nil without yesterday's hour.
+function Report.yesterday(forecast)
+    local now, before = forecast.hours[forecast.now], forecast.hours[forecast.now - 24]
+    if not (now and before and now.temp and before.temp) or before.date >= now.date then return nil end
+    local change = now.temp - before.temp
+    if math.abs(change) < 1.5 then return "about as warm as yesterday" end
+    return ("%s %s than yesterday"):format(Units.tempDelta(math.abs(change)), change > 0 and "warmer" or "colder")
+end
+
 -- How old the forecast is, as a row: "updated 25 min ago", and a clear line
 -- when it is the copy saved before the network went away.
 function Report.age(forecast, now)
@@ -85,11 +95,12 @@ function Report.age(forecast, now)
     return { title = title, detail = detail, tone = forecast.stale and "poor" or old and "fair" or "info", score = 0 }
 end
 
--- An activity's cards (`cards(forecast, place)`), added as "card" rows.
-local function addCards(add, activity, forecast, place)
+-- An activity's cards (`cards(forecast, place, clock)`), added as "card"
+-- rows. `clock` is the time now; it may be nil.
+local function addCards(add, activity, forecast, place, clock, kind)
     if not (activity and activity.cards) then return end
-    for index, card in ipairs(activity.cards(forecast, place) or {}) do
-        add("card", tostring(card.id or index), {
+    for index, card in ipairs(activity.cards(forecast, place, clock) or {}) do
+        add(kind or "card", tostring(card.id or index), {
             title = card.title or "", value = card.value or "", detail = card.detail or "", tone = card.tone or "info",
             icon = card.icon or "", activity = activity.id, score = 0,
         })
@@ -122,7 +133,7 @@ function Report.rows(activity, place, forecast, clock)
         note = focus == now and place.title or place.title .. " · from " .. Units.clock(focus.time),
     })
     add("age", "age", Report.age(forecast, clock))
-    addCards(add, activity, forecast, place)
+    addCards(add, activity, forecast, place, clock)
     for index = 1, math.min(REASONS_SHOWN, #result.reasons) do
         local reason = result.reasons[index]
         add("reason", tostring(index), { title = reason.text, tone = reason.tone, score = 0 })
@@ -168,15 +179,22 @@ function Report.hub(place, forecast, activities, clock, lead)
     local now = hours[forecast.now]
     if not now then return rows end
     local today = now.date
+    -- An edition's own answers lead; in the full app everyday outdoors'
+    -- (the next two hours, the day in one line, what to bring) follow the
+    -- temperature as compact "answer" rows, so it stays on top.
+    local everyday = lead and lead.id == "outdoors"
     for _, activity in ipairs(activities) do
-        if activity == lead then addCards(add, activity, forecast, place) end
+        if activity == lead and not everyday then addCards(add, activity, forecast, place, clock) end
     end
+    local yesterday = Report.yesterday(forecast)
+    local gusts = (now.gust or 0) >= (now.wind or 0) + 3 and ", gusts " .. Units.wind(now.gust) or ""
     add("now", "now", {
         title = Sky.describe(now.code), value = Units.temp(now.temp), icon = Sky.icon(now.code, now.isDay),
-        detail = "feels like " .. Units.temp(now.feels),
-        note = ("wind %s %s · uv %s"):format(Units.wind(now.wind), Sky.compass(now.windDir), Score.fmt(now.uv)),
+        detail = "feels like " .. Units.temp(now.feels) .. (yesterday and " · " .. yesterday or ""),
+        note = ("wind %s %s%s · uv %s"):format(Units.wind(now.wind), Sky.compass(now.windDir), gusts, Score.fmt(now.uv)),
         score = 0, tone = "info",
     })
+    if everyday then addCards(add, lead, forecast, place, clock, "answer") end
     add("age", "age", Report.age(forecast, clock))
     local day = now.day or {}
     local moon = Sky.moon(forecast.epoch)

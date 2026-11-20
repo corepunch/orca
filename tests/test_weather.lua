@@ -221,13 +221,24 @@ check(restored.updated == NOW and restored.hours[restored.now].time == "2026-11-
 check(Forecast.restore(raw, { lat = 1, lon = 2 }, nil, NOW + 9 * 86400) == nil, "A copy that no longer reaches now is dropped")
 local Activities = require "Weather/activities"
 local tahoe = F.PLACES[1]
+-- Merged over the activities' own declarations (each edition grows its own),
+-- so only what this test adds is checked, and theirs come back after.
+local declared = {}
+for _, activity in ipairs(Activities.list) do declared[activity] = { activity.fields, activity.sources } end
+local function only(list, wanted)
+    local count = 0
+    for _, name in ipairs(list) do if name == wanted then count = count + 1 end end
+    return count == 1
+end
+for _, activity in ipairs(Activities.list) do activity.fields, activity.sources = nil, nil end
 Activities.byId.fishing.fields = { hourly = { "soil_temperature_6cm" }, pastDays = 2 }
 Activities.byId.hiking.fields = { hourly = { "soil_temperature_6cm", "snow_depth" }, pastDays = 3, forecastDays = 10 }
-Activities.byId.hiking.sources = { airQuality }
+Activities.byId.fishing.sources, Activities.byId.hiking.sources = { airQuality }, { airQuality }
 local merged = Activities.request(tahoe)
 check(table.concat(merged.hourly, ",") == "soil_temperature_6cm,snow_depth" and merged.pastDays == 3
-    and merged.forecastDays == 10 and #merged.sources == 1, "One request merges the activities at a place")
-Activities.byId.fishing.fields, Activities.byId.hiking.fields, Activities.byId.hiking.sources = nil, nil, nil
+    and merged.forecastDays == 10 and #merged.sources == 1 and only(merged.hourly, "snow_depth"),
+    "One request merges the activities at a place")
+for activity, saved in pairs(declared) do activity.fields, activity.sources = saved[1], saved[2] end
 
 -- The app over a few places, with every navigation step a real control event.
 local Places = require "Weather/places"
@@ -237,13 +248,25 @@ for _, page in ipairs { { "Weather/Pages/Hub", "Weather/Data/Hub.xml" }, { "Weat
     local problems = Lint.page(page[1], page[2])
     check(#problems == 0, Lint.format(problems))
 end
--- In the full app everyday outdoors leads the hub with its cards (F7).
+-- In the full app everyday outdoors' cards follow the temperature as
+-- answers (F7); its own are checked below, after a stand-in here.
+local everydayCards = Outdoors.cards
 Outdoors.cards = function(_, place)
     return { { id = "today", title = "today", value = "a mild day", detail = "dry until " .. place.title .. "'s evening",
         tone = "good" } }
 end
 local net = F.network()
 local requests = net.requests
+-- The place's own forecast and marine requests; activities' extra sources
+-- (tides, air, other models) come and go as the editions grow.
+local function forecasts()
+    local list = {}
+    for _, url in ipairs(requests) do
+        if url:find("v1/forecast%?latitude=[%-%d%.]+&longitude=[%-%d%.]+&hourly=temperature_2m,") or url:find("marine%-api")
+        then list[#list + 1] = url end
+    end
+    return list
+end
 local store = F.storage("app", F.PLACES)
 local ui = F.launch { net = net, storage = store }
 local app, find, text, press, settle = ui.app, ui.find, ui.text, ui.press, ui.settle
@@ -251,8 +274,8 @@ local hub = app.screen
 
 -- The hub: Amazing Weather's now page, what the place is good for, the week.
 check(find("HubPanorama").Title == "Lake Tahoe", "The hub is titled with the place")
-check(#requests == 1 and requests[1]:find("latitude=39.09") and not requests[1]:find("marine"),
-    "A lake asks for the forecast only")
+check(requests[1] == forecasts()[1] and forecasts()[1]:find("latitude=39.09") and forecasts()[1]:find("v1/forecast"),
+    "The place's forecast comes first")
 check(text("Nowtahoe:now:now", "HubTemp") == "10°" and text("Nowtahoe:now:now", "HubSky") == "partly cloudy"
     and text("Nowtahoe:now:now", "HubFeels") == "feels like 9°", "Now shows temperature, sky and feels like")
 check(text("Detailtahoe:detail:1", "DetailValue") == "70%" and text("Detailtahoe:detail:6", "DetailValue") == "06:45",
@@ -283,18 +306,20 @@ check(text("Daytahoe:day:2026-11-20", "Verdict") == "11° / 7°" or text("Daytah
 check(text("Daytahoe:day:2026-11-19", "Why"):find(" for ") ~= nil, "Days name their best activity: "
     .. text("Daytahoe:day:2026-11-19", "Why"))
 check(find("Placetahoe") and find("Placebondi"), "Places are listed")
--- Cards lead the hub; the age row follows the conditions (F5, F7).
-check(text("Cardtahoe:card:today", "CardValue") == "a mild day" and find("Cardtahoe:card:today").StateClasses == "good"
-    and not find("Cardtahoe:card:today"):findChild("CardIcon", true).Visible, "The lead activity's cards open the hub")
+-- Outdoors' answers follow the conditions; the age row comes next (F5, F7).
+check(text("Answertahoe:answer:today", "AnswerValue") == "a mild day"
+    and find("Answertahoe:answer:today").StateClasses == "good" and not app.screen:findChild("Cardtahoe:card:today", true),
+    "Everyday outdoors answers under the temperature")
 check(text("Agetahoe:age:age", "AgeText") == "updated just now" and not find("Agetahoe:age:age"):findChild("AgeWarning", true).Visible,
     "A fresh forecast says when it was updated")
 check(find("TempColumns").Title == "temperature °C" and find("WindLine").Title == "wind m/s", "Hub charts name their units")
 
 -- An activity page reuses the hub's forecast and goes back to the same hub.
+local hubRequests = #requests
 press("GoodFortahoe:activity:fishing")
 check(app.screen ~= hub and find("ActivityPivot").Title == "fishing · Lake Tahoe", "Fishing opens its own page")
 check(find("ActivityPage").StateClasses == "fishing", "The page carries the activity's accent class")
-check(#requests == 1, "Opening an activity reuses the place's forecast")
+check(#requests == hubRequests, "Opening an activity reuses the place's forecast")
 check(text("Nowtahoe:fishing:now:now", "NowVerdict") == "good" and text("Nowtahoe:fishing:now:now", "NowSpot") == "Lake Tahoe",
     "The verdict card shows the activity's verdict")
 local tile = find("Nowtahoe:fishing:now:now"):findChild("VerdictTile", true).BackgroundColor
@@ -331,7 +356,8 @@ find("HubPanorama").SelectedIndex = 4
 press("Placeocean-beach")
 check(find("HubPanorama").Title == "Ocean Beach" and find("HubPanorama").SelectedIndex == 0,
     "Choosing a place shows its hub from the start")
-check(requests[#requests]:find("marine%-api") and requests[#requests]:find("latitude=37.76"), "Surf adds the marine forecast")
+check(forecasts()[#forecasts()]:find("marine%-api") and forecasts()[#forecasts()]:find("latitude=37.76"),
+    "Surf adds the marine forecast")
 check(find("GoodForocean-beach:activity:surf") and not app.screen:findChild("GoodForocean-beach:activity:fishing", true),
     "Ocean Beach is good for surf, not fishing")
 press("GoodForocean-beach:activity:surf")
@@ -406,7 +432,106 @@ local savedRows = later.app.provider.caches.savedHub { PlaceId = "ocean-beach" }
 check(savedRows and #savedRows > 0, "The saved hub can show before the first request")
 net.failing = false
 later.app.hubScope:dispose()
-Outdoors.cards = nil
+Outdoors.cards = everydayCards
+
+-- Everyday answers (W1, W2): the next two hours of rain from the quarter
+-- hours, the rest of the day in one line, and what to bring.
+local BERLIN, TOKYO = { lat = 52.52, lon = 13.4 }, { lat = 35.68, lon = 139.7 }
+-- A day at a spot with quarter-hour rain (mm per quarter from 06:00) and
+-- hourly changes `hourly(i, w)`.
+local function everyday(spot, rain, hourly, clock)
+    local w = weather(spot.lat)
+    local times, amounts, snow = {}, {}, {}
+    for i = 0, 15 do
+        times[i + 1] = ("2026-11-18T%02d:%02d"):format(6 + i * 15 // 60, i * 15 % 60)
+        amounts[i + 1], snow[i + 1] = rain and rain[i + 1] or 0, 0
+    end
+    w.minutely_15 = { time = times, precipitation = amounts, snowfall = snow }
+    if hourly then for i = 1, #w.hourly.time do hourly(i - 1, w) end end
+    local forecast = Forecast.parse(w, nil, clock or NOW, spot)
+    forecast.spot = spot
+    return forecast, w
+end
+check(Outdoors.preciseNowcast(BERLIN) and Outdoors.preciseNowcast({ lat = 40.7, lon = -74 })
+    and not Outdoors.preciseNowcast(TOKYO) and not Outdoors.preciseNowcast({ lat = -33.9, lon = 151.2 }),
+    "Real quarter hours: North America and Central Europe")
+local function nextHour(spot, rain, clock) return Outdoors.nextHour(everyday(spot, rain, nil, clock), clock or NOW) end
+check(nextHour(BERLIN, {}).value == "dry for the next 2 hours" and nextHour(BERLIN, {}).tone == "good", "A dry outlook")
+local soon = nextHour(BERLIN, { 0, 0, 0, 0.3, 0.4, 0.5, 0.2 })
+check(soon.value == "rain starts in about 30 min" and soon.detail == "light, for about 1 h" and soon.tone == "fair",
+    "Rain from 06:30 to 07:30: " .. soon.value .. " · " .. soon.detail)
+check(nextHour(BERLIN, { 0, 0, 0, 0.3 }, NOW + 7 * 60).value == "rain starts in about 25 min",
+    "Minutes count from the time now, not from the request")
+local stopping = nextHour(BERLIN, { 0, 0.3, 0.4, 0.5, 0.2 })
+check(stopping.value == "rain stops in about 1 h" and stopping.detail:find("^light"), "Rain now: when it stops")
+local pouring = nextHour(BERLIN, { 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3 })
+check(pouring.value == "rain for the next 2 hours" and pouring.detail == "heavy" and pouring.tone == "poor", "A wet outlook")
+local rough = nextHour(TOKYO, { 0, 0, 0, 0.3, 0.4, 0.5, 0.2 })
+check(rough.value == "rain likely within the hour" and rough.detail:find("approximate") and not rough.value:find("min"),
+    "Elsewhere the timing is rough, never in minutes: " .. rough.value)
+check(Outdoors.nextHour(Forecast.parse(weather(52.5), nil, NOW), NOW) == nil, "No quarter hours, no next-hour answer")
+local function answers(forecast)
+    local byId = {}
+    for _, card in ipairs(Outdoors.today(forecast)) do byId[card.id] = card end
+    return byId
+end
+local plain = answers(everyday(BERLIN))
+check(plain.today.title == "today" and plain.today.value == "dry all day; up to 15°" and plain.today.detail == "feels 9° to 14°",
+    "Today in one line: " .. plain.today.value)
+check(plain.bring.value == "a coat" and plain.bring.detail == "feels 9° at the coldest", "Bring a coat when it feels 9°")
+local showers = answers(everyday(BERLIN, nil, function(i, w)
+    if i >= 15 and i < 24 then w.hourly.weather_code[i + 1] = 81 end
+    if i == 12 then w.hourly.uv_index[i + 1] = 5 end
+end))
+check(showers.today.value == "dry until 15:00, then showers; up to 15°" and showers.today.detail:find("uv up to 5"),
+    "Dry, then showers: " .. showers.today.value)
+check(showers.bring.value == "an umbrella, a coat, sunscreen" and showers.bring.detail:find("^showers from 15:00"),
+    "Bring an umbrella and sunscreen: " .. showers.bring.value)
+local gale = answers(everyday(BERLIN, nil, function(i, w)
+    if i >= 8 and i < 11 then w.hourly.weather_code[i + 1] = 63 end
+    if i >= 13 and i < 15 then w.hourly.weather_code[i + 1] = 63 end
+    w.hourly.wind_gusts_10m[i + 1] = 17
+    w.hourly.apparent_temperature[i + 1] = -2
+end))
+check(gale.today.value == "rain at times, most 08–10h; up to 15°, windy", "Rain on and off: " .. gale.today.value)
+check(gale.bring.value == "a hood, a warm coat, hat and gloves" and gale.bring.detail:find("too windy for an umbrella"),
+    "Gales call for a hood: " .. gale.bring.value)
+local evening = answers(everyday(BERLIN, nil, nil, NOW + 15 * 3600))
+check(evening.today.title == "tomorrow", "Late in the evening the line is about tomorrow")
+-- Yesterday (W4): `pastDays = 1` brings the same hour a day earlier.
+local function withYesterday(change)
+    local w = weather(1)
+    for name, values in pairs(w.hourly) do
+        local copy = {}
+        for i = 1, 24 do copy[i] = name == "time" and values[i]:gsub("11%-18", "11-17") or values[i] end
+        if name == "temperature_2m" then for i = 1, 24 do copy[i] = values[i] + change end end
+        for i, v in ipairs(values) do copy[24 + i] = v end
+        w.hourly[name] = copy
+    end
+    for name, values in pairs(w.daily) do
+        table.insert(values, 1, name == "time" and "2026-11-17" or name == "sunrise" and "2026-11-17T06:45"
+            or name == "sunset" and "2026-11-17T17:00" or values[1])
+    end
+    return w
+end
+check(Report.yesterday(Forecast.parse(withYesterday(4), nil, NOW)) == "4° colder than yesterday"
+    and Report.yesterday(Forecast.parse(withYesterday(-2.6), nil, NOW)) == "3° warmer than yesterday"
+    and Report.yesterday(Forecast.parse(withYesterday(1), nil, NOW)) == "about as warm as yesterday"
+    and Report.yesterday(Forecast.parse(weather(1), nil, NOW)) == nil, "Now against this time yesterday")
+check(Outdoors.fields.pastDays == 1, "Outdoors asks for yesterday")
+
+-- On the hub, under the temperature.
+local berlin = { id = "berlin", title = "Berlin", region = "Germany", lat = 52.52, lon = 13.4, activities = {} }
+local everydayNet = F.network()
+everydayNet.answers["v1/forecast"] = function() return (select(2, everyday(BERLIN, { 0, 0, 0, 0.3, 0.4, 0.5, 0.2 }))) end
+local daily = F.launch { places = { berlin }, net = everydayNet, storageName = "everyday" }
+check(everydayNet.requests[1]:find("minutely_15=precipitation,snowfall", 1, true)
+    and everydayNet.requests[1]:find("precipitation_hours,uv_index_max", 1, true), "Outdoors asks for quarter hours")
+check(daily.text("Answerberlin:answer:next-hour", "AnswerValue") == "rain starts in about 30 min"
+    and daily.text("Answerberlin:answer:today", "AnswerValue") == "dry all day; up to 15°"
+    and daily.text("Answerberlin:answer:bring", "AnswerValue") == "a coat", "The hub answers the door-step questions")
+check(daily.find("AnswerItems").Parent == daily.find("NowItems").Parent, "beside the conditions")
+daily.app.hubScope:dispose()
 
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}

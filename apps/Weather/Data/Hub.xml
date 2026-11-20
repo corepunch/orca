@@ -10,6 +10,7 @@
   </Query>
   <View Name="Cards" Source="Report" Filter="cardRows"/>
   <View Name="Now" Source="Report" Filter="nowRows"/>
+  <View Name="Answers" Source="Report" Filter="answerRows"/>
   <View Name="Age" Source="Report" Filter="ageRows"/>
   <View Name="Details" Source="Report" Filter="detailRows"/>
   <View Name="Strip" Source="Report" Filter="stripRows"/>

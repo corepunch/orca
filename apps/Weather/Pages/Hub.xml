@@ -23,6 +23,9 @@
                     ItemsSource="{Binding DataContext/Cards/Items}" ItemTemplate="Weather/Templates/CardRow"/>
         <ItemsStack Name="NowItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Now"
                     ItemsSource="{Binding DataContext/Now/Items}" ItemTemplate="Weather/Templates/HubNow"/>
+        <!-- The full app's everyday answers: the next two hours, today, what to bring. -->
+        <ItemsStack Name="AnswerItems" Spacing="12" JustifyContent="Start" ItemNamePrefix="Answer"
+                    ItemsSource="{Binding DataContext/Answers/Items}" ItemTemplate="Weather/Templates/HubAnswer"/>
         <ItemsStack Name="AgeItems" Spacing="0" JustifyContent="Start" ItemNamePrefix="Age"
                     ItemsSource="{Binding DataContext/Age/Items}" ItemTemplate="Weather/Templates/AgeRow"/>
         <ItemsStack Name="DetailItems" Spacing="2" JustifyContent="Start" ItemNamePrefix="Detail"
