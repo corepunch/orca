@@ -167,7 +167,7 @@ function Garden.metrics(hour, forecast)
     end
     rows[#rows + 1] = Water.metric(hour, plot)
     local soil = Soil.state(forecast)
-    rows[#rows + 1] = { label = "soil at 6 cm", value = Units.temp(soil and soil.today or hour.soil_temperature_6cm),
+    rows[#rows + 1] = { label = "soil at " .. Plot.depth(6), value = Units.temp(soil and soil.today or hour.soil_temperature_6cm),
         note = soil and (Soil.trendText(soil.trend) or "daily mean") or "daily mean" }
     for _, job in ipairs(Jobs.list(forecast, plot)) do
         rows[#rows + 1] = { label = job.title, value = job.value, note = job.note, tone = job.tone }

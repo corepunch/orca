@@ -23,9 +23,9 @@ local DAY = 86400
 -- thick), else the top centimetre. Returns the fraction and its depth text.
 function Water.rootMoisture(hour)
     local upper, lower = hour.soil_moisture_3_to_9cm, hour.soil_moisture_9_to_27cm
-    if upper and lower then return (upper * 6 + lower * 18) / 24, "3–27 cm" end
-    if upper then return upper, "3–9 cm" end
-    if hour.soilMoisture then return hour.soilMoisture, "the top 1 cm" end
+    if upper and lower then return (upper * 6 + lower * 18) / 24, Plot.depth(3, 27) end
+    if upper then return upper, Plot.depth(3, 9) end
+    if hour.soilMoisture then return hour.soilMoisture, "the top " .. Plot.depth(1) end
     return nil
 end
 

@@ -99,6 +99,14 @@ function Plot.water(mm)
     return ("%d L/m²"):format(math.floor((mm or 0) + 0.5))
 end
 
+-- A soil depth as the user reads lengths: "6 cm", or "2 in" with feet.
+-- With a second depth, a range: "3–27 cm".
+function Plot.depth(cm, to)
+    local inches = Units.current("height") == "ft"
+    local function n(v) return inches and math.floor(v / 2.54 + 0.5) or v end
+    return (to and ("%d–%d"):format(n(cm), n(to)) or ("%d"):format(n(cm))) .. (inches and " in" or " cm")
+end
+
 -- The local month (1–12) of the current hour, and whether it is spring at
 -- this latitude (March–May north, September–November south).
 function Plot.month(forecast)

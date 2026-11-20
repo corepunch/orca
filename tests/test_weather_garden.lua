@@ -190,6 +190,12 @@ end }
 for _, job in ipairs(Jobs.list(frostComing)) do jobs[job.id] = job end
 check(jobs.harvest.value == "before tomorrow" and jobs.harvest.note:find("frost", 1, true), "Harvest before the frost: " .. jobs.harvest.value .. " " .. jobs.harvest.note)
 check(jobs.plant.value == "not yet", "No planting out before a frost")
+local function harvestWith(mmPerHour)
+    for _, job in ipairs(Jobs.list(build { hours = 72, each = function(h, k) if k >= 20 and k < 30 then h.rain = mmPerHour end end })) do
+        if job.id == "harvest" then return job.value end
+    end
+end
+check(harvestWith(2) == "no rush" and harvestWith(3) == "before tomorrow", "A downpour of 25 mm or more means harvest first")
 local jobsCard = Jobs.card(frostComing)
 check(jobsCard.value == "harvest today" and jobsCard.detail:find("frost comes tomorrow", 1, true), "The jobs card leads with the urgent one: " .. jobsCard.value)
 

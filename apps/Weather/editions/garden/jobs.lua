@@ -10,7 +10,7 @@
 --              24 h so it isn't washed away                          1 h
 --   plant out  a day whose next three nights stay above 10 °C and frost
 --              free, with light wind
---   harvest    before frost, a day of 15 mm or more, a gale or hail
+--   harvest    before frost, a downpour (25 mm in a day), a gale or hail
 --              in the next three days
 local Sky = require "Weather/sky"
 local Units = require "Weather/units"
@@ -122,7 +122,7 @@ local function threat(forecast, plot)
         end
         if hail then return day.date, "hail" end
         if gust >= 17 then return day.date, "a gale" end
-        if rain >= 15 then return day.date, ("%s of rain"):format(Units.rain(rain)) end
+        if rain >= 25 then return day.date, ("%s of rain"):format(Units.rain(rain)) end
     end
 end
 

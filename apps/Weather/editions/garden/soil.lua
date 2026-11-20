@@ -86,7 +86,7 @@ function Soil.card(forecast)
         for index = #ready, math.max(1, #ready - 1), -1 do names[#names + 1] = ready[index].name end
         card.value, card.tone = table.concat(names, ", "), "good"
     end
-    local parts = { ("soil %s at 6 cm"):format(Units.temp(state.today)) }
+    local parts = { ("soil %s at %s"):format(Units.temp(state.today), Plot.depth(6)) }
     if #ready > 2 then parts[1] = parts[1] .. ", fine for hardier crops too" end
     parts[#parts + 1] = Soil.trendText(state.trend)
     if nextCrop then parts[#parts + 1] = ("next: %s at %s"):format(nextCrop.detail, Units.temp(nextCrop.min)) end
@@ -117,17 +117,18 @@ function Soil.lawnCard(forecast)
     if season == "spring" and first then
         local already = first <= now.date
         card.value, card.tone = already and "pre-emergent now" or "pre-emergent " .. Plot.dayName(first, forecast), "good"
-        card.detail = ("soil %s at 10 cm, %s for %d days in a row: weeds start to sprout"):format(Units.temp(soil),
+        card.detail = ("soil %s at %s, %s for %d days in a row: weeds start to sprout"):format(Units.temp(soil), Plot.depth(10),
             Units.temp(lawn.preEmergent), lawn.preEmergentDays)
     elseif (season == "summer" or season == "autumn") and soil >= lawn.seedMin and soil <= lawn.seedMax then
         card.value, card.tone = "good for seeding", "good"
-        card.detail = ("soil %s at 10 cm: grass seed takes between %s and %s"):format(Units.temp(soil),
+        card.detail = ("soil %s at %s: grass seed takes between %s and %s"):format(Units.temp(soil), Plot.depth(10),
             Units.temp(lawn.seedMin), Units.temp(lawn.seedMax))
     else
         card.value = "soil " .. Units.temp(soil)
-        card.detail = season == "spring" and ("pre-emergent once 10 cm holds %s for %d days"):format(
-            Units.temp(lawn.preEmergent), lawn.preEmergentDays)
-            or ("at 10 cm · seed grass between %s and %s"):format(Units.temp(lawn.seedMin), Units.temp(lawn.seedMax))
+        card.detail = season == "spring" and ("pre-emergent once %s holds %s for %d days"):format(
+            Plot.depth(10), Units.temp(lawn.preEmergent), lawn.preEmergentDays)
+            or ("at %s · seed grass between %s and %s"):format(Plot.depth(10), Units.temp(lawn.seedMin),
+                Units.temp(lawn.seedMax))
     end
     return card
 end
