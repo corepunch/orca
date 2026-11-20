@@ -1,5 +1,6 @@
 -- Things the sky does that every weather profile reads: WMO weather codes,
--- compass points, angles and the phase of the moon. Pure functions, so the
+-- compass points, angles, the phase of the moon and the sun's height with
+-- the twilights it makes. Pure functions, so the
 -- standalone tests can load this module without ORCA.
 local Sky = {}
 
@@ -100,6 +101,102 @@ function Sky.weekday(date)
     local t = { 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4 }
     if m < 3 then y = y - 1 end
     return WEEKDAYS[(y + y // 4 - y // 100 + y // 400 + t[m] + d) % 7 + 1] .. " " .. tostring(d)
+end
+
+-- Days since 1970-01-01 for a civil date (proleptic Gregorian).
+local function daysFromCivil(y, m, d)
+    y = m <= 2 and y - 1 or y
+    local era = (y >= 0 and y or y - 399) // 400
+    local yoe = y - era * 400
+    local doy = (153 * (m + (m > 2 and -3 or 9)) + 2) // 5 + d - 1
+    return era * 146097 + yoe * 365 + yoe // 4 - yoe // 100 + doy - 719468
+end
+
+-- The UTC epoch of a date's midnight ("2026-11-18"), or nil.
+function Sky.epochOf(date)
+    local y, m, d = (date or ""):match("^(%d+)-(%d+)-(%d+)")
+    if not y then return nil end
+    return daysFromCivil(tonumber(y), tonumber(m), tonumber(d)) * 86400
+end
+
+-- The sun's height above the horizon in degrees at a UTC epoch, without
+-- refraction (NOAA's solar calculator, good to a few hundredths of a degree).
+function Sky.sunAltitude(epoch, lat, lon)
+    local rad, deg = math.pi / 180, 180 / math.pi
+    local t = (epoch / 86400 + 2440587.5 - 2451545) / 36525
+    local l0 = (280.46646 + t * (36000.76983 + t * 0.0003032)) % 360
+    local m = 357.52911 + t * (35999.05029 - 0.0001537 * t)
+    local e = 0.016708634 - t * (0.000042037 + 0.0000001267 * t)
+    local c = math.sin(m * rad) * (1.914602 - t * (0.004817 + 0.000014 * t))
+        + math.sin(2 * m * rad) * (0.019993 - 0.000101 * t) + math.sin(3 * m * rad) * 0.000289
+    local omega = 125.04 - 1934.136 * t
+    local lambda = l0 + c - 0.00569 - 0.00478 * math.sin(omega * rad)
+    local eps0 = 23 + (26 + (21.448 - t * (46.815 + t * (0.00059 - t * 0.001813))) / 60) / 60
+    local eps = eps0 + 0.00256 * math.cos(omega * rad)
+    local decl = math.asin(math.sin(eps * rad) * math.sin(lambda * rad))
+    local y = math.tan(eps * rad / 2) ^ 2
+    local eqTime = 4 * deg * (y * math.sin(2 * l0 * rad) - 2 * e * math.sin(m * rad)
+        + 4 * e * y * math.sin(m * rad) * math.cos(2 * l0 * rad) - 0.5 * y * y * math.sin(4 * l0 * rad)
+        - 1.25 * e * e * math.sin(2 * m * rad))
+    local minutes = (epoch % 86400) / 60
+    local hourAngle = ((minutes + eqTime + 4 * lon) / 4 - 180) * rad
+    local cosZenith = math.sin(lat * rad) * math.sin(decl) + math.cos(lat * rad) * math.cos(decl) * math.cos(hourAngle)
+    return 90 - math.acos(math.max(-1, math.min(1, cosZenith))) * deg
+end
+
+-- How far below the horizon the sun is at each twilight's edge.
+Sky.TWILIGHT = { sunrise = -0.833, civil = -6, nautical = -12, astronomical = -18 }
+
+local twilights, STEP = {}, 300
+
+-- Dawn and dusk on a local date for a place, `offset` seconds east of UTC:
+--
+--   { sunrise = "…T07:28", sunset = "…T16:05", polar = nil | "day" | "night",
+--     civil = { dawn = "…T06:52", dusk = "…T16:41", dawnEpoch, duskEpoch },
+--     nautical = { … }, astronomical = { … } }
+--
+-- A level is nil when the sun never gets that low that day (no full
+-- darkness in a northern summer); it is `{ dark = true }` when the sun never
+-- gets that high (polar night). A dawn or dusk that falls on the next date
+-- is missing from this one. Times are local, like the forecast's.
+function Sky.twilight(date, lat, lon, offset)
+    offset = offset or 0
+    local key = ("%s|%.3f|%.3f|%d"):format(date, lat, lon, offset)
+    if twilights[key] then return twilights[key] end
+    local midnight = Sky.epochOf(date)
+    if not midnight then return nil end
+    local start = midnight - offset
+    local samples, low, high = {}, math.huge, -math.huge
+    for index = 0, 86400 // STEP do
+        local altitude = Sky.sunAltitude(start + index * STEP, lat, lon)
+        samples[index] = altitude
+        low, high = math.min(low, altitude), math.max(high, altitude)
+    end
+    local function at(epoch) return os.date("!%Y-%m-%dT%H:%M", math.floor(epoch + offset + 30)) end
+    local function edge(limit)
+        if low > limit then return nil end
+        if high < limit then return { dark = true } end
+        -- Dawn is the first rise through the limit; dusk the first fall after
+        -- it (a fall before dawn ends the previous evening).
+        local dawn, dusk
+        for index = 1, #samples do
+            local a, b = samples[index - 1], samples[index]
+            local epoch = start + (index - 1 + (limit - a) / (b - a)) * STEP
+            if a < limit and b >= limit and not dawn then dawn = epoch
+            elseif a >= limit and b < limit and (dawn or not dusk) and not (dawn and dusk and dusk > dawn) then
+                dusk = epoch
+            end
+        end
+        if dawn and dusk and dusk < dawn then dusk = nil end
+        return { dawnEpoch = dawn, duskEpoch = dusk, dawn = dawn and at(dawn), dusk = dusk and at(dusk) }
+    end
+    local rise = edge(Sky.TWILIGHT.sunrise)
+    local result = { civil = edge(Sky.TWILIGHT.civil), nautical = edge(Sky.TWILIGHT.nautical),
+        astronomical = edge(Sky.TWILIGHT.astronomical),
+        polar = rise == nil and "day" or rise.dark and "night" or nil,
+        sunrise = rise and rise.dawn, sunset = rise and rise.dusk }
+    twilights[key] = result
+    return result
 end
 
 return Sky

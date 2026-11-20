@@ -62,12 +62,35 @@ function Score.curve(value, points)
     return points[#points][2]
 end
 
--- Minutes from this hour to the nearest sunrise or sunset of its day.
-function Score.twilight(hour)
+-- Minutes from this hour to the nearest sunrise or sunset of its day, or,
+-- with a `level` ("civil", "nautical", "astronomical"), to the nearest dawn
+-- or dusk of that twilight (Sky.twilight, on `hour.day.twilight`). math.huge
+-- when the day has no such edge, as in a northern summer night.
+function Score.twilight(hour, level)
     local day, now = hour.day, Sky.minutes(hour.time)
     if not (day and now) then return math.huge end
-    local rise, set = Sky.minutes(day.sunrise), Sky.minutes(day.sunset)
+    local rise, set
+    if level then
+        local edges = day.twilight and day.twilight[level]
+        rise, set = Sky.minutes(edges and edges.dawn), Sky.minutes(edges and edges.dusk)
+    else
+        local computed = day.twilight or {}
+        rise, set = Sky.minutes(day.sunrise or computed.sunrise), Sky.minutes(day.sunset or computed.sunset)
+    end
     return math.min(rise and math.abs(now - rise) or math.huge, set and math.abs(now - set) or math.huge)
+end
+
+-- How dark the sky is at an hour, from the sun's height (`hour.sunAltitude`,
+-- set by Forecast.parse): "day", "civil", "nautical", "astronomical" (the
+-- twilight it is in) or "night". nil when the height is unknown.
+function Score.darkness(hour)
+    local altitude = hour.sunAltitude
+    if altitude == nil then return nil end
+    if altitude > Sky.TWILIGHT.sunrise then return "day" end
+    if altitude > Sky.TWILIGHT.civil then return "civil" end
+    if altitude > Sky.TWILIGHT.nautical then return "nautical" end
+    if altitude > Sky.TWILIGHT.astronomical then return "astronomical" end
+    return "night"
 end
 
 -- Rounded number with a unit, or a dash.
