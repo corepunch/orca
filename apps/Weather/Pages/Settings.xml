@@ -2,9 +2,9 @@
      units and clock, each activity's own `settings`, and "about" with the
      data attribution. A Pivot with Back, like an activity page; the app
      titles it with the app's name. -->
-<Grid Name="SettingsPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+<Grid Name="SettingsPage" Rows="1fr" class="wx-page">
   <Pivot Name="SettingsPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
-         ContentInsetAdjustment="Always" class="wx-ink">
+         ExtendBodyBehindHeader="true" class="wx-ink">
     <PivotItem Name="UnitsSection" Header="units">
       <ItemsStack Name="UnitItems" Spacing="6" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Setting"
                   ItemsSource="{Binding DataContext/Units/Items}" ItemTemplate="Weather/Templates/SettingRow"/>

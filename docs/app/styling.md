@@ -188,7 +188,11 @@ background, which tints the blurred content, as iOS 7 bars do:
 ```
 
 `pivot-bar` styles the bar a `Pivot` generates behind its title and headers
-when `ExtendBodyBehindHeader` is true. Use the bar's border, for example
+when `ExtendBodyBehindHeader` is true; `panorama-bar` is the same bar on a
+`Panorama`. Metro headers use this frosted bar by default: extend the body
+behind the header and style the bar as Chat's, for example
+`.pivot-bar, .panorama-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; border-bottom-width: 0.5; border-color: #38383a; }`
+on a dark page. Use the bar's border, for example
 `border-bottom-width: 0.5; border-color: #c6c6c8`, for the hairline between a
 bar and the content. Give hairlines an opaque color: an sRGB framebuffer blends
 in linear light, so a 15% white line over a dark bar shows at about 45%.

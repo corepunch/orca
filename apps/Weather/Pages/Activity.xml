@@ -2,9 +2,9 @@
      (the WP limit: now, today, hourly, week) with a back button. The app titles it "fishing · lake
      tahoe" (an edition's own activity: "surfers' weather · bondi") and gives
      the page the activity's class for its accent. -->
-<Grid Name="ActivityPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
+<Grid Name="ActivityPage" Rows="1fr" class="wx-page">
   <Pivot Name="ActivityPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
-         ContentInsetAdjustment="Always" class="wx-ink">
+         ExtendBodyBehindHeader="true" class="wx-ink">
     <PivotItem Name="VerdictSection" Header="now">
       <StackView Name="VerdictBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
         <Grid Name="ReportLoading" Height="96" IgnoreHitTest="true">

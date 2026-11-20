@@ -2,9 +2,9 @@
      page. "log": one big tap saves a catch with the hour's conditions,
      another a blank; the water reading; the entries; undo and export.
      "waters": every place compared. "patterns": what the catches share. -->
-<Grid Name="FishingLogPage" Rows="1fr" ContentInsetAdjustment="Always" StateClasses="fishing" class="wx-page">
+<Grid Name="FishingLogPage" Rows="1fr" StateClasses="fishing" class="wx-page">
   <Pivot Name="FishingLogPivot" Title="fishers' log" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack"
-         ContentInsetAdjustment="Always" class="wx-ink">
+         ExtendBodyBehindHeader="true" class="wx-ink">
     <PivotItem Name="LogSection" Header="log">
       <StackView Name="LogBody" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
         <Grid Columns="1fr 1fr" Spacing="12">

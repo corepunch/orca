@@ -115,9 +115,12 @@ App = Application:extend {
         return sheet or "Weather/Styles/weather.css"
     end,
 
+    -- Pages run edge to edge: each Pivot or Panorama keeps its title below
+    -- the notch and its scrolling bodies clear of the home indicator, and
+    -- content scrolls under the frosted header bar and into the bottom inset.
     screenFor = function(self, page)
         local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
-            ClearColor = "#000000", StyleSheet = self:styleSheet() }
+            RespectSafeArea = false, ClearColor = "#000000", StyleSheet = self:styleSheet() }
         screen:addChild(page)
         self:dress(screen, self:pageClasses())
         return screen
