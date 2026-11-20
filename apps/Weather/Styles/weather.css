@@ -11,6 +11,15 @@
 .wx-row { background-color: #00000000; }
 .wx-poor { color: #e51400; }
 
+/* Every page's header is a frosted bar that content scrolls under (Pivot and
+   Panorama ExtendBodyBehindHeader), as Chat's dark theme. */
+.wx-page .pivot-bar, .wx-page .panorama-bar {
+  backdrop-filter: blur(20) saturate(1.8);
+  background-color: #16161695;
+  border-bottom-width: 0.5;
+  border-color: #38383a;
+}
+
 .wx-tile { background-color: #333333; }
 .wx-tile-ink { color: #ffffff; }
 .wx-bar { background-color: #333333; }

@@ -62,6 +62,14 @@ Verdict colours are state classes (`good`, `fair`, `poor`) in
 `Styles/weather.css`. `good` uses the hub accent, or the activity's accent on
 its page.
 
+Every screen runs edge to edge (`RespectSafeArea = false` in `App.lua`) and
+its Pivot or Panorama sets `ExtendBodyBehindHeader="true"`: the title and
+headers sit on a frosted bar (`.pivot-bar, .panorama-bar` in
+`Styles/weather.css`, as Chat's dark bar) and each section's scrolling body
+scrolls under it and into the home-indicator area without being cut off. Give
+a new page the same header and a scrolling body (`Overflow="hidden scroll"`).
+Stargazers' red night mode tints the bar red-black in `night.css`.
+
 ## How it fits together
 
 ```text

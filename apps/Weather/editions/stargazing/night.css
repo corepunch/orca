@@ -49,3 +49,5 @@
 .pivot-back { color: #c81e00; }
 .panorama-title { color: #c81e00; }
 .panorama-header { color: #c81e00; }
+/* The frosted header bar turns red-black, its hairline dark red. */
+.wx-page .pivot-bar, .wx-page .panorama-bar { background-color: #1a020095; border-color: #3a0800; }
