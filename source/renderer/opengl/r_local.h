@@ -8,8 +8,97 @@
 #include <renderer/renderer.h>
 
 #if ORCA_METAL
-// Apple builds render with Metal through an OpenGL ES 3 layer.
 #include "../metal/metal.h"
+// Map GL call names to the Metal backend
+#define glActiveTexture                       mtlActiveTexture
+#define glAttachShader                        mtlAttachShader
+#define glBindBuffer                          mtlBindBuffer
+#define glBindFramebuffer                     mtlBindFramebuffer
+#define glBindRenderbuffer                    mtlBindRenderbuffer
+#define glBindTexture                         mtlBindTexture
+#define glBindVertexArray                     mtlBindVertexArray
+#define glBlendFunc                           mtlBlendFunc
+#define glBlitFramebuffer                     mtlBlitFramebuffer
+#define glBufferData                          mtlBufferData
+#define glCheckFramebufferStatus              mtlCheckFramebufferStatus
+#define glClear                               mtlClear
+#define glClearColor                          mtlClearColor
+#define glClearDepthf                         mtlClearDepthf
+#define glClearStencil                        mtlClearStencil
+#define glColorMask                           mtlColorMask
+#define glCompileShader                       mtlCompileShader
+#define glCompressedTexImage2D                mtlCompressedTexImage2D
+#define glCopyTexSubImage2D                   mtlCopyTexSubImage2D
+#define glCreateProgram                       mtlCreateProgram
+#define glCreateShader                        mtlCreateShader
+#define glCullFace                            mtlCullFace
+#define glDeleteBuffers                       mtlDeleteBuffers
+#define glDeleteFramebuffers                  mtlDeleteFramebuffers
+#define glDeleteProgram                       mtlDeleteProgram
+#define glDeleteRenderbuffers                 mtlDeleteRenderbuffers
+#define glDeleteShader                        mtlDeleteShader
+#define glDeleteTextures                      mtlDeleteTextures
+#define glDeleteVertexArrays                  mtlDeleteVertexArrays
+#define glDepthFunc                           mtlDepthFunc
+#define glDepthMask                           mtlDepthMask
+#define glDetachShader                        mtlDetachShader
+#define glDisable                             mtlDisable
+#define glDrawArrays                          mtlDrawArrays
+#define glDrawElements                        mtlDrawElements
+#define glEnable                              mtlEnable
+#define glEnableVertexAttribArray              mtlEnableVertexAttribArray
+#define glFinish                              mtlFinish
+#define glFlush                               mtlFlush
+#define glFramebufferRenderbuffer             mtlFramebufferRenderbuffer
+#define glFramebufferTexture2D                mtlFramebufferTexture2D
+#define glGenBuffers                          mtlGenBuffers
+#define glGenFramebuffers                     mtlGenFramebuffers
+#define glGenRenderbuffers                    mtlGenRenderbuffers
+#define glGenTextures                         mtlGenTextures
+#define glGenVertexArrays                     mtlGenVertexArrays
+#define glGetActiveUniform                    mtlGetActiveUniform
+#define glGetAttribLocation                   mtlGetAttribLocation
+#define glGetError                            mtlGetError
+#define glGetFramebufferAttachmentParameteriv mtlGetFramebufferAttachmentParameteriv
+#define glGetIntegerv                         mtlGetIntegerv
+#define glGetProgramInfoLog                   mtlGetProgramInfoLog
+#define glGetProgramiv                        mtlGetProgramiv
+#define glGetShaderInfoLog                    mtlGetShaderInfoLog
+#define glGetShaderiv                         mtlGetShaderiv
+#define glGetString                           mtlGetString
+#define glGetStringi                          mtlGetStringi
+#define glGetUniformLocation                  mtlGetUniformLocation
+#define glLinkProgram                         mtlLinkProgram
+#define glMapBuffer                           mtlMapBuffer
+#define glPixelStorei                         mtlPixelStorei
+#define glProgramLabel                        mtlProgramLabel
+#define glReadPixels                          mtlReadPixels
+#define glRenderbufferStorage                 mtlRenderbufferStorage
+#define glScissor                             mtlScissor
+#define glShaderSource                        mtlShaderSource
+#define glStencilFunc                         mtlStencilFunc
+#define glStencilMask                         mtlStencilMask
+#define glStencilOp                           mtlStencilOp
+#define glTexImage2D                          mtlTexImage2D
+#define glTexParameteri                       mtlTexParameteri
+#define glTexSubImage2D                       mtlTexSubImage2D
+#define glUniform1f                           mtlUniform1f
+#define glUniform1i                           mtlUniform1i
+#define glUniform2f                           mtlUniform2f
+#define glUniform2fv                          mtlUniform2fv
+#define glUniform3f                           mtlUniform3f
+#define glUniform3fv                          mtlUniform3fv
+#define glUniform4f                           mtlUniform4f
+#define glUniform4fv                          mtlUniform4fv
+#define glUniformMatrix3fv                    mtlUniformMatrix3fv
+#define glUniformMatrix4fv                    mtlUniformMatrix4fv
+#define glUnmapBuffer                         mtlUnmapBuffer
+#define glUseProgram                          mtlUseProgram
+#define glVertexAttribPointer                 mtlVertexAttribPointer
+#define glViewport                            mtlViewport
+#define GLMTL_BeginFrame                      mtlBeginFrame
+#define GLMTL_Present                         mtlPresent
+#define GLMTL_TexImageIOSurface               mtlTexImageIOSurface
 #elif __APPLE__
 //#define GL_SILENCE_DEPRECATION
 #include <TargetConditionals.h>

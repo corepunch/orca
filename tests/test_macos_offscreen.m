@@ -37,12 +37,12 @@ static int check_offscreen_rendering(void)
   if (size.width != 160 || size.height != 120) return 1;
   axBeginPaint();
   axBindFramebuffer();
-  glViewport(0, 0, 160, 120);
-  glClearColor(1, 0, 0, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
+  mtlViewport(0, 0, 160, 120);
+  mtlClearColor(1, 0, 0, 1);
+  mtlClear(GL_COLOR_BUFFER_BIT);
   unsigned char pixel[4] = {0};
-  glReadPixels(80, 60, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-  if (glGetError() != GL_NO_ERROR || pixel[0] != 255 || pixel[1] || pixel[2] || pixel[3] != 255) {
+  mtlReadPixels(80, 60, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+  if (mtlGetError() != GL_NO_ERROR || pixel[0] != 255 || pixel[1] || pixel[2] || pixel[3] != 255) {
     fputs("FAIL: the background surface must render readable Preview pixels\n", stderr);
     return 1;
   }

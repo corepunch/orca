@@ -1,14 +1,9 @@
-#ifndef __GL_METAL_H__
-#define __GL_METAL_H__
+#ifndef __ORCA_METAL_H__
+#define __ORCA_METAL_H__
 
-// The OpenGL ES 3.0 subset the ORCA renderer calls, implemented on Metal by
-// metal.m. Apple builds with ORCA_METAL include this header instead of a
-// system OpenGL header and link no OpenGL framework, so a call outside the
-// subset fails to link instead of silently doing nothing.
-//
-// Differences from OpenGL ES that the renderer relies on are documented in
-// docs/METAL.md. Programs use hand-written MSL shaders with pre-computed
-// reflection; see source/renderer/metal/r_msl_shaders.h.
+// ORCA renderer backend — Metal implementation.
+// Programs use hand-written MSL shaders with pre-computed reflection;
+// see source/renderer/metal/r_msl_shaders.h.
 
 #include <stddef.h>
 #include <stdint.h>
@@ -230,122 +225,120 @@ typedef ptrdiff_t GLintptr;
 #define GL_FRAMEBUFFER_SRGB 0x8DB9
 
 // Buffers
-void glGenBuffers(GLsizei n, GLuint *buffers);
-void glDeleteBuffers(GLsizei n, GLuint const *buffers);
-void glBindBuffer(GLenum target, GLuint buffer);
-void glBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage);
-void *glMapBuffer(GLenum target, GLenum access);
-GLboolean glUnmapBuffer(GLenum target);
+void mtlGenBuffers(GLsizei n, GLuint *buffers);
+void mtlDeleteBuffers(GLsizei n, GLuint const *buffers);
+void mtlBindBuffer(GLenum target, GLuint buffer);
+void mtlBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage);
+void *mtlMapBuffer(GLenum target, GLenum access);
+GLboolean mtlUnmapBuffer(GLenum target);
 
 // Vertex arrays
-void glGenVertexArrays(GLsizei n, GLuint *arrays);
-void glDeleteVertexArrays(GLsizei n, GLuint const *arrays);
-void glBindVertexArray(GLuint array);
-void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
+void mtlGenVertexArrays(GLsizei n, GLuint *arrays);
+void mtlDeleteVertexArrays(GLsizei n, GLuint const *arrays);
+void mtlBindVertexArray(GLuint array);
+void mtlVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
                            GLsizei stride, void const *pointer);
-void glEnableVertexAttribArray(GLuint index);
+void mtlEnableVertexAttribArray(GLuint index);
 
 // Textures
-void glGenTextures(GLsizei n, GLuint *textures);
-void glDeleteTextures(GLsizei n, GLuint const *textures);
-void glActiveTexture(GLenum texture);
-void glBindTexture(GLenum target, GLuint texture);
-void glTexParameteri(GLenum target, GLenum pname, GLint param);
-void glPixelStorei(GLenum pname, GLint param);
-void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+void mtlGenTextures(GLsizei n, GLuint *textures);
+void mtlDeleteTextures(GLsizei n, GLuint const *textures);
+void mtlActiveTexture(GLenum texture);
+void mtlBindTexture(GLenum target, GLuint texture);
+void mtlTexParameteri(GLenum target, GLenum pname, GLint param);
+void mtlPixelStorei(GLenum pname, GLint param);
+void mtlTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
                   GLint border, GLenum format, GLenum type, void const *pixels);
-void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+void mtlTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                      GLsizei height, GLenum format, GLenum type, void const *pixels);
-void glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
+void mtlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
                             GLsizei height, GLint border, GLsizei imageSize, void const *data);
-void glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
+void mtlCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
                          GLsizei width, GLsizei height);
 
 // Framebuffers and renderbuffers
-void glGenFramebuffers(GLsizei n, GLuint *framebuffers);
-void glDeleteFramebuffers(GLsizei n, GLuint const *framebuffers);
-void glBindFramebuffer(GLenum target, GLuint framebuffer);
-void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
-void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
-GLenum glCheckFramebufferStatus(GLenum target);
-void glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params);
-void glGenRenderbuffers(GLsizei n, GLuint *renderbuffers);
-void glDeleteRenderbuffers(GLsizei n, GLuint const *renderbuffers);
-void glBindRenderbuffer(GLenum target, GLuint renderbuffer);
-void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
+void mtlGenFramebuffers(GLsizei n, GLuint *framebuffers);
+void mtlDeleteFramebuffers(GLsizei n, GLuint const *framebuffers);
+void mtlBindFramebuffer(GLenum target, GLuint framebuffer);
+void mtlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+void mtlFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+GLenum mtlCheckFramebufferStatus(GLenum target);
+void mtlGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params);
+void mtlGenRenderbuffers(GLsizei n, GLuint *renderbuffers);
+void mtlDeleteRenderbuffers(GLsizei n, GLuint const *renderbuffers);
+void mtlBindRenderbuffer(GLenum target, GLuint renderbuffer);
+void mtlRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+void mtlBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
                        GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
-void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels);
+void mtlReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels);
 
 // Shaders and programs
-GLuint glCreateShader(GLenum type);
-void glDeleteShader(GLuint shader);
-void glShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, GLint const *length);
-void glCompileShader(GLuint shader);
-void glGetShaderiv(GLuint shader, GLenum pname, GLint *params);
-void glGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
-GLuint glCreateProgram(void);
-void glDeleteProgram(GLuint program);
-void glAttachShader(GLuint program, GLuint shader);
-void glDetachShader(GLuint program, GLuint shader);
-void glLinkProgram(GLuint program);
-// Label a program with its shader name so glLinkProgram can find its MSL
-// reflection. Call before glLinkProgram.
-void glProgramLabel(GLuint program, char const *name);
-void glUseProgram(GLuint program);
-void glGetProgramiv(GLuint program, GLenum pname, GLint *params);
-void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
-void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
+GLuint mtlCreateShader(GLenum type);
+void mtlDeleteShader(GLuint shader);
+void mtlShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, GLint const *length);
+void mtlCompileShader(GLuint shader);
+void mtlGetShaderiv(GLuint shader, GLenum pname, GLint *params);
+void mtlGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+GLuint mtlCreateProgram(void);
+void mtlDeleteProgram(GLuint program);
+void mtlAttachShader(GLuint program, GLuint shader);
+void mtlDetachShader(GLuint program, GLuint shader);
+void mtlLinkProgram(GLuint program);
+// Label a program with its shader name so mtlLinkProgram can find its MSL
+// reflection. Call before mtlLinkProgram.
+void mtlProgramLabel(GLuint program, char const *name);
+void mtlUseProgram(GLuint program);
+void mtlGetProgramiv(GLuint program, GLenum pname, GLint *params);
+void mtlGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+void mtlGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
                         GLenum *type, GLchar *name);
-GLint glGetUniformLocation(GLuint program, GLchar const *name);
-GLint glGetAttribLocation(GLuint program, GLchar const *name);
-void glUniform1f(GLint location, GLfloat v0);
-void glUniform2f(GLint location, GLfloat v0, GLfloat v1);
-void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
-void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-void glUniform1i(GLint location, GLint v0);
-void glUniform2fv(GLint location, GLsizei count, GLfloat const *value);
-void glUniform3fv(GLint location, GLsizei count, GLfloat const *value);
-void glUniform4fv(GLint location, GLsizei count, GLfloat const *value);
-void glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value);
-void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value);
+GLint mtlGetUniformLocation(GLuint program, GLchar const *name);
+GLint mtlGetAttribLocation(GLuint program, GLchar const *name);
+void mtlUniform1f(GLint location, GLfloat v0);
+void mtlUniform2f(GLint location, GLfloat v0, GLfloat v1);
+void mtlUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+void mtlUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+void mtlUniform1i(GLint location, GLint v0);
+void mtlUniform2fv(GLint location, GLsizei count, GLfloat const *value);
+void mtlUniform3fv(GLint location, GLsizei count, GLfloat const *value);
+void mtlUniform4fv(GLint location, GLsizei count, GLfloat const *value);
+void mtlUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value);
+void mtlUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value);
 
 // State
-void glEnable(GLenum cap);
-void glDisable(GLenum cap);
-void glBlendFunc(GLenum sfactor, GLenum dfactor);
-void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
-void glCullFace(GLenum mode);
-void glDepthFunc(GLenum func);
-void glDepthMask(GLboolean flag);
-void glStencilFunc(GLenum func, GLint ref, GLuint mask);
-void glStencilMask(GLuint mask);
-void glStencilOp(GLenum fail, GLenum zfail, GLenum zpass);
-void glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-void glScissor(GLint x, GLint y, GLsizei width, GLsizei height);
-void glClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
-void glClearDepthf(GLfloat d);
-void glClearStencil(GLint s);
-void glClear(GLbitfield mask);
-void glGetIntegerv(GLenum pname, GLint *data);
-GLubyte const *glGetString(GLenum name);
-GLubyte const *glGetStringi(GLenum name, GLuint index);
-GLenum glGetError(void);
+void mtlEnable(GLenum cap);
+void mtlDisable(GLenum cap);
+void mtlBlendFunc(GLenum sfactor, GLenum dfactor);
+void mtlColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+void mtlCullFace(GLenum mode);
+void mtlDepthFunc(GLenum func);
+void mtlDepthMask(GLboolean flag);
+void mtlStencilFunc(GLenum func, GLint ref, GLuint mask);
+void mtlStencilMask(GLuint mask);
+void mtlStencilOp(GLenum fail, GLenum zfail, GLenum zpass);
+void mtlViewport(GLint x, GLint y, GLsizei width, GLsizei height);
+void mtlScissor(GLint x, GLint y, GLsizei width, GLsizei height);
+void mtlClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
+void mtlClearDepthf(GLfloat d);
+void mtlClearStencil(GLint s);
+void mtlClear(GLbitfield mask);
+void mtlGetIntegerv(GLenum pname, GLint *data);
+GLubyte const *mtlGetString(GLenum name);
+GLubyte const *mtlGetStringi(GLenum name, GLuint index);
+GLenum mtlGetError(void);
 
 // Drawing and submission
-void glDrawArrays(GLenum mode, GLint first, GLsizei count);
-void glDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices);
-void glFlush(void);
-void glFinish(void);
+void mtlDrawArrays(GLenum mode, GLint first, GLsizei count);
+void mtlDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices);
+void mtlFlush(void);
+void mtlFinish(void);
 
-// Not part of OpenGL: R_BeginFrame opens an autorelease pool for the frame,
-// which GLMTL_Present closes after presenting the drawable rendered since the
-// last call and submitting the frame. R_EndFrame calls it in place of a swap.
-void GLMTL_BeginFrame(void);
-void GLMTL_Present(void);
-// Not part of OpenGL: wraps an IOSurface as the texture bound to target.
-// Returns 0 on success.
-int GLMTL_TexImageIOSurface(GLenum target, void *iosurface, GLsizei width, GLsizei height);
+// R_BeginFrame opens an autorelease pool for the frame, which mtlPresent
+// closes after presenting the drawable and submitting the frame.
+void mtlBeginFrame(void);
+void mtlPresent(void);
+// Wraps an IOSurface as the texture bound to target. Returns 0 on success.
+int mtlTexImageIOSurface(GLenum target, void *iosurface, GLsizei width, GLsizei height);
 
 #ifdef __cplusplus
 }

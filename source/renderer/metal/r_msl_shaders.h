@@ -6,7 +6,7 @@
 // Uniform offsets follow std430 (vec3 align=16, size=12; next at tight align).
 // SPIRV-Cross uses float3 when gap to next = 16, packed_float3 when gap = 12.
 //
-// Every vertex shader applies the Y-flip and OpenGL→Metal depth remap.
+// Every vertex shader applies the Y-flip and depth remap to Metal's [0,1] range.
 // All shaders use entry point "main0" and uniform buffer [[buffer(0)]].
 
 #ifndef R_MSL_SHADERS_H

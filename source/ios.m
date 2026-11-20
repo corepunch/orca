@@ -31,7 +31,7 @@ int luaopen_orca(lua_State *L);
 struct OrcaFrameProfile {
   BOOL enabled;
   unsigned callbacks, gaps, paints;
-  double drawCalls, glCalls;
+  double drawCalls, mtlCalls;
   double start, last, lastTimestamp;
   double resumeTotal, resumeMax, callbackTotal, callbackMax;
   double gapTotal, gapMax, timestampGapTotal, timestampGapMax;
@@ -77,11 +77,11 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
   static unsigned lastPainted;
   unsigned painted = ios_paint_count();
   if (painted != lastPainted) {
-    uint32_t drawCalls, glCalls;
-    R_GetFrameStats(&drawCalls, &glCalls);
+    uint32_t drawCalls, mtlCalls;
+    R_GetFrameStats(&drawCalls, &mtlCalls);
     lastPainted = painted;
     p->drawCalls += drawCalls;
-    p->glCalls += glCalls;
+    p->mtlCalls += mtlCalls;
   }
   if (p->last) {
     double gap = started - p->last, timestampGap = link.timestamp - p->lastTimestamp;
@@ -113,7 +113,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
     "wall_gap_ms=%.2f/max%.2f display_gap_ms=%.2f/max%.2f "
     "duration_ms=%.2f target_interval_ms=%.2f target_lead_ms=%.2f/min%.2f preferred_fps=%ld\n",
     p->callbacks, paints - p->paints, elapsed, count / elapsed, (paints - p->paints) / elapsed,
-    p->drawCalls / paintCount, p->glCalls / paintCount,
+    p->drawCalls / paintCount, p->mtlCalls / paintCount,
     p->resumeTotal * 1000 / count, p->resumeMax * 1000,
     p->callbackTotal * 1000 / count, p->callbackMax * 1000,
     p->gapTotal * 1000 / gaps, p->gapMax * 1000,
@@ -321,7 +321,7 @@ static uint32_t animation_time(void *context)
   axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
   _active = NO;
   _displayLink.paused = YES;
-  if (_lua) { axMakeCurrentContext(); glFinish(); }
+  if (_lua) { axMakeCurrentContext(); mtlFinish(); }
 }
 
 - (void)sceneDidBecomeActive:(UIScene *)scene

@@ -1,19 +1,18 @@
-// The OpenGL ES 3.0 subset used by the ORCA renderer, implemented on Metal.
-// See metal.h and docs/METAL.md. Compiled with ARC.
+// ORCA renderer — Metal backend. See metal.h. Compiled with ARC.
 //
 // Model:
-// - GL objects are Objective-C objects in per-kind name tables.
+// - Renderer objects are Objective-C objects in per-kind name tables.
 // - A render pass starts lazily at the first draw on the bound framebuffer.
-//   glClear before that becomes the pass's load action; glClear inside an open
-//   pass ends it and the next draw starts a cleared pass.
+//   mtlClear before that becomes the pass's load action; mtlClear inside an
+//   open pass ends it and the next draw starts a cleared pass.
 // - Offscreen framebuffers are rendered with the vertex stage's Y flip, so
-//   their textures keep OpenGL's bottom-up rows: textures uploaded by the
-//   engine and textures it renders to then sample the same way. The default
-//   framebuffer is the CAMetalLayer's drawable and is rendered unflipped.
+//   their textures keep bottom-up rows: textures uploaded by the engine and
+//   textures it renders to then sample the same way. The default framebuffer
+//   is the CAMetalLayer's drawable and is rendered unflipped.
 // - Uniform values live in each program's per-stage block and are copied
 //   into the command stream with every draw (setVertexBytes).
 // - An upload to a texture the GPU may still read is encoded as a blit in
-//   the command stream, so draws before and after it see OpenGL's order.
+//   the command stream, so draws before and after it see submission order.
 
 #if !__has_feature(objc_arc)
 #error metal.m must be compiled with -fobjc-arc
@@ -140,8 +139,8 @@ typedef struct
   GLMShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  NSString *name;                          // set by glProgramLabel before glLinkProgram
-  struct glsl_msl_program const *refl;     // looked up by name in glLinkProgram
+  NSString *name;                          // set by mtlProgramLabel before mtlLinkProgram
+  struct glsl_msl_program const *refl;     // looked up by name in mtlLinkProgram
   id<MTLFunction> functions[GLSL_MSL_STAGES];
   uint8_t *data[GLSL_MSL_STAGES];
   GLint units[GLSL_MSL_MAX_UNIFORMS];
@@ -412,7 +411,7 @@ typedef struct
 {
   id<MTLTexture> color, depth, stencil;
   GLMTexture *__unsafe_unretained colorObject, *__unsafe_unretained depthObject;
-  BOOL flipped;   // offscreen: rows in OpenGL order
+  BOOL flipped;   // offscreen: rows in bottom-up order
 } targets_t;
 
 static targets_t framebuffer_targets(GLMFramebuffer *fb)
@@ -629,7 +628,7 @@ static BOOL grow_levels(GLMTexture *t, GLint level)
   return YES;
 }
 
-// Writes rows into a texture region in OpenGL order (first row = row 0). A
+// Writes rows into a texture region in bottom-up order (first row = row 0). A
 // texture the GPU may still read is updated through a blit in the stream.
 static void write_region(GLMTexture *t, NSUInteger slice, GLint level, GLint x, GLint y, GLsizei w, GLsizei h,
                          void const *bytes, NSUInteger rowBytes, NSUInteger imageBytes)
@@ -682,9 +681,9 @@ static void const *unpack_source(void const *pixels)
 
 #pragma mark - Buffers
 
-void glGenBuffers(GLsizei n, GLuint *buffers) { gen(OBJ_BUFFER, n, buffers, GLMBuffer.class); }
+void mtlGenBuffers(GLsizei n, GLuint *buffers) { gen(OBJ_BUFFER, n, buffers, GLMBuffer.class); }
 
-void glDeleteBuffers(GLsizei n, GLuint const *buffers)
+void mtlDeleteBuffers(GLsizei n, GLuint const *buffers)
 {
   for (GLsizei i = 0; buffers && i < n; i++) {
     GLMBuffer *b = object(OBJ_BUFFER, buffers[i]);
@@ -705,16 +704,16 @@ static GLMBuffer *__strong *buffer_binding(GLenum target)
   return NULL;
 }
 
-void glBindBuffer(GLenum target, GLuint buffer)
+void mtlBindBuffer(GLenum target, GLuint buffer)
 {
   GLMBuffer *__strong *binding = buffer_binding(target);
   if (!binding) return set_error(GL_INVALID_ENUM);
   *binding = object(OBJ_BUFFER, buffer);
 }
 
-// New storage every time, as OpenGL orphans it: draws already encoded keep
+// New storage every time, matching orphan semantics: draws already encoded keep
 // reading the previous contents.
-void glBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage)
+void mtlBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage)
 {
   (void)usage;
   GLMBuffer *__strong *binding = buffer_binding(target);
@@ -728,7 +727,7 @@ void glBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage
   if (size && !b->buffer) set_error(GL_OUT_OF_MEMORY);
 }
 
-void *glMapBuffer(GLenum target, GLenum access)
+void *mtlMapBuffer(GLenum target, GLenum access)
 {
   (void)access;
   GLMBuffer *__strong *binding = buffer_binding(target);
@@ -736,20 +735,20 @@ void *glMapBuffer(GLenum target, GLenum access)
   return b && b->buffer ? b->buffer.contents : NULL;
 }
 
-GLboolean glUnmapBuffer(GLenum target) { (void)target; return GL_TRUE; }
+GLboolean mtlUnmapBuffer(GLenum target) { (void)target; return GL_TRUE; }
 
 #pragma mark - Vertex arrays
 
-void glGenVertexArrays(GLsizei n, GLuint *arrays) { gen(OBJ_VERTEXARRAY, n, arrays, GLMVertexArray.class); }
+void mtlGenVertexArrays(GLsizei n, GLuint *arrays) { gen(OBJ_VERTEXARRAY, n, arrays, GLMVertexArray.class); }
 
-void glDeleteVertexArrays(GLsizei n, GLuint const *arrays)
+void mtlDeleteVertexArrays(GLsizei n, GLuint const *arrays)
 {
   for (GLsizei i = 0; arrays && i < n; i++)
     if (arrays[i] && arrays[i] == gl.vertexArrayName) gl.vertexArray = gl.defaultVertexArray, gl.vertexArrayName = 0;
   forget(OBJ_VERTEXARRAY, n, arrays);
 }
 
-void glBindVertexArray(GLuint array)
+void mtlBindVertexArray(GLuint array)
 {
   GLMVertexArray *va = array ? object(OBJ_VERTEXARRAY, array) : gl.defaultVertexArray;
   if (!va) return set_error(GL_INVALID_OPERATION);
@@ -757,7 +756,7 @@ void glBindVertexArray(GLuint array)
   gl.vertexArrayName = array;
 }
 
-void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
+void mtlVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
                            GLsizei stride, void const *pointer)
 {
   if (index >= MAX_VERTEX_ATTRIBS || size < 1 || size > 4) return set_error(GL_INVALID_VALUE);
@@ -770,7 +769,7 @@ void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean norm
   a->offset = (uintptr_t)pointer;
 }
 
-void glEnableVertexAttribArray(GLuint index)
+void mtlEnableVertexAttribArray(GLuint index)
 {
   if (index >= MAX_VERTEX_ATTRIBS) return set_error(GL_INVALID_VALUE);
   gl.vertexArray->attribs[index].enabled = YES;
@@ -778,9 +777,9 @@ void glEnableVertexAttribArray(GLuint index)
 
 #pragma mark - Textures
 
-void glGenTextures(GLsizei n, GLuint *textures) { gen(OBJ_TEXTURE, n, textures, GLMTexture.class); }
+void mtlGenTextures(GLsizei n, GLuint *textures) { gen(OBJ_TEXTURE, n, textures, GLMTexture.class); }
 
-void glDeleteTextures(GLsizei n, GLuint const *textures)
+void mtlDeleteTextures(GLsizei n, GLuint const *textures)
 {
   for (GLsizei i = 0; textures && i < n; i++) {
     GLMTexture *t = object(OBJ_TEXTURE, textures[i]);
@@ -792,13 +791,13 @@ void glDeleteTextures(GLsizei n, GLuint const *textures)
   forget(OBJ_TEXTURE, n, textures);
 }
 
-void glActiveTexture(GLenum texture)
+void mtlActiveTexture(GLenum texture)
 {
   if (texture < GL_TEXTURE0 || texture >= GL_TEXTURE0 + MAX_TEXTURE_UNITS) return set_error(GL_INVALID_ENUM);
   gl.activeUnit = texture - GL_TEXTURE0;
 }
 
-void glBindTexture(GLenum target, GLuint texture)
+void mtlBindTexture(GLenum target, GLuint texture)
 {
   GLMTexture *t = object(OBJ_TEXTURE, texture);
   if (texture && !t) return set_error(GL_INVALID_OPERATION);
@@ -809,7 +808,7 @@ void glBindTexture(GLenum target, GLuint texture)
   else set_error(GL_INVALID_ENUM);
 }
 
-void glTexParameteri(GLenum target, GLenum pname, GLint param)
+void mtlTexParameteri(GLenum target, GLenum pname, GLint param)
 {
   GLMTexture *t = bound_texture(target);
   if (!t) return set_error(GL_INVALID_OPERATION);
@@ -831,13 +830,13 @@ void glTexParameteri(GLenum target, GLenum pname, GLint param)
   t->sampler = nil;
 }
 
-void glPixelStorei(GLenum pname, GLint param)
+void mtlPixelStorei(GLenum pname, GLint param)
 {
   if (pname == GL_UNPACK_ALIGNMENT && (param == 1 || param == 2 || param == 4 || param == 8))
     gl.unpackAlignment = param;
 }
 
-void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
+void mtlTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
                   GLint border, GLenum format, GLenum type, void const *pixels)
 {
   (void)border;
@@ -861,7 +860,7 @@ void glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei widt
   free(converted);
 }
 
-void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+void mtlTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                      GLsizei height, GLenum format, GLenum type, void const *pixels)
 {
   GLMTexture *t = bound_texture(target);
@@ -879,7 +878,7 @@ void glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, G
   free(converted);
 }
 
-void glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
+void mtlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
                             GLsizei height, GLint border, GLsizei imageSize, void const *data)
 {
   (void)border;
@@ -898,7 +897,7 @@ void glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, G
                          rowBytes, (NSUInteger)imageSize);
 }
 
-int GLMTL_TexImageIOSurface(GLenum target, void *iosurface, GLsizei width, GLsizei height)
+int mtlTexImageIOSurface(GLenum target, void *iosurface, GLsizei width, GLsizei height)
 {
   GLMTexture *t = bound_texture(target);
   if (!t || !iosurface || !ensure_device()) return -1;
@@ -1008,19 +1007,19 @@ static GLMTexture *fallback_texture(BOOL cube)
 
 #pragma mark - Framebuffers
 
-void glGenFramebuffers(GLsizei n, GLuint *framebuffers) { gen(OBJ_FRAMEBUFFER, n, framebuffers, GLMFramebuffer.class); }
+void mtlGenFramebuffers(GLsizei n, GLuint *framebuffers) { gen(OBJ_FRAMEBUFFER, n, framebuffers, GLMFramebuffer.class); }
 
-void glDeleteFramebuffers(GLsizei n, GLuint const *framebuffers)
+void mtlDeleteFramebuffers(GLsizei n, GLuint const *framebuffers)
 {
   for (GLsizei i = 0; framebuffers && i < n; i++) {
     if (!framebuffers[i]) continue;
-    if (framebuffers[i] == gl.drawName) glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    if (framebuffers[i] == gl.readName) glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    if (framebuffers[i] == gl.drawName) mtlBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    if (framebuffers[i] == gl.readName) mtlBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
   }
   forget(OBJ_FRAMEBUFFER, n, framebuffers);
 }
 
-void glBindFramebuffer(GLenum target, GLuint framebuffer)
+void mtlBindFramebuffer(GLenum target, GLuint framebuffer)
 {
   if (!ensure_device()) return;
   GLMFramebuffer *fb = object(OBJ_FRAMEBUFFER, framebuffer);
@@ -1055,19 +1054,19 @@ static void attach(GLenum target, GLenum attachment, GLMTexture *t)
   }
 }
 
-void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+void mtlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
 {
   (void)textarget, (void)level;
   attach(target, attachment, object(OBJ_TEXTURE, texture));
 }
 
-void glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
+void mtlFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
 {
   (void)renderbuffertarget;
   attach(target, attachment, object(OBJ_RENDERBUFFER, renderbuffer));
 }
 
-GLenum glCheckFramebufferStatus(GLenum target)
+GLenum mtlCheckFramebufferStatus(GLenum target)
 {
   GLMFramebuffer *fb = framebuffer_for(target);
   if (!fb) return GL_FRAMEBUFFER_COMPLETE;
@@ -1077,7 +1076,7 @@ GLenum glCheckFramebufferStatus(GLenum target)
   return GL_FRAMEBUFFER_COMPLETE;
 }
 
-void glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params)
+void mtlGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params)
 {
   targets_t t = framebuffer_targets(framebuffer_for(target));
   if (!params) return;
@@ -1090,27 +1089,27 @@ void glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLe
   }
 }
 
-void glGenRenderbuffers(GLsizei n, GLuint *renderbuffers)
+void mtlGenRenderbuffers(GLsizei n, GLuint *renderbuffers)
 {
   gen(OBJ_RENDERBUFFER, n, renderbuffers, GLMTexture.class);
   for (GLsizei i = 0; i < n; i++) ((GLMTexture *)object(OBJ_RENDERBUFFER, renderbuffers[i]))->renderbuffer = YES;
 }
 
-void glDeleteRenderbuffers(GLsizei n, GLuint const *renderbuffers)
+void mtlDeleteRenderbuffers(GLsizei n, GLuint const *renderbuffers)
 {
   for (GLsizei i = 0; renderbuffers && i < n; i++)
     if (renderbuffers[i] && renderbuffers[i] == gl.renderbufferName) gl.renderbuffer = nil, gl.renderbufferName = 0;
   forget(OBJ_RENDERBUFFER, n, renderbuffers);
 }
 
-void glBindRenderbuffer(GLenum target, GLuint renderbuffer)
+void mtlBindRenderbuffer(GLenum target, GLuint renderbuffer)
 {
   (void)target;
   gl.renderbuffer = object(OBJ_RENDERBUFFER, renderbuffer);
   gl.renderbufferName = renderbuffer;
 }
 
-void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
+void mtlRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
 {
   (void)target;
   if (!gl.renderbuffer) return set_error(GL_INVALID_OPERATION);
@@ -1122,7 +1121,7 @@ void glRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, 
 
 #pragma mark - Blits
 
-// A full-screen-quad copy used by glBlitFramebuffer and glCopyTexSubImage2D:
+// A full-screen-quad copy used by mtlBlitFramebuffer and mtlCopyTexSubImage2D:
 // Metal's blit encoder can neither scale nor flip rows.
 static NSString *const kBlitSource =
   @"#include <metal_stdlib>\n"
@@ -1158,9 +1157,9 @@ static id<MTLRenderPipelineState> blit_pipeline(MTLPixelFormat format, BOOL dept
   return gl.blitPipelines[key] = pso;
 }
 
-// Draws the OpenGL window rectangle (sx0, sy0)-(sx1, sy1) of `src` over
-// (dx0, dy0)-(dx1, dy1) of `dst`. Both rectangles are in OpenGL's bottom-up
-// coordinates; `flipped` says which textures store rows in OpenGL order.
+// Draws the window rectangle (sx0, sy0)-(sx1, sy1) of `src` over
+// (dx0, dy0)-(dx1, dy1) of `dst`. Both rectangles are in bottom-up
+// coordinates; `flipped` says which textures store rows bottom-up.
 static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, BOOL dstFlipped, BOOL depth,
                       GLint sx0, GLint sy0, GLint sx1, GLint sy1,
                       GLint dx0, GLint dy0, GLint dx1, GLint dy1, BOOL linear)
@@ -1185,7 +1184,7 @@ static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, B
   }
   id<MTLRenderCommandEncoder> enc = [command_buffer() renderCommandEncoderWithDescriptor:rp];
   float sw = (float)src.width, sh = (float)src.height, dh = (float)dst.height;
-  // Texture v of an OpenGL row coordinate, and the destination's NDC y.
+  // Texture v of a bottom-up row coordinate, and the destination's NDC y.
   float v0 = srcFlipped ? sy0 / sh : 1 - sy0 / sh, v1 = srcFlipped ? sy1 / sh : 1 - sy1 / sh;
   float lo = MIN(dy0, dy1), hi = MAX(dy0, dy1);
   float y0 = (dy0 == lo) == dstFlipped ? 1 : -1, y1 = -y0;
@@ -1210,7 +1209,7 @@ static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, B
   [enc endEncoding];
 }
 
-void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
+void mtlBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
                        GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
   if (!(mask & GL_COLOR_BUFFER_BIT)) return;
@@ -1224,7 +1223,7 @@ void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint
   use(dst.colorObject);
 }
 
-void glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
+void mtlCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
                          GLsizei width, GLsizei height)
 {
   (void)level;
@@ -1242,7 +1241,7 @@ void glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffse
   use(src.depthObject);
 }
 
-void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
+void mtlReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
 {
   if (format != GL_RGBA || type != GL_UNSIGNED_BYTE || !pixels) return set_error(GL_INVALID_ENUM);
   flush_pending_clear();
@@ -1275,7 +1274,7 @@ void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format
 
 #pragma mark - Shaders and programs
 
-GLuint glCreateShader(GLenum type)
+GLuint mtlCreateShader(GLenum type)
 {
   GLuint name;
   gen(OBJ_SHADER, 1, &name, GLMShader.class);
@@ -1285,9 +1284,9 @@ GLuint glCreateShader(GLenum type)
   return name;
 }
 
-void glDeleteShader(GLuint shader) { forget(OBJ_SHADER, 1, &shader); }
+void mtlDeleteShader(GLuint shader) { forget(OBJ_SHADER, 1, &shader); }
 
-void glShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, GLint const *length)
+void mtlShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, GLint const *length)
 {
   GLMShader *s = object(OBJ_SHADER, shader);
   if (!s) return set_error(GL_INVALID_VALUE);
@@ -1302,9 +1301,9 @@ void glShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, G
 }
 
 // Translation needs both stages, so it happens when the program links.
-void glCompileShader(GLuint shader) { (void)shader; }
+void mtlCompileShader(GLuint shader) { (void)shader; }
 
-void glGetShaderiv(GLuint shader, GLenum pname, GLint *params)
+void mtlGetShaderiv(GLuint shader, GLenum pname, GLint *params)
 {
   GLMShader *s = object(OBJ_SHADER, shader);
   if (!params) return;
@@ -1312,27 +1311,27 @@ void glGetShaderiv(GLuint shader, GLenum pname, GLint *params)
   else if (pname == GL_INFO_LOG_LENGTH) *params = 0;
 }
 
-void glGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
+void mtlGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
   (void)shader;
   if (length) *length = 0;
   if (infoLog && bufSize > 0) *infoLog = 0;
 }
 
-GLuint glCreateProgram(void)
+GLuint mtlCreateProgram(void)
 {
   GLuint name;
   gen(OBJ_PROGRAM, 1, &name, GLMProgram.class);
   return object(OBJ_PROGRAM, name) ? name : 0;
 }
 
-void glDeleteProgram(GLuint program)
+void mtlDeleteProgram(GLuint program)
 {
   if (program && program == gl.programName) gl.program = nil, gl.programName = 0;
   forget(OBJ_PROGRAM, 1, &program);
 }
 
-void glAttachShader(GLuint program, GLuint shader)
+void mtlAttachShader(GLuint program, GLuint shader)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   GLMShader *s = object(OBJ_SHADER, shader);
@@ -1341,7 +1340,7 @@ void glAttachShader(GLuint program, GLuint shader)
   else p->fs = s;
 }
 
-void glDetachShader(GLuint program, GLuint shader)
+void mtlDetachShader(GLuint program, GLuint shader)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   GLMShader *s = object(OBJ_SHADER, shader);
@@ -1387,13 +1386,13 @@ lookup_msl_refl(NSString *name)
   return NULL;
 }
 
-void glProgramLabel(GLuint program, char const *name)
+void mtlProgramLabel(GLuint program, char const *name)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (p) p->name = name ? @(name) : nil;
 }
 
-void glLinkProgram(GLuint program)
+void mtlLinkProgram(GLuint program)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !ensure_device()) return set_error(GL_INVALID_VALUE);
@@ -1430,7 +1429,7 @@ void glLinkProgram(GLuint program)
   if (!ok) [p reset], p->log = log;
 }
 
-void glUseProgram(GLuint program)
+void mtlUseProgram(GLuint program)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (program && (!p || !p->linked)) return set_error(GL_INVALID_OPERATION);
@@ -1440,7 +1439,7 @@ void glUseProgram(GLuint program)
 
 static BOOL hidden(struct glsl_msl_uniform const *u) { return !strcmp(u->name, GLSL_MSL_FLIP_Y); }
 
-void glGetProgramiv(GLuint program, GLenum pname, GLint *params)
+void mtlGetProgramiv(GLuint program, GLenum pname, GLint *params)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !params) return set_error(GL_INVALID_VALUE);
@@ -1456,7 +1455,7 @@ void glGetProgramiv(GLuint program, GLenum pname, GLint *params)
   }
 }
 
-void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
+void mtlGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   char const *text = p && p->log ? p->log.UTF8String : "";
@@ -1465,7 +1464,7 @@ void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLcha
   if (length) *length = n;
 }
 
-void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
+void mtlGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
                         GLenum *type, GLchar *name)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
@@ -1485,7 +1484,7 @@ void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *
 }
 
 // A location is the uniform's index with the array element above bit 8.
-GLint glGetUniformLocation(GLuint program, GLchar const *name)
+GLint mtlGetUniformLocation(GLuint program, GLchar const *name)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !p->refl || !name) return -1;
@@ -1502,7 +1501,7 @@ GLint glGetUniformLocation(GLuint program, GLchar const *name)
   return -1;
 }
 
-GLint glGetAttribLocation(GLuint program, GLchar const *name)
+GLint mtlGetAttribLocation(GLuint program, GLchar const *name)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
   for (uint32_t i = 0; p && p->refl && name && i < p->refl->numAttributes; i++)
@@ -1599,20 +1598,20 @@ static void write_matrix(GLint location, GLsizei count, int n, GLboolean transpo
   }
 }
 
-void glUniform1f(GLint location, GLfloat v0) { write_uniform(location, 1, 1, &v0, NULL); }
-void glUniform2f(GLint location, GLfloat v0, GLfloat v1) { GLfloat v[] = { v0, v1 }; write_uniform(location, 1, 2, v, NULL); }
-void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) { GLfloat v[] = { v0, v1, v2 }; write_uniform(location, 1, 3, v, NULL); }
-void glUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) { GLfloat v[] = { v0, v1, v2, v3 }; write_uniform(location, 1, 4, v, NULL); }
-void glUniform1i(GLint location, GLint v0) { write_uniform(location, 1, 1, NULL, &v0); }
-void glUniform2fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 2, value, NULL); }
-void glUniform3fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 3, value, NULL); }
-void glUniform4fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 4, value, NULL); }
-void glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 3, transpose, value); }
-void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 4, transpose, value); }
+void mtlUniform1f(GLint location, GLfloat v0) { write_uniform(location, 1, 1, &v0, NULL); }
+void mtlUniform2f(GLint location, GLfloat v0, GLfloat v1) { GLfloat v[] = { v0, v1 }; write_uniform(location, 1, 2, v, NULL); }
+void mtlUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) { GLfloat v[] = { v0, v1, v2 }; write_uniform(location, 1, 3, v, NULL); }
+void mtlUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) { GLfloat v[] = { v0, v1, v2, v3 }; write_uniform(location, 1, 4, v, NULL); }
+void mtlUniform1i(GLint location, GLint v0) { write_uniform(location, 1, 1, NULL, &v0); }
+void mtlUniform2fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 2, value, NULL); }
+void mtlUniform3fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 3, value, NULL); }
+void mtlUniform4fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 4, value, NULL); }
+void mtlUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 3, transpose, value); }
+void mtlUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 4, transpose, value); }
 
 #pragma mark - Fixed-function state
 
-void glEnable(GLenum cap)
+void mtlEnable(GLenum cap)
 {
   switch (cap) {
     case GL_BLEND: gl.blend = YES; break;
@@ -1626,7 +1625,7 @@ void glEnable(GLenum cap)
   }
 }
 
-void glDisable(GLenum cap)
+void mtlDisable(GLenum cap)
 {
   switch (cap) {
     case GL_BLEND: gl.blend = NO; break;
@@ -1640,36 +1639,36 @@ void glDisable(GLenum cap)
   }
 }
 
-void glBlendFunc(GLenum sfactor, GLenum dfactor) { gl.blendSrc = sfactor, gl.blendDst = dfactor; }
+void mtlBlendFunc(GLenum sfactor, GLenum dfactor) { gl.blendSrc = sfactor, gl.blendDst = dfactor; }
 
-void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+void mtlColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
 {
   gl.colorMask = (red ? MTLColorWriteMaskRed : 0) | (green ? MTLColorWriteMaskGreen : 0) |
                  (blue ? MTLColorWriteMaskBlue : 0) | (alpha ? MTLColorWriteMaskAlpha : 0);
 }
 
-void glCullFace(GLenum mode) { gl.cullFace = mode; }
-void glDepthFunc(GLenum func) { gl.depthFunc = func; }
-void glDepthMask(GLboolean flag) { gl.depthMask = flag; }
-void glStencilFunc(GLenum func, GLint ref, GLuint mask) { gl.stencilFunc = func, gl.stencilRef = ref, gl.stencilReadMask = mask; }
-void glStencilMask(GLuint mask) { gl.stencilWriteMask = mask; }
-void glStencilOp(GLenum fail, GLenum zfail, GLenum zpass) { gl.stencilFail = fail, gl.stencilZFail = zfail, gl.stencilZPass = zpass; }
-void glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+void mtlCullFace(GLenum mode) { gl.cullFace = mode; }
+void mtlDepthFunc(GLenum func) { gl.depthFunc = func; }
+void mtlDepthMask(GLboolean flag) { gl.depthMask = flag; }
+void mtlStencilFunc(GLenum func, GLint ref, GLuint mask) { gl.stencilFunc = func, gl.stencilRef = ref, gl.stencilReadMask = mask; }
+void mtlStencilMask(GLuint mask) { gl.stencilWriteMask = mask; }
+void mtlStencilOp(GLenum fail, GLenum zfail, GLenum zpass) { gl.stencilFail = fail, gl.stencilZFail = zfail, gl.stencilZPass = zpass; }
+void mtlViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
   gl.viewport[0] = x, gl.viewport[1] = y, gl.viewport[2] = width, gl.viewport[3] = height;
 }
 // The renderer never enables GL_SCISSOR_TEST, so the rectangle has no effect.
-void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) { (void)x, (void)y, (void)width, (void)height; }
+void mtlScissor(GLint x, GLint y, GLsizei width, GLsizei height) { (void)x, (void)y, (void)width, (void)height; }
 
-void glClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+void mtlClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
 {
   gl.clearColor[0] = r, gl.clearColor[1] = g, gl.clearColor[2] = b, gl.clearColor[3] = a;
 }
-void glClearDepthf(GLfloat d) { gl.clearDepth = d; }
-void glClearStencil(GLint s) { gl.clearStencil = s; }
+void mtlClearDepthf(GLfloat d) { gl.clearDepth = d; }
+void mtlClearStencil(GLint s) { gl.clearStencil = s; }
 
 // Clears the whole attachment: the renderer never enables the scissor test.
-void glClear(GLbitfield mask)
+void mtlClear(GLbitfield mask)
 {
   if (!ensure_device()) return;
   if (gl.encoderOpen && gl.encoderFramebuffer == gl.drawFramebuffer && gl.encoderDefault == !gl.drawFramebuffer)
@@ -1680,7 +1679,7 @@ void glClear(GLbitfield mask)
   if (mask & GL_STENCIL_BUFFER_BIT) gl.pendingStencil = gl.clearStencil;
 }
 
-void glGetIntegerv(GLenum pname, GLint *data)
+void mtlGetIntegerv(GLenum pname, GLint *data)
 {
   if (!data) return;
   switch (pname) {
@@ -1714,7 +1713,7 @@ void glGetIntegerv(GLenum pname, GLint *data)
   set_error(GL_INVALID_ENUM);
 }
 
-GLubyte const *glGetString(GLenum name)
+GLubyte const *mtlGetString(GLenum name)
 {
   switch (name) {
     case GL_VERSION: return (GLubyte const *)"OpenGL ES 3.0 (ORCA on Metal)";
@@ -1725,9 +1724,9 @@ GLubyte const *glGetString(GLenum name)
   return NULL;
 }
 
-GLubyte const *glGetStringi(GLenum name, GLuint index) { (void)name, (void)index; return NULL; }
+GLubyte const *mtlGetStringi(GLenum name, GLuint index) { (void)name, (void)index; return NULL; }
 
-GLenum glGetError(void)
+GLenum mtlGetError(void)
 {
   GLenum error = gl.error;
   gl.error = GL_NO_ERROR;
@@ -2034,7 +2033,7 @@ static MTLPrimitiveType primitive(GLenum mode, BOOL *ok)
   return MTLPrimitiveTypeTriangle;
 }
 
-void glDrawArrays(GLenum mode, GLint first, GLsizei count)
+void mtlDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
   BOOL ok;
   MTLPrimitiveType type = primitive(mode, &ok);
@@ -2043,7 +2042,7 @@ void glDrawArrays(GLenum mode, GLint first, GLsizei count)
   [gl.encoder drawPrimitives:type vertexStart:first vertexCount:count];
 }
 
-void glDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices)
+void mtlDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices)
 {
   BOOL ok;
   MTLPrimitiveType prim = primitive(mode, &ok);
@@ -2058,14 +2057,14 @@ void glDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices
 
 #pragma mark - Submission
 
-void glFlush(void)
+void mtlFlush(void)
 {
   if (!gl.device) return;
   flush_pending_clear();
   commit(NO);
 }
 
-void glFinish(void)
+void mtlFinish(void)
 {
   if (!gl.device) return;
   flush_pending_clear();
@@ -2073,14 +2072,14 @@ void glFinish(void)
 }
 
 // iOS frames already run in the display link's run loop pool.
-void GLMTL_BeginFrame(void)
+void mtlBeginFrame(void)
 {
 #if TARGET_OS_OSX
   if (!gl.framePool) gl.framePool = objc_autoreleasePoolPush();
 #endif
 }
 
-void GLMTL_Present(void)
+void mtlPresent(void)
 {
   if (gl.device) {
     if (!gl.drawFramebuffer) flush_pending_clear();
