@@ -187,6 +187,18 @@ python3 tools/capture.py apps/Weather --wait 'Now*:now:now' \
 
 The tests run the app on a synthetic forecast, so they need no network.
 
+The offscreen capture has no notch. To see a page as on an iPhone, give the
+screen its insets first (`app?SafeAreaTop=47&SafeAreaBottom=34`), and scroll
+a body with `ContentOffset` (negative Y scrolls down):
+
+```bash
+python3 tools/capture.py apps/Weather --wait 'Now*' \
+    --shot "now=app?SafeAreaTop=47&SafeAreaBottom=34" \
+    --shot "scrolled=app/**/NowBody?ContentOffset=0 -300"
+```
+
+A step that opens another page gets a new screen; set its insets again.
+
 ### Tests
 
 `tests/weather_fixture.lua` is the shared harness. Start a file with
