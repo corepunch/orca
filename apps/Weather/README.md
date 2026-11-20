@@ -300,3 +300,9 @@ The forecast puts them on `day.twilight` and `hour.sunAltitude`.
 `Score.twilight(hour, level)` is the minutes to the nearest sunrise or sunset
 (or that level's dawn or dusk) and `Score.darkness(hour)` says `"day"`,
 `"civil"`, `"nautical"`, `"astronomical"` or `"night"`.
+
+**Stylesheet.** An edition's activity may set `stylesheet =
+"Weather/editions/<key>/style.css"`. Every screen of that edition then uses
+it. The sheet starts with `@import "../../Styles/weather.css";` and adds
+to it, for example a red night theme under a state class the edition sets.
+

@@ -51,9 +51,16 @@ local App = Application:extend {
         end
     end,
 
+    -- An edition may bring its own sheet (activity.stylesheet, a resource
+    -- path) that @imports Styles/weather.css and adds to it.
+    styleSheet = function(self)
+        local lead = Activities.edition and Activities.byId[Activities.edition]
+        return lead and lead.stylesheet or "Weather/Styles/weather.css"
+    end,
+
     screenFor = function(self, page)
         local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
-            ClearColor = "#000000", StyleSheet = "Weather/Styles/weather.css" }
+            ClearColor = "#000000", StyleSheet = self:styleSheet() }
         screen:addChild(page)
         return screen
     end,
