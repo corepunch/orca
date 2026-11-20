@@ -986,6 +986,55 @@ local again = F.launch { net = placeNet, storage = placeStore }
 check(again.find("HubPanorama").Title == "New York" and #MyPlaces.saved() == 2 and again.has("Placebondi"),
     "Saved places come back on the next launch")
 again.app.hubScope:dispose()
+check(not again.has("Locatelocate"), "Where the device cannot say where it is, no 'use my location' is offered")
+
+-- N1: "use my location" over a stand-in for orca.location. The fix is a
+-- result like a search's; nothing is saved until the editor saves it.
+local Locate = require "Weather/locate"
+local located = { status = "allowed", asked = 0 }
+local fakeLocation = {
+    supported = function() return true end,
+    status = function() return located.status, located.approximate end,
+    current = function()
+        located.asked = located.asked + 1
+        if located.status ~= "allowed" then return nil, { code = "permission", message = "denied" } end
+        return { lat = 52.3702, lon = 4.8952, accuracy = 3000, timestamp = NOW, approximate = true }
+    end,
+    reverse = function()
+        if located.offline then return nil, { code = "network", message = "offline" } end
+        return { name = "Amsterdam", locality = "Amsterdam", region = "North Holland", country = "Netherlands", countryCode = "NL" }
+    end,
+}
+check(Locate.available(false) == false and Locate.available(fakeLocation) and select(2, Locate.run(false)):find("cannot say"),
+    "Without orca.location, location is not offered and says so")
+local loc = F.launch { net = placeNet, storage = placeStore, location = fakeLocation }
+check(loc.find("Locatelocate").Text == "use my location", "The places section offers 'use my location'")
+loc.press("Locatelocate")
+check(loc.find("SearchPivot") and located.asked == 1
+    and loc.find("Locatedat-52.370_4.895"):findChild("ResultLine", true).Text
+        == "your location · North Holland, Netherlands · approximate"
+    and loc.find("Locatedat-52.370_4.895"):findChild("ResultTitle", true).Text == "Amsterdam",
+    "It opens search on where the device is, named, saying it is approximate")
+check(#MyPlaces.saved() == 2, "Nothing is saved by looking")
+loc.press("Locatedat-52.370_4.895")
+check(loc.find("PlacePivot").Title == "Amsterdam" and loc.find("PlaceSection").Header == "new place",
+    "The located place opens in the editor like a search result")
+loc.press("Actionplace:action:save")
+local mine = MyPlaces.find("at-52.370_4.895")
+check(mine and mine.saved and mine.country == "NL" and mine.located and loc.find("HubPanorama").Title == "Amsterdam",
+    "Saving keeps it with its country, and the hub shows it")
+-- Offline naming falls back to coordinates; a denial is a calm line.
+located.offline = true
+local draft = Locate.run(fakeLocation)
+check(draft and draft.base.title == "here" and draft.base.region == "52.37°, 4.90°", "Without a name the place is 'here'")
+located.offline, located.status = nil, "denied"
+loc.press("AddPlace")
+loc.press("Locatelocate")
+check(loc.find("LocatedNotelocate:note").Text:find("Location is off for this app") and not loc.has("Locatedat-52.370_4.895")
+    and loc.has("SearchInput"), "Denied, it says so calmly and search still works")
+located.status = "restricted"
+check(not Locate.available(fakeLocation), "A device policy that forbids location hides the offer")
+loc.app.hubScope:dispose()
 
 -- P5: one comparison of my places for an activity, which surf, sailing
 -- and fishing rank with.

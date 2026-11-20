@@ -56,6 +56,8 @@ App = Application:extend {
             or Storage.default()
         Storage.use(self.storage)
         self.fetch = options.fetch
+        -- options.location replaces orca.location (tests; false for none).
+        self.location = options.location
         MyPlaces.init { storage = self.storage, curated = options.places or Places }
         self:listPlaces()
         -- Tests name a region; the device also says its measurement system
@@ -201,6 +203,13 @@ App = Application:extend {
         elseif path == "/search" then
             if Activities.edition then page.StateClasses = Activities.edition end
             page:findChild("SearchPivot", true).Title = Activities.appName:lower()
+            -- "my location" on the hub: look as the page opens.
+            if self.locateOnOpen then
+                self.locateOnOpen = nil
+                scope:activate()
+                scope:member("Located"):refresh { force = true }
+                return self:screenFor(page)
+            end
         elseif path == "/place" then
             if Activities.edition then page.StateClasses = Activities.edition end
             local place, draft = self:editedPlace()

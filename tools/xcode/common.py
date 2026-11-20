@@ -42,6 +42,31 @@ def url_types(project):
     return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
 
 
+# Kept identical to tools/ios/bundle.py.
+CAPABILITIES = ('location',)
+LOCATION_USAGE = ('Finds where you are, only when you ask, to show the weather there. '
+                  'Apple names the place; your position is not shared with anyone else.')
+
+
+def capabilities(project):
+    """Names from a literal `Capabilities = { "location", ... }` list in package.lua."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^Capabilities\s*=\s*\{([^}]*)\}', package.read_text() if package.is_file() else '', re.MULTILINE)
+    names = re.findall(r'"([^"]*)"', match[1]) if match else []
+    for name in names:
+        if name not in CAPABILITIES:
+            raise ValueError('Unknown capability ' + repr(name) + '; known: ' + ', '.join(CAPABILITIES))
+    return names
+
+
+def capability_info(project):
+    """Info.plist keys for the capabilities a project asks for, and only those."""
+    names, info = capabilities(project), {}
+    if 'location' in names:
+        info['NSLocationWhenInUseUsageDescription'] = LOCATION_USAGE
+    return info
+
+
 def unity_sources(root=ROOT):
     config = configuration(root)
     units = {}

@@ -329,6 +329,22 @@ class BundleTests(unittest.TestCase):
         self.assertTrue((self.project / 'package.lua').is_file())
         self.assertTrue((self.root / 'share/orca/startup.lua').is_file())
 
+    def test_capabilities_add_only_the_usage_strings_a_project_asks_for(self):
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertNotIn('NSLocationWhenInUseUsageDescription', info)
+        (self.project / 'package.lua').write_text('Name = "Chat"\nCapabilities = { "location" }\n')
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertIn('only when you ask', info['NSLocationWhenInUseUsageDescription'])
+        (self.project / 'package.lua').write_text('Name = "Chat"\nCapabilities = { "teleport" }\n')
+        self.assertNotEqual(self.package().returncode, 0)
+
+    def test_weather_asks_for_location(self):
+        self.assertIn('location', bundle.capabilities(ROOT / 'apps/Weather'))
+
 
 class EditionTests(unittest.TestCase):
     def test_weather_declares_an_edition_per_activity(self):

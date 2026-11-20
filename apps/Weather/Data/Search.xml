@@ -8,8 +8,15 @@
   </Query>
   <View Name="Found" Source="Results" Filter="resultRows"/>
   <View Name="Notes" Source="Results" Filter="noteRows"/>
+  <Query Name="LocationOffer" Entity="WeatherPlace" Operation="locationOffer"
+         Description="One row when this device can say where it is; none otherwise."/>
+  <Query Name="Located" Entity="WeatherPlace" Operation="locatePlace" AutoLoad="false"
+         Description="Where the device is, as a place to open in the editor, or a note when it cannot say."/>
+  <View Name="LocatedFound" Source="Located" Filter="resultRows"/>
+  <View Name="LocatedNotes" Source="Located" Filter="noteRows"/>
   <Query Name="Suggested" Entity="WeatherPlace" Operation="suggestedPlaces" Description="Curated places not saved yet."/>
   <Handler Name="RunSearch" Function="runSearch"/>
   <Handler Name="ChooseResult" Function="chooseResult"/>
+  <Handler Name="UseLocation" Function="useLocation"/>
   <Handler Name="GoBack" Function="goBack"/>
 </DataScope>

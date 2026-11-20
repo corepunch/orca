@@ -252,18 +252,27 @@ week), `F.network()` (a fake fetch with `requests`, `failing`,
 true }` answers each place in its own clock and longitude, as
 `F.weather(lat, extra, lon)` does), `F.storage(name, places, extra)` (a
 scratch folder emptied of the app's and editions' files, and of
-`extra(place)`), `F.launch { places, net, clock, storage, region }` (the app
+`extra(place)`), `F.launch { places, net, clock, storage, region, location }` (the app
 at "/", with `find`, `has`, `text`, `press`, `back`, `open`, `cards`,
 `settle`) and `F.checkEdition(key)` (the checks every edition shares).
 Default units in tests are metric (region "NL").
 
 Not built yet:
 
-- device location (wave 4: the hook is `MyPlaces.fromLocation`);
 - notifications and live tiles (wave 4).
 
 `F.storage` empties the saved places (`places`) too, so every launch starts
 on the first run; `ui.choose(id)` taps a place row.
+
+**Use my location** (`locate.lua`, N1). Where `orca.location` can ask
+(an iPhone or iPad build whose package.lua declares `Capabilities = {
+"location" }`), the hub's places section and the search page offer "use my
+location". It looks once (`location.current()`, approximate accepted),
+names the fix with the system geocoder and shows it like a search result
+("your location · North Holland, Netherlands · approximate"); the editor
+saves it as any found place, with its country. Denied, unsupported, no fix
+or no name each give one calm line; search always stays. Tests pass
+`location` (a stand-in module) to `F.launch`.
 
 ## Extension points for editions
 
@@ -434,7 +443,7 @@ MyPlaces.add(draftOrId, home)  -- save a draft, or keep a suggestion by id
 MyPlaces.set(id, key, value)   -- the user's own value (`place.own` lists them)
 MyPlaces.move(id, delta), MyPlaces.makeHome(id), MyPlaces.remove(id)
 MyPlaces.fromResult(json)      -- a draft from a geocoding result
-MyPlaces.fromLocation(lat, lon, name, region)  -- wave 4's hook: a draft at a device fix
+MyPlaces.fromLocation(lat, lon, name, region, country)  -- a draft at a device fix
 ```
 
 A resolved place is a plain table: the curated or found fields, the user's

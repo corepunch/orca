@@ -278,6 +278,34 @@ URLSchemes = { "appwrite-callback-<project id>" }
 `tools/ios/bundle.py`, `tools/macos/bundle.py` and the Xcode generator add them
 to `CFBundleURLTypes`. Regenerate the Xcode project after changing the list.
 
+### Capabilities
+
+A project declares the native features it uses in `package.lua`; the Make
+packaging and the Xcode generator add only the Info.plist keys those need:
+
+```lua
+Capabilities = { "location" }
+```
+
+- `location`: `NSLocationWhenInUseUsageDescription`, with generic wording.
+  `orca.location.supported()` is false without it, so a project that does not
+  ask never shows a prompt.
+
+### Location
+
+`orca.location` finds the device's position once, while the app is in use.
+`current()` asks for when-in-use permission the first time, requests about a
+kilometre of accuracy (an approximate position is accepted, so Precise
+Location may stay off) and yields the application coroutine like
+`network.fetch` until it returns `{ lat, lon, accuracy, timestamp,
+approximate }`, or nil and `{ code, message }` with `permission`, `timeout`
+(about 20 seconds), `failed`, `unsupported` or `not_yieldable`. `status()`
+reports `not_determined`, `allowed`, `denied`, `restricted` or `unsupported`
+without asking. `reverse(lat, lon)` names a position with `CLGeocoder`
+(`name`, `locality`, `region`, `country`, `countryCode`); the coordinates go
+to Apple's geocoding service. Nothing keeps tracking after a call. Desktop
+builds return `unsupported`.
+
 ## Verify
 
 ```sh

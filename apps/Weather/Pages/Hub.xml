@@ -2,7 +2,7 @@
      Bing Weather's hub and Amazing Weather's "now" page (DESIGN.md). Each
      "good for" row opens that activity's page and a day of the week its
      hours; "places" lists the saved places (home first, each with "edit"),
-     "add a place", the suggestions (each with "keep") and "settings".
+     "add a place", "use my location" where the device can say, the suggestions (each with "keep") and "settings".
      App.lua titles the hourly charts in the user's units. -->
 <Grid Name="HubPage" Rows="1fr" ContentInsetAdjustment="Always" class="wx-page">
   <Panorama Name="HubPanorama" Title="{Binding DataContext/PlaceList/Selected/Title}" ContentInsetAdjustment="Always"
@@ -76,6 +76,8 @@
                    Text="No places of your own yet: add one, or keep a suggestion." class="wx-dim" IgnoreHitTest="true"/>
         <Button Name="AddPlace" Click="AddPlace" Height="44" BorderWidth="0" FontSize="20"
                 TextHorizontalAlignment="Left" class="wx-link">add a place</Button>
+        <ItemsStack Name="LocateItems" JustifyContent="Start" ItemNamePrefix="Locate"
+                    ItemsSource="{Binding DataContext/LocationOffer/Items}" ItemTemplate="Weather/Templates/LocateRow"/>
         <StackView Name="SuggestionsBody" Visible="{Binding DataContext/Suggestions/HasItems}" Spacing="12"
                    JustifyContent="Start">
           <TextBlock Name="SuggestionsTitle" Text="suggestions" FontSize="26" MarginTop="12" class="wx-ink" IgnoreHitTest="true"/>

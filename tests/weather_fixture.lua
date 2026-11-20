@@ -200,7 +200,7 @@ function Fixture.launch(options)
     local App = require "Weather/App"
     local app = App { places = places, fetch = net.fetch, clock = options.clock or function() return Fixture.NOW end,
         storage = options.storage or Fixture.storage(options.storageName or "app", places),
-        region = options.region or F.region or "NL" }
+        region = options.region or F.region or "NL", location = options.location }
     app:activate_route("/")
     local core = require "orca.core"
     local ui = { app = app, net = net }
