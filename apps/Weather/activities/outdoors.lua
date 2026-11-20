@@ -8,6 +8,7 @@ local Sky = require "Weather/sky"
 local Score = require "Weather/score"
 local Units = require "Weather/units"
 local Report = require "Weather/report"
+local Settings = require "Weather/settings"
 
 local Weather = {
     id = "outdoors", title = "outdoors", needsMarine = false,
@@ -20,10 +21,22 @@ local Weather = {
     },
 }
 
+-- "I run cold" (W8): the same air feels colder to some people, so the
+-- temperature rules read it a few degrees off.
+local COMFORT = { cold = 3, usual = 0, warm = -3 }
+Weather.settings = {
+    { key = "comfort", title = "how you feel the cold", kind = "choice", default = "usual",
+        options = { { "usual", "like most people" }, { "cold", "I run cold" }, { "warm", "I run warm" } },
+        detail = "moves \"comfortable\" about 3° either way" },
+    { key = "pollen", title = "pollen in the verdict", kind = "toggle", default = false,
+        detail = "for hay fever; pollen is forecast in Europe only" },
+}
+
 function Weather.rate(hour)
     local card = Score.card(55)
     if Sky.isStorm(hour.code) then card:cap(15, "Thunderstorm: stay indoors.") end
     local feels = hour.feels or hour.temp
+    if feels then feels = feels - (COMFORT[Settings.get("outdoors", "comfort")] or 0) end
     if feels == nil then card:note("No temperature reading.")
     elseif feels < 0 then card:add(-25, "Freezing: wrap up warm.")
     elseif feels < 10 then card:add(-10, "Chilly: bring a jacket.")
@@ -37,6 +50,7 @@ function Weather.rate(hour)
     if (hour.wind or 0) > 10 then card:add(-15, "Windy.") elseif (hour.wind or 0) < 5 then card:add(4, "Gentle wind.") end
     if hour.isDay and (hour.cloud or 100) < 50 and not Sky.isWet(hour.code) then card:add(6, "Sunny spells.") end
     if (hour.uv or 0) >= 8 then card:note("Very high UV: use sunscreen.") end
+    Weather.rateAir(card, hour)
     return card
 end
 
@@ -48,7 +62,7 @@ function Weather.note(hour)
 end
 
 function Weather.metrics(hour, forecast)
-    return {
+    local list = {
         { label = "feels like", value = Units.temp(hour.feels), note = "air " .. Units.temp(hour.temp) },
         { label = "rain", value = Score.fmt(hour.rainChance, "%"), note = Units.rain(hour.rain) .. " this hour" },
         Report.wind(hour),
@@ -58,6 +72,8 @@ function Weather.metrics(hour, forecast)
         Report.sun(hour),
         Report.moon(forecast),
     }
+    for index, metric in ipairs(Weather.airMetrics(hour, forecast)) do table.insert(list, 3 + index, metric) end
+    return list
 end
 
 -- The two charts on the activity's "today" view, over the next 24 hours.
@@ -67,6 +83,101 @@ Weather.charts = {
     { title = "chance of rain", unit = "percent", kind = "column", min = 0, max = 100,
         value = function(hour) return hour.rainChance or 0 end },
 }
+
+-- Air quality and pollen (W3) -------------------------------------------------
+
+-- Open-Meteo's air quality model: about 45 km, five days. Europe reads the
+-- European index, everywhere else the US one; pollen is Europe only, in
+-- season.
+local POLLEN = { "grass", "birch", "alder", "olive", "mugwort", "ragweed" }
+local function inEurope(spot) return spot and spot.lat and spot.lat >= 34 and spot.lat <= 72 and spot.lon >= -25 and spot.lon <= 45 end
+
+-- Only the full app asks: an edition keeps its requests to its own sources
+-- (the same test as activities.lua, which is still loading this file).
+local function edition()
+    local ok, build = pcall(require, "Weather/build")
+    local id = ok and type(build) == "table" and build.edition or os.getenv("ORCA_EDITION")
+    return id ~= "" and id or nil
+end
+
+Weather.airSource = {
+    id = "outdoors-air", optional = true,
+    url = function(spot, Forecast)
+        local pollen = {}
+        for _, name in ipairs(POLLEN) do pollen[#pollen + 1] = name .. "_pollen" end
+        return Forecast.url("airQuality", ("latitude=%s&longitude=%s&hourly=%s,%s&timezone=auto&forecast_days=5")
+            :format(spot.lat, spot.lon, inEurope(spot) and "european_aqi" or "us_aqi", table.concat(pollen, ",")))
+    end,
+    parse = function(json, forecast)
+        local h = json.hourly or {}
+        local scale = h.european_aqi and "eu" or h.us_aqi and "us"
+        local at = {}
+        for index, time in ipairs(h.time or {}) do at[time] = index end
+        for _, hour in ipairs(forecast.hours) do
+            local i = at[hour.time]
+            if i then
+                hour.aqi, hour.aqiScale = scale and h[scale == "eu" and "european_aqi" or "us_aqi"][i], scale
+                local top, worst = nil, 0
+                for _, name in ipairs(POLLEN) do
+                    local value = h[name .. "_pollen"] and h[name .. "_pollen"][i]
+                    if value and value > worst then top, worst = name, value end
+                    if value then top = top or name end
+                end
+                if top then hour.pollen, hour.pollenType = worst, top end
+            end
+        end
+    end,
+}
+Weather.sources = not edition() and { Weather.airSource } or nil
+
+-- The index's band, 1 (good) to 6, and its word.
+local BANDS = {
+    eu = { { 20, "good" }, { 40, "fair" }, { 60, "moderate" }, { 80, "poor" }, { 100, "very poor" }, { math.huge, "extremely poor" } },
+    us = { { 50, "good" }, { 100, "moderate" }, { 150, "unhealthy for some" }, { 200, "unhealthy" }, { 300, "very unhealthy" },
+        { math.huge, "hazardous" } },
+}
+function Weather.airBand(hour)
+    if not (hour.aqi and BANDS[hour.aqiScale]) then return nil end
+    for level, band in ipairs(BANDS[hour.aqiScale]) do
+        if hour.aqi <= band[1] then return level, band[2] end
+    end
+end
+
+-- Pollen grains per m³ as a level; the bands are an estimate across types.
+function Weather.pollenLevel(hour)
+    local p = hour.pollen
+    if not p then return nil end
+    return p < 20 and "low" or p < 50 and "moderate" or p < 150 and "high" or "very high"
+end
+
+function Weather.rateAir(card, hour)
+    local level, word = Weather.airBand(hour)
+    if level == 3 then card:add(-8, ("Air quality is %s: go easy on hard exercise."):format(word))
+    elseif level == 4 then card:add(-18, ("Air quality is %s: keep effort low."):format(word))
+    elseif level == 5 then card:add(-30, ("Air quality is %s: stay in if you can."):format(word))
+    elseif level == 6 then card:cap(25, ("Air quality is %s: stay inside."):format(word)) end
+    local pollen = Weather.pollenLevel(hour)
+    if pollen == "high" or pollen == "very high" then
+        local text = ("%s %s pollen: hard on hay fever."):format(pollen:sub(1, 1):upper() .. pollen:sub(2), hour.pollenType)
+        if Settings.get("outdoors", "pollen") then card:add(pollen == "high" and -10 or -18, text) else card:note(text) end
+    end
+end
+
+-- The air as a condition: "42 US AQI, good", and pollen or why there is none.
+function Weather.airMetrics(hour, forecast)
+    local list = {}
+    local level, word = Weather.airBand(hour)
+    if level then
+        list[#list + 1] = { label = "air quality", value = ("%d %s"):format(math.floor(hour.aqi + 0.5),
+            hour.aqiScale == "eu" and "EU AQI" or "US AQI"), note = word, tone = level <= 2 and "good" or level <= 3 and "fair" or "poor" }
+    elseif forecast.missing and forecast.missing["outdoors-air"] then
+        list[#list + 1] = { label = "air quality", value = "—", note = "not available right now" }
+    end
+    local pollen = Weather.pollenLevel(hour)
+    if pollen then list[#list + 1] = { label = "pollen", value = pollen, note = "mostly " .. hour.pollenType .. " · an estimate" }
+    elseif level then list[#list + 1] = { label = "pollen", value = "—", note = "not forecast here: Europe only, in season" } end
+    return list
+end
 
 -- Next-hour rain -------------------------------------------------------------
 

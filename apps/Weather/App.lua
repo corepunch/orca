@@ -17,7 +17,28 @@ local Units = require "Weather/units"
 local Report = require "Weather/report"
 local Sky = require "Weather/sky"
 
-local App = Application:extend {
+local App
+
+-- The full app lets you choose and order what "good for" lists (W7):
+-- outdoors' settings gain the order and one switch per other activity. An
+-- edition has only its own, so it keeps them all.
+local function offerFollowing()
+    local outdoors = Activities.byId.outdoors
+    if Activities.edition or not outdoors or outdoors.following then return end
+    outdoors.following = true
+    outdoors.settings = outdoors.settings or {}
+    local list = outdoors.settings
+    list[#list + 1] = { key = "order", title = "good for order", kind = "choice", default = "listed",
+        options = { { "listed", "as listed" }, { "best", "best first" } } }
+    for _, activity in ipairs(Activities.list) do
+        if activity.id ~= "outdoors" then
+            list[#list + 1] = { key = "follow_" .. activity.id, title = "good for " .. activity.title, kind = "toggle",
+                default = true }
+        end
+    end
+end
+
+App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
 
     -- options.places, options.fetch and options.clock replace the places,
@@ -35,6 +56,7 @@ local App = Application:extend {
         Storage.use(self.storage)
         local region = options.region
         if region == nil then region = Units.region() end
+        offerFollowing()
         Settings.init { storage = self.storage, edition = Activities.edition, region = region }
         self.provider = Provider.new(self.places,
             { fetch = options.fetch, clock = options.clock, storage = self.storage })

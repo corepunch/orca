@@ -9,6 +9,7 @@
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
 local Units = require "Weather/units"
+local Settings = require "Weather/settings"
 local Report = {}
 
 local HOURS_SHOWN = 24
@@ -209,6 +210,9 @@ function Report.hub(place, forecast, activities, clock, lead)
         { "sunrise", Units.clock(day.sunrise) }, { "sunset", Units.clock(day.sunset) },
         { "moon", moon.name },
     }
+    if now.aqi then
+        details[#details + 1] = { "air quality", ("%d %s"):format(math.floor(now.aqi + 0.5), now.aqiScale == "eu" and "EU AQI" or "US AQI") }
+    end
     for index, detail in ipairs(details) do
         add("detail", tostring(index), { title = detail[1], value = detail[2], score = 0, tone = "info" })
     end
@@ -220,10 +224,12 @@ function Report.hub(place, forecast, activities, clock, lead)
             note = Score.fmt(d.rainChance, "%"), icon = Sky.icon(d.code), score = 0, tone = "info",
         })
     end
-    -- Good for: each activity's best window today, or tomorrow once today's
-    -- has passed, with the reason that matters most then.
+    -- Good for: each followed activity's best window today, or tomorrow
+    -- once today's has passed, with the reason that matters most then; in
+    -- hub order or, if the user chose it, the best first.
+    activities = Report.followed(activities)
     local tomorrow = ahead[2] and ahead[2].date
-    local bestPerDay = {}
+    local bestPerDay, goodFor = {}, {}
     for _, activity in ipairs(activities) do
         local best, span, hour = Report.bestOfDay(activity, forecast, today)
         local when = ""
@@ -233,13 +239,22 @@ function Report.hub(place, forecast, activities, clock, lead)
         end
         if best then
             local reason = best.reasons[1]
-            add("activity", activity.id, {
+            goodFor[#goodFor + 1] = { id = activity.id, rank = #goodFor + (when == "" and 0 or 1000), fields = {
                 title = activity.title, value = best.word, activity = activity.id, score = best.score, tone = best.verdict,
                 detail = ("best %s%s%s"):format(when, span, reason and " · " .. reason.text or ""),
                 icon = Sky.icon(hour.code, hour.isDay),
-            })
+            } }
         end
     end
+    if Settings.get("outdoors", "order") == "best" then
+        -- Today's windows before tomorrow's, then the higher score.
+        table.sort(goodFor, function(a, b)
+            if (a.rank >= 1000) ~= (b.rank >= 1000) then return a.rank < b.rank end
+            if a.fields.score ~= b.fields.score then return a.fields.score > b.fields.score end
+            return a.rank < b.rank
+        end)
+    end
+    for _, entry in ipairs(goodFor) do add("activity", entry.id, entry.fields) end
     for index = forecast.now, math.min(#hours, forecast.now + HOURS_SHOWN - 1) do
         local hour = hours[index]
         add("hour", hour.time, {
@@ -270,6 +285,18 @@ function Report.hub(place, forecast, activities, clock, lead)
     return rows
 end
 
+-- The activities the user follows (W7): an "outdoors" setting
+-- `follow_<id>` switches each off; everyday outdoors always stays.
+function Report.followed(activities)
+    local list = {}
+    for _, activity in ipairs(activities) do
+        if activity.id == "outdoors" or Settings.get("outdoors", "follow_" .. activity.id) ~= false then
+            list[#list + 1] = activity
+        end
+    end
+    return list
+end
+
 -- One day of a place, opened from the hub's week: the sky, high and low,
 -- the day in one line (an activity's `daySummary(forecast, date)`), its
 -- readings, what each activity is good for then, and its hours.
@@ -282,6 +309,7 @@ function Report.day(place, forecast, date, activities)
         if d.date == date then index, day = i, d end
     end
     if not (now and day) then return rows end
+    activities = Report.followed(activities)
     add("now", "day", {
         title = Sky.describe(day.code), value = Units.temp(day.max) .. " / " .. Units.temp(day.min),
         icon = Sky.icon(day.code), detail = certainty(index) .. "rain " .. Score.fmt(day.rainChance, "%"),

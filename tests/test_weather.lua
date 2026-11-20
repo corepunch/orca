@@ -578,6 +578,62 @@ check(daily.text("Answerberlin:answer:next-hour", "AnswerValue") == "rain starts
 check(daily.find("AnswerItems").Parent == daily.find("NowItems").Parent, "beside the conditions")
 daily.app.hubScope:dispose()
 
+-- Air quality and pollen (W3) in the verdict, and "I run cold" (W8).
+local smog = F.verdict(Outdoors, { aqi = 170, aqiScale = "us" })
+check(F.says(smog, "unhealthy: keep effort low") and smog.score < F.verdict(Outdoors, {}).score, "Smog lowers outdoors")
+check(F.verdict(Outdoors, { aqi = 350, aqiScale = "us" }).score <= 25 and not F.says(F.verdict(Outdoors, { aqi = 15,
+    aqiScale = "eu" }), "Air"), "Hazardous air caps it; clean air goes unsaid")
+local sneezy = F.verdict(Outdoors, { pollen = 180, pollenType = "grass" })
+check(F.says(sneezy, "^Very high grass pollen") and sneezy.score == F.verdict(Outdoors, {}).score,
+    "Pollen is a note unless you ask")
+Settings.set("outdoors", "pollen", true)
+check(F.verdict(Outdoors, { pollen = 180, pollenType = "grass" }).score < F.verdict(Outdoors, {}).score, "then it counts")
+Settings.set("outdoors", "pollen", false)
+check(F.says(F.verdict(Outdoors, { feels = 11 }), "Comfortable"), "11° feels comfortable to most")
+Settings.set("outdoors", "comfort", "cold")
+check(F.says(F.verdict(Outdoors, { feels = 11 }), "Chilly"), "but chilly to someone who runs cold")
+Settings.set("outdoors", "comfort", "usual")
+local air = Outdoors.airSource
+check(air.url(BERLIN, Forecast):find("european_aqi,grass_pollen") and air.url({ lat = 39, lon = -120 }, Forecast):find("us_aqi"),
+    "Europe reads the European index, the rest the US one")
+local aired = Forecast.parse(weather(1), nil, NOW)
+air.parse({ hourly = { time = { "2026-11-18T06:00", "2026-11-18T07:00" }, european_aqi = { 65, 30 },
+    grass_pollen = { 2, 60 }, birch_pollen = { 0, 5 } } }, aired)
+local airNow = aired.hours[aired.now]
+check(airNow.aqi == 65 and airNow.aqiScale == "eu" and airNow.pollen == 2 and aired.hours[aired.now + 1].pollenType == "grass",
+    "The air lands on its hours")
+local conditions = {}
+for _, metric in ipairs(Outdoors.metrics(airNow, aired)) do conditions[metric.label] = metric end
+check(conditions["air quality"].value == "65 EU AQI" and conditions["air quality"].note == "poor"
+    and conditions.pollen.value == "low", "Outdoors shows the air among its conditions")
+local usAir = Forecast.parse(weather(1), nil, NOW)
+air.parse({ hourly = { time = { "2026-11-18T06:00" }, us_aqi = { 40 }, grass_pollen = {} } }, usAir)
+conditions = {}
+for _, metric in ipairs(Outdoors.metrics(usAir.hours[usAir.now], usAir)) do conditions[metric.label] = metric end
+check(conditions.pollen.value == "—" and conditions.pollen.note:find("Europe only"), "and says plainly when pollen is not forecast")
+
+check(Outdoors.sources[1] == air, "The full app asks for the air; an edition keeps to its own requests")
+
+-- Choose and order "good for" (W7): a switch per activity and the order.
+local function goodFor(rows)
+    local list = {}
+    for _, row in ipairs(rows) do if row.kind == "activity" then list[#list + 1] = row.activity end end
+    return table.concat(list, ",")
+end
+local tahoeWeek = Forecast.parse(weather(39.09), nil, NOW, F.PLACES[1])
+local tahoeActivities = Activities.at(F.PLACES[1])
+check(goodFor(Report.hub(F.PLACES[1], tahoeWeek, tahoeActivities, NOW)) == "outdoors,fishing,hiking,stargazing",
+    "Every activity at first, in hub order")
+check(Settings.set("outdoors", "follow_hiking", false) and Settings.set("outdoors", "order", "best"), "Switch one off, best first")
+local chosen = goodFor(Report.hub(F.PLACES[1], tahoeWeek, tahoeActivities, NOW))
+check(not chosen:find("hiking") and chosen:find("stargazing$"), "Hidden ones go, tonight's stars wait at the end: " .. chosen)
+local settingsRows = {}
+for _, row in ipairs(Settings.rows(Activities.list)) do settingsRows[row.id] = row end
+check(settingsRows["settings:outdoors:follow_hiking"].value == "off" and settingsRows["settings:outdoors:order"].value
+    == "best first" and settingsRows["settings:outdoors:comfort"].note == "outdoors", "Settings list them under outdoors")
+Settings.set("outdoors", "follow_hiking", true)
+Settings.set("outdoors", "order", "listed")
+
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}
 for _, place in ipairs(Places) do
