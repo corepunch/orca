@@ -246,14 +246,8 @@ check(RedMode.on(utc("2026-11-18T17:00")) and not RedMode.on(utc("2026-11-18T16:
 -- Tahoe's real clock, so the sky is computed for it.
 local Places = require "Weather/places"
 local store = F.storage("stargazing-red", Places)
-store:remove(RedMode.FILE)
 RedMode.reset()
-local net = F.network()
-net.answers["latitude=39%.09&longitude=%-120%.04"] = function()
-    local answer = F.weather(39.09)
-    answer.utc_offset_seconds, answer.longitude = -8 * 3600, -120.04
-    return answer
-end
+local net = F.network { placeClock = true }
 local ui = F.launch { places = Places, storage = store, net = net, clock = function() return F.NOW + 8 * 3600 end }
 check(ui.cards()[1] == "Cardtahoe:card:tonight" and #ui.cards() <= 3,
     "The hub opens on tonight's cards: " .. table.concat(ui.cards(), " "))

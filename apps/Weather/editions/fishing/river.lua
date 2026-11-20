@@ -4,14 +4,11 @@
 -- says so. A place opts in with `river = true` (places.lua).
 local River = {}
 
-River.FLOOD = "https://flood-api.open-meteo.com/v1/flood"
-
 function River.url(spot, Forecast)
     if not (spot and spot.river) then return nil end
-    local query = ("latitude=%s&longitude=%s&daily=river_discharge&past_days=7&forecast_days=7"):format(spot.lat, spot.lon)
-    -- The flood endpoint joins Forecast.endpoints when the foundation adds it.
-    if Forecast and Forecast.endpoints and Forecast.endpoints.flood then return Forecast.url("flood", query) end
-    return River.FLOOD .. "?" .. query
+    Forecast = Forecast or require "Weather/forecast"
+    return Forecast.url("flood", ("latitude=%s&longitude=%s&daily=river_discharge&past_days=7&forecast_days=7")
+        :format(spot.lat, spot.lon))
 end
 
 function River.parse(json)

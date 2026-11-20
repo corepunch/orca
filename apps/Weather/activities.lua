@@ -9,8 +9,10 @@ local ORDER = {
     { "outdoors", "#1BA1E2" }, { "fishing", "#60A917" }, { "surf", "#00ABA9" }, { "sailing", "#6A00FF" },
     { "hiking", "#C46A2B" }, { "garden", "#008A00" }, { "stargazing", "#AA00FF" },
     -- Everyday lenses, full app only (`everywhere`: they fit every place).
-    { "run", "#1BA1E2" }, { "cycle", "#1BA1E2" }, { "dogwalk", "#1BA1E2" }, { "picnic", "#1BA1E2" },
-    { "laundry", "#1BA1E2" },
+    -- Metro colours kept clear of the fair and poor tones, each at least
+    -- 4.5:1 on black.
+    { "run", "#A4C400" }, { "cycle", "#F472D0" }, { "dogwalk", "#87794E" }, { "picnic", "#6D8764" },
+    { "laundry", "#6E8094" },
 }
 
 -- An edition is a one-activity build of this app: EDITION=surf bundles a

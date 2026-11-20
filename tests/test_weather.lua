@@ -183,6 +183,11 @@ check(weatherUrl:find("^https://api%.open%-meteo%.com/v1/forecast%?latitude=1&lo
 Forecast.endpoints.apiKey = "secret"
 local keyed = Forecast.urls({ lat = 1, lon = 2 }, false)
 check(keyed:find("^https://customer%-api%.open%-meteo%.com/") and keyed:find("&apikey=secret$"), "A key moves to the customer host")
+-- I8: every Open-Meteo host moves with the key; NOAA's stays as it is.
+check(Forecast.url("flood", "x=1") == "https://customer-flood-api.open-meteo.com/v1/flood?x=1&apikey=secret"
+    and Forecast.url("archive", "x=1"):find("^https://customer%-archive%-api%.open%-meteo%.com/")
+    and Forecast.url("noaaTides", "x=1") == "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?x=1",
+    "A key switches every Open-Meteo host, and only those")
 Forecast.endpoints.apiKey = nil
 local function pastWeek()
     local base = Sky.epochOf("2026-11-16")
@@ -425,6 +430,14 @@ local hubRequests = #requests
 press("GoodFortahoe:activity:fishing")
 check(app.screen ~= hub and find("ActivityPivot").Title == "fishing · Lake Tahoe", "Fishing opens its own page")
 check(find("ActivityPage").StateClasses == "fishing", "The page carries the activity's accent class")
+-- I10: every activity's accent is in the sheet, in step with activities.lua,
+-- and poor text reads at 4.5:1 on black.
+local sheet = assert(io.open("apps/Weather/Styles/weather.css", "r+b")):read("a")
+for _, activity in ipairs(Activities.list) do
+    check(sheet:find("." .. activity.id .. " .wx-accent { color: " .. activity.accent .. "; }", 1, true),
+        activity.id .. " has its accent in the sheet")
+end
+check(sheet:find(".wx-poor { color: #f01a00; }", 1, true), "Poor text is the lighter red")
 -- I1: the page adds only fishing's own optional sources; the forecast stays.
 local added = {}
 for index = hubRequests + 1, #requests do added[#added + 1] = requests[index] end

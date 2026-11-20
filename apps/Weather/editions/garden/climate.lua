@@ -23,8 +23,6 @@ local Storage = require "Weather/storage"
 local Units = require "Weather/units"
 local Climate = {}
 
--- Requested shared change: this belongs in Forecast.endpoints (forecast.lua).
-Forecast.endpoints.archive = Forecast.endpoints.archive or "https://archive-api.open-meteo.com/v1/archive"
 Climate.YEARS = 30
 Climate.RETRY = 86400
 

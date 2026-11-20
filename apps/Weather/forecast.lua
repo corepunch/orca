@@ -16,26 +16,35 @@ local Sky = require "Weather/sky"
 local Forecast = {}
 
 -- Every base URL and the optional API key in one place (PLAN.md 0.1): the
--- commercial API uses the same paths on "customer-" hosts with `apikey`.
+-- commercial API uses the same paths on "customer-" hosts with `apikey`,
+-- so a key switches every Open-Meteo host at once. NOAA's tide predictions
+-- are free and keyless.
 Forecast.endpoints = {
     forecast = "https://api.open-meteo.com/v1/forecast",
     marine = "https://marine-api.open-meteo.com/v1/marine",
     airQuality = "https://air-quality-api.open-meteo.com/v1/air-quality",
     geocoding = "https://geocoding-api.open-meteo.com/v1/search",
+    flood = "https://flood-api.open-meteo.com/v1/flood",
+    archive = "https://archive-api.open-meteo.com/v1/archive",
+    noaaTides = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter",
     apiKey = nil,
 }
 local DAYS = 7
 
--- The base URL for an endpoint name, on the customer host when there is a key.
+local function openMeteo(base) return base:find("^https://[%w%-]*%.?open%-meteo%.com/") ~= nil end
+
+-- The base URL for an endpoint name, on the customer host when there is a
+-- key and the host is Open-Meteo's.
 function Forecast.endpoint(name)
     local base = assert(Forecast.endpoints[name], "Unknown endpoint " .. tostring(name))
-    if Forecast.endpoints.apiKey then base = base:gsub("^https://", "https://customer-") end
+    if Forecast.endpoints.apiKey and openMeteo(base) then base = base:gsub("^https://", "https://customer-") end
     return base
 end
 
--- A full URL: endpoint, query string and the key when there is one.
+-- A full URL: endpoint, query string and, for Open-Meteo, the key when
+-- there is one.
 function Forecast.url(name, query)
-    local key = Forecast.endpoints.apiKey
+    local key = openMeteo(Forecast.endpoints[name] or "") and Forecast.endpoints.apiKey
     return Forecast.endpoint(name) .. "?" .. query .. (key and "&apikey=" .. key or "")
 end
 

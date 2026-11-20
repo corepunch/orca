@@ -13,7 +13,6 @@
 local Sky = require "Weather/sky"
 local Tides = {}
 
-Tides.NOAA = "https://api.tidesandcurrents.noaa.gov/api/prod/datagetter"
 local SLACK_MINUTES = 40
 
 local function coastal(spot) return spot and not spot.lake and not spot.river end
@@ -34,9 +33,9 @@ end
 function Tides.noaaUrl(spot, now)
     local station = spot and spot.tideStation
     if not (coastal(spot) and station and station.noaa) then return nil end
-    return ("%s?product=predictions&application=weather_app&begin_date=%s&range=96&datum=MLLW&station=%s"
-        .. "&time_zone=lst_ldt&units=metric&interval=hilo&format=json")
-        :format(Tides.NOAA, os.date("!%Y%m%d", (now or os.time()) - 86400), station.noaa)
+    return require("Weather/forecast").url("noaaTides", ("product=predictions&application=weather_app&begin_date=%s"
+        .. "&range=96&datum=MLLW&station=%s&time_zone=lst_ldt&units=metric&interval=hilo&format=json")
+        :format(os.date("!%Y%m%d", (now or os.time()) - 86400), station.noaa))
 end
 
 function Tides.seaLevelUrl(spot, Forecast)

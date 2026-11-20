@@ -71,8 +71,14 @@ end
 function Fixture.series(n, fn) local t = {} for i = 1, n do t[i] = fn(i - 1) end return t end
 function Fixture.iso(i) return ("2026-11-%02dT%02d:00"):format(18 + i // 24, i % 24) end
 
--- `extra` adds hourly columns: { name = function(i) … end }.
-function Fixture.weather(lat, extra)
+-- A place's own clock, from its longitude: an hour per 15° (no summer time).
+function Fixture.offsetOf(lon) return math.floor((lon or 0) / 15 + 0.5) * 3600 end
+
+-- `extra` adds hourly columns: { name = function(i) … end }. With `lon`,
+-- the answer carries the place's longitude and its own clock
+-- (`utc_offset_seconds`), so the sky is computed for it; its week then
+-- starts at local midnight, so pick a clock inside it.
+function Fixture.weather(lat, extra, lon)
     local series, iso, hours = Fixture.series, Fixture.iso, 7 * 24
     local result = {
         utc_offset_seconds = 0, latitude = lat, elevation = 1200,
@@ -115,6 +121,7 @@ function Fixture.weather(lat, extra)
         },
     }
     for name, fn in pairs(extra or {}) do result.hourly[name] = series(hours, fn) end
+    if lon then result.longitude, result.utc_offset_seconds = lon, Fixture.offsetOf(lon) end
     return result
 end
 
@@ -134,8 +141,11 @@ end
 -- A fake network: `net.fetch(url, options)` answers from the synthetic week
 -- and records each URL in `net.requests` (its options in `net.options`). Set `net.failing` (everything) or
 -- `net.marineFailing`; `net.answers[pattern] = fn(url)` adds other hosts.
-function Fixture.network()
+-- `options.placeClock` answers each place in its own clock and longitude
+-- (Fixture.weather's `lon`).
+function Fixture.network(options)
     local net = { requests = {}, options = {}, failing = false, marineFailing = false, answers = {} }
+    local placeClock = options and options.placeClock
     function net.fetch(url, options)
         net.requests[#net.requests + 1] = url
         net.options[#net.requests] = options
@@ -146,18 +156,27 @@ function Fixture.network()
             if url:find(pattern) then return answer(url) end
         end
         if url:find("marine%-api") then return Fixture.marine() end
-        return Fixture.weather(tonumber(url:match("latitude=([%-%d%.]+)")))
+        return Fixture.weather(tonumber(url:match("latitude=([%-%d%.]+)")), nil,
+            placeClock and tonumber(url:match("longitude=([%-%d%.]+)")) or nil)
     end
     return net
 end
 
--- A scratch folder for Storage, emptied of the files the app writes.
-function Fixture.storage(name, places)
+-- The files the app and its editions keep, besides each place's forecast.
+Fixture.FILES = { "settings", "garden-frost", "fishing-log", "surf-sessions", "stargazing-place" }
+
+-- A scratch folder for Storage, emptied of the files the app writes:
+-- Fixture.FILES, each place's forecast and, with `extra(place)`, a file
+-- an edition keeps per place.
+function Fixture.storage(name, places, extra)
     local Storage = require "Weather/storage"
     local base = (os.getenv("TMPDIR") or "/tmp/"):gsub("/?$", "/")
     local store = Storage.new { dir = base .. "orca-weather-tests/" .. name }
-    store:remove("settings")
-    for _, place in ipairs(places or {}) do store:remove("forecast-" .. place.id) end
+    for _, file in ipairs(Fixture.FILES) do store:remove(file) end
+    for _, place in ipairs(places or {}) do
+        store:remove("forecast-" .. place.id)
+        if extra then store:remove(extra(place)) end
+    end
     return store
 end
 

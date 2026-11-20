@@ -21,9 +21,7 @@ local Protect = require "Weather/editions/garden/protect"
 local Climate = require "Weather/editions/garden/climate"
 
 local LEEDS = { id = "leeds", title = "Leeds", lat = 53.8, lon = -1.55, activities = { "garden" } }
-local store = F.storage("garden-rules", { LEEDS })
-store:remove("garden-frost")
-store:remove(Climate.key(LEEDS))
+local store = F.storage("garden-rules", { LEEDS }, Climate.key)
 Storage.use(store)
 Settings.init { edition = "garden", region = "NL" }
 
@@ -331,9 +329,7 @@ check(Garden.cards(evening(8), LEEDS)[1].detail:find("all clear", 1, true), "The
 
 -- The edition: its places, and the archive request never holding up the hub.
 local Places = require "Weather/places"
-local appStore = F.storage("garden", Places)
-appStore:remove("garden-frost")
-for _, place in ipairs(Places) do appStore:remove(Climate.key(place)) end
+local appStore = F.storage("garden", Places, Climate.key)
 Climate.reset()
 local ui = F.checkEdition("garden")
 local first = Places[1]

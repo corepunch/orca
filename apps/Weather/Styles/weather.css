@@ -9,7 +9,9 @@
 .wx-rule { background-color: var(--accent); }
 .wx-link { background-color: #00000000; color: var(--accent); }
 .wx-row { background-color: #00000000; }
-.wx-poor { color: #e51400; }
+/* Poor as text is a touch lighter than the Metro red of bars and tiles, so
+   it reads at 4.85:1 on black (the red is 4.4:1). */
+.wx-poor { color: #f01a00; }
 
 .wx-tile { background-color: #333333; }
 .wx-tile-ink { color: #ffffff; }
@@ -24,7 +26,7 @@
 .poor .wx-bar { background-color: #e51400; }
 .good .wx-tone { color: var(--accent); }
 .fair .wx-tone { color: #f0a30a; }
-.poor .wx-tone { color: #e51400; }
+.poor .wx-tone { color: #f01a00; }
 
 /* Charts: gridlines take the chart's colour at 20% opacity, labels are dim,
    the first series is in the accent and a second one white. */
@@ -77,3 +79,35 @@
 .stargazing .good .wx-bar { background-color: #AA00FF; }
 .stargazing .good .wx-tone { color: #AA00FF; }
 .stargazing .wx-series { color: #AA00FF; }
+
+/* The everyday lenses (full app). */
+.run .wx-accent { color: #A4C400; }
+.run .wx-link { color: #A4C400; }
+.run .good .wx-tile { background-color: #A4C400; }
+.run .good .wx-bar { background-color: #A4C400; }
+.run .good .wx-tone { color: #A4C400; }
+.run .wx-series { color: #A4C400; }
+.cycle .wx-accent { color: #F472D0; }
+.cycle .wx-link { color: #F472D0; }
+.cycle .good .wx-tile { background-color: #F472D0; }
+.cycle .good .wx-bar { background-color: #F472D0; }
+.cycle .good .wx-tone { color: #F472D0; }
+.cycle .wx-series { color: #F472D0; }
+.dogwalk .wx-accent { color: #87794E; }
+.dogwalk .wx-link { color: #87794E; }
+.dogwalk .good .wx-tile { background-color: #87794E; }
+.dogwalk .good .wx-bar { background-color: #87794E; }
+.dogwalk .good .wx-tone { color: #87794E; }
+.dogwalk .wx-series { color: #87794E; }
+.picnic .wx-accent { color: #6D8764; }
+.picnic .wx-link { color: #6D8764; }
+.picnic .good .wx-tile { background-color: #6D8764; }
+.picnic .good .wx-bar { background-color: #6D8764; }
+.picnic .good .wx-tone { color: #6D8764; }
+.picnic .wx-series { color: #6D8764; }
+.laundry .wx-accent { color: #6E8094; }
+.laundry .wx-link { color: #6E8094; }
+.laundry .good .wx-tile { background-color: #6E8094; }
+.laundry .good .wx-bar { background-color: #6E8094; }
+.laundry .good .wx-tone { color: #6E8094; }
+.laundry .wx-series { color: #6E8094; }
