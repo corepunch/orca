@@ -209,7 +209,7 @@ class ResourceTests(unittest.TestCase):
         metadata = {'CFBundleIcons': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}},
                     'CFBundleIcons~ipad': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}}}
 
-        def fake_compile(command, check):
+        def fake_compile(command, check, **options):
             self.assertTrue(check)
             self.assertEqual(command[:5], ['xcrun', '--sdk', 'iphonesimulator', 'actool', str(catalog)])
             self.assertIn('--compile', command)

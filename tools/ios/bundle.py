@@ -2,6 +2,7 @@
 """Package an ORCA project as a standalone universal iPhone/iPad application."""
 import argparse
 import fnmatch
+import json
 import os
 from pathlib import Path
 import plistlib
@@ -113,6 +114,44 @@ def capability_info(project, identifier):
     return info
 
 
+# Kept identical to tools/xcode/common.py.
+LAUNCH_COLOR = 'LaunchBackground'
+
+
+def launch_background(project):
+    """(r, g, b) from 0 to 1 for a literal `LaunchBackground = "#rrggbb"` in package.lua, or None."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^LaunchBackground\s*=\s*"([^"]*)"', package.read_text() if package.is_file() else '', re.MULTILINE)
+    if not match:
+        return None
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}', match[1]):
+        raise ValueError('LaunchBackground must be a "#rrggbb" colour: ' + match[1])
+    return tuple(int(match[1][i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+
+def launch_catalog(directory, rgb):
+    """Write <directory>/Launch.xcassets with the LaunchBackground colour set; return its path."""
+    catalog = Path(directory) / 'Launch.xcassets'
+    info = {'info': {'author': 'xcode', 'version': 1}}
+    components = {name: '%.3f' % value for name, value in zip(('red', 'green', 'blue'), rgb)}
+    components['alpha'] = '1.000'
+    colour = dict(info, colors=[{'idiom': 'universal', 'color': {'color-space': 'srgb', 'components': components}}])
+    for path, content in ((catalog / 'Contents.json', info), (catalog / (LAUNCH_COLOR + '.colorset/Contents.json'), colour)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(content, indent=2, sort_keys=True) + '\n'
+        if not path.is_file() or path.read_text() != text:
+            path.write_text(text)
+    return catalog
+
+
+def launch_info(rgb):
+    """The launch screen in that colour; a dark one also keeps system sheets dark, so nothing flashes white."""
+    info = {'UILaunchScreen': {'UIColorName': LAUNCH_COLOR}}
+    if 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2] < 0.3:
+        info['UIUserInterfaceStyle'] = 'Dark'
+    return info
+
+
 def editions(project):
     """{key: name} from a literal `Editions = { { Key = "k", Name = "n" }, ... }` in package.lua."""
     package = Path(project) / 'package.lua'
@@ -136,21 +175,25 @@ def url_types(project):
     return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
 
 
-def compile_assets(project, bundle, sdk, minimum):
-    """Compile an optional native icon catalog during an actual Make build."""
+def compile_assets(project, bundle, sdk, minimum, launch=None):
+    """Compile the project's icon catalog and a launch colour (`launch`, rgb) during an actual Make build."""
     catalog = project / 'Assets.xcassets'
-    if not (catalog / 'AppIcon.appiconset/Contents.json').is_file():
+    icon = (catalog / 'AppIcon.appiconset/Contents.json').is_file()
+    if not icon and not launch:
         return {}
     with tempfile.TemporaryDirectory(prefix='orca-app-icon-') as temporary:
         partial = Path(temporary) / 'asset-info.plist'
+        catalogs = ([str(catalog)] if icon else []) + ([str(launch_catalog(temporary, launch))] if launch else [])
         subprocess.run([
-            'xcrun', '--sdk', sdk, 'actool', str(catalog), '--compile', str(bundle),
+            'xcrun', '--sdk', sdk, 'actool', *catalogs, '--compile', str(bundle),
             '--platform', sdk, '--minimum-deployment-target', minimum,
-            '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', 'AppIcon',
+            '--target-device', 'iphone', '--target-device', 'ipad', *(['--app-icon', 'AppIcon'] if icon else []),
             '--output-partial-info-plist', str(partial),
         ], check=True, stdout=subprocess.DEVNULL)
-        return plistlib.loads(partial.read_bytes())
-
+        info = plistlib.loads(partial.read_bytes()) if partial.is_file() else {}
+    if launch:
+        info.update(launch_info(launch))
+    return info
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -206,7 +249,7 @@ def main():
             }]},
         },
     }
-    info.update(compile_assets(project, bundle, args.sdk, args.minimum))
+    info.update(compile_assets(project, bundle, args.sdk, args.minimum, launch_background(project)))
     info.update(url_types(project))
     info.update(capability_info(project, args.identifier))
     languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')

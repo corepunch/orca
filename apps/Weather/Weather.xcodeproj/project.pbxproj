@@ -11,7 +11,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_location.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -61,7 +61,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_notifications.c u_signin.c u_contacts.c u_location.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m metal_renderer.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -166,6 +166,10 @@
 "AuthenticationServices",
 "-framework",
 "Contacts",
+"-framework",
+"CoreLocation",
+"-framework",
+"BackgroundTasks",
 );
 "SKIP_INSTALL" = "NO";
 "INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
@@ -226,6 +230,10 @@
 "AuthenticationServices",
 "-framework",
 "Contacts",
+"-framework",
+"CoreLocation",
+"-framework",
+"BackgroundTasks",
 );
 "SKIP_INSTALL" = "NO";
 "INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
@@ -451,6 +459,19 @@
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
+"806791A7A62928239AFB8BF5" = {
+"isa" = "PBXFileReference";
+"path" = "u_location.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"B0B67280082895486B1ABE1F" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "806791A7A62928239AFB8BF5";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
 "162B92800E3AD53CEC9CB5BC" = {
 "isa" = "PBXFileReference";
 "path" = "u_UIKit.c";
@@ -570,6 +591,7 @@
 "$(DERIVED_FILE_DIR)/u_notifications.c",
 "$(DERIVED_FILE_DIR)/u_signin.c",
 "$(DERIVED_FILE_DIR)/u_contacts.c",
+"$(DERIVED_FILE_DIR)/u_location.c",
 "$(DERIVED_FILE_DIR)/u_UIKit.c",
 "$(DERIVED_FILE_DIR)/u_SceneKit.c",
 "$(DERIVED_FILE_DIR)/u_SpriteKit.c",
@@ -601,6 +623,7 @@
 "E880787F360A80EB563C9D51",
 "58294B2B678AE2C8497E3E82",
 "B08B4EC43909C4BFB714AB85",
+"B0B67280082895486B1ABE1F",
 "A338AA3F9DCFD32CA0E3E6C2",
 "DBD48EDB615D4D3FFB4140F0",
 "E1331E22DDDAAB2050635741",
@@ -608,6 +631,25 @@
 "B3DB704ABC167581963A98C6",
 "5297588D925865098767F1D7",
 "C1EA729A5F61C0391394A1FE",
+);
+"runOnlyForDeploymentPostprocessing" = 0;
+};
+"937583EB068EEB9445375C4E" = {
+"isa" = "PBXFileReference";
+"name" = "Launch.xcassets";
+"path" = "Weather.xcodeproj/Generated/Launch.xcassets";
+"sourceTree" = "SOURCE_ROOT";
+"lastKnownFileType" = "folder.assetcatalog";
+};
+"751E1402BCEF33D7065984FD" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "937583EB068EEB9445375C4E";
+};
+"7899A95B247C4825828F736C" = {
+"isa" = "PBXResourcesBuildPhase";
+"buildActionMask" = 2147483647;
+"files" = (
+"751E1402BCEF33D7065984FD",
 );
 "runOnlyForDeploymentPostprocessing" = 0;
 };
@@ -636,6 +678,7 @@
 "buildPhases" = (
 "45666D976BAB316D970EC459",
 "878A52FC5FF6A57D50B7B870",
+"7899A95B247C4825828F736C",
 "41D311A605520FC7B8B9A980",
 );
 "buildRules" = (
@@ -670,6 +713,7 @@
 "55756AA7337153DBB7168B6E",
 "A9989F2A5CC217642C0C1838",
 "DBE2FCDC15519ECD0928DF15",
+"806791A7A62928239AFB8BF5",
 "F99A1494E406C50D0A5CE0FD",
 );
 "sourceTree" = "<group>";
@@ -709,6 +753,7 @@
 "2D25A9B56DCCB8131EBB5456",
 "90C4A5508CD24F3833987AAE",
 "D20ADA84B682F079A05DF86A",
+"937583EB068EEB9445375C4E",
 "BEAD8915881B60FC177E63AB",
 );
 "sourceTree" = "<group>";

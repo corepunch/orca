@@ -294,6 +294,14 @@ Capabilities = { "location" }
   `BGTaskSchedulerPermittedIdentifiers = <bundle id>.refresh`, for
   `orca.notifications.scheduleRefresh`.
 
+A dark app should also launch dark. `LaunchBackground = "#000000"` in
+`package.lua` compiles a `LaunchBackground` colour set (Make: a temporary
+catalog beside the project's icons; Xcode: `Generated/Launch.xcassets` in
+the project) and sets `UILaunchScreen.UIColorName`, so the system's launch
+screen is that colour instead of white. A dark colour also sets
+`UIUserInterfaceStyle = Dark`, keeping permission sheets and the keyboard
+dark. A project `LaunchScreen.storyboard` still wins in Xcode.
+
 ### Local notifications and background refresh
 
 `orca.notifications.requestLocalAuthorization()` asks for alerts and sound

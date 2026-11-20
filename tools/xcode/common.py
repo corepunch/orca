@@ -72,6 +72,44 @@ def capability_info(project, identifier):
     return info
 
 
+# Kept identical to tools/ios/bundle.py.
+LAUNCH_COLOR = 'LaunchBackground'
+
+
+def launch_background(project):
+    """(r, g, b) from 0 to 1 for a literal `LaunchBackground = "#rrggbb"` in package.lua, or None."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^LaunchBackground\s*=\s*"([^"]*)"', package.read_text() if package.is_file() else '', re.MULTILINE)
+    if not match:
+        return None
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}', match[1]):
+        raise ValueError('LaunchBackground must be a "#rrggbb" colour: ' + match[1])
+    return tuple(int(match[1][i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+
+def launch_catalog(directory, rgb):
+    """Write <directory>/Launch.xcassets with the LaunchBackground colour set; return its path."""
+    catalog = Path(directory) / 'Launch.xcassets'
+    info = {'info': {'author': 'xcode', 'version': 1}}
+    components = {name: '%.3f' % value for name, value in zip(('red', 'green', 'blue'), rgb)}
+    components['alpha'] = '1.000'
+    colour = dict(info, colors=[{'idiom': 'universal', 'color': {'color-space': 'srgb', 'components': components}}])
+    for path, content in ((catalog / 'Contents.json', info), (catalog / (LAUNCH_COLOR + '.colorset/Contents.json'), colour)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(content, indent=2, sort_keys=True) + '\n'
+        if not path.is_file() or path.read_text() != text:
+            path.write_text(text)
+    return catalog
+
+
+def launch_info(rgb):
+    """The launch screen in that colour; a dark one also keeps system sheets dark, so nothing flashes white."""
+    info = {'UILaunchScreen': {'UIColorName': LAUNCH_COLOR}}
+    if 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2] < 0.3:
+        info['UIUserInterfaceStyle'] = 'Dark'
+    return info
+
+
 def unity_sources(root=ROOT):
     config = configuration(root)
     units = {}

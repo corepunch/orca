@@ -9,7 +9,8 @@ import plistlib
 import re
 import xml.etree.ElementTree as ET
 
-from common import METAL_UNIT, ROOT, capability_info, configuration, unity_sources, url_types, write
+from common import (METAL_UNIT, ROOT, capability_info, configuration, launch_background, launch_catalog,
+                    launch_info, unity_sources, url_types, write)
 from pbxproj import load
 
 
@@ -213,6 +214,13 @@ def generate(args, app):
             path=os.path.relpath(asset_catalog, output), sourceTree='SOURCE_ROOT',
             lastKnownFileType='folder.assetcatalog'))
         resource_files.append(project.add('assets/build', 'PBXBuildFile', fileRef=resource_references[-1]))
+    launch_colour = None if launch_screen.is_file() else launch_background(app_dir)
+    if launch_colour:
+        # package.lua `LaunchBackground`: a colour-set catalog beside the project.
+        catalog = launch_catalog(bundle / 'Generated', launch_colour)
+        resource_references.append(project.add('launch/catalog', 'PBXFileReference', name=catalog.name,
+            path=os.path.relpath(catalog, output), sourceTree='SOURCE_ROOT', lastKnownFileType='folder.assetcatalog'))
+        resource_files.append(project.add('launch/catalog-build', 'PBXBuildFile', fileRef=resource_references[-1]))
     if launch_screen.is_file():
         resource_references.append(project.add('launch/storyboard', 'PBXFileReference', name=launch_screen.name,
             path=os.path.relpath(launch_screen, output), sourceTree='SOURCE_ROOT',
@@ -257,6 +265,8 @@ def generate(args, app):
     info = info_plist(display_name, launch_screen.stem if launch_screen.is_file() else None)
     info.update(url_types(app_dir))
     info.update(capability_info(app_dir, '$(PRODUCT_BUNDLE_IDENTIFIER)'))
+    if launch_colour:
+        info.update(launch_info(launch_colour))
     if languages:
         info['CFBundleLocalizations'] = languages
     write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info).decode())
