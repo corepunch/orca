@@ -14,6 +14,7 @@ local Activities = require "Weather/activities"
 local Places = require "Weather/places"
 local MyPlaces = require "Weather/myplaces"
 local PlacePages = require "Weather/placepages"
+local Search = require "Weather/search"
 local Storage = require "Weather/storage"
 local Settings = require "Weather/settings"
 local Units = require "Weather/units"
@@ -57,10 +58,14 @@ App = Application:extend {
         self.fetch = options.fetch
         MyPlaces.init { storage = self.storage, curated = options.places or Places }
         self:listPlaces()
-        local region = options.region
-        if region == nil then region = Units.region() end
+        -- Tests name a region; the device also says its measurement system
+        -- and clock, which win over the region's usual ones.
+        local region, device = options.region, nil
+        if region == nil then region, device = Units.region(), Units.device() end
+        self.region = region
+        Search.prefer(region)
         offerFollowing()
-        Settings.init { storage = self.storage, edition = Activities.edition, region = region }
+        Settings.init { storage = self.storage, edition = Activities.edition, region = region, device = device }
         self.provider = Provider.new(self.places,
             { fetch = options.fetch, clock = options.clock, storage = self.storage })
         -- The hub's everyday answers and the day page, which the shared

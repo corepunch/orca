@@ -1,5 +1,6 @@
 #include <source/core/core_local.h>
 #include <libxml/tree.h>
+#include <ctype.h>
 
 typedef struct _LOCALE
 {
@@ -137,6 +138,95 @@ core_GetPreferredLanguage(void)
     }
   }
   return "en";
+}
+
+/* "US" from "en_US.UTF-8" or "en-US"; FALSE when the tag names no region. */
+static bool_t
+region_of_tag(char const *tag, char region[3])
+{
+  for (char const *c = tag; c && *c && *c != '.' && *c != '@'; c++) {
+    if ((*c == '_' || *c == '-') && isalpha((unsigned char)c[1]) && isalpha((unsigned char)c[2]) &&
+        (!c[3] || strchr("._-@", c[3]))) {
+      region[0] = (char)toupper((unsigned char)c[1]);
+      region[1] = (char)toupper((unsigned char)c[2]);
+      region[2] = 0;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static char const *
+region_override(void)
+{
+  char const *value = getenv("ORCA_REGION");
+  return value && *value ? value : NULL;
+}
+
+lpcString_t
+core_GetRegion(void)
+{
+  static char region[8];
+  char const *override = region_override();
+  if (override) {
+    snprintf(region, sizeof(region), "%s", override);
+    for (char *c = region; *c; c++) *c = (char)toupper((unsigned char)*c);
+    return region;
+  }
+#ifdef __APPLE__
+  CFLocaleRef locale = CFLocaleCopyCurrent();
+  CFStringRef code = locale ? CFLocaleGetValue(locale, kCFLocaleCountryCode) : NULL;
+  bool_t copied = code && CFStringGetCString(code, region, sizeof(region), kCFStringEncodingUTF8);
+  if (locale) CFRelease(locale);
+  if (copied && *region) return region;
+#endif
+  char const *names[] = { "LC_ALL", "LC_MEASUREMENT", "LANG" };
+  FOR_LOOP(i, 3) if (region_of_tag(getenv(names[i]), region)) return region;
+  return "";
+}
+
+static lpcString_t
+measurement_of_region(lpcString_t region)
+{
+  if (!strcmp(region, "US") || !strcmp(region, "LR") || !strcmp(region, "MM")) return "us";
+  return !strcmp(region, "GB") ? "uk" : "metric";
+}
+
+lpcString_t
+core_GetMeasurementSystem(void)
+{
+#ifdef __APPLE__
+  if (!region_override()) {
+    CFLocaleRef locale = CFLocaleCopyCurrent();
+    CFStringRef system = locale ? CFLocaleGetValue(locale, kCFLocaleMeasurementSystem) : NULL;
+    lpcString_t result = NULL;
+    if (system && CFStringCompare(system, CFSTR("U.S."), 0) == kCFCompareEqualTo) result = "us";
+    else if (system && CFStringCompare(system, CFSTR("U.K."), 0) == kCFCompareEqualTo) result = "uk";
+    else if (system) result = "metric";
+    if (locale) CFRelease(locale);
+    if (result) return result;
+  }
+#endif
+  return measurement_of_region(core_GetRegion());
+}
+
+bool_t
+core_Uses24HourClock(void)
+{
+#ifdef __APPLE__
+  if (!region_override()) {
+    // The locale's skeleton "j" becomes "HH" or "h a"; the person's
+    // 24-Hour Time switch is folded into the current locale.
+    CFLocaleRef locale = CFLocaleCopyCurrent();
+    CFStringRef format = locale ? CFDateFormatterCreateDateFormatFromTemplate(NULL, CFSTR("j"), 0, locale) : NULL;
+    char text[32] = "";
+    bool_t copied = format && CFStringGetCString(format, text, sizeof(text), kCFStringEncodingUTF8);
+    if (format) CFRelease(format);
+    if (locale) CFRelease(locale);
+    if (copied && *text) return !strpbrk(text, "ahK");
+  }
+#endif
+  return strcmp(measurement_of_region(core_GetRegion()), "us") != 0;
 }
 
 static lpcString_t

@@ -379,8 +379,14 @@ toIso)` "06–08h" or "6–8 am", `Units.label(kind)` for chart titles,
 `Units.value(kind, metric)` for chart values. Defaults: metric (m/s,
 24 h); a US region gets °F, mph, feet, inches, inHg, miles and a 12-hour
 clock; the UK mph and miles; Sailors' Weather knots everywhere. The region
-is `ORCA_REGION`, else the preferred language's region ("en-US"), else
-`LC_ALL`, `LC_MEASUREMENT` or `LANG`; with none, metric.
+is `ORCA_REGION`, else the device's region (`core.getRegion()`, the phone's
+Language and Region setting, apart from the app's language), else the
+preferred language's region ("en-US"), else `LC_ALL`, `LC_MEASUREMENT` or
+`LANG`; with none, metric. Without `ORCA_REGION` the phone's own measurement
+system and 24-hour switch (`core.getMeasurementSystem()`,
+`core.uses24HourClock()`, through `Units.device()`) win over the region's
+usual ones. Place search asks for the device's country only for a postcode
+and otherwise lists that country's places first (`Search.prefer`).
 
 **`Storage`: files on the device.** `Storage.load(name)` and
 `Storage.save(name, table)` keep plain tables (strings, numbers, booleans,

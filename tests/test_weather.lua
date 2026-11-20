@@ -92,6 +92,23 @@ check(Units.regionOf("en-US") == "US" and Units.regionOf("en_GB.UTF-8") == "GB" 
 local us, uk, sailors = Units.defaults(nil, "US"), Units.defaults(nil, "GB"), Units.defaults("sailing", "US")
 check(us.temp == "f" and us.wind == "mph" and us.rain == "in" and us.clock == "12" and uk.temp == "c" and uk.wind == "mph"
     and sailors.wind == "kn" and sailors.temp == "f" and Units.defaults(nil, nil).wind == "ms", "Defaults by region and edition")
+local usMetric = Units.defaults(nil, "US", { measurement = "metric", clock24 = true })
+local nl12 = Units.defaults(nil, "NL", { measurement = "metric", clock24 = false })
+local ukPhone = Units.defaults(nil, nil, { measurement = "uk", clock24 = true })
+check(usMetric.temp == "c" and usMetric.wind == "ms" and usMetric.clock == "24" and nl12.clock == "12" and nl12.temp == "c"
+    and ukPhone.wind == "mph" and ukPhone.temp == "c" and Units.defaults("sailing", "US", { measurement = "us" }).wind == "kn",
+    "The phone's own measurement system and clock win over its region")
+do
+    -- The engine's region functions: ORCA_REGION decides when set (tests and
+    -- previews); Units.device() then stays out of the way.
+    local core = require "orca.core"
+    check(type(core.getRegion()) == "string" and ({ metric = true, us = true, uk = true })[core.getMeasurementSystem()]
+        and type(core.uses24HourClock()) == "boolean", "The engine says the device's region, measurement and clock")
+    if os.getenv("ORCA_REGION") == nil then
+        local device = Units.device()
+        check(device == nil or (device.measurement and type(device.clock24) == "boolean"), "Units.device reads the engine")
+    end
+end
 Units.use {}
 check(Units.temp(12.4) == "12°" and Units.wind(5) == "5 m/s" and Units.gust(5, 7.2) == "5 g 7 m/s" and Units.height(1.46) == "1.5 m"
     and Units.height(2200) == "2200 m" and Units.rain(2) == "2.0 mm" and Units.pressure(1013.2) == "1013 hPa"
@@ -828,6 +845,19 @@ check(Search.url("bondi"):find("^https://customer%-geocoding%-api%.open%-meteo%.
     "An API key moves search to the commercial host")
 Forecast.endpoints.apiKey = nil
 check(Search.clean("  b ") == nil and Search.clean(" Lake  Garda ") == "Lake Garda", "Too short a search is not sent")
+do
+    -- The device's country: a postcode is searched in it, a name everywhere
+    -- with its places first.
+    local before = Search.preferred()
+    Search.prefer("fr")
+    check(Search.url("40150"):find("&countryCode=FR") and not Search.url("hossegor"):find("countryCode"),
+        "A postcode is searched in the device's country, a name everywhere")
+    local mixed = Search.parse({ results = { GEO.matterhorn.results[1], GEO.hossegor.results[1] } }, "x")
+    check(mixed[1].base.country == "FR" and mixed[2].base.country == "CH", "Places in the device's country come first")
+    Search.prefer(nil)
+    check(not Search.url("40150"):find("countryCode"), "Without a region nothing is filtered")
+    Search.prefer(before)
+end
 local peak = MyPlaces.fromResult(GEO.matterhorn.results[1], "matterhorn")
 check(peak.id == "geo-2659729" and peak.base.region == "Valais, Switzerland" and peak.own.kind == "mountain"
     and peak.own.summit == 4478 and table.concat(peak.base.activities, ",") == "hiking,stargazing",
