@@ -213,11 +213,14 @@ check(weekend and weekend.value == "Lake Garda" and weekend.tone == "good" and w
     "Lake Garda wins the weekend")
 Rank.places = nil
 
--- Wave 3: a safe sector the rider sets comes before the table.
+-- Wave 3: a safe sector the rider sets comes before the table, and the
+-- weekend compares my saved spots (Weather/compare.lua).
 do
     local MyPlaces = require "Weather/myplaces"
     local Places = require "Weather/places"
     MyPlaces.init { curated = Places }
+    local Compare = require "Weather/compare"
+    check(#Compare.places("sailing") == #Places, "Before any is saved, the weekend compares the suggested spots")
     MyPlaces.add("bodensee")
     local draft = MyPlaces.fromResult({ id = 2878044, name = "Lindau", latitude = 47.55, longitude = 9.68, feature_code = "LK",
         country_code = "DE", country = "Germany", admin1 = "Bavaria" })
@@ -233,6 +236,8 @@ do
     local constance = Spots.sector(MyPlaces.find("bodensee"))
     check(constance.from == 90 and constance.to == 300 and select(2, Spots.sector(MyPlaces.find("bodensee"))):find("north shore"),
         "A curated spot keeps its table under the rider's change")
+    local near = Rank.near(MyPlaces.find(id), 300)
+    check(#near == 1 and near[1].place.id == "bodensee", "The weekend compares my saved spots only")
     MyPlaces.init { curated = Places }
 end
 

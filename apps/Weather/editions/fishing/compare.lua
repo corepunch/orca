@@ -1,9 +1,10 @@
--- Compare my waters (FI10): every place the angler fishes, ranked by its
+-- Compare my waters (FI10): every saved place the angler fishes, ranked by its
 -- best hours this morning (the rest of today after noon, tomorrow morning
 -- after dark). Each place costs one forecast, which the provider caches for
 -- ten minutes, so the comparison respects the call budget.
 local Sky = require "Weather/sky"
 local Units = require "Weather/units"
+local Shared = require "Weather/compare"
 local Compare = {}
 
 -- The date and the hours that count from `now` (a forecast hour): this
@@ -41,32 +42,21 @@ end
 
 -- Every place offering `activity`, best first: { place, result, span, hour,
 -- label } or { place, failed = message } when its forecast is missing.
--- `forecastFor(placeId)` returns the forecast or nil, err.
+-- `forecastFor(placeId)` returns the forecast or nil, err. Ranked by the
+-- shared comparison (Weather/compare.lua).
 function Compare.rank(activity, places, forecastFor)
-    local ranked, failed = {}, {}
-    for _, place in ipairs(places) do
-        local offers = false
-        for _, id in ipairs(place.activities or {}) do offers = offers or id == activity.id end
-        if offers then
-            local forecast, err = forecastFor(place.id)
-            local now = forecast and forecast.hours[forecast.now]
-            if now then
-                local date, label, untilHour = Compare.target(now)
-                local result, span, hour = Compare.best(activity, forecast, date, untilHour)
-                if result then
-                    ranked[#ranked + 1] = { place = place, result = result, span = span, hour = hour, label = label }
-                end
-            else
-                failed[#failed + 1] = { place = place, failed = type(err) == "table" and err.message or tostring(err or "") }
-            end
-        end
+    local entries = {}
+    for _, place in ipairs(Shared.places(activity, places)) do
+        local forecast, err = forecastFor(place.id)
+        local now = forecast and forecast.hours[forecast.now]
+        entries[#entries + 1] = now and { place = place, forecast = forecast, now = now }
+            or { place = place, failed = type(err) == "table" and err.message or tostring(err or "") }
     end
-    table.sort(ranked, function(a, b)
-        if a.result.score ~= b.result.score then return a.result.score > b.result.score end
-        return a.place.title < b.place.title
+    return Shared.rank(entries, function(entry)
+        local date, label, untilHour = Compare.target(entry.now)
+        local result, span, hour = Compare.best(activity, entry.forecast, date, untilHour)
+        return result and { place = entry.place, result = result, span = span, hour = hour, label = label }
     end)
-    for _, entry in ipairs(failed) do ranked[#ranked + 1] = entry end
-    return ranked
 end
 
 return Compare

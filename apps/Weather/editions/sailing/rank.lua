@@ -3,28 +3,22 @@
 -- latitudes and longitudes and answers with a list), each rated with the
 -- rider's profile and compared with this spot's own forecast.
 --
--- The spots are the edition's places (places.lua, read when the request is
--- built, since it loads the activities). Saved spots (wave 3) should feed
--- `Rank.places` instead.
+-- The spots are my places that offer sailing (Weather/compare.lua: the
+-- saved ones, or the suggestions before any is saved), read when the
+-- request is built.
 local Forecast = require "Weather/forecast"
+local Compare = require "Weather/compare"
 local Sky = require "Weather/sky"
 local Rank = {}
 
--- Nil means the edition's places; tests set a list.
+-- Nil means my places; tests set a list.
 Rank.places = nil
 
 local HOURLY = "weather_code,temperature_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,is_day,pressure_msl,cape,"
     .. "visibility,precipitation,cloud_cover"
 
 local function candidates()
-    if Rank.places then return Rank.places end
-    local list = {}
-    for _, place in ipairs(require "Weather/places") do
-        for _, id in ipairs(place.activities or {}) do
-            if id == "sailing" then list[#list + 1] = place; break end
-        end
-    end
-    return list
+    return Rank.places or Compare.places("sailing")
 end
 
 -- Great-circle distance in km.
@@ -111,8 +105,7 @@ function Rank.rank(place, forecast, dates, best)
     for _, other in ipairs(forecast.spots or {}) do
         entries[#entries + 1] = { place = other.place, forecast = other.forecast, km = Rank.distance(place, other.place) }
     end
-    local ranked = {}
-    for _, entry in ipairs(entries) do
+    return Compare.rank(entries, function(entry)
         local top
         for _, date in ipairs(dates) do
             local result, span = best(entry.forecast, date)
@@ -120,13 +113,8 @@ function Rank.rank(place, forecast, dates, best)
                 top = { place = entry.place, date = date, result = result, span = span, km = entry.km }
             end
         end
-        if top then ranked[#ranked + 1] = top end
-    end
-    table.sort(ranked, function(a, b)
-        if a.result.score ~= b.result.score then return a.result.score > b.result.score end
-        return a.km < b.km
-    end)
-    return ranked
+        return top
+    end, { tie = function(a, b) return a.km < b.km end })
 end
 
 return Rank

@@ -957,6 +957,22 @@ check(again.find("HubPanorama").Title == "New York" and #MyPlaces.saved() == 2 a
     "Saved places come back on the next launch")
 again.app.hubScope:dispose()
 
+-- P5: one comparison of my places for an activity, which surf, sailing
+-- and fishing rank with.
+local Compare = require "Weather/compare"
+local A, B, C, D = { id = "a", title = "A", activities = { "surf" } }, { id = "b", title = "B", activities = { "surf" } },
+    { id = "c", title = "C", activities = { "fishing" } }, { id = "d", title = "D", activities = { "surf" } }
+check(#Compare.places("surf", { A, B, C, D }) == 3 and Compare.places("fishing", { A, C })[1] == C,
+    "Only the places offering the activity are compared")
+local scores = { a = { score = 50 }, b = { score = 80 }, d = { score = 90 } }
+local ranked = Compare.rank({ { place = A }, { place = B, failed = "offline" }, { place = D, later = true }, { place = C } },
+    function(entry)
+        local result = scores[entry.place.id]
+        return result and { result = result, later = entry.place.id == "d" }
+    end)
+check(#ranked == 3 and ranked[1].place == A and ranked[2].place == D and ranked[3].failed == "offline",
+    "Sooner first, then the score; places without a forecast last")
+
 -- The real places: unique, known activities, and a shore for surf and sailing.
 local seen = {}
 for _, place in ipairs(Places) do

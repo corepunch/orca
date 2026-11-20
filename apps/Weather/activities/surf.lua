@@ -15,6 +15,7 @@ local Waves = require "Weather/editions/surf/waves"
 local Tides = require "Weather/editions/surf/tides"
 local Outlook = require "Weather/editions/surf/outlook"
 local Logbook = require "Weather/editions/surf/logbook"
+local Compare = require "Weather/compare"
 
 local Surf = {
     id = "surf", title = "surf", needsMarine = true,
@@ -349,50 +350,27 @@ local function bestSoon(forecast)
     local ahead = Report.daysAhead(forecast)
     for index = 1, math.min(2, #ahead) do
         local result, span, hour = Report.bestOfDay(Surf, forecast, ahead[index].date)
-        if result then return { result = result, span = span, hour = hour, tomorrow = index == 2 } end
+        if result then return { result = result, span = span, hour = hour, tomorrow = index == 2, later = index == 2 } end
     end
 end
 
 -- Best break among several (SU6): `entries` are { place, forecast }. Returns
--- them rated, best first.
+-- them rated, best first: today's windows before tomorrow's (the shared
+-- comparison, Weather/compare.lua).
 function Surf.compare(entries)
-    local rated = {}
-    for _, entry in ipairs(entries) do
-        local best = bestSoon(entry.forecast)
-        if best then
-            best.place, best.forecast = entry.place, entry.forecast
-            rated[#rated + 1] = best
-        end
-    end
-    table.sort(rated, function(a, b)
-        if a.tomorrow ~= b.tomorrow then return not a.tomorrow end
-        if a.result.score ~= b.result.score then return a.result.score > b.result.score end
-        return a.place.id < b.place.id
-    end)
-    return rated
+    return Compare.rank(entries, function(entry) return bestSoon(entry.forecast) end,
+        { tie = function(a, b) return a.place.id < b.place.id end })
 end
 
--- The other breaks' forecasts this device has saved, as of `epoch`. The
+-- The forecasts this device keeps for my other breaks, as of `epoch`. The
 -- provider fetches only the place on screen, so a break shows up here once
--- it has been opened (see PLAN.md, requests to the foundation).
-local savedOthers = {}
+-- it has been opened: comparing costs no request.
 function Surf.others(place, epoch)
-    local Storage, Forecast = require "Weather/storage", require "Weather/forecast"
-    local Activities, Places = require "Weather/activities", require "Weather/places"
     local list = {}
-    for _, other in ipairs(Places) do
-        local surfs = false
-        for _, id in ipairs(other.activities or {}) do surfs = surfs or id == "surf" end
-        if surfs and other.id ~= place.id then
-            local memo, store = savedOthers[other.id], Storage.default()
-            if not (memo and memo.store == store and memo.epoch // 600 == epoch // 600) then
-                local raw = store:load("forecast-" .. other.id)
-                local forecast = raw and Forecast.restore(raw, other, Activities.request(other), epoch)
-                if forecast then forecast.spot = other end
-                memo = { epoch = epoch, store = store, forecast = forecast }
-                savedOthers[other.id] = memo
-            end
-            if memo.forecast then list[#list + 1] = { place = other, forecast = memo.forecast } end
+    for _, other in ipairs(Compare.places("surf")) do
+        if other.id ~= place.id then
+            local forecast = Compare.saved(other, epoch)
+            if forecast then list[#list + 1] = { place = other, forecast = forecast } end
         end
     end
     return list

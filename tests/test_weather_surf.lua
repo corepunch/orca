@@ -320,9 +320,11 @@ do
     ui.app.hubScope:dispose()
 end
 -- Wave 3: a beach the surfer found, saved for surf (the edition's activity),
--- its shore set in the editor, flowing through the surf rules.
+-- its shore set in the editor, flowing through the surf rules; then the
+-- comparison of my breaks (Weather/compare.lua) sees it.
 do
     local MyPlaces = require "Weather/myplaces"
+    local Compare = require "Weather/compare"
     local net = F.network()
     -- Recorded from Open-Meteo's geocoding (November 2026), trimmed.
     net.answers["geocoding%-api"] = function()
@@ -363,8 +365,11 @@ do
     check(ui.text("Hourgeo-3018384:surf:hour:2026-11-18T08:00", "Why"):find("offshore"),
         "The east wind is offshore on a west-facing beach")
     ui.back()
+    check(#Compare.places("surf") == 1 and Compare.places("surf")[1] == place, "My breaks are the saved ones")
     child("Placebondi", "PlaceLink"):send("Node.LeftButtonUp")
     ui.settle()
+    local mine = Compare.places("surf")
+    check(#mine == 2 and mine[2].id == "bondi", "A kept suggestion joins them")
     local own = MyPlaces.find("bondi")
     check(Breaks.of(own) == Breaks.list.bondi, "A break the user has not changed keeps its table")
     MyPlaces.set("bondi", "breakTide", "low")
