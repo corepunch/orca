@@ -12,20 +12,13 @@ indicators and sprite frames. `Object.Animate` reaches every component on an
 object, even when another component handles the tick. Requests remain
 coalesced per object.
 
-The clock driver supplies time; easing, stagger, transforms, property updates
-and completion stay in the shared implementation. The default driver uses the
-platform monotonic clock through the event loop. On iOS, a `CAAnimation`
-animates one scalar timeline, sampled by the existing display-link frame pump.
-The whole iOS message batch and its paints share that sample. This still
-evaluates and renders ORCA content each frame; it does not rotate a captured
-page or move engine rendering to the Core Animation compositor.
+Animation events advance easing, stagger, transforms, and property updates
+through the normal event queue. On iOS, the display link paces that queue.
+Each callback samples monotonic time once for the entire message batch and
+its paints.
 
-Changing drivers preserves animation time. Backgrounding iOS pauses the shared
-clock, so returning to the app resumes every animation without counting time
-spent suspended. The timeline animation opts out of removal on completion,
-because iOS strips other layer animations in the background and that would
-freeze ORCA time. Resuming reinstalls it if it is missing anyway. macOS uses the default event-loop driver through the same
-clock interface.
+On iOS, the clock pauses while the display link is idle or the scene is
+inactive. Animations resume from the same point when the app wakes.
 
 The animation system is composed of three building blocks:
 

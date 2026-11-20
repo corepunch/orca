@@ -53,7 +53,7 @@ PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o $(ROOT)/obj/source/notifications/notifications_apple.o $(ROOT)/obj/source/signin/signin_apple.o $(ROOT)/obj/source/contacts/contacts_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
-IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_animation.o ios_scroll.o)
+IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_scroll.o)
 ifeq ($(RENDERER),metal)
 # GLSL is translated to MSL when a program links; dependencies.py builds
 # glslang, SPIRV-Cross and the translator into libglslmsl.a.
