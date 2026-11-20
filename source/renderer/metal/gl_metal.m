@@ -139,7 +139,8 @@ typedef struct
   GLMShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  struct glsl_msl_program *refl;
+  struct glsl_msl_program const *preset_refl;  // set before glLinkProgram; not freed
+  struct glsl_msl_program const *refl;         // points to preset_refl after link
   id<MTLFunction> functions[GLSL_MSL_STAGES];
   uint8_t *data[GLSL_MSL_STAGES];
   GLint units[GLSL_MSL_MAX_UNIFORMS];
@@ -151,7 +152,7 @@ typedef struct
 @implementation GLMProgram
 - (void)reset
 {
-  if (refl) GLSL_FreeProgram(refl), free(refl), refl = NULL;
+  refl = NULL;
   for (int s = 0; s < GLSL_MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
@@ -1359,6 +1360,12 @@ static id<MTLFunction> compile_stage(GLMProgram *p, int stage, NSMutableString *
   return [library newFunctionWithName:@(p->refl->entry[stage])];
 }
 
+void glSetMSLReflection(GLuint program, struct glsl_msl_program const *refl)
+{
+  GLMProgram *p = object(OBJ_PROGRAM, program);
+  if (p) p->preset_refl = refl;
+}
+
 void glLinkProgram(GLuint program)
 {
   GLMProgram *p = object(OBJ_PROGRAM, program);
@@ -1367,14 +1374,13 @@ void glLinkProgram(GLuint program)
   if (!p->pipelines) p->pipelines = [NSMutableDictionary new];
   static uint32_t serial;
   p->serial = ++serial;
-  if (!p->vs || !p->fs || !p->vs->source || !p->fs->source) {
-    p->log = @"a vertex and a fragment shader are required";
+  NSMutableString *log = [NSMutableString string];
+  if (!p->preset_refl) {
+    p->log = @"no MSL reflection: use glSetMSLReflection before glLinkProgram, or add lang=\"msl\" to the Shader XML";
     return;
   }
-  p->refl = calloc(1, sizeof(*p->refl));
-  enum glsl_msl_platform platform = TARGET_OS_IPHONE ? GLSL_MSL_IOS : GLSL_MSL_MACOS;
-  int ok = p->refl && GLSL_TranslateProgram(p->vs->source.UTF8String, p->fs->source.UTF8String, platform, p->refl);
-  NSMutableString *log = [NSMutableString stringWithUTF8String:p->refl && p->refl->log ? p->refl->log : ""];
+  p->refl = p->preset_refl;
+  int ok = YES;
   for (int s = 0; ok && s < GLSL_MSL_STAGES; s++) {
     p->functions[s] = compile_stage(p, s, log);
     ok = p->functions[s] != nil;

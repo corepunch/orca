@@ -274,6 +274,10 @@ struct shader_desc
   struct uniform_def Shared[MAX_SHADER_UNIFORMS];
   lpcString_t VertexShader;
   lpcString_t FragmentShader;
+#if ORCA_METAL
+  // Hand-written MSL with pre-computed reflection; set by r_msl_shaders.h.
+  const struct glsl_msl_program *MetalReflection;
+#endif
 };
 
 extern struct shader_desc shader_default;

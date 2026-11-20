@@ -137,7 +137,6 @@ ifeq ($(RENDERER),metal)
 	CFLAGS += -DORCA_METAL=1 -DAX_METAL=1
 	LIBS := $(subst -framework OpenGL ,,$(LIBS)) -framework Metal -framework QuartzCore
 	UNITEOBJECTS += gl_metal.o
-	LIBS += $(SHADER_LIB) $(CXX_RUNTIME)
 	PLATFORM_MAKEFLAGS += METAL=1
 endif
 
@@ -231,7 +230,7 @@ $(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_n
 	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -x objective-c -c $< -o $@
 endif
 ifeq ($(RENDERER),metal)
-buildunite: $(OBJECTDIR)/gl_metal.o $(SHADER_LIB)
+buildunite: $(OBJECTDIR)/gl_metal.o
 $(OBJECTDIR)/gl_metal.o: source/renderer/metal/gl_metal.m source/renderer/metal/gl_metal.h source/renderer/metal/glsl_msl.h | directories
 	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -fobjc-arc -x objective-c -c $< -o $@
 endif
@@ -348,7 +347,7 @@ weather: copyshare
 chat: copyshare
 	$(TARGET) apps/chat
 
-test-chat: copyshare $(LUA_BIN)
+test-chat: copyshare $(LUA_BIN) test-chat-new-message
 	$(LUA) tests/test_chat_push.lua
 	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_polling.lua
@@ -770,6 +769,7 @@ APP_LUA_TESTS += test-chat-safety
 APP_LUA_TESTS += test-octopus-safety
 APP_LUA_TESTS += test-chat-theme
 APP_LUA_TESTS += test-chat-social
+APP_LUA_TESTS += test-chat-new-message
 APP_LUA_TESTS += test-editor-panels test-editor-chrome test-editor-palette
 APP_LUA_TESTS += test-editor-welcome test-editor-tabs test-encarta
 APP_LUA_TESTS += test-weather
@@ -825,6 +825,7 @@ $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lu
 $(eval $(call LUA_TEST_RULE,test-data-collection,tests/test_data_collection.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-data-runtime,tests/test_data_runtime.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-data-lint,tests/test_data_lint.lua,unite copyshare))
+$(eval $(call LUA_TEST_RULE,test-chat-new-message,tests/test_chat_new_message.lua,copyshare))
 $(eval $(call LUA_TEST_RULE,test-ledger-example,tests/test_ledger_example.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-octopus-composer,tests/test_octopus_composer.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))

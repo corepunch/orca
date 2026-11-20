@@ -2,12 +2,18 @@
 #define __R_DEFAULT_SHADER_H__
 
 #include "../r_local.h"
+#ifdef ORCA_METAL
+#include "source/renderer/metal/r_msl_shaders.h"
+#endif
 
 struct shader_desc shader_default = {
   .Name = "Default Shader",
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_default,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -89,6 +95,9 @@ struct shader_desc shader_ui = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_ui,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -152,6 +161,9 @@ struct shader_desc shader_cinematic = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_cinematic,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -191,6 +203,9 @@ struct shader_desc shader_ninepatch = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_ninepatch,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -224,11 +239,14 @@ struct shader_desc shader_ninepatch = {
 #define CHARSER_WIDTH 16
 #define CONSOLE_CHAR_BASE 16
 
-struct shader_desc shader_charset= {
+struct shader_desc shader_charset = {
   .Name = "Charset Shader",
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_charset,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -322,6 +340,9 @@ struct shader_desc shader_vertexcolor = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_vertexcolor,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
@@ -349,6 +370,9 @@ struct shader_desc shader_error = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_error,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
@@ -376,6 +400,9 @@ struct shader_desc shader_button = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_button,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -445,6 +472,9 @@ struct shader_desc shader_roundedbox = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_roundedbox,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_normalTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -516,6 +546,9 @@ struct shader_desc shader_blur_h = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_blur_h,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -565,6 +598,9 @@ struct shader_desc shader_blur_v = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_blur_v,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },
@@ -622,6 +658,9 @@ struct shader_desc shader_backdrop_blur = {
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
+#ifdef ORCA_METAL
+  .MetalReflection = &k_refl_backdrop_blur,
+#endif
   .Uniforms = {
     { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
     { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },

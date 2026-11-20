@@ -70,12 +70,15 @@ struct glsl_msl_program
   char *log;  // errors and warnings; may be set on success
 };
 
-// Translates a vertex/fragment pair. Returns 1 on success. Always call
-// GLSL_FreeProgram afterwards, also after a failure, to free the log.
+// Translates a vertex/fragment GLSL pair to MSL. Returns 1 on success.
+// Always call GLSL_FreeProgram afterwards (also after failure) to free log.
+// Not available in ORCA_METAL builds — all shaders use pre-compiled MSL.
+#ifndef ORCA_METAL
 int GLSL_TranslateProgram(char const *vertex, char const *fragment,
                           enum glsl_msl_platform platform,
                           struct glsl_msl_program *out);
 void GLSL_FreeProgram(struct glsl_msl_program *program);
+#endif
 
 #ifdef __cplusplus
 }

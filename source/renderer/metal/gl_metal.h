@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "glsl_msl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -289,6 +290,9 @@ void glDeleteProgram(GLuint program);
 void glAttachShader(GLuint program, GLuint shader);
 void glDetachShader(GLuint program, GLuint shader);
 void glLinkProgram(GLuint program);
+// Set pre-compiled MSL reflection on a program before glLinkProgram. The
+// pointer must remain valid for the program's lifetime.
+void glSetMSLReflection(GLuint program, struct glsl_msl_program const *refl);
 void glUseProgram(GLuint program);
 void glGetProgramiv(GLuint program, GLenum pname, GLint *params);
 void glGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
