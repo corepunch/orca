@@ -57,7 +57,7 @@ end
 local originalGetenv = os.getenv
 local selected
 os.getenv = function(name) return name == "CHAT_APPEARANCE" and selected or originalGetenv(name) end
-local colors = require "Chat/theme"
+local colors = require "Chat/Scripts/theme"
 for _, appearance in ipairs { "light", "dark", "light" } do
     selected = appearance
     colors.refresh()

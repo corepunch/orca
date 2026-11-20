@@ -4,7 +4,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 #include <renderer/renderer.h>
-#include <source/ref_ogl/r_local.h>
+#include <source/renderer/r_local.h>
 #include "test_local.h"
 
 extern int luaopen_orca(lua_State *L);

@@ -15,6 +15,7 @@ local apps = {
         { "Chat/Pages/Thread", "Chat/Data/Conversation.xml" },
         { "Chat/Pages/Composer", "Chat/Data/Conversation.xml" },
         { "Chat/Pages/Details", "Chat/Data/Details.xml" },
+        { "Chat/Pages/NewMessageLists", "Chat/Data/NewMessage.xml" },
     } },
     { "apps/octopus", {
         { "Octopus/Pages/Home", "Octopus/Data/Feeds.xml" },
@@ -23,6 +24,7 @@ local apps = {
         { "Octopus/Pages/Post", "Octopus/Data/Post.xml", { present = { PostDetail = "Post" } } },
         { "Octopus/Pages/Write", "Octopus/Data/Compose.xml" },
         { "Octopus/Pages/ProfileEditor", "Octopus/Data/Me.xml" },
+        { "Octopus/Pages/Blocked", "Octopus/Data/Blocks.xml" },
     } },
     { "apps/ledger", { { "Ledger/Pages/Ledger", "Ledger/Data/Ledger.xml" } } },
 }
@@ -52,4 +54,6 @@ check(text:find("Probe.xml:3: TextBlock.Text DataContext/Missing/Items: the scop
 check(text:find("Probe.xml:4: Go.Click NoSuchHandler", 1, true), text)
 check(text:find("Entries is a Query; Submit applies to Edit members", 1, true), text)
 check(text:find("LedgerAccount has no column or relation Unknown", 1, true), text)
+check(#Lint.source([[<Button Click="Entries.Clear"/>]], "Clear.xml", "Ledger/Data/Ledger.xml") == 0,
+    "Queries support the Clear action")
 print(("PASS: data binding diagnostics (%d checks)"):format(checks))

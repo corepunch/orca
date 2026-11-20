@@ -8,7 +8,7 @@ require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/octopus")
 require("orca.core.startup").load_plugins()
 
-local App = require "Octopus/App"
+local App = require "Octopus/Scripts/App"
 local Octopus = require "Octopus/api/octopus"
 orca.async = function(fn, ...) return fn(...) end
 local NOW = 1761400000
@@ -49,8 +49,9 @@ local function go(app, route)
 end
 
 local transport, state = require("Octopus/api/mock").new { clock = function() return NOW end }
-local app = App { client = assert(Octopus.client { mode = "mock", transport = transport, projectId = "octopus-mock",
-    clock = function() return NOW end }) }
+local client = assert(Octopus.client { mode = "mock", transport = transport, projectId = "octopus-mock",
+    clock = function() return NOW end })
+local app = App { client = client }
 app.activate_controller = function(self, controller) self.screen = controller.view; return controller end
 app.repaint = function() end
 go(app, "/")
@@ -120,14 +121,60 @@ assert(text(find(app, "BlockPerson")):find("block Maya Chen", 1, true) and find(
 click(app, "BlockPerson")
 assert(app.client:isBlocked("u-maya") and app.currentRoute ~= "/user", "Blocking leaves the profile")
 go(app, "/me")
+local listBlocks = client.listBlocks
+client.listBlocks = function() return nil, { code = "offline", message = "Could not load blocked people." } end
 click(app, "OpenBlocked")
-assert(app.currentRoute == "/blocked" and find(app, "Blockedu-maya") and find(app, "Blockedu-sam"))
-press(app, assert(find(app, "Blockedu-maya"):findChild("Unblock", true)))
+assert(app.currentRoute == "/blocked" and find(app, "RetryBlocks"):getParent().Visible
+    and not find(app, "BlocksEmpty").Visible, "The list offers retry after a failure")
+client.listBlocks = listBlocks
+click(app, "RetryBlocks")
+local maya, sam = find(app, "Blockedu-maya"), find(app, "Blockedu-sam")
+local unblock = assert(maya:findChild("Unblock", true))
+local setUserBlocked = client.setUserBlocked
+client.setUserBlocked = function() return nil, { code = "offline", message = "Could not unblock this person." } end
+press(app, unblock)
+assert(app.client:isBlocked("u-maya") and find(app, "UnblockError").Visible
+    and text(find(app, "UnblockError")) == "Could not unblock this person.", "An unblock failure keeps the row")
+client.setUserBlocked = setUserBlocked
+press(app, unblock)
 assert(not app.client:isBlocked("u-maya") and not app.screen:findChild("Blockedu-maya", true)
-    and app.screen:findChild("Blockedu-sam", true), "Unblocking removes the row")
+    and find(app, "Blockedu-sam"):getUniqueID() == sam:getUniqueID() and not find(app, "UnblockError").Visible,
+    "Unblocking removes only the chosen row")
+
+-- A write can finish after its page closes. The replacement scope must reload.
+local blockedScope = app.transientScope
+local run, pending = orca.async, nil
+orca.async = function(fn, ...)
+    pending = coroutine.create(fn)
+    assert(coroutine.resume(pending, ...))
+end
+client.setUserBlocked = function(...)
+    coroutine.yield()
+    return setUserBlocked(...)
+end
+press(app, assert(sam:findChild("Unblock", true)))
+orca.async = run
+assert(pending and coroutine.status(pending) == "suspended", "The unblock is still in flight")
+go(app, "/me")
+assert(blockedScope.disposed, "Leaving blocked people disposes its scope")
+go(app, "/blocked")
+find(app, "Blockedu-sam")
+assert(coroutine.resume(pending))
+client.setUserBlocked = setUserBlocked
+drain(app)
+assert(find(app, "BlocksEmpty").Visible and not app.screen:findChild("Blockedu-sam", true),
+    "The reopened list shows the empty state after the unblock")
 
 -- Account deletion asks twice, then signs the device out.
 go(app, "/me")
+local closedScope = setmetatable({}, { __mode = "v" })
+do
+    local scope = app:octopusScope("Octopus/Data/Blocks.xml")
+    scope:dispose()
+    closedScope[1] = scope
+end
+collectgarbage("collect")
+assert(closedScope[1] == nil, "The reader's scope registry does not retain closed scopes")
 click(app, "OpenRules")
 assert(app.currentRoute == "/rules")
 go(app, "/me")

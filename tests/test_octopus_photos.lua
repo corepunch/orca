@@ -11,7 +11,7 @@ fs.init("apps/octopus")
 require("orca.core.startup").load_plugins()
 local data = require "orca.data"
 local Visibility = require "orca.data.visibility"
-local Media = require "Octopus/media"
+local Media = require "Octopus/Scripts/media"
 local OctopusProvider = require "Octopus/providers/octopus"
 local f = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = f:read("*a"); f:close()

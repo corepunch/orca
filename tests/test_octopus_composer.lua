@@ -6,7 +6,7 @@ require("orca.renderer").init(390, 844, true)
 fs.init("apps/octopus")
 require("orca.core.startup").load_plugins()
 local data = require "orca.data"
-local Provider, Media = require "Octopus/providers/octopus", require "Octopus/media"
+local Provider, Media = require "Octopus/providers/octopus", require "Octopus/Scripts/media"
 local file = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = file:read("*a"); file:close()
 local media, notice, captured, rejected = Media.new(), "", nil, true

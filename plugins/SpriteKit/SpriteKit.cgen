@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
-  <require file="../../source/renderer/opengl/api/renderer.cgen"/>
+  <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
     <include file="core/core.h"/>

@@ -107,8 +107,10 @@ Workspace.setValue = function(path, property, value)
 end
 Workspace.project, Workspace.document = 'apps/Example', 'Example/Screens/Test'
 local Hierarchy, Project, Inspector = require "Editor.Scripts.Hierarchy", require "Editor.Scripts.ProjectView", require "Editor.Scripts.Inspector"
+local Preview = require 'Editor.Scripts.Preview'
 local hierarchy, project, binding = Hierarchy(), Project(), nil
 local inspector = Inspector(function(opts) binding = opts end)
+local previewPanel = Preview()
 propertySource = inspector.source
 local screen = assert(fs.loadObjectFromDisk('Editor/Screens/Editor'))
 screen.Width, screen.Height, screen.ResizeMode = 1440, 900, 'NoResize'
@@ -118,8 +120,10 @@ local Panel = require 'Editor.Scripts.Panel'
 screen:findChild('HierarchySlot', true):addChild(Panel.wrap(hierarchy))
 screen:findChild('ProjectSlot', true):addChild(Panel.wrap(project))
 screen:findChild('InspectorSlot', true):addChild(Panel.wrap(inspector))
+screen:findChild('PreviewSlot', true):addChild(Panel.wrap(previewPanel))
 local function settle()
     core.flushQueue()
+    inspector:update()
     core.advanceFrame()
     core.runAllPrograms(screen)
     core.flushQueue()
@@ -154,7 +158,24 @@ assert(label.ActualX + label.ActualWidth <= label.parent.ActualWidth, 'Long node
 hierarchy.list:send('TreeView.SelectItem', { Value = 'Example/Screens/Test/Title' })
 settle()
 assert(Workspace.selection == 'Example/Screens/Test/Title', 'TreeView descendant selection selects the runtime path')
-local Preview = require 'Editor.Scripts.Preview'
+local groupPath = Workspace.document .. '/Group'
+previewPanel.artboard = { w = 100, h = 100 }
+previewPanel.rects = { { path = groupPath, x = 10, y = 10, w = 50, h = 30 } }
+previewPanel:fit()
+local rapidSelectionRequests = #requests
+hierarchy.list:send('TreeView.SelectItem', { Value = Workspace.document })
+hierarchy.list:send('TreeView.SelectItem', { Value = groupPath })
+core.flushQueue()
+assert(Workspace.selection == groupPath and hierarchy.list.SelectedValue == groupPath,
+    'Rapid TreeView selections keep the latest selection in the hierarchy')
+assert(previewPanel.selection.Visible and previewPanel.selection.Width == 50 * previewPanel.scale,
+    'The preview outlines the latest TreeView selection from the existing snapshot')
+assert(#requests == rapidSelectionRequests, 'The preview updates before an inspector round trip')
+settle()
+assert(inspector.path == groupPath and #requests == rapidSelectionRequests + 1,
+    'Superseded TreeView selections do not reload the inspector or get replayed')
+hierarchy.list:send('TreeView.SelectItem', { Value = Workspace.document .. '/Title' })
+settle()
 local preview = {
     scale = 1, canvas = { x = 0, y = 0 },
     rects = {

@@ -1,7 +1,7 @@
 -- Standalone, offline persistence tests; no native engine or shell commands.
 package.preload["Octopus/api/json"] = function() return dofile("apps/octopus/api/json.lua") end
-local Cache = dofile("apps/octopus/cache.lua")
-local Media = dofile("apps/octopus/media.lua")
+local Cache = dofile("apps/octopus/Scripts/cache.lua")
+local Media = dofile("apps/octopus/Scripts/media.lua")
 -- The same file also runs inside ORCA, including its virtual io.open wrapper.
 local nativeOK, nativeFS = pcall(require, "orca.filesystem")
 local now, caches = 1000000, {}

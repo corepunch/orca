@@ -1,5 +1,5 @@
 package.path = "apps/chat/?.lua;" .. package.path
-local Store = require "session_store"
+local Store = require "Scripts.session_store"
 local json = require "api.json"
 local records = {}
 local native = {

@@ -6,7 +6,7 @@ require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
-local App, Chat = require "Chat/App", require "api.chat"
+local App, Chat = require "Chat/Scripts/App", require "api.chat"
 
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
@@ -79,13 +79,14 @@ assert(app.currentRoute == "/thread" and app.room and app.room.peer_id == "alex"
 
 -- Nobody found, and a refused permission, are explained.
 app:show("/new"); settle(app)
-app.contactsNative.readEmails = function() return { { name = "Stranger", emails = { "nobody@example.invalid" } } } end
-press(app, "FromContacts")
-assert(app.screen:findChild("NoContactMatches", true), "An empty match explains how friends appear")
 app.contactsNative.readEmails = function() return nil, { code = "permission", message = "Allow access to contacts in Settings to find friends from them." } end
 press(app, "FromContacts")
-local status = app.screen:findChild("NewChatStatus", true)
+local status = app.screen:findChild("DiscoveryError", true)
 assert(status.Visible and nodeText(status) == "Allow access to contacts in Settings to find friends from them.",
     "A refused permission says how to allow it")
+assert(not app.screen:findChild("FoundPersonContactalex", true), "A refused permission clears previous matches")
+app.contactsNative.readEmails = function() return { { name = "Stranger", emails = { "nobody@example.invalid" } } } end
+press(app, "FromContacts")
+assert(app.screen:findChild("NoContactMatches", true).Visible, "An empty match explains how friends appear")
 orca.async = savedAsync
 print("Chat contact matches: opted-in friends found, others hidden, chat opens, empty and refused states explained")

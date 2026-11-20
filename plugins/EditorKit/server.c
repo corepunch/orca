@@ -1778,8 +1778,10 @@ SV_CMD(GET, snapshot)
   uint32_t w = design ? (uint32_t)designWidth : SV_ARG("width") ? atoi(SV_ARG("width")) : 1024;
   uint32_t h = design ? (uint32_t)designHeight : SV_ARG("height") ? atoi(SV_ARG("height")) : 768;
   if (!w || !h || w > 4096 || h > 4096) return "Invalid snapshot size";
+  if (FAILED(R_BeginFrame(pScreen->ClearColor))) return "Can't begin snapshot frame";
   struct Texture *rt = NULL;
   if (FAILED(RenderTexture_Create(&(CREATERTSTRUCT){ .Width = w, .Height = h }, &rt))) {
+    R_EndFrame();
     return "Can't create render target";
   }
   ORCA_API void CORE_AdvanceFrame(void);
@@ -1798,6 +1800,7 @@ SV_CMD(GET, snapshot)
            && write_png(file, pixels, w, h, pScreen->ClearColor.a >= 1);
   free(pixels);
   Texture_Release(rt);
+  R_EndFrame();
   /* Rectangles from this same layout pass, so outlines match the image. */
   layout_rects(screen, response, endpoint);
   pScreen->Width = designWidth;
@@ -2118,8 +2121,9 @@ LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
     if (!url) exit(0);
     if (!*url) {
       axPostMessageW(msg->target, kEventReadCommands, 0, NULL);
-      return TRUE;
+      return FALSE;
     }
+    bool_t repaint = FALSE;
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFreeDoc) {
       xmlNodePtr response = xmlNewNode(NULL, XMLSTR("response"));
       enum cmd cmd = cmd_GET;
@@ -2136,6 +2140,7 @@ LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
         if (strchr(url, '\n')) *strchr(url, '\n') = 0;
         reqArg_t rargs[MAX_ARGS]={0};
         lpcString_t endpoint = FS_ParseArgs(url+strlen(routes[i].name), rargs, MAX_ARGS);
+        repaint = cmd != cmd_GET;
         lpcString_t err = routes[i].func(L, response, endpoint, rargs, MAX_ARGS);
         if (err) {
           _xmlSetProp(response, "status", "error");
@@ -2157,7 +2162,9 @@ LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
       //      xmlDocDump(stderr, doc);
     }
     axPostMessageW(msg->target, kEventReadCommands, 0, NULL);
-    return TRUE;
+    // The application loop repaints on a handled message. Queries inspect
+    // the current scene, and snapshot requests render their own frame.
+    return repaint;
   } else {
     return FALSE;
   }

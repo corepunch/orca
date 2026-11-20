@@ -7,8 +7,8 @@ local ui = require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
-local I18n = require "Chat/i18n"
-local App = require "Chat/App"
+local I18n = require "Chat/Scripts/i18n"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
 local Provider = require "Chat/providers/chat"
 local en, ru = require "Chat/Locales/en", require "Chat/Locales/ru"

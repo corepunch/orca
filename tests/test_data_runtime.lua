@@ -227,6 +227,25 @@ do
     calls[9].result = { items = { { id = "late", title = "Late", author_id = "a" } } }
     h.resume()
     check(state.Count == 0, "A response from before a session change is discarded")
+    query:clear()
+    check(state.IsIdle and query:get("Search") == "abc", "Clear restores idle and keeps the parameters")
+    query:set("Search", "later")
+    query:clear()
+    h.tick()
+    check(#calls == 9 and state.IsIdle, "Clear cancels the debounced request")
+    query:load()
+    calls[10].result = { { id = "later", title = "Late", author_id = "a" } }
+    query:refresh()
+    query:clear()
+    h.resume()
+    check(state.IsIdle and state.Count == 0 and #calls == 10, "Clear drops a running result and its coalesced refresh")
+    local queued, run = nil, h.run
+    h.run = function(fn) queued = fn end
+    query:load()
+    query:clear()
+    queued()
+    h.run = run
+    check(#calls == 10, "A load cleared before its coroutine starts never calls the provider")
     -- Disposal discards results and releases rows.
     local other = scope:query { name = "Other", entity = "TestPost", operation = function()
         coroutine.yield(); return { { id = "o1", title = "x", author_id = "a" } } end }

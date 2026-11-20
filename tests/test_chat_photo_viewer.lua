@@ -4,7 +4,7 @@ local ui = require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 require("orca.filesystem").init("apps/chat")
 local Viewer = require "Chat/views/photo_viewer"
-local Media = require "Chat/media"
+local Media = require "Chat/Scripts/media"
 local file = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = file:read("*a"); file:close()
 local workers, calls, stored, repaints = {}, 0, 0, 0

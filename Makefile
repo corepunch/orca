@@ -46,7 +46,7 @@ CFLAGS += $(SANITIZER_FLAGS)
 LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer/opengl filesystem core data media credentials notifications signin contacts
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials notifications signin contacts
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -84,7 +84,7 @@ ZLIB_LIB = $(THIRD_PARTY_DIR)/libz.a
 ZLIB_SRCS = adler32 compress crc32 deflate gzclose gzlib gzread gzwrite infback inffast inflate inftrees trees uncompr zutil
 ZLIB_OBJS = $(addprefix $(OBJECTDIR)/zlib/,$(addsuffix .o,$(ZLIB_SRCS)))
 FREETYPE_SRCDIR = libs/freetype
-FREETYPE_MODULES_H = source/renderer/opengl/third_party/freetype_modules.h
+FREETYPE_MODULES_H = source/renderer/third_party/freetype_modules.h
 FREETYPE_SRCS = base/ftbase.c base/ftinit.c base/ftsystem.c base/ftglyph.c base/ftbitmap.c base/ftdebug.c base/ftmm.c gzip/ftgzip.c autofit/autofit.c truetype/truetype.c cff/cff.c psaux/psaux.c psnames/psnames.c pshinter/pshinter.c sfnt/sfnt.c smooth/smooth.c raster/raster.c
 FREETYPE_OBJS = $(patsubst %.c,$(OBJECTDIR)/freetype/%.o,$(FREETYPE_SRCS))
 PNG_SRCDIR = libs/libpng
@@ -548,7 +548,7 @@ ICUI_DATA = find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirna
 XDESC_DIRS = $(shell find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirname $$(dirname $$file); done | sort -u | grep -vE "^\\.$$")
 
 font:
-	xxd -i "images/vga8x12_extra_chars.png" > "source/renderer/opengl/builtin/r_builtin_charset2.c"
+	xxd -i "images/vga8x12_extra_chars.png" > "source/renderer/builtin/r_builtin_charset2.c"
 
 pak:
 	Build/Debug/pz2 -gz -luac $(XDESC_DIRS)
@@ -579,7 +579,7 @@ modules-c-diff:
 fonts:
 	python3 cd tools && \
 	../images/vga8x12_extra_chars.png \
-	../source/renderer/opengl/builtin/r_builtin_charset2.c \
+	../source/renderer/builtin/r_builtin_charset2.c \
 	images_vga8x12_extra_chars_png && cd ..
 
 # Install target for LuaRocks

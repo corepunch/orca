@@ -8,7 +8,7 @@ require("orca.filesystem").init("apps/chat")
 local Avatar = require "Chat/views/profile_avatar"
 local Avatars = require "orca.avatars"
 local C = require "Chat/views/components"
-local media = require("Chat/media").new()
+local media = require("Chat/Scripts/media").new()
 local savedLoad, savedAsync = Avatars.load, orca.async
 orca.async = function(fn) return fn() end
 local photo = assert(Avatars.load("orca"))

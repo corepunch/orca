@@ -5,7 +5,7 @@ local system = { is_dark_theme = function() return dark end }
 local getenv = os.getenv
 os.getenv = function(key) if key == "OCTOPUS_APPEARANCE" then return override end; return getenv(key) end
 package.loaded["orca.system"] = system
-local colors = dofile("apps/octopus/theme.lua")
+local colors = dofile("apps/octopus/Scripts/theme.lua")
 local retained = colors
 assert(colors.appearance == "light" and colors.background == "#ffffff")
 assert(not colors.refresh(), "An unchanged appearance must not rebuild pages")
@@ -44,7 +44,7 @@ for _, name in ipairs { "Octopus/api/octopus", "Octopus/views/shell", "Octopus/v
     modules[name] = {}
 end
 for name, value in pairs(modules) do package.loaded[name] = value end
-local App = dofile("apps/octopus/App.lua")
+local App = dofile("apps/octopus/Scripts/App.lua")
 local session, client, draft = {}, {}, { content = "unfinished post" }
 client.session = session
 function client:getSession() return self.session end

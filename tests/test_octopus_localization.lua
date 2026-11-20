@@ -8,7 +8,7 @@ require("orca.core.startup").load_plugins()
 orca.async = function(fn, ...) return fn(...) end
 local Locales = require "Octopus/Locales"
 local Provider = require "Octopus/providers/octopus"
-local Format = require "Octopus/format"
+local Format = require "Octopus/Scripts/format"
 local ru, en = Locales.new("ru-RU"), Locales.new("en-GB")
 local english, russian = require "Octopus/Locales/en", require "Octopus/Locales/ru"
 local function variables(value)
@@ -54,7 +54,7 @@ assert(result == nil and err.code == "validation" and err.message == "Введи
 local function settle(screen)
     core.flushQueue(); core.advanceFrame(); core.runAllPrograms(screen); core.flushQueue()
 end
-local App, Octopus = require "Octopus/App", require "Octopus/api/octopus"
+local App, Octopus = require "Octopus/Scripts/App", require "Octopus/api/octopus"
 local app = App { client = Octopus.mock { clock = function() return 1761400000 end }, language = "ru" }
 app.activate_controller = function(self, controller) self.screen = controller.view; return controller end
 app.repaint = function() end

@@ -9,7 +9,7 @@ package.path = "apps/chat/?.lua;" .. package.path
 io.stdout:setvbuf("line")
 local Chat = require "api.chat"
 local json = require "api.json"
-local SessionStore = require "session_store"
+local SessionStore = require "Scripts.session_store"
 local credentials = require "orca.credentials"
 require "orca.renderer"
 local core = require "orca.core"

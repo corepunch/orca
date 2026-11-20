@@ -1,6 +1,6 @@
 package.path = "apps/chat/?.lua;" .. package.path
 local Chat = require "api.chat"
-local Models = require "models"
+local Models = require "Scripts.models"
 local client = Chat.mock { clock = function() return 1700000000 end }
 local models = Models.new(client)
 local rows, err = models.Rooms:select()

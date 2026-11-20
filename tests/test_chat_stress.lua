@@ -10,9 +10,9 @@ require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
 local data = require "orca.data"
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
-local Media = require "Chat/media"
+local Media = require "Chat/Scripts/media"
 local count = tonumber(os.getenv("ORCA_CHAT_STRESS_ROWS")) or 1000
 assert(count >= 60 and count % 1 == 0)
 local pending, savedAsync, savedHost = {}, orca.async, data.Scope.defaultHost

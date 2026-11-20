@@ -4,9 +4,9 @@ local core = require "orca.core"
 local system = require "orca.system"
 require("orca.filesystem").init("apps/chat")
 require("orca.core.startup").load_plugins()
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
-local Diagnostics = require "Chat/diagnostics"
+local Diagnostics = require "Chat/Scripts/diagnostics"
 local async = require "orca.core.async"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
@@ -133,7 +133,7 @@ local redacted = Diagnostics.redact('password="secret-value with spaces" token=t
 for _, secret in ipairs { "secret-value", "with spaces", "token-value", "bearer-value", "private-cookie", "demo@example.invalid", "+491234567890" } do
     assert(not redacted:find(secret, 1, true), "Private values must not appear in reports")
 end
-assert(Diagnostics.redact("apps/chat/App.lua:123: test error"):find("App.lua:123", 1, true))
+assert(Diagnostics.redact("apps/chat/Scripts/App.lua:123: test error"):find("App.lua:123", 1, true))
 app:show("/")
 app.room = app.client:listRooms()[1]
 app:show("/thread")

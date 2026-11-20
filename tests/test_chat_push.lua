@@ -1,9 +1,9 @@
 -- Offline push lifecycle and private Account target requests.
 package.path = "apps/chat/?.lua;" .. package.path
-package.preload["Chat/polling"] = function() return require "polling" end
+package.preload["Chat/Scripts/polling"] = function() return require "Scripts.polling" end
 local Chat = require "api.chat"
 local json = require "api.json"
-local Push = require "push"
+local Push = require "Scripts.push"
 local checks = 0
 local function check(value, message) assert(value, message); checks = checks + 1 end
 local record, requests, responses, beforeResponse = nil, {}, {}
@@ -133,7 +133,7 @@ assert(client:signOut())
 check(not record, "Original-owner reauthentication makes revoked logout cleanup recoverable")
 
 local storedValue, storedKey
-local deviceStore = assert(require("push_store").new({ endpoint = "https://example.test/v1", projectId = "project" }, {
+local deviceStore = assert(require("Scripts.push_store").new({ endpoint = "https://example.test/v1", projectId = "project" }, {
     supported = function() return true end,
     get = function(key) storedKey = key; return storedValue end,
     set = function(key, value) storedKey, storedValue = key, value; return true end,

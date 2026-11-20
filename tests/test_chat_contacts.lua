@@ -8,7 +8,7 @@ require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end

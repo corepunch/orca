@@ -7,7 +7,7 @@ require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
 -- Keep native painting out of the deterministic request scheduler.
 local function flushQueue()

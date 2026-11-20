@@ -264,7 +264,7 @@ do
     for index, id in ipairs(ids) do check(edited.attachments[index].id == id, "Text edits preserve all ordered photos") end
 end
 
-local models = require("models").new(owner)
+local models = require("Scripts.models").new(owner)
 local modeled = assert(models.Rooms:create { name = "Modeled channel", member_ids = {}, kind = "channel", visibility = "public" })
 check(modeled.kind == "channel" and modeled.visibility == "public", "Room model forwards conversation options")
 local modeledPhoto = assert(owner:uploadPhoto(modeled.id, photo))

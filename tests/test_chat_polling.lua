@@ -1,5 +1,5 @@
 package.path = "apps/chat/?.lua;" .. package.path
-local Polling = require "polling"
+local Polling = require "Scripts.polling"
 local checks = 0
 local function check(value, message)
     assert(value, message)

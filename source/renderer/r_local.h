@@ -8,7 +8,7 @@
 #include <renderer/renderer.h>
 
 #if ORCA_METAL
-#include "../metal/metal.h"
+#include "metal/metal.h"
 // Map GL call names to the Metal backend
 #define glActiveTexture                       mtlActiveTexture
 #define glAttachShader                        mtlAttachShader

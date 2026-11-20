@@ -8,7 +8,7 @@ require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
 
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
@@ -487,6 +487,8 @@ drain(app)
 assert(#app.composer.Text == 4001, "An API-rejected send must retain input")
 
 local newRoom = app:dispatch("/new").view
+core.advanceFrame()
+core.runAllPrograms(newRoom)
 assert(newRoom:findChild("RoomName", true))
 assert(newRoom:findChild("FindPerson", true), "New conversations must offer privacy-aware discovery")
 assert(newRoom:findChild("Contactalex", true), "Contacts must come from the API")
@@ -1023,7 +1025,7 @@ assert(otpApp.screen:findChild("EmptyTimeline", true).Text == "no posts yet",
 -- The picker is injected; upload/storage/message operations remain the real mock API.
 local photoFile = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = photoFile:read("*a"); photoFile:close()
-local photoMedia = require("Chat/media").new()
+local photoMedia = require("Chat/Scripts/media").new()
 local nextPhoto, cancelPick = { jpeg = jpeg, thumbnail = jpeg, width = 32, height = 24,
     thumbnail_width = 32, thumbnail_height = 24, byte_count = #jpeg, mime_type = "image/jpeg" }, false
 photoMedia.pick = function()
@@ -1296,7 +1298,8 @@ assert(not avatarPhoto(photoApp.screen:findChild("Roomweekend", true)), "Groups 
 assert(not avatarPhoto(photoApp.screen:findChild("Roomjules", true)), "People without a photo keep their initials")
 assert(photoApp.avatarPaths.jules == false, "People without a photo are remembered for the session")
 photoApp.screen = photoApp:dispatch("/new").view
-assert(avatarPhoto(photoApp.screen:findChild("Contactalex", true):getParent()), "Contacts show their photos")
+drain(photoApp); drain(photoApp)
+assert(avatarPhoto(photoApp.screen:findChild("Contactalex", true)), "Contacts show their photos")
 photoApp.room = photoApp.client:listRooms()[1]
 photoApp.screen = photoApp:dispatch("/details").view
 drain(photoApp) -- visible member photos load after paint
@@ -1360,7 +1363,7 @@ assert(historyMessages.items:count() == 60 and historyApp.composer.Text == "Keep
 -- An OS appearance change restyles views built before it, Lua and XML alike,
 -- without rebuilding retained tabs.
 local system = require "orca.system"
-local colors, getenv = require "Chat/theme", os.getenv
+local colors, getenv = require "Chat/Scripts/theme", os.getenv
 local themeApp = mockApp()
 themeApp:show("/new")
 drain(themeApp)

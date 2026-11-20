@@ -6,8 +6,8 @@ require "orca.UIKit"
 require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
-local App, Chat = require "Chat/App", require "api.chat"
-local Social, PublicPost = require "Chat/views/social", require "Chat/public_post"
+local App, Chat = require "Chat/Scripts/App", require "api.chat"
+local Social, PublicPost = require "Chat/views/social", require "Chat/Scripts/public_post"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
 local function settle(app)

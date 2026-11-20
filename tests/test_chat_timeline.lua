@@ -11,9 +11,9 @@ require("orca.renderer").init(390, 844, true)
 fs.init("apps/chat")
 require("orca.core.startup").load_plugins()
 local data = require "orca.data"
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
-local Media = require "Chat/media"
+local Media = require "Chat/Scripts/media"
 local WHEN = "2025-10-25T12:00:00Z"
 local file = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local JPEG = file:read("*a"); file:close()

@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <source/ref_ogl/r_local.h>
-#include <source/ref_metal/glsl_msl.h>
+#include <source/renderer/r_local.h>
+#include <source/renderer/metal/glsl_msl.h>
 #include "test_local.h"
 
 static char *

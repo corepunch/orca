@@ -515,6 +515,46 @@ static void test_object_property_holds_reference(void) {
     }
 }
 
+static struct Object *load_bound_test_object(int argc, const char *argv[]) {
+    return argc && strcmp(argv[0], "missing.bound-test") ? make_rt_object() : NULL;
+}
+
+static void test_object_binding_reuses_loaded_resource(void) {
+    OBJ_RegisterFileLoader(".bound-test", load_bound_test_object);
+    int64_t baseline = OBJ_GetObjectCount();
+    WITH(struct Object, holder, make_rt_object_holder(), destroy_object) {
+        struct Property *prop;
+        EXPECT_OK(FIND_SHORT_PROPERTY(holder, "Child", &prop));
+        struct vm_register r = { .type = kDataTypeString, .size = sizeof(const char *) };
+        const char *path = "first.bound-test";
+        memcpy(r.value, &path, sizeof(path));
+        EXPECT(PROP_Import(prop, &r));
+        struct Object *first = *(struct Object **)PROP_GetValue(prop);
+        EXPECT(first && OBJ_GetObjectCount() == baseline + 2);
+
+        EXPECT(PROP_Import(prop, &r));
+        EXPECT(*(struct Object **)PROP_GetValue(prop) == first);
+
+        path = "second.bound-test";
+        memcpy(r.value, &path, sizeof(path));
+        EXPECT(PROP_Import(prop, &r));
+        struct Object *second = *(struct Object **)PROP_GetValue(prop);
+        EXPECT(second && strcmp(OBJ_GetSourceFile(second), path) == 0);
+        EXPECT(OBJ_GetObjectCount() == baseline + 2);
+
+        path = "missing.bound-test";
+        memcpy(r.value, &path, sizeof(path));
+        EXPECT(!PROP_Import(prop, &r));
+        EXPECT(*(struct Object **)PROP_GetValue(prop) == second);
+
+        path = "";
+        memcpy(r.value, &path, sizeof(path));
+        EXPECT(PROP_Import(prop, &r));
+        EXPECT(*(struct Object **)PROP_GetValue(prop) == NULL);
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+    }
+}
+
 static void test_inherited_property_starts_unset_without_ancestor(void) {
     WITH(struct Object, obj, make_inherited_object(), destroy_object) {
         struct Property *prop;
@@ -1882,6 +1922,7 @@ int main(void) {
         DECL_TEST(test_object_refcount_direct),
         DECL_TEST(test_remove_from_parent_without_parent_does_not_release),
         DECL_TEST(test_object_property_holds_reference),
+        DECL_TEST(test_object_binding_reuses_loaded_resource),
         DECL_TEST(test_inherited_property_starts_unset_without_ancestor),
         DECL_TEST(test_inherited_scalar_reads_parent_value),
         DECL_TEST(test_inherited_attached_parent_property_late_set_reads_child),

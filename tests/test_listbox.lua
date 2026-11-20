@@ -338,6 +338,42 @@ local function test_listbox_binding_expression()
   print("PASS: test_listbox_binding_expression")
 end
 
+local function test_listbox_selection_styles()
+  local screen = ui.Screen {
+    Width = 400, Height = 300, ResizeMode = 'NoResize',
+    StyleSheet = ui.loadObjectFromCssString [[
+      .test-label { border-width: 1; }
+      .test-row:selected .test-label { border-width: 4; }
+    ]],
+  }
+  local items = core.DataObject {}
+  items:addChild(core.DataObject { Name = 'First' })
+  local second = items:addChild(core.DataObject { Name = 'Second' })
+  local template = ui.Node2D { class = 'test-row' }
+  template:addChild(ui.Node2D { Name = 'Label', class = 'test-label' })
+  local listbox = screen:addChild(ui.ListBox {
+    ItemsSource = items, ItemTemplate = template, ItemNamePrefix = 'Row',
+  })
+  core.flushQueue()
+  local firstRow, secondRow = listbox:findChild('RowFirst'), listbox:findChild('RowSecond')
+  local firstLabel, secondLabel = firstRow:findChild('Label'), secondRow:findChild('Label')
+  test.expect_eq(firstLabel.BorderWidthLeft, 4, 'The initial selection styles its descendants')
+  test.expect_eq(secondLabel.BorderWidthLeft, 1, 'The unselected row uses the normal style')
+
+  listbox:send('ListBox.SelectItem', { Value = 'Second' })
+  items:addChild(core.DataObject { Name = 'Third' })
+  core.flushQueue()
+  test.expect(listbox:findChild('RowSecond') == secondRow and listbox.SelectedItem == second,
+    'Refreshing membership retains the selected row and record')
+  test.expect_eq(firstLabel.BorderWidthLeft, 1, 'Deselection removes the selected ancestor style')
+  test.expect_eq(secondLabel.BorderWidthLeft, 4, 'Selection applies the selected ancestor style')
+  test.expect_eq(listbox:findChild('RowThird'):findChild('Label').BorderWidthLeft, 1,
+    'New unselected rows use the normal style')
+  screen:clear()
+  core.flushQueue()
+  print('PASS: test_listbox_selection_styles')
+end
+
 -- ---------------------------------------------------------------------------
 -- DataContext.GetData: base DataObject contexts resolve nested object paths
 -- ---------------------------------------------------------------------------
@@ -360,5 +396,6 @@ test_listbox_empty_items_source()
 test_listbox_datacontext_wiring()
 test_listbox_default_item_template()
 test_listbox_binding_expression()
+test_listbox_selection_styles()
 
 print("All ListBox tests passed.")

@@ -8,7 +8,7 @@ require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/octopus")
 require("orca.core.startup").load_plugins()
 
-local App = require "Octopus/App"
+local App = require "Octopus/Scripts/App"
 local Octopus = require "Octopus/api/octopus"
 -- Run background work inline so each step can assert its result.
 orca.async = function(fn, ...) return fn(...) end
@@ -914,7 +914,7 @@ assert(cachedApp.scope:member("Discover").items:count() == #freshPosts,
     "A successful refresh replaces cached items without duplicating rows")
 
 -- Chrome follows the app palette even when the OS appearance differs.
-local system, colors = require "orca.system", require "Octopus/theme"
+local system, colors = require "orca.system", require "Octopus/Scripts/theme"
 local isDark, getenv = system.is_dark_theme, os.getenv
 local appearance
 os.getenv = function(key) if key == "OCTOPUS_APPEARANCE" then return appearance end; return getenv(key) end
