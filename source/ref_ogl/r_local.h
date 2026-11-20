@@ -9,7 +9,7 @@
 
 #if ORCA_METAL
 // Apple builds render with Metal through an OpenGL ES 3 layer.
-#include "metal/gl_metal.h"
+#include "../ref_metal/gl_metal.h"
 #elif __APPLE__
 //#define GL_SILENCE_DEPRECATION
 #include <TargetConditionals.h>

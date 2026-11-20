@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <source/renderer/r_local.h>
-#include <source/renderer/metal/glsl_msl.h>
+#include <source/ref_ogl/r_local.h>
+#include <source/ref_metal/glsl_msl.h>
 #include "test_local.h"
 
 static char *
@@ -83,6 +83,31 @@ test_translate(struct shader_desc const *desc, char const *attr, char const *sam
     // GLSL_MSL_DUMP=<shader name> prints the generated MSL for inspection.
     if (ok && getenv("GLSL_MSL_DUMP") && strstr(name, getenv("GLSL_MSL_DUMP")))
       printf("%s\n%s\n", program.source[GLSL_MSL_VERTEX], program.source[GLSL_MSL_FRAGMENT]);
+    // REFL_DUMP prints C reflection struct initializers (macOS only, for r_msl_shaders.h).
+    if (ok && !es && getenv("REFL_DUMP")) {
+      char cname[64];
+      strncpy(cname, desc->Name, 63);
+      for (char *c = cname; *c; c++) if (*c == ' ') *c = '_';
+      for (char *c = cname; *c; c++) *c = (*c>='A'&&*c<='Z') ? (*c+32) : *c;
+      printf("/* %s */\nstatic const struct glsl_msl_program k_refl_%s = {\n", desc->Name, cname);
+      printf("  .entry = { \"main0\", \"main0\" },\n");
+      printf("  .blockSize = { %u, %u },\n", program.blockSize[0], program.blockSize[1]);
+      printf("  .numUniforms = %u,\n  .uniforms = {\n", program.numUniforms);
+      for (uint32_t ui = 0; ui < program.numUniforms; ui++) {
+        struct glsl_msl_uniform *u = &program.uniforms[ui];
+        printf("    { \"%s\", 0x%04x, %u, {%d,%d}, {%u,%u}, {%u,%u}, {%d,%d}, {%d,%d} },\n",
+          u->name, u->gltype, u->arraySize,
+          u->offset[0], u->offset[1], u->arrayStride[0], u->arrayStride[1],
+          u->matrixStride[0], u->matrixStride[1],
+          u->texture[0], u->texture[1], u->sampler[0], u->sampler[1]);
+      }
+      printf("  },\n  .numAttributes = %u,\n  .attributes = {\n", program.numAttributes);
+      for (uint32_t ai = 0; ai < program.numAttributes; ai++) {
+        struct glsl_msl_attribute *a = &program.attributes[ai];
+        printf("    { \"%s\", %u, 0x%04x },\n", a->name, a->location, a->gltype);
+      }
+      printf("  },\n};\n\n");
+    }
     RUN_TEST(name, {
       EXPECT(ok);
       EXPECT(ok && check_program(&program));

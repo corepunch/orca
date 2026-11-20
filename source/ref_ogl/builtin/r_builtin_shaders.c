@@ -3,7 +3,7 @@
 
 #include "../r_local.h"
 #ifdef ORCA_METAL
-#include "source/renderer/metal/r_msl_shaders.h"
+#include "source/ref_metal/r_msl_shaders.h"
 #endif
 
 struct shader_desc shader_default = {

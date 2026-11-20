@@ -87,6 +87,11 @@ Texture_Cleanup(struct Texture* image)
   }
 }
 
+HANDLER(Texture, Object, Destroy) {
+  Texture_Cleanup(pTexture);
+  return FALSE;
+}
+
 HRESULT
 Texture_Release(struct Texture* image)
 {

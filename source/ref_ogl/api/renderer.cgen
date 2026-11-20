@@ -241,6 +241,9 @@
       <summary>Base class for managing texture resources and their sampling parameters for rendering.</summary>
       <details>Controls texture image loading, filtering modes, and coordinate wrapping behavior. Supports texture preprocessing options like premultiplication and scaling for optimized rendering performance. Serves as the foundation for specialized texture types such as SingleTexture and RenderTargetTexture.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Destroy"/>
+      </handles>
       <properties>
         <property name="MinificationFilter" type="TextureFilter">Filtering method used when texture is rendered smaller than its original size.</property>
         <property name="MagnificationFilter" type="TextureFilter">Filtering method used when texture is rendered larger than its original size.</property>

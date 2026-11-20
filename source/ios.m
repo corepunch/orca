@@ -9,7 +9,7 @@
 #import <QuartzCore/CADisplayLink.h>
 #import <QuartzCore/QuartzCore.h>
 #if ORCA_METAL
-#include <source/renderer/metal/gl_metal.h>
+#include <source/ref_metal/gl_metal.h>
 #else
 #import <OpenGLES/ES3/gl.h>
 #endif

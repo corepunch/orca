@@ -540,7 +540,7 @@ ORCA_API void ED_SetDrawHook(void (*hook)(void)) {
   s_draw_hook = hook;
 }
 
-#include <source/renderer/r_local.h>
+#include <source/ref_ogl/r_local.h>
 
 static DWORD _LocalCoord(HEDWND wnd, DWORD wparam) {
   if (!wnd) return wparam;

@@ -2,7 +2,7 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered" after-luaopen="after_ui_module_registered">
   <require file="../../source/core/core.cgen"/>
-  <require file="../../source/renderer/api/renderer.cgen"/>
+  <require file="../../source/ref_ogl/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
     <include file="core/core.h"/>
