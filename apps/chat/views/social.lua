@@ -1,8 +1,8 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local C = require "Chat/views/components"
 local filesystem = require "orca.filesystem"
 local data = require "orca.data"
-local PublicPost = require "Chat/public_post"
+local PublicPost = require "Chat/Scripts/public_post"
 local Social = {}
 local function t(key, params) return I18n:t(key, params) end
 

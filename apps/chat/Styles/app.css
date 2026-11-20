@@ -1,5 +1,5 @@
 /* Palette roles for XML and Lua views. The Screen's StateClasses carry
-   chat-light or chat-dark (theme.lua, CHAT_APPEARANCE), so every rule follows
+   chat-light or chat-dark (Scripts/theme.lua, CHAT_APPEARANCE), so every rule follows
    the app palette and an appearance change restyles views already built.
    Rows reset their fill first so a later chat-soft can highlight them. */
 /* List rows are layout, never filled controls. Each selector outranks the

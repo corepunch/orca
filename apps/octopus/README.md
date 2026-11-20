@@ -94,7 +94,7 @@ blocks with [Chat](../chat/README.md):
   original, `normal` restores it, and publishing uploads the graded JPEGs.
   Grading uses native `orca.media` (macOS and iOS); elsewhere the grid hides.
 
-`theme.lua` holds black and white palettes. The OS appearance chooses between
+`Scripts/theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.
 Appearance changes rebuild the current page and invalidate retained tabs with
 the same palette for content and chrome, preserving the session and post/comment
@@ -133,7 +133,7 @@ keeps changes for the session. For iOS, open `octopus.xcodeproj` and run the
 
 ## Backend
 
-`config.lua` holds the website's public values: the Frankfurt endpoint, the
+`Scripts/config.lua` holds the website's public values: the Frankfurt endpoint, the
 Octopus project, the `octopus-db` database and the `post-images` bucket. The
 client calls Appwrite's REST API with the same document-level permissions as
 the browser. Protected handle claims use the shared account Function with a
@@ -200,12 +200,12 @@ Links can be copied to the clipboard because ORCA has no open-in-browser API yet
 
 | File | Owns |
 | --- | --- |
-| `App.lua` | Routes, session lifetime, the home timelines and background tasks |
+| `Scripts/App.lua` | Routes, session lifetime, the home timelines and background tasks |
 | `api/octopus.lua` | The Octopus client: validation, Appwrite queries and response mapping |
 | `api/appwrite.lua` | HTTP over `orca.network`, query and JSON encoding |
 | `api/mock.lua`, `api/fixtures.lua` | An in-memory Appwrite with the website's permissions and unique indexes |
 | `views/` | The shell, home/connect/discover, post cards, post page, people and search, compose and sign-in screens |
-| `media.lua` | Photo picking and the private image cache |
+| `Scripts/media.lua` | Photo picking and the private image cache |
 
 Network calls run in `orca.async` coroutines, so pages appear immediately with
 a centered shared activity indicator over the content being loaded. Navigation

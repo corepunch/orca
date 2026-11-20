@@ -5,6 +5,7 @@
 -- (plugins/EditorKit/server.c); set ORCA_EDITOR_PROJECT to choose it.
 local Application = require "orca.core.application"
 local fs = require "orca.filesystem"
+local renderer = require "orca.renderer"
 local Native = require "Editor.Scripts.Native"
 local Workspace = require "Editor.Scripts.Workspace"
 local Popups = require "Editor.Scripts.Popups"
@@ -64,6 +65,8 @@ local App = Application:extend {
 		DataPanel.autoExpand(self.project)
 		local popup = Popups.top()
 		if popup and popup.checkResize then popup:checkResize() end
+		-- Present the hierarchy and Preview selection before loading new property rows.
+		if self.inspector:update() then self.screen:post('Window.Paint', renderer.getSize()) end
 	end,
 }
 
@@ -345,6 +348,7 @@ function App:build()
 			app.menubar:invalidate()
 		end)
 	end
+	Workspace.on('select', function() screen:post('Window.Paint', renderer.getSize()) end)
 	for _, p in ipairs { self.hierarchy, self.project, self.inspector, self.console, self.preview } do
 		if p.header then
 			p.header:invalidate()

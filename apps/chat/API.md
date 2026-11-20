@@ -37,7 +37,7 @@ local client = assert(Chat.appwrite {
 })
 ```
 
-This is the default in `config.lua`. `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`
+This is the default in `Scripts/config.lua`. `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`
 and `APPWRITE_CHAT_FUNCTION_ID` override the public configuration; no API key is
 accepted or bundled. `CHAT_BACKEND=mock` selects offline data explicitly.
 The shared methods below keep the same return shapes and model bindings.
@@ -229,7 +229,7 @@ Realtime subscriptions, older-history pagination, read receipts and end-to-end
 encryption are not implemented.
 
 Apple push notifications use Appwrite Messaging and the native
-`orca.notifications` module. Set the public `pushProviderId` in `config.lua`
+`orca.notifications` module. Set the public `pushProviderId` in `Scripts/config.lua`
 (`APPWRITE_PUSH_PROVIDER_ID` for terminal launches) and configure the matching
 APNs provider and app signing; see [push setup](backend/appwrite/README.md#new-message-push-apns).
 The backend must also enable `CHAT_PUSH_ENABLED=true`. Push payloads contain
@@ -328,7 +328,7 @@ path, so the website displays them as ordinary profile photos.
 ## Models and backend setup
 
 ```lua
-local models = require("Chat/models").new(client)
+local models = require("Chat/Scripts/models").new(client)
 local room = assert(models.Rooms:create {
   name = "News", member_ids = {}, kind = "channel", visibility = "private",
 })
@@ -360,7 +360,7 @@ Server `routes.js` maps methods and paths to domain services, following
 [Lapis flows](https://leafo.net/lapis/reference/flows.html)'s separation of operations.
 
 Create the remote client with `Chat.appwrite {endpoint=..., projectId=...,
-functionId=...}`; [config.lua](config.lua) holds Octopus's public values. Follow
+functionId=...}`; [config.lua](Scripts/config.lua) holds Octopus's public values. Follow
 [backend setup](backend/README.md) and [Appwrite setup](backend/appwrite/README.md)
 for the schema, Function deployment and integration checks. API keys and Function
 secrets belong only in the trusted server function, never in the client.

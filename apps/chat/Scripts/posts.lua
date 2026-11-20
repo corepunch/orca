@@ -4,15 +4,15 @@
 local ui = require "orca.UIKit"
 local filesystem = require "orca.filesystem"
 local Octopus = require "Octopus/api/octopus"
-local OctopusApp = require "Octopus/App"
+local OctopusApp = require "Octopus/Scripts/App"
 local Home = require "Octopus/views/home"
 local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Safety = require "Octopus/views/safety"
-local ChatColors = require "Chat/theme"
-local PostColors = require "Octopus/theme"
-local I18n = require "Chat/i18n"
+local ChatColors = require "Chat/Scripts/theme"
+local PostColors = require "Octopus/Scripts/theme"
+local I18n = require "Chat/Scripts/i18n"
 local Posts = {}
 Posts.__index = Posts
 
@@ -71,8 +71,8 @@ end
 
 local function clientFor(chat)
     if chat.client.mode == "mock" then return mockClient(chat) end
-    local config = require "Octopus/config"
-    local chatConfig = require "Chat/config"
+    local config = require "Octopus/Scripts/config"
+    local chatConfig = require "Chat/Scripts/config"
     return assert(Octopus.client { mode = chat.client.mode, projectId = chatConfig.projectId,
         databaseId = config.databaseId, bucketId = config.bucketId, feedCollectionId = config.feedCollectionId,
         functionId = config.functionId, clock = chat.client.clock,

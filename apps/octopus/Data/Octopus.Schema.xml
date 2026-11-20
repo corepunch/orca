@@ -187,6 +187,11 @@
     <Column Name="Tone" Type="string" Computed="tone" DependsOn="UserId"/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
   </Entity>
+  <Entity Name="OctopusBlockedPerson" Key="UserId" ObjectName="UserId"
+          Description="A person on the reader's block list, with the account name returned by the safety service.">
+    <Column Name="UserId" Type="string" Source="userId"/>
+    <Column Name="DisplayName" Type="string" Source="name"/>
+  </Entity>
   <Entity Name="OctopusProfile" Key="UserId" ObjectName="UserId"
           Description="A person: profile pages, search results and the reader's own page share one record.">
     <Column Name="UserId" Type="string" Source="userId"/>

@@ -4,11 +4,11 @@
 --
 -- context: client, media (files), clock(), now(), photos (decoded ratios),
 -- openPost(raw), openProfile(id, name), openTag(tag), requireSession(reason),
--- notice(text, isError), signIn(route), signUp(route), selectFeed(name),
+-- notice(text, isError), signIn(route), signUp(route), selectFeed(name), blocksChanged(scope),
 -- readerId(), postLoaded(raw), commentSent(postId), postDeleted(postId),
 -- focusComment(), copyLink(url), published(post, info), avatarChanged(userId),
 -- signOut().
-local Format = require "Octopus/format"
+local Format = require "Octopus/Scripts/format"
 local Schema = require "orca.data.schema"
 local Avatars = require "orca.avatars"
 local Provider = {}
@@ -235,6 +235,12 @@ function Provider.new(context)
     end
 
     local operations = {
+        blocks = function() return client:listBlocks() end,
+        unblock = function(params, _, command)
+            local ok, err = client:setUserBlocked(params.item.key, false)
+            if ok and context.blocksChanged then context.blocksChanged(command.scope) end
+            return ok, err
+        end,
         home = function(_, page, _, query)
             local items, cursor = client:homeTimeline { limit = PAGE_SIZE, before = page.cursor }
             if not items then return nil, cursor end

@@ -52,7 +52,7 @@ def prepare(bundle, binary, family='iphone'):
     for portrait in portraits:
         shutil.copy2(portrait, promo / 'assets' / portrait.name)
     package = project / 'package.lua'
-    package.write_text(package.read_text().replace('"Chat/App"', '"Chat/promo/Capture"'))
+    package.write_text(package.read_text().replace('"Chat/Scripts/App"', '"Chat/promo/Capture"'))
     # A separate identifier keeps the normal Chat application and Keychain alone.
     info_path = bundle / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())

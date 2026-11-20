@@ -81,6 +81,23 @@
     <Column Name="AvatarId" Type="string" Computed="contactAvatar" DependsOn="Id"/>
     <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
   </Entity>
+  <Entity Name="ChatRecipient" Key="Key" ObjectName="Id" Description="A contact, discovery result, or public channel.">
+    <Column Name="Key" Type="string" Source="key"/>
+    <Column Name="Id" Type="string" Source="id"/>
+    <Column Name="Title" Type="string" Source="title"/>
+    <Column Name="Subtitle" Type="string" Source="subtitle"/>
+    <Column Name="IsChannel" Type="bool" Source="is_channel"/>
+    <Column Name="AvatarId" Type="string" Source="avatar_id"/>
+    <Column Name="AvatarPath" Type="string" Local="true"/>
+    <Column Name="HasAvatar" Type="bool" Computed="hasAvatar" DependsOn="AvatarPath"/>
+    <Column Name="Initials" Type="string" Computed="initials" DependsOn="Title"/>
+    <Column Name="Tone" Type="string" Computed="tone" DependsOn="Id"/>
+    <Column Name="SelectionStyle" Type="string" Computed="recipientSelection" DependsOn="Id IsChannel"/>
+  </Entity>
+  <Entity Name="ChatContactSection" Key="Letter" Description="The contacts filed under one letter in New Message.">
+    <Column Name="Letter" Type="string" Source="letter"/>
+    <Relation Name="People" Entity="ChatRecipient" Many="true" Source="people"/>
+  </Entity>
   <Entity Name="ChatMessage" Key="Id" ObjectName="Id" Description="A message in the open conversation, oldest first.">
     <Column Name="Id" Type="string" Source="id"/>
     <Column Name="RoomId" Type="string" Source="room_id" Nullable="true"/>

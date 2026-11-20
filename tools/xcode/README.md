@@ -160,5 +160,5 @@ a workflow for Chat does not build Octopus. For each app:
 4. Grant Cloud access to the repository and its submodules when asked.
 
 Xcode Cloud assigns each build number. Chat's and Octopus's public Appwrite
-settings are defaults in `apps/<app>/config.lua`, so Cloud needs no
+settings are defaults in `apps/<app>/Scripts/config.lua`, so Cloud needs no
 environment variables or secrets for them.

@@ -1,7 +1,7 @@
 /* Gradient look concept for Chat and Octopus: gradient display type and
    accents on the plain black or white canvas. ORCA_LOOK=neon puts look-neon and
    look-neon-dark or look-neon-light on the Screen beside the palette class
-   (theme.lua). Materials are Octopus/Materials/Neon*, all on the
+   (Scripts/theme.lua). Materials are Octopus/Materials/Neon*, all on the
    fragment-only Octopus/Shaders/Gradient. Imported last, so the look overrides
    the palette rule of the same specificity. */
 

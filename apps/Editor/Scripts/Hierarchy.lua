@@ -39,12 +39,18 @@ function Hierarchy:reload()
 end
 
 function Hierarchy:reveal(path)
-    if path then self.list:send('TreeView.SelectItem', { Value = path }) end
+    if path and path ~= self.list.SelectedValue then
+        self.list:send('TreeView.SelectItem', { Value = path })
+    end
 end
 
 function Hierarchy:selectionChanged(_, args)
+    if not Workspace.document then return end
     local path = args.SelectedValue
-    if path and path ~= '' and path ~= Workspace.selection then Workspace.select(path) end
+    -- The tree may have moved on since this event was queued.
+    if path and path ~= '' and path == self.list.SelectedValue and path ~= Workspace.selection then
+        Workspace.select(path)
+    end
 end
 
 function Hierarchy:openItem(item, _, sender)

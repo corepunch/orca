@@ -52,7 +52,7 @@ def prepare(bundle, binary, family='iphone'):
     for portrait in portraits:
         shutil.copy2(portrait, project / 'assets/avatars' / portrait.name)
     package = project / 'package.lua'
-    package.write_text(package.read_text().replace('"Octopus/App"', '"Octopus/promo/Capture"'))
+    package.write_text(package.read_text().replace('"Octopus/Scripts/App"', '"Octopus/promo/Capture"'))
     info_path = bundle / 'Info.plist'
     info = plistlib.loads(info_path.read_bytes())
     info.pop('ORCARemoteNotifications', None)

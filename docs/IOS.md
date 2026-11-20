@@ -246,7 +246,7 @@ compression pipeline before preview or upload. Cancelling retains the current
 message draft.
 Terminal environment variables are not inherited by apps installed on
 physical devices. The chat's public Appwrite endpoint, project ID and Function
-ID are defaults in `apps/chat/config.lua`, so installed builds connect without
+ID are defaults in `apps/chat/Scripts/config.lua`, so installed builds connect without
 environment variables.
 
 Chat and Octopus ship English and Russian catalogs in `Locales/en.lua` and

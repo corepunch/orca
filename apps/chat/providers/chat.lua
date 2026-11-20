@@ -1,4 +1,4 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local function t(key, params) return I18n:t(key, params) end
 local function localizedError(err)
     if type(err) ~= "table" then return err end
@@ -20,10 +20,48 @@ end
 -- attachPhoto(scope), removePhoto(scope).
 local Provider = {}
 local PhotoLayout = require "orca.UIKit.PhotoLayout"
-local PublicPost = require "Chat/public_post"
+local PublicPost = require "Chat/Scripts/public_post"
 
 local function initials(name)
     return I18n:initials(name)
+end
+
+local function publicName(displayName, username)
+    if displayName and displayName ~= "" then return displayName end
+    return username or t("Member")
+end
+
+local function recipients(source, people, deviceNames)
+    local rows = {}
+    for _, person in ipairs(people) do
+        local title = publicName(person.display_name, person.username)
+        local handle = person.username and "@" .. person.username or ""
+        local deviceName = deviceNames and deviceNames[person.email]
+        local subtitle = handle
+        if deviceName and deviceName ~= "" and deviceName ~= title then
+            subtitle = handle ~= "" and (deviceName .. " · " .. handle) or deviceName
+        end
+        rows[#rows + 1] = { key = source .. ":" .. person.id, id = person.id, title = title,
+            subtitle = subtitle, avatar_id = person.id }
+    end
+    return rows
+end
+
+local function sectionedContacts(people)
+    local sorted = recipients("contact", people)
+    table.sort(sorted, function(a, b) return a.title:lower() < b.title:lower() end)
+    local rows, byLetter = {}, {}
+    for _, person in ipairs(sorted) do
+        local first = person.title:match(utf8.charpattern) or "#"
+        local section = (#first > 1 or first:match("%a")) and first:lower() or "#"
+        local group = byLetter[section]
+        if not group then
+            group = { letter = section, people = {} }
+            byLetter[section], rows[#rows + 1] = group, group
+        end
+        group.people[#group.people + 1] = person
+    end
+    return rows
 end
 
 -- The same tile colour as Lua-built avatars (views/components.lua).
@@ -91,7 +129,10 @@ function Provider.new(context)
         hasAvatar = function(values) return (values.AvatarPath or "") ~= "" end,
         roomSearch = function(values) return ((values.Title or "") .. " " .. (values.Subtitle or "")):lower() end,
         publicName = function(values)
-            return values.DisplayName ~= nil and values.DisplayName ~= "" and values.DisplayName or values.Username or t("Member")
+            return publicName(values.DisplayName, values.Username)
+        end,
+        recipientSelection = function(values)
+            return not values.IsChannel and context.selectedRecipient(values.Id) and "chat-soft" or ""
         end,
         handle = function(values) return (values.Username or "") ~= "" and "@" .. values.Username or "" end,
         -- Messages: a photo message is as wide as its photos and has no tail
@@ -182,6 +223,43 @@ function Provider.new(context)
             local contacts, err = models.Contacts:select()
             if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
             return contacts, localizedError(err)
+        end,
+        recipientContacts = function()
+            local people, err = client:listContacts()
+            if not signedIn() then return nil, { code = "unauthenticated", message = t("Signed out.") } end
+            if not people then return nil, localizedError(err) end
+            return sectionedContacts(people)
+        end,
+        findRecipients = function(params)
+            local people, err = client:findPeople(params.Search)
+            if not people then return nil, localizedError(err) end
+            return recipients("search", people)
+        end,
+        matchRecipients = function()
+            local entries, err = context.readDeviceContacts()
+            if not entries then return nil, localizedError(err) or t("Contacts could not be read.") end
+            local emails, names = {}, {}
+            for _, entry in ipairs(entries) do
+                for _, address in ipairs(entry.emails or {}) do
+                    local key = address:lower()
+                    if not names[key] and #emails < 500 then
+                        names[key], emails[#emails + 1] = entry.name or "", key
+                    end
+                end
+            end
+            local people, matchError = client:matchContacts(emails)
+            if not people then return nil, localizedError(matchError) end
+            return recipients("device", people, names)
+        end,
+        findPublicChannels = function(params)
+            local channels, err = client:findChannels(params.Search)
+            if not channels then return nil, localizedError(err) end
+            local rows = {}
+            for _, channel in ipairs(channels) do
+                rows[#rows + 1] = { key = "channel:" .. channel.id, id = channel.id, title = channel.name,
+                    subtitle = t("Public channel"), is_channel = true }
+            end
+            return rows
         end,
         blockedUsers = function()
             local rows, err = client:listBlocks()
@@ -520,6 +598,9 @@ function Provider.new(context)
         RefreshContacts = function(scope) scope:member("Contacts"):refresh() end,
         FindSomeone = function() context.show("/new") end,
         NewChat = function() context.show("/new") end,
+        SelectRecipient = function(_, params)
+            if params.item then context.selectRecipient(params.item) end
+        end,
         OpenSharedPost = function(_, params)
             local item = params.item
             if item and context.openSharedPost and PublicPost.validId(item.values.SharedPostId) then

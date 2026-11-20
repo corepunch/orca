@@ -91,26 +91,12 @@ end
 function Safety.blocked(self)
     if not self.client:getSession() then return self:home() end
     local page = load(self, "Blocked")
-    local list = page:findChild("BlockedPeople", true)
-    self.status = page:findChild("BlockedStatus", true)
-    local function fill()
-        local people, err = self.client:listBlocks()
-        if not people then self:notice(err.message, true); return end
-        C.clear(list)
-        for _, person in ipairs(people) do
-            local row = require("orca.UIKit").Grid { Name = "Blocked" .. person.userId, Columns = "1fr 112px", Spacing = 12, Height = 44 }
-            row:addChild(C.text(person.name, { FontSize = 17, TextVerticalAlignment = "Center", Height = 44 }))
-            row:addChild(C.outline(self.i18n:t("unblock"), function()
-                Safety.setBlocked(self, person.userId, person.name, false, fill)
-            end, { Name = "Unblock", Height = 44 }))
-            list:addChild(row)
-        end
-        self:notice(#people == 0 and "You have not blocked anyone." or "")
-        self:repaint()
-    end
-    self:notice("Loading…")
-    self:task(fill)
-    return pushed(self, "blocked people", page, function() self:goBack("/me") end)
+    local scope = self:pageScope("Octopus/Data/Blocks.xml")
+    scope:attach(page)
+    self.status = nil
+    local screen = pushed(self, "blocked people", page, function() self:goBack("/me") end)
+    scope:activate()
+    return screen
 end
 
 local function document(self, title, asset, link)

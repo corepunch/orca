@@ -16,7 +16,7 @@ return setmetatable({}, {
         local client = assert(Octopus.client { mode = "mock", transport = transport,
             projectId = "octopus-mock", clock = clock })
         assert(client:signIn("demo@example.invalid", "password123"))
-        local App = require "Octopus/App"
+        local App = require "Octopus/Scripts/App"
         local self = App { client = client }
         local feeds = { home = "home", connect = "connect", discover = "discover", light = "home" }
         if feeds[stage] then self.feed = feeds[stage] end

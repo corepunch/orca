@@ -1,5 +1,5 @@
 local filesystem = require "orca.filesystem"
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local C = require "Chat/views/components"
 local function t(key) return I18n:t(key) end
 

@@ -1,5 +1,5 @@
 /* Palette roles for XML views; the Screen carries octopus-light or octopus-dark
-   (theme.lua, OCTOPUS_APPEARANCE). Base roles first, then states. */
+   (Scripts/theme.lua, OCTOPUS_APPEARANCE). Base roles first, then states. */
 .octopus-light .octopus-background { background-color: #ffffff; }
 .octopus-light .octopus-ink { color: #000000; }
 .octopus-light .octopus-muted { color: #555555; }

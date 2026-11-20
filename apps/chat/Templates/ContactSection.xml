@@ -1,0 +1,5 @@
+<StackView JustifyContent="Start">
+  <TextBlock Text="{Binding DataContext/Letter}" FontSize="18" MarginTop="8" class="chat-accent-text" IgnoreHitTest="true"/>
+  <ItemsStack ItemsSource="{Binding DataContext/People}" ItemTemplate="Chat/Templates/Recipient"
+              ItemNamePrefix="Contact" JustifyContent="Start"/>
+</StackView>

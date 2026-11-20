@@ -1,4 +1,4 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local Diagnostics = {}

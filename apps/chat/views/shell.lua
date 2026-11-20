@@ -1,4 +1,4 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local core = require "orca.core"

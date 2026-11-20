@@ -5,6 +5,7 @@
          Missing="avatarMissing">
     <Target Entity="ChatRoom" Id="AvatarId" Path="AvatarPath"/>
     <Target Entity="ChatContact" Id="AvatarId" Path="AvatarPath"/>
+    <Target Entity="ChatRecipient" Id="AvatarId" Path="AvatarPath"/>
     <Target Entity="ChatMember" Id="AvatarId" Path="AvatarPath"/>
   </Media>
 </DataScope>

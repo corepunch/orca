@@ -1,5 +1,5 @@
 Name = "Chat"
-StartupViewController = "Chat/App"
+StartupViewController = "Chat/Scripts/App"
 StartupRoute = "/"
 WindowWidth = 390
 WindowHeight = 844
@@ -13,5 +13,5 @@ SystemMessages = {
     { Message = "WindowClosed", Command = "return" },
 }
 -- Appwrite returns sign-in links (OAuth and emailed links) to this scheme. Keep it
--- in step with config.lua's projectId; packaging adds it to the bundle's Info.plist.
+-- in step with Scripts/config.lua's projectId; packaging adds it to the bundle's Info.plist.
 URLSchemes = { "appwrite-callback-69f1c06800389dc6a1a0" }

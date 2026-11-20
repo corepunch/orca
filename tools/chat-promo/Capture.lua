@@ -1,6 +1,6 @@
 -- This controller is copied into an isolated simulator bundle by capture.py.
 -- Production Chat's package, startup, transport and user data are never changed.
-local App = require "Chat/App"
+local App = require "Chat/Scripts/App"
 local Chat = require "api.chat"
 local Fixtures = require "Chat/promo/fixtures"
 

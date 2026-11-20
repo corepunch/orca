@@ -1,0 +1,4 @@
+<DataScope Name="Blocks" Schema="Octopus/Data/Octopus.Schema.xml">
+  <Query Name="Blocks" Entity="OctopusBlockedPerson" Operation="blocks"/>
+  <Command Name="Unblock" Operation="unblock" Parameter="Item" Invalidates="Blocks"/>
+</DataScope>

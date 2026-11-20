@@ -184,6 +184,11 @@ newest page cannot hide it. With `Window="latest"`, a newest page that no
 longer overlaps the loaded history sets `HasGap` instead of creating a hole;
 `reset()` drops history and shows the newest page.
 
+`clear()` returns a query to idle, empties its collection and discards pending
+loads, including debounced requests. It keeps the parameter values so a later
+`Load` can use the same inputs. Use it when the reader closes or replaces a
+search, or bind an XML action to `QueryName.Clear`.
+
 ### View, selection and master–detail
 
 `<View Source="Query" Filter="fn" Sort="fn">` filters and sorts loaded rows

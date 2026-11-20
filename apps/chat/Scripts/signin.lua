@@ -1,7 +1,7 @@
 -- Browser and link sign-in: Apple and Google pages in a private browser session,
 -- and emailed magic links the system opens the app with. Native events carry
 -- only a URL; the client validates it and Appwrite checks its secret.
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local SignIn = {}
 SignIn.__index = SignIn
 

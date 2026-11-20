@@ -27,11 +27,11 @@ local App = Application:extend {
         options = options or {}
         local Locales = require "Octopus/Locales"
         self.i18n = Locales.new(options.language)
-        local config = require "Octopus/config"
+        local config = require "Octopus/Scripts/config"
         local backend = config.backend or "appwrite"
         local cache
         if backend == "appwrite" and not options.client then
-            cache = require("Octopus/cache").new {
+            cache = require("Octopus/Scripts/cache").new {
                 namespace = table.concat({ config.endpoint, config.projectId, config.databaseId, config.bucketId,
                     config.feedCollectionId or "posts" }, "|"),
             }
@@ -43,7 +43,7 @@ local App = Application:extend {
         else self.configurationError = { message = "Choose OCTOPUS_BACKEND=appwrite or mock." } end
         self.client = Locales.client(self.client, self.i18n)
         self.clock = self.client and self.client.clock or os.time
-        self.media = options.media or require("Octopus/media").new { cache = cache }
+        self.media = options.media or require("Octopus/Scripts/media").new { cache = cache }
         self.publicCache = cache
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         self:resetSessionViews()
@@ -81,6 +81,11 @@ local App = Application:extend {
             -- The session changed underneath the views: start them over.
             self:resetSessionViews()
         end
+        local epoch = self.sessionEpoch
+        local function valid()
+            local active = self.client:getSession()
+            return self.sessionEpoch == epoch and (active and active.user.id or "guest") == user
+        end
         local provider = OctopusProvider.new {
             client = self.client, i18n = self.i18n, media = self.media, now = function() return self.clock() end,
             openPost = function(post) self:openPost(post) end,
@@ -93,6 +98,15 @@ local App = Application:extend {
             signIn = function(route) self.authReturn = route; self:show("/auth") end,
             signUp = function(route) self.authReturn = route; self:show("/auth/signup") end,
             invalidateFeeds = function(names) self:invalidateFeeds(names) end,
+            blocksChanged = function(origin)
+                if not valid() then return end
+                self:invalidate()
+                -- The block list may have been reopened while the write was pending.
+                self:eachScope(function(scope)
+                    local blocks = scope ~= origin and scope:member("Blocks")
+                    if blocks then blocks:invalidate() end
+                end)
+            end,
             repaint = function() self:repaint() end,
             readerId = function() return session and session.user.id end,
             -- The full post replaces a feed excerpt as the page's current post.
@@ -140,8 +154,9 @@ local App = Application:extend {
         }
         local store = data.Store.new { schema = data.schema("Octopus/Data/Octopus.Schema.xml"),
             scope = "octopus:" .. user, computed = provider.computed }
-        self.reader = { epoch = self.sessionEpoch, user = user, provider = provider, store = store,
-            record = store:put("OctopusReader", { id = user, signedIn = session ~= nil }), scopes = {} }
+        self.reader = { epoch = epoch, user = user, valid = valid, provider = provider, store = store,
+            record = store:put("OctopusReader", { id = user, signedIn = session ~= nil }),
+            scopes = setmetatable({}, { __mode = "k" }) }
         return self.reader
     end,
 
@@ -149,15 +164,11 @@ local App = Application:extend {
     -- previous reader never apply.
     octopusScope = function(self, declaration)
         local reader = self:readerData()
-        local epoch, user = reader.epoch, reader.user
         local host = data.Scope.defaultHost()
         host.run = function(fn) self:task(fn) end
         host.report = function(err) io.stderr:write("octopus: " .. tostring(err) .. "\n") end
         local scope = data.scope(declaration, { provider = reader.provider, store = reader.store, host = host,
-            valid = function()
-                local active = self.client:getSession()
-                return self.sessionEpoch == epoch and (active and active.user.id or "guest") == user
-            end })
+            valid = reader.valid })
         scope:expose("Reader", reader.record)
         reader.scopes[scope] = true
         return scope

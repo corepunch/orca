@@ -1,0 +1,6 @@
+<Grid Columns="1fr 112px" Spacing="12" Height="44">
+  <TextBlock Text="{Binding DataContext/DisplayName}" Height="44" FontSize="17" TextVerticalAlignment="Center"
+             class="octopus-ink" IgnoreHitTest="true"/>
+  <Button Name="Unblock" Click="Unblock" Text="unblock" TextResourceID="unblock" Height="40" BorderWidth="2" FontSize="15"
+          FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+</Grid>

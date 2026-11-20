@@ -1,7 +1,7 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
-local C = { colors = require "Chat/theme", brandBackground = "#7930ff" }
+local C = { colors = require "Chat/Scripts/theme", brandBackground = "#7930ff" }
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered

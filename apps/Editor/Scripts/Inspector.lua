@@ -13,10 +13,17 @@ function Inspector:init(openBindingEditor)
     self.openBindingEditor = openBindingEditor
     self.collapsed, self.expanded = {}, {}
     DataPanel.load(self, "Inspector")
-    Workspace.on('select', function(path) self:show(path) end)
+    Workspace.on('select', function(path) self.pendingSelection = path or false end)
     Workspace.on('changed', function(path) if path == self.path then self:reload() end end)
 end
 function Inspector:tools() return {} end
+function Inspector:update()
+    local path = self.pendingSelection
+    if path == nil then return false end
+    self.pendingSelection = nil
+    self:show(path or nil)
+    return true
+end
 function Inspector:show(path)
     self.path, self.subtitle = path, Workspace.leaf(path)
     self:reload()

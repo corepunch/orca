@@ -14,7 +14,7 @@ renderer.init(390 * scale, 844 * scale, false)
 require("orca.core.startup").load_plugins()
 local client = require("api.chat").mock()
 assert(client:signIn("demo@example.invalid", "password123"))
-local app = require("Chat/App") { client = client }
+local app = require("Chat/Scripts/App") { client = client }
 app.show = function(self, route) return self:navigate(route) end
 local route = os.getenv("ORCA_CAPTURE_ROUTE") or "/"
 if route:match("^/posts") then

@@ -147,8 +147,9 @@ local function handlerKnown(spec, members, name)
         if not member then return false, "no member " .. target end
         local kind = ACTIONS[action]
         if not kind then return false, "unknown action " .. action end
-        if kind ~= true and member.kind ~= kind and not (action == "Retry" and member.kind == "Media") then
-            return false, ("%s is a %s; %s applies to %s members"):format(target, member.kind, action, kind)
+        if kind ~= true and member.kind ~= kind and not (action == "Clear" and member.kind == "Query") then
+            local expected = action == "Clear" and "Edit or Query" or kind
+            return false, ("%s is a %s; %s applies to %s members"):format(target, member.kind, action, expected)
         end
         return true
     end

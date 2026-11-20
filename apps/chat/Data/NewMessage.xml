@@ -1,0 +1,12 @@
+<DataScope Name="NewMessage" Schema="Chat/Data/Chat.Schema.xml">
+  <Query Name="Contacts" Entity="ChatContactSection" Operation="recipientContacts"/>
+  <Query Name="People" Entity="ChatRecipient" Operation="findRecipients" AutoLoad="false" Require="Search">
+    <Param Name="Search" Type="string"/>
+  </Query>
+  <Query Name="DeviceMatches" Entity="ChatRecipient" Operation="matchRecipients" AutoLoad="false"/>
+  <Query Name="Channels" Entity="ChatRecipient" Operation="findPublicChannels" AutoLoad="false">
+    <Param Name="Search" Type="string"/>
+  </Query>
+  <Handler Name="SelectRecipient"/>
+  <Include Path="Chat/Data/Avatars.xml"/>
+</DataScope>

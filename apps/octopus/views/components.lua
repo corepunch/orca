@@ -1,6 +1,6 @@
 local ui = require "orca.UIKit"
-local Format = require "Octopus/format"
-local C = { colors = require "Octopus/theme" }
+local Format = require "Octopus/Scripts/format"
+local C = { colors = require "Octopus/Scripts/theme" }
 -- A 4-point spacing scale shared by post lists and cards. Lists keep
 -- Twitter's density: posts sit 12 points apart below their action row.
 C.spacing = { tight = 4, inline = 8, column = 12, section = 16, post = 12 }
@@ -200,7 +200,7 @@ function C.empty(title, hint, props)
     })
 end
 
--- Text helpers live in Octopus/format so the data provider shares them.
+-- Text helpers live in Octopus/Scripts/format so the data provider shares them.
 for _, name in ipairs { "plain", "excerpt", "domain", "epoch", "ago", "stamp", "count" } do C[name] = Format[name] end
 
 return C

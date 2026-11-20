@@ -1,5 +1,5 @@
 -- Native events contain hints only; room access is always checked by the API.
-local Polling = require "Chat/polling"
+local Polling = require "Chat/Scripts/polling"
 local Push = {}
 Push.__index = Push
 

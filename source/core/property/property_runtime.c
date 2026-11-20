@@ -654,11 +654,19 @@ PROP_Import(struct Property *prop,
 
     case kDataTypeObject:
       if (r->type == kDataTypeString) {
-        struct Object *loaded = FS_LoadObject(VM_REG_STR(r));
-        if (loaded) {
-          PROP_SetValue(prop, &loaded);
+        lpcString_t path = VM_REG_STR(r);
+        if (!path || !*path) {
+          PROP_SetValue(prop, &(struct Object *){ NULL });
           return TRUE;
         }
+        struct Object *current = PROP_GetObjectValue(prop);
+        lpcString_t current_path = current ? OBJ_GetSourceFile(current) : NULL;
+        if (current_path && !strcmp(current_path, path)) return TRUE;
+        struct Object *loaded = FS_LoadObject(path);
+        if (!loaded) return FALSE;
+        PROP_SetValue(prop, &loaded);
+        OBJ_ReleaseRef(loaded);
+        return TRUE;
       }
       if (PROP_GetSize(prop) == r->size) {
         PROP_SetValue(prop, r->value);

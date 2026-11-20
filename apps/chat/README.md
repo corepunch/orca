@@ -27,7 +27,7 @@ then a separate editor. Back returns to the chooser and retains each type's
 draft, tags and selected photos.
 
 Posts reuses the standalone Octopus app's pages and provider through
-`posts.lua`; the website and standalone app remain compatible. Chat supplies
+`Scripts/posts.lua`; the website and standalone app remain compatible. Chat supplies
 its current Appwrite JWT through an allowlisted public-resource transport.
 No second login, session cookie export or backend deployment is needed. The
 public client targets the existing `octopus-db`, `post-feed` and `post-images`
@@ -96,7 +96,7 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
 - Keep the footer free of routine sync captions and empty status rows. Show
   loading, errors and retry actions only when relevant.
 
-`theme.lua` holds a black and a white palette with Messenger blue. The OS
+`Scripts/theme.lua` holds a black and a white palette with Messenger blue. The OS
 appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
 override it. On Linux, ORCA reports dark mode when `GTK_THEME` contains
 `dark`. `Styles/app.css` adds hover and focus states with `:dark` variants.
@@ -230,7 +230,7 @@ On iOS, use the system app switcher to close the app.
 ## Appwrite / Octopus
 
 The Lua client follows Banking's HTTP integration pattern while keeping Chat's
-shared models, validation, and views. Public configuration is in `config.lua`:
+shared models, validation, and views. Public configuration is in `Scripts/config.lua`:
 
 ```sh
 CHAT_BACKEND=appwrite APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1 \
@@ -288,7 +288,7 @@ server route handlers and domain services each have a separate owner.
 
 ## Using the live backend
 
-`make chat` connects to the Octopus Appwrite project from [config.lua](config.lua).
+`make chat` connects to the Octopus Appwrite project from [config.lua](Scripts/config.lua).
 
 Sign in with an email code, an emailed sign-in link, Apple or Google (iOS,
 macOS and Android) or email and password. See [Android](../../docs/ANDROID.md)
@@ -331,7 +331,7 @@ page through the existing endpoint. Older cursor pages become available when
 the new Function is deployed; the client retries capability discovery after a minute.
 
 Installed iOS apps do not inherit terminal environment variables, so the public
-Appwrite values are defaults in `config.lua`. Set `CHAT_BACKEND=mock` for the
+Appwrite values are defaults in `Scripts/config.lua`. Set `CHAT_BACKEND=mock` for the
 offline mock on the desktop.
 
 Unexpected route, event, and background callback failures display a **Chat error**
@@ -366,15 +366,15 @@ make test-chat
 make test-chat-appwrite-backend
 make test-media
 make test-network-headers
-lua5.4 tests/test_chat_new_message.lua
+make test-chat-new-message
 ```
 
 The Appwrite backend suite covers server authorization, role and invitation rules,
 private encrypted photos, verification challenges, and database pagination without
 contacting the cloud or sending verification messages.
-The standalone new-message controller test covers direct opening, group steps,
-channel visibility, invitations, rejected drafts, and stale search responses with
-UI doubles; native layout and interaction remain covered by the UI suite.
+The New Message test exercises the real ORCA page, item templates and scope
+against an offline client. It covers direct opening, grouped contacts, member
+selection, channel visibility, invitations, rejected drafts and stale searches.
 The API suite exercises authentication, refresh, authorization headers, room
 creation, message ordering, validation, and HTTP failures. The mock suite
 checks the same client with isolated fixtures and guards against network

@@ -15,7 +15,7 @@ generic text and open the authorized conversation for the signed-in recipient.
 Push queue failures preserve the saved message; delivery is best-effort and
 requires provider configuration outside the repository.
 
-The client's public configuration is in [config.lua](../config.lua): the
+The client's public configuration is in [config.lua](../Scripts/config.lua): the
 endpoint, project ID and Function ID. It contains no secrets, so installed iOS
 builds connect to Octopus without environment variables. Do not put API keys,
 provider credentials or Function secrets in the app.

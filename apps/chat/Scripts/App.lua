@@ -1,10 +1,10 @@
-local I18n = require "Chat/i18n"
+local I18n = require "Chat/Scripts/i18n"
 local function t(key, params) return I18n:t(key, params) end
 local ui = require "orca.UIKit"
 local Footer = require "orca.UIKit.Footer"
 local Application = require "orca.core.application"
 local Chat = require "api.chat"
-local Models = require "Chat/models"
+local Models = require "Chat/Scripts/models"
 local system = require "orca.system"
 local renderer = require "orca.renderer"
 local C = require "Chat/views/components"
@@ -13,7 +13,7 @@ local Identity = require "Chat/views/identity"
 local ProfileAvatar = require "Chat/views/profile_avatar"
 local Conversations = require "Chat/views/conversations"
 local PhotoViewer = require "Chat/views/photo_viewer"
-local Diagnostics = require "Chat/diagnostics"
+local Diagnostics = require "Chat/Scripts/diagnostics"
 local async = require "orca.core.async"
 local orca = require "orca"
 local AvatarLoader = require "orca.UIKit.AvatarLoader"
@@ -45,15 +45,15 @@ local App = Application:extend {
         self.postsOptions = options.posts
         I18n:setLanguage(options.language)
         self.localization = I18n
-        local config = require "Chat/config"
+        local config = require "Chat/Scripts/config"
         local backend = config.backend or "appwrite"
         if options.client then self.client = options.client
         elseif backend == "appwrite" then
             local settings = {}
             for key, value in pairs(config) do settings[key] = value end
-            settings.sessionStore, self.configurationError = require("Chat/session_store").new(config)
+            settings.sessionStore, self.configurationError = require("Chat/Scripts/session_store").new(config)
             if not self.configurationError then
-                settings.pushStore = require("Chat/push_store").new(config)
+                settings.pushStore = require("Chat/Scripts/push_store").new(config)
             end
             if not self.configurationError then
                 self.client, self.configurationError = Chat.appwrite(settings)
@@ -61,7 +61,7 @@ local App = Application:extend {
             end
         elseif backend == "mock" then self.client = Chat.mock()
         else self.configurationError = { message = t("Choose CHAT_BACKEND=appwrite or mock.") } end
-        self.media = options.media or require("Chat/media").new()
+        self.media = options.media or require("Chat/Scripts/media").new()
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
         -- Data pages open by route (Data/Routes.xml); no route needs Lua of its own.
@@ -71,9 +71,9 @@ local App = Application:extend {
         end
         self:resetSessionViews()
         if self.remote and self.client and self.client.mode == "appwrite" then
-            self.push = require("Chat/push").new(self, config, options.push)
+            self.push = require("Chat/Scripts/push").new(self, config, options.push)
         end
-        if self.client then self.signin = require("Chat/signin").new(self, options.signin) end
+        if self.client then self.signin = require("Chat/Scripts/signin").new(self, options.signin) end
     end,
 
     resetSessionViews = function(self)
@@ -82,8 +82,9 @@ local App = Application:extend {
         PhotoViewer.close(self)
         -- Records belong to one account: the next session gets a new store.
         self:closePages()
+        Conversations.dispose(self)
         if self.scope then self.scope:dispose() end
-        self.scope, self.visibility = nil, Visibility.new()
+        self.scope, self.sessionData, self.visibility = nil, nil, Visibility.new()
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         if self.avatars then self.avatars:clear() end
         self.avatarPaths = {}
@@ -100,12 +101,12 @@ local App = Application:extend {
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.pivot, self.contactsPanorama, self.contactsStatus = nil, nil, nil
         self.messageList, self.composer = nil, nil
-        self.status, self.homeStatus, self.newStatus = nil, nil, nil
+        self.status, self.homeStatus = nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.profileStatus, self.pendingIdentity = {}, nil, nil
         self.safetyTarget = nil
-        self.newScreen, self.settingsScreen, self.pendingPostShare = nil, nil, nil
+        self.settingsScreen, self.pendingPostShare = nil, nil
         self.publicAuthResume, self.meContent, self.meStatus = nil, nil, nil
         self.pictureResume = nil
     end,
@@ -123,6 +124,12 @@ local App = Application:extend {
             read = self.readRooms, pinned = self.pinned, remote = self.remote,
             badge = function(total) if self.push and self.sessionEpoch == epoch then self.push:setBadge(total) end end,
             openRoom = function(room) self:openRoom(room) end,
+            selectedRecipient = function(id) return self.newSelection[id] ~= nil end,
+            selectRecipient = function(record) if self.selectNewRecipient then self.selectNewRecipient(record) end end,
+            readDeviceContacts = function()
+                local contacts = Conversations.deviceContacts(self)
+                if contacts and contacts.supported() then return contacts.readEmails() end
+            end,
             openPerson = function(id, name) self:openPerson(id, name) end,
             openSharedPost = function(id) self:posts():openPostId(id) end,
             shareToRoom = function(room) Social.selectShareRoom(self, room) end,
@@ -274,6 +281,7 @@ local App = Application:extend {
     dispatch = function(self, request)
         if self.accountDeletionPending then request = "/delete-account" end
         PhotoViewer.close(self)
+        if self.currentRoute == "/new" then Conversations.leave(self) end
         -- Every route change ends the open conversation's scope.
         self:closePages()
         self:installErrorHandler()
@@ -722,7 +730,7 @@ local App = Application:extend {
 
     newRoom = Conversations.newRoom,
     posts = function(self)
-        if not self.postsFeature then self.postsFeature = require("Chat/posts").new(self, self.postsOptions) end
+        if not self.postsFeature then self.postsFeature = require("Chat/Scripts/posts").new(self, self.postsOptions) end
         return self.postsFeature
     end,
     openPerson = function(self, id, name) return self:posts():openProfile(id, name) end,
@@ -848,6 +856,7 @@ local App = Application:extend {
             if self:updateAppearance() then self.screen:post("Window.Paint", renderer.getSize()) end
             if message:is("Window.Closed") then
                 self:closePages()
+                Conversations.dispose(self)
                 if self.push then self.push:suspend() end
                 if self.signin then self.signin:suspend() end
                 async.set_error_handler(nil)

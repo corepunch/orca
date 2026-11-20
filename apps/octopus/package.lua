@@ -1,5 +1,5 @@
 Name = "Octopus"
-StartupViewController = "Octopus/App"
+StartupViewController = "Octopus/Scripts/App"
 StartupRoute = "/"
 WindowWidth = 390
 WindowHeight = 844

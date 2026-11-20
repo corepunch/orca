@@ -161,10 +161,7 @@ function Query:request(mode, options)
         return false
     end
     if blocked(self) then
-        self.generation = self.generation + 1
-        self.mode, self.error, self.cursor, self.loaded = nil, nil, nil, false
-        self.items:clear()
-        self:publish()
+        self:clear()
         return false
     end
     self.generation = self.generation + 1
@@ -185,6 +182,7 @@ function Query:request(mode, options)
     self.mode, self.quiet = mode, options.quiet and mode ~= "more"
     self:publish()
     self.scope:run(function()
+        if self.disposed or self.generation ~= generation or not self.scope:valid(token) then return end
         local ok, result, err = xpcall(self.def.operation, debug.traceback, params, page, self.scope.context, self)
         if self.disposed or self.generation ~= generation or not self.scope:valid(token) then return end
         self.mode = nil
@@ -310,6 +308,20 @@ function Query:assign(rows)
     self.generation = self.generation + 1
     self.mode, self.error, self.stale, self.cursor, self.loaded, self.replacing = nil, nil, false, nil, true, nil
     self.items:set(self:rows(rows or {}))
+end
+
+-- Return to the idle state, including any in-flight or debounced request.
+-- Keep the parameters so callers can retry the same input explicitly.
+function Query:clear()
+    if self.disposed then return false end
+    self.generation = self.generation + 1
+    if self.debounceHandle then self.debounceHandle:cancel(); self.debounceHandle = nil end
+    self.mode, self.quiet, self.pendingRefresh, self.replacing = nil, nil, nil, nil
+    self.error, self.moreError, self.stale, self.loaded = nil, nil, false, false
+    self.cursor, self.history, self.gap, self.prefetchY = nil, nil, nil, nil
+    self.items:clear()
+    self.scope:changed(self)
+    return true
 end
 
 -- Initial load (or reload after parameters change); keeps nothing stale.

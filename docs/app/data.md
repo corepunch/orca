@@ -28,11 +28,11 @@ fields and domain methods, and relations connect those rows. Adapt that
 interface to the application's service contract. ORCA client apps should not
 connect directly to the server database or ship database credentials.
 
-The chat app demonstrates this in [models.lua](../../apps/chat/models.lua) and
+The chat app demonstrates this in [models.lua](../../apps/chat/Scripts/models.lua) and
 its small [model adapter](../../apps/chat/api/model.lua):
 
 ```lua
-local models = require("Chat/models").new(client)
+local models = require("Chat/Scripts/models").new(client)
 local contacts, err = models.Contacts:select()
 local alex = models.Contacts:find { display_name = "Alex Morgan" }
 local room = models.Rooms:create { name = "Weekend", member_ids = { alex.id } }
@@ -87,7 +87,7 @@ See [the chat API](../../apps/chat/API.md) for the supported contract and
 ## Photos and binary transport
 
 Keep native file selection/encoding, the media upload API, and timeline views
-separate. The chat [media adapter](../../apps/chat/media.lua) owns preview files
+separate. The chat [media adapter](../../apps/chat/Scripts/media.lua) owns preview files
 per app instance and removes them at sign-out. Preserve private temporary-file
 permissions when adding a decoder-required filename extension; do not remove a
 secure temporary file and recreate a predictable sibling with default permissions.

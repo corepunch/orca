@@ -137,7 +137,7 @@ tested against real addresses or phone numbers.
 
 The Apple client registers its native APNs token as an Appwrite Account push
 target using its ordinary authenticated session. The public client configuration
-`pushProviderId` in [`apps/chat/config.lua`](../../config.lua)
+`pushProviderId` in [`apps/chat/Scripts/config.lua`](../../Scripts/config.lua)
 (or `APPWRITE_PUSH_PROVIDER_ID` in a local run)
 selects the provider. Neither device registration nor the app contains a server
 key. Registering, rotating and removing targets is owned by the client, including
