@@ -138,9 +138,12 @@ function Garden.cards(forecast, place)
     local function add(card) if card then cards[#cards + 1] = card end end
     local frost = Frost.card(forecast, plot, place.id and remembered(place))
     if frost and place.id then remember(place, frost) end
-    add(frost)
-    add((Water.card(forecast, plot)))
-    add(bestTime(forecast))
+    -- The hub keeps three: frost tonight and water this week always lead
+    -- (rank 0); a poor-tone warning (rank 1) may displace the best time.
+    local function pin(card, rank) if card then card.rank = card.rank or rank end; return card end
+    add(pin(frost, 0))
+    add(pin((Water.card(forecast, plot)), 0))
+    add(pin(bestTime(forecast), 2))
     for _, card in ipairs(Protect.cards(forecast)) do add(card) end
     add((Soil.card(forecast)))
     if plot.lawn then add(Soil.lawnCard(forecast)) end

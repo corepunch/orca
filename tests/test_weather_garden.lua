@@ -306,6 +306,15 @@ local parsed = Forecast.parse(F.weather(53.8, {
 check(cardIds(parsed):find("^frost,water,best,") and cardIds(parsed):find("sow", 1, true) and cardIds(parsed):find("jobs", 1, true)
     and not cardIds(parsed):find("moon", 1, true) and not cardIds(parsed):find("lawn", 1, true),
     "GA5: frost tonight, water this week and the best time lead: " .. cardIds(parsed))
+do
+    -- The hub keeps three cards, and frost tonight and water this week lead.
+    local Report = require "Weather/report"
+    local hub = {}
+    for _, row in ipairs(Report.hub(LEEDS, parsed, { Garden }, nil, Garden)) do
+        if row.kind == "card" then hub[#hub + 1] = row.id:match("([^:]+)$") end
+    end
+    check(#hub == 3 and hub[1] == "frost" and hub[2] == "water", "The hub leads with frost and water: " .. table.concat(hub, ","))
+end
 set("moon", true); set("lawn", true)
 local moon
 for _, card in ipairs(Garden.cards(parsed, LEEDS)) do if card.id == "moon" then moon = card end end
