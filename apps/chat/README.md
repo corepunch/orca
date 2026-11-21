@@ -6,11 +6,11 @@ Runs on macOS with a **390 × 844** portrait viewport and on iPhone/iPad with
 an adaptive viewport, touch scrolling and the native keyboard. iOS builds use
 Make and the Xcode command-line tools without an Xcode project.
 
-![ORCA Messenger in dark mode](preview.png)
+![ORCA Messenger in dark mode](docs/screenshots/preview.png)
 
-[Light mode](preview-light.png) · [Message thread preview](thread-preview.png)
+[Light mode](docs/screenshots/preview-light.png) · [Message thread preview](docs/screenshots/thread-preview.png)
 
-[New conversation](new-preview.png) · [Profile](profile-preview.png) · [Sign in](auth-preview.png)
+[New conversation](docs/screenshots/new-preview.png) · [Profile](docs/screenshots/profile-preview.png) · [Sign in](docs/screenshots/auth-preview.png)
 
 ## Public posts and people
 
