@@ -231,10 +231,6 @@ hosts was reachable from the build machine.
 
 Requests to the foundation from Surfers' services:
 
-- `tests/test_weather.lua` ("Each title shows once") counts `Provider.about()`
-  as if no other activity had `attribution`. Count relative to the lines
-  before the test's own, and then let `Surf.attribution` credit the NWS,
-  NDBC and CO-OPS in the full app too (it does only in Surfers' Weather now).
 - A card link that opens an outside page (for example `act` returning
   `{ url = … }`), so SV-SU6's links can be tapped.
 - In the full app the surf page asks `api.weather.gov` for alerts again

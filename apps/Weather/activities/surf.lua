@@ -37,13 +37,8 @@ Surf.sources = { Outlook.source, Hazards.source, Buoys.source, Buoys.waterSource
 for _, source in ipairs(WaterQuality.sources) do Surf.sources[#Surf.sources + 1] = source end
 
 -- Credit on the settings' "about": a country's bathing-water line only
--- once a break reads it. For now only in Surfers' Weather: the full app's
--- test counts the about lines as if no activity had its own (PLAN.md,
--- Surfers' services, requests). NWS, NDBC and CO-OPS are public domain,
--- so no licence needs the line there meanwhile.
+-- once a break reads it.
 function Surf.attribution()
-    local Activities = package.loaded["Weather/activities"]
-    if not (type(Activities) == "table" and Activities.edition == "surf") then return {} end
     local list = { Hazards.attribution, Buoys.attribution[1], Buoys.attribution[2] }
     for _, profile in pairs(Breaks.list) do
         if profile.bathingWater and profile.bathingWater.ie then
