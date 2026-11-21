@@ -60,8 +60,13 @@ end
 -- How likely thunder is in an hour (an estimate): "likely" with a storm
 -- code or lots of unstable storm energy and showers about, "possible" with
 -- some, else nil. CAPE is the energy, a negative lifted index the push.
+-- Where ICON-D2's lightning potential is known (SV-HI7, J/kg) it says
+-- "likely" from Trail.LIGHTNING; a model estimate, to be tuned against
+-- observed strikes.
+Trail.LIGHTNING = 2
 function Trail.thunder(hour)
     if Sky.isStorm(hour.code) then return "likely" end
+    if (hour.lightning or 0) >= Trail.LIGHTNING then return "likely" end
     local cape, lifted, rain = hour.cape or 0, hour.lifted_index, hour.rainChance or 0
     if cape >= 1000 and (lifted == nil or lifted <= -2) and rain >= 40 then return "likely" end
     if cape >= 500 and (lifted == nil or lifted <= 0) and rain >= 20 then return "possible" end
