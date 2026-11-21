@@ -281,8 +281,28 @@ Requests to the foundation from Surfers' services:
 | SA6 | Tides and wind-against-tide hours | P1 | M | decision 0.4 |
 | SA7 | "Where should I go this weekend": rank my spots | P1 | M | provider |
 | SA8 | Safe direction sector per spot (offshore danger for kites) | P0 | S | `places.lua` |
-| SA9 | Live stations and buoys against the forecast | P2 | L | NOAA NDBC, METAR |
-| SA10 | Gale and storm warnings at saved spots | P1 | M | with W10 |
+| SA9 | Live stations and buoys against the forecast | P2 | L | done: METAR, OpenWindMap, NDBC (services SV-SA2, SV-SA4, SV-SA5); bias per spot is SV-SA7 |
+| SA10 | Gale and storm warnings at saved spots | P1 | M | done: NWS (US) and MeteoAlarm (Europe), services SV-SA1, SV-SA3 |
+
+#### Sailors' Weather services
+
+From [services-sailing.md](Research/services-sailing.md). Code in
+`editions/sailing/warnings.lua`, `live.lua` and `links.lua`; every source is
+optional; credit in `Sailing.attribution`.
+Tests run on synthetic answers in the documented shapes
+(`tests/fixtures/sailing/answers.lua`): the hosts were blocked when this was
+built, so each still needs one live recording.
+
+| ID | Service | Pri | Status | Notes |
+| --- | --- | --- | --- | --- |
+| SV-SA1 | NWS marine warnings (api.weather.gov) | P0 | done | Gale, Storm, Special Marine and similar cap every profile; a Small Craft Advisory caps learners and dinghies. Point query only: the `?zone=` second call waits for a Crissy recording |
+| SV-SA2 | Nearest airport METAR (aviationweather.gov) | P0 | done | "observed now", distance, age, against the forecast hour; not live after 90 min. Airport vs shore ("inland") is not known, so the card says "airport, X km away" |
+| SV-SA3 | MeteoAlarm warnings, Europe | P1 | done | country feed; area by CAP polygon, a curated area-name table per spot, or the place's own names; another district is "elsewhere", and a found place with no match reads "check your area", never "none" |
+| SV-SA4 | OpenWindMap / Pioupiou stations | P1 | done | `live-with-meta/all` inside its dense area (France, the Alps), or one station when the place sets `windStation`; offline and older than 30 min skipped; a station within 10 km leads |
+| SV-SA5 | NDBC shore stations and buoys | P1 | done | `format = "text"`; curated stations for Crissy (FTPC1, 46026) and Islamorada (MLRF1); the offshore buoy adds a waves card |
+| SV-SA6 | Station and forecast links | P1 | partial | a "check by hand" card (NDBC pages, NWS text, MeteoAlarm, OpenWindMap, Met Office for GB). Shown as text: no open-a-web-page action yet; no free "station link" field in the place editor; Holfuy and Windguru ids not seeded (unverified) |
+| SV-SA7 | Forecast-vs-observed bias per spot | P2 | follow-up | needs stored pairs (Storage) |
+| SV-SA8 | DMI and KNMI observations | P2 | follow-up | needs keys in `Forecast.endpoints` |
 
 ### Hikers' Weather: `hiking.lua`
 
