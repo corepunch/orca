@@ -385,9 +385,27 @@ activity's `attribution`; a failed service never reads as "no warning".
 | ST9 | Aurora chance from Kp, the oval, darkness, cloud and latitude | P1 | M | NOAA SWPC as an F4 source |
 | ST10 | Night-long chart from dusk to dawn: cloud layers, moon height, darkness | P1 | M | |
 | ST11 | Fog and low-cloud risk | P1 | S | `boundary_layer_height` |
-| ST12 | Meteor showers (a yearly table) and planets up tonight | P2 | S/M | |
-| ST13 | Deep-sky and planet scores shown apart | P2 | S | after ST8 |
-| ST14 | Bortle class per curated site | P2 | S | check the licence |
+| ST12 | Meteor showers (a yearly table) and planets up tonight | P2 | S/M | done (SV-ST4, SV-ST5): `planets.lua`, `events.lua`; lunar eclipses too, solar eclipses not yet |
+| ST13 | Deep-sky and planet scores shown apart | P2 | S | partial: the planets card is apart from the night's verdict; no planet score yet |
+| ST14 | Bortle class per curated site | P2 | S | not built: SV-ST7 (Black Marble estimate); the World Atlas is CC BY-NC |
+
+#### Stargazers' services
+
+Existing services reused ([Research/services-stargazing.md](Research/services-stargazing.md)).
+Each is an optional source or local code, credited through the activity's
+`attribution`; a failed one is recorded in `forecast.missing` and the
+aurora card says the data is missing, never "no aurora".
+
+| ID | Service | Status |
+| --- | --- | --- |
+| SV-ST1 | Solar wind now (SWPC mag/plasma 2-hour) | done: `Aurora.solarWind`, `windText`; asked where the aurora can matter on a dark night; rows over 15 min old count as missing |
+| SV-ST2 | OVATION 30-minute nowcast (SWPC) | done: asked only dark and in reach (`Aurora.worth`), cut to the cells within 10° before it is saved; replaces the Kp reason for the hour going on |
+| SV-ST3 | SWPC alerts, GFZ Hp30 | done: watches, warnings and alerts with cancellations; "activity is rising now" from Hp30 |
+| SV-ST4 | Planets tonight (Schlyter) | done: `planets.lua`, a card; checked against published conjunctions, oppositions, elongations and magnitudes |
+| SV-ST5 | Meteor showers and lunar eclipses (static tables) | done: `events.lua`, cards rated by radiant height, moonlight and cloud; solar eclipses need Besselian elements (follow-up) |
+| SV-ST6 | ISS and Tiangong passes (CelesTrak + SGP4) | deferred: L, and CelesTrak's terms for an app with many users are unconfirmed |
+| SV-ST7 | Bortle estimate from NASA Black Marble | deferred (P2): needs an offline tool and a data file |
+| SV-ST8 | Second-opinion links | deferred (P2): the app has no way to open a web page yet (request to the foundation) |
 
 ## 5. Wave 3: places (one agent)
 
