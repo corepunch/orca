@@ -317,6 +317,23 @@ built, so each still needs one live recording.
 | HI7 | Official warnings and avalanche bulletin links | P1 | M | with W10 |
 | HI8 | Smoke and air quality on the trail | P2 | S | Air Quality source |
 
+#### Hikers' Weather: services
+
+Existing services from [services-hiking.md](Research/services-hiking.md)
+(issue #503). Each is an optional source in `editions/hiking/services.lua`;
+the rating stays weather-only, and credits come from `Hiking.attribution`.
+
+| ID | Feature | Pri | Status |
+| --- | --- | --- | --- |
+| SV-HI1 | US avalanche danger card (avalanche.org map layer) | P0 | built, **off** (`Services.CLEARED.avalancheOrg`) until the National Avalanche Center agrees in writing; Tahoe keeps the link meanwhile |
+| SV-HI2 | Alpine danger at the summit's elevation band (EAWS CAAML v6) | P0 | built: SLF on (CC BY 4.0), Euregio **off** until its licence is settled, Varsom link only; both peaks wait for their micro-region ids from regions.avalanches.org (not reachable here) |
+| SV-HI3 | Wildfire near the trail (WFIGS perimeters and new starts) | P1 | built, on for US peaks |
+| SV-HI4 | Measured snow near the top (SNOTEL) | P1 | built for Tahoe (Echo Peak); SLF IMIS later (endpoint to verify) |
+| SV-HI5 | National park alerts (NPS) | P1 | built, on only with `Forecast.endpoints.npsKey` (none committed) |
+| SV-HI6 | Huts, shelters and water (OSM, precomputed) | P2 | follow-up: needs a maintainer's Overpass run per peak |
+| SV-HI7 | Lightning potential in the storm clock (ICON-D2) | P2 | built for Garda and Zermatt; threshold `Trail.LIGHTNING` to calibrate |
+| SV-HI8 | Official links where no open API can be used | P2 | built: MeteoAlarm, USFS forest orders, Euregio and Varsom links; Avalanche Canada, BRA and SAIS wait for a curated peak there |
+
 ### Gardeners' Weather: `garden.lua`
 
 | ID | Feature | Pri | Size | Notes |

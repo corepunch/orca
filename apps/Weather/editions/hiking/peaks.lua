@@ -6,7 +6,21 @@
 --   top, start   { name, lat, lon, elevation (m) }
 --   nws          a US place: official warnings from api.weather.gov
 --   official     { { name, where } }: human forecasts and warnings to read
---   avalanche    { name, where }: the regional bulletin, shown when there is snow
+--   avalanche    { name, where }: the regional bulletin, shown when there is snow;
+--                `center` (avalanche.org centre id) and `zone` (its zone name, when
+--                the top falls outside every polygon) for a US centre (SV-HI1);
+--                `caaml = { provider, region, treeline }` for an EAWS bulletin
+--                (SV-HI2): "slf" or "euregio", the EAWS micro-region id from
+--                regions.avalanches.org, the treeline height (m) when known
+--   station      { kind = "snotel", id = triplet, name, elevation (m) }: measured
+--                snow near the top (SV-HI4)
+--   nps          a National Park Service park code: park alerts (SV-HI5)
+--   forest       { name, where }: the forest or park order to check near a fire
+--   iconD2       inside ICON-D2's domain: lightning potential (SV-HI7)
+--
+-- A CAAML region id stays empty until it is read off regions.avalanches.org
+-- (not reachable when this was written): without one the bulletin source
+-- asks nothing and the card keeps its link.
 --
 -- Heights are the published summit and trailhead heights; coordinates
 -- were checked against Open-Meteo's 90 m elevation model (November 2026).
@@ -18,13 +32,18 @@ return {
         start = { name = "Mount Tallac trailhead", lat = 38.9227, lon = -120.0714, elevation = 1960 },
         nws = true,
         official = { { "NWS Reno", "weather.gov/rev" } },
-        avalanche = { "Sierra Avalanche Center", "sierraavalanchecenter.org" },
+        avalanche = { "Sierra Avalanche Center", "sierraavalanchecenter.org", center = "SAC", zone = "Central Sierra Nevada" },
+        -- Echo Peak SNOTEL (CA), 7,800 ft, about 10 km south of the top.
+        station = { kind = "snotel", id = "463:CA:SNTL", name = "Echo Peak", elevation = 2377 },
+        forest = { "Lake Tahoe Basin forest orders", "fs.usda.gov/ltbmu" },
     },
     yosemite = {
         top = { name = "Half Dome", lat = 37.7461, lon = -119.5332, elevation = 2694 },
         start = { name = "Happy Isles", lat = 37.7323, lon = -119.5578, elevation = 1230 },
         nws = true,
         official = { { "NWS Hanford", "weather.gov/hnx" }, { "Yosemite conditions", "nps.gov/yose" } },
+        nps = "yose",
+        forest = { "Yosemite conditions", "nps.gov/yose/planyourvisit/conditions.htm" },
     },
     ["mauna-kea"] = {
         top = { name = "Mauna Kea summit", lat = 19.8207, lon = -155.4681, elevation = 4207 },
@@ -45,19 +64,21 @@ return {
     garda = {
         top = { name = "Monte Altissimo di Nago", lat = 45.8106, lon = 10.8881, elevation = 2078 },
         start = { name = "Bocca di Navene", lat = 45.7880, lon = 10.8726, elevation = 1420 },
-        official = { { "Meteotrentino", "meteotrentino.it" } },
-        avalanche = { "Euregio avalanche report", "avalanche.report" },
+        official = { { "Meteotrentino", "meteotrentino.it" }, { "MeteoAlarm", "meteoalarm.org" } },
+        avalanche = { "Euregio avalanche report", "avalanche.report", caaml = { provider = "euregio" } },
+        iconD2 = true,
     },
     zermatt = {
         top = { name = "Matterhorn", lat = 45.9763, lon = 7.6586, elevation = 4478 },
         start = { name = "Schwarzsee", lat = 45.9910, lon = 7.7085, elevation = 2583 },
-        official = { { "MeteoSwiss", "meteoswiss.admin.ch" } },
-        avalanche = { "SLF bulletin", "slf.ch" },
+        official = { { "MeteoSwiss", "meteoswiss.admin.ch" }, { "MeteoAlarm", "meteoalarm.org" } },
+        avalanche = { "SLF bulletin", "slf.ch", caaml = { provider = "slf" } },
+        iconD2 = true,
     },
     lofoten = {
         top = { name = "Fløya", lat = 68.2483, lon = 14.6012, elevation = 590 },
         start = { name = "Svolvær", lat = 68.2420, lon = 14.5800, elevation = 30 },
-        official = { { "Yr (Met Norway)", "yr.no" } },
+        official = { { "Yr (Met Norway)", "yr.no" }, { "MeteoAlarm", "meteoalarm.org" } },
         avalanche = { "Varsom", "varsom.no" },
     },
     fuji = {
