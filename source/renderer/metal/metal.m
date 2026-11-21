@@ -29,7 +29,6 @@
 #include <libs/platform/platform.h>
 #include "metal.h"
 #include "msl_program.h"
-#include "r_msl_shaders.h"
 
 #define MAX_TEXTURE_UNITS 16
 #define MAX_VERTEX_ATTRIBS MSL_MAX_ATTRIBUTES
@@ -139,8 +138,7 @@ typedef struct
   OrcaShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  NSString *name;                          // set by mtlProgramLabel before mtlLinkProgram
-  struct msl_program const *refl;          // looked up by name in mtlLinkProgram
+  struct msl_program const *refl;        // set by mtlProgramReflection before mtlLinkProgram
   id<MTLFunction> functions[MSL_STAGES];
   uint8_t *data[MSL_STAGES];
   int units[MSL_MAX_UNIFORMS];
@@ -153,7 +151,6 @@ typedef struct
 - (void)reset
 {
   refl = NULL;
-  name = nil;
   for (int s = 0; s < MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
@@ -1300,7 +1297,7 @@ void mtlShaderSource(uint32_t shader, int count, char const *const *string, int 
   s->source = text;
 }
 
-// Translation needs both stages, so it happens when the program links.
+// Both stages compile when the program links.
 void mtlCompileShader(uint32_t shader) { (void)shader; }
 
 void mtlGetShaderiv(uint32_t shader, mtlEnum pname, int *params)
@@ -1350,64 +1347,38 @@ void mtlDetachShader(uint32_t program, uint32_t shader)
 
 static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, NSMutableString *log)
 {
+  char const *label = stage == MSL_VERTEX ? "vertex" : "fragment";
+  OrcaShader *shader = stage == MSL_VERTEX ? p->vs : p->fs;
+  if (!shader->source.length) return [log appendFormat:@"%s: no shader source\n", label], nil;
   NSError *error = nil;
   MTLCompileOptions *options = [MTLCompileOptions new];
   options.languageVersion = MTLLanguageVersion2_1;
-  id<MTLLibrary> library = [mtl.device newLibraryWithSource:@(p->refl->source[stage]) options:options error:&error];
-  if (!library) {
-    [log appendFormat:@"%s: %@\n", stage == MSL_VERTEX ? "vertex" : "fragment", error.localizedDescription];
-    return nil;
-  }
+  id<MTLLibrary> library = [mtl.device newLibraryWithSource:shader->source options:options error:&error];
+  if (!library) return [log appendFormat:@"%s: %@\n", label, error.localizedDescription], nil;
   return [library newFunctionWithName:@(p->refl->entry[stage])];
 }
 
-static struct { char const *name; struct msl_program const *refl; } const k_builtin_shaders[] = {
-  { "Default Shader",      &k_refl_default      },
-  { "UI Shader",           &k_refl_ui           },
-  { "Charset Shader",      &k_refl_charset      },
-  { "Cinematic Shader",    &k_refl_cinematic    },
-  { "Ninepatch Shader",    &k_refl_ninepatch    },
-  { "Vertex Color Shader", &k_refl_vertexcolor  },
-  { "Error Shader",        &k_refl_error        },
-  { "Button Shader",       &k_refl_button       },
-  { "Rounded Box Shader",  &k_refl_roundedbox   },
-  { "Blur H Shader",       &k_refl_blur_h       },
-  { "Blur V Shader",       &k_refl_blur_v       },
-  { "Backdrop Blur Shader",&k_refl_backdrop_blur},
-};
-
-static struct msl_program const *
-lookup_msl_refl(NSString *name)
-{
-  if (!name) return NULL;
-  char const *s = name.UTF8String;
-  for (size_t i = 0; i < sizeof(k_builtin_shaders)/sizeof(*k_builtin_shaders); i++)
-    if (!strcmp(k_builtin_shaders[i].name, s)) return k_builtin_shaders[i].refl;
-  return NULL;
-}
-
-void mtlProgramLabel(uint32_t program, char const *name)
+void mtlProgramReflection(uint32_t program, struct msl_program const *reflection)
 {
   OrcaProgram *p = object(OBJ_PROGRAM, program);
-  if (p) p->name = name ? @(name) : nil;
+  if (p) p->refl = reflection;
 }
 
 void mtlLinkProgram(uint32_t program)
 {
   OrcaProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !ensure_device()) return set_error(MTL_INVALID_VALUE);
-  NSString *name = p->name;
+  struct msl_program const *refl = p->refl;
   [p reset];
-  p->name = name;
   if (!p->pipelines) p->pipelines = [NSMutableDictionary new];
   static uint32_t serial;
   p->serial = ++serial;
-  NSMutableString *log = [NSMutableString string];
-  p->refl = lookup_msl_refl(p->name);
-  if (!p->refl) {
-    p->log = [NSString stringWithFormat:@"%@: no Metal shader with this name", p->name ?: @"(unnamed program)"];
+  if (!(p->refl = refl) || !p->vs || !p->fs) {
+    p->refl = NULL;
+    p->log = @"a Metal program needs both MSL stages and their reflection";
     return;
   }
+  NSMutableString *log = [NSMutableString string];
   int ok = YES;
   for (int s = 0; ok && s < MSL_STAGES; s++) {
     p->functions[s] = compile_stage(p, s, log);

@@ -1,5 +1,6 @@
-// Hand-written Metal Shading Language shaders for all built-in ORCA shaders,
-// with pre-computed reflection tables. Included by metal.m.
+// The built-in shaders in Metal Shading Language, hand-written, each with its
+// reflection table. Included by r_builtin_shaders.c on Metal builds, where
+// every shader_desc there names its program here as its Metal shader.
 //
 // Layout rules: float4x4 = 64B, float3x3 = 48B (3×16B cols), float4 = 16B,
 // float3 = 16B slot / packed_float3 = 12B slot, float2 = 8B, float = 4B.
@@ -9,10 +10,10 @@
 // Every vertex shader applies the Y-flip and depth remap to Metal's [0,1] range.
 // All shaders use entry point "main0" and uniform buffer [[buffer(0)]].
 
-#ifndef R_MSL_SHADERS_H
-#define R_MSL_SHADERS_H
+#ifndef __R_BUILTIN_SHADERS_MSL_H__
+#define __R_BUILTIN_SHADERS_MSL_H__
 
-#include "msl_program.h"
+#include "../metal/msl_program.h"
 
 // ============================================================  Default Shader
 // blockSize=120  attrs: a_position[0] a_normal[1] a_texcoord0[2] a_color[3]
@@ -69,7 +70,7 @@ static const char k_msl_fs_default[] =
   "    return u_texture.sample(u_textureSampler, in.v_texcoord0) * in.v_color * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_refl_default = {
+static const struct msl_program k_msl_default = {
   .source = {k_msl_vs_default, k_msl_fs_default},
   .entry = {"main0","main0"},
   .blockSize = {120,120},
@@ -163,7 +164,7 @@ static const char k_msl_fs_ui[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_refl_ui = {
+static const struct msl_program k_msl_ui = {
   .source = {k_msl_vs_ui, k_msl_fs_ui},
   .entry = {"main0","main0"},
   .blockSize = {196,196},
@@ -267,7 +268,7 @@ static const char k_msl_fs_charset[] =
   "    return step(fr.y, 1.0) * mix(bg, fg, t) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_refl_charset = {
+static const struct msl_program k_msl_charset = {
   .source = {k_msl_vs_charset, k_msl_fs_charset},
   .entry = {"main0","main0"},
   .blockSize = {204,204},
@@ -350,7 +351,7 @@ static const char k_msl_fs_cinematic[] =
   "    return u_cinematicPalette.sample(u_cinematicPaletteSampler, float2(col.r, 0.5)) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_refl_cinematic = {
+static const struct msl_program k_msl_cinematic = {
   .source = {k_msl_vs_cinematic, k_msl_fs_cinematic},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
@@ -427,7 +428,7 @@ static const char k_msl_fs_ninepatch[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_refl_ninepatch = {
+static const struct msl_program k_msl_ninepatch = {
   .source = {k_msl_vs_ninepatch, k_msl_fs_ninepatch},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -487,7 +488,7 @@ static const char k_msl_fs_vertexcolor[] =
   "    return u.u_color * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_refl_vertexcolor = {
+static const struct msl_program k_msl_vertexcolor = {
   .source = {k_msl_vs_vertexcolor, k_msl_fs_vertexcolor},
   .entry = {"main0","main0"},
   .blockSize = {100,100},
@@ -541,7 +542,7 @@ static const char k_msl_fs_error[] =
   "    return float4(1.0, 0.0, 1.0, u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_refl_error = {
+static const struct msl_program k_msl_error = {
   .source = {k_msl_vs_error, k_msl_fs_error},
   .entry = {"main0","main0"},
   .blockSize = {72,72},
@@ -632,7 +633,7 @@ static const char k_msl_fs_button[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static const struct msl_program k_refl_button = {
+static const struct msl_program k_msl_button = {
   .source = {k_msl_vs_button, k_msl_fs_button},
   .entry = {"main0","main0"},
   .blockSize = {208,208},
@@ -730,7 +731,7 @@ static const char k_msl_fs_roundedbox[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static const struct msl_program k_refl_roundedbox = {
+static const struct msl_program k_msl_roundedbox = {
   .source = {k_msl_vs_roundedbox, k_msl_fs_roundedbox},
   .entry = {"main0","main0"},
   .blockSize = {224,224},
@@ -861,7 +862,7 @@ static const char k_msl_fs_blur_v[] =
   "    return float4(a,a,a,a) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_refl_blur_h = {
+static const struct msl_program k_msl_blur_h = {
   .source = {k_msl_blur_common_vs, k_msl_fs_blur_h},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -885,7 +886,7 @@ static const struct msl_program k_refl_blur_h = {
   },
 };
 
-static const struct msl_program k_refl_blur_v = {
+static const struct msl_program k_msl_blur_v = {
   .source = {k_msl_blur_common_vs, k_msl_fs_blur_v},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -979,7 +980,7 @@ static const char k_msl_fs_backdrop_blur[] =
   "    return float4(mix(float3(luma), color, u.u_saturation), 1.0);\n"
   "}\n";
 
-static const struct msl_program k_refl_backdrop_blur = {
+static const struct msl_program k_msl_backdrop_blur = {
   .source = {k_msl_vs_backdrop_blur, k_msl_fs_backdrop_blur},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
@@ -1003,4 +1004,4 @@ static const struct msl_program k_refl_backdrop_blur = {
   },
 };
 
-#endif /* R_MSL_SHADERS_H */
+#endif

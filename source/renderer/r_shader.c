@@ -232,9 +232,19 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   if (!(shader = glCreateShader(type))) {
     return 0;
   }
+  lpcString_t shaderType = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
+#if ORCA_METAL
+  // Metal compiles no GLSL: the stage's source is the definition's own MSL.
+  lpcString_t msl = def->Metal ? def->Metal->source[type == GL_VERTEX_SHADER ? MSL_VERTEX : MSL_FRAGMENT] : NULL;
+  if (!msl) {
+    Con_Error("%s: no Metal %s shader", def->Name, shaderType);
+    R_Call(glDeleteShader, shader);
+    return 0;
+  }
+  R_Call(glShaderSource, shader, 1, &msl, NULL);
+#else
   static char pszTexts[SHADER_MAX_TEXTS][SHADER_TEXT_LENGTH];
   static lpcString_t pszCodes[SHADER_MAX_TEXTS];
-  lpcString_t shaderType = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
   uint32_t dwNumTexts = Shader_AssembleSource(def, type == GL_VERTEX_SHADER, pszTexts, pszCodes);
   if (!dwNumTexts) {
     R_Call(glDeleteShader, shader);
@@ -242,6 +252,7 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   }
 
   R_Call(glShaderSource, shader, dwNumTexts, pszCodes, NULL);
+#endif
   R_Call(glCompileShader, shader);
   R_Call(glGetShaderiv, shader, GL_COMPILE_STATUS, &success);
   if (success == GL_FALSE) {
@@ -283,7 +294,7 @@ static GLuint _CreateGLProgram(struct shader_desc* def)
   R_Call(glAttachShader, program, vertexShader);
   R_Call(glAttachShader, program, fragmentShader);
 #if ORCA_METAL
-  glProgramLabel(program, def->Name);
+  mtlProgramReflection(program, def->Metal);
 #endif
   R_Call(glLinkProgram, program);
   R_Call(glGetProgramiv, program, GL_LINK_STATUS, &success);
