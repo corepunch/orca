@@ -309,7 +309,7 @@ function Client:_rpc(name, values)
         end
         session.jwt, session.jwtExpires = token.jwt, self.clock() + 840
     end
-    local json = require "Octopus/api/json"
+    local json = require "orca.json"
     local envelope = { method = "POST", path = "/rest/v1/rpc/" .. name, body = values or {} }
     local execution
     execution, err = self:_request("POST", "/functions/" .. escape(self.functionId) .. "/executions", {

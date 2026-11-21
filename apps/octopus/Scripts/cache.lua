@@ -1,6 +1,6 @@
 -- Public guest snapshots and immutable image variants only. Session credentials
 -- and authenticated timelines belong in memory, never in this optional cache.
-local json = require "Octopus/api/json"
+local json = require "orca.json"
 local Cache = {}
 Cache.__index = Cache
 local MAX_ENTRIES, MAX_BYTES, MAX_JSON = 128, 50 * 1024 * 1024, 1024 * 1024

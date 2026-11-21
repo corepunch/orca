@@ -1,5 +1,5 @@
 -- Shared-client behavior, privacy and authorization against the isolated mock.
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat, Mock = require "api.chat", require "api.mock_transport"
 local checks, now = 0, 1800000000
 local function check(value, message) assert(value, message); checks = checks + 1 end

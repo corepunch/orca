@@ -1,5 +1,6 @@
 -- Offline service contracts for startup payloads; run with standalone Lua.
-for _, name in ipairs { "json", "fixtures", "mock" } do
+package.preload["orca.json"] = function() return dofile("share/orca/json.lua") end
+for _, name in ipairs { "fixtures", "mock" } do
     local module = name
     package.preload["Octopus/api/" .. module] = function() return dofile("apps/octopus/api/" .. module .. ".lua") end
 end
@@ -309,7 +310,7 @@ local denied, namespaceError = identity:claimHandle("u-sam")
 assert(not denied and namespaceError.code == "handle_taken", "Protected alias claims must reserve native Account IDs")
 assert(identity:signOut())
 
-local json = require "Octopus/api/json"
+local json = require "orca.json"
 local jwtRequests, profileExecutions = 0, 0
 local protected = client(function(request)
     for _, q in ipairs(request.query or {}) do assert(q.attribute ~= "handle", "Public handle queries are not authoritative") end

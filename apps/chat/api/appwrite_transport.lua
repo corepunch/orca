@@ -107,7 +107,7 @@ end
 function M.new(options)
   local encode, decode = options.encode, options.decode
   if not encode or not decode then
-    local json = require "api.json"
+    local json = require "orca.json"
     encode, decode = encode or json.encode, decode or json.decode
   end
   local transport = options.transport or require "api.orca_transport"

@@ -1,4 +1,4 @@
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Polling = require "Scripts.polling"
 local checks = 0
 local function check(value, message)

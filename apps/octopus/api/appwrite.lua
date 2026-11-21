@@ -1,5 +1,5 @@
 -- HTTP transport for the Octopus client: Appwrite REST over orca.network.
-local json = require "Octopus/api/json"
+local json = require "orca.json"
 local M = {}
 
 local function urlEncode(value)

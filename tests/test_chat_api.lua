@@ -1,5 +1,5 @@
 -- Standalone Lua / ORCA headless test. No network or Appwrite account required.
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat = require "api.chat"
 local checks = 0
 local function check(condition, message)
@@ -223,7 +223,7 @@ check(value == nil and err.code == "configuration", "Remote services require HTT
 -- that the adapter preserves its status instead of turning HTTP 401 into an
 -- undifferentiated network failure.
 local oldNetwork = package.loaded["orca.network"]
-local oldJson = require "api.json"
+local oldJson = require "orca.json"
 local oldTransport = package.loaded["api.orca_transport"]
 local requestOptions
 local throwsResponse = true
@@ -235,7 +235,7 @@ package.loaded["orca.network"] = { fetch = function(url, options)
   if throwsResponse then error(response) end
   return response
 end }
-package.loaded["api.json"] = { encode = function() return "encoded-json" end, decode = oldJson.decode }
+package.loaded["orca.json"] = { encode = function() return "encoded-json" end, decode = oldJson.decode }
 package.loaded["api.orca_transport"] = nil
 local transport = require "api.orca_transport"
 local result = transport { url = "https://chat.example.test", method = "POST", headers = {}, body = {} }
@@ -258,7 +258,7 @@ response.code = function() return 503 end
 result = transport { url = "https://chat.example.test", method = "GET", headers = {} }
 check(result.status == 503 and result.body.code == "http_error", "Malformed error JSON must preserve the HTTP status")
 package.loaded["orca.network"] = oldNetwork
-package.loaded["api.json"] = oldJson
+package.loaded["orca.json"] = oldJson
 package.loaded["api.orca_transport"] = oldTransport
 
 -- Staged photos reuse the authenticated file path and fetch metadata only once.

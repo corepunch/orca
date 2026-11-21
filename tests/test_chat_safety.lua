@@ -1,4 +1,4 @@
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat = require "api.chat"
 local client = Chat.demo()
 local before = assert(client:listMessages("alex"))

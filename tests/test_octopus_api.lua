@@ -4,7 +4,7 @@ local filesystem = require "orca.filesystem"
 filesystem.init("apps/octopus")
 
 local Octopus = require "Octopus/api/octopus"
-local json = require "Octopus/api/json"
+local json = require "orca.json"
 local NOW = 1761400000
 local function clock() return NOW end
 

@@ -1,5 +1,5 @@
 -- Exercise the normal chat client against the offline backend, without native networking.
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local guarded = { "orca.network", "api.orca_transport" }
 local savedLoaded, savedPreload, networkLoads = {}, {}, 0
 for _, name in ipairs(guarded) do

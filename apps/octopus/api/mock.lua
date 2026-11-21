@@ -370,7 +370,7 @@ function M.new(options)
     }
 
     local function executeProfile(request)
-        local json = require "Octopus/api/json"
+        local json = require "orca.json"
         local actor = state.users[state.jwts[request.headers and request.headers["X-Appwrite-JWT"]]]
         local function execution(status, body)
             return reply(201, { status = "completed", responseStatusCode = 200,

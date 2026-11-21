@@ -1,5 +1,5 @@
--- Strict JSON at the remote service boundary. No native modules are required,
--- so injected HTTP transports use exactly the same wire format in tests.
+-- Strict JSON for service boundaries and persisted state. Pure Lua: it needs no
+-- native module, so standalone-Lua tests use exactly the wire format the engine does.
 local M = {}
 local escapes = { ['"'] = '\\"', ['\\'] = '\\\\', ['\b'] = '\\b', ['\f'] = '\\f',
   ['\n'] = '\\n', ['\r'] = '\\r', ['\t'] = '\\t' }
