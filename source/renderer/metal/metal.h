@@ -2,8 +2,8 @@
 #define __ORCA_METAL_H__
 
 // ORCA renderer backend — Metal implementation.
-// Shaders are Metal Shading Language: mtlShaderSource takes a stage's MSL and
-// mtlProgramReflection its layout; see msl_program.h.
+// Shaders are Metal Shading Language: mtlShaderSource takes a stage's MSL.
+// mtlProgramReflection can give its layout; see msl_program.h.
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -274,9 +274,10 @@ void mtlDeleteProgram(uint32_t program);
 void mtlAttachShader(uint32_t program, uint32_t shader);
 void mtlDetachShader(uint32_t program, uint32_t shader);
 void mtlLinkProgram(uint32_t program);
-// Gives a program the reflection of the MSL in its attached shaders: their
-// entry points, uniform layout and vertex attributes. It must outlive the
-// program. Call before mtlLinkProgram.
+// Gives a program a hand-written reflection of the MSL in its attached
+// shaders: their entry points, uniform layout and vertex attributes. It must
+// outlive the program. Call before mtlLinkProgram; a program without one
+// links with the reflection Metal itself reports for the two functions.
 struct msl_program;
 void mtlProgramReflection(uint32_t program, struct msl_program const *reflection);
 void mtlUseProgram(uint32_t program);

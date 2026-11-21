@@ -209,6 +209,11 @@ GLSL name. Redeclaring a name with another data type is an error.
 both for gradient text and for gradient fills. A Shader that supplies its own
 `VertexShader` declares its inputs itself, as the SceneKit shaders do.
 
+A stage is GLSL unless it says `Language="Metal"`. Apple builds draw with
+Metal and compile only the Metal stages, so a shader that should draw there
+has each stage a second time in MSL; see
+[Writing a project shader in MSL](METAL.md#writing-a-project-shader-in-msl).
+
 ## Backdrop Filter
 
 `R_FilterBackdrop` (`source/renderer/r_backdrop.c`) implements CSS
@@ -320,8 +325,8 @@ CSS and Lua can load shaders and images before a window or GL context exists
 
 - **Shader**: `Object.Start` only declares its `Shader.Uniforms` properties.
   `Shader_GetProgram` builds the GL program the first time the shader draws
-  (`R_DrawEntity`), from the object's properties and `VertexShader` /
-  `FragmentShader` children. A program that fails to compile or link becomes
+  (`R_DrawEntity`), from the object's properties and the `VertexShader` /
+  `FragmentShader` children in the build's shading language. A program that fails to compile or link becomes
   the error shader, so the failure is reported once, at first draw.
 - **Image**: with a context, `Object.Start` uploads the file as before.
   Without one it reads only the image's size, for layout, and sets

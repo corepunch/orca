@@ -2,6 +2,7 @@
 <!ENTITY % GpuResourceMemoryType "GpuOnly | CpuGpuShared | CpuOnly">
 <!ENTITY % PrecisionType "Low | Medium | High">
 <!ENTITY % SourceType "FixedUniform | PropertyType | Manual">
+<!ENTITY % ShaderLanguage "GLSL | Metal">
 
 <!-- Common attributes -->
 <!ENTITY % CommonAttribs '
@@ -37,6 +38,7 @@
     Name CDATA #REQUIRED
     version CDATA #REQUIRED
     out CDATA #IMPLIED
+    Language (%ShaderLanguage;) "GLSL"
     FloatPrecision (%PrecisionType;) #IMPLIED
 >
 
@@ -45,11 +47,13 @@
     Name CDATA #REQUIRED
     version CDATA #REQUIRED
     out CDATA #IMPLIED
+    Language (%ShaderLanguage;) "GLSL"
     FloatPrecision (%PrecisionType;) #IMPLIED
 >
 
 <!-- Root Shader element -->
-<!ELEMENT Shader (Uniforms?, Attributes?, Shared?, VertexShader, FragmentShader)>
+<!-- A stage may appear once per Language. -->
+<!ELEMENT Shader (Uniforms?, Attributes?, Shared?, (VertexShader | FragmentShader)+)>
 <!ATTLIST Shader
     Name CDATA #REQUIRED
     GpuResourceMemoryType (%GpuResourceMemoryType;) "GpuOnly"

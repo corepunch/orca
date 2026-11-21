@@ -235,7 +235,8 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   lpcString_t shaderType = type == GL_VERTEX_SHADER ? "vertex" : "fragment";
 #if ORCA_METAL
   // Metal compiles no GLSL: the stage's source is the definition's own MSL.
-  lpcString_t msl = def->Metal ? def->Metal->source[type == GL_VERTEX_SHADER ? MSL_VERTEX : MSL_FRAGMENT] : NULL;
+  enum msl_stage stage = type == GL_VERTEX_SHADER ? MSL_VERTEX : MSL_FRAGMENT;
+  lpcString_t msl = def->Metal ? def->Metal->source[stage] : def->MetalSource[stage];
   if (!msl) {
     Con_Error("%s: no Metal %s shader", def->Name, shaderType);
     R_Call(glDeleteShader, shader);
@@ -864,10 +865,14 @@ static lpcString_t _PBRPointLight =
 // UI vertex stage (rounded corners, borders, texture transform) with its
 // attributes, varyings and engine uniforms, so the fragment code can read
 // u_texture, u_opacity, v_texcoord0, v_boxCoord and v_boxSize directly.
+// A Metal fragment declares the ones it reads itself; they match by name.
 bool_t
 Shader_UseUIVertexStage(struct shader_desc *desc, uint32_t numUniforms)
 {
   desc->VertexShader = shader_ui.VertexShader;
+#if ORCA_METAL
+  desc->MetalSource[MSL_VERTEX] = shader_ui.Metal->source[MSL_VERTEX];
+#endif
   desc->Version = MAX(desc->Version, shader_ui.Version);
   memcpy(desc->Attributes, shader_ui.Attributes, sizeof(desc->Attributes));
   memcpy(desc->Shared, shader_ui.Shared, sizeof(desc->Shared));
@@ -907,13 +912,16 @@ _DeclareUniforms(struct Object *hObject, struct Shader *pShader)
 }
 
 // The program description: uniforms from the object's properties and the
-// stage sources from its VertexShader / FragmentShader children. Reads the
-// object only, so it can run again whenever the program must be (re)built.
+// stage sources from its VertexShader / FragmentShader children, of which a
+// build takes the ones in its own shading language. `hasVertexStage` tells
+// whether the shader has a vertex stage in any language. Reads the object
+// only, so it can run again whenever the program must be (re)built.
 static uint32_t
 _BuildDesc(struct Object *hObject, struct Shader const *pShader,
-           struct shader_desc *desc)
+           struct shader_desc *desc, bool_t *hasVertexStage)
 {
   uint32_t NumUniforms = 0;
+  *hasVertexStage = FALSE;
   *desc = (struct shader_desc){ .Name = OBJ_GetName(hObject) };
   for (struct Property *p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
     struct uniform_def ud = {0};
@@ -979,11 +987,24 @@ _BuildDesc(struct Object *hObject, struct Shader const *pShader,
   FOR_EACH_OBJECT(hChild, hObject) {
     if (GetVertexShader(hChild)) {
       struct VertexShader const *vs = GetVertexShader(hChild);
+      *hasVertexStage = TRUE;
+      if (vs->Language == kShaderLanguageMetal) {
+#if ORCA_METAL
+        desc->MetalSource[MSL_VERTEX] = OBJ_GetTextContent(hChild);
+#endif
+        continue;
+      }
       desc->VertexShader = OBJ_GetTextContent(hChild);
       desc->Shading = vs->Shading;
       desc->Version = MAX(desc->Version, vs->Version);
     } else if (GetFragmentShader(hChild)) {
       struct FragmentShader const *fs = GetFragmentShader(hChild);
+      if (fs->Language == kShaderLanguageMetal) {
+#if ORCA_METAL
+        desc->MetalSource[MSL_FRAGMENT] = OBJ_GetTextContent(hChild);
+#endif
+        continue;
+      }
       desc->FragmentShader = OBJ_GetTextContent(hChild);
       desc->FragmentOut = fs->Out;
       desc->Version = MAX(desc->Version, fs->Version);
@@ -998,8 +1019,9 @@ static void
 _Realize(struct Object *hObject, struct Shader *pShader)
 {
   struct shader_desc desc;
-  uint32_t NumUniforms = _BuildDesc(hObject, pShader, &desc);
-  GLuint prognum = desc.VertexShader || Shader_UseUIVertexStage(&desc, NumUniforms)
+  bool_t hasVertexStage;
+  uint32_t NumUniforms = _BuildDesc(hObject, pShader, &desc, &hasVertexStage);
+  GLuint prognum = hasVertexStage || Shader_UseUIVertexStage(&desc, NumUniforms)
                   ? _CreateGLProgram(&desc) : 0;
   if (prognum != 0) {
     Shader_Create(prognum, &desc, &pShader->shader);

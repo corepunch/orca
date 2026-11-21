@@ -35,29 +35,112 @@ of `axGetSize` times `axGetScaling` that `glReadPixels` reads.
 
 The Metal backend compiles Metal Shading Language and nothing else; there is
 no GLSL translation at build time or at run time. A shader's MSL belongs to
-its definition in the renderer, next to its GLSL: on Metal builds
-`struct shader_desc` has a `Metal` member, a `struct msl_program`
-(`source/renderer/metal/msl_program.h`) with the source of both stages and
-their reflection: the entry points, each uniform's byte offset, array and
-matrix strides in each stage's uniform block, each sampler's
-`texture(n)`/`sampler(n)` pair and each vertex attribute's location.
-
-The built-in shaders' programs are hand-written in
-`source/renderer/builtin/r_builtin_shaders_msl.h`, and each definition in
-`r_builtin_shaders.c` names its own with `SHADER_METAL(...)`. A built-in
-shader's GLSL and MSL must be changed together.
+its definition, next to its GLSL: a built-in shader's in the renderer, a
+project shader's in its `Shader` XML.
 
 When a program is created, the renderer passes each stage's MSL to
-`glShaderSource` in place of assembled GLSL and the reflection to
-`mtlProgramReflection`; `mtlLinkProgram` compiles the stages with `MTLDevice
-newLibraryWithSource:`. Metal caches compiled source between launches. MSL
-that fails to compile reports the compiler's message through
-`glGetProgramInfoLog`, as a GLSL link error would.
+`glShaderSource` in place of assembled GLSL, and `mtlLinkProgram` compiles the
+stages with `MTLDevice newLibraryWithSource:`. Metal caches compiled source
+between launches. MSL that fails to compile reports the compiler's message
+through `glGetProgramInfoLog`, as a GLSL link error would. A definition with
+no MSL has no program on a Metal build: it is logged and drawn with the error
+shader.
 
-A definition without `Metal` has no program on a Metal build. That is every
-project `Shader` resource today: its XML supplies GLSL only, so it is logged
-and drawn with the error shader. A project that needs its own shader on Metal
-has to supply MSL; reading it from the `Shader` XML is not implemented yet.
+The backend also needs a program's reflection: the entry points, each
+uniform's byte offset, array and matrix strides in each stage's uniform block,
+each sampler's `texture(n)`/`sampler(n)` pair and each vertex attribute's
+location (`struct msl_program`, `source/renderer/metal/msl_program.h`). It
+comes from one of two places:
+
+- **Built-in shaders** carry it. On Metal builds `struct shader_desc` has a
+  `Metal` member, a `struct msl_program` with both sources and a hand-written
+  reflection, passed with `mtlProgramReflection`. The programs are in
+  `source/renderer/builtin/r_builtin_shaders_msl.h`, and each definition in
+  `r_builtin_shaders.c` names its own with `SHADER_METAL(...)`. A built-in
+  shader's GLSL and MSL must be changed together.
+- **Project shaders** give the sources alone (`shader_desc.MetalSource`), and
+  `mtlLinkProgram` reflects them itself: it builds one pipeline from the two
+  functions and reads Metal's own `MTLRenderPipelineReflection`. This needs
+  macOS 13 or iOS 16.
+
+### Writing a project shader in MSL
+
+A `Shader` holds each stage once per shading language. A stage with
+`Language="Metal"` is compiled by Metal builds and ignored by the others; a
+stage without `Language` is GLSL and is ignored by Metal builds. Keep both so
+the shader draws everywhere:
+
+```xml
+<Shader Name="Flat">
+  <Shader.Uniforms>
+    <PropertyType Name="Tint" DataType="Color" DefaultValue="#ffffff"/>
+  </Shader.Uniforms>
+  <VertexShader>...GLSL...</VertexShader>
+  <FragmentShader Out="FragColor">...GLSL...</FragmentShader>
+  <VertexShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float4x4 u_modelViewProjectionTransform; float orca_FlipY; };
+struct VertexIn { float3 a_position [[attribute(0)]]; float2 a_texcoord0 [[attribute(1)]]; };
+struct VertexOut { float4 position [[position]]; float2 v_uv; };
+vertex VertexOut vertexStage(VertexIn in [[stage_in]], constant Uniforms& u [[buffer(0)]]) {
+  VertexOut out;
+  out.v_uv = in.a_texcoord0;
+  out.position = u.u_modelViewProjectionTransform * float4(in.a_position, 1.0);
+  out.position.y *= u.orca_FlipY;
+  out.position.z = (out.position.z + out.position.w) * 0.5;
+  return out;
+}
+]]></VertexShader>
+  <FragmentShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float4 Tint; };
+struct FragmentIn { float2 v_uv; };
+fragment float4 fragmentStage(FragmentIn in [[stage_in]], constant Uniforms& u [[buffer(0)]],
+                              texture2d<float> u_texture [[texture(0)]], sampler u_textureSampler [[sampler(0)]]) {
+  return u_texture.sample(u_textureSampler, in.v_uv) * u.Tint;
+}
+]]></FragmentShader>
+</Shader>
+```
+
+Unlike GLSL, where the engine declares the uniforms in front of the source, a
+Metal stage is a complete MSL file. Write it in CDATA, because MSL is full of
+`<` and `&`. The rules the reflection goes by:
+
+- **One function per stage.** The vertex source has one `vertex` function and
+  the fragment source one `fragment` function; their names are free.
+- **Uniforms** are the members of the one struct a stage takes at
+  `[[buffer(0)]]`, matched by member name to the engine's uniforms
+  (`u_modelViewProjectionTransform`, `u_opacity`, ...) and to the shader's own
+  (`Tint`). Each stage declares only what it reads, in any order; the two
+  stages' structs are independent. Members are `float`, `int`, `uint`, `bool`,
+  their vectors, `float2x2`, `float3x3`, `float4x4`, or arrays of those. No
+  other buffer may be bound.
+- **Textures** are `texture2d`, `texturecube` or `texture3d` arguments, named
+  as the uniform. A texture's sampler is the `sampler` argument named
+  `<texture>Sampler`; without one, the sampler at the texture's own index.
+- **Vertex attributes** are the `[[stage_in]]` struct's members, matched by
+  name (`a_position`, `a_normal`, `a_color`, `a_texcoord0`, ...). The
+  `[[attribute(n)]]` numbers are free, below 22.
+- **Varyings** are matched between the stages by member name.
+- **The vertex stage must declare `float orca_FlipY`** among its uniforms and
+  multiply it into the position's `y`; the backend sets it to the target's row
+  order, and a program without it does not link. It must also remap depth from
+  the projection matrices' -1..1 to Metal's 0..1:
+  `position.z = (position.z + position.w) * 0.5`.
+
+A shader with no `VertexShader` in any language is a UI material and takes the
+built-in UI vertex stage, in MSL too. Its Metal fragment declares the varyings
+it reads, `float2 v_texcoord0`, `v_boxCoord` and `v_boxSize`, and the engine
+uniforms it reads, such as `u_opacity` and the `u_texture` texture.
+`apps/octopus/Shaders/Gradient.xml` is an example; `apps/encarta/Study/Baked.xml`
+is one with its own vertex stage.
+
+Not covered: `tools/blender-export.py` writes GLSL stages only, so the shaders
+it exports draw with the error shader on Metal until an MSL stage is written
+for them by hand; `renderer.CreateShader` in Lua takes GLSL only.
 
 ## How the renderer's calls map to Metal
 

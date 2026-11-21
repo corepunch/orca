@@ -4,7 +4,8 @@
      material it fills the box (u_texture is then white). Angle is in degrees:
      0 runs left to right, 90 top to bottom, measured in points so the slope is
      true on wide boxes. There is no VertexShader, so the engine's UI vertex
-     stage supplies rounded corners, v_texcoord0, v_boxCoord and v_boxSize. -->
+     stage supplies rounded corners, v_texcoord0, v_boxCoord and v_boxSize.
+     The fragment stage is written twice: GLSL, and Metal for Apple builds. -->
 <Shader Name="Gradient">
   <!-- The shader owns its uniforms: materials set them as Gradient.Color0 etc. -->
   <Shader.Uniforms>
@@ -22,6 +23,22 @@ void main() {
   float t = clamp(dot(p, d) / max(extent, 1.0) * 0.5 + 0.5, 0.0, 1.0);
   vec3 c = t < 0.5 ? mix(Color0.rgb, Color1.rgb, t * 2.0) : mix(Color1.rgb, Color2.rgb, t * 2.0 - 1.0);
   FragColor = vec4(c, texture(u_texture, v_texcoord0).a * u_opacity);
+}
+]]></FragmentShader>
+  <FragmentShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float4 Color0; float4 Color1; float4 Color2; float Angle; float u_opacity; };
+struct FragmentIn { float2 v_texcoord0; float2 v_boxCoord; float2 v_boxSize; };
+fragment float4 fragmentStage(FragmentIn in [[stage_in]], constant Uniforms& u [[buffer(0)]],
+                              texture2d<float> u_texture [[texture(0)]], sampler u_textureSampler [[sampler(0)]]) {
+  float a = u.Angle * M_PI_F / 180.0;
+  float2 d = float2(cos(a), sin(a));
+  float2 p = (in.v_boxCoord - 0.5) * in.v_boxSize;
+  float extent = dot(abs(d), in.v_boxSize) * 0.5;
+  float t = clamp(dot(p, d) / max(extent, 1.0) * 0.5 + 0.5, 0.0, 1.0);
+  float3 c = t < 0.5 ? mix(u.Color0.rgb, u.Color1.rgb, t * 2.0) : mix(u.Color1.rgb, u.Color2.rgb, t * 2.0 - 1.0);
+  return float4(c, u_texture.sample(u_textureSampler, in.v_texcoord0).a * u.u_opacity);
 }
 ]]></FragmentShader>
 </Shader>

@@ -264,6 +264,39 @@ void main() {
   FragColor = vec4(texture(Albedo, fract(v_uv)).rgb * v_tint * light, 1.0);
 }
   </FragmentShader>
+  <VertexShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float4x4 u_modelViewProjectionTransform; float4x4 u_modelTransform; float orca_FlipY; };
+struct VertexIn {
+  float3 a_position [[attribute(0)]]; float3 a_normal [[attribute(1)]];
+  float2 a_texcoord0 [[attribute(2)]]; float4 a_color [[attribute(3)]];
+};
+struct VertexOut { float4 position [[position]]; float2 v_uv; float3 v_tint; float3 v_normal; };
+vertex VertexOut vertexStage(VertexIn in [[stage_in]], constant Uniforms& u [[buffer(0)]]) {
+  VertexOut out;
+  out.v_uv = in.a_texcoord0;
+  out.v_tint = pow(in.a_color.rgb, float3(2.2));
+  out.v_normal = (u.u_modelTransform * float4(in.a_normal, 0.0)).xyz;
+  out.position = u.u_modelViewProjectionTransform * float4(in.a_position, 1.0);
+  out.position.y *= u.orca_FlipY;                             // the target's row order
+  out.position.z = (out.position.z + out.position.w) * 0.5;   // depth -1..1 to Metal's 0..1
+  return out;
+}
+]]></VertexShader>
+  <FragmentShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct FragmentIn { float2 v_uv; float3 v_tint; float3 v_normal; };
+fragment float4 fragmentStage(FragmentIn in [[stage_in]],
+                              texture2d<float> Albedo [[texture(0)]], sampler AlbedoSampler [[sampler(0)]]) {
+  float3 n = normalize(in.v_normal);
+  float sun = max(dot(n, normalize(float3(0.4, 0.8, 0.45))), 0.0);
+  float sky = 0.5 + 0.5 * n.y;
+  float3 light = float3(1.0, 0.95, 0.85) * sun * 0.75 + mix(float3(0.16, 0.14, 0.13), float3(0.3, 0.34, 0.4), sky);
+  return float4(Albedo.sample(AlbedoSampler, fract(in.v_uv)).rgb * in.v_tint * light, 1.0);
+}
+]]></FragmentShader>
 </Shader>
 """
 
@@ -299,6 +332,39 @@ void main() {
   FragColor = vec4(c * 1.3, 1.0);
 }
   </FragmentShader>
+  <VertexShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float4x4 u_modelViewProjectionTransform; float orca_FlipY; };
+struct VertexIn {
+  float3 a_position [[attribute(0)]]; float2 a_texcoord0 [[attribute(1)]];
+  float2 a_texcoord1 [[attribute(2)]]; float4 a_color [[attribute(3)]];
+};
+struct VertexOut { float4 position [[position]]; float2 v_uv0; float2 v_uv1; float3 v_tint; };
+vertex VertexOut vertexStage(VertexIn in [[stage_in]], constant Uniforms& u [[buffer(0)]]) {
+  VertexOut out;
+  out.v_uv0 = in.a_texcoord0; out.v_uv1 = in.a_texcoord1;
+  out.v_tint = pow(in.a_color.rgb, float3(2.2));
+  out.position = u.u_modelViewProjectionTransform * float4(in.a_position, 1.0);
+  out.position.y *= u.orca_FlipY;                             // the target's row order
+  out.position.z = (out.position.z + out.position.w) * 0.5;   // depth -1..1 to Metal's 0..1
+  return out;
+}
+]]></VertexShader>
+  <FragmentShader Language="Metal"><![CDATA[
+#include <metal_stdlib>
+using namespace metal;
+struct Uniforms { float Glow; };
+struct FragmentIn { float2 v_uv0; float2 v_uv1; float3 v_tint; };
+fragment float4 fragmentStage(FragmentIn in [[stage_in]], constant Uniforms& u [[buffer(0)]],
+                              texture2d<float> Albedo [[texture(0)]], sampler AlbedoSampler [[sampler(0)]],
+                              texture2d<float> Lightmap [[texture(1)]], sampler LightmapSampler [[sampler(1)]]) {
+  float3 light = Lightmap.sample(LightmapSampler, in.v_uv1).rgb * %(range)s + float3(u.Glow);
+  float3 c = Albedo.sample(AlbedoSampler, fract(in.v_uv0)).rgb * in.v_tint * light;
+  c = c / (1.0 + 0.45 * c);          // a soft shoulder keeps bright pools coloured
+  return float4(c * 1.3, 1.0);
+}
+]]></FragmentShader>
 </Shader>
 """ % {"range": "%.1f" % LIGHTMAP_RANGE}
 

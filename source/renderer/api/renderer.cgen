@@ -169,6 +169,12 @@
       <value name="Medium">Medium precision, typically 16-24 bits. Ideal for texture coordinates and general-purpose calculations.</value>
       <value name="High">Highest precision, typically 32 bits. Required for vertex positions, matrices, and critical transformations.</value>
     </enum>
+    <enum name="ShaderLanguage">
+      <summary>The shading language a shader stage is written in</summary>
+      <details>A Shader may hold each stage once per language. A build compiles only the stages in its renderer's language and ignores the others: GLSL for OpenGL and OpenGL ES, Metal for the Metal renderer on Apple platforms.</details>
+      <value name="GLSL">OpenGL Shading Language. The engine declares the shader's uniforms and the fragment output in front of the source.</value>
+      <value name="Metal">Metal Shading Language. The source is a complete MSL file with one function of the stage's kind; the renderer reads its uniforms, textures and vertex attributes from the compiled function.</value>
+    </enum>
     <enum name="Shading">
       <summary>Defines shading models for lighting calculations in shaders</summary>
       <details>Specifies the lighting algorithm used to calculate surface appearance. Each model offers different visual quality and performance characteristics. Unlit provides no lighting for flat colors or pre-lit textures, Phong offers classic specular highlights, and Standard implements physically-based rendering for realistic materials.</details>
@@ -344,6 +350,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <properties>
         <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
+        <property name="Language" type="ShaderLanguage">The shading language of this stage's source. Stages in a language the running renderer does not compile are ignored.</property>
         <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for vertex shader calculations</property>
         <property name="Shading" type="Shading">The lighting/shading model to use for vertex processing. Determines which lighting calculations are performed and how surface appearance is computed.</property>
       </properties>
@@ -354,6 +361,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <properties>
         <property name="Version" type="int">GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)</property>
+        <property name="Language" type="ShaderLanguage">The shading language of this stage's source. Stages in a language the running renderer does not compile are ignored.</property>
         <property name="FloatPrecision" type="FloatPrecision">Default floating-point precision for fragment shader calculations</property>
         <property name="Out" type="string">Name of the output variable for fragment color (e.g., "FragColor", "gl_FragColor")</property>
       </properties>
