@@ -1,7 +1,8 @@
 -- Hikers' Weather: is the trail safe and pleasant? The hiking activity's
 -- rules on hand-built hours, its extra requests on recorded-shape JSON
 -- (summit and trailhead, models, air, NWS alerts), its big answers (storm
--- clock, turnaround, trail), then the hiking edition running on its own
+-- clock, turnaround, trail), the other services (avalanche, fire, snow,
+-- park alerts, lightning; tests/fixtures/hiking/), then the hiking edition running on its own
 -- places (tests/weather_fixture.lua). This file belongs to the hiking
 -- edition. No network: every answer is built here.
 local F = dofile("tests/weather_fixture.lua").init { edition = "hiking" }
@@ -53,8 +54,8 @@ end
 -- alerts only where NWS covers.
 local tahoe = { id = "tahoe", title = "Lake Tahoe", lat = 39.09, lon = -120.04, activities = { "hiking" } }
 local request = Activities.request(tahoe)
-check(request.pastDays == 3 and request.forecastDays == 16 and #request.sources == 4,
-    "Hiking asks for three past days, sixteen ahead and four extra requests")
+check(request.pastDays == 3 and request.forecastDays == 16 and #request.sources == 11,
+    "Hiking asks for three past days, sixteen ahead and eleven optional extra requests")
 local byId = {}
 for _, source in ipairs(request.sources) do byId[source.id] = source end
 local pointsUrl = byId["hiking-points"].url(tahoe, Forecast)
@@ -229,15 +230,207 @@ check(F.says(Hiking.rate(fc.hours[fc.now], fc):result(), "Official warning"), "A
 check(not F.says(Hiking.rate(fc.hours[fc.now + 30], fc):result(), "Official warning"), "Hours after it ends are clear")
 check(not pcall(byId["hiking-alerts"].parse, { hourly = {} }, week()), "An answer without a list is not 'no warnings'")
 
+-- Existing services (Research/services-hiking.md), each optional, on
+-- synthetic answers in their documented shapes (tests/fixtures/hiking/).
+local Services = require "Weather/editions/hiking/services"
+local Avalanche = require "Weather/editions/hiking/avalanche"
+local Provider = require "Weather/provider"
+local fixture = function(name) return dofile("tests/fixtures/hiking/" .. name .. ".lua") end
+local US, SLF, EUREGIO, SERVICES = fixture "avalanche-org", fixture "caaml-slf", fixture "caaml-euregio", fixture "services"
+local function cardOf(fc, place, id)
+    for _, card in ipairs(Hiking.cards(fc, place)) do if card.id == id then return card end end
+end
+local function snowyWeek() return week { snow_depth = function() return 0.5 end } end
+local yosemite = { id = "yosemite", title = "Yosemite Valley", lat = 37.75, lon = -119.59, activities = { "hiking" } }
+
+-- SV-HI1: avalanche.org, off until the National Avalanche Center agrees.
+check(byId["hiking-avalanche"].url(tahoe, Forecast) == nil, "avalanche.org is not asked before its terms are settled")
+Services.CLEARED.avalancheOrg = true
+check(byId["hiking-avalanche"].url(tahoe, Forecast) == "https://api.avalanche.org/v2/public/products/map-layer/SAC"
+    and byId["hiking-avalanche"].url(tahoe, Forecast, week()) == nil
+    and byId["hiking-avalanche"].url(tahoe, Forecast, snowyWeek()), "Once cleared, one centre's zones, only with snow")
+check(Avalanche.inside({ lat = 38.9, lon = -120.1 }, US.features[1].geometry)
+    and not Avalanche.inside({ lat = 38.9, lon = -120.1 }, US.features[2].geometry)
+    and not Avalanche.inside({ lat = 0.5, lon = 0.5 }, { type = "Polygon", coordinates = {
+        { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { 0, 0 } }, { { 0.4, 0.4 }, { 0.6, 0.4 }, { 0.6, 0.6 }, { 0.4, 0.6 }, { 0.4, 0.4 } } } }),
+    "Point in polygon: inside, outside, and in a hole")
+fc = week()
+byId["hiking-avalanche"].parse(US, fc)
+local avalanche = cardOf(fc, tahoe, "avalanche")
+check(avalanche and avalanche.value == "3 considerable · Central Sierra Nevada" and avalanche.tone == "poor"
+    and avalanche.detail:find("Sierra Avalanche Center · until 18:00", 1, true)
+    and avalanche.detail:find("read the full forecast: https://www.sierraavalanchecenter.org/forecasts/#/central-sierra-nevada", 1, true),
+    "A current US rating keeps its level and word, the zone, the centre, until when and the link: " .. tostring(avalanche and avalanche.detail))
+local later = Forecast.parse(F.weather(51.88, { snow_depth = function() return 0.5 end }), nil, F.NOW + 13 * 3600, brecon)
+byId["hiking-avalanche"].parse(US, later)
+avalanche = cardOf(later, tahoe, "avalanche")
+check(avalanche.value == "no current rating" and avalanche.tone == "info" and avalanche.detail:find("expired", 1, true)
+    and not (avalanche.value .. avalanche.detail):find("considerable"), "An expired rating never shows the last level")
+local mono = { id = "mono", top = { name = "a Mono top", lat = 45, lon = 0, elevation = 3000 }, start = Peaks.tahoe.start,
+    avalanche = { "Sierra Avalanche Center", "sierraavalanchecenter.org", center = "SAC", zone = "Mono" } }
+check(Avalanche.mapLayer(US, mono).zone == "Mono" and not Avalanche.current(Avalanche.mapLayer(US, mono), fc),
+    "Outside every polygon the named zone is used, and its expired rating is no rating")
+fc = week()
+byId["hiking-avalanche"].parse(US, fc)
+check(not cardOf(fc, mono, "avalanche"), "No rating and no snow: no card")
+fc = snowyWeek()
+fc.missing["hiking-avalanche"] = "The forecast service is not answering."
+avalanche = cardOf(fc, tahoe, "avalanche")
+check(avalanche.value == "no current rating" and avalanche.detail:find("did not load", 1, true),
+    "A bulletin that did not load says so, never 'safe'")
+Services.CLEARED.avalancheOrg = false
+
+-- SV-HI2: an EAWS bulletin at the top's height.
+check(byId["hiking-bulletin"].url(zermatt, Forecast) == nil, "Without a micro-region id no bulletin is asked")
+local matterhorn = { id = "matterhorn", top = Peaks.zermatt.top, start = Peaks.zermatt.start,
+    avalanche = { "SLF bulletin", "slf.ch", caaml = { provider = "slf", region = "CH-TEST-1" } } }
+local slfUrl, slfOptions = byId["hiking-bulletin"].url(matterhorn, Forecast), Forecast.requestOptions(byId["hiking-bulletin"].headers)
+check(slfUrl and slfUrl:find("aws.slf.ch/api/bulletin/caaml", 1, true) and slfOptions.headers.Accept == "application/json",
+    "SLF (CC BY 4.0) is asked as JSON")
+check(Avalanche.aspects { "N", "NE", "E" } == "N–E" and Avalanche.aspects { "NW", "N", "NE" } == "NW–NE"
+    and Avalanche.aspects { "N", "S" } == "N, S" and Avalanche.aspects { "N", "NE", "E", "SE", "S", "SW", "W", "NW" } == "all aspects",
+    "Aspects read as runs")
+fc = week()
+byId["hiking-bulletin"].parse(SLF, fc)
+avalanche = cardOf(fc, matterhorn, "avalanche")
+check(avalanche and avalanche.value == "3 considerable above 2200 m" and avalanche.tone == "poor"
+    and avalanche.detail:find("wind slab, persistent weak layers NW–E", 1, true) and not avalanche.detail:find("gliding")
+    and avalanche.detail:find("published tue 17 16:00", 1, true) and avalanche.detail:find("next update 07:00", 1, true)
+    and avalanche.detail:find("slf.ch", 1, true), "The top's band, its problems and aspects, the times and the link: "
+    .. tostring(avalanche and avalanche.detail))
+local low = { id = "low", top = { name = "a low top", lat = 46, lon = 7.7, elevation = 1900 }, start = Peaks.zermatt.start,
+    avalanche = matterhorn.avalanche }
+fc = snowyWeek()
+byId["hiking-bulletin"].parse(SLF, fc)
+avalanche = cardOf(fc, low, "avalanche")
+check(avalanche.value == "2 moderate below 2200 m" and avalanche.detail:find("gliding snow S", 1, true),
+    "A lower top reads the lower band")
+local nowhere = { id = "nowhere", top = Peaks.zermatt.top, start = Peaks.zermatt.start,
+    avalanche = { "SLF bulletin", "slf.ch", caaml = { provider = "slf", region = "CH-NONE" } } }
+avalanche = cardOf(fc, nowhere, "avalanche")
+check(avalanche.value == "no current rating" and avalanche.detail:find("no bulletin for this region", 1, true),
+    "A region the bulletin does not cover is no rating")
+fc = Forecast.parse(F.weather(51.88), nil, F.NOW + 11 * 3600, brecon)
+byId["hiking-bulletin"].parse(SLF, fc)
+check(not Avalanche.current(Avalanche.caaml(SLF, matterhorn), fc), "Past its valid time a bulletin is no rating")
+
+-- Euregio: off until its licence is settled; am/pm split and treeline bounds.
+local altissimo = { id = "altissimo", top = Peaks.garda.top, start = Peaks.garda.start,
+    avalanche = { "Euregio avalanche report", "avalanche.report", caaml = { provider = "euregio", region = "IT-32-TN-TEST" } } }
+check(byId["hiking-bulletin"].url(altissimo, Forecast) == nil, "Euregio is not asked before its licence is settled")
+fc = week()
+byId["hiking-bulletin"].parse(EUREGIO, fc)
+avalanche = cardOf(fc, altissimo, "avalanche")
+check(avalanche.value == "2 moderate above the treeline" and avalanche.detail:find("treeline height not known", 1, true)
+    and avalanche.detail:find("new snow N", 1, true) and avalanche.detail:find("rising to 3 considerable later in the day", 1, true),
+    "Morning: the higher band where the treeline is unknown, and the afternoon's rise: " .. avalanche.detail)
+altissimo.avalanche.caaml.treeline = 1800
+avalanche = cardOf(fc, altissimo, "avalanche")
+check(avalanche.value == "2 moderate above 1800 m" and not avalanche.detail:find("not known"), "A known treeline is a height")
+local afternoon = Forecast.parse(F.weather(51.88), nil, F.NOW + 7 * 3600, brecon)
+byId["hiking-bulletin"].parse(EUREGIO, afternoon)
+avalanche = cardOf(afternoon, altissimo, "avalanche")
+check(avalanche.value == "3 considerable above 1800 m" and avalanche.detail:find("wet snow E–SW", 1, true),
+    "In the afternoon the later rating and its problems")
+
+-- SV-HI3: fires near US trailheads, from public-domain WFIGS layers.
+local fireUrl = byId["hiking-fire"].url(tahoe)
+check(fireUrl:find("WFIGS_Interagency_Perimeters_Current/FeatureServer/0/query?geometry=-120.0714,38.9227", 1, true)
+    and fireUrl:find("distance=30&units=esriSRUnit_Kilometer", 1, true) and fireUrl:find("returnCentroid=true", 1, true)
+    and fireUrl:find("poly_IncidentName", 1, true) and not fireUrl:find("Date%%3E") and byId["hiking-fire"].url(zermatt) == nil,
+    "One point-and-distance query at US trailheads, no relative date filter")
+check(byId["hiking-fire-starts"].url(tahoe):find("WFIGS_Incident_Locations_Current", 1, true), "New starts come from incident points")
+fc = week()
+byId["hiking-fire"].parse(SERVICES.fire, fc)
+local fireCard = cardOf(fc, tahoe, "fire")
+check(fireCard and fireCard.value == "fire 12 km NE" and fireCard.tone == "fair"
+    and fireCard.detail:find("Cascade · 931 ha · 45 % contained · updated 06:00", 1, true)
+    and fireCard.detail:find("check Lake Tahoe Basin forest orders, fs.usda.gov/ltbmu", 1, true),
+    "A fire 12 km off is fair, with its size, containment, update and the forest order: " .. tostring(fireCard and fireCard.value))
+byId["hiking-fire-starts"].parse(SERVICES.starts, fc)
+fireCard = cardOf(fc, tahoe, "fire")
+check(fireCard.value == "fire 5.0 km W" and fireCard.tone == "poor" and fireCard.detail:find("Fallen Leaf (new start)", 1, true)
+    and fireCard.detail:find("2 fires within", 1, true), "A new start under 10 km is poor; the same fire is not counted twice")
+fc = week()
+byId["hiking-fire"].parse(SERVICES.fireNone, fc)
+check(not cardOf(fc, tahoe, "fire"), "Nothing within 30 km: no card, and nothing says 'no fires'")
+check(not pcall(byId["hiking-fire"].parse, SERVICES.fireError, week()), "An ArcGIS error is a missing source, not 'no fires'")
+
+-- SV-HI4: measured snow from a SNOTEL station near the top.
+local snowUrl = byId["hiking-snow"].url(tahoe)
+check(snowUrl:find("awdbRestApi/services/v1/data?stationTriplets=463:CA:SNTL&elements=SNWD&duration=DAILY&beginDate=", 1, true)
+    and byId["hiking-snow"].url(zermatt) == nil, "SNOTEL is asked for the curated station's snow depth")
+fc = week()
+byId["hiking-snow"].parse(SERVICES.snotel, fc)
+local trailCard = cardOf(fc, tahoe, "trail")
+check(trailCard.value == "snow measured nearby" and trailCard.tone == "fair"
+    and trailCard.detail:find("measured 84 cm at Echo Peak (2377 m), yesterday; +20 cm in 3 days", 1, true),
+    "The trail card gains the measured depth, its station and height, its day and the change: " .. trailCard.detail)
+local stale = { { stationTriplet = "463:CA:SNTL", data = { { values = { { date = "2026-11-15", value = 40 } } } } } }
+fc = week()
+byId["hiking-snow"].parse(stale, fc)
+check(fc.hiking.measured.stale and not cardOf(fc, tahoe, "trail").detail:find("measured"), "A reading older than two days is dropped")
+
+-- SV-HI5: NPS alerts, only with a key, sent as a header.
+check(byId["hiking-park"].url(yosemite) == nil, "Without an NPS key no park alerts are asked")
+Forecast.endpoints.npsKey = "test-key"
+local parkUrl = byId["hiking-park"].url(yosemite)
+local parkOptions = Forecast.requestOptions(byId["hiking-park"].headers, yosemite)
+check(parkUrl == "https://developer.nps.gov/api/v1/alerts?parkCode=yose&limit=20" and not parkUrl:find("test%-key")
+    and parkOptions.headers["X-Api-Key"] == "test-key" and byId["hiking-park"].url(tahoe) == nil,
+    "With a key, the park's alerts, the key in a header")
+local credits = {}
+for _, about in ipairs(Provider.about()) do credits[about[1]] = true end
+check(credits["Park alerts: National Park Service"], "With a key the NPS is credited")
+Forecast.endpoints.npsKey = nil
+fc = week()
+byId["hiking-park"].parse(SERVICES.nps, fc)
+local parkCard = cardOf(fc, yosemite, "park")
+check(parkCard and parkCard.value == "park closure" and parkCard.tone == "poor"
+    and parkCard.detail:find("Half Dome cables are down", 1, true) and parkCard.detail:find("nps.gov/yose/planyourvisit/halfdome.htm", 1, true),
+    "A park closure is poor, with its title and link")
+fc = week()
+byId["hiking-park"].parse({ data = { SERVICES.nps.data[2] } }, fc)
+check(not cardOf(fc, yosemite, "park"), "Information alone gives no card")
+
+-- SV-HI7: ICON-D2 lightning potential names the storm clock's hour.
+check(byId["hiking-lightning"].url(zermatt, Forecast):find("models=icon_d2", 1, true)
+    and byId["hiking-lightning"].url(zermatt, Forecast):find("lightning_potential", 1, true)
+    and byId["hiking-lightning"].url(tahoe, Forecast) == nil, "Lightning potential is asked inside ICON-D2's domain only")
+fc = week()
+byId["hiking-lightning"].parse(SERVICES.lightning(series, iso), fc)
+storm = Trail.storm(fc, Trail.planDay(fc))
+local stormCard = cardOf(fc, zermatt, "storm")
+check(storm and storm.hour.time == "2026-11-18T14:00" and storm.level == "likely"
+    and stormCard.detail:find("model estimate (lightning potential): thunder likely from about 14:00", 1, true),
+    "A lightning spike sets the storm clock, worded as a model estimate")
+
+-- SV-HI8: links where no open API can be used.
+check(Peaks.garda.official[2][1] == "MeteoAlarm" and Peaks.zermatt.official[2][1] == "MeteoAlarm"
+    and Peaks.garda.avalanche[2] == "avalanche.report" and Peaks.lofoten.avalanche[2] == "varsom.no"
+    and Peaks.tahoe.forest[2] == "fs.usda.gov/ltbmu", "Official links stand in where terms say ask first")
+
+-- Credit: the services that are on join the settings' "about".
+credits = {}
+for _, about in ipairs(Provider.about()) do credits[about[1]] = true end
+check(credits["Fire data: NIFC / WFIGS"] and credits["Snow: USDA NRCS SNOTEL"]
+    and credits["Avalanche bulletin: WSL Institute for Snow and Avalanche Research SLF"]
+    and not credits["Park alerts: National Park Service"] and not credits["Avalanche bulletin: Euregio Tyrol, South Tyrol, Trentino"],
+    "About credits the services in use, and only those")
+
 -- The whole request on a fake network, and offline replay.
 local net = F.network()
 net.answers["elevation=1960"] = function() return { point(1960), point(2968, { snow_depth = function() return 0.3 end }) } end
 net.answers["models="] = function() return { daily = daily } end
 net.answers["air%-quality"] = function() return { hourly = air } end
 net.answers["weather%.gov"] = function() return nws end
+net.answers["Perimeters_Current"] = function() return SERVICES.fire end
+net.answers["Incident_Locations_Current"] = function() return SERVICES.fireNone end
+net.answers["awdbRestApi"] = function() return SERVICES.snotel end
 local loaded, err, raw = Forecast.load(tahoe, false, net.fetch, F.NOW, request)
 check(loaded and not err and next(loaded.missing) == nil and loaded.hours[loaded.now].top.snow_depth == 0.3
-    and loaded.hiking.confidence and #loaded.hiking.alerts == 2, "Every hiking source loads")
+    and loaded.hiking.confidence and #loaded.hiking.alerts == 2 and #loaded.hiking.fires == 1
+    and loaded.hiking.measured.cm, "Every hiking source loads")
 local restored = Forecast.restore(raw, tahoe, request, F.NOW + 3600)
 check(restored and restored.hours[restored.now].top.elevation == 2968, "Offline, the saved top and start come back")
 net.answers["elevation=1960"] = function() return nil, "No connection to the forecast service." end
@@ -276,9 +469,10 @@ end
 F.checkEdition("hiking")
 net.answers["elevation=1960"] = function() return { point(1960), point(2968) } end
 local ui = F.launch { places = { tahoe }, net = net, storageName = "hiking-page" }
--- I2: the hub keeps the three most urgent answers, the warning first.
+-- I2: the hub keeps the three most urgent answers, the warning first; the
+-- measured snow brings the avalanche link up, so a calm storm clock drops off.
 check(ui.text("Cardtahoe:card:warning", "CardValue") == "winter storm warning" and ui.cards()[1] == "Cardtahoe:card:warning"
-    and ui.has("Cardtahoe:card:storm") and #ui.cards() == 3, "The hub opens on hiking's answers: " .. table.concat(ui.cards(), " "))
+    and ui.has("Cardtahoe:card:avalanche") and not ui.has("Cardtahoe:card:storm") and #ui.cards() == 3, "The hub opens on hiking's answers: " .. table.concat(ui.cards(), " "))
 ui.open("tahoe", "hiking")
 check(ui.has("Cardtahoe:hiking:card:warning") and ui.has("Cardtahoe:hiking:card:storm") and #ui.cards() > 3,
     "Every answer stays on the activity page")

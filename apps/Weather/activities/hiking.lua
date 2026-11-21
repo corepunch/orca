@@ -3,13 +3,17 @@
 -- afternoon), wind on the ridges, cold, fog and ice. The place's forecast
 -- is often a town or valley; Hikers' Weather also asks for the trailhead
 -- and the top at their own heights (editions/hiking/peaks.lua) and rates
--- the harder of the two.
+-- the harder of the two. Avalanche danger, fires, measured snow and park
+-- alerts come from existing services (editions/hiking/services.lua) as
+-- cards; they never change the rating.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
 local Units = require "Weather/units"
 local Report = require "Weather/report"
 local Sources = require "Weather/editions/hiking/sources"
 local Trail = require "Weather/editions/hiking/trail"
+local Services = require "Weather/editions/hiking/services"
+local Avalanche = require "Weather/editions/hiking/avalanche"
 
 local Hiking = {
     id = "hiking", title = "hiking", needsMarine = false,
@@ -22,7 +26,13 @@ Hiking.fields = {
     hourly = { "lifted_index", "snowfall", "snow_depth", "wet_bulb_temperature_2m" },
     pastDays = 3, forecastDays = 16,
 }
-Hiking.sources = Sources.list
+-- Open-Meteo's points, models and air and the NWS warnings, then the
+-- other services (editions/hiking/services.lua), each optional.
+Hiking.sources = {}
+for _, list in ipairs { Sources.list, Services.list } do
+    for _, source in ipairs(list) do Hiking.sources[#Hiking.sources + 1] = source end
+end
+Hiking.attribution = Services.attribution
 
 local function hourText(v)
     local h = math.floor(v)
@@ -150,13 +160,15 @@ local function stormCard(forecast, day, today)
             detail = "estimate from storm energy and showers · mountain weather changes fast" }
     end
     local at = Units.clock(storm.hour.time)
+    local estimate = (storm.hour.lightning or 0) >= Trail.LIGHTNING and "model estimate (lightning potential)"
+        or "estimate"
     if storm.now then
         return { id = "storm", title = "storm clock · now", value = "thunder " .. storm.level, tone = "poor",
-            detail = "estimate · get below the ridges and off the top" }
+            detail = estimate .. " · get below the ridges and off the top" }
     end
     return { id = "storm", title = "storm clock · " .. when, value = "about " .. at,
         tone = storm.level == "likely" and "poor" or "fair",
-        detail = ("estimate: thunder %s from about %s · be off the summit by %s"):format(storm.level, at,
+        detail = ("%s: thunder %s from about %s · be off the summit by %s"):format(estimate, storm.level, at,
             Trail.clock(storm.offBy)) }
 end
 
@@ -188,8 +200,9 @@ local function turnCard(forecast)
         detail = table.concat(parts, " · ") }
 end
 
-local function trailCard(forecast)
+local function trailCard(forecast, place)
     local c = Trail.conditions(forecast)
+    local measured, measuredCm = Services.measuredSnow(forecast, Sources.peak(place))
     local parts, value, tone = {}, nil, "good"
     local function say(text, word, worse)
         parts[#parts + 1] = text
@@ -199,6 +212,8 @@ local function trailCard(forecast)
     local where = forecast.hiking and forecast.hiking.top and " at the top" or ""
     if c.snowDepth >= 0.05 then say("about " .. Trail.snow(c.snowDepth * 100) .. " of snow" .. where, "snow" .. where,
         c.snowDepth >= 0.3 and "poor" or "fair") end
+    -- A station's reading beside the modelled depth (SV-HI4).
+    if measured then say(measured, measuredCm >= 5 and "snow measured nearby" or nil, measuredCm >= 5 and "fair" or nil) end
     if c.snowfall >= 1 then say("about " .. Trail.snow(c.snowfall) .. " fell in 3 days", "fresh snow", "fair") end
     if c.thaw then say("frozen early, thawing from about " .. Units.clock(c.thaw.time), "icy early", "fair") end
     -- Rain alone: snow (cm, Open-Meteo's 7:1) is taken out of the precipitation.
@@ -255,11 +270,18 @@ local function alertCard(forecast)
         detail = table.concat(parts, " · ") }
 end
 
+-- The centre's own rating when its service answered (SV-HI1, SV-HI2): a
+-- current rating always shows; "no current rating", a failed bulletin or
+-- the plain link only when there is snow on the mountain.
 local function avalancheCard(forecast, place)
     local peak = Sources.peak(place)
     if not (peak and peak.avalanche) then return nil end
+    local result, missing = Services.avalanche(forecast, peak), Services.avalancheMissing(forecast, peak)
+    if Avalanche.current(result, forecast) then return Avalanche.card(result, peak, forecast) end
     local c = Trail.conditions(forecast)
-    if c.snowDepth < 0.1 and c.snowfall < 10 then return nil end
+    local _, measured = Services.measuredSnow(forecast, peak)
+    if c.snowDepth < 0.1 and c.snowfall < 10 and (measured or 0) < 10 then return nil end
+    if result or missing then return Avalanche.card(result, peak, forecast, missing) end
     return { id = "avalanche", title = "avalanche", value = peak.avalanche[1], tone = "fair",
         detail = peak.avalanche[2] .. " · snow on the mountain: read the bulletin before you go" }
 end
@@ -278,16 +300,20 @@ local function airCard(forecast)
             Score.fmt(worst.pm25), worst.aqi > 150 and "shorten the hike" or "sensitive lungs: take it easy") }
 end
 
--- The big answers, most urgent first: warnings, the storm clock, the
--- turnaround, both ends of the hike, the trail, smoke, avalanche, models.
+-- The big answers, most urgent first: warnings and park alerts, the storm
+-- clock, the turnaround, avalanche danger, fire, both ends of the hike, the
+-- trail, smoke, models.
 function Hiking.cards(forecast, place)
     if not Trail.now(forecast) then return {} end
     local day, today = Trail.planDay(forecast)
+    local peak = Sources.peak(place)
     local cards = {}
     for _, card in ipairs {
-        alertCard(forecast) or false, day and stormCard(forecast, day, today) or false, turnCard(forecast) or false,
-        pointsCard(forecast, place) or false, trailCard(forecast), airCard(forecast) or false,
-        avalancheCard(forecast, place) or false, confidenceCard(forecast) or false,
+        alertCard(forecast) or false, Services.parkCard(forecast, peak) or false,
+        day and stormCard(forecast, day, today) or false, turnCard(forecast) or false,
+        avalancheCard(forecast, place) or false, Services.fireCard(forecast, peak) or false,
+        pointsCard(forecast, place) or false, trailCard(forecast, place), airCard(forecast) or false,
+        confidenceCard(forecast) or false,
     } do
         if card then cards[#cards + 1] = card end
     end
