@@ -13,6 +13,7 @@ local Trail = require "Weather/editions/hiking/trail"
 
 local Hiking = {
     id = "hiking", title = "hiking", needsMarine = false,
+    hubBackground = "Weather/editions/hiking/alpine-trail.jpg",
 }
 
 -- Snow, ice and heat columns for the place, three days back for what fell

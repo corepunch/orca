@@ -12,6 +12,7 @@ local Settings = require "Weather/settings"
 
 local Weather = {
     id = "outdoors", title = "outdoors", needsMarine = false,
+    hubBackground = "Weather/Images/forecast-hills.jpg",
     fields = {
         daily = { "precipitation_hours", "uv_index_max", "wind_gusts_10m_max", "apparent_temperature_max",
             "apparent_temperature_min" },

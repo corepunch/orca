@@ -176,6 +176,13 @@ App = Application:extend {
         if self.screen and self.screen ~= self.hubScreen then self:dress(self.screen, extra) end
     end,
 
+    updateHubBackground = function(self)
+        if not self.hubPage then return end
+        local lead = Activities.lead()
+        local photo = Settings.get(Settings.APPEARANCE, "photos") and lead and lead.hubBackground
+        self.hubPage:findChild("HubPanorama", true).BackgroundImage = photo or ""
+    end,
+
     open = function(self, path)
         local options = { provider = self.provider, store = self.store, host = self.host }
         if self.activityScope then self.activityScope:dispose(); self.activityScope = nil end
@@ -187,9 +194,10 @@ App = Application:extend {
                 local lead = Activities.lead()
                 if lead then self.hubPage:findChild("HubBandTitle", true).Text = lead.title .. ", next 24 hours" end
                 self.hubScreen = self:screenFor(self.hubPage)
-                self.hubRevision = Settings.revision()
+                self.hubRevision = Settings.forecastRevision()
                 self.placesRevision = MyPlaces.revision()
             end
+            self:updateHubBackground()
             self:titleCharts(self.hubPage)
             self.hubScope:activate()
             -- Places added, removed, moved or edited: the lists, the place to
@@ -198,9 +206,9 @@ App = Application:extend {
                 self.placesRevision = MyPlaces.revision()
                 self:showPlaces()
             end
-            -- Changed units redraw the hub from the forecast it already has.
-            if self.hubRevision ~= Settings.revision() then
-                self.hubRevision = Settings.revision()
+            -- Changed forecast settings redraw the hub from the forecast it already has.
+            if self.hubRevision ~= Settings.forecastRevision() then
+                self.hubRevision = Settings.forecastRevision()
                 self.provider.redrawing = true
                 self.hubScope:member("Report"):refresh { force = true }
             end
@@ -311,6 +319,7 @@ App = Application:extend {
         local group, key = Settings.split(record and record.values.Setting)
         if not (group and Settings.step(group, key, direction)) then return end
         if group == Alerts.GROUP then self:alertsChanged(key) end
+        if group == Settings.APPEARANCE then self:updateHubBackground() end
         scope:member("Settings"):refresh { force = true }
     end,
 

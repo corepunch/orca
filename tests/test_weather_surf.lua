@@ -264,6 +264,28 @@ end
 -- The edition on its own places, with the cards on the hub and the page.
 F.checkEdition("surf")
 do
+    local ui = F.launch { places = Places, storageName = "surf-panorama" }
+    local screen, panorama, section = ui.app.screen, ui.find("HubPanorama"), ui.find("NowSection")
+    local photo = F.checkHubPhoto(ui)
+
+    local function pointer(message, x)
+        F.orca.system.dispatchMessage { target = screen, message = message, x = x, y = 420 }
+        screen:UpdateLayout(390, 844)
+    end
+    local start, crop = section.ActualX, photo.Viewbox
+    pointer("LeftButtonDown", 240)
+    pointer("LeftButtonDragged", 150)
+    local panelTravel = start - section.ActualX
+    local photoTravel = (photo.Viewbox.X - crop.X) * photo.ActualWidth / crop.Z
+    check(panelTravel > 0 and math.abs(photoTravel - panelTravel / 8) < 0.5,
+        "The photo follows the finger at one-eighth of the panel speed")
+    local draggedCrop = photo.Viewbox.X
+    pointer("LeftButtonUp", 150)
+    check(panorama.SelectedIndex == 1 and math.abs(photo.Viewbox.X - draggedCrop) < 0.0001,
+        "A swipe changes sections and begins settling from the current crop")
+    ui.app.hubScope:dispose()
+end
+do
     local store = F.storage("surf-cards", Places)
     local net = F.network()
     net.answers["marine%-api.*latitude=%-33"] = function(url)

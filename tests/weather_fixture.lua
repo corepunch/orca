@@ -236,6 +236,27 @@ function Fixture.launch(options)
     return ui
 end
 
+function Fixture.checkHubPhoto(ui)
+    local F = Fixture.current
+    local screen = ui.app.hubScreen
+    while true do
+        local message = F.orca.system.peekMessage()
+        if not message then break end
+        F.orca.system.dispatchMessage(screen, message)
+    end
+    screen:UpdateLayout(390, 844)
+    local photo = screen:findChild("HubPanorama", true):getFirstChild()
+    local lead = require("Weather/activities").lead()
+    F.check(photo:getClassName() == "ImageView" and photo.Src == lead.hubBackground
+        and photo.Source and photo.Source.Width > 0, "The hub loads its bundled " .. lead.title .. " photo")
+    F.check(photo.IgnoreHitTest and photo.AccessibilityHidden and photo.ActualWidth == 390
+        and photo.ActualHeight == 844, "The hub photo fills the screen as decoration")
+    local night = (ui.app.hubPage.StateClasses or ""):match("%f[%w]night%f[%W]")
+    F.check(night and photo.Opacity == 0 or not night and photo.Opacity > 0 and photo.Opacity < 1,
+        "The hub photo is dimmed for readability and hidden in red night mode")
+    return photo
+end
+
 -- The checks every edition shares: it runs on its own places, rates
 -- everyday outdoors and its activity, titles its activity page with the
 -- app's name when that fits (F9), and its settings name it.
@@ -248,6 +269,7 @@ function Fixture.checkEdition(key)
         "The " .. key .. " edition rates outdoors and " .. key)
     check(Activities.appName == Activities.names[key], "The edition is called " .. Activities.appName)
     local ui = Fixture.launch { places = Places, storageName = key, region = "NL" }
+    Fixture.checkHubPhoto(ui)
     local place = Places[1]
     -- The edition's class; its own page classes (red mode's "night") may follow.
     check(ui.find("HubPanorama").Title == place.title and ui.find("HubPage").StateClasses:match("^%S+") == key,
@@ -266,6 +288,8 @@ function Fixture.checkEdition(key)
     ui.press("OpenSettings")
     check(ui.find("SettingsPivot").Title == Activities.appName:lower()
         and ui.find("ActivitySettingsSection").Header == activity.title, "Settings carry the edition's name")
+    check(ui.text("Settingsettings:appearance:photos", "SettingValue") == "on",
+        "The edition offers background photos in Settings")
     ui.back("SettingsPivot")
     ui.app.hubScope:dispose()
     return ui

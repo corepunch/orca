@@ -1,8 +1,9 @@
 <!-- The settings page: one query of rows built from the declarations, split
-     into the units, the activities' own settings and "about". -->
+     into units, appearance, the activities' own settings and "about". -->
 <DataScope Name="Settings" Schema="Weather/Data/Weather.Schema.xml">
   <Query Name="Settings" Entity="WeatherRow" Operation="settings" Description="Every setting and the about lines."/>
   <View Name="Units" Source="Settings" Filter="unitRows"/>
+  <View Name="Appearance" Source="Settings" Filter="appearanceRows"/>
   <View Name="ActivitySettings" Source="Settings" Filter="activitySettingRows"/>
   <View Name="About" Source="Settings" Filter="aboutRows"/>
   <Handler Name="ChangeSetting" Function="changeSetting"/>

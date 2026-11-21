@@ -249,6 +249,10 @@ local store = F.storage("stargazing-red", Places)
 RedMode.reset()
 local net = F.network { placeClock = true }
 local ui = F.launch { places = Places, storage = store, net = net, clock = function() return F.NOW + 8 * 3600 end }
+local photo = F.checkHubPhoto(ui)
+local wind, age = ui.find("HubWind"), ui.find("AgeText")
+check(photo.Opacity == 0 and wind.ForegroundColor.B == 0 and age.ForegroundColor.B == 0,
+    "Red night mode blacks out the photo and keeps the forecast labels red")
 check(ui.cards()[1] == "Cardtahoe:card:tonight" and #ui.cards() <= 3,
     "The hub opens on tonight's cards: " .. table.concat(ui.cards(), " "))
 check(store:load(RedMode.FILE).lat == Places[1].lat, "The last place is kept for the next launch")
@@ -264,6 +268,8 @@ ui.app.activityScope:member("Settings"):refresh { force = true }
 ui.settle()
 check(ui.app.hubPage.StateClasses == "stargazing" and not ui.find("SettingsPage").StateClasses:find("night"),
     "Turning red mode off takes effect at once")
+check(photo.Opacity > 0 and photo.Opacity < 1 and wind.ForegroundColor.B > 0 and age.ForegroundColor.B > 0,
+    "Turning red mode off restores the sky photo and the daytime forecast colours")
 Settings.set("stargazing", "redmode", "auto")
 ui.back("SettingsPivot")
 ui.app.hubScope:dispose()

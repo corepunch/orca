@@ -1,5 +1,6 @@
 #include "Layout.h"
 #include "metro.h"
+#include <include/renderer.h>
 
 // Panorama layout, after the Windows Phone 8 Panorama template.
 #define PANORAMA_TITLE_SIZE    110.0f
@@ -11,7 +12,65 @@
 #define PANORAMA_BODY_TOP      20.0f   // the bar's bottom edge to the content: the page's top padding, as in a Pivot
 #define PANORAMA_ITEM_WIDTH    0.875f  // of the panorama width; the next section peeks in
 #define PANORAMA_PARALLAX      0.6f    // title travel relative to its overflow
+#define PANORAMA_PHOTO_SPEED   0.125f
 #define PANORAMA_MAX_ITEMS     32
+
+static void
+Panorama_SyncBackground(struct Object *hObject, struct Panorama *panorama)
+{
+  lpcString_t path = panorama->BackgroundImage;
+  if (!path || !*path) {
+    if (panorama->_background) {
+      OBJ_RemoveFromParent(panorama->_background);
+      OBJ_ReleaseRef(panorama->_background);
+      panorama->_background = NULL;
+    }
+    return;
+  }
+  if (!panorama->_background) {
+    struct Object *first = OBJ_GetFirstChild(hObject);
+    struct Object *background = OBJ_Create(ID_ImageView);
+    if (!background) return;
+    panorama->_background = background;
+    GetImageView(background)->Stretch = kStretchUniformToFill;
+    GetNode2D(background)->IgnoreHitTest = TRUE;
+    GetNode2D(background)->AccessibilityHidden = TRUE;
+    _SendMessage(background, StyleController, AddClass, .ClassName = "panorama-background");
+    OBJ_AddChild(hObject, background);
+    OBJ_MoveBefore(background, first);
+  }
+  struct ImageView *image = GetImageView(panorama->_background);
+  if (!image->Src || strcmp(image->Src, path))
+    PROP_SetStringValue(OBJ_FindLongProperty(panorama->_background, ID_ImageView_Src), path);
+}
+
+static void
+Panorama_ArrangeBackground(struct Object *background, struct rect frame, float position, float total, float end)
+{
+  struct ImageView *image = GetImageView(background);
+  struct Texture const *texture = image->Source;
+  if (!texture || frame.width <= 0 || frame.height <= 0) return;
+
+  // Keep the crop continuous when the last section wraps back to the first.
+  float rewind = total - end;
+  float travel = MIN(end * PANORAMA_PHOTO_SPEED, rewind * 0.5f);
+  float shift = 0;
+  if (travel > 0) {
+    float wrapped = position - floorf(position / total) * total;
+    shift = wrapped <= end ? travel * wrapped / end : travel * (total - wrapped) / rewind;
+  }
+
+  // Reserve enough photo on each side for the sweep, even in a wide window.
+  float scale = MAX((frame.width + travel) / texture->Width, frame.height / texture->Height);
+  float width = frame.width / (scale * texture->Width);
+  float height = frame.height / (scale * texture->Height);
+  image->Viewbox = (struct vec4) {
+    .x = (1 - width) * 0.5f + (shift - travel * 0.5f) / (scale * texture->Width),
+    .y = (1 - height) * 0.5f, .z = width, .w = height,
+  };
+  Metro_Measure(background, frame.width, frame.height);
+  Metro_Arrange(background, frame.x, frame.y, frame.width, frame.height);
+}
 
 static int
 Panorama_Items(struct Object *hObject, struct Object **items)
@@ -35,6 +94,7 @@ Panorama_IsHeader(struct Object *hObject, struct Object *child, struct Object **
 static int
 Panorama_Sync(struct Object *hObject, struct Panorama *pPanorama, struct Object **items)
 {
+  Panorama_SyncBackground(hObject, pPanorama);
   int count = Panorama_Items(hObject, items);
   // The bar precedes the title and headers, so it draws over the sections
   // and under them.
@@ -114,6 +174,7 @@ HANDLER(Panorama, Object, Create)
 
 HANDLER(Panorama, Object, Destroy)
 {
+  OBJ_ReleaseRef(pPanorama->_background);
   OBJ_ReleaseRef(pPanorama->_bar);
   OBJ_ReleaseRef(pPanorama->_title);
   return FALSE;
@@ -207,8 +268,11 @@ HANDLER(Panorama, Node2D, ArrangeOverride)
   struct Size title = Metro_Measure(pPanorama->_title, 4096, 4096);
   float travel = MAX(title.width - w * PANORAMA_PARALLAX, 0);
   float range = count ? MAX(total - MIN(Panorama_Width(items[count - 1], w), w), 0) : 0;
-  float position = range > 0 ? (selected + pPanorama->_sectionOffset - offset) / range : 0;
-  Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * position, safeTop + PANORAMA_TITLE_TOP,
+  float position = selected + pPanorama->_sectionOffset - offset;
+  float titleProgress = range > 0 ? position / range : 0;
+  if (pPanorama->_background)
+    Panorama_ArrangeBackground(pPanorama->_background, (struct rect){ x, y, w, h }, position, total, range);
+  Metro_Arrange(pPanorama->_title, x + METRO_INSET * 0.5f - travel * titleProgress, safeTop + PANORAMA_TITLE_TOP,
     title.width, title.height);
 
   // Sections extending behind the header start at the top and take the bar

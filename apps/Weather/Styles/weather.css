@@ -64,6 +64,7 @@
 .surf .good .wx-bar { background-color: #00ABA9; }
 .surf .good .wx-tone { color: #00ABA9; }
 .surf .wx-series { color: #00ABA9; }
+
 .sailing .wx-accent { color: #6A00FF; }
 .sailing .wx-link { color: #6A00FF; }
 .sailing .good .wx-tile { background-color: #6A00FF; }
@@ -88,6 +89,26 @@
 .stargazing .good .wx-bar { background-color: #AA00FF; }
 .stargazing .good .wx-tone { color: #AA00FF; }
 .stargazing .wx-series { color: #AA00FF; }
+
+/* The forecast sits over a dimmed photo on the hub. */
+.wx-hub .panorama-background { opacity: 0.46; }
+.wx-hub .panorama-title, .wx-hub .panorama-header { color: #FFFFFF; }
+.wx-hub .wx-dim, .wx-hub .chart-label { color: #D0DBDF; }
+.wx-hub .fair .wx-tone { color: #FFCA69; }
+.wx-hub .wx-poor, .wx-hub .poor .wx-tone { color: #FF9B88; }
+.wx-hub .wx-accent, .wx-hub .wx-link, .wx-hub .good .wx-tone, .wx-hub .wx-series { color: #80CDFF; }
+.fishing .wx-hub .wx-accent, .fishing .wx-hub .wx-link, .fishing .wx-hub .good .wx-tone,
+.fishing .wx-hub .wx-series { color: #B5E681; }
+.surf .wx-hub .wx-accent, .surf .wx-hub .wx-link, .surf .wx-hub .good .wx-tone,
+.surf .wx-hub .wx-series { color: #65E1D8; }
+.sailing .wx-hub .wx-accent, .sailing .wx-hub .wx-link, .sailing .wx-hub .good .wx-tone,
+.sailing .wx-hub .wx-series { color: #C0ADFF; }
+.hiking .wx-hub .wx-accent, .hiking .wx-hub .wx-link, .hiking .wx-hub .good .wx-tone,
+.hiking .wx-hub .wx-series { color: #FFB981; }
+.garden .wx-hub .wx-accent, .garden .wx-hub .wx-link, .garden .wx-hub .good .wx-tone,
+.garden .wx-hub .wx-series { color: #95E0A1; }
+.stargazing .wx-hub .wx-accent, .stargazing .wx-hub .wx-link, .stargazing .wx-hub .good .wx-tone,
+.stargazing .wx-hub .wx-series { color: #DBAEFF; }
 
 /* The everyday lenses (full app). */
 .run .wx-accent { color: #A4C400; }

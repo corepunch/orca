@@ -21,6 +21,7 @@ local Climate = require "Weather/editions/garden/climate"
 
 local Garden = {
     id = "garden", title = "garden", needsMarine = false,
+    hubBackground = "Weather/editions/garden/kitchen-garden.jpg",
     -- A week of history for the water balance, soil at sowing and root
     -- depth, snowfall for the snow-load warning, and 16 days ahead.
     fields = {

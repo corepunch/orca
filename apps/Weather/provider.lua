@@ -111,8 +111,12 @@ function Provider.new(places, options)
             reasonRows = kind("reason"), hourRows = kind("hour"), dayRows = kind("day"), metricRows = kind("metric"),
             cardRows = kind("card"), chartRows = kind("chart"), ageRows = kind("age"), aboutRows = kind("about"),
             unitRows = function(record) return record.values.Kind == "setting" and record.values.Activity == Settings.UNITS end,
+            appearanceRows = function(record)
+                return record.values.Kind == "setting" and record.values.Activity == Settings.APPEARANCE
+            end,
             activitySettingRows = function(record)
-                return record.values.Kind == "setting" and record.values.Activity ~= Settings.UNITS
+                local group = record.values.Activity
+                return record.values.Kind == "setting" and group ~= Settings.UNITS and group ~= Settings.APPEARANCE
             end,
         },
         -- The hub shows the saved forecast at once while the first request runs.
@@ -201,8 +205,8 @@ Provider.ABOUT = {
     { "your data stays here", "Your places and settings are kept on this device only." },
 }
 
--- The settings page: the shared units, each activity's own settings and
--- "about" (WeatherRow, Kind "setting" or "about").
+-- The settings page: shared units and appearance, each activity's own
+-- settings, and "about" (WeatherRow, Kind "setting" or "about").
 function Provider.settingsRows()
     -- Each activity's settings, then the notifications (alerts.lua).
     local groups = {}

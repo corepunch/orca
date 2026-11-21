@@ -19,6 +19,7 @@ local Compare = require "Weather/compare"
 
 local Surf = {
     id = "surf", title = "surf", needsMarine = true,
+    hubBackground = "Weather/editions/surf/ocean-beach.jpg",
 }
 
 local marine = { Tides.COLUMN }

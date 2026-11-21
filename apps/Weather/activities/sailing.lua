@@ -21,6 +21,7 @@ local Rank = require "Weather/editions/sailing/rank"
 
 local Sailing = {
     id = "sailing", title = "sailing",
+    hubBackground = "Weather/editions/sailing/bay-under-sail.jpg",
     -- Waves and the sea level on a coast; a lake has neither, so it does not ask.
     needsMarine = function(place) return not (place and place.lake) and "optional" end,
     settings = Profile.settings,

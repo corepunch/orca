@@ -16,9 +16,9 @@
 -- (`Settings.get("units", "wind")`). Values are stored with Storage under
 -- "settings"; changing one saves at once and applies the units.
 local Units = require "Weather/units"
-local Settings = { UNITS = "units" }
+local Settings = { UNITS = "units", APPEARANCE = "appearance" }
 
-local state = { values = {}, registry = {}, order = {}, revision = 0 }
+local state = { values = {}, registry = {}, order = {}, revision = 0, forecastRevision = 0 }
 
 -- The shared units, in the order the page lists them.
 local SHARED = {
@@ -28,6 +28,9 @@ local SHARED = {
     { key = "clock", title = "clock" },
 }
 for _, setting in ipairs(SHARED) do setting.kind, setting.options = "choice", Units.CHOICES[setting.key] end
+local APPEARANCE = {
+    { key = "photos", title = "background photos", kind = "toggle", default = true },
+}
 
 local function option(entry)
     if type(entry) == "table" then
@@ -47,6 +50,7 @@ end
 
 function Settings.declarations(group)
     if group == Settings.UNITS then return SHARED end
+    if group == Settings.APPEARANCE then return APPEARANCE end
     local activity = state.registry[group]
     return activity and activity.settings or {}
 end
@@ -92,6 +96,7 @@ function Settings.init(options)
     local saved = state.storage and state.storage:load("settings")
     state.values = type(saved) == "table" and saved or {}
     state.revision = state.revision + 1
+    state.forecastRevision = state.revision
     applyUnits()
 end
 
@@ -109,6 +114,8 @@ end
 
 -- Bumps whenever a value changes, so pages know to redraw.
 function Settings.revision() return state.revision end
+-- Appearance changes apply independently of the forecast.
+function Settings.forecastRevision() return state.forecastRevision end
 
 function Settings.set(group, key, value)
     local setting = declaration(group, key)
@@ -121,6 +128,7 @@ function Settings.set(group, key, value)
     state.values[group] = state.values[group] or {}
     state.values[group][key] = value
     state.revision = state.revision + 1
+    if group ~= Settings.APPEARANCE then state.forecastRevision = state.revision end
     if group == Settings.UNITS then applyUnits() end
     if state.storage then state.storage:save("settings", state.values) end
     return true
@@ -160,8 +168,8 @@ function Settings.text(group, key)
     return tostring(value)
 end
 
--- Rows for the settings page (WeatherRow, Kind "setting"): the units, then
--- each listed activity's settings under its title (`note` on its first row).
+-- Rows for the settings page (WeatherRow, Kind "setting"): units, appearance,
+-- then each listed activity's settings under its title (`note` on its first row).
 function Settings.rows(activities)
     local rows = {}
     local function add(group, setting, heading)
@@ -173,6 +181,7 @@ function Settings.rows(activities)
         }
     end
     for _, setting in ipairs(SHARED) do add(Settings.UNITS, setting) end
+    for _, setting in ipairs(APPEARANCE) do add(Settings.APPEARANCE, setting) end
     for _, activity in ipairs(activities or {}) do
         for index, setting in ipairs(activity.settings or {}) do add(activity.id, setting, index == 1 and activity.title) end
     end
