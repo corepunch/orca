@@ -229,7 +229,7 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 
 From [services-sailing.md](Research/services-sailing.md). Code in
 `editions/sailing/warnings.lua`, `live.lua` and `links.lua`; every source is
-optional and asked in this edition only; credit in `Sailing.attribution`.
+optional; credit in `Sailing.attribution`.
 Tests run on synthetic answers in the documented shapes
 (`tests/fixtures/sailing/answers.lua`): the hosts were blocked when this was
 built, so each still needs one live recording.

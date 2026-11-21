@@ -26,19 +26,6 @@ local Warnings = require "Weather/editions/sailing/warnings"
 local Live = require "Weather/editions/sailing/live"
 local Links = require "Weather/editions/sailing/links"
 
--- The existing services (warnings, live wind) are asked and credited in
--- Sailors' Weather only: the full app has its own warnings (outdoors.lua),
--- and its "about" lists Open-Meteo and the activities' own lines.
-local function ownEdition()
-    local ok, Activities = pcall(require, "Weather/activities")
-    return ok and type(Activities) == "table" and Activities.edition == "sailing"
-end
-local function editionOnly(source)
-    local url = source.url
-    return setmetatable({ url = function(spot, Forecast)
-        if ownEdition() then return url(spot, Forecast) end
-    end }, { __index = source })
-end
 local SERVICES = { Warnings.nws, Warnings.meteoalarm, Live.metar, Live.openwindmap, Live.buoys[1], Live.buoys[2] }
 local ATTRIBUTION = {
     { "Warnings in the US: National Weather Service", "Public domain, weather.gov." },
@@ -57,9 +44,9 @@ local Sailing = {
     settings = Profile.settings,
     sources = { Models.source, Tides.source, Rank.source(function() return Profile.current().range end) },
     -- Credit for each service read (Provider.about).
-    attribution = function() return ownEdition() and ATTRIBUTION or {} end,
+    attribution = ATTRIBUTION,
 }
-for _, source in ipairs(SERVICES) do table.insert(Sailing.sources, editionOnly(source)) end
+for _, source in ipairs(SERVICES) do table.insert(Sailing.sources, source) end
 -- What the place editor asks of a spot (P3); Spots.sector reads the safe
 -- sector the user set before its table.
 Sailing.placeFields = {
