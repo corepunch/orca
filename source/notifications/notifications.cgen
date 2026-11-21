@@ -43,6 +43,11 @@
       <details>Submits a BGAppRefreshTaskRequest named after the bundle identifier with a .refresh suffix; the bundle must permit it (package.lua `Capabilities = { "background-refresh" }`) and carry a project background.lua returning a function. When iOS runs the task, that function runs in a Lua state of its own without screens or engine objects (orca.network, orca.notifications and a region-only orca.core are available), resumed until it returns or the system expires it. The system decides whether and when; it may never run, for example in Low Power Mode. Returns true when submitted, or nil and an error string.</details>
       <returns type="nresults">True, or nil and an error string.</returns>
     </function>
+    <function name="WriteWidgetSnapshot" lua="true">
+      <summary>Writes a JSON snapshot for the application's widgets into its App Group container.</summary>
+      <details>Takes a string of at most 16 KiB and saves it atomically as widget.json in the container of the App Group named by the bundle's ORCAAppGroup Info.plist key, which `make ios WIDGETS=1` sets to group.&lt;bundle id&gt; together with the App Groups entitlement; a WidgetKit extension in the same group reads it. The extension refreshes on its own timeline: writing does not reload it. Returns true, or nil and an error string when the build has no App Group, the container is unavailable (the group is not provisioned for the signing team) or the write failed.</details>
+      <returns type="nresults">True, or nil and an error string.</returns>
+    </function>
     <function name="Poll" lua="true">
       <summary>Dequeues one native notification event on the Lua thread.</summary>
       <details>Returns nil when empty. Events have type token (token), received or open (conversationId, messageId, userId), or error (code, message). Error codes include permission_denied, authorization_failed, registration_failed, invalid_token and unsupported. Notification payload identifiers are untrusted routing hints and must be authorized by the application. Open events survive startup before Lua initialization. Platform callbacks never access Lua.</details>

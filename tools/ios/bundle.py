@@ -16,7 +16,7 @@ def resource_filter(directory, names):
     """Keep runtime assets, excluding developer credentials and server-only trees."""
     patterns = ('.git', '.DS_Store', '.env', '.env.*', '.live-*', '.appwrite',
                 '__pycache__', 'node_modules', 'build', '*.mobileprovision',
-                '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', '*.entitlements', 'ci_scripts')
+                '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', '*.entitlements', '*.swift', 'ci_scripts')
     ignored = [name for name in names if any(fnmatch.fnmatchcase(name, pattern) for pattern in patterns)]
     # Chat's Appwrite Function, fixtures and local account sessions never run on-device.
     backend = Path(directory) / 'backend'
@@ -208,6 +208,7 @@ def main():
     for name in ('identifier', 'minimum', 'display-name'):
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--edition', help='an `Editions` key from package.lua; its Name becomes the display name')
+    parser.add_argument('--app-group', help='an App Group the app shares with its widgets (WIDGETS=1), as ORCAAppGroup')
     args = parser.parse_args()
     project = args.project.resolve()
     if not project.is_dir() or not (project / 'package.lua').is_file():
@@ -263,6 +264,8 @@ def main():
         info['CFBundleLocalizations'] = languages
     if (project / 'Push.entitlements').is_file():
         info['ORCARemoteNotifications'] = True
+    if args.app_group:
+        info['ORCAAppGroup'] = args.app_group
     (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))
     (bundle / 'PkgInfo').write_bytes(b'APPL????')
     print('Packaged ' + str(bundle))

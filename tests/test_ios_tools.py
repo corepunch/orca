@@ -136,6 +136,21 @@ class SigningTests(unittest.TestCase):
         self.assertEqual(chat, {'application-identifier': 'ORCASIM000.org.orca.chat'})
         self.assertNotEqual(chat, other)
 
+    def test_widgets_share_the_app_group_named_in_the_bundle(self):
+        bundle = {'CFBundleSupportedPlatforms': ['iPhoneSimulator'], 'CFBundleIdentifier': 'org.orca.weather',
+                  'ORCAAppGroup': 'group.org.orca.weather'}
+        self.assertEqual(sign.simulator_entitlements(bundle), {
+            'application-identifier': 'ORCASIM000.org.orca.weather',
+            'com.apple.security.application-groups': ['group.org.orca.weather']})
+        spec = importlib.util.spec_from_file_location('orca_widget', ROOT / 'tools/ios/widget.py')
+        widget = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(widget)
+        info = widget.info_plist('WeatherWidget', 'org.orca.weather.widget', {'CFBundleDisplayName': 'Weather'},
+                                 'group.org.orca.weather', 'iphonesimulator', '16.0')
+        self.assertEqual(info['NSExtension'], {'NSExtensionPointIdentifier': 'com.apple.widgetkit-extension'})
+        self.assertEqual((info['CFBundlePackageType'], info['ORCAAppGroup']), ('XPC!', 'group.org.orca.weather'))
+        self.assertEqual(widget.target('arm64', 'iphonesimulator', '16.0'), 'arm64-apple-ios16.0-simulator')
+
     def test_push_entitlement_is_copied_only_from_a_development_profile(self):
         entitlements = sign.signing_entitlements('TEAM.org.orca.chat', 'TEAM', ['TEAM.*'], 'development')
         self.assertEqual(entitlements['aps-environment'], 'development')

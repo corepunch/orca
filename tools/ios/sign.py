@@ -31,23 +31,27 @@ def signing_entitlements(identifier, team, allowed_groups, push_environment=None
     return entitlements
 
 
-def simulated_entitlements(bundle_id):
+def simulated_entitlements(bundle_id, app_group=None):
     if not isinstance(bundle_id, str) or not bundle_id:
         raise ValueError('Simulator bundle has no application identifier')
     # The simulator Keychain uses the application identifier as each app's
     # private default group. This local prefix needs no team or profile.
-    return {'application-identifier': 'ORCASIM000.' + bundle_id}
+    entitlements = {'application-identifier': 'ORCASIM000.' + bundle_id}
+    # Widgets (WIDGETS=1): the app and its extension share an App Group.
+    if app_group:
+        entitlements['com.apple.security.application-groups'] = [app_group]
+    return entitlements
 
 
 def simulator_entitlements(bundle):
     if bundle.get('CFBundleSupportedPlatforms') != ['iPhoneSimulator']:
         raise ValueError('Ad hoc simulator signing requires an iPhoneSimulator bundle')
-    return simulated_entitlements(bundle.get('CFBundleIdentifier'))
+    return simulated_entitlements(bundle.get('CFBundleIdentifier'), bundle.get('ORCAAppGroup'))
 
 
-def write_simulated_entitlements(path, bundle_id):
+def write_simulated_entitlements(path, bundle_id, app_group=None):
     """Write the linker section inputs, touching them only when they change."""
-    data = plistlib.dumps(simulated_entitlements(bundle_id))
+    data = plistlib.dumps(simulated_entitlements(bundle_id, app_group))
     if path.is_file() and path.read_bytes() == data and path.with_suffix(path.suffix + '.der').is_file():
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -75,10 +79,11 @@ def main():
     parser.add_argument('--simulator', action='store_true')
     parser.add_argument('--simulated-entitlements', type=Path, metavar='PATH')
     parser.add_argument('--identifier')
+    parser.add_argument('--app-group')
     args = parser.parse_args()
     if args.simulated_entitlements:
         try:
-            write_simulated_entitlements(args.simulated_entitlements, args.identifier)
+            write_simulated_entitlements(args.simulated_entitlements, args.identifier, args.app_group)
         except ValueError as error:
             raise SystemExit(str(error))
         return
@@ -102,6 +107,9 @@ def main():
         subprocess.run(['codesign', '--verify', '--strict', str(app)], check=True)
         print('Signed simulator ' + bundle_id + ' with its private Keychain group')
         return
+    if (app / 'PlugIns').is_dir() or bundle.get('ORCAAppGroup'):
+        raise SystemExit('Device signing of a WIDGETS=1 build (App Group and widget extension) is not supported here: '
+                         'sign it in Xcode with both targets provisioned (docs/IOS.md, Widgets).')
     identities = subprocess.check_output(['security', 'find-identity', '-v', '-p', 'codesigning'], text=True)
     valid = set()
     for line in identities.splitlines():

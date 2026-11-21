@@ -17,6 +17,7 @@ local PlacePages = require "Weather/placepages"
 local Search = require "Weather/search"
 local Alerts = require "Weather/alerts"
 local Notify = require "Weather/notify"
+local Widget = require "Weather/widget"
 local Storage = require "Weather/storage"
 local Settings = require "Weather/settings"
 local Units = require "Weather/units"
@@ -313,14 +314,22 @@ App = Application:extend {
         scope:member("Settings"):refresh { force = true }
     end,
 
-    -- The home place's forecast was drawn: plan its alerts (N2). Only the
-    -- home place, only a fresh forecast, only when notifications are on.
+    -- The home place's forecast was drawn: write the widget's snapshot (N3)
+    -- and plan its alerts (N2). Only the home place, only a fresh forecast,
+    -- alerts only when notifications are on.
     planAlerts = function(self, forecast)
         local home = MyPlaces.mine()[1]
         if not (forecast and forecast.spot and home and forecast.spot.id == home.id) then return end
         if not forecast.stale then self.homeForecast = forecast end
-        if not Settings.get(Alerts.GROUP, "on") or forecast.stale then return end
-        return Alerts.sync(forecast, forecast.spot, { now = self.provider.clock(), storage = self.storage,
+        if forecast.stale then return end
+        -- The widget (N3) shows the home place too; then a background
+        -- refresh keeps it current.
+        local now = self.provider.clock()
+        if Widget.write(forecast, forecast.spot, { now = now, notifier = self.notifier }) and self.notifier.scheduleRefresh then
+            pcall(self.notifier.scheduleRefresh, Alerts.REFRESH)
+        end
+        if not Settings.get(Alerts.GROUP, "on") then return end
+        return Alerts.sync(forecast, forecast.spot, { now = now, storage = self.storage,
             notifier = self.notifier })
     end,
 

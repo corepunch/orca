@@ -21,6 +21,10 @@ DEVICE ?=
 DEVICE_TYPE ?= iPhone
 # EDITION=<key> bundles one of the project's package.lua `Editions`.
 EDITION ?=
+# WIDGETS=1 builds <project>/Widget/*.swift into a WidgetKit extension that
+# shares the App Group APP_GROUP with the app (tools/ios/widget.py).
+WIDGETS ?=
+APP_GROUP ?= $(if $(WIDGETS),group.$(BUNDLE_ID))
 TEAM ?=
 PROFILE ?=
 BUILD_DIR ?= build/ios
@@ -101,14 +105,17 @@ SIMULATED := $(ROOT)/simulated.xcent
 LINK_FLAGS := -Wl,-sectcreate,__TEXT,__entitlements,$(SIMULATED) -Wl,-sectcreate,__TEXT,__ents_der,$(SIMULATED).der
 .PHONY: simulated
 simulated:
-	@python3 tools/ios/sign.py --simulated-entitlements "$(SIMULATED)" --identifier "$(BUNDLE_ID)"
+	@python3 tools/ios/sign.py --simulated-entitlements "$(SIMULATED)" --identifier "$(BUNDLE_ID)" $(if $(APP_GROUP),--app-group "$(APP_GROUP)")
 $(SIMULATED): simulated
 endif
 $(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(DEPS_STAMP) $(SIMULATED)
 	@echo "  LD      $(@F)"
 	$(Q)$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(IOS_OBJECTS) $(VENDOR_OBJECTS) $(LIBS) $(LINK_FLAGS) -o "$@"
 app: $(ROOT)/Orca
-	$(Q)python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)" $(if $(EDITION),--edition "$(EDITION)")
+	$(Q)python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)" $(if $(EDITION),--edition "$(EDITION)") $(if $(APP_GROUP),--app-group "$(APP_GROUP)")
+ifneq ($(WIDGETS),)
+	$(Q)python3 tools/ios/widget.py --project "$(PROJECT)" --bundle "$(BUNDLE)" --build-dir "$(ROOT)" --sdk $(SDK) --arch $(ARCH) --minimum $(IOS_MIN) --app-group "$(APP_GROUP)"
+endif
 ifeq ($(SDK),iphonesimulator)
 	$(Q)python3 tools/ios/sign.py --simulator "$(BUNDLE)"
 endif

@@ -291,7 +291,7 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 | --- | --- | --- | --- | --- |
 | N1 | Device location with approximate accuracy accepted, Lua API `orca.location`; reverse geocoding through `CLGeocoder` | P0 | M | done, 039abc5e: "use my location" on the hub and the search page, one fix, saved only through the editor (`MyPlaces.fromLocation`); `Capabilities = { "location" }` in package.lua adds the usage string |
 | N2 | Local notifications and background refresh (`BGAppRefreshTask`), Lua API for scheduling; alert rules in Lua (`alerts.lua`) | P1 | L | done, 2f0b4292: seven calm kinds for the home place, off until asked, quiet hours, one per kind a day; `background.lua` refreshes best effort ([README](README.md#tests)) |
-| N3 | Home and lock-screen widgets: a WidgetKit extension reading a snapshot the app writes into an App Group | P1 | L | not started |
+| N3 | Home and lock-screen widgets: a WidgetKit extension reading a snapshot the app writes into an App Group | P1 | L | partial: `widget.lua` writes the snapshot through `orca.notifications.writeWidgetSnapshot`, `Widget/WeatherWidget.swift` reads it, `WIDGETS=1` builds and embeds it (simulator checked: the app writes `widget.json` into its group). Needs the owner: App Groups on the team and a widget target in Xcode for device builds ([docs/IOS.md](../../docs/IOS.md#widgets)); no reload from the app (WidgetCenter is Swift-only), the widget reads every 30 min |
 | N4 | Dark launch screen for Stargazers' (no white flash) | P0 | S | done, 4d13ba66: package.lua `LaunchBackground = "#000000"` gives every Weather build a black launch screen and dark system sheets |
 | N5 | Live Activity for rain, Apple Watch | P2 | L | not started |
 
@@ -307,7 +307,7 @@ why`.
 | 2 Apps | done. Weather W1–W10 except W11 (engine has no accessibility properties), W12 skipped: bee80f81, deca9fde, e42e0d37, 68412dba. Fishers' FI1–FI12 (FI2, FI5, FI11, FI12 partial): 0bd69837, d70eb45b. Surfers' SU1–SU11 (SU6, SU9, SU10 partial): ed5e2cfa, 9eec452e. Sailors' SA1–SA8 (SA9, SA10 skipped): 42328fd6. Hikers' HI1–HI8 (HI7 needs a User-Agent to work live): 07010bfc. Gardeners' GA1–GA9, GA11–GA13 (GA10 skipped): e8387067, b16276bd. Stargazers' ST1–ST9, ST11 (ST10 partial; ST12–ST14 skipped): 8420eb49. Tests: 880 checks pass |
 | 2.5 Integration | done: I1–I11 (section 8). I1, I4 in ee252388; I2, I3 in 5c861e16; I5–I7 in 8b7204f4; I8–I10 in f4a83259; I11 with this row. Tests: 919 checks pass |
 | 3 Places | done: P1–P4 in 2277736e, P5 in 93063191 (section 5). Device location is wave 4's: `MyPlaces.fromLocation(lat, lon, name, region)` makes the draft. Tests: 991 checks pass |
-| 4 Native | not started |
+| 4 Native | N1, N2, N4 done; W11 and N3 partial; N5 not started (section 6). Tests: weather 403, alerts 40, editions 614 checks pass |
 
 ## 8. Wave 2.5: integration (one agent, shared files)
 

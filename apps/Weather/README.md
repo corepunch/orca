@@ -349,6 +349,21 @@ place's forecast and syncs again. Tests pass `notifier` (a stand-in for
 `orca.notifications`) to `F.launch`; `tests/test_weather_alerts.lua` checks
 every rule, the plan and the hook.
 
+**Widgets** (`widget.lua`, N3). Whenever the home place's fresh forecast is
+drawn, and after a background refresh, the app writes a snapshot for the
+home-screen and lock-screen widget: `{ version, app, edition, place, temp,
+sky, activity, verdict, tone, line, updated }`, the lead activity's verdict
+now and its best window today ("fishing best 06–08h", else the sky). It
+goes through `orca.notifications.writeWidgetSnapshot` into the build's App
+Group (`widget.json`); `Widget/WeatherWidget.swift` (small, medium,
+rectangular and inline) reads it every half hour and never fetches. Each
+edition is its own app with its own group, so each has its own widget.
+Only `make ios-sim APP=weather WIDGETS=1` builds the extension;
+[docs/IOS.md](../../docs/IOS.md#widgets) lists what a device build needs.
+A successful write also asks for a background refresh, so the widget stays
+current with notifications off. `tests/test_weather_alerts.lua` checks the
+snapshot and both writers.
+
 **VoiceOver and Dynamic Type** (W11). On iOS the engine mirrors each drawn
 screen into VoiceOver elements (`Node2D.AccessibilityLabel`, `…Hint`,
 `…Traits`, `…Hidden`; `source/ios_accessibility.m`). A button reads its own
