@@ -41,38 +41,16 @@ Fishing.sources[#Fishing.sources + 1] = River.source
 -- where the place has a station (editions/fishing/gauges.lua).
 for _, source in ipairs(Gauges.sources()) do Fishing.sources[#Fishing.sources + 1] = source end
 
--- Credit for each service, on the settings' "about" (Research/services-fishing.md):
--- the services my places read, each once.
-Fishing.CREDITS = {
-    noaa = { "Tides and water temperature by NOAA CO-OPS", "Public domain, tidesandcurrents.noaa.gov." },
-    usgs = { "River data by the U.S. Geological Survey", "Public domain. Recent readings are provisional and may be revised." },
-    ea = { "River levels by the Environment Agency", "This uses Environment Agency flood and river level data from the "
+-- Credit for each service, on the settings' "about" (Research/services-fishing.md).
+Fishing.attribution = {
+    { "Tides and water temperature by NOAA CO-OPS", "Public domain, tidesandcurrents.noaa.gov." },
+    { "River data by the U.S. Geological Survey", "Public domain. Recent readings are provisional and may be revised." },
+    { "River levels by the Environment Agency", "This uses Environment Agency flood and river level data from the "
         .. "real-time data API (Beta). Open Government Licence v3.0." },
-    pegel = { "Water levels by WSV, PEGELONLINE", "Data licence Germany – Zero – Version 2.0, pegelonline.wsv.de." },
-    opw = { "Water levels by the Office of Public Works", "waterlevel.ie, CC BY 4.0." },
-    glerl = { "Great Lakes water temperature by NOAA GLERL", "GLSEA, a daily lake-average surface temperature from satellites." },
+    { "Water levels by WSV, PEGELONLINE", "Data licence Germany – Zero – Version 2.0, pegelonline.wsv.de." },
+    { "Water levels by the Office of Public Works", "waterlevel.ie, CC BY 4.0." },
+    { "Great Lakes water temperature by NOAA GLERL", "GLSEA, a daily lake-average surface temperature from satellites." },
 }
-local CREDIT_ORDER = { "noaa", "usgs", "ea", "pegel", "opw", "glerl" }
-
--- The services a place reads: { noaa = true, usgs = true, … }.
-function Fishing.services(place)
-    local used, station = {}, Gauges.station(place)
-    used.noaa = place.tideStation and place.tideStation.noaa and true
-    if station then used[station.network] = true end
-    used.usgs = used.usgs or Gauges.usgsUrl(place) ~= nil
-    used.glerl = Gauges.greatLake(place) ~= nil
-    return used
-end
-
-function Fishing.attribution()
-    local used = {}
-    for _, place in ipairs(require("Weather/myplaces").mine() or {}) do
-        for key, yes in pairs(Fishing.services(place)) do used[key] = used[key] or yes end
-    end
-    local list = {}
-    for _, key in ipairs(CREDIT_ORDER) do if used[key] then list[#list + 1] = Fishing.CREDITS[key] end end
-    return list
-end
 
 -- What the place editor asks of a water (P3). Lake, river or coast is the
 -- place's kind.

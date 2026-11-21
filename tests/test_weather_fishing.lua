@@ -442,14 +442,13 @@ check(Rules.blooms(COAST, lake) == nil, "A coast has no blooms row")
 check(Fishing.metrics(lake.hours[lake.now], lake)[#Fishing.metrics(lake.hours[lake.now], lake)].label == "algae",
     "The lake's conditions end with the blooms row")
 
--- Credit for each service my places read on the settings' about, once.
-local MyPlaces = require "Weather/myplaces"
-check(#Fishing.attribution() == 0, "The edition's own places read no gauge network, and credit none")
-MyPlaces.init { curated = { POTOMAC, KEYS, THAMES, RHINE, SHANNON, ERIE, nearby } }
-local about = {}
-for _, row in ipairs(Provider.about()) do about[row[1]] = row[2] end
-check(#Fishing.attribution() == 6, "Six services, each credited once")
-MyPlaces.init { curated = require "Weather/places" }
+-- Credit for each service on the settings' about, once.
+local about, rows = {}, 0
+for _, row in ipairs(Provider.about()) do
+    rows = rows + (about[row[1]] and 0 or 1)
+    about[row[1]] = row[2]
+end
+check(rows == #Provider.about(), "Each service is credited once")
 check(about["River data by the U.S. Geological Survey"]:find("provisional")
     and about["River levels by the Environment Agency"]:find("^This uses Environment Agency flood and river level data")
     and about["Tides and water temperature by NOAA CO-OPS"] and about["Great Lakes water temperature by NOAA GLERL"]
