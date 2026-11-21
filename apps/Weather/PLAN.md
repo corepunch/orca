@@ -287,13 +287,13 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 
 ## 6. Wave 4: native iOS (engine work)
 
-| ID | Feature | Pri | Size |
-| --- | --- | --- | --- |
-| N1 | Device location with approximate accuracy accepted, Lua API `orca.location`; reverse geocoding through `CLGeocoder` | P0 | M |
-| N2 | Local notifications and background refresh (`BGAppRefreshTask`), Lua API for scheduling; alert rules in Lua (`alerts.lua`) | P1 | L |
-| N3 | Home and lock-screen widgets: a WidgetKit extension reading a snapshot the app writes into an App Group | P1 | L |
-| N4 | Dark launch screen for Stargazers' (no white flash) | P0 | S |
-| N5 | Live Activity for rain, Apple Watch | P2 | L |
+| ID | Feature | Pri | Size | Status |
+| --- | --- | --- | --- | --- |
+| N1 | Device location with approximate accuracy accepted, Lua API `orca.location`; reverse geocoding through `CLGeocoder` | P0 | M | done, 039abc5e: "use my location" on the hub and the search page, one fix, saved only through the editor (`MyPlaces.fromLocation`); `Capabilities = { "location" }` in package.lua adds the usage string |
+| N2 | Local notifications and background refresh (`BGAppRefreshTask`), Lua API for scheduling; alert rules in Lua (`alerts.lua`) | P1 | L | done, 2f0b4292: seven calm kinds for the home place, off until asked, quiet hours, one per kind a day; `background.lua` refreshes best effort ([README](README.md#tests)) |
+| N3 | Home and lock-screen widgets: a WidgetKit extension reading a snapshot the app writes into an App Group | P1 | L | not started |
+| N4 | Dark launch screen for Stargazers' (no white flash) | P0 | S | done, 4d13ba66: package.lua `LaunchBackground = "#000000"` gives every Weather build a black launch screen and dark system sheets |
+| N5 | Live Activity for rain, Apple Watch | P2 | L | not started |
 
 ## 7. Status
 
@@ -373,13 +373,18 @@ Notes from the foundation:
 - The region for default units comes from `core.getPreferredLanguage()`;
   when the app bundle declares localizations without a region it can be
   only "en", which falls back to metric. Wave 4 may want the device region
-  (`NSLocale.current.region`) exposed to Lua.
+  (`NSLocale.current.region`) exposed to Lua. Done in cdb615db:
+  `core.getRegion()` is the device region, and `core.getMeasurementSystem()`
+  and `core.uses24HourClock()` follow the phone's own settings
+  (`Units.device()`).
 
 Notes from wave 3 (places):
 
 - Postcodes are matched worldwide: "10115" finds New York before Berlin.
   Open-Meteo takes `countryCode=`; passing the device region (wave 4's
-  `NSLocale.current.region`, see above) would fix it.
+  `NSLocale.current.region`, see above) would fix it. Done in cdb615db: a
+  query with a digit asks for the device's country only, and a name lists
+  that country's places first (`Search.prefer`).
 - The geocoder cannot tell a seaside town from an inland one, and has no
   shore direction: a found coast asks the user for its facing. A reverse
   lookup of the nearest coastline would need another data source.
