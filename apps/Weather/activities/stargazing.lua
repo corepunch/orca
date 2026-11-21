@@ -18,6 +18,7 @@ local RedMode = require "Weather/editions/stargazing/redmode"
 
 local Stargazing = {
     id = "stargazing", title = "stars", needsMarine = false,
+    hubBackground = "Weather/editions/stargazing/dark-sky.jpg",
 }
 
 -- Upper winds and temperatures for seeing, water vapour for transparency,

@@ -82,7 +82,10 @@ saved forecast goes too). Changes to a saved place are kept at once.
 **Settings** (`Pages/Settings.xml`) is a Pivot built from declarations:
 **units** (temperature, wind, heights, rain, pressure, distance, clock),
 **activities** (each activity's own `settings`; an edition names it after its
-activity) and **about** (the Open-Meteo attribution).
+activity), **appearance**, and **about** (the Open-Meteo attribution).
+Under **appearance**, tap **background photos** to show or hide the hub's
+photo. The choice is saved per app. Red night mode in Stargazers’ Weather
+keeps the hub black.
 
 Everyday outdoors' own settings: how you feel the cold (`comfort`: "I run
 cold" moves "comfortable" about 3°), and in the full app the "good for"

@@ -1521,10 +1521,12 @@
       </handles>
       <properties>
         <property name="Title" type="string">Large panorama title, displayed in lowercase</property>
+        <property name="BackgroundImage" type="string">Optional image path. The image fills the viewport and pans behind the sections at a slower rate. Style it with the "panorama-background" CSS class.</property>
         <property name="SelectedIndex" type="int">Index of the section currently in view</property>
         <property name="ExtendBodyBehindHeader" type="bool">When true, the sections in view extend under the title and section headers, which become a top bar: scrolling content rests 20 points below it and scrolls under it. Style the bar behind them with the "panorama-bar" CSS class.</property>
       </properties>
       <fields>
+        <field name="_background" type="Object" pointer="true">Generated ImageView behind the sections (private)</field>
         <field name="_bar" type="Object" pointer="true">Generated bar behind the title and headers when the sections extend behind them (private)</field>
         <field name="_title" type="Object" pointer="true">Generated title TextBlock (private)</field>
         <field name="_pressX" type="float">Pointer x at press (private)</field>

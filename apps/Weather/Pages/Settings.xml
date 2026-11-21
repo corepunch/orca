@@ -1,5 +1,5 @@
 <!-- Settings over Data/Settings.xml, built from declarations: the shared
-     units and clock, each activity's own `settings`, and "about" with the
+     units and clock, each activity's own `settings`, appearance, and "about" with the
      data attribution. A Pivot with Back, like an activity page; the app
      titles it with the app's name. -->
 <Grid Name="SettingsPage" Rows="1fr" class="wx-page">
@@ -16,6 +16,10 @@
         <ItemsStack Name="ActivitySettingItems" Spacing="6" JustifyContent="Start" ItemNamePrefix="Setting"
                     ItemsSource="{Binding DataContext/ActivitySettings/Items}" ItemTemplate="Weather/Templates/SettingRow"/>
       </StackView>
+    </PivotItem>
+    <PivotItem Name="AppearanceSection" Header="appearance">
+      <ItemsStack Name="AppearanceItems" Spacing="6" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="Setting"
+                  ItemsSource="{Binding DataContext/Appearance/Items}" ItemTemplate="Weather/Templates/SettingRow"/>
     </PivotItem>
     <PivotItem Name="AboutSection" Header="about">
       <ItemsStack Name="AboutItems" Spacing="18" JustifyContent="Start" Overflow="hidden scroll" ItemNamePrefix="About"

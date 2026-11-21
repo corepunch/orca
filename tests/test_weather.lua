@@ -156,8 +156,9 @@ Settings.init { storage = settingsStore, region = "NL" }
 check(Settings.get("units", "wind") == "kn" and Settings.get("units", "temp") == "c" and Settings.get("probe", "on") == false,
     "Saved choices come back; the rest follow the region")
 local probeRows = Settings.rows { probe }
-check(#probeRows == 10 and probeRows[1].setting == "units/temp" and probeRows[8].note == "probe"
-    and probeRows[10].stepper and probeRows[10].value == "9 m", "Rows for the settings page")
+check(#probeRows == 11 and probeRows[1].setting == "units/temp" and probeRows[8].setting == "appearance/photos"
+    and probeRows[8].value == "on" and probeRows[9].note == "probe"
+    and probeRows[11].stepper and probeRows[11].value == "9 m", "Rows include the default photo choice for existing settings")
 settingsStore:remove("settings")
 Settings.init { region = "NL" }
 
@@ -374,6 +375,7 @@ local app, find, text, press, settle = ui.app, ui.find, ui.text, ui.press, ui.se
 local hub = app.screen
 
 -- The hub: Amazing Weather's now page, what the place is good for, the week.
+F.checkHubPhoto(ui)
 check(find("HubPanorama").Title == "Lake Tahoe", "The hub is titled with the place")
 check(requests[1] == forecasts()[1] and forecasts()[1]:find("latitude=39.09") and forecasts()[1]:find("v1/forecast"),
     "The place's forecast comes first")
@@ -573,6 +575,20 @@ check(text(setting("fishing:moon"), "SettingHeading") == "fishing" and text(sett
 check(not find("NoActivitySettings").Visible, "The empty line hides when an activity has settings")
 check(text("Aboutsettings:about:1", "AboutTitle") == "Weather data by Open-Meteo.com", "About credits Open-Meteo")
 local function tap(row, button) find(row):findChild(button, true):send("Node.LeftButtonUp"); settle() end
+local photoSetting = setting("appearance:photos")
+local panorama = app.hubPage:findChild("HubPanorama", true)
+local beforePhotos = #requests
+find("SettingsPivot").SelectedIndex = 2
+settle()
+check(text(photoSetting, "SettingTitle") == "background photos" and text(photoSetting, "SettingValue") == "on",
+    "Appearance offers a background photos setting")
+tap(photoSetting, "SettingChange")
+check(text(photoSetting, "SettingValue") == "off" and panorama.BackgroundImage == ""
+    and store:load("settings").appearance.photos == false, "Turning photos off updates the hub and saves the choice")
+ui.back("SettingsPivot")
+check(panorama:getFirstChild():getClassName() == "PanoramaItem" and #requests == beforePhotos,
+    "The plain hub opens without fetching a forecast for the appearance change")
+press("OpenSettings")
 tap(setting("units:temp"), "SettingChange")
 check(text(setting("units:temp"), "SettingValue") == "°F" and Settings.get("units", "temp") == "f", "A tap picks the next unit")
 tap(setting("fishing:moon"), "SettingChange")
@@ -603,6 +619,14 @@ check(later.text("Nowtahoe:now:now", "HubTemp") == "11°" and later.text("Agetah
     and later.text("Agetahoe:age:age", "AgeWarning"):find("offline"), "Offline, the saved forecast shows with its age")
 local savedRows = later.app.provider.caches.savedHub { PlaceId = "ocean-beach" }
 check(savedRows and #savedRows > 0, "The saved hub can show before the first request")
+check(later.find("HubPanorama"):getFirstChild():getClassName() == "PanoramaItem",
+    "Photos remain off when the app is reopened")
+later.press("OpenSettings")
+check(later.text(photoSetting, "SettingValue") == "off", "Settings show the saved photo choice")
+later.find(photoSetting):findChild("SettingChange", true):send("Node.LeftButtonUp")
+later.settle()
+later.back("SettingsPivot")
+F.checkHubPhoto(later)
 net.failing = false
 later.app.hubScope:dispose()
 Outdoors.cards = everydayCards

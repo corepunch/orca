@@ -21,6 +21,7 @@ local Log = require "Weather/editions/fishing/log"
 
 local Fishing = {
     id = "fishing", title = "fishing",
+    hubBackground = "Weather/editions/fishing/misty-lake.jpg",
     -- The sea surface and waves where there is sea, and the forecast stands
     -- without them; a lake or a river does not ask.
     needsMarine = function(place) return not (place and (place.lake or place.river)) and "optional" end,
