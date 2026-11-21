@@ -236,7 +236,7 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
 #if ORCA_METAL
   // Metal compiles no GLSL: the stage's source is the definition's own MSL.
   enum msl_stage stage = type == GL_VERTEX_SHADER ? MSL_VERTEX : MSL_FRAGMENT;
-  lpcString_t msl = def->Metal ? def->Metal->source[stage] : def->MetalSource[stage];
+  lpcString_t msl = def->MetalSource[stage];
   if (!msl) {
     Con_Error("%s: no Metal %s shader", def->Name, shaderType);
     R_Call(glDeleteShader, shader);
@@ -294,9 +294,6 @@ static GLuint _CreateGLProgram(struct shader_desc* def)
 
   R_Call(glAttachShader, program, vertexShader);
   R_Call(glAttachShader, program, fragmentShader);
-#if ORCA_METAL
-  mtlProgramReflection(program, def->Metal);
-#endif
   R_Call(glLinkProgram, program);
   R_Call(glGetProgramiv, program, GL_LINK_STATUS, &success);
 
@@ -871,7 +868,7 @@ Shader_UseUIVertexStage(struct shader_desc *desc, uint32_t numUniforms)
 {
   desc->VertexShader = shader_ui.VertexShader;
 #if ORCA_METAL
-  desc->MetalSource[MSL_VERTEX] = shader_ui.Metal->source[MSL_VERTEX];
+  desc->MetalSource[MSL_VERTEX] = shader_ui.MetalSource[MSL_VERTEX];
 #endif
   desc->Version = MAX(desc->Version, shader_ui.Version);
   memcpy(desc->Attributes, shader_ui.Attributes, sizeof(desc->Attributes));

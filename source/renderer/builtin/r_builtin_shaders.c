@@ -8,7 +8,7 @@
 
 struct shader_desc shader_default = {
   .Name = "Default Shader",
-  SHADER_METAL(k_msl_default)
+  SHADER_METAL(k_msl_vs_default, k_msl_fs_default)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -90,7 +90,7 @@ struct shader_desc shader_rect = {
 // scrolling box would overflow, dropping everything it clips.
 struct shader_desc shader_ui = {
   .Name = "UI Shader",
-  SHADER_METAL(k_msl_ui)
+  SHADER_METAL(k_msl_vs_ui, k_msl_fs_ui)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -154,7 +154,7 @@ struct shader_desc shader_ui = {
 
 struct shader_desc shader_cinematic = {
   .Name = "Cinematic Shader",
-  SHADER_METAL(k_msl_cinematic)
+  SHADER_METAL(k_msl_vs_cinematic, k_msl_fs_cinematic)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -194,7 +194,7 @@ struct shader_desc shader_cinematic = {
 
 struct shader_desc shader_ninepatch = {
   .Name = "Ninepatch Shader",
-  SHADER_METAL(k_msl_ninepatch)
+  SHADER_METAL(k_msl_vs_ninepatch, k_msl_fs_ninepatch)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -233,7 +233,7 @@ struct shader_desc shader_ninepatch = {
 
 struct shader_desc shader_charset = {
   .Name = "Charset Shader",
-  SHADER_METAL(k_msl_charset)
+  SHADER_METAL(k_msl_vs_charset, k_msl_fs_charset)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -327,7 +327,7 @@ struct shader_desc shader_charset = {
 
 struct shader_desc shader_vertexcolor = {
   .Name = "Vertex Color Shader",
-  SHADER_METAL(k_msl_vertexcolor)
+  SHADER_METAL(k_msl_vs_vertexcolor, k_msl_fs_vertexcolor)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -355,7 +355,7 @@ struct shader_desc shader_vertexcolor = {
 
 struct shader_desc shader_error = {
   .Name = "Error Shader",
-  SHADER_METAL(k_msl_error)
+  SHADER_METAL(k_msl_vs_error, k_msl_fs_error)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -383,7 +383,7 @@ struct shader_desc shader_error = {
 
 struct shader_desc shader_button = {
   .Name = "Button Shader",
-  SHADER_METAL(k_msl_button)
+  SHADER_METAL(k_msl_vs_button, k_msl_fs_button)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -453,7 +453,7 @@ struct shader_desc shader_button = {
 
 struct shader_desc shader_roundedbox = {
   .Name = "Rounded Box Shader",
-  SHADER_METAL(k_msl_roundedbox)
+  SHADER_METAL(k_msl_vs_roundedbox, k_msl_fs_roundedbox)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -525,7 +525,7 @@ struct shader_desc shader_roundedbox = {
 // Outputs alpha-only result as vec4(a,a,a,a); color is applied at composition.
 struct shader_desc shader_blur_h = {
   .Name = "Blur H Shader",
-  SHADER_METAL(k_msl_blur_h)
+  SHADER_METAL(k_msl_blur_common_vs, k_msl_fs_blur_h)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -575,7 +575,7 @@ struct shader_desc shader_blur_h = {
 // Separable Gaussian blur — vertical pass.
 struct shader_desc shader_blur_v = {
   .Name = "Blur V Shader",
-  SHADER_METAL(k_msl_blur_v)
+  SHADER_METAL(k_msl_blur_common_vs, k_msl_fs_blur_v)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",
@@ -633,7 +633,7 @@ struct shader_desc shader_blur_v = {
 // linear, so it commutes with the blur and is applied by the last pass only.
 struct shader_desc shader_backdrop_blur = {
   .Name = "Backdrop Blur Shader",
-  SHADER_METAL(k_msl_backdrop_blur)
+  SHADER_METAL(k_msl_vs_backdrop_blur, k_msl_fs_backdrop_blur)
   .Version = 150,
   .Precision = PRECISION_LOW,
   .FragmentOut = "fragColor",

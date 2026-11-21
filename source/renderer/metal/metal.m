@@ -138,9 +138,7 @@ typedef struct
   OrcaShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  struct msl_program const *given;       // set by mtlProgramReflection
-  struct msl_program const *refl;        // of the linked program: `given`, else `reflected`
-  struct msl_program *reflected;         // Metal's own reflection, made by mtlLinkProgram
+  struct msl_program *refl;              // of the linked functions, made by mtlLinkProgram
   id<MTLFunction> functions[MSL_STAGES];
   uint8_t *data[MSL_STAGES];
   int units[MSL_MAX_UNIFORMS];
@@ -152,7 +150,7 @@ typedef struct
 @implementation OrcaProgram
 - (void)reset
 {
-  free(reflected), reflected = NULL, refl = NULL;
+  free(refl), refl = NULL;
   for (int s = 0; s < MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
@@ -1347,9 +1345,8 @@ void mtlDetachShader(uint32_t program, uint32_t shader)
   if (p && p->fs == s) p->fs = nil;
 }
 
-// The stage's function: the one named `entry`, else the source's only
-// function of the stage's kind.
-static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, char const *entry, NSMutableString *log)
+// The stage's function: the source's one function of the stage's kind.
+static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, NSMutableString *log)
 {
   char const *label = stage == MSL_VERTEX ? "vertex" : "fragment";
   OrcaShader *shader = stage == MSL_VERTEX ? p->vs : p->fs;
@@ -1360,17 +1357,11 @@ static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, char const *entr
   id<MTLLibrary> library = [mtl.device newLibraryWithSource:shader->source options:options error:&error];
   if (!library) return [log appendFormat:@"%s: %@\n", label, error.localizedDescription], nil;
   MTLFunctionType type = stage == MSL_VERTEX ? MTLFunctionTypeVertex : MTLFunctionTypeFragment;
-  for (NSString *name in entry ? @[@(entry)] : library.functionNames) {
+  for (NSString *name in library.functionNames) {
     id<MTLFunction> function = [library newFunctionWithName:name];
     if (function.functionType == type) return function;
   }
   return [log appendFormat:@"%s: the source has no %s function\n", label, label], nil;
-}
-
-void mtlProgramReflection(uint32_t program, struct msl_program const *reflection)
-{
-  OrcaProgram *p = object(OBJ_PROGRAM, program);
-  if (p) p->given = reflection;
 }
 
 static int components(mtlEnum type, int *columns, BOOL *integer);
@@ -1496,8 +1487,8 @@ static BOOL reflect_stage(struct msl_program *r, int s, NSArray<id<MTLBinding>> 
   return YES;
 }
 
-// The reflection of a program that was given none: Metal's own, of a pipeline
-// built from the two functions. A stage's uniforms are the members of the
+// A program's reflection is Metal's own, of a pipeline built from its two
+// functions. A stage's uniforms are the members of the
 // struct at buffer(MSL_UNIFORM_BUFFER) and its texture arguments; a texture's
 // sampler is the argument named <texture>Sampler, else the one at its index.
 static struct msl_program *reflect(OrcaProgram *p, NSMutableString *log)
@@ -1520,10 +1511,9 @@ static struct msl_program *reflect(OrcaProgram *p, NSMutableString *log)
     ok = ok && reflect_stage(r, MSL_VERTEX, info.vertexBindings, log) &&
          reflect_stage(r, MSL_FRAGMENT, info.fragmentBindings, log);
   } else {
-    [log appendString:@"MSL without a reflection table needs macOS 13 or iOS 16\n"];
+    [log appendString:@"the Metal renderer needs macOS 13 or iOS 16\n"];
     ok = NO;
   }
-  for (int s = 0; s < MSL_STAGES; s++) snprintf(r->entry[s], MSL_MAX_NAME, "%s", p->functions[s].name.UTF8String);
   if (!ok) free(r), r = NULL;
   return r;
 }
@@ -1532,7 +1522,6 @@ void mtlLinkProgram(uint32_t program)
 {
   OrcaProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !ensure_device()) return set_error(MTL_INVALID_VALUE);
-  struct msl_program const *given = p->given;
   [p reset];
   if (!p->pipelines) p->pipelines = [NSMutableDictionary new];
   static uint32_t serial;
@@ -1544,9 +1533,8 @@ void mtlLinkProgram(uint32_t program)
   NSMutableString *log = [NSMutableString string];
   BOOL ok = YES;
   for (int s = 0; ok && s < MSL_STAGES; s++)
-    ok = (p->functions[s] = compile_stage(p, s, given ? given->entry[s] : NULL, log)) != nil;
-  if (ok && !given) ok = (p->reflected = reflect(p, log)) != NULL;
-  p->refl = given ? given : p->reflected;
+    ok = (p->functions[s] = compile_stage(p, s, log)) != nil;
+  ok = ok && (p->refl = reflect(p, log)) != NULL;
   for (int s = 0; ok && s < MSL_STAGES; s++) {
     p->data[s] = calloc(1, MAX(p->refl->blockSize[s], 4));
     if (p->refl->blockSize[s] > MAX_SET_BYTES) {

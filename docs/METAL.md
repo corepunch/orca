@@ -46,22 +46,21 @@ through `glGetProgramInfoLog`, as a GLSL link error would. A definition with
 no MSL has no program on a Metal build: it is logged and drawn with the error
 shader.
 
-The backend also needs a program's reflection: the entry points, each
-uniform's byte offset, array and matrix strides in each stage's uniform block,
-each sampler's `texture(n)`/`sampler(n)` pair and each vertex attribute's
-location (`struct msl_program`, `source/renderer/metal/msl_program.h`). It
-comes from one of two places:
+The backend also needs a program's reflection: each uniform's byte offset,
+array and matrix strides in each stage's uniform struct, each sampler's
+`texture(n)`/`sampler(n)` pair and each vertex attribute's location
+(`struct msl_program`, `source/renderer/metal/msl_program.h`). Nobody writes
+it: `mtlLinkProgram` builds one pipeline from the two functions and reads
+Metal's own `MTLRenderPipelineReflection`, matching everything to the
+renderer's uniforms and attributes by name. This needs macOS 13 or iOS 16.
 
-- **Built-in shaders** carry it. On Metal builds `struct shader_desc` has a
-  `Metal` member, a `struct msl_program` with both sources and a hand-written
-  reflection, passed with `mtlProgramReflection`. The programs are in
-  `source/renderer/builtin/r_builtin_shaders_msl.h`, and each definition in
-  `r_builtin_shaders.c` names its own with `SHADER_METAL(...)`. A built-in
-  shader's GLSL and MSL must be changed together.
-- **Project shaders** give the sources alone (`shader_desc.MetalSource`), and
-  `mtlLinkProgram` reflects them itself: it builds one pipeline from the two
-  functions and reads Metal's own `MTLRenderPipelineReflection`. This needs
-  macOS 13 or iOS 16.
+Built-in and project shaders differ only in where the MSL is kept:
+
+- **Built-in shaders**: `source/renderer/builtin/r_builtin_shaders_msl.h`.
+  Each definition in `r_builtin_shaders.c` names its two stages with
+  `SHADER_METAL(vertex, fragment)`, which fills `shader_desc.MetalSource` on
+  Metal builds. A built-in shader's GLSL and MSL must be changed together.
+- **Project shaders**: the `Shader` XML, as described next.
 
 ### Writing a project shader in MSL
 
@@ -107,7 +106,7 @@ fragment float4 fragmentStage(FragmentIn in [[stage_in]], constant Uniforms& u [
 
 Unlike GLSL, where the engine declares the uniforms in front of the source, a
 Metal stage is a complete MSL file. Write it in CDATA, because MSL is full of
-`<` and `&`. The rules the reflection goes by:
+`<` and `&`. The rules the reflection goes by, for built-in shaders too:
 
 - **One function per stage.** The vertex source has one `vertex` function and
   the fragment source one `fragment` function; their names are free.
@@ -193,7 +192,8 @@ for them by hand; `renderer.CreateShader` in Lua takes GLSL only.
 The OpenGL renderer's own tests are unchanged. On a Mac, check:
 
 1. `make` and `make test-macos-offscreen` (clears and reads back an offscreen
-   surface through the Metal layer), then `make test-macos-retina`.
+   surface through the Metal layer, and links a program to check what the
+   backend reflects from it), then `make test-macos-retina`.
 2. `make chat-ios`, or build a regenerated Xcode project, on an iPhone.
 3. Scroll the Octopus feed with Instruments' Animation Hitches template and
    compare displayed frames with the 60 fps measured on OpenGL ES.
