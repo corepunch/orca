@@ -31,6 +31,8 @@ void Notifications_AppleCancelLocal(char const *id);
    application:didFinishLaunchingWithOptions: returns; NULL or an error. */
 void Notifications_AppleRegisterRefresh(void);
 char const *Notifications_AppleScheduleRefresh(double seconds);
+/* Widgets (N3): widget.json in the ORCAAppGroup container; NULL or an error. */
+char const *Notifications_AppleWriteWidget(char const *json, unsigned long length);
 #endif
 
 #endif

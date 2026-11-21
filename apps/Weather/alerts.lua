@@ -361,7 +361,7 @@ end
 
 -- The background refresh (background.lua): the home place's forecast,
 -- fetched fresh, then sync. `options`: home (a place), fetch, now, storage,
--- notifier, setting. Returns the plan, or nil and why.
+-- notifier, setting. Returns the plan and the forecast, or nil and why.
 function Alerts.refresh(options)
     local Forecast = require "Weather/forecast"
     local home = options.home
@@ -372,7 +372,7 @@ function Alerts.refresh(options)
     if not forecast then return nil, err end
     forecast.spot = home
     if options.storage and raw then options.storage:save("forecast-" .. home.id, raw) end
-    return (Alerts.sync(forecast, home, options))
+    return (Alerts.sync(forecast, home, options)), forecast
 end
 
 return Alerts

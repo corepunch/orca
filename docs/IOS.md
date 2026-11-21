@@ -342,6 +342,37 @@ without asking. `reverse(lat, lon)` names a position with `CLGeocoder`
 to Apple's geocoding service. Nothing keeps tracking after a call. Desktop
 builds return `unsupported`.
 
+### Widgets
+
+`make ios-sim APP=weather WIDGETS=1` (or `make -f tools/ios/Makefile
+WIDGETS=1 …`) builds the project's `Widget/*.swift` into a WidgetKit
+extension, `PlugIns/<Name>.appex`, identified as `<bundle id>.widget`
+(`tools/ios/widget.py`). The app and the extension share the App Group
+`APP_GROUP`, by default `group.<bundle id>`: bundle.py writes it to both
+Info.plists as `ORCAAppGroup`, and simulator builds link the
+`com.apple.security.application-groups` entitlement into both binaries.
+The app writes with `orca.notifications.writeWidgetSnapshot(json)`, which
+saves `widget.json` atomically in that container (16 KiB at most; nil and
+a reason without a group or a provisioned container); the extension reads
+it on its own timeline. Without `WIDGETS=1` nothing changes: no extension,
+no entitlement, and the call reports that the build has no App Group.
+
+On a device the App Group must exist on the signing team, and both the app
+and the extension need it. `tools/ios/sign.py` refuses a `WIDGETS=1` device
+build; sign it in Xcode. For each bundle id (one per edition):
+
+1. In the Apple Developer portal (Identifiers), register the App Group
+   `group.<bundle id>`, for example `group.org.orca.weather` and
+   `group.org.orca.weather.surf`.
+2. Give the App IDs `<bundle id>` and `<bundle id>.widget` the App Groups
+   capability with that group (Xcode's automatic signing does this when the
+   capability is added to both targets).
+3. Create or refresh development and distribution profiles for both IDs.
+4. Add a Widget Extension target to the generated Xcode project whose
+   sources are `Widget/*.swift`, with `ORCAAppGroup` in its Info.plist, and
+   add App Groups to both targets. The generated projects do not include it
+   yet: `tools/xcode/generate.py` would need a second target.
+
 ### VoiceOver and Dynamic Type
 
 While VoiceOver or Switch Control runs, every paint mirrors the visible

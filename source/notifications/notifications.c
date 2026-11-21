@@ -197,4 +197,20 @@ int notifications_ScheduleRefresh(lua_State *L) {
 #endif
 }
 
+#define NOTIFICATIONS_WIDGET_MAX 16384
+
+int notifications_WriteWidgetSnapshot(lua_State *L) {
+  size_t length = 0;
+  char const *json = luaL_checklstring(L, 1, &length);
+  luaL_argcheck(L, length <= NOTIFICATIONS_WIDGET_MAX, 1, "snapshot must be at most 16 KiB");
+#if defined(ORCA_IOS)
+  char const *error = Notifications_AppleWriteWidget(json, length);
+  if (!error) { lua_pushboolean(L, 1); return 1; }
+  return notifications_unsupported(L, error);
+#else
+  (void)json;
+  return notifications_unsupported(L, "Widgets need an iPhone or iPad build with an App Group.");
+#endif
+}
+
 #include <notifications/notifications_export.c>

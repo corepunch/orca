@@ -183,4 +183,28 @@ local bgNet = F.network()
 check(hook { fetch = bgNet.fetch, notifier = notifier, clock = function() return NOW end } == true and #bgNet.requests >= 1,
     "background.lua refreshes the home place")
 
+-- N3: the widget's snapshot. The app writes it when the home place's fresh
+-- forecast is drawn, notifications on or off; background.lua writes it
+-- too; a build without an App Group says so and nothing else changes.
+local Widget = require "Weather/widget"
+local snapshot = Widget.snapshot(wet, home, NOW)
+check(snapshot.place == home.title and snapshot.temp:find("°$") and snapshot.verdict ~= "" and snapshot.line ~= ""
+    and snapshot.updated == NOW and snapshot.version == 1, "A snapshot has the place, temperature, verdict and a line")
+check(Widget.encode { b = 'say "hi"\n', a = 2 } == [[{"a":2,"b":"say \"hi\"\n"}]], "Snapshots are JSON, keys sorted")
+local widgets = {}
+local widgetNotifier = setmetatable({ writeWidgetSnapshot = function(json) widgets[#widgets + 1] = json; return true end },
+    { __index = notifier })
+check(Widget.write(wet, home, { notifier = widgetNotifier, now = NOW }) == widgets[1] and widgets[1]:find('"place":"', 1, true),
+    "Widget.write hands the JSON to orca.notifications")
+check(select(2, Widget.write(wet, home, { notifier = { writeWidgetSnapshot = function() return nil, "no App Group" end } }))
+    == "no App Group" and select(2, Widget.write(wet, home, {})) == "no widget", "Without an App Group it says why")
+widgets = {}
+local widgetStore = F.storage("alerts-widget", F.PLACES)
+local wui = F.launch { storage = widgetStore, notifier = widgetNotifier }
+check(#widgets >= 1 and widgets[#widgets]:find('"place":"', 1, true), "The app writes the widget for its home place")
+wui.app.hubScope:dispose()
+widgets = {}
+check(hook { fetch = F.network().fetch, notifier = widgetNotifier, clock = function() return NOW end } == true
+    and #widgets == 1, "background.lua writes the widget too")
+
 F.done("weather-alerts")

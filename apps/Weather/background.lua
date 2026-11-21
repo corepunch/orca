@@ -18,9 +18,18 @@ return function(options)
     local MyPlaces = require "Weather/myplaces"
     MyPlaces.init { storage = store, curated = require "Weather/places" }
     local Alerts = require "Weather/alerts"
-    if not Settings.get(Alerts.GROUP, "on") then return false end
     local notifier = require("Weather/notify").module(options.notifier)
-    local plan = Alerts.refresh { home = MyPlaces.mine()[1], storage = store, notifier = notifier, fetch = options.fetch,
-        now = options.clock and options.clock() }
+    -- Alerts need notifications on; the widget (N3) needs a build with an
+    -- App Group, which writeWidgetSnapshot reports.
+    local widget = notifier and notifier.writeWidgetSnapshot
+    if not (Settings.get(Alerts.GROUP, "on") or widget) then return false end
+    local now = options.clock and options.clock()
+    local home = MyPlaces.mine()[1]
+    local plan, forecast = Alerts.refresh { home = home, storage = store, notifier = notifier, fetch = options.fetch,
+        now = now }
+    if forecast and widget then
+        local written = require("Weather/widget").write(forecast, home, { now = now, notifier = notifier })
+        if written and notifier.scheduleRefresh then pcall(notifier.scheduleRefresh, Alerts.REFRESH) end
+    end
     return plan ~= nil
 end

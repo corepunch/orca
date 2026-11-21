@@ -194,4 +194,19 @@ char const *Notifications_AppleScheduleRefresh(double seconds) {
   // The simulator has no scheduler (BGTaskSchedulerErrorCodeUnavailable).
   return submitted ? NULL : "The system did not accept a background refresh.";
 }
+
+// Widgets read what the app writes into the App Group they share; the
+// group comes from Info.plist so one binary serves every edition.
+char const *Notifications_AppleWriteWidget(char const *json, unsigned long length) {
+  NSString *group = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"ORCAAppGroup"];
+  if (![group isKindOfClass:[NSString class]] || !group.length) return "This build has no App Group (build with WIDGETS=1).";
+  NSURL *container = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:group];
+  if (!container) return "The App Group container is unavailable: check the App Groups capability and provisioning.";
+  NSData *data = [NSData dataWithBytes:json length:length];
+  NSError *error = nil;
+  if (![data writeToURL:[container URLByAppendingPathComponent:@"widget.json"] options:NSDataWritingAtomic error:&error])
+    return "Could not write the widget snapshot.";
+  return NULL;
+}
+
 #endif
