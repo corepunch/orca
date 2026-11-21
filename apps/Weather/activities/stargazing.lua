@@ -15,6 +15,8 @@ local Seeing = require "Weather/editions/stargazing/seeing"
 local Sources = require "Weather/editions/stargazing/sources"
 local Aurora = require "Weather/editions/stargazing/aurora"
 local RedMode = require "Weather/editions/stargazing/redmode"
+local Planets = require "Weather/editions/stargazing/planets"
+local Events = require "Weather/editions/stargazing/events"
 
 local Stargazing = {
     id = "stargazing", title = "stars", needsMarine = false,
@@ -28,7 +30,26 @@ Stargazing.fields = {
         "geopotential_height_850hPa", "geopotential_height_700hPa", "geopotential_height_500hPa",
         "total_column_integrated_water_vapour", "boundary_layer_height" },
 }
-Stargazing.sources = { Sources.air, Sources.models, Aurora.source }
+-- Aerosols and other models' clouds (Open-Meteo), then NOAA SWPC's Kp
+-- forecast, solar wind, aurora nowcast and alerts, and GFZ's Hp30. Each is
+-- optional, and the space-weather ones are asked only where the aurora can
+-- matter (aurora.lua); the rating stands without any of them.
+Stargazing.sources = { Sources.air, Sources.models }
+for _, source in ipairs(Aurora.sources) do Stargazing.sources[#Stargazing.sources + 1] = source end
+
+-- Credit for every service read, and for what is computed after others'
+-- work, on the settings' "about" (Provider.about).
+Stargazing.attribution = {
+    { "Space weather by NOAA SWPC", "Kp forecast, solar wind, OVATION aurora nowcast and alerts. Public domain, "
+        .. "swpc.noaa.gov; no endorsement by NOAA is implied." },
+    { "Hp30 index by GFZ Potsdam", "Geomagnetic Hp30, GFZ German Research Centre for Geosciences (Yamazaki et al. 2022), "
+        .. "CC BY 4.0, kp.gfz.de." },
+    { "Moon and planet positions after P. Schlyter", "Computed on this device from Paul Schlyter's \"How to compute "
+        .. "planetary positions\"." },
+    { "Meteor showers: IMO and IAU MDC", "Peak dates, rates and radiants after the International Meteor Organization's "
+        .. "calendar and the IAU Meteor Data Center." },
+    { "Eclipse Predictions by Fred Espenak, NASA/GSFC Emeritus", "Lunar eclipse times, eclipse.gsfc.nasa.gov." },
+}
 
 local REDMODE = { { "auto", "dusk to dawn" }, { "on", "always" }, { "off", "off" } }
 Stargazing.settings = {
@@ -146,6 +167,24 @@ end
 
 local function poleward(spot) return spot and spot.lat < 0 and "south" or "north" end
 
+local function dark(level) return level == "night" or level == "astronomical" or level == "nautical" end
+
+-- OVATION's nowcast for the hour going on now, when it is dark: a reason
+-- that replaces the Kp estimate, or nil (no fresh nowcast, or little
+-- chance where Kp said none either).
+local function nowcast(hour, forecast, level, reach)
+    local spot, now = spotOf(forecast), forecast and forecast.epoch
+    if not (spot and now and hour.epoch and forecast.ovation and dark(level)) then return nil end
+    if not (hour.epoch <= now and now < hour.epoch + 3600) then return nil end
+    local cast = Aurora.ovationAt(forecast.ovation, spot.lat, spot.lon, now)
+    if not cast or cast.stale then return nil end
+    if cast.chance >= 10 then return ("Aurora nowcast: %d%% chance overhead (NOAA OVATION)."):format(cast.chance) end
+    if cast.horizonChance >= 10 then
+        return ("Aurora nowcast: possible low in the %s (NOAA OVATION)."):format(poleward(spot))
+    end
+    return reach and "Aurora nowcast: little chance right now (NOAA OVATION)." or nil
+end
+
 function Stargazing.rate(hour, forecast)
     local card = Score.card(50)
     if Sky.isStorm(hour.code) then card:cap(5, "Thunderstorm.") end
@@ -209,7 +248,9 @@ function Stargazing.rate(hour, forecast)
     elseif (hour.gust or 0) > 12 then card:add(-4, "Gusts shake the telescope.") end
     if (hour.temp or 10) < 0 then card:note("Below freezing: dress warmly.") end
     local reach = below < 60 and aurora(hour, forecast, level)
-    if reach then
+    local cast = below < 60 and nowcast(hour, forecast, level, reach)
+    if cast then card:note(cast)
+    elseif reach then
         card:note(reach == "overhead" and "Aurora likely (estimate from Kp)."
             or ("Aurora possible low in the %s (estimate from Kp)."):format(poleward(spotOf(forecast))))
     end
@@ -367,7 +408,8 @@ local function tonightCard(forecast, frame, night)
         local later = goodNights(forecast, frame)
         detail = detail .. (#later > 0 and " · next good night: " .. later[1] or "")
     end
-    return { id = "tonight", title = "tonight", value = word, detail = detail, tone = tone,
+    -- rank 0: tonight's answer always leads the hub's cards.
+    return { id = "tonight", title = "tonight", value = word, detail = detail, tone = tone, rank = 0,
         icon = night.best and Sky.icon(night.best.hour.code, false) or nil }
 end
 
@@ -449,21 +491,202 @@ local function skyCard(forecast, night)
         detail = ("at %s · %s"):format(Units.clock(entry.hour.time), #why > 0 and table.concat(why, ", ") or "from model winds and moisture") }
 end
 
+-- The live space weather for now (SV-ST1 to SV-ST3): the OVATION nowcast
+-- and the solar wind only when it is dark now, Hp30 and NOAA's alerts
+-- whenever they came, and the services asked that did not answer.
+local SERVICES = { { "kp", "Kp forecast" }, { "solarMag", "solar wind" }, { "solarPlasma", "solar wind" },
+    { "ovation", "aurora nowcast" }, { "spaceAlerts", "NOAA alerts" }, { "hp30", "Hp30" } }
+local function live(forecast, spot)
+    local now = forecast.epoch
+    local state = { dark = now and dark(Night.level(Sky.sunAltitude(now, spot.lat, spot.lon))), silent = {} }
+    if not now then return state end
+    if state.dark then
+        state.cast = Aurora.ovationAt(forecast.ovation, spot.lat, spot.lon, now)
+        state.wind = forecast.solarWind
+    end
+    state.activity = Aurora.activityNow(forecast.hp30, now)
+    state.alert = Aurora.alertLine(forecast.spaceAlerts, spot.lat, spot.lon, now, forecast.offset)
+    local seen = {}
+    for _, service in ipairs(SERVICES) do
+        if (forecast.missing or {})[service[1]] and not seen[service[2]] then
+            seen[service[2]], state.silent[#state.silent + 1] = true, service[2]
+        end
+    end
+    return state
+end
+Stargazing.liveAurora = live
+
 local function auroraCard(forecast, night)
-    local spot, best, clear = spotOf(forecast), nil, false
+    local spot, best, clear, top = spotOf(forecast), nil, false, nil
     for _, entry in ipairs(night.hours) do
         local reach = aurora(entry.hour, forecast, darkness(entry.hour, forecast))
         if reach and (not best or reach == "overhead" or entry.hour.kp > best.hour.kp) then
             best = { hour = entry.hour, reach = reach }
         end
         if reach and blocking(entry.hour) < 60 then clear = true end
+        top = entry.hour.kp and math.max(top or 0, entry.hour.kp) or top
     end
-    if not best then return nil end
-    local where = best.reach == "overhead" and "likely" or "low in the " .. poleward(spot)
-    return { id = "aurora", title = "aurora (estimate)", tone = clear and (best.reach == "overhead" and "good" or "fair") or "poor",
-        value = clear and where or "behind clouds",
-        detail = ("Kp %.0f forecast around %s; best away from town lights, looking %s"):format(best.hour.kp,
-            Units.clock(best.hour.time), poleward(spot)) }
+    local state = live(forecast, spot)
+    local cast = state.cast and not state.cast.stale and state.cast
+    local seen = cast and (cast.chance >= 10 or cast.horizonChance >= 10)
+    local windText, windLevel
+    if state.wind then windText, windLevel = Aurora.windText(state.wind) end
+    local matters = Aurora.canMatter(spot.lat, spot.lon, top)
+    local stirring = matters and (windLevel == "watch" or windLevel == "strong" or (state.activity and state.activity.rising))
+    local silent = matters and state.dark and #state.silent > 0
+    if not (best or seen or stirring or state.alert or silent) then return nil end
+
+    local first = night.hours[1] and night.hours[1].hour
+    local clearNow = not first or blocking(first) < 60
+    local value, tone
+    if cast then
+        local where = cast.chance >= 30 and "likely now" or cast.chance >= 10 and "possible now"
+            or cast.horizonChance >= 10 and ("low in the %s now"):format(poleward(spot)) or "quiet now"
+        value, tone = clearNow and where or "behind clouds", not clearNow and "poor" or where == "quiet now" and "info"
+            or cast.chance >= 30 and "good" or "fair"
+    elseif best then
+        local where = best.reach == "overhead" and "likely" or "low in the " .. poleward(spot)
+        value, tone = clear and where or "behind clouds", clear and (best.reach == "overhead" and "good" or "fair") or "poor"
+    elseif stirring then value, tone = "watch the sky", "fair"
+    elseif state.alert then value, tone = "storm watch", "info"
+    else value, tone = "no live data", "info" end
+
+    local parts = {}
+    if cast then
+        parts[#parts + 1] = ("NOAA nowcast %d%% here, %d%% low in the %s, for %s"):format(cast.chance, cast.horizonChance,
+            poleward(spot), Units.clock(Night.iso(cast.at or forecast.epoch, forecast.offset)))
+    elseif state.cast and state.cast.stale then parts[#parts + 1] = "the aurora nowcast is out of date"
+    end
+    if windText and windText ~= "" then parts[#parts + 1] = windText end
+    if state.activity then
+        parts[#parts + 1] = state.activity.rising and ("activity is rising now (Hp30 %.1f)"):format(state.activity.value)
+            or ("Hp30 %.1f now"):format(state.activity.value)
+    end
+    if state.alert then parts[#parts + 1] = state.alert end
+    if best then
+        parts[#parts + 1] = ("Kp %.0f forecast around %s; best away from town lights, looking %s"):format(best.hour.kp,
+            Units.clock(best.hour.time), poleward(spot))
+    end
+    if #state.silent > 0 and matters then
+        -- A silent service is no sign of a quiet sky: say so.
+        parts[#parts + 1] = ("no answer from the %s: that says nothing about the sky, look %s if it is clear"):format(
+            table.concat(state.silent, ", "), poleward(spot))
+    end
+    return { id = "aurora", title = cast and "aurora now" or "aurora (estimate)", tone = tone, value = value,
+        detail = table.concat(parts, " · ") }
+end
+
+local function at(epoch, offset) return Units.clock(Night.iso(epoch, offset)) end
+
+-- How the clouds go over the night's hours: "clear all night", "clear
+-- after midnight", "clear from 22:00", "clear spells", "cloudy all night".
+local function cloudWords(night)
+    local clear, cloudy, firstClear, count = 0, 0, nil, #night.hours
+    for _, entry in ipairs(night.hours) do
+        local below = blocking(entry.hour)
+        if below < 30 then clear, firstClear = clear + 1, firstClear or entry.hour end
+        if below >= 60 then cloudy = cloudy + 1 end
+    end
+    if count == 0 then return nil end
+    if clear == count then return "clear all night", true end
+    if clear == 0 then return cloudy == count and "cloudy all night" or "never quite clear", false end
+    local tail = true
+    for index = count, 1, -1 do
+        local entry = night.hours[index]
+        if entry.hour == firstClear then break end
+        if blocking(entry.hour) >= 30 then tail = false end
+    end
+    if not tail then return "clear spells", true end
+    local h = Sky.hour(firstClear.time)
+    return (h and h < 12) and "clear after midnight" or "clear from " .. Units.clock(firstClear.time), true
+end
+
+-- SV-ST4: the bright planets up in tonight's dark hours, brightest first,
+-- with the moon or another planet close by.
+local function planetsCard(forecast, frame, night)
+    local list = Planets.night(frame, spotOf(forecast))
+    if #list == 0 then
+        return { id = "planets", title = "planets tonight", value = "none well placed", tone = "info", hub = false,
+            detail = "Mercury to Saturn stay low or in twilight tonight" }
+    end
+    local names, parts, close = {}, {}, nil
+    for index, entry in ipairs(list) do
+        if index <= 3 then names[#names + 1] = entry.name end
+        parts[#parts + 1] = ("%s %s · %s · highest %d° %s at %s"):format(entry.name, Planets.magnitude(entry.mag),
+            between(entry.from, entry.to, forecast.offset), math.floor(entry.best.altitude + 0.5), Sky.compass(entry.best.azimuth),
+            at(entry.best.epoch, forecast.offset))
+        if not close and entry.moon and entry.moon < 6 then
+            close = ("%s and the moon close together (%d°)"):format(entry.name, math.max(1, math.floor(entry.moon + 0.5)))
+        end
+    end
+    for _, entry in ipairs(list) do
+        if not close and entry.near and entry.near.degrees < 3 then
+            close = ("%s and %s close together (%.1f°)"):format(entry.name, entry.near.name, entry.near.degrees)
+        end
+    end
+    if close then table.insert(parts, 1, close) end
+    if decide(night) == "stay in" and #night.hours > 0 then parts[#parts + 1] = "clouds may hide them" end
+    return { id = "planets", title = "planets tonight", tone = "info", hub = close ~= nil,
+        value = table.concat(names, ", ") .. (#list > 3 and (" +%d"):format(#list - 3) or ""),
+        detail = table.concat(parts, " · ") }
+end
+
+local function rounded(rate) return rate >= 20 and math.floor(rate / 5 + 0.5) * 5 or math.floor(rate + 0.5) end
+
+-- SV-ST5: a meteor shower near its peak, rated by the radiant's height,
+-- the moonlight and tonight's clouds.
+local function showerCard(forecast, frame, night)
+    local spot, entry = spotOf(forecast), Events.showersOn(frame)[1]
+    if not entry then return nil end
+    local shower, days = entry.shower, entry.days
+    local best = Events.rate(shower, frame, spot, days)
+    local value = days == 0 and "peak tonight" or days == -1 and "peak tomorrow night"
+        or days < 0 and ("peak in %d nights"):format(-days) or "a night past the peak"
+    local parts = {}
+    if best and best.rate >= 1 then
+        parts[1] = ("up to about %d an hour around %s"):format(rounded(best.rate), at(best.at, forecast.offset))
+    else
+        parts[1] = best and "the radiant stays low here: few meteors" or "no dark hours tonight"
+    end
+    local moon, free = frame.moon, 0
+    for _, span in ipairs(frame.moonFree or {}) do free = free + span.to - span.from end
+    if frame.moonUp == "none" or moon.lit < 0.15 then parts[#parts + 1] = "no moonlight"
+    elseif free < 2 * 3600 then
+        parts[#parts + 1] = ("the %s washes out the faint ones"):format(moon.name:find("moon") and moon.name or moon.name .. " moon")
+    elseif frame.moonSet and (not frame.moonRise or frame.moonSet < frame.moonRise) then
+        parts[#parts + 1] = "moon sets at " .. at(frame.moonSet, forecast.offset)
+    elseif frame.moonRise then parts[#parts + 1] = "moon rises at " .. at(frame.moonRise, forecast.offset)
+    else parts[#parts + 1] = "a dark sky" end
+    local clouds, clearSome = cloudWords(night)
+    if clouds then parts[#parts + 1] = clouds end
+    local rate = best and best.rate or 0
+    local tone = clearSome == false and "poor" or rate >= 30 and "good" or rate >= 10 and "fair" or "poor"
+    return { id = "meteors", title = shower.name, value = value, tone = tone, hub = days == 0 and rate >= 10,
+        detail = table.concat(parts, " · ") }
+end
+
+-- SV-ST5: a lunar eclipse tonight, or one in the next week, seen from here.
+local function eclipseCard(forecast, frame, night)
+    local spot = spotOf(forecast)
+    local eclipse = Events.eclipseIn(frame, spot)
+    if eclipse then
+        local parts = { ("greatest at %s, the moon %d° up"):format(at(eclipse.at, forecast.offset),
+            math.floor(eclipse.altitude + 0.5)) }
+        local cloudy
+        for _, entry in ipairs(night.hours) do
+            if entry.hour.epoch <= eclipse.at and eclipse.at < entry.hour.epoch + 3600 then
+                cloudy = blocking(entry.hour) >= 60
+                parts[#parts + 1] = cloudy and "cloudy then" or "clear then"
+            end
+        end
+        return { id = "eclipse", title = "eclipse", value = eclipse.kind .. " lunar eclipse tonight",
+            tone = cloudy == nil and "info" or cloudy and "poor" or "good", detail = table.concat(parts, " · ") }
+    end
+    local later = Events.nextEclipse(spot, frame.to, 7)
+    if not later then return nil end
+    return { id = "eclipse", title = "eclipse", value = ("%s lunar eclipse %s"):format(later.kind,
+        Sky.weekday(Night.iso(later.at, forecast.offset):sub(1, 10))), tone = "info", hub = false,
+        detail = ("greatest at %s, the moon %d° up"):format(at(later.at, forecast.offset), math.floor(later.altitude + 0.5)) }
 end
 
 -- Tonight's big answers: the verdict for the whole night, darkness, the
@@ -485,6 +708,9 @@ function Stargazing.cards(forecast)
         if decide(night) ~= "stay in" then cards[#cards + 1] = skyCard(forecast, night) end
         cards[#cards + 1] = auroraCard(forecast, night)
     end
+    cards[#cards + 1] = eclipseCard(forecast, frame, night)
+    cards[#cards + 1] = showerCard(forecast, frame, night)
+    cards[#cards + 1] = planetsCard(forecast, frame, night)
     local list = {}
     for index = 1, #cards do if cards[index] then list[#list + 1] = cards[index] end end
     return list
