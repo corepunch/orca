@@ -556,9 +556,12 @@ struct shader_desc
   lpcString_t VertexShader;
   lpcString_t FragmentShader;
 #if ORCA_METAL
-  // Metal draws with MSL, not with the GLSL above: both stages and their
-  // reflection. A definition without it has no program on a Metal build.
+  // Metal draws with MSL, not with the GLSL above. A built-in shader names
+  // its program: both stages and their hand-written reflection. A project's
+  // Shader gives the two stage sources alone and the backend reflects them.
+  // A definition with neither has no program on a Metal build.
   struct msl_program const *Metal;
+  lpcString_t MetalSource[MSL_STAGES];
 #endif
 };
 

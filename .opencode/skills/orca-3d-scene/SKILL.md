@@ -97,6 +97,11 @@ void main() { FragColor = vec4(Tint.rgb, Intensity); }
   uniform the Shader declares**. Declare custom uniforms in `<Shader.Uniforms>`
   so colours get the sRGB->linear conversion; do not redeclare them in GLSL. Text may be plain or CDATA; escape `<` as `&lt;`
   in plain text.
+- Apple builds draw with Metal and compile no GLSL: a shader without Metal
+  stages draws there with the error shader (magenta) and logs `no Metal vertex
+  shader`. Add each stage a second time as `<VertexShader Language="Metal">` /
+  `<FragmentShader Language="Metal">` holding complete MSL in CDATA; the rules
+  are in `docs/METAL.md` under *Writing a project shader in MSL*.
 - Attributes: `a_position`, `a_normal`, `a_tangent`, `a_binormal`, `a_color`,
   `a_texcoord0..4`. Builtins: `u_modelViewProjectionTransform`,
   `u_modelTransform`, `u_viewTransform`, `u_projectionTransform`,

@@ -138,7 +138,9 @@ typedef struct
   OrcaShader *vs, *fs;
   BOOL linked;
   NSString *log;
-  struct msl_program const *refl;        // set by mtlProgramReflection before mtlLinkProgram
+  struct msl_program const *given;       // set by mtlProgramReflection
+  struct msl_program const *refl;        // of the linked program: `given`, else `reflected`
+  struct msl_program *reflected;         // Metal's own reflection, made by mtlLinkProgram
   id<MTLFunction> functions[MSL_STAGES];
   uint8_t *data[MSL_STAGES];
   int units[MSL_MAX_UNIFORMS];
@@ -150,7 +152,7 @@ typedef struct
 @implementation OrcaProgram
 - (void)reset
 {
-  refl = NULL;
+  free(reflected), reflected = NULL, refl = NULL;
   for (int s = 0; s < MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
@@ -1345,7 +1347,9 @@ void mtlDetachShader(uint32_t program, uint32_t shader)
   if (p && p->fs == s) p->fs = nil;
 }
 
-static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, NSMutableString *log)
+// The stage's function: the one named `entry`, else the source's only
+// function of the stage's kind.
+static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, char const *entry, NSMutableString *log)
 {
   char const *label = stage == MSL_VERTEX ? "vertex" : "fragment";
   OrcaShader *shader = stage == MSL_VERTEX ? p->vs : p->fs;
@@ -1355,34 +1359,195 @@ static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, NSMutableString 
   options.languageVersion = MTLLanguageVersion2_1;
   id<MTLLibrary> library = [mtl.device newLibraryWithSource:shader->source options:options error:&error];
   if (!library) return [log appendFormat:@"%s: %@\n", label, error.localizedDescription], nil;
-  return [library newFunctionWithName:@(p->refl->entry[stage])];
+  MTLFunctionType type = stage == MSL_VERTEX ? MTLFunctionTypeVertex : MTLFunctionTypeFragment;
+  for (NSString *name in entry ? @[@(entry)] : library.functionNames) {
+    id<MTLFunction> function = [library newFunctionWithName:name];
+    if (function.functionType == type) return function;
+  }
+  return [log appendFormat:@"%s: the source has no %s function\n", label, label], nil;
 }
 
 void mtlProgramReflection(uint32_t program, struct msl_program const *reflection)
 {
   OrcaProgram *p = object(OBJ_PROGRAM, program);
-  if (p) p->refl = reflection;
+  if (p) p->given = reflection;
+}
+
+static int components(mtlEnum type, int *columns, BOOL *integer);
+
+static mtlEnum data_type(MTLDataType type)
+{
+  switch (type) {
+    case MTLDataTypeFloat: return MTL_FLOAT;
+    case MTLDataTypeFloat2: return MTL_FLOAT_VEC2;
+    case MTLDataTypeFloat3: return MTL_FLOAT_VEC3;
+    case MTLDataTypeFloat4: return MTL_FLOAT_VEC4;
+    case MTLDataTypeFloat2x2: return MTL_FLOAT_MAT2;
+    case MTLDataTypeFloat3x3: return MTL_FLOAT_MAT3;
+    case MTLDataTypeFloat4x4: return MTL_FLOAT_MAT4;
+    case MTLDataTypeInt: return MTL_INT;
+    case MTLDataTypeInt2: return MTL_INT_VEC2;
+    case MTLDataTypeInt3: return MTL_INT_VEC3;
+    case MTLDataTypeInt4: return MTL_INT_VEC4;
+    case MTLDataTypeUInt: return MTL_UNSIGNED_INT;
+    case MTLDataTypeUInt2: return MTL_UNSIGNED_INT_VEC2;
+    case MTLDataTypeUInt3: return MTL_UNSIGNED_INT_VEC3;
+    case MTLDataTypeUInt4: return MTL_UNSIGNED_INT_VEC4;
+    case MTLDataTypeBool: return MTL_BOOL;
+    case MTLDataTypeBool2: return MTL_BOOL_VEC2;
+    case MTLDataTypeBool3: return MTL_BOOL_VEC3;
+    case MTLDataTypeBool4: return MTL_BOOL_VEC4;
+    default: return 0;
+  }
+}
+
+// The uniform called `name`, added when this is the first stage to declare it.
+static struct msl_uniform *reflected_uniform(struct msl_program *r, NSString *name, mtlEnum type, NSUInteger count,
+                                             NSMutableString *log)
+{
+  char const *text = name.UTF8String;
+  for (uint32_t i = 0; i < r->numUniforms; i++) {
+    struct msl_uniform *u = &r->uniforms[i];
+    if (strcmp(u->name, text)) continue;
+    if (u->type == type && u->arraySize == count) return u;
+    return [log appendFormat:@"%s: the two stages declare it differently\n", text], NULL;
+  }
+  if (!type) return [log appendFormat:@"%s: a uniform cannot have this type\n", text], NULL;
+  if (strlen(text) >= MSL_MAX_NAME) return [log appendFormat:@"%s: the name is too long\n", text], NULL;
+  if (r->numUniforms == MSL_MAX_UNIFORMS) return [log appendFormat:@"more than %d uniforms\n", MSL_MAX_UNIFORMS], NULL;
+  struct msl_uniform *u = &r->uniforms[r->numUniforms++];
+  *u = (struct msl_uniform){ .type = type, .arraySize = (uint32_t)count,
+                             .offset = { -1, -1 }, .texture = { -1, -1 }, .sampler = { -1, -1 } };
+  strcpy(u->name, text);
+  return u;
+}
+
+static BOOL reflect_attributes(struct msl_program *r, id<MTLFunction> function, MTLVertexDescriptor *vd,
+                               NSMutableString *log)
+{
+  static MTLVertexFormat const floats[] = { MTLVertexFormatFloat, MTLVertexFormatFloat2, MTLVertexFormatFloat3,
+                                            MTLVertexFormatFloat4 };
+  static MTLVertexFormat const ints[] = { MTLVertexFormatInt, MTLVertexFormatInt2, MTLVertexFormatInt3,
+                                          MTLVertexFormatInt4 };
+  static MTLVertexFormat const uints[] = { MTLVertexFormatUInt, MTLVertexFormatUInt2, MTLVertexFormatUInt3,
+                                           MTLVertexFormatUInt4 };
+  for (MTLVertexAttribute *a in function.vertexAttributes) {
+    mtlEnum type = data_type(a.attributeType);
+    int columns;
+    BOOL integer;
+    int n = components(type, &columns, &integer);
+    if (!n || columns > 1) return [log appendFormat:@"%@: an attribute cannot have this type\n", a.name], NO;
+    if (a.attributeIndex >= MAX_VERTEX_ATTRIBS)
+      return [log appendFormat:@"%@: attribute(%d) is the last one\n", a.name, MAX_VERTEX_ATTRIBS - 1], NO;
+    if (strlen(a.name.UTF8String) >= MSL_MAX_NAME) return [log appendFormat:@"%@: the name is too long\n", a.name], NO;
+    if (r->numAttributes == MSL_MAX_ATTRIBUTES) return [log appendFormat:@"more than %d attributes\n", MSL_MAX_ATTRIBUTES], NO;
+    struct msl_attribute *out = &r->attributes[r->numAttributes++];
+    strcpy(out->name, a.name.UTF8String);
+    out->location = (uint32_t)a.attributeIndex;
+    out->type = type;
+    BOOL isUnsigned = type == MTL_UNSIGNED_INT || (type >= MTL_UNSIGNED_INT_VEC2 && type <= MTL_UNSIGNED_INT_VEC4);
+    NSUInteger index = MSL_VERTEX_BUFFER_BASE + a.attributeIndex;
+    vd.attributes[a.attributeIndex].format = (!integer ? floats : isUnsigned ? uints : ints)[n - 1];
+    vd.attributes[a.attributeIndex].bufferIndex = index;
+    vd.layouts[index].stride = 16;
+  }
+  return YES;
+}
+
+static BOOL reflect_stage(struct msl_program *r, int s, NSArray<id<MTLBinding>> *bindings, NSMutableString *log)
+  API_AVAILABLE(macos(13.0), ios(16.0))
+{
+  for (id<MTLBinding> b in bindings) {
+    if (b.type == MTLBindingTypeBuffer) {
+      if (b.index >= MSL_VERTEX_BUFFER_BASE) continue;  // a vertex buffer of the stage's input
+      MTLStructType *block = ((id<MTLBufferBinding>)b).bufferStructType;
+      if (b.index != MSL_UNIFORM_BUFFER || !block)
+        return [log appendFormat:@"%@: a stage's only buffer is its struct of uniforms, at buffer(%d)\n", b.name,
+                                 MSL_UNIFORM_BUFFER], NO;
+      r->blockSize[s] = (uint32_t)((id<MTLBufferBinding>)b).bufferDataSize;
+      for (MTLStructMember *m in block.members) {
+        MTLArrayType *array = m.dataType == MTLDataTypeArray ? m.arrayType : nil;
+        mtlEnum type = data_type(array ? array.elementType : m.dataType);
+        struct msl_uniform *u = reflected_uniform(r, m.name, type, array ? array.arrayLength : 1, log);
+        if (!u) return NO;
+        u->offset[s] = (int32_t)m.offset;
+        u->arrayStride[s] = array ? (uint32_t)array.stride : 0;
+        u->matrixStride[s] = type == MTL_FLOAT_MAT2 ? 8 : type == MTL_FLOAT_MAT3 || type == MTL_FLOAT_MAT4 ? 16 : 0;
+      }
+    } else if (b.type == MTLBindingTypeTexture) {
+      MTLTextureType kind = ((id<MTLTextureBinding>)b).textureType;
+      mtlEnum type = kind == MTLTextureType2D ? MTL_SAMPLER_2D : kind == MTLTextureTypeCube ? MTL_SAMPLER_CUBE
+                   : kind == MTLTextureType3D ? MTL_SAMPLER_3D : 0;
+      struct msl_uniform *u = reflected_uniform(r, b.name, type, 1, log);
+      if (!u) return NO;
+      u->texture[s] = (int32_t)b.index;
+    }
+  }
+  for (uint32_t i = 0; i < r->numUniforms; i++) {
+    struct msl_uniform *u = &r->uniforms[i];
+    if (u->texture[s] < 0) continue;
+    NSString *named = [@(u->name) stringByAppendingString:@"Sampler"];
+    for (id<MTLBinding> b in bindings) {
+      if (b.type != MTLBindingTypeSampler) continue;
+      if ([b.name isEqualToString:named]) { u->sampler[s] = (int32_t)b.index; break; }
+      if ((int32_t)b.index == u->texture[s]) u->sampler[s] = (int32_t)b.index;
+    }
+  }
+  return YES;
+}
+
+// The reflection of a program that was given none: Metal's own, of a pipeline
+// built from the two functions. A stage's uniforms are the members of the
+// struct at buffer(MSL_UNIFORM_BUFFER) and its texture arguments; a texture's
+// sampler is the argument named <texture>Sampler, else the one at its index.
+static struct msl_program *reflect(OrcaProgram *p, NSMutableString *log)
+{
+  struct msl_program *r = calloc(1, sizeof(*r));
+  MTLRenderPipelineDescriptor *d = [MTLRenderPipelineDescriptor new];
+  d.vertexFunction = p->functions[MSL_VERTEX];
+  d.fragmentFunction = p->functions[MSL_FRAGMENT];
+  d.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
+  d.vertexDescriptor = [MTLVertexDescriptor vertexDescriptor];
+  BOOL ok = reflect_attributes(r, d.vertexFunction, d.vertexDescriptor, log);
+  if (@available(macOS 13.0, iOS 16.0, *)) {
+    MTLRenderPipelineReflection *info = nil;
+    NSError *error = nil;
+    ok = ok && [mtl.device newRenderPipelineStateWithDescriptor:d
+                                                        options:MTLPipelineOptionBindingInfo | MTLPipelineOptionBufferTypeInfo
+                                                     reflection:&info
+                                                          error:&error];
+    if (error) [log appendFormat:@"%@\n", error.localizedDescription];
+    ok = ok && reflect_stage(r, MSL_VERTEX, info.vertexBindings, log) &&
+         reflect_stage(r, MSL_FRAGMENT, info.fragmentBindings, log);
+  } else {
+    [log appendString:@"MSL without a reflection table needs macOS 13 or iOS 16\n"];
+    ok = NO;
+  }
+  for (int s = 0; s < MSL_STAGES; s++) snprintf(r->entry[s], MSL_MAX_NAME, "%s", p->functions[s].name.UTF8String);
+  if (!ok) free(r), r = NULL;
+  return r;
 }
 
 void mtlLinkProgram(uint32_t program)
 {
   OrcaProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !ensure_device()) return set_error(MTL_INVALID_VALUE);
-  struct msl_program const *refl = p->refl;
+  struct msl_program const *given = p->given;
   [p reset];
   if (!p->pipelines) p->pipelines = [NSMutableDictionary new];
   static uint32_t serial;
   p->serial = ++serial;
-  if (!(p->refl = refl) || !p->vs || !p->fs) {
-    p->refl = NULL;
-    p->log = @"a Metal program needs both MSL stages and their reflection";
+  if (!p->vs || !p->fs) {
+    p->log = @"a Metal program needs both MSL stages";
     return;
   }
   NSMutableString *log = [NSMutableString string];
-  int ok = YES;
+  BOOL ok = YES;
+  for (int s = 0; ok && s < MSL_STAGES; s++)
+    ok = (p->functions[s] = compile_stage(p, s, given ? given->entry[s] : NULL, log)) != nil;
+  if (ok && !given) ok = (p->reflected = reflect(p, log)) != NULL;
+  p->refl = given ? given : p->reflected;
   for (int s = 0; ok && s < MSL_STAGES; s++) {
-    p->functions[s] = compile_stage(p, s, log);
-    ok = p->functions[s] != nil;
     p->data[s] = calloc(1, MAX(p->refl->blockSize[s], 4));
     if (p->refl->blockSize[s] > MAX_SET_BYTES) {
       [log appendFormat:@"uniforms take %u bytes, more than %d\n", p->refl->blockSize[s], MAX_SET_BYTES];
@@ -1392,7 +1557,12 @@ void mtlLinkProgram(uint32_t program)
   p->flipY = -1;
   for (uint32_t i = 0; ok && i < p->refl->numUniforms; i++) {
     p->units[i] = 0;
-    if (!strcmp(p->refl->uniforms[i].name, MSL_FLIP_Y)) p->flipY = (int32_t)i;
+    if (!strcmp(p->refl->uniforms[i].name, MSL_FLIP_Y) && p->refl->uniforms[i].offset[MSL_VERTEX] >= 0)
+      p->flipY = (int32_t)i;
+  }
+  if (ok && p->flipY < 0) {
+    [log appendFormat:@"vertex: the uniforms need `float %s`, multiplied into the position's y\n", MSL_FLIP_Y];
+    ok = NO;
   }
   p->log = log;
   p->linked = ok;
@@ -1900,11 +2070,11 @@ static void bind_samplers(OrcaProgram *p)
     id<MTLSamplerState> sampler = sampler_for(t);
     if (u->texture[MSL_VERTEX] >= 0) {
       [mtl.encoder setVertexTexture:texture atIndex:u->texture[MSL_VERTEX]];
-      [mtl.encoder setVertexSamplerState:sampler atIndex:u->sampler[MSL_VERTEX]];
+      if (u->sampler[MSL_VERTEX] >= 0) [mtl.encoder setVertexSamplerState:sampler atIndex:u->sampler[MSL_VERTEX]];
     }
     if (u->texture[MSL_FRAGMENT] >= 0) {
       [mtl.encoder setFragmentTexture:texture atIndex:u->texture[MSL_FRAGMENT]];
-      [mtl.encoder setFragmentSamplerState:sampler atIndex:u->sampler[MSL_FRAGMENT]];
+      if (u->sampler[MSL_FRAGMENT] >= 0) [mtl.encoder setFragmentSamplerState:sampler atIndex:u->sampler[MSL_FRAGMENT]];
     }
   }
 }

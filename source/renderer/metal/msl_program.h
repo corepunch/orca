@@ -3,10 +3,11 @@
 
 // A Metal Shading Language program and its reflection: the two stage
 // sources and where each uniform and vertex attribute lives in them.
-// The Metal backend compiles no other shading language. The renderer owns
-// these (builtin/r_builtin_shaders_msl.h has one, written by hand, for each
-// built-in shader): it passes each stage's source to mtlShaderSource and the
-// program to mtlProgramReflection.
+// The Metal backend compiles no other shading language. The renderer has one,
+// written by hand, for each built-in shader (builtin/r_builtin_shaders_msl.h):
+// it passes each stage's source to mtlShaderSource and the program to
+// mtlProgramReflection. A program linked without one, as a project's Shader
+// is, gets its reflection from Metal: see reflect() in metal.m.
 //
 // Loose uniforms of both stages are gathered into one uniform block per
 // stage at buffer(MSL_UNIFORM_BUFFER); the reflection gives each uniform's

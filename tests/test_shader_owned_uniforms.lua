@@ -18,4 +18,10 @@ local early = fs.loadObjectFromString [[
 ]]
 test.expect(early ~= nil, "a material loads with the uniform written first")
 test.expect_near(early["Gradient.Angle"], 90, 0.001, "an attribute waits for the owner a sibling attribute loads")
+
+-- A shader holds a stage once per shading language; each build compiles its own.
+local languages = {}
+for stage in shader.children do languages[#languages + 1] = tostring(stage.Language) end
+table.sort(languages)
+test.expect_eq(table.concat(languages, " "), "GLSL Metal", "the gradient has its fragment stage in GLSL and in Metal")
 print("PASS: shader-owned uniforms")
