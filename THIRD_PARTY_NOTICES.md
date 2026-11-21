@@ -53,19 +53,6 @@ Noto Sans, Noto Sans Mono and Noto Serif, the default font families in
   fonts in [share/fonts/OFL-Noto.txt](share/fonts/OFL-Noto.txt), as the
   license requires.
 
-## glslang and SPIRV-Cross
-
-GLSL to MSL translation for the Metal renderer on macOS and iOS, compiled into
-the engine there:
-
-- glslang (15.4.0), `libs/glslang`: The Khronos Group, 3Dlabs, LunarG,
-  Google and other contributors. Its files are under the 3-Clause BSD,
-  2-Clause BSD, MIT and Apache 2.0 licenses, reproduced in
-  `libs/glslang/LICENSE.txt`.
-- SPIRV-Cross (vulkan-sdk-1.4.350.0), `libs/SPIRV-Cross`: Copyright 2015-2021
-  Arm Limited and other contributors. Apache-2.0 OR MIT; ORCA uses it under
-  the Apache License 2.0 (below and `libs/SPIRV-Cross/LICENSE`).
-
 ## LZ4
 
 Compression library from the `libs/lz4` submodule (v1.10.0), compiled into

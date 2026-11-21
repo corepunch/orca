@@ -4,7 +4,7 @@
 // Layout rules: float4x4 = 64B, float3x3 = 48B (3×16B cols), float4 = 16B,
 // float3 = 16B slot / packed_float3 = 12B slot, float2 = 8B, float = 4B.
 // Uniform offsets follow std430 (vec3 align=16, size=12; next at tight align).
-// SPIRV-Cross uses float3 when gap to next = 16, packed_float3 when gap = 12.
+// A vec3 is float3 when the gap to the next member is 16, packed_float3 when 12.
 //
 // Every vertex shader applies the Y-flip and depth remap to Metal's [0,1] range.
 // All shaders use entry point "main0" and uniform buffer [[buffer(0)]].
@@ -69,8 +69,8 @@ static const char k_msl_fs_default[] =
   "    return u_texture.sample(u_textureSampler, in.v_texcoord0) * in.v_color * u.u_opacity;\n"
   "}\n";
 
-static struct msl_program k_refl_default = {
-  .source = {(char *)k_msl_vs_default, (char *)k_msl_fs_default},
+static const struct msl_program k_refl_default = {
+  .source = {k_msl_vs_default, k_msl_fs_default},
   .entry = {"main0","main0"},
   .blockSize = {120,120},
   .numUniforms = 5,
@@ -163,8 +163,8 @@ static const char k_msl_fs_ui[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static struct msl_program k_refl_ui = {
-  .source = {(char *)k_msl_vs_ui, (char *)k_msl_fs_ui},
+static const struct msl_program k_refl_ui = {
+  .source = {k_msl_vs_ui, k_msl_fs_ui},
   .entry = {"main0","main0"},
   .blockSize = {196,196},
   .numUniforms = 10,
@@ -267,8 +267,8 @@ static const char k_msl_fs_charset[] =
   "    return step(fr.y, 1.0) * mix(bg, fg, t) * u.u_opacity;\n"
   "}\n";
 
-static struct msl_program k_refl_charset = {
-  .source = {(char *)k_msl_vs_charset, (char *)k_msl_fs_charset},
+static const struct msl_program k_refl_charset = {
+  .source = {k_msl_vs_charset, k_msl_fs_charset},
   .entry = {"main0","main0"},
   .blockSize = {204,204},
   .numUniforms = 13,
@@ -350,8 +350,8 @@ static const char k_msl_fs_cinematic[] =
   "    return u_cinematicPalette.sample(u_cinematicPaletteSampler, float2(col.r, 0.5)) * u.u_opacity;\n"
   "}\n";
 
-static struct msl_program k_refl_cinematic = {
-  .source = {(char *)k_msl_vs_cinematic, (char *)k_msl_fs_cinematic},
+static const struct msl_program k_refl_cinematic = {
+  .source = {k_msl_vs_cinematic, k_msl_fs_cinematic},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
   .numUniforms = 8,
@@ -427,8 +427,8 @@ static const char k_msl_fs_ninepatch[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static struct msl_program k_refl_ninepatch = {
-  .source = {(char *)k_msl_vs_ninepatch, (char *)k_msl_fs_ninepatch},
+static const struct msl_program k_refl_ninepatch = {
+  .source = {k_msl_vs_ninepatch, k_msl_fs_ninepatch},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
   .numUniforms = 8,
@@ -487,8 +487,8 @@ static const char k_msl_fs_vertexcolor[] =
   "    return u.u_color * u.u_opacity;\n"
   "}\n";
 
-static struct msl_program k_refl_vertexcolor = {
-  .source = {(char *)k_msl_vs_vertexcolor, (char *)k_msl_fs_vertexcolor},
+static const struct msl_program k_refl_vertexcolor = {
+  .source = {k_msl_vs_vertexcolor, k_msl_fs_vertexcolor},
   .entry = {"main0","main0"},
   .blockSize = {100,100},
   .numUniforms = 4,
@@ -541,8 +541,8 @@ static const char k_msl_fs_error[] =
   "    return float4(1.0, 0.0, 1.0, u.u_opacity);\n"
   "}\n";
 
-static struct msl_program k_refl_error = {
-  .source = {(char *)k_msl_vs_error, (char *)k_msl_fs_error},
+static const struct msl_program k_refl_error = {
+  .source = {k_msl_vs_error, k_msl_fs_error},
   .entry = {"main0","main0"},
   .blockSize = {72,72},
   .numUniforms = 3,
@@ -632,8 +632,8 @@ static const char k_msl_fs_button[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static struct msl_program k_refl_button = {
-  .source = {(char *)k_msl_vs_button, (char *)k_msl_fs_button},
+static const struct msl_program k_refl_button = {
+  .source = {k_msl_vs_button, k_msl_fs_button},
   .entry = {"main0","main0"},
   .blockSize = {208,208},
   .numUniforms = 10,
@@ -730,8 +730,8 @@ static const char k_msl_fs_roundedbox[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static struct msl_program k_refl_roundedbox = {
-  .source = {(char *)k_msl_vs_roundedbox, (char *)k_msl_fs_roundedbox},
+static const struct msl_program k_refl_roundedbox = {
+  .source = {k_msl_vs_roundedbox, k_msl_fs_roundedbox},
   .entry = {"main0","main0"},
   .blockSize = {224,224},
   .numUniforms = 11,
@@ -861,8 +861,8 @@ static const char k_msl_fs_blur_v[] =
   "    return float4(a,a,a,a) * u.u_opacity;\n"
   "}\n";
 
-static struct msl_program k_refl_blur_h = {
-  .source = {(char *)k_msl_blur_common_vs, (char *)k_msl_fs_blur_h},
+static const struct msl_program k_refl_blur_h = {
+  .source = {k_msl_blur_common_vs, k_msl_fs_blur_h},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
   .numUniforms = 9,
@@ -885,8 +885,8 @@ static struct msl_program k_refl_blur_h = {
   },
 };
 
-static struct msl_program k_refl_blur_v = {
-  .source = {(char *)k_msl_blur_common_vs, (char *)k_msl_fs_blur_v},
+static const struct msl_program k_refl_blur_v = {
+  .source = {k_msl_blur_common_vs, k_msl_fs_blur_v},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
   .numUniforms = 9,
@@ -979,8 +979,8 @@ static const char k_msl_fs_backdrop_blur[] =
   "    return float4(mix(float3(luma), color, u.u_saturation), 1.0);\n"
   "}\n";
 
-static struct msl_program k_refl_backdrop_blur = {
-  .source = {(char *)k_msl_vs_backdrop_blur, (char *)k_msl_fs_backdrop_blur},
+static const struct msl_program k_refl_backdrop_blur = {
+  .source = {k_msl_vs_backdrop_blur, k_msl_fs_backdrop_blur},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
   .numUniforms = 9,
