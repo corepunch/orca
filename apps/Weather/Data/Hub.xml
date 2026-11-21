@@ -7,6 +7,8 @@
   <View Name="PlaceList" Source="Places" Selection="first"/>
   <View Name="MyPlaces" Source="Places" Filter="minePlaces"/>
   <View Name="Suggestions" Source="Places" Filter="suggestedPlaces"/>
+  <Query Name="LocationOffer" Entity="WeatherPlace" Operation="locationOffer"
+         Description="One row when this device can say where it is (orca.location); none otherwise."/>
   <Query Name="Report" Entity="WeatherRow" Operation="hub" Require="PlaceId" Poll="1800000" Cached="savedHub"
          Description="Conditions, the week and what the selected place is good for.">
     <Param Name="PlaceId" Type="string" Bind="PlaceList.Selected.Id"/>
@@ -26,5 +28,6 @@
   <Handler Name="OpenSettings" Function="openSettings"/>
   <Handler Name="PlaceLink" Function="placeLink"/>
   <Handler Name="AddPlace" Function="addPlace"/>
+  <Handler Name="UseLocation" Function="locateFromHub"/>
   <Handler Name="CardAction" Function="cardAction"/>
 </DataScope>

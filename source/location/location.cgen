@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
+<module name="location" namespace="orca" prefix="location_">
+  <includes>
+    <include file="include/api.h"/>
+  </includes>
+  <functions>
+    <function name="Supported" lua="true">
+      <summary>Reports whether this build can ask for the device's position.</summary>
+      <details>True on iOS, where Core Location exists and the bundle declares NSLocationWhenInUseUsageDescription (package.lua `Capabilities = { "location" }`). False on other platforms, command-line tools and bundles without the usage string.</details>
+      <returns type="nresults">A boolean.</returns>
+    </function>
+    <function name="Status" lua="true">
+      <summary>Returns the application's location permission without asking for it.</summary>
+      <details>One of not_determined (never asked), allowed, denied (the person said no or turned Location Services off), restricted (parental or device policy) or unsupported. A second result is true when the person allowed only an approximate position (iOS Precise Location off).</details>
+      <returns type="nresults">A status string and a boolean for approximate.</returns>
+    </function>
+    <function name="Current" lua="true">
+      <summary>Finds the device's position once, asking for permission while the application is in use if needed.</summary>
+      <details>Yields the application coroutine until done; outside a yieldable coroutine it returns not_yieldable. Accuracy of about a kilometre is requested, and an approximate position is accepted, so the fix is quick and the person may keep Precise Location off. Nothing is tracked after the call. Returns { lat, lon, accuracy (metres), timestamp (Unix seconds), approximate }. Errors are nil and a table with code and message: permission when access is denied or restricted, timeout after about 20 seconds without a fix, failed when Core Location reports an error, unsupported on other platforms or when the bundle lacks the usage string.</details>
+      <returns type="nresults">A position table, or nil and a structured error.</returns>
+    </function>
+    <function name="Reverse" lua="true">
+      <summary>Names a position through the system geocoder (CLGeocoder).</summary>
+      <details>Takes latitude and longitude in degrees. Yields like Current. Returns { name, locality, region, country, countryCode }, any of which may be missing; countryCode is ISO 3166-1 alpha-2. The coordinates go to Apple's geocoding service, which needs the network and is rate limited. Errors: network, failed, unsupported, not_yieldable.</details>
+      <returns type="nresults">A place table, or nil and a structured error.</returns>
+    </function>
+  </functions>
+</module>

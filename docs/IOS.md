@@ -278,6 +278,70 @@ URLSchemes = { "appwrite-callback-<project id>" }
 `tools/ios/bundle.py`, `tools/macos/bundle.py` and the Xcode generator add them
 to `CFBundleURLTypes`. Regenerate the Xcode project after changing the list.
 
+### Capabilities
+
+A project declares the native features it uses in `package.lua`; the Make
+packaging and the Xcode generator add only the Info.plist keys those need:
+
+```lua
+Capabilities = { "location" }
+```
+
+- `location`: `NSLocationWhenInUseUsageDescription`, with generic wording.
+  `orca.location.supported()` is false without it, so a project that does not
+  ask never shows a prompt.
+- `background-refresh`: `UIBackgroundModes = fetch` and
+  `BGTaskSchedulerPermittedIdentifiers = <bundle id>.refresh`, for
+  `orca.notifications.scheduleRefresh`.
+
+A dark app should also launch dark. `LaunchBackground = "#000000"` in
+`package.lua` compiles a `LaunchBackground` colour set (Make: a temporary
+catalog beside the project's icons; Xcode: `Generated/Launch.xcassets` in
+the project) and sets `UILaunchScreen.UIColorName`, so the system's launch
+screen is that colour instead of white. A dark colour also sets
+`UIUserInterfaceStyle = Dark`, keeping permission sheets and the keyboard
+dark. A project `LaunchScreen.storyboard` still wins in Xcode.
+
+### Local notifications and background refresh
+
+`orca.notifications.requestLocalAuthorization()` asks for alerts and sound
+without registering with APNs; `poll()` then returns `authorized` or an
+error with `permission_denied`. `scheduleLocal { id, title, body, at }`
+schedules one at a Unix time (the same id replaces it) and
+`cancelLocal(id)` removes one, or every local one without an id; their
+identifiers are prefixed `orca.local.` so remote notifications are never
+touched. A local notification shown while the app is open appears as a
+banner.
+
+`scheduleRefresh(seconds)` submits a `BGAppRefreshTaskRequest`. When iOS
+runs it (when and whether is the system's choice; never on the simulator,
+rarely in Low Power Mode), the project's `background.lua`, which returns a
+function, runs in a Lua state of its own: no screens and no engine objects,
+so it cannot disturb the suspended application. `orca.network`,
+`orca.notifications`, plain `io` and stand-ins for `orca.core` (the region
+functions only) and `orca.filesystem` (`fileExists`, `makeDirectory`) are
+available, and `require "<package Name>/x"` loads the project's `x.lua`. The
+function is resumed every 100 ms until it returns (false marks the task
+failed) or the system expires it; the next refresh is asked for three hours
+on either way. Debug it in Xcode with
+`e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"<bundle id>.refresh"]`
+on a device.
+
+### Location
+
+`orca.location` finds the device's position once, while the app is in use.
+`current()` asks for when-in-use permission the first time, requests about a
+kilometre of accuracy (an approximate position is accepted, so Precise
+Location may stay off) and yields the application coroutine like
+`network.fetch` until it returns `{ lat, lon, accuracy, timestamp,
+approximate }`, or nil and `{ code, message }` with `permission`, `timeout`
+(about 20 seconds), `failed`, `unsupported` or `not_yieldable`. `status()`
+reports `not_determined`, `allowed`, `denied`, `restricted` or `unsupported`
+without asking. `reverse(lat, lon)` names a position with `CLGeocoder`
+(`name`, `locality`, `region`, `country`, `countryCode`); the coordinates go
+to Apple's geocoding service. Nothing keeps tracking after a call. Desktop
+builds return `unsupported`.
+
 ## Verify
 
 ```sh

@@ -1293,6 +1293,21 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
       <details>ORCA_LANGUAGE overrides the platform preference for deterministic previews. Apple matches the bundle localizations against preferred languages, falling back to the system list for command-line tools; other platforms use LANGUAGE, LC_ALL, LC_MESSAGES or LANG. Defaults to en.</details>
       <returns type="string"/>
     </function>
+    <function name="GetRegion">
+      <summary>Returns the device's region as an ISO 3166-1 alpha-2 code, such as US, or an empty string when unknown.</summary>
+      <details>ORCA_REGION overrides it for deterministic previews and tests. Apple platforms read the current locale's region (Settings, General, Language and Region), which is independent of the application's language; other platforms take the region of LC_ALL, LC_MEASUREMENT or LANG. Use it for defaults such as units and the country to prefer in place search, never to locate the person.</details>
+      <returns type="string"/>
+    </function>
+    <function name="GetMeasurementSystem">
+      <summary>Returns the device's measurement system: metric, us or uk.</summary>
+      <details>Apple platforms read the locale's measurement system, which the person may change apart from the region. Elsewhere, and whenever ORCA_REGION is set, it follows the region: us for the United States, Liberia and Myanmar, uk for the United Kingdom, otherwise metric.</details>
+      <returns type="string"/>
+    </function>
+    <function name="Uses24HourClock">
+      <summary>Reports whether the device shows times on a 24-hour clock.</summary>
+      <details>Apple platforms read the locale's hour format, including the person's 24-Hour Time switch. Elsewhere, and whenever ORCA_REGION is set, regions that read the us measurement system use a 12-hour clock and the rest 24 hours.</details>
+      <returns type="bool"/>
+    </function>
     <function name="GetLocalizedString">
       <summary>Looks up a text key in the nearest scoped Locale resource.</summary>
       <details>Searches Locale components on the object and immediate Locale children of each ancestor. Missing entries fall back to the key. This keeps independent applications and detached templates isolated.</details>

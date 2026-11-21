@@ -272,18 +272,59 @@ week), `F.network()` (a fake fetch with `requests`, `failing`,
 true }` answers each place in its own clock and longitude, as
 `F.weather(lat, extra, lon)` does), `F.storage(name, places, extra)` (a
 scratch folder emptied of the app's and editions' files, and of
-`extra(place)`), `F.launch { places, net, clock, storage, region }` (the app
+`extra(place)`), `F.launch { places, net, clock, storage, region, location }` (the app
 at "/", with `find`, `has`, `text`, `press`, `back`, `open`, `cards`,
 `settle`) and `F.checkEdition(key)` (the checks every edition shares).
 Default units in tests are metric (region "NL").
 
 Not built yet:
 
-- device location (wave 4: the hook is `MyPlaces.fromLocation`);
-- notifications and live tiles (wave 4).
+- live tiles (wave 4).
 
 `F.storage` empties the saved places (`places`) too, so every launch starts
 on the first run; `ui.choose(id)` taps a place row.
+
+**Use my location** (`locate.lua`, N1). Where `orca.location` can ask
+(an iPhone or iPad build whose package.lua declares `Capabilities = {
+"location" }`), the hub's places section and the search page offer "use my
+location". It looks once (`location.current()`, approximate accepted),
+names the fix with the system geocoder and shows it like a search result
+("your location · North Holland, Netherlands · approximate"); the editor
+saves it as any found place, with its country. Denied, unsupported, no fix
+or no name each give one calm line; search always stays. Tests pass
+`location` (a stand-in module) to `F.launch`.
+
+**Notifications** (`alerts.lua`, N2). Off until the user turns them on
+(settings, "notifications" under the activities); turning them on asks the
+system once. They are for the home place only: at most one of each kind a
+day, never in quiet hours (22:00 to 07:00 by default; an alert due then
+waits for their end, or is dropped when that is too late to help), and each
+kind has its own switch. The kinds, each where its activity is in the app:
+
+| Kind | Activity | Said | Rule |
+| --- | --- | --- | --- |
+| `rain` | outdoors | 30 min before | dry now, ≥ 60 % and ≥ 0.3 mm in the next 3 h |
+| `brief` | outdoors | 07:00 | the day's high and low, rain, what to bring (off by default) |
+| `frost` | garden | 17:00 | tonight ≤ 0.5 °C, or ≤ 2 °C (likely) / ≤ 4 °C (possible) clear and calm |
+| `storm` | hiking | 3 h before | the first daylight hour with codes 95–99, or CAPE ≥ 1000 J/kg and ≥ 40 % (an estimate) |
+| `wind` | sailing | 19:00 the evening before, or 3 h before | two good hours in a row by Sailing's own rating |
+| `dawn` | surf | 20:00 | Surfers' dawn-patrol card is good for tomorrow |
+| `clear` | stargazing | 2 h before | two dark hours (sun 12° down) under 20 % cloud |
+
+```lua
+Alerts.candidates(forecast, place, now)  -- { kind, title, body, at, before } per rule
+Alerts.plan(candidates, { now, offset, setting, delivered })  -- what to deliver, ids "<kind>:<date>"
+Alerts.sync(forecast, place, { now, storage, notifier })  -- plan and (re)schedule; storage "alerts"
+Alerts.refresh { home, fetch, now, storage, notifier }    -- the background hook's work
+```
+
+An activity may add its own (`activity.alerts(forecast, place, now)`,
+items with a `kind` from `Alerts.KINDS`). The app syncs whenever the home
+place's fresh forecast is drawn. `background.lua` is the background refresh
+(iOS `BGAppRefreshTask`, best effort): without screens it loads the home
+place's forecast and syncs again. Tests pass `notifier` (a stand-in for
+`orca.notifications`) to `F.launch`; `tests/test_weather_alerts.lua` checks
+every rule, the plan and the hook.
 
 ## Extension points for editions
 
@@ -399,8 +440,14 @@ toIso)` "06–08h" or "6–8 am", `Units.label(kind)` for chart titles,
 `Units.value(kind, metric)` for chart values. Defaults: metric (m/s,
 24 h); a US region gets °F, mph, feet, inches, inHg, miles and a 12-hour
 clock; the UK mph and miles; Sailors' Weather knots everywhere. The region
-is `ORCA_REGION`, else the preferred language's region ("en-US"), else
-`LC_ALL`, `LC_MEASUREMENT` or `LANG`; with none, metric.
+is `ORCA_REGION`, else the device's region (`core.getRegion()`, the phone's
+Language and Region setting, apart from the app's language), else the
+preferred language's region ("en-US"), else `LC_ALL`, `LC_MEASUREMENT` or
+`LANG`; with none, metric. Without `ORCA_REGION` the phone's own measurement
+system and 24-hour switch (`core.getMeasurementSystem()`,
+`core.uses24HourClock()`, through `Units.device()`) win over the region's
+usual ones. Place search asks for the device's country only for a postcode
+and otherwise lists that country's places first (`Search.prefer`).
 
 **`Storage`: files on the device.** `Storage.load(name)` and
 `Storage.save(name, table)` keep plain tables (strings, numbers, booleans,
@@ -448,7 +495,7 @@ MyPlaces.add(draftOrId, home)  -- save a draft, or keep a suggestion by id
 MyPlaces.set(id, key, value)   -- the user's own value (`place.own` lists them)
 MyPlaces.move(id, delta), MyPlaces.makeHome(id), MyPlaces.remove(id)
 MyPlaces.fromResult(json)      -- a draft from a geocoding result
-MyPlaces.fromLocation(lat, lon, name, region)  -- wave 4's hook: a draft at a device fix
+MyPlaces.fromLocation(lat, lon, name, region, country)  -- a draft at a device fix
 ```
 
 A resolved place is a plain table: the curated or found fields, the user's

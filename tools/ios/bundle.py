@@ -2,6 +2,7 @@
 """Package an ORCA project as a standalone universal iPhone/iPad application."""
 import argparse
 import fnmatch
+import json
 import os
 from pathlib import Path
 import plistlib
@@ -83,6 +84,74 @@ def url_schemes(project):
     return schemes
 
 
+# Kept identical to tools/xcode/common.py, which the Xcode generator imports.
+CAPABILITIES = ('location', 'background-refresh')
+LOCATION_USAGE = ('Finds where you are, only when you ask, to show the weather there. '
+                  'Apple names the place; your position is not shared with anyone else.')
+
+
+def capabilities(project):
+    """Names from a literal `Capabilities = { "location", ... }` list in package.lua."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^Capabilities\s*=\s*\{([^}]*)\}', package.read_text() if package.is_file() else '', re.MULTILINE)
+    names = re.findall(r'"([^"]*)"', match[1]) if match else []
+    for name in names:
+        if name not in CAPABILITIES:
+            raise ValueError('Unknown capability ' + repr(name) + '; known: ' + ', '.join(CAPABILITIES))
+    return names
+
+
+def capability_info(project, identifier):
+    """Info.plist keys for the capabilities a project asks for, and only those."""
+    names, info = capabilities(project), {}
+    if 'location' in names:
+        info['NSLocationWhenInUseUsageDescription'] = LOCATION_USAGE
+    if 'background-refresh' in names:
+        # orca.notifications.scheduleRefresh submits "<bundle id>.refresh",
+        # which runs the project's background.lua.
+        info['UIBackgroundModes'] = ['fetch']
+        info['BGTaskSchedulerPermittedIdentifiers'] = [identifier + '.refresh']
+    return info
+
+
+# Kept identical to tools/xcode/common.py.
+LAUNCH_COLOR = 'LaunchBackground'
+
+
+def launch_background(project):
+    """(r, g, b) from 0 to 1 for a literal `LaunchBackground = "#rrggbb"` in package.lua, or None."""
+    package = Path(project) / 'package.lua'
+    match = re.search(r'^LaunchBackground\s*=\s*"([^"]*)"', package.read_text() if package.is_file() else '', re.MULTILINE)
+    if not match:
+        return None
+    if not re.fullmatch(r'#[0-9a-fA-F]{6}', match[1]):
+        raise ValueError('LaunchBackground must be a "#rrggbb" colour: ' + match[1])
+    return tuple(int(match[1][i:i + 2], 16) / 255 for i in (1, 3, 5))
+
+
+def launch_catalog(directory, rgb):
+    """Write <directory>/Launch.xcassets with the LaunchBackground colour set; return its path."""
+    catalog = Path(directory) / 'Launch.xcassets'
+    info = {'info': {'author': 'xcode', 'version': 1}}
+    components = {name: '%.3f' % value for name, value in zip(('red', 'green', 'blue'), rgb)}
+    components['alpha'] = '1.000'
+    colour = dict(info, colors=[{'idiom': 'universal', 'color': {'color-space': 'srgb', 'components': components}}])
+    for path, content in ((catalog / 'Contents.json', info), (catalog / (LAUNCH_COLOR + '.colorset/Contents.json'), colour)):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(content, indent=2, sort_keys=True) + '\n'
+        if not path.is_file() or path.read_text() != text:
+            path.write_text(text)
+    return catalog
+
+
+def launch_info(rgb):
+    """The launch screen in that colour; a dark one also keeps system sheets dark, so nothing flashes white."""
+    info = {'UILaunchScreen': {'UIColorName': LAUNCH_COLOR}}
+    if 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2] < 0.3:
+        info['UIUserInterfaceStyle'] = 'Dark'
+    return info
+
+
 def editions(project):
     """{key: name} from a literal `Editions = { { Key = "k", Name = "n" }, ... }` in package.lua."""
     package = Path(project) / 'package.lua'
@@ -106,23 +175,29 @@ def url_types(project):
     return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
 
 
-def compile_assets(project, bundle, sdk, minimum, edition=None):
-    """Compile an optional native icon catalog during an actual Make build."""
+def compile_assets(project, bundle, sdk, minimum, edition=None, launch=None):
+    """Compile the project's icon catalog (the edition's icon when it has one) and a launch colour
+    (`launch`, rgb) during an actual Make build."""
     catalog = project / 'Assets.xcassets'
     icon = 'AppIcon'
     if edition and (catalog / f'AppIcon-{edition}.appiconset/Contents.json').is_file():
         icon = f'AppIcon-{edition}'
-    if not (catalog / f'{icon}.appiconset/Contents.json').is_file():
+    has_icon = (catalog / f'{icon}.appiconset/Contents.json').is_file()
+    if not has_icon and not launch:
         return {}
     with tempfile.TemporaryDirectory(prefix='orca-app-icon-') as temporary:
         partial = Path(temporary) / 'asset-info.plist'
+        catalogs = ([str(catalog)] if has_icon else []) + ([str(launch_catalog(temporary, launch))] if launch else [])
         subprocess.run([
-            'xcrun', '--sdk', sdk, 'actool', str(catalog), '--compile', str(bundle),
+            'xcrun', '--sdk', sdk, 'actool', *catalogs, '--compile', str(bundle),
             '--platform', sdk, '--minimum-deployment-target', minimum,
-            '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', icon,
+            '--target-device', 'iphone', '--target-device', 'ipad', *(['--app-icon', icon] if has_icon else []),
             '--output-partial-info-plist', str(partial),
         ], check=True, stdout=subprocess.DEVNULL)
-        return plistlib.loads(partial.read_bytes())
+        info = plistlib.loads(partial.read_bytes()) if partial.is_file() else {}
+    if launch:
+        info.update(launch_info(launch))
+    return info
 
 
 def main():
@@ -179,8 +254,9 @@ def main():
             }]},
         },
     }
-    info.update(compile_assets(project, bundle, args.sdk, args.minimum, args.edition))
+    info.update(compile_assets(project, bundle, args.sdk, args.minimum, args.edition, launch_background(project)))
     info.update(url_types(project))
+    info.update(capability_info(project, args.identifier))
     languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')
                        if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))
     if languages:

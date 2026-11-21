@@ -112,4 +112,89 @@ int notifications_SetActiveConversation(lua_State *L) {
   return 1;
 }
 
+static int notifications_unsupported(lua_State *L, char const *message) {
+  lua_pushnil(L);
+  lua_pushstring(L, message);
+  return 2;
+}
+
+static char const *const notifications_local_unsupported = "Local notifications require an Apple application bundle.";
+
+int notifications_RequestLocalAuthorization(lua_State *L) {
+#if defined(__APPLE__)
+  if (Notifications_AppleSupported()) {
+    Notifications_AppleRequestLocalAuthorization();
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+#endif
+  return notifications_unsupported(L, notifications_local_unsupported);
+}
+
+static int notifications_valid_id(char const *id, size_t length) {
+  if (!length || length > NOTIFICATIONS_LOCAL_ID) return 0;
+  for (size_t i = 0; i < length; i++) {
+    char c = id[i];
+    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || strchr("-_.:", c))) return 0;
+  }
+  return 1;
+}
+
+static char const *notifications_field(lua_State *L, char const *name, size_t limit) {
+  lua_getfield(L, 1, name);
+  size_t length = 0;
+  char const *value = lua_tolstring(L, -1, &length);
+  lua_pop(L, 1); // the table keeps the string alive
+  if (!value) luaL_error(L, "notification %s must be a string", name);
+  if (length > limit || memchr(value, '\0', length)) luaL_error(L, "notification %s is too long", name);
+  return value;
+}
+
+int notifications_ScheduleLocal(lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  char const *id = notifications_field(L, "id", NOTIFICATIONS_LOCAL_ID);
+  luaL_argcheck(L, notifications_valid_id(id, strlen(id)), 1, "id must be 1-96 letters, digits, '-', '_', '.' or ':'");
+  char const *title = notifications_field(L, "title", 256);
+  char const *body = notifications_field(L, "body", 1024);
+  lua_getfield(L, 1, "at");
+  int ok = 0;
+  double at = lua_tonumberx(L, -1, &ok);
+  lua_pop(L, 1);
+  luaL_argcheck(L, ok && at == at, 1, "at must be Unix seconds");
+#if defined(__APPLE__)
+  if (Notifications_AppleSupported()) {
+    Notifications_AppleScheduleLocal(id, title, body, at);
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+#endif
+  return notifications_unsupported(L, notifications_local_unsupported);
+}
+
+int notifications_CancelLocal(lua_State *L) {
+  size_t length = 0;
+  char const *id = luaL_optlstring(L, 1, NULL, &length);
+  luaL_argcheck(L, !id || notifications_valid_id(id, length), 1, "id must be 1-96 letters, digits, '-', '_', '.' or ':'");
+#if defined(__APPLE__)
+  if (Notifications_AppleSupported()) {
+    Notifications_AppleCancelLocal(id);
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+#endif
+  return notifications_unsupported(L, notifications_local_unsupported);
+}
+
+int notifications_ScheduleRefresh(lua_State *L) {
+  lua_Number seconds = luaL_checknumber(L, 1);
+  luaL_argcheck(L, seconds >= 0 && seconds == seconds, 1, "seconds must not be negative");
+#if defined(ORCA_IOS)
+  char const *error = Notifications_AppleScheduleRefresh((double)seconds);
+  if (!error) { lua_pushboolean(L, 1); return 1; }
+  return notifications_unsupported(L, error);
+#else
+  return notifications_unsupported(L, "Background refresh needs an iPhone or iPad.");
+#endif
+}
+
 #include <notifications/notifications_export.c>

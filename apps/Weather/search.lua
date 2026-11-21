@@ -20,8 +20,20 @@ function Search.clean(text)
     return text
 end
 
+-- The device's country (`Units.region()`, "NL"), which the app sets: a
+-- postcode is national, so a query with a digit asks Open-Meteo for that
+-- country only (`countryCode`); a name searches everywhere and the places
+-- in that country come first. Without one, nothing changes.
+local preferred
+function Search.prefer(region)
+    preferred = type(region) == "string" and region:match("^%a%a$") and region:upper() or nil
+end
+function Search.preferred() return preferred end
+
 function Search.url(text)
-    return Forecast.url("geocoding", ("name=%s&count=%d&language=en&format=json"):format(Search.encode(text), Search.COUNT))
+    local country = preferred and text:find("%d") and "&countryCode=" .. preferred or ""
+    return Forecast.url("geocoding", ("name=%s&count=%d&language=en&format=json%s"):format(Search.encode(text),
+        Search.COUNT, country))
 end
 
 -- Lowercase without the common accents, so "zurich" finds "Zürich".
@@ -53,6 +65,16 @@ function Search.parse(json, text)
     for _, result in ipairs(type(json) == "table" and type(json.results) == "table" and json.results or {}) do
         local draft = MyPlaces.fromResult(result, text)
         if draft then drafts[#drafts + 1] = draft end
+    end
+    -- The device's country first, otherwise Open-Meteo's order.
+    if preferred then
+        local home, abroad = {}, {}
+        for _, draft in ipairs(drafts) do
+            local list = (draft.base and draft.base.country or ""):upper() == preferred and home or abroad
+            list[#list + 1] = draft
+        end
+        for _, draft in ipairs(abroad) do home[#home + 1] = draft end
+        drafts = home
     end
     return drafts
 end

@@ -5,6 +5,7 @@
 -- place found or suggested and not saved yet.
 local MyPlaces = require "Weather/myplaces"
 local Search = require "Weather/search"
+local Locate = require "Weather/locate"
 local Activities = require "Weather/activities"
 local Units = require "Weather/units"
 local PlacePages = {}
@@ -139,6 +140,14 @@ function PlacePages.install(app)
 
     provider.operations.places = function() return PlacePages.rows(app.places) end
     provider.operations.searchPlaces = function(params) return PlacePages.searchRows(params.Query, app.fetch, drafts) end
+    -- "use my location" (N1): offered where the build can ask; the fix
+    -- shows on the search page as a result, or a calm note.
+    provider.filters.offerRows = kind("offer")
+    provider.operations.locationOffer = function()
+        if not Locate.available(app.location) then return {} end
+        return { { id = "locate", kind = "offer", title = "use my location", line = "" } }
+    end
+    provider.operations.locatePlace = function() return Locate.rows(app.location, drafts) end
     provider.operations.suggestedPlaces = function()
         local rows = {}
         for _, place in ipairs(MyPlaces.suggestions()) do
@@ -155,6 +164,12 @@ function PlacePages.install(app)
 
     local handlers = provider.handlers
     handlers.addPlace = function() return app:openSearch() end
+    -- From the hub's places: open search and look there.
+    handlers.locateFromHub = function()
+        app.locateOnOpen = true
+        return app:openSearch()
+    end
+    handlers.useLocation = function(scope) scope:member("Located"):refresh { force = true } end
     handlers.placeLink = function(scope, params)
         local values = params.item and params.item.values
         if not values then return end

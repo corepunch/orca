@@ -45,14 +45,22 @@ function Units.regionOf(tag)
     return nil
 end
 
--- The device's region: ORCA_REGION, the preferred language's region
--- ("en-US"), then LC_ALL, LC_MEASUREMENT or LANG. nil when none says.
+local function core()
+    local ok, module = pcall(require, "orca.core")
+    return ok and type(module) == "table" and module or nil
+end
+
+-- The device's region: ORCA_REGION, the device's own region setting
+-- (`core.getRegion`, which iOS and macOS keep apart from the language), the
+-- preferred language's region ("en-US"), then LC_ALL, LC_MEASUREMENT or
+-- LANG. nil when none says.
 function Units.region()
     local override = os.getenv("ORCA_REGION")
     if override and override ~= "" then return override:upper() end
-    local ok, core = pcall(require, "orca.core")
-    local language = ok and type(core) == "table" and core.getPreferredLanguage and core.getPreferredLanguage()
-    local region = Units.regionOf(language)
+    local engine = core()
+    local own = engine and engine.getRegion and engine.getRegion()
+    if type(own) == "string" and own:match("^%a%a$") then return own:upper() end
+    local region = Units.regionOf(engine and engine.getPreferredLanguage and engine.getPreferredLanguage())
     if region then return region end
     for _, name in ipairs { "LC_ALL", "LC_MEASUREMENT", "LANG" } do
         region = Units.regionOf(os.getenv(name))
@@ -61,17 +69,34 @@ function Units.region()
     return nil
 end
 
+-- What the device itself reads: `{ measurement = "metric" | "us" | "uk",
+-- clock24 = true | false }`, or nil when the engine cannot say (older
+-- builds) or ORCA_REGION decides.
+function Units.device()
+    local override = os.getenv("ORCA_REGION")
+    if override and override ~= "" then return nil end
+    local engine = core()
+    if not (engine and engine.getMeasurementSystem and engine.uses24HourClock) then return nil end
+    local measurement = engine.getMeasurementSystem()
+    if measurement ~= "metric" and measurement ~= "us" and measurement ~= "uk" then return nil end
+    return { measurement = measurement, clock24 = engine.uses24HourClock() == true }
+end
+
 -- The first choice: metric, °F, mph, feet, inches, inHg and miles in the
 -- US, mph and miles in the UK, and knots for wind sports whatever the region.
-function Units.defaults(edition, region)
+-- `device` (Units.device()) is what the phone reads, and wins over the
+-- region: a US phone set to metric stays metric, a 24-hour switch shows 24 h.
+function Units.defaults(edition, region, device)
     local result = {}
     for kind, unit in pairs(METRIC) do result[kind] = unit end
-    if US[region] then
+    local system = device and device.measurement or (US[region] and "us") or (UK[region] and "uk") or "metric"
+    if system == "us" then
         result.temp, result.wind, result.height, result.rain, result.pressure, result.distance, result.clock =
             "f", "mph", "ft", "in", "inhg", "mi", "12"
-    elseif UK[region] then
+    elseif system == "uk" then
         result.wind, result.distance = "mph", "mi"
     end
+    if device and device.clock24 ~= nil then result.clock = device.clock24 and "24" or "12" end
     if edition == "sailing" then result.wind = "kn" end
     return result
 end

@@ -92,6 +92,23 @@ check(Units.regionOf("en-US") == "US" and Units.regionOf("en_GB.UTF-8") == "GB" 
 local us, uk, sailors = Units.defaults(nil, "US"), Units.defaults(nil, "GB"), Units.defaults("sailing", "US")
 check(us.temp == "f" and us.wind == "mph" and us.rain == "in" and us.clock == "12" and uk.temp == "c" and uk.wind == "mph"
     and sailors.wind == "kn" and sailors.temp == "f" and Units.defaults(nil, nil).wind == "ms", "Defaults by region and edition")
+local usMetric = Units.defaults(nil, "US", { measurement = "metric", clock24 = true })
+local nl12 = Units.defaults(nil, "NL", { measurement = "metric", clock24 = false })
+local ukPhone = Units.defaults(nil, nil, { measurement = "uk", clock24 = true })
+check(usMetric.temp == "c" and usMetric.wind == "ms" and usMetric.clock == "24" and nl12.clock == "12" and nl12.temp == "c"
+    and ukPhone.wind == "mph" and ukPhone.temp == "c" and Units.defaults("sailing", "US", { measurement = "us" }).wind == "kn",
+    "The phone's own measurement system and clock win over its region")
+do
+    -- The engine's region functions: ORCA_REGION decides when set (tests and
+    -- previews); Units.device() then stays out of the way.
+    local core = require "orca.core"
+    check(type(core.getRegion()) == "string" and ({ metric = true, us = true, uk = true })[core.getMeasurementSystem()]
+        and type(core.uses24HourClock()) == "boolean", "The engine says the device's region, measurement and clock")
+    if os.getenv("ORCA_REGION") == nil then
+        local device = Units.device()
+        check(device == nil or (device.measurement and type(device.clock24) == "boolean"), "Units.device reads the engine")
+    end
+end
 Units.use {}
 check(Units.temp(12.4) == "12°" and Units.wind(5) == "5 m/s" and Units.gust(5, 7.2) == "5 g 7 m/s" and Units.height(1.46) == "1.5 m"
     and Units.height(2200) == "2200 m" and Units.rain(2) == "2.0 mm" and Units.pressure(1013.2) == "1013 hPa"
@@ -828,6 +845,19 @@ check(Search.url("bondi"):find("^https://customer%-geocoding%-api%.open%-meteo%.
     "An API key moves search to the commercial host")
 Forecast.endpoints.apiKey = nil
 check(Search.clean("  b ") == nil and Search.clean(" Lake  Garda ") == "Lake Garda", "Too short a search is not sent")
+do
+    -- The device's country: a postcode is searched in it, a name everywhere
+    -- with its places first.
+    local before = Search.preferred()
+    Search.prefer("fr")
+    check(Search.url("40150"):find("&countryCode=FR") and not Search.url("hossegor"):find("countryCode"),
+        "A postcode is searched in the device's country, a name everywhere")
+    local mixed = Search.parse({ results = { GEO.matterhorn.results[1], GEO.hossegor.results[1] } }, "x")
+    check(mixed[1].base.country == "FR" and mixed[2].base.country == "CH", "Places in the device's country come first")
+    Search.prefer(nil)
+    check(not Search.url("40150"):find("countryCode"), "Without a region nothing is filtered")
+    Search.prefer(before)
+end
 local peak = MyPlaces.fromResult(GEO.matterhorn.results[1], "matterhorn")
 check(peak.id == "geo-2659729" and peak.base.region == "Valais, Switzerland" and peak.own.kind == "mountain"
     and peak.own.summit == 4478 and table.concat(peak.base.activities, ",") == "hiking,stargazing",
@@ -956,6 +986,55 @@ local again = F.launch { net = placeNet, storage = placeStore }
 check(again.find("HubPanorama").Title == "New York" and #MyPlaces.saved() == 2 and again.has("Placebondi"),
     "Saved places come back on the next launch")
 again.app.hubScope:dispose()
+check(not again.has("Locatelocate"), "Where the device cannot say where it is, no 'use my location' is offered")
+
+-- N1: "use my location" over a stand-in for orca.location. The fix is a
+-- result like a search's; nothing is saved until the editor saves it.
+local Locate = require "Weather/locate"
+local located = { status = "allowed", asked = 0 }
+local fakeLocation = {
+    supported = function() return true end,
+    status = function() return located.status, located.approximate end,
+    current = function()
+        located.asked = located.asked + 1
+        if located.status ~= "allowed" then return nil, { code = "permission", message = "denied" } end
+        return { lat = 52.3702, lon = 4.8952, accuracy = 3000, timestamp = NOW, approximate = true }
+    end,
+    reverse = function()
+        if located.offline then return nil, { code = "network", message = "offline" } end
+        return { name = "Amsterdam", locality = "Amsterdam", region = "North Holland", country = "Netherlands", countryCode = "NL" }
+    end,
+}
+check(Locate.available(false) == false and Locate.available(fakeLocation) and select(2, Locate.run(false)):find("cannot say"),
+    "Without orca.location, location is not offered and says so")
+local loc = F.launch { net = placeNet, storage = placeStore, location = fakeLocation }
+check(loc.find("Locatelocate").Text == "use my location", "The places section offers 'use my location'")
+loc.press("Locatelocate")
+check(loc.find("SearchPivot") and located.asked == 1
+    and loc.find("Locatedat-52.370_4.895"):findChild("ResultLine", true).Text
+        == "your location · North Holland, Netherlands · approximate"
+    and loc.find("Locatedat-52.370_4.895"):findChild("ResultTitle", true).Text == "Amsterdam",
+    "It opens search on where the device is, named, saying it is approximate")
+check(#MyPlaces.saved() == 2, "Nothing is saved by looking")
+loc.press("Locatedat-52.370_4.895")
+check(loc.find("PlacePivot").Title == "Amsterdam" and loc.find("PlaceSection").Header == "new place",
+    "The located place opens in the editor like a search result")
+loc.press("Actionplace:action:save")
+local mine = MyPlaces.find("at-52.370_4.895")
+check(mine and mine.saved and mine.country == "NL" and mine.located and loc.find("HubPanorama").Title == "Amsterdam",
+    "Saving keeps it with its country, and the hub shows it")
+-- Offline naming falls back to coordinates; a denial is a calm line.
+located.offline = true
+local draft = Locate.run(fakeLocation)
+check(draft and draft.base.title == "here" and draft.base.region == "52.37°, 4.90°", "Without a name the place is 'here'")
+located.offline, located.status = nil, "denied"
+loc.press("AddPlace")
+loc.press("Locatelocate")
+check(loc.find("LocatedNotelocate:note").Text:find("Location is off for this app") and not loc.has("Locatedat-52.370_4.895")
+    and loc.has("SearchInput"), "Denied, it says so calmly and search still works")
+located.status = "restricted"
+check(not Locate.available(fakeLocation), "A device policy that forbids location hides the offer")
+loc.app.hubScope:dispose()
 
 -- P5: one comparison of my places for an activity, which surf, sailing
 -- and fishing rank with.
