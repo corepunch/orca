@@ -209,6 +209,23 @@ Shared modules in `services/`, reusable by every edition (`Warnings.sources()`, 
 | FI11 | River flow and level from Open-Meteo flood data | P2 | M | F4 source |
 | FI12 | Link to local fishing rules | P2 | S | per place |
 
+#### Fishers' Weather: services
+
+Existing free services ([services-fishing.md](Research/services-fishing.md)),
+in `editions/fishing/gauges.lua`, `tides.lua`, `water.lua` and `rules.lua`.
+Response shapes come from the services' documentation; each needs one live
+check before release (the hosts were unreachable when this was built).
+
+| ID | Service | Pri | Status |
+| --- | --- | --- | --- |
+| SV-FI1 | USGS gauge: latest flow, level and water temperature, a week for trend and usual; "silent since" after 6 h | P0 | built. Place field `gauge = { usgs = … }`, or the nearest gauge within 10 km of a US river place. Picking a gauge in the place editor is a follow-up |
+| SV-FI2 | NOAA CO-OPS water temperature at the place's tide station, ahead of the marine model | P0 | built; stale (over 6 h) or sensorless stations fall back |
+| SV-FI3 | Environment Agency, PEGELONLINE, OPW gauges, one reading shape | P1 | built (`gauge = { ea = … }`, `pegel` or `opw`). EA typical range, OPW trend from saved readings and Hub'Eau (France) are follow-ups |
+| SV-FI4 | NOAA GLERL GLSEA Great Lakes average surface temperature | P1 | built; by `greatLake` or the lake's name inside the lakes' box |
+| SV-FI5 | GBIF "recorded near here" species | P2 | follow-up: needs a log-page source and a 30-day cache |
+| SV-FI6 | NY and WA stocking (Socrata) | P2 | follow-up: confirm each portal's terms first |
+| SV-FI7 | Algal blooms, link-only | P2 | built: a conditions row on lakes and rivers, EPA link in the US, "warm and calm" first |
+
 ### Surfers' Weather: `surf.lua`
 
 | ID | Feature | Pri | Size | Notes |

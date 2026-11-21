@@ -281,6 +281,180 @@ do
     MyPlaces.init { curated = require "Weather/places" }
 end
 
+-- Services (Research/services-fishing.md): measured water from public
+-- gauges and NOAA, on synthetic answers in each documented shape.
+local S = dofile("tests/fixtures/fishing/services.lua")
+local Gauges = require "Weather/editions/fishing/gauges"
+local Units = require "Weather/units"
+local Provider = require "Weather/provider"
+local Rules = require "Weather/editions/fishing/rules"
+local POTOMAC = { id = "potomac", title = "Potomac", lat = 38.95, lon = -77.13, river = true, country = "US",
+    activities = { "fishing" }, gauge = { usgs = "01646500", name = "Potomac at Little Falls" } }
+local function gauged(place, answers)
+    local forecast = forecastAt(place)
+    Forecast.extend(forecast, place, Fishing.sources, function(url)
+        for pattern, answer in pairs(answers) do if url:find(pattern) then return answer(url) end end
+        return nil, "not answering"
+    end, {})
+    return forecast
+end
+check(Gauges.epoch("2026-11-18T00:20:00-05:00") == F.NOW - 40 * 60 and Gauges.epoch("2026-11-18 05:48") == F.NOW - 12 * 60
+    and Gauges.epoch("2026-11-18T06:45:00+01:00") == F.NOW - 15 * 60, "Gauge times read with their offsets")
+
+-- SV-FI1: a USGS gauge, its week and its card.
+check(Gauges.usgsUrl(POTOMAC):find("latest%-continuous/items%?f=json&parameter_code=00060,00065,00010&monitoring_location_id=USGS%-01646500")
+    and Gauges.usgsWeekUrl(POTOMAC):find("continuous/items.*time=P7D"), "A USGS place asks its gauge's latest and its week")
+check(not Gauges.usgsUrl(LAKE) and not Gauges.usgsUrl(COAST) and not Gauges.eaUrl(POTOMAC) and not Gauges.opwUrl(LAKE),
+    "Places without a gauge ask no gauge network")
+local nearby = { id = "n", title = "N", lat = 38.95, lon = -77.13, river = true, country = "US" }
+check(Gauges.usgsUrl(nearby):find("bbox=%-77%.2%d%d,38%.8%d%d,%-77%.0%d%d,39%.0%d%d") and not Gauges.usgsWeekUrl(nearby)
+    and not Gauges.usgsUrl({ lat = 51, lon = 0, river = true }), "A US river finds its gauge in a box; elsewhere none")
+local usgs = Gauges.parseUsgs(S.usgsLatest)
+check(#usgs.stations == 2 and math.abs(usgs.stations[1].flow - 35.11) < 0.01 and math.abs(usgs.stations[1].level - 1.161) < 0.001
+    and usgs.stations[1].temp == nil and usgs.stations[1].provisional, "USGS values are read in metric, temperature missing")
+local potomac = gauged(POTOMAC, { ["latest%-continuous"] = function() return S.usgsLatest end,
+    ["/continuous/"] = function() return S.usgsWeek(F.NOW) end, ["flood%-api"] = function() return riverJson end })
+local gauge = Gauges.of(potomac)
+check(gauge and gauge.id == "01646500" and gauge.fresh and gauge.trend == "falling" and gauge.state == "normal"
+    and math.abs(gauge.ratio - 0.62) < 0.01, "The gauge is fresh, falling, at 62% of the week's usual")
+local riverCard = Fishing.riverCard(potomac)
+check(riverCard.title == "river gauge" and riverCard.value == "falling" and riverCard.detail
+    == "Potomac at Little Falls: 35 m³/s, level 1.16 m, falling, 40 min ago (USGS, provisional). 62% of the week's usual.",
+    "The card names the gauge, its reading and age: " .. riverCard.detail)
+check(River.on(potomac, potomac.hours[potomac.now].date).gauge and not says(Fishing.rate(potomac.hours[potomac.now],
+    potomac):result(), "blown out"), "The gauge wins over GloFAS, which reads blown out here")
+check(Fishing.waterCard(potomac).value == "unknown", "No temperature at the gauge: the water is not claimed from it")
+Units.use { height = "ft" }
+check(Fishing.riverCard(potomac).detail:find("^Potomac at Little Falls: 1,240 ft³/s, level 3.81 ft"), "US units read ft³/s")
+Units.use(nil)
+local withTemp = gauged(POTOMAC, { ["latest%-continuous"] = function() return S.usgsWithTemp end })
+local warm = Fishing.water(withTemp.hours[withTemp.now], withTemp)
+check(warm.kind == "measured" and warm.temp == 9.5 and warm.source:find("^measured at Potomac at Little Falls, 40 min ago"),
+    "A gauge's water temperature is used, named and aged")
+check(Fishing.riverCard(withTemp).value == "measured" and Fishing.riverCard(withTemp).detail:find("water 10°"),
+    "Without a week there is no trend, only the reading")
+local empty = gauged(POTOMAC, { ["latest%-continuous"] = function() return S.usgsEmpty end,
+    ["flood%-api"] = function() return riverJson end })
+check(empty.missing["gauge-usgs"] and Gauges.of(empty) == nil, "An empty answer is a missing gauge")
+local fallback = Fishing.riverCard(empty)
+check(fallback and fallback.detail:find("^The gauge did not answer, so this is the model%.") and fallback.detail:find("GloFAS"),
+    "A silent gauge falls back to the model and says so")
+local silent = Fishing.riverCard(gauged(POTOMAC, {}))
+check(silent and silent.value == "no reading" and silent.detail:find("says nothing about the water"),
+    "No gauge and no model: no reading, never calm water")
+local old = forecastAt(POTOMAC, nil, F.NOW + 8 * 3600)
+old.gaugeLatest = Gauges.parseUsgs(S.usgsLatest)
+local oldCard = Fishing.riverCard(old)
+check(not Gauges.of(old).fresh and oldCard.value == "silent since 05:20" and oldCard.tone == "info"
+    and oldCard.detail:find("No fresh reading"), "A reading over six hours old is a silent gauge: " .. oldCard.value)
+check(not (River.on(old, old.hours[old.now].date) or {}).gauge, "A silent gauge is not scored")
+local box = forecastAt(nearby)
+box.gaugeLatest = usgs
+check(Gauges.of(box).id == "01646500" and Gauges.of(box).name == "USGS gauge 01646500", "A box picks the nearest gauge")
+
+-- SV-FI2: water temperature at the NOAA station.
+local KEYS = { id = "keys", title = "Keys", lat = 24.92, lon = -80.63, facing = 135, activities = { "fishing" },
+    tideStation = { noaa = "0000000", name = "Test Harbor", lat = 24.95, lon = -80.6 } }
+check(Tides.waterUrl(KEYS):find("product=water_temperature.*station=0000000.*time_zone=gmt&units=metric")
+    and Tides.waterUrl(COAST) == nil, "A NOAA station is asked for its water temperature")
+local function keys(answer)
+    local forecast = forecastAt(KEYS, nil, nil, F.marine())
+    Forecast.extend(forecast, KEYS, Fishing.sources, function(url)
+        if url:find("water_temperature") then return answer end
+        return nil, "not answering"
+    end, {})
+    return forecast
+end
+local measured = keys(S.coops)
+local keysWater = Fishing.water(measured.hours[measured.now], measured)
+check(keysWater.kind == "measured" and keysWater.temp == 18.4
+    and keysWater.source == "measured at Test Harbor, 4.5 km away, 12 min ago (NOAA)", "The station's water: " .. keysWater.source)
+Units.use { temp = "f" }
+check(Fishing.waterCard(measured).value == "65°", "The station's °C shows in °F")
+Units.use(nil)
+local staleKeys = keys(S.coopsStale)
+check(Fishing.water(staleKeys.hours[staleKeys.now], staleKeys).kind == "sea", "A twelve-hour-old reading gives way to the model")
+local noSensor = keys(S.coopsNoSensor)
+check(noSensor.missing["water-noaa"]:find("No data was found")
+    and Fishing.water(noSensor.hours[noSensor.now], noSensor).kind == "sea", "A station without the sensor falls back")
+
+-- SV-FI3: European gauges, each read into the same reading.
+local THAMES = { id = "t", title = "T", lat = 51.5, lon = -0.9, river = true, gauge = { ea = "1491TH", name = "Test Lock" } }
+local RHINE = { id = "r", title = "R", lat = 47.66, lon = 9.17, river = true, gauge = { pegel = "TESTPEGEL" } }
+local SHANNON = { id = "s", title = "S", lat = 52.7, lon = -8.6, river = true, gauge = { opw = "0000099999" } }
+check(Gauges.eaUrl(THAMES, F.NOW) == "https://environment.data.gov.uk/flood-monitoring/id/stations/1491TH/readings"
+    .. "?_sorted&_limit=2000&since=2026-11-11T06:00:00Z", "EA asks a week of the station's readings")
+check(Gauges.pegelUrl(RHINE):find("stations/TESTPEGEL%.json%?includeTimeseries=true&includeCurrentMeasurement=true")
+    and Gauges.pegelWeekUrl(RHINE):find("TESTPEGEL/W/measurements%.json%?start=P7D"), "PEGELONLINE asks the station and W")
+local thames = gauged(THAMES, { ["flood%-monitoring"] = function() return S.ea end })
+local rhine = gauged(RHINE, { ["TESTPEGEL%.json"] = function() return S.pegel end,
+    ["W/measurements"] = function() return S.pegelWeek end })
+local shannon = gauged(SHANNON, { ["waterlevel%.ie"] = function() return S.opw end })
+local normal = {
+    { thames, "ea", 1.12, 42.5, nil, "rising", "Environment Agency" },
+    { rhine, "pegel", 3.12, 250, 8.4, "rising", "PEGELONLINE" },
+    { shannon, "opw", 0.512, nil, 7.9, nil, "OPW waterlevel.ie" },
+}
+for _, case in ipairs(normal) do
+    local reading = Gauges.of(case[1])
+    check(reading and reading.network == case[2] and math.abs(reading.level - case[3]) < 1e-6 and reading.flow == case[4]
+        and reading.temp == case[5] and reading.trend == case[6] and reading.fresh and reading.source == case[7],
+        "The " .. case[2] .. " answer reads as one gauge reading")
+    local card = Fishing.riverCard(case[1])
+    check(card.title == "river gauge" and card.detail:find(case[7], 1, true) and card.detail:find("min ago"),
+        "The " .. case[2] .. " card names its network and age: " .. card.detail)
+end
+check(Gauges.of(thames).state == "high" and Fishing.riverCard(thames).tone == "poor"
+    and says(Fishing.rate(thames.hours[thames.now], thames):result(), "The gauge reads high"),
+    "EA flow at twice the week's usual is blown out")
+check(Gauges.of(rhine).state == "normal" and Gauges.of(rhine).name == "TESTPEGEL, TESTFLUSS", "Pegel gives its own state")
+check(Fishing.water(rhine.hours[rhine.now], rhine).temp == 8.4, "Pegel's WT is the water")
+check(Gauges.of(shannon).id == "0000099999" and Fishing.riverCard(shannon).value == "measured",
+    "OPW picks the place's station; one reading has no trend")
+
+-- SV-FI4: the Great Lakes' daily average, by column name.
+local ERIE = { id = "erie", title = "Lake Erie at Port Clinton", lat = 41.51, lon = -82.94, lake = true, activities = { "fishing" } }
+check(Gauges.greatLake(ERIE) == "erie" and Gauges.greatLake(LAKE) == nil
+    and Gauges.greatLake({ title = "Lake Erie", lake = true, lat = 10, lon = 10 }) == nil
+    and Gauges.greatLake({ greatLake = "superior" }) == "superior", "A Great Lake by its name, inside the lakes' box")
+check(Gauges.glerlUrl(ERIE):find("glsea_avgtemps_3%.json%?&time%%3E=now%-10days") and Gauges.glerlUrl(LAKE) == nil,
+    "Only a Great Lake asks GLERL")
+local lakes = Gauges.parseGlerl(S.glerl).lakes
+check(lakes.erie[3][2] == 10.4 and lakes.ontario[3][2] == 10.1 and lakes.stclair[1][2] == 10.0 and not lakes.huron,
+    "Columns are found by name, not position")
+local erie = gauged(ERIE, { ["glsea"] = function() return S.glerl end })
+local erieWater = Fishing.water(erie.hours[erie.now], erie)
+check(erieWater.kind == "measured" and erieWater.temp == 10.4
+    and erieWater.source == "Lake Erie average surface from satellites, not your shore, down 2° this week (NOAA GLERL)",
+    "The lake average replaces the estimate and says what it is: " .. erieWater.source)
+erie.epoch = F.NOW + 4 * 86400
+check(Gauges.lake(erie) == nil, "An old lake average is dropped")
+
+-- SV-FI7: blooms are a reminder and a link, never "safe".
+local blooms = Rules.blooms({ lake = true, country = "US" }, lake)
+check(blooms.value == "check for blooms" and blooms.note:find("^check mywaterway%.epa%.gov")
+    and blooms.note:find("does not mean safe") and blooms.note:find("dogs") and blooms.note:find("before eating fish"),
+    "The blooms row links EPA and says untested is not safe")
+local hot = forecastAt(LAKE, { temperature_2m = function() return 29 end, wind_speed_10m = function() return 1 end })
+check(Rules.blooms(LAKE, hot).value == "warm and calm: look for scum" and Rules.blooms(LAKE, hot).note:find("local water authority"),
+    "After warm, calm days the row says so first")
+check(Rules.blooms(COAST, lake) == nil, "A coast has no blooms row")
+check(Fishing.metrics(lake.hours[lake.now], lake)[#Fishing.metrics(lake.hours[lake.now], lake)].label == "algae",
+    "The lake's conditions end with the blooms row")
+
+-- Credit for each service on the settings' about, once.
+local about, rows = {}, 0
+for _, row in ipairs(Provider.about()) do
+    rows = rows + (about[row[1]] and 0 or 1)
+    about[row[1]] = row[2]
+end
+check(rows == #Provider.about(), "Each service is credited once")
+check(about["River data by the U.S. Geological Survey"]:find("provisional")
+    and about["River levels by the Environment Agency"]:find("^This uses Environment Agency flood and river level data")
+    and about["Tides and water temperature by NOAA CO-OPS"] and about["Great Lakes water temperature by NOAA GLERL"]
+    and about["Water levels by WSV, PEGELONLINE"] and about["Water levels by the Office of Public Works"],
+    "Each service is credited on the about")
+
 -- The edition on its own places, then the log page as the app would open it.
 F.checkEdition("fishing")
 local net = F.network()
@@ -334,5 +508,26 @@ ui.back()
 check(ui.app.screen == ui.app.hubScreen, "and from there to the hub")
 Log.setReading("lake", nil)
 ui.app.hubScope:dispose()
+
+-- SV-FI1 in the app: a gauged river asks its gauge, keyless, and the hub
+-- leads with the measured river.
+do
+    local gaugeNet = F.network()
+    gaugeNet.answers["latest%-continuous"] = function() return S.usgsWithTemp end
+    gaugeNet.answers["/continuous/items"] = function() return S.usgsWeek(F.NOW) end
+    local river = F.launch { places = { POTOMAC }, net = gaugeNet, storageName = "fishing-gauge" }
+    local asked, keyless = {}, true
+    for index, url in ipairs(gaugeNet.requests) do
+        asked[#asked + 1] = url
+        local headers = gaugeNet.options[index] and gaugeNet.options[index].headers or {}
+        keyless = keyless and headers["X-Api-Key"] == nil
+    end
+    asked = table.concat(asked, "\n")
+    check(asked:find("monitoring_location_id=USGS%-01646500") and asked:find("time=P7D") and keyless
+        and not asked:find("water_temperature") and not asked:find("waterlevel"), "The river asks its USGS gauge, no key")
+    check(river.has("Cardpotomac:card:river") and river.text("Cardpotomac:card:river", "CardValue") == "falling",
+        "The hub shows the measured river")
+    river.app.hubScope:dispose()
+end
 
 F.done("weather-fishing")
