@@ -231,7 +231,7 @@ $(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_n
 endif
 ifeq ($(RENDERER),metal)
 buildunite: $(OBJECTDIR)/metal.o
-$(OBJECTDIR)/metal.o: source/renderer/metal/metal.m source/renderer/metal/metal.h source/renderer/metal/glsl_msl.h source/renderer/metal/r_msl_shaders.h | directories
+$(OBJECTDIR)/metal.o: source/renderer/metal/metal.m source/renderer/metal/metal.h source/renderer/metal/msl_program.h source/renderer/metal/r_msl_shaders.h | directories
 	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -fobjc-arc -x objective-c -c $< -o $@
 endif
 
@@ -616,7 +616,7 @@ TEST_TEXTURE_DOWNSCALE_BIN = $(BINDIR)/test_texture_downscale
 TEST_SCREEN_SPACE_CAPTURE_BIN = $(BINDIR)/test_screen_space_capture
 TEST_DEFERRED_GPU_RESOURCES_BIN = $(BINDIR)/test_deferred_gpu_resources
 .PHONY: test-deferred-gpu-resources
-# With RENDERER=metal, liborca itself provides the OpenGL ES calls.
+# With RENDERER=metal, liborca draws with Metal and tests link no GL library.
 TEST_GL_LIBS := $(if $(filter Darwin,$(UNAME_S)),$(if $(filter metal,$(RENDERER)),,-framework OpenGL),-lGL)
 .PHONY: test-screen-space-capture
 TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
