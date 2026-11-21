@@ -217,7 +217,7 @@ $(OBJECTDIR)/signin_apple.o: source/signin/signin_apple.m source/signin/signin_n
 endif
 ifeq ($(RENDERER),metal)
 buildunite: $(OBJECTDIR)/metal.o
-$(OBJECTDIR)/metal.o: source/renderer/metal/metal.m source/renderer/metal/metal.h source/renderer/metal/msl_program.h source/renderer/metal/r_msl_shaders.h | directories
+$(OBJECTDIR)/metal.o: source/renderer/metal/metal.m source/renderer/metal/metal.h source/renderer/metal/msl_program.h | directories
 	$(Q)$(CC) $(filter-out -Igenerated,$(CFLAGS)) -fobjc-arc -x objective-c -c $< -o $@
 endif
 

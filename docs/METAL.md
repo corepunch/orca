@@ -31,26 +31,33 @@ and commits the frame. A macOS offscreen surface (`axCreateSurface`, used by
 the editor's Preview) has no layer; the default framebuffer is then a texture
 of `axGetSize` times `axGetScaling` that `glReadPixels` reads.
 
-## Shaders: hand-written MSL with reflection tables
+## Shaders: MSL in the shader definitions
 
-The Metal backend compiles no GLSL. `source/renderer/metal/r_msl_shaders.h`
-holds the Metal Shading Language source of every built-in shader and a
-`struct msl_program` reflection table for it (`msl_program.h`): the entry
-points, each uniform's byte offset, array and matrix strides in each stage's
-uniform block, each sampler's `texture(n)`/`sampler(n)` pair and each vertex
-attribute's location.
+The Metal backend compiles Metal Shading Language and nothing else; there is
+no GLSL translation at build time or at run time. A shader's MSL belongs to
+its definition in the renderer, next to its GLSL: on Metal builds
+`struct shader_desc` has a `Metal` member, a `struct msl_program`
+(`source/renderer/metal/msl_program.h`) with the source of both stages and
+their reflection: the entry points, each uniform's byte offset, array and
+matrix strides in each stage's uniform block, each sampler's
+`texture(n)`/`sampler(n)` pair and each vertex attribute's location.
 
-The renderer labels a program with its shader's name before linking
-(`mtlProgramLabel`); `mtlLinkProgram` looks the table up by that name and
-compiles the MSL with `MTLDevice newLibraryWithSource:`. Metal caches compiled
-source between launches. A program without a table, or whose MSL fails to
-compile, reports the reason through `glGetProgramInfoLog`, as a GLSL link
-error would.
+The built-in shaders' programs are hand-written in
+`source/renderer/builtin/r_builtin_shaders_msl.h`, and each definition in
+`r_builtin_shaders.c` names its own with `SHADER_METAL(...)`. A built-in
+shader's GLSL and MSL must be changed together.
 
-Only the built-in shaders have tables, so a custom GLSL `Shader` resource does
-not link on a Metal build. There is no GLSL translation, at build time or at
-run time: a shader for Metal is written in MSL, and a project that needs its
-own has to supply MSL.
+When a program is created, the renderer passes each stage's MSL to
+`glShaderSource` in place of assembled GLSL and the reflection to
+`mtlProgramReflection`; `mtlLinkProgram` compiles the stages with `MTLDevice
+newLibraryWithSource:`. Metal caches compiled source between launches. MSL
+that fails to compile reports the compiler's message through
+`glGetProgramInfoLog`, as a GLSL link error would.
+
+A definition without `Metal` has no program on a Metal build. That is every
+project `Shader` resource today: its XML supplies GLSL only, so it is logged
+and drawn with the error shader. A project that needs its own shader on Metal
+has to supply MSL; reading it from the `Shader` XML is not implemented yet.
 
 ## How the renderer's calls map to Metal
 

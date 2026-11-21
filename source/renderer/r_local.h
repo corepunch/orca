@@ -9,6 +9,7 @@
 
 #if ORCA_METAL
 #include "metal/metal.h"
+#include "metal/msl_program.h"
 // The renderer is written in GL vocabulary; on Metal builds its types,
 // constants and calls are the Metal backend's.
 typedef mtlEnum GLenum;
@@ -266,7 +267,6 @@ typedef ptrdiff_t GLintptr;
 #define glLinkProgram                         mtlLinkProgram
 #define glMapBuffer                           mtlMapBuffer
 #define glPixelStorei                         mtlPixelStorei
-#define glProgramLabel                        mtlProgramLabel
 #define glReadPixels                          mtlReadPixels
 #define glRenderbufferStorage                 mtlRenderbufferStorage
 #define glScissor                             mtlScissor
@@ -555,7 +555,20 @@ struct shader_desc
   struct uniform_def Shared[MAX_SHADER_UNIFORMS];
   lpcString_t VertexShader;
   lpcString_t FragmentShader;
+#if ORCA_METAL
+  // Metal draws with MSL, not with the GLSL above: both stages and their
+  // reflection. A definition without it has no program on a Metal build.
+  struct msl_program const *Metal;
+#endif
 };
+
+// Names a built-in shader's MSL program (builtin/r_builtin_shaders_msl.h) in
+// its shader_desc initializer; nothing on builds that compile the GLSL.
+#if ORCA_METAL
+#define SHADER_METAL(program) .Metal = &program,
+#else
+#define SHADER_METAL(program)
+#endif
 
 extern struct shader_desc shader_default;
 extern struct shader_desc shader_ui;
