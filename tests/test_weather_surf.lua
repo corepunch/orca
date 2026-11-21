@@ -261,6 +261,253 @@ do
     check(Surf.dawnPatrol(forecastAt(F.NOW)).icon:find("wind/0%.svg$"), "The dawn card draws the wind on the beach")
 end
 
+-- Existing services (Research/services-surf.md). Synthetic answers in each
+-- service's documented shape; the network to these hosts is not reached.
+local Hazards = require "Weather/editions/surf/hazards"
+local Buoys = require "Weather/editions/surf/buoys"
+local Comfort = require "Weather/editions/surf/comfort"
+local WaterQuality = require "Weather/editions/surf/waterquality"
+local usBeach = { id = "ocean-beach", title = "Ocean Beach", lat = 37.76, lon = -122.52, facing = 270, activities = { "surf" } }
+local function sourceIds()
+    local ids = {}
+    for _, source in ipairs(Surf.sources) do ids[source.id] = source end
+    return ids
+end
+local function loadAt(place, answers)
+    local net = F.network()
+    for pattern, answer in pairs(answers or {}) do net.answers[pattern] = answer end
+    local f = Forecast.load(place, true, net.fetch, F.NOW, Activities.request(place))
+    f.spot = place
+    return f, net
+end
+local function cardOf(f, id)
+    for _, card in ipairs(Surf.cards(f, f.spot)) do if card.id == id then return card end end
+end
+local function iso(epoch, offset) return os.date("!%Y-%m-%dT%H:%M:%S", epoch) .. (offset or "Z") end
+
+-- api.weather.gov alerts/active?point= (GeoJSON), trimmed to what is read.
+local function alerts(features) return function() return { type = "FeatureCollection", features = features } end end
+local RIP = { properties = { event = "Rip Current Statement", status = "Actual", severity = "Moderate",
+    senderName = "NWS San Francisco CA", onset = "2026-11-17T21:00:00-08:00", ends = "2026-11-19T03:00:00-08:00" } }
+local CRAFT = { properties = { event = "Small Craft Advisory", status = "Actual", severity = "Minor",
+    senderName = "NWS San Francisco CA", ends = "2026-11-19T03:00:00-08:00" } }
+
+-- SV-SU1: beach warnings from the National Weather Service.
+do
+    Settings.set("surf", "level", "intermediate")
+    local ids = sourceIds()
+    check(ids["surf-hazards"] and ids["surf-hazards"].optional, "Beach warnings are an optional source")
+    check(Hazards.source.url(usBeach):find("^https://api%.weather%.gov/alerts/active%?point=37%.7600,%-122%.5200")
+        and not Hazards.source.url({ lat = -33.89, lon = 151.28 }), "Warnings are asked for US beaches only")
+    local f, net = loadAt(usBeach, { ["api%.weather%.gov"] = alerts { RIP, CRAFT } })
+    local asked
+    for index, url in ipairs(net.requests) do
+        if url:find("api%.weather%.gov") then asked = net.options[index].headers end
+    end
+    check(asked and asked.Accept == "application/geo+json" and asked["User-Agent"], "The request names the app")
+    check(#f.beachHazards == 1 and f.beachHazards[1].event == "Rip Current Statement",
+        "Only the beach's warnings are kept: a small craft advisory is not")
+    local card = cardOf(f, "hazard")
+    check(card and card.value == "rip current statement" and card.tone == "poor" and card.rank == 0
+        and card.detail:find("until thu 19 11:00") and card.detail:find("lifeguard")
+        and card.detail:find("NWS San Francisco"), "A rip current statement leads, with its end: "
+        .. tostring(card and card.detail))
+    check(Surf.cards(f, usBeach)[1].id == "hazard", "The warning comes first among the cards")
+    local during, after = f.hours[f.now + 2], f.hours[f.now + 30]
+    check(Report.rate(Surf, during, f).score <= 60 and says(Report.rate(Surf, during, f), "Rip Current Statement in force")
+        and not says(Report.rate(Surf, after, f), "in force"), "While it is in force it caps the hour")
+    Settings.set("surf", "level", "beginner")
+    check(Report.rate(Surf, during, f).score <= 40 and says(Report.rate(Surf, during, f), "surf near a lifeguard"),
+        "A beginner is told to surf near a lifeguard")
+    Settings.set("surf", "level", "intermediate")
+    local quiet = loadAt(usBeach, { ["api%.weather%.gov"] = alerts {} })
+    check(#quiet.beachHazards == 0 and not cardOf(quiet, "hazard") and not quiet.missing["surf-hazards"],
+        "No beach warning in force: no card")
+    local broken = loadAt(usBeach, { ["api%.weather%.gov"] = function() return { title = "Unexpected Problem" } end })
+    check(broken.missing["surf-hazards"] and not broken.beachHazards and not cardOf(broken, "hazard"),
+        "An answer without an alert list fails the source")
+    for _, c in ipairs(Surf.cards(broken, usBeach)) do
+        check(not (c.value .. " " .. (c.detail or "")):lower():find("no warning")
+            and not (c.value .. " " .. (c.detail or "")):lower():find("safe"),
+            "A failed warning service never reads as safe: " .. c.id)
+    end
+    local high = { properties = { event = "High Surf Warning", status = "Actual", ends = "2026-11-19T03:00:00-08:00" } }
+    local worst = Hazards.parse { features = { RIP, high } }
+    check(worst[1].event == "High Surf Warning", "The worst warning comes first")
+end
+
+-- CoastWatch ERDDAP cwwcNDBCMet.json: a table of columns and rows.
+local function erddap(rows)
+    return function()
+        local list = {}
+        for _, row in ipairs(rows) do
+            list[#list + 1] = { "46026", iso(F.NOW - row[1] * 60), row[2], row[3], row[4], row[5], row[6] }
+        end
+        return { table = { columnNames = { "station", "time", "wvht", "dpd", "apd", "mwd", "wtmp" },
+            columnTypes = { "String", "String", "float", "float", "float", "short", "float" },
+            columnUnits = { nil, "UTC", "m", "s", "s", "degrees_true", "degree_C" }, rows = list } }
+    end
+end
+
+-- SV-SU2: the live buoy, against the forecast.
+do
+    check(Breaks.of(usBeach).buoy == "46026", "Ocean Beach reads buoy 46026")
+    local url = Buoys.source.url(usBeach)
+    check(url:find("^https://coastwatch%.pfeg%.noaa%.gov/erddap/tabledap/cwwcNDBCMet%.json%?")
+        and url:find("station=%%2246026%%22") and url:find("time%%3E=now%-6hours")
+        and not Buoys.source.url({ id = "tarifa" }), "The buoy is asked for six hours, only where a break has one")
+    -- Minutes before now: 23 min ago a long-period swell, 3 h before that a short one.
+    local f = loadAt(usBeach, { coastwatch = erddap {
+        { 310, 1.6, 9, 7.5, 290, 12.4 }, { 190, 1.7, 9, 7.6, 290, 12.4 }, { 23, 2.1, 14, 9.1, 292, 12.3 } } })
+    local card = cardOf(f, "buoy")
+    check(card and card.title == "buoy 46026" and card.value == "2.1 m · 14 s" and card.tone == "info",
+        "The buoy card reads the last wave: " .. tostring(card and card.value))
+    check(card.detail:find("^23 min ago, from W") and card.detail:find("0%.3 m bigger than forecast")
+        and card.detail:find("swell arriving: the period rose from 9 s to 14 s")
+        and card.detail:find("National Data Buoy Center"), "It compares with the forecast: " .. card.detail)
+    local same = loadAt(usBeach, { coastwatch = erddap { { 15, 1.85, 11, 8, 280, 12 } } })
+    check(cardOf(same, "buoy").detail:find("as forecast") and not cardOf(same, "buoy").detail:find("arriving"),
+        "Close to the forecast it says so")
+    local stale = loadAt(usBeach, { coastwatch = erddap { { 310, 1.6, 9, 7.5, 290, 12.4 } } })
+    card = cardOf(stale, "buoy")
+    check(card.value == "no recent reading" and card.detail:find("5 h ago") and card.hub == false,
+        "A reading five hours old is not now")
+    local silent = loadAt(usBeach, { coastwatch = erddap { { 30, nil, nil, nil, nil, 12.2 }, { 90, "NaN", nil, nil, nil, 12 } } })
+    check(cardOf(silent, "buoy").value == "no reading" and cardOf(silent, "buoy").detail:find("may be down"),
+        "A buoy without wave readings says it may be down")
+    local down = loadAt(usBeach)
+    check(down.missing["surf-buoy"] and cardOf(down, "buoy").value == "no reading"
+        and cardOf(down, "buoy").detail:find("not answering"), "A feed that fails says so, on the page")
+    check(not cardOf(loadAt({ id = "tarifa", title = "Tarifa", lat = 36.01, lon = -5.61, facing = 210,
+        activities = { "surf" } }), "buoy"), "A break without a buoy shows none")
+end
+
+-- SV-SU3: the water temperature measured at a NOAA station.
+do
+    local url = Buoys.waterSource.url(usBeach, Forecast)
+    check(url:find("^https://api%.tidesandcurrents%.noaa%.gov/api/prod/datagetter%?product=water_temperature")
+        and url:find("station=9414290") and url:find("date=latest") and url:find("format=json"),
+        "Ocean Beach asks CO-OPS station 9414290: " .. url)
+    local function waterRow(f, ahead)
+        for _, row in ipairs(Surf.metrics(f.hours[f.now + (ahead or 0)], f)) do
+            if row.label == "water" then return row end
+        end
+    end
+    local f = loadAt(usBeach, { ["datagetter.*water_temperature"] = function()
+        return { metadata = { id = "9414290", name = "San Francisco", lat = "37.8063", lon = "-122.4659" },
+            data = { { t = "2026-11-18 05:54", v = "10.8", f = "0,0,0" } } }
+    end })
+    local row = waterRow(f)
+    check(f.waterTemp and f.waterTemp.value == 10.8 and row.value == "11°" and row.note:find("^5/4 mm")
+        and row.note:find("measured at San Francisco"), "The measured water picks the wetsuit: " .. row.note)
+    check(waterRow(f, 24).value == "14°" and waterRow(f, 24).note:find("model"),
+        "Tomorrow's hours keep the model's sea, labelled model")
+    local failed = loadAt(usBeach, { ["datagetter.*water_temperature"] = function()
+        return { error = { message = "No data was found. This product may not be offered at this station." } }
+    end })
+    row = waterRow(failed)
+    check(failed.missing["surf-water"] and row.value == "14°" and row.note == "4/3 mm wetsuit · model",
+        "Without a measurement the model's sea stands, labelled model")
+    local buoyWater = loadAt(usBeach, { coastwatch = erddap { { 20, 1.8, 11, 8, 280, 12.6 } } })
+    check(waterRow(buoyWater).value == "13°" and waterRow(buoyWater).note:find("measured at buoy 46026"),
+        "The buoy's water temperature stands in for a station")
+end
+
+-- SV-SU4: official bathing-water status (Ireland's EPA), before the rain rule.
+do
+    local code = "IESWBWC090_0000_0300"
+    Breaks.list["test-ie"] = { window = { 200, 320 }, wind = 90, size = { 0.5, 2.5 }, tide = "all",
+        level = "intermediate", exposure = 1, runoff = 10, bathingWater = { ie = code } }
+    local irish = { id = "test-ie", title = "Test Strand", lat = 43.67, lon = 0, facing = 270 }
+    check(WaterQuality.ireland.url(irish) == "https://data.epa.ie/bw/api/v1/alerts"
+        and not WaterQuality.ireland.url(usBeach), "Ireland's list is asked only for a break with an Irish ID")
+    local f = forecastAt(F.NOW, nil, nil, irish)
+    WaterQuality.ireland.parse({ { bathingWaterCode = "IENWBWC160_0000_0100", alertType = "Prohibition" },
+        { bathingWaterCode = code, alertType = "Advice Against Bathing", reason = "Sewage overflow",
+            endDate = "2026-11-20T00:00:00" } }, f)
+    local card = Surf.waterCard(f)
+    check(card.value == "advice against bathing" and card.tone == "poor" and card.detail:find("sewage overflow")
+        and card.detail:find("until 2026%-11%-20") and card.detail:find("EPA Ireland"),
+        "An EPA alert for the break leads the water card: " .. card.detail)
+    check(says(Report.rate(Surf, f.hours[f.now + 2], f), "Official advice against bathing"),
+        "and lowers today's rating")
+    local clear = forecastAt(F.NOW, nil, nil, irish)
+    WaterQuality.ireland.parse({ alerts = { { bathingWaterCode = "IENWBWC160_0000_0100", alertType = "Prohibition" } } },
+        clear)
+    card = Surf.waterCard(clear)
+    check(card.value == "no restriction listed" and card.tone == "info" and card.hub == false
+        and not card.detail:find("safe"), "No alert for the break: none listed, never safe")
+    local later = F.NOW + 3 * 86400
+    local wet = forecastAt(later, { precipitation = function(i) return i >= 24 and i < 48 and 1 or 0 end }, nil, irish)
+    WaterQuality.ireland.parse({}, wet)
+    card = Surf.waterCard(wet)
+    check(card.value == "runoff risk" and card.detail:find("no official restriction listed yet"),
+        "Heavy rain still warns when the list is quiet")
+    local ok = pcall(WaterQuality.ireland.parse, "garbled", forecastAt(F.NOW, nil, nil, irish))
+    check(not ok, "An answer without a list fails the source")
+    local about = Surf.attribution()
+    check(about[#about][1]:find("EPA Ireland"), "A break that reads the EPA credits it")
+    Breaks.list["test-ie"] = nil
+    for _, line in ipairs(Surf.attribution()) do
+        check(not line[1]:find("EPA"), "No Irish break, no Irish credit")
+    end
+    local malibu = forecastAt(later, { precipitation = function(i) return i >= 24 and i < 48 and 1 or 0 end }, nil,
+        { id = "malibu", lat = 43.67, lon = 0, facing = 190 })
+    check(Surf.waterCard(malibu).detail:find("no official reading here"), "Elsewhere the rain rule says it is not official")
+end
+
+-- SV-SU5: the sun and the current, on the surf page.
+do
+    local f = forecastAt(F.NOW, { uv_index = function(i) return i % 24 == 13 and 8 or 1 end })
+    check(Comfort.source.url(spot, Forecast):find("ocean_current_velocity,ocean_current_direction"),
+        "The current is asked from the marine model")
+    Comfort.source.parse({ hourly_units = { ocean_current_velocity = "km/h", ocean_current_direction = "°" },
+        hourly = { time = F.series(#f.hours, F.iso), ocean_current_velocity = F.series(#f.hours, function() return 3.24 end),
+            ocean_current_direction = F.series(#f.hours, function() return 0 end) } }, f)
+    check(math.abs(f.hours[f.now].current - 0.9) < 0.001, "km/h is read as m/s")
+    local card = Comfort.card(f, f.hours[f.now + 2])
+    check(card and card.id == "comfort" and card.hub == false and card.value == "strong current" and card.tone == "fair"
+        and card.detail:find("strong current along the beach") and card.detail:find("not rips"),
+        "A 0.9 m/s current along the beach is strong: " .. tostring(card and card.detail))
+    check(card.detail:find("UV 8 around 13:00: sunscreen"), "UV 8 at noon asks for sunscreen")
+    local calm = forecastAt(F.NOW)
+    check(not Comfort.card(calm), "Low UV and no current data: no card")
+end
+
+-- SV-SU6: pages about the break, named and never copied.
+do
+    local card = Surf.linksCard(forecastAt(F.NOW, nil, nil, { id = "bondi", lat = 43.67, lon = 0, facing = 110 }))
+    check(card and card.hub == false and card.detail:find("Beachwatch NSW: beachwatch%.nsw%.gov%.au")
+        and card.detail:find("SharkSmart NSW"), "Bondi names Beachwatch and SharkSmart")
+    check(not Surf.linksCard(forecastAt(F.NOW, nil, nil, { id = "tarifa", lat = 43.67, lon = 0, facing = 210 })),
+        "A break without pages shows none")
+end
+
+-- Credit for every service on the settings' "about".
+do
+    local Provider = require "Weather/provider"
+    local titles = {}
+    for _, line in ipairs(Provider.about()) do titles[#titles + 1] = line[1] end
+    local all = table.concat(titles, "|")
+    check(all:find("Warnings: U.S. National Weather Service", 1, true) and all:find("NOAA National Data Buoy Center", 1, true)
+        and all:find("Water temperature: NOAA CO-OPS", 1, true) and titles[1]:find("Open%-Meteo"),
+        "About credits the NWS, NDBC and CO-OPS after Open-Meteo: " .. all)
+end
+
+-- On the hub: a warning in force leads.
+do
+    local first = Places[1]
+    check(first.id == "ocean-beach", "The edition opens on Ocean Beach")
+    local net = F.network()
+    net.answers["api%.weather%.gov"] = alerts { RIP }
+    local ui = F.launch { places = Places, net = net, storage = F.storage("surf-hazard", Places) }
+    local cards = ui.cards()
+    check(cards[1] == "Card" .. first.id .. ":card:hazard" and #cards == 3,
+        "The hub leads with the rip current statement: " .. table.concat(cards, " "))
+    check(ui.text("Card" .. first.id .. ":card:hazard", "CardValue") == "rip current statement", "and names it")
+    ui.app.hubScope:dispose()
+end
+
 -- The edition on its own places, with the cards on the hub and the page.
 F.checkEdition("surf")
 do

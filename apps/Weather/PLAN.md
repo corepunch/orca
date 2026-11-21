@@ -242,6 +242,33 @@ check before release (the hosts were unreachable when this was built).
 | SU10 | Session log with a one-tap rating, later personal tuning | P2 | M | F1 |
 | SU11 | Wind drawn against the beach | P2 | S | |
 
+#### Surfers' services
+
+Existing services ([Research/services-surf.md](Research/services-surf.md)),
+each an optional source in `Surf.sources`; a failed or silent one never
+reads as "safe" or "no warnings". Tests use synthetic answers in each
+service's documented shape (`tests/test_weather_surf.lua`); none of these
+hosts was reachable from the build machine.
+
+| ID | Service | Pri | Status |
+| --- | --- | --- | --- |
+| SV-SU1 | NWS beach warnings (rip current, beach hazards, high surf, tsunami) | P0 | done: `editions/surf/hazards.lua`, source `surf-hazards`; the `hazard` card leads the hub (`rank = 0`) and caps the hour while in force, harder for beginners ("surf near a lifeguard") |
+| SV-SU2 | Live NDBC buoy against the forecast | P0 | done: `editions/surf/buoys.lua`, source `surf-buoy` (CoastWatch ERDDAP JSON, six hours); "swell arriving" on a period jump; late (> 3 h), silent or failed buoys say so on the page. Buoys for Ocean Beach (46026) and Malibu (46025); the nearest station for other breaks is a follow-up. ERDDAP's lag was not measured |
+| SV-SU3 | Measured water temperature (CO-OPS, else the buoy) | P0 | done: source `surf-water`; the water row says "measured at …" or "model". Stations 9414290 (San Francisco) and 9410840 (Santa Monica) |
+| SV-SU4 | Official bathing-water status | P1 | partly: `editions/surf/waterquality.lua` with Ireland's EPA adapter (CC BY 4.0), dormant until a break has an Irish ID: its alert list's field names are unverified. The rain rule stays, worded "no official reading here". England's EA forecast (path unverified, no forecasts Oct–Apr) and NSW Beachwatch (endpoint and terms unconfirmed) are links only |
+| SV-SU5 | Sun and current on the surf page | P1 | done: `editions/surf/comfort.lua`, source `surf-current` (its own small marine request, because the answer names the current's unit); card `comfort`, page only |
+| SV-SU6 | Pages about the break (cams, water quality, sharks, surf-zone forecast) | P1 | done as text: `links` in `breaks.lua`, card `links`, page only. Cards cannot open an outside page yet |
+| SV-SU7 | NWS Surf Zone Forecast rip risk | P2 | follow-up: text layouts differ by office and no recorded product was available |
+| SV-SU8 | Buoys outside the US (UK CCO, Irish Marine Institute) | P2 | follow-up: CCO needs a key tied to a Referer; the Irish ERDDAP dataset was not verified |
+
+Requests to the foundation from Surfers' services:
+
+- A card link that opens an outside page (for example `act` returning
+  `{ url = … }`), so SV-SU6's links can be tapped.
+- In the full app the surf page asks `api.weather.gov` for alerts again
+  when outdoors already has them (`forecast.warnings`); a shared alert
+  source with per-activity filters would save the request.
+
 ### Sailors' Weather: `sailing.lua`
 
 | ID | Feature | Pri | Size | Notes |
