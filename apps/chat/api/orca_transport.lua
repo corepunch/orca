@@ -1,5 +1,5 @@
 local network = require "orca.network"
-local json = require "api.json"
+local json = require "orca.json"
 
 local function encode(request)
   if type(request.body) == "string" then return request.body end

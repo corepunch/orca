@@ -1,7 +1,7 @@
 # Chat Lua API
 
 `require "api.chat"` provides one client for Appwrite and the offline mock.
-Only the HTTP adapter imports `orca.network`; `api.json` handles strict JSON. Remote
+Only the HTTP adapter imports `orca.network`; `orca.json` handles strict JSON. Remote
 methods yield through `network.fetch`; call them from an ORCA event coroutine.
 
 ```lua

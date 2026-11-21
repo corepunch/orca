@@ -1,5 +1,5 @@
 -- Upload preflight only: no renderer, network or backend emulator.
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Client = {}
 local writes = 0
 require("api.features")(Client, {

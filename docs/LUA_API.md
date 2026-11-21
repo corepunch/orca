@@ -39,6 +39,16 @@ Use this file when changing Lua-visible behavior.
 - DataObject child changes notify ItemsControl automatically. Use `addChild`, `removeFromParent`, `clear`, and `moveBefore(sibling)`; moving within a parent preserves lifecycle and references. `beginUpdate()` / `endUpdate()` batch membership notifications, including nested batches.
 - `orca.data` declares schemas, scopes, queries, views, commands, edits, media and routes for data-driven screens; `orca.data.lint` checks page bindings and `orca.data.fixtures` previews providers offline. See [data-driven screens](app/datasources.md).
 
+## JSON
+
+`require "orca.json"` is the strict JSON codec for service requests and
+persisted state: `encode(value)` and `decode(text)`, both raising on invalid
+input (non-string object keys, cycles, NaN, malformed text). It is pure Lua
+under `share/orca/`, so tests run in standalone Lua can load it with
+`share/?.lua` on `package.path`. Apps should use it rather than bundling a
+codec. The native `orca.parsers.json` remains for lenient parsing; its `encode`
+does not escape strings and is not suitable for a wire format.
+
 ## HTTP responses and private sessions
 
 The handwritten `orca.network` response userdata provides `text()`, `json()`,

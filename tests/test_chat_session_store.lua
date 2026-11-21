@@ -1,6 +1,6 @@
-package.path = "apps/chat/?.lua;" .. package.path
+package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
 local Store = require "Scripts.session_store"
-local json = require "api.json"
+local json = require "orca.json"
 local records = {}
 local native = {
     supported = function() return true end,

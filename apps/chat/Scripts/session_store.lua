@@ -1,5 +1,5 @@
 -- Private Account credentials only; passwords and short-lived JWTs are never saved.
-local json = require "api.json"
+local json = require "orca.json"
 local M = {}
 
 function M.new(config, native)

@@ -1,5 +1,5 @@
 -- Device target metadata is private device state, separate from the login.
-local json = require "api.json"
+local json = require "orca.json"
 local M = {}
 
 function M.new(config, native)
