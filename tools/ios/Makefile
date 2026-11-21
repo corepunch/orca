@@ -55,9 +55,8 @@ PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/u
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_scroll.o)
 ifeq ($(RENDERER),metal)
-# GLSL is translated to MSL when a program links; dependencies.py builds
-# glslang, SPIRV-Cross and the translator into libglslmsl.a.
-IOS_OBJECTS += $(ROOT)/obj/source/renderer/metal/gl_metal.o
+# The Metal renderer is the one unit compiled with ARC.
+IOS_OBJECTS += $(ROOT)/obj/source/renderer/metal/metal.o
 endif
 LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts
 .PHONY: app dependencies generated settings run install list-devices
@@ -83,7 +82,7 @@ $(ROOT)/obj/$(1).o: $$(shell find $(2) -name '*.c' 2>/dev/null) $(ROOT)/settings
 endef
 $(foreach module,$(MODULES),$(eval $(call unity,$(module),source/$(module))))
 $(foreach plugin,$(PLUGINS),$(eval $(call unity,plugin_$(plugin),plugins/$(plugin))))
-$(ROOT)/obj/source/renderer/metal/gl_metal.o: source/renderer/metal/gl_metal.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
+$(ROOT)/obj/source/renderer/metal/metal.o: source/renderer/metal/metal.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
 	@mkdir -p "$(@D)"
 	$(CC) $(OBJCFLAGS) -fobjc-arc -c "$<" -o "$@"
 $(ROOT)/obj/%.o: %.m $(ROOT)/settings tools/ios/Makefile | dependencies generated
