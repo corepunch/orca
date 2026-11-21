@@ -347,10 +347,28 @@ the rating stays weather-only, and credits come from `Hiking.attribution`.
 | GA7 | Heat, gust, hail and snow warnings for plants | P1 | S | |
 | GA8 | Root-zone moisture instead of 0–1 cm | P1 | S | `soil_moisture_3_to_9cm`, `9_to_27cm` |
 | GA9 | Local frost dates with 10/50/90 % odds, and hardiness zone | P1 | M | historical API once, cached with F1 |
-| GA10 | Growing degree days since a date | P2 | M | |
+| GA10 | Growing degree days since a date | P2 | M | done with SV-GA2: `editions/garden/degree.lua`, "growing season" card |
 | GA11 | Plot settings: frost pocket, soil type, what I protect | P1 | M | F3 |
 | GA12 | 16 days | P2 | S | |
 | GA13 | Moon gardening, optional and labelled as tradition | P2 | S | |
+
+#### Gardeners' Weather: services
+
+Existing services ([Research/services-garden.md](Research/services-garden.md)).
+Each is an optional source (asked for the hub in Gardeners' Weather and,
+in the full app, when the garden page opens), credited through the
+activity's `attribution`; a failed service never reads as "no warning".
+
+| ID | Service | Status |
+| --- | --- | --- |
+| SV-GA1 | NWS frost, freeze, heat and high-wind alerts, US (`editions/garden/warnings.lua`) | done: card `official` (rank 0, unmodified, issuer named); the frost card says "NWS: … in force", "no NWS frost alert in force … our estimate" or "NWS alerts not reached" |
+| SV-GA2 | Growing degree days from the archive (`degree.lua`, `climate.lua`) | done: second archive source `gdd` (once a day, after the hub), 30-year average season from the frost-date request, "N days ahead", crabgrass window for US lawns (rule of thumb, source *verify*) |
+| SV-GA3 | CAMS pollen, Europe (`jobs.lua`) | done: source `pollen`; a note on mowing, the best time today and the hour; no own card |
+| SV-GA4 | U.S. Drought Monitor category at the point (`water.lua`) | done: source `drought` (FeatureServer point query, at most once a day, kept 8 days); D1+ adds a line to the water card. FeatureServer owner to confirm |
+| SV-GA5 | Hosepipe-ban pointer, UK (`water.lua`) | done as text (Water UK's address): no card link can open a web page yet |
+| SV-GA6 | Met Office Weather Warnings, UK | link only ("official warnings" row): NSWWS Open Licence and style guide unread, and the feed names regions, not points |
+| SV-GA7 | USA-NPN Spring Index and pest stages | not started: For-Profit policy to clear first |
+| SV-GA8 | Reference links: USDA map, RHS ratings, AHDB BlightWatch | done as text on the hardiness and blight rows |
 
 ### Stargazers' Weather: `stargazing.lua`
 

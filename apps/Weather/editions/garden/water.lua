@@ -12,12 +12,85 @@
 -- Model soil moisture at 3–9 and 9–27 cm, where roots are, can overrule
 -- it: soil past field capacity needs nothing; soil near wilting point
 -- needs water whatever the sums say. Both are estimates.
+--
+-- Two official answers the app cannot compute join the card:
+--
+--   US drought (SV-GA4)  the U.S. Drought Monitor's category at the point
+--                        (NDMC, USDA, NOAA), from the current map's
+--                        polygons; weekly, so asked at most once a day.
+--                        D1 and worse add a line. A failed answer says
+--                        nothing, never "no drought".
+--   UK hosepipe bans     no feed exists anywhere, so no claim: in a dry
+--   (SV-GA5)             summer week the card names where to look.
 local Units = require "Weather/units"
 local Score = require "Weather/score"
+local Storage = require "Weather/storage"
 local Plot = require "Weather/editions/garden/plot"
+local Warnings = require "Weather/editions/garden/warnings"
 local Water = {}
 
 local DAY = 86400
+
+-- The current USDM map as an ArcGIS FeatureServer (owner to be confirmed
+-- with NDMC before shipping; see Research/services-garden.md).
+Water.USDM = "https://services5.arcgis.com/0OTVzJS4K09zlixn/ArcGIS/rest/services/USDM_current/FeatureServer/0/query"
+Water.DROUGHT = { [0] = "Abnormally dry (D0)", "Moderate drought (D1)", "Severe drought (D2)", "Extreme drought (D3)",
+    "Exceptional drought (D4)" }
+Water.HOSEPIPE = "water.org.uk"
+
+local function droughtKey(spot) return ("%.2f,%.2f"):format(spot.lat, spot.lon) end
+local function droughtSaved(spot)
+    local all = Storage.load("garden-drought")
+    all = type(all) == "table" and all or {}
+    return all[droughtKey(spot)], all
+end
+
+-- The drought source (Garden.sources): US places, once a day. The answer
+-- has no coordinates and the forecast no `spot` while its sources parse,
+-- so the place asked is remembered from `url`; a replay is not kept.
+local asking
+Water.droughtSource = {
+    id = "drought", optional = true,
+    url = function(spot, _, now)
+        asking = nil
+        if not Warnings.us(spot) then return nil end
+        local saved = droughtSaved(spot)
+        if saved and saved.at and (now or os.time()) - saved.at < DAY then return nil end
+        asking = { spot = spot, at = os.time() }
+        return ("%s?geometry=%.4f,%.4f&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects"
+            .. "&outFields=DM&returnGeometry=false&f=json"):format(Water.USDM, spot.lon, spot.lat)
+    end,
+    parse = function(json, forecast)
+        assert(type(json) == "table" and not json.error, "drought map refused the query")
+        local features = assert(type(json.features) == "table" and json.features, "no drought features")
+        local dm = -1
+        for _, feature in ipairs(features) do
+            local value = tonumber((feature.attributes or {}).DM)
+            if value and value > dm then dm = value end
+        end
+        -- Only straight after its own request (not a later replay).
+        local spot = forecast.spot or asking and os.time() - asking.at < 60 and asking.spot or nil
+        asking = nil
+        local value = { at = forecast.updated or forecast.epoch or os.time(), dm = dm }
+        forecast.drought = value
+        if spot and spot.lat then
+            local _, all = droughtSaved(spot)
+            all[droughtKey(spot)] = value
+            Storage.save("garden-drought", all)
+        end
+    end,
+}
+
+-- The drought category at the place (-1 none, 0–4), from this forecast or
+-- a map read in the last eight days; nil when unknown.
+function Water.drought(forecast, spot)
+    spot = spot or forecast.spot
+    if forecast.drought then return forecast.drought.dm end
+    if not (spot and spot.lat and Warnings.us(spot)) then return nil end
+    local saved = droughtSaved(spot)
+    local now = forecast.epoch or os.time()
+    if saved and saved.at and now - saved.at < 8 * DAY then return saved.dm end
+end
 
 -- Root-zone moisture: a weighted mean of the two layers (6 cm and 18 cm
 -- thick), else the top centimetre. Returns the fraction and its depth text.
@@ -96,6 +169,17 @@ function Water.card(forecast, plot)
         parts[#parts + 1] = "one deep soak in the evening or early morning, not a daily sprinkle"
     end
     if not history then parts[#parts + 1] = "no rain record for last week yet" end
+    local spot = forecast.spot
+    local dm = Water.drought(forecast, spot)
+    if dm and dm >= 1 then
+        parts[#parts + 1] = ("%s here (U.S. Drought Monitor): check your utility's watering days"):format(
+            Water.DROUGHT[math.min(4, dm)])
+    end
+    local month = Plot.month(forecast)
+    if b.verdict == "water" and history and b.short >= b.limit and month and month >= 6 and month <= 9
+        and Warnings.uk(spot) then
+        parts[#parts + 1] = "is there a hosepipe ban? ask your water company (Water UK: " .. Water.HOSEPIPE .. ")"
+    end
     card.detail = table.concat(parts, " · ")
     return card, b
 end

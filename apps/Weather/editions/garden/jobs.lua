@@ -12,6 +12,13 @@
 --              free, with light wind
 --   harvest    before frost, a downpour (25 mm in a day), a gale or hail
 --              in the next three days
+--
+-- Pollen (SV-GA3): in Europe, CAMS's grass, birch and mugwort forecasts
+-- (Open-Meteo Air Quality, about 11 km) say when hay fever makes mowing
+-- and weeding hard: "grass pollen high until 18:00". The bands (grains per
+-- m³: low under 20, medium under 50, high from 50) are an estimate across
+-- the three types. A note, never a reason the weather is bad for plants.
+local Forecast = require "Weather/forecast"
 local Sky = require "Weather/sky"
 local Units = require "Weather/units"
 local Plot = require "Weather/editions/garden/plot"
@@ -20,6 +27,84 @@ local Crops = require "Weather/editions/garden/crops"
 local Jobs = {}
 
 local HOUR, DAY = 3600, 86400
+
+Jobs.POLLEN = { "grass", "birch", "mugwort" }
+
+-- CAMS Europe's domain, roughly.
+function Jobs.inEurope(spot)
+    return spot and spot.lat and spot.lon and spot.lat >= 34 and spot.lat <= 72 and spot.lon >= -25 and spot.lon <= 45
+        or false
+end
+
+Jobs.pollenSource = {
+    id = "pollen", optional = true,
+    url = function(spot)
+        if not Jobs.inEurope(spot) then return nil end
+        local names = {}
+        for _, name in ipairs(Jobs.POLLEN) do names[#names + 1] = name .. "_pollen" end
+        return Forecast.url("airQuality", ("latitude=%s&longitude=%s&hourly=%s&forecast_days=3&timezone=auto")
+            :format(spot.lat, spot.lon, table.concat(names, ",")))
+    end,
+    parse = function(json, forecast)
+        local h = assert(type(json) == "table" and json.hourly, "no hourly pollen")
+        local at = {}
+        for index, time in ipairs(h.time or {}) do at[time] = index end
+        for _, hour in ipairs(forecast.hours or {}) do
+            local i = at[hour.time]
+            if i then
+                for _, name in ipairs(Jobs.POLLEN) do
+                    local column = h[name .. "_pollen"]
+                    if column and column[i] then hour[name .. "_pollen"] = column[i] end
+                end
+            end
+        end
+    end,
+}
+
+-- An hour's worst pollen: its type, grains and "low" / "medium" / "high".
+function Jobs.pollenAt(hour)
+    local top, worst
+    for _, name in ipairs(Jobs.POLLEN) do
+        local value = hour[name .. "_pollen"]
+        if value and (not worst or value > worst) then top, worst = name, value end
+    end
+    if not top then return nil end
+    return top, worst, worst < 20 and "low" or worst < 50 and "medium" or "high"
+end
+
+-- "13:00" for the start of an hour row.
+local function clockOf(hour) return Units.clock(hour.time:sub(12, 16)) end
+
+-- Today's high pollen in the daylight left: "grass pollen high until
+-- 18:00: mow and weed after", "… from 13:00: mow and weed before", "… for
+-- the rest of the day", or nil (no data, or not high).
+function Jobs.pollen(forecast)
+    local now = forecast.hours and forecast.hours[forecast.now]
+    if not now then return nil end
+    local rows = {}
+    for index = forecast.now, #forecast.hours do
+        local hour = forecast.hours[index]
+        if hour.date ~= now.date then break end
+        if hour.isDay and Jobs.pollenAt(hour) then rows[#rows + 1] = hour end
+    end
+    local first, kind
+    for index, hour in ipairs(rows) do
+        local top, _, level = Jobs.pollenAt(hour)
+        if level == "high" then first, kind = index, top; break end
+    end
+    if not first then return nil end
+    local ends
+    for index = first + 1, #rows do
+        if select(3, Jobs.pollenAt(rows[index])) ~= "high" then ends = rows[index]; break end
+    end
+    if first > 1 then
+        return ("%s pollen high from %s: mow and weed before, if you have hay fever"):format(kind, clockOf(rows[first]))
+    end
+    if ends then
+        return ("%s pollen high until %s: mow and weed after, if you have hay fever"):format(kind, clockOf(ends))
+    end
+    return ("%s pollen high for the rest of the day: hard on hay fever"):format(kind)
+end
 
 -- The hours from a day ago (for rain already fallen) to three days ahead.
 local function window(forecast)
@@ -136,6 +221,12 @@ function Jobs.list(forecast, plot)
         jobs[#jobs + 1] = from and { id = rule.id, title = rule.title, value = when(forecast, from, to), note = rule.why,
             tone = "good", date = from.date, short = Plot.dayName(from.date, forecast), span = Units.span(from.time, to.time) }
             or { id = rule.id, title = rule.title, value = "not in 3 days", note = "no window: " .. rule.why, tone = "poor" }
+    end
+    local pollen = Jobs.pollen(forecast)
+    if pollen then
+        for _, job in ipairs(jobs) do
+            if job.id == "mow" then job.note = job.note .. " · " .. pollen end
+        end
     end
     local date, coldest = plantOut(forecast, plot)
     jobs[#jobs + 1] = date and { id = "plant", title = "plant out", value = Plot.dayName(date, forecast), tone = "good",
