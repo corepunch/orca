@@ -13,6 +13,8 @@ local Seeing = require "Weather/editions/stargazing/seeing"
 local Sources = require "Weather/editions/stargazing/sources"
 local Aurora = require "Weather/editions/stargazing/aurora"
 local RedMode = require "Weather/editions/stargazing/redmode"
+local Planets = require "Weather/editions/stargazing/planets"
+local Events = require "Weather/editions/stargazing/events"
 local Forecast = require "Weather/forecast"
 local Settings = require "Weather/settings"
 local Sky = require "Weather/sky"
@@ -226,6 +228,196 @@ check(greyCards[1].value == "stay in" and greyCards[1].detail:find("Cloudy") and
 -- No night in a Lofoten June.
 local midsummer = { hours = {}, spot = lofoten, epoch = utc("2026-06-21T10:00"), offset = 7200 }
 check(Stargazing.cards(midsummer)[1].value == "no night", "Midsummer in Lofoten: no night")
+
+-- Planets tonight on the Brecon forecast above: Venus (past inferior
+-- conjunction on 24 October 2026) and Jupiter before dawn, Saturn
+-- (opposition 4 October 2026) in the evening.
+check(cards.planets and cards.planets.value:find("^Venus, Jupiter") and cards.planets.detail:find("Saturn 0%.%d · 1%d:%d%d%–")
+    and cards.planets.detail:find("highest %d+° %a+ at %d%d:%d%d"),
+    "Planets tonight at Brecon: " .. (cards.planets and cards.planets.value .. " · " .. cards.planets.detail or "none"))
+check(cards.meteors == nil and cards.eclipse == nil, "No shower near its peak and no eclipse in the week of 18 November 2026")
+
+-- SV-ST1 to SV-ST3: live space weather, on synthetic answers in the
+-- services' documented shapes (tests/fixtures/stargazing/space-weather.lua);
+-- the live services are never asked in tests.
+local Space = dofile("tests/fixtures/stargazing/space-weather.lua")
+local tromso = { id = "tromso", lat = 69.65, lon = 18.96 }
+local atacama = { lat = -22.9, lon = -68.2 }
+local NIGHT = utc("2026-11-18T22:00")
+check(Sky.sunAltitude(NIGHT, tromso.lat, tromso.lon) < -18, "22:00 UTC is full night at Tromsø")
+local MAG, PLASMA = { bz_gsm = "bz", bt = "bt" }, { speed = "speed", density = "density" }
+local function south(ago) return ago < 40 and -8 or 2 end
+local function fast() return 560 end
+
+-- SV-ST1: solar wind now.
+local southward = Aurora.solarWind(Aurora.rows(Space.mag(NIGHT, south), MAG), Aurora.rows(Space.plasma(NIGHT, fast), PLASMA), NIGHT)
+check(southward.bz == -8 and southward.minutesSouth == 40 and southward.speed == 560 and southward.density == 4.5,
+    "Bz −8 nT south for the last 40 minutes, 560 km/s")
+local windLine, windLevel = Aurora.windText(southward)
+check(windLevel == "watch" and windLine:find("Bz south −8 nT for 40 min: the next hour is the one to watch")
+    and windLine:find("fast solar wind 560 km/s"), "Southward Bz held half an hour: " .. windLine)
+local quietWind = Aurora.solarWind(Aurora.rows(Space.mag(NIGHT, function() return 3 end), MAG), {}, NIGHT)
+check(select(2, Aurora.windText(quietWind)) == "quiet" and Aurora.windText(quietWind):find("Bz north"), "Northward Bz is quiet")
+local gap = Aurora.solarWind(Aurora.rows(Space.mag(NIGHT, function(ago) return ago >= 20 and -6 or nil end), MAG),
+    Aurora.rows(Space.plasma(NIGHT, function(ago) return ago >= 20 and 450 or nil end), PLASMA), NIGHT)
+check(gap == nil, "A spacecraft gap: rows older than 15 minutes count as missing")
+check(#Aurora.rows({ { time_tag = "2026-11-18 21:59:00.000", bz_gsm = -3.1, bt = 5 } }, MAG) == 1,
+    "Solar wind from a list of objects too")
+
+-- SV-ST2: the OVATION nowcast, cut to the cells around the place.
+local cells = {}
+for lat = 60, 80 do
+    cells[lat] = {}
+    for lon = 10, 30 do cells[lat][lon] = lat >= 72 and 60 or 25 end
+end
+Aurora.reset()
+Aurora.source.parse(Space.kp(NIGHT, 3), { epoch = NIGHT, hours = {} })
+check(Aurora.ovationSource.url(tromso) == Aurora.OVATION_URL and Aurora.magSource.url(tromso) == Aurora.MAG_URL,
+    "Tromsø on a dark night asks for the nowcast and the solar wind")
+local grid, read = Space.ovation(NIGHT, cells), { epoch = NIGHT, hours = {} }
+Aurora.ovationSource.parse(grid, read)
+check(#grid.coordinates > 300 and #grid.coordinates < 600, "Only the cells within 10° are kept: " .. #grid.coordinates)
+local cast = Aurora.ovationAt(read.ovation, tromso.lat, tromso.lon, NIGHT)
+check(cast.chance == 25 and cast.horizonChance == 60 and not cast.stale, "25% overhead, 60% low in the north")
+check(Aurora.ovationAt(Aurora.ovation(Space.ovation(NIGHT, cells, 3 * 3600)), tromso.lat, tromso.lon, NIGHT).stale,
+    "A nowcast observed three hours ago is stale")
+check(Aurora.ovationSource.url(atacama) == nil and Aurora.alertsSource.url(atacama) == nil
+    and Aurora.hp30Source.url(atacama) == nil, "The Atacama never asks for aurora data")
+Aurora.source.parse(Space.kp(utc("2026-11-18T12:00"), 5), { epoch = utc("2026-11-18T12:00"), hours = {} })
+check(Aurora.ovationSource.url(brecon) == nil and Aurora.magSource.url(brecon) == nil
+    and Aurora.alertsSource.url(brecon) == Aurora.ALERTS_URL, "Brecon at noon: no nowcast by day, alerts still")
+
+-- SV-ST3: NOAA's alerts and GFZ's Hp30.
+local alerts = Aurora.parseAlerts(Space.alerts(NIGHT), NIGHT)
+check(#alerts == 1 and alerts[1].kind == "watch" and alerts[1].g == 2,
+    "A cancelled watch and a lapsed warning drop out; the G2 watch stays")
+check(Aurora.alertLine(alerts, tromso.lat, tromso.lon, NIGHT, 3600) == "A G2 storm watch for tomorrow night",
+    "The watch as a calm line")
+check(Aurora.alertLine(alerts, atacama.lat, atacama.lon, NIGHT, 0) == nil, "A storm that cannot reach the place says nothing")
+local RISING = { 2, 2.33, 2, 2.67, 3, 3.33, 4, 4.67, 5, 5.33, 5.67, 6 }
+local activity = Aurora.activityNow(Aurora.parseHp30(Space.hp30(NIGHT, RISING)), NIGHT)
+check(activity and activity.value == 6 and activity.rising, "Hp30 up from 4.7 to 6 in two hours: rising now")
+check(Aurora.activityNow(Aurora.parseHp30(Space.hp30(NIGHT - 3 * 3600, RISING)), NIGHT) == nil, "Old Hp30 says nothing")
+check(Aurora.hp30Url(NIGHT):find("start=2026%-11%-18T16:00:00Z&end=2026%-11%-18T22:00:00Z&index=Hp30"), "Six hours of Hp30")
+
+-- The whole chain through Forecast.load at Tromsø: every answer read, the
+-- nowcast replaces the Kp estimate, and the aurora card says it all.
+local tromsoWeather = F.weather(tromso.lat, {
+    cloud_cover = function() return 0 end, cloud_cover_low = function() return 0 end,
+    cloud_cover_mid = function() return 0 end, cloud_cover_high = function() return 0 end,
+    is_day = function(i) return Sky.sunAltitude(utc("2026-11-18T00:00") + i * 3600 + 1800, tromso.lat, tromso.lon) > 0 and 1 or 0 end,
+})
+tromsoWeather.longitude = tromso.lon
+local function spaceNet(answer)
+    local net = F.network()
+    net.answers["latitude=69%.65"] = function() return tromsoWeather end
+    net.answers["k%-index%-forecast"] = answer or function() return Space.kp(NIGHT, 4) end
+    net.answers["mag%-2%-hour"] = answer or function() return Space.mag(NIGHT, south) end
+    net.answers["plasma%-2%-hour"] = answer or function() return Space.plasma(NIGHT, fast) end
+    net.answers["ovation_aurora"] = answer or function() return Space.ovation(NIGHT, cells) end
+    net.answers["alerts%.json"] = answer or function() return Space.alerts(NIGHT) end
+    net.answers["kp%.gfz%.de"] = answer or function() return Space.hp30(NIGHT, RISING) end
+    return net
+end
+local function auroraAt(net)
+    Aurora.reset()
+    local loaded, _, raw = Forecast.load(tromso, false, net.fetch, NIGHT, { sources = Stargazing.sources })
+    loaded.spot = tromso
+    for _, card in ipairs(Stargazing.cards(loaded)) do if card.id == "aurora" then return card, loaded, raw end end
+    return nil, loaded, raw
+end
+local liveCard, liveForecast, liveRaw = auroraAt(spaceNet())
+check(next(liveForecast.missing) == nil and liveForecast.solarWind and liveForecast.ovation and liveForecast.hp30
+    and #liveForecast.spaceAlerts == 1, "Every space-weather answer is read")
+check(#liveRaw.sources.ovation.coordinates < 600, "Only the cells near Tromsø are saved with the forecast")
+check(liveCard and liveCard.title == "aurora now" and liveCard.value == "possible now" and liveCard.tone == "fair",
+    "The nowcast leads the aurora card: " .. tostring(liveCard and liveCard.value))
+check(liveCard.detail:find("NOAA nowcast 25%% here, 60%% low in the north") and liveCard.detail:find("Bz south −8 nT for 40 min")
+    and liveCard.detail:find("activity is rising now") and liveCard.detail:find("A G2 storm watch for tomorrow night")
+    and liveCard.detail:find("Kp 4 forecast"), "The aurora card: " .. liveCard.detail)
+local nowHour = liveForecast.hours[liveForecast.now]
+check(says(Stargazing.rate(nowHour, liveForecast):result(), "Aurora nowcast: 25%% chance overhead"),
+    "This hour's reason comes from the nowcast, not Kp")
+check(not says(Stargazing.rate(liveForecast.hours[liveForecast.now + 2], liveForecast):result(), "nowcast"),
+    "Two hours on, the Kp estimate again")
+-- Every service silent: the card says the data is missing, never "no aurora".
+local silentCard, silentForecast = auroraAt(spaceNet(function() return nil, "No connection." end))
+check(silentForecast.missing.kp and silentForecast.missing.solarMag and silentForecast.missing.ovation,
+    "Failed services are recorded as missing")
+check(silentCard and silentCard.value == "no live data" and silentCard.detail:find("no answer from the Kp forecast, solar wind")
+    and silentCard.detail:find("says nothing about the sky") and not (silentCard.detail .. silentCard.value):find("no aurora")
+    and not silentCard.value:find("quiet"), "A silent service is not a quiet sky: " .. tostring(silentCard and silentCard.detail))
+
+-- SV-ST4: planets against published events (USNO, NASA and Sky &
+-- Telescope almanacs): the conjunctions' separations, opposition dates
+-- (180° from the sun in longitude), greatest elongations and magnitudes.
+local function planet(name, time) return Planets.position(name, utc(time)) end
+local function apart(a, b) return Planets.separation(a.ra, a.dec, b.ra, b.dec) end
+check(apart(planet("Jupiter", "2020-12-21T18:20"), planet("Saturn", "2020-12-21T18:20")) < 0.2,
+    "The great conjunction of 21 December 2020: 0.1° apart")
+check(apart(planet("Venus", "2016-08-27T22:00"), planet("Jupiter", "2016-08-27T22:00")) < 0.2,
+    "Venus and Jupiter on 27 August 2016: 4′ apart")
+for _, opposition in ipairs { { "Mars", "2020-10-13T23:20" }, { "Jupiter", "2023-11-03T05:00" }, { "Saturn", "2023-08-27T08:00" },
+    { "Jupiter", "2026-01-10T08:00" }, { "Saturn", "2026-10-04T12:00" } } do
+    local p = planet(opposition[1], opposition[2])
+    check(math.abs((p.lon - p.sunLon) % 360 - 180) < 1, ("%s at opposition on %s"):format(opposition[1], opposition[2]:sub(1, 10)))
+end
+check(math.abs(planet("Venus", "2020-03-24T22:00").elongation - 46.1) < 0.5, "Venus 46.1° from the sun, 24 March 2020")
+check(math.abs(planet("Mercury", "2020-02-10T14:00").elongation - 18.2) < 0.5, "Mercury 18.2° from the sun, 10 February 2020")
+for _, bright in ipairs { { "Mars", "2020-10-13T23:20", -2.6 }, { "Jupiter", "2023-11-03T05:00", -2.9 },
+    { "Saturn", "2023-08-27T08:00", 0.4 }, { "Venus", "2020-04-28T12:00", -4.7 } } do
+    local mag = planet(bright[1], bright[2]).mag
+    check(math.abs(mag - bright[3]) <= 0.25, ("%s magnitude %.2f, published %.1f"):format(bright[1], mag, bright[3]))
+end
+-- At opposition Jupiter culminates at local midnight (00:20 UTC at Brecon).
+local january = Night.frame(brecon, utc("2026-01-10T12:00"), 0)
+local jupiter
+for _, entry in ipairs(Planets.night(january, brecon)) do if entry.name == "Jupiter" then jupiter = entry end end
+check(jupiter and math.abs(jupiter.best.epoch - utc("2026-01-11T00:20")) <= 30 * 60 and jupiter.best.altitude > 55
+    and Sky.compass(jupiter.best.azimuth) == "S", "Jupiter highest in the south around midnight at opposition")
+for _, entry in ipairs(Planets.night(frame, brecon)) do
+    if entry.rise then
+        check(math.abs(Planets.altitude(entry.name, entry.rise, brecon.lat, brecon.lon) - Planets.HORIZON) < 0.2,
+            entry.name .. " rises on the horizon")
+    end
+end
+
+-- SV-ST5: meteor showers and lunar eclipses.
+local function night(spot, time, offset) return { spot = spot, epoch = utc(time), offset = offset or 0, hours = {} } end
+local function cardOf(forecast, id)
+    for _, card in ipairs(Stargazing.cards(forecast)) do if card.id == id then return card end end
+end
+local perseids = cardOf(night(brecon, "2026-08-12T20:00", 3600), "meteors")
+check(perseids and perseids.title == "Perseids" and perseids.value == "peak tonight" and perseids.detail:find("no moonlight")
+    and tonumber(perseids.detail:match("up to about (%d+) an hour")) >= 60 and perseids.tone == "good",
+    "The Perseids at new moon, 12 August 2026: " .. tostring(perseids and perseids.detail))
+local quadrantids = cardOf(night(brecon, "2026-01-03T18:00"), "meteors")
+check(quadrantids and quadrantids.title == "Quadrantids" and quadrantids.detail:find("full moon washes out"),
+    "The Quadrantids under the full moon of 3 January 2026: " .. tostring(quadrantids and quadrantids.detail))
+local qFrame = Night.frame(brecon, utc("2026-01-03T18:00"), 0)
+check(Events.rate(Events.SHOWERS[1], qFrame, brecon, 0).rate < 0.6 * 80, "Moonlight cuts the Quadrantids' rate")
+check(cardOf(night(brecon, "2026-08-10T20:00", 3600), "meteors").value == "peak in 2 nights", "Two nights before the peak")
+check(cardOf(night(brecon, "2026-09-20T20:00", 3600), "meteors") == nil, "No shower card far from a peak")
+local eclipse = cardOf(night(brecon, "2029-12-20T18:00"), "eclipse")
+check(eclipse and eclipse.value == "total lunar eclipse tonight" and eclipse.detail:find("greatest at 22:42, the moon %d+° up"),
+    "The total lunar eclipse of 20 December 2029 from Brecon: " .. tostring(eclipse and eclipse.detail))
+local soon = cardOf(night(brecon, "2029-12-17T18:00"), "eclipse")
+check(soon and soon.value == "total lunar eclipse thu 20" and soon.hub == false, "An eclipse later in the week: " .. tostring(soon and soon.value))
+check(cardOf(night({ lat = -33.9, lon = 151.2 }, "2029-12-20T08:00", 39600), "eclipse") == nil,
+    "Sydney sees no moon at 22:42 UTC: no eclipse card")
+for _, entry in ipairs(Events.LUNAR_ECLIPSES) do
+    local when = utc(entry.at)
+    check(math.abs(Moon.phase(when).phase - 0.5) < 0.006 and math.abs(Moon.position(when).lat) < 1.3,
+        "The eclipse of " .. entry.at .. " is a full moon near a node")
+end
+
+-- Credits on the settings' about.
+local about = {}
+for _, row in ipairs(require("Weather/provider").about()) do about[row[1]] = row[2] end
+check(about["Space weather by NOAA SWPC"] and about["Hp30 index by GFZ Potsdam"]:find("CC BY 4.0")
+    and about["Moon and planet positions after P. Schlyter"] and about["Meteor showers: IMO and IAU MDC"]
+    and about["Eclipse Predictions by Fred Espenak, NASA/GSFC Emeritus"], "Every service is credited on the about")
+Aurora.reset()
 
 -- ST6: red night mode.
 check(RedMode.classes("stargazing", true) == "stargazing night" and RedMode.classes("stargazing night", false) == "stargazing",
