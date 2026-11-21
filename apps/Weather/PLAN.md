@@ -173,9 +173,24 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 | W7 | Choose and order the "good for" activities | P1 | M | an F3 setting |
 | W8 | Comfort setting ("I run cold") | P2 | S | an outdoors setting |
 | W9 | An hourly "good for" traffic-light row on the hub | P2 | S | DESIGN.md already proposes it |
-| W10 | Official severe weather warnings (US NWS, MeteoAlarm, Canada) | P1 | M–L | F4 source; check the MeteoAlarm licence |
+| W10 | Official severe weather warnings (US NWS, MeteoAlarm, Canada) | P1 | M–L | done for the US, Canada, Norway and Germany through `services/warnings.lua` (SV-W1 to SV-W4 below); MeteoAlarm, the UK, Australia, New Zealand and Japan are links until their licence or key allows reading |
 | W11 | Accessibility: VoiceOver labels, Dynamic Type, contrast | P1 | M | partial, see [README](README.md#tests): engine accessibility properties and an iOS VoiceOver bridge; labels on colour-only bands, reasons and rows; Dynamic Type through `TextScale`, 0.9 to 1.35. Not done: VoiceOver scrolling to content below the fold (three-finger scroll does not reach engine scroll views), live Dynamic Type on an open page, a contrast audit |
-| W12 | Rain radar | P2 | L | needs a paid provider; RainViewer's free API was cut back in 2025 |
+| W12 | Rain radar | P2 | L | no free global radar (RainViewer's free API was cut back in 2025); a radar line for Germany is SV-W5, a map is SV-W8 |
+
+#### Services (existing free services, [research](Research/services-weather.md))
+
+Shared modules in `services/`, reusable by every edition (`Warnings.sources()`, `Warnings.cards`). Tests: `tests/test_weather_services.lua` (`make test-weather-services`), offline on synthetic answers.
+
+| ID | Item | Pri | Status | Notes |
+| --- | --- | --- | --- | --- |
+| SV-W1 | Warning registry, coverage covered / link / none | P0 | done | `services/warnings.lua`; NWS moved to `services/nws.lua`; a place's country picks first, else coarse boxes. Link and none show a calm card, never "no warnings" |
+| SV-W2 | Canada (ECCC GeoMet OGC API) | P0 | done | `services/eccc.lua`; bbox request, point in polygon at card time, French names for French readers. Not verified live (host blocked in the build session) |
+| SV-W3 | MeteoAlarm (Europe) | P1 | link only | licence to confirm in writing (meteoalarm@geosphere.at); then the JSON feed per country and an EMMA region lookup |
+| SV-W4 | Norway (MET MetAlerts 2.0) | P1 | done | `services/metno.lua`, by point; needs the place's country (NO) |
+| SV-W5 | Radar "rain nearby" line (Germany, Bright Sky) | P1 | done | `services/radar.lua`; DWD warnings via Bright Sky too (`services/dwd.lua`). Distance and trend only, no direction yet, never minutes |
+| SV-W6 | NWS HeatRisk | P2 | follow-up | touches run and dog walk |
+| SV-W7 | Lightning potential (ICON-D2) | P2 | follow-up | needs a `score.lua` helper shared with hiking (HI3) |
+| SV-W8 | Radar map | P2 | follow-up | needs an engine map/tile view |
 
 ### Fishers' Weather: `fishing.lua`
 
