@@ -311,6 +311,29 @@ kind has its own switch. The kinds, each where its activity is in the app:
 | `dawn` | surf | 20:00 | Surfers' dawn-patrol card is good for tomorrow |
 | `clear` | stargazing | 2 h before | two dark hours (sun 12° down) under 20 % cloud |
 
+Per edition: an edition keeps outdoors and its own activity, so it offers
+`rain`, `brief` and its own kind (Gardeners' `frost`, Hikers' `storm`,
+Sailors' `wind`, Surfers' `dawn`, Stargazers' `clear`; Fishers' has no kind
+of its own yet). The full app offers all seven. The switches start with
+`rain` and the edition's own kind on and the rest off; the master switch
+starts off everywhere.
+
+The settings group is `alerts`: `on` (the master switch), one toggle per
+kind (`rain`, `brief`, …) and `quietFrom` / `quietTo` (whole local hours of
+the home place; `from` equal to `to` means no quiet hours). Turning `on` off
+cancels everything planned; changing a kind or quiet hours plans again at
+once.
+The plan remembers what went out in storage (`alerts`, ids
+`"<kind>:<local date>"`), so a kind is said at most once a local day even
+when the forecast is planned again.
+
+Background refresh is best effort. iOS decides when (and whether) to run
+it, from the person's usage and Low Power Mode; Weather asks for about every
+three hours (`Alerts.REFRESH`) and never counts on it. What is planned is
+scheduled as local notifications, which go out without the app running, so
+an alert planned at the last launch still arrives when no refresh comes; it
+is only less fresh.
+
 ```lua
 Alerts.candidates(forecast, place, now)  -- { kind, title, body, at, before } per rule
 Alerts.plan(candidates, { now, offset, setting, delivered })  -- what to deliver, ids "<kind>:<date>"
