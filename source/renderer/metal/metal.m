@@ -28,11 +28,11 @@
 
 #include <libs/platform/platform.h>
 #include "metal.h"
-#include "glsl_msl.h"
+#include "msl_program.h"
 #include "r_msl_shaders.h"
 
 #define MAX_TEXTURE_UNITS 16
-#define MAX_VERTEX_ATTRIBS GLSL_MSL_MAX_ATTRIBUTES
+#define MAX_VERTEX_ATTRIBS MSL_MAX_ATTRIBUTES
 #define MAX_SET_BYTES 4096
 
 #if TARGET_OS_IPHONE
@@ -47,36 +47,36 @@ void objc_autoreleasePoolPop(void *pool);
 
 #pragma mark - Objects
 
-@interface GLMTexture : NSObject {
+@interface OrcaTexture : NSObject {
 @public
-  GLenum target;                  // 0 until first bound
+  mtlEnum target;                 // 0 until first bound
   id<MTLTexture> texture;
   id<MTLTexture> swizzled;        // view for a non-identity swizzle
-  GLint width, height, levels;
-  GLenum internalFormat;
-  GLenum minFilter, magFilter, wrapS, wrapT, wrapR;
-  GLint maxLevel;
-  GLenum swizzle[4];
+  int width, height, levels;
+  mtlEnum internalFormat;
+  mtlEnum minFilter, magFilter, wrapS, wrapT, wrapR;
+  int maxLevel;
+  mtlEnum swizzle[4];
   id<MTLSamplerState> sampler;
   uint64_t lastUse;               // command buffer serial that last read or wrote it
   BOOL renderbuffer;
 }
 @end
-@implementation GLMTexture
+@implementation OrcaTexture
 - (instancetype)init
 {
   if ((self = [super init])) {
-    minFilter = GL_NEAREST_MIPMAP_LINEAR;
-    magFilter = GL_LINEAR;
-    wrapS = wrapT = wrapR = GL_REPEAT;
+    minFilter = MTL_NEAREST_MIPMAP_LINEAR;
+    magFilter = MTL_LINEAR;
+    wrapS = wrapT = wrapR = MTL_REPEAT;
     maxLevel = 1000;
-    swizzle[0] = GL_RED, swizzle[1] = GL_GREEN, swizzle[2] = GL_BLUE, swizzle[3] = GL_ALPHA;
+    swizzle[0] = MTL_RED, swizzle[1] = MTL_GREEN, swizzle[2] = MTL_BLUE, swizzle[3] = MTL_ALPHA;
   }
   return self;
 }
 @end
 
-@interface GLMBuffer : NSObject {
+@interface OrcaBuffer : NSObject {
 @public
   id<MTLBuffer> buffer;
   NSUInteger size;
@@ -86,28 +86,28 @@ void objc_autoreleasePoolPop(void *pool);
   NSUInteger paddedStride, paddedOffset, paddedElement;
 }
 @end
-@implementation GLMBuffer
+@implementation OrcaBuffer
 @end
 
 typedef struct
 {
-  GLMBuffer *__unsafe_unretained buffer;  // owned by GLMVertexArray.retained
-  GLint size;
-  GLenum type;
-  GLboolean normalized;
-  GLsizei stride;
+  OrcaBuffer *__unsafe_unretained buffer;  // owned by OrcaVertexArray.retained
+  int size;
+  mtlEnum type;
+  bool normalized;
+  int stride;
   uintptr_t offset;
   BOOL enabled;
 } attrib_t;
 
-@interface GLMVertexArray : NSObject {
+@interface OrcaVertexArray : NSObject {
 @public
   attrib_t attribs[MAX_VERTEX_ATTRIBS];
-  NSMutableArray<GLMBuffer *> *retained;
-  GLMBuffer *elements;
+  NSMutableArray<OrcaBuffer *> *retained;
+  OrcaBuffer *elements;
 }
 @end
-@implementation GLMVertexArray
+@implementation OrcaVertexArray
 - (instancetype)init
 {
   if ((self = [super init])) retained = [NSMutableArray new];
@@ -115,46 +115,46 @@ typedef struct
 }
 @end
 
-@interface GLMFramebuffer : NSObject {
+@interface OrcaFramebuffer : NSObject {
 @public
-  GLMTexture *color;
-  GLMTexture *depth;     // depth, or depth and stencil
-  GLMTexture *stencil;
+  OrcaTexture *color;
+  OrcaTexture *depth;    // depth, or depth and stencil
+  OrcaTexture *stencil;
 }
 @end
-@implementation GLMFramebuffer
+@implementation OrcaFramebuffer
 @end
 
-@interface GLMShader : NSObject {
+@interface OrcaShader : NSObject {
 @public
-  GLenum type;
+  mtlEnum type;
   NSString *source;
 }
 @end
-@implementation GLMShader
+@implementation OrcaShader
 @end
 
-@interface GLMProgram : NSObject {
+@interface OrcaProgram : NSObject {
 @public
-  GLMShader *vs, *fs;
+  OrcaShader *vs, *fs;
   BOOL linked;
   NSString *log;
   NSString *name;                          // set by mtlProgramLabel before mtlLinkProgram
-  struct glsl_msl_program const *refl;     // looked up by name in mtlLinkProgram
-  id<MTLFunction> functions[GLSL_MSL_STAGES];
-  uint8_t *data[GLSL_MSL_STAGES];
-  GLint units[GLSL_MSL_MAX_UNIFORMS];
-  int32_t flipY;                         // uniform index of GLSL_MSL_FLIP_Y
+  struct msl_program const *refl;          // looked up by name in mtlLinkProgram
+  id<MTLFunction> functions[MSL_STAGES];
+  uint8_t *data[MSL_STAGES];
+  int units[MSL_MAX_UNIFORMS];
+  int32_t flipY;                         // uniform index of MSL_FLIP_Y
   uint32_t serial;
   NSMutableDictionary<NSData *, id<MTLRenderPipelineState>> *pipelines;
 }
 @end
-@implementation GLMProgram
+@implementation OrcaProgram
 - (void)reset
 {
   refl = NULL;
   name = nil;
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
+  for (int s = 0; s < MSL_STAGES; s++) free(data[s]), data[s] = NULL, functions[s] = nil;
   linked = NO;
   [pipelines removeAllObjects];
 }
@@ -173,8 +173,8 @@ typedef struct
 
 typedef struct
 {
-  GLenum target;
-  GLMTexture *__unsafe_unretained bound2D, *__unsafe_unretained boundCube;
+  mtlEnum target;
+  OrcaTexture *__unsafe_unretained bound2D, *__unsafe_unretained boundCube;
 } unit_t;
 
 static struct
@@ -183,7 +183,7 @@ static struct
   id<MTLCommandQueue> queue;
   id<MTLCommandBuffer> cb;
   id<MTLRenderCommandEncoder> encoder;
-  GLMFramebuffer *encoderFramebuffer;   // nil: the default framebuffer
+  OrcaFramebuffer *encoderFramebuffer;  // nil: the default framebuffer
   BOOL encoderOpen, encoderDefault;
   uint64_t serial;
   _Atomic uint64_t completed;
@@ -195,37 +195,37 @@ static struct
   BOOL srgb;
 
   NSMutableDictionary<NSNumber *, id> *objects[7];
-  GLuint nextName;
+  uint32_t nextName;
 
-  GLMBuffer *arrayBuffer, *unpackBuffer;
-  GLMVertexArray *vertexArray, *defaultVertexArray;
-  GLMFramebuffer *drawFramebuffer, *readFramebuffer;
-  GLMTexture *renderbuffer;
-  GLMProgram *program;
-  GLuint drawName, readName, renderbufferName, programName, vertexArrayName;
+  OrcaBuffer *arrayBuffer, *unpackBuffer;
+  OrcaVertexArray *vertexArray, *defaultVertexArray;
+  OrcaFramebuffer *drawFramebuffer, *readFramebuffer;
+  OrcaTexture *renderbuffer;
+  OrcaProgram *program;
+  uint32_t drawName, readName, renderbufferName, programName, vertexArrayName;
   unit_t units[MAX_TEXTURE_UNITS];
-  GLuint activeUnit;
-  GLint unpackAlignment;
+  uint32_t activeUnit;
+  int unpackAlignment;
 
   BOOL blend, depthTest, stencilTest, cull;
-  GLenum blendSrc, blendDst;
+  mtlEnum blendSrc, blendDst;
   uint8_t colorMask;
-  GLenum cullFace, depthFunc;
+  mtlEnum cullFace, depthFunc;
   BOOL depthMask;
-  GLenum stencilFunc, stencilFail, stencilZFail, stencilZPass;
-  GLint stencilRef;
-  GLuint stencilReadMask, stencilWriteMask;
-  GLint viewport[4];
+  mtlEnum stencilFunc, stencilFail, stencilZFail, stencilZPass;
+  int stencilRef;
+  uint32_t stencilReadMask, stencilWriteMask;
+  int viewport[4];
 
-  GLfloat clearColor[4];
-  GLfloat clearDepth;
-  GLint clearStencil;
-  GLbitfield pendingClear;              // for drawFramebuffer, before its pass starts
-  GLfloat pendingColor[4];
-  GLfloat pendingDepth;
-  GLint pendingStencil;
+  float clearColor[4];
+  float clearDepth;
+  int clearStencil;
+  uint32_t pendingClear;                // for drawFramebuffer, before its pass starts
+  float pendingColor[4];
+  float pendingDepth;
+  int pendingStencil;
 
-  GLenum error;
+  mtlEnum error;
   id<MTLRenderPipelineState> lastPipeline;
   NSMutableDictionary<NSData *, id<MTLDepthStencilState>> *depthStates;
   NSMutableDictionary<NSNumber *, id<MTLSamplerState>> *samplers;
@@ -233,14 +233,14 @@ static struct
   id<MTLLibrary> blitLibrary;
   id<MTLDepthStencilState> depthAlways, depthDisabled;
   id<MTLBuffer> constantAttribute;
-  GLMTexture *blackTexture, *blackCube;
+  OrcaTexture *blackTexture, *blackCube;
   void *framePool;
   pipeline_key_t lastKey;
-} gl;
+} mtl;
 
 enum { OBJ_TEXTURE, OBJ_BUFFER, OBJ_FRAMEBUFFER, OBJ_RENDERBUFFER, OBJ_VERTEXARRAY, OBJ_SHADER, OBJ_PROGRAM };
 
-static void set_error(GLenum error) { if (!gl.error) gl.error = error; }
+static void set_error(mtlEnum error) { if (!mtl.error) mtl.error = error; }
 
 static void log_once(char const *message)
 {
@@ -257,145 +257,145 @@ static void log_once(char const *message)
 static CAMetalLayer *current_layer(void)
 {
   CAMetalLayer *layer = (__bridge CAMetalLayer *)axGetMetalLayer();
-  if (layer == gl.layer) return layer;
-  gl.layer = layer;
-  gl.drawable = nil;
+  if (layer == mtl.layer) return layer;
+  mtl.layer = layer;
+  mtl.drawable = nil;
   if (layer) {
-    layer.device = gl.device;
+    layer.device = mtl.device;
     layer.framebufferOnly = NO;  // the drawable is read by backdrop filters
-    layer.pixelFormat = gl.srgb ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
+    layer.pixelFormat = mtl.srgb ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatBGRA8Unorm;
   }
   return layer;
 }
 
 static BOOL ensure_device(void)
 {
-  if (gl.device) return YES;
+  if (mtl.device) return YES;
   CAMetalLayer *layer = (__bridge CAMetalLayer *)axGetMetalLayer();
-  gl.device = layer.device ? layer.device : MTLCreateSystemDefaultDevice();
-  if (!gl.device) return log_once("no Metal device"), NO;
-  gl.queue = [gl.device newCommandQueue];
+  mtl.device = layer.device ? layer.device : MTLCreateSystemDefaultDevice();
+  if (!mtl.device) return log_once("no Metal device"), NO;
+  mtl.queue = [mtl.device newCommandQueue];
   current_layer();
-  for (int i = 0; i < 7; i++) gl.objects[i] = [NSMutableDictionary new];
-  gl.depthStates = [NSMutableDictionary new];
-  gl.samplers = [NSMutableDictionary new];
-  gl.blitPipelines = [NSMutableDictionary new];
-  gl.defaultVertexArray = gl.vertexArray = [GLMVertexArray new];
-  gl.unpackAlignment = 4;
-  gl.blendSrc = GL_ONE, gl.blendDst = GL_ZERO;
-  gl.colorMask = 0xf;
-  gl.cullFace = GL_BACK;
-  gl.depthFunc = GL_LESS;
-  gl.depthMask = YES;
-  gl.stencilFunc = GL_ALWAYS;
-  gl.stencilFail = gl.stencilZFail = gl.stencilZPass = GL_KEEP;
-  gl.stencilReadMask = gl.stencilWriteMask = 0xffffffff;
-  gl.clearDepth = 1;
+  for (int i = 0; i < 7; i++) mtl.objects[i] = [NSMutableDictionary new];
+  mtl.depthStates = [NSMutableDictionary new];
+  mtl.samplers = [NSMutableDictionary new];
+  mtl.blitPipelines = [NSMutableDictionary new];
+  mtl.defaultVertexArray = mtl.vertexArray = [OrcaVertexArray new];
+  mtl.unpackAlignment = 4;
+  mtl.blendSrc = MTL_ONE, mtl.blendDst = MTL_ZERO;
+  mtl.colorMask = 0xf;
+  mtl.cullFace = MTL_BACK;
+  mtl.depthFunc = MTL_LESS;
+  mtl.depthMask = YES;
+  mtl.stencilFunc = MTL_ALWAYS;
+  mtl.stencilFail = mtl.stencilZFail = mtl.stencilZPass = MTL_KEEP;
+  mtl.stencilReadMask = mtl.stencilWriteMask = 0xffffffff;
+  mtl.clearDepth = 1;
   float constant[4] = { 0, 0, 0, 1 };
-  gl.constantAttribute = [gl.device newBufferWithBytes:constant length:sizeof(constant)
+  mtl.constantAttribute = [mtl.device newBufferWithBytes:constant length:sizeof(constant)
                                                options:MTLResourceStorageModeShared];
   MTLDepthStencilDescriptor *ds = [MTLDepthStencilDescriptor new];
   ds.depthCompareFunction = MTLCompareFunctionAlways;
   ds.depthWriteEnabled = YES;
-  gl.depthAlways = [gl.device newDepthStencilStateWithDescriptor:ds];
+  mtl.depthAlways = [mtl.device newDepthStencilStateWithDescriptor:ds];
   ds.depthWriteEnabled = NO;
-  gl.depthDisabled = [gl.device newDepthStencilStateWithDescriptor:ds];
+  mtl.depthDisabled = [mtl.device newDepthStencilStateWithDescriptor:ds];
   return YES;
 }
 
-static id object(int kind, GLuint name) { return name ? gl.objects[kind][@(name)] : nil; }
+static id object(int kind, uint32_t name) { return name ? mtl.objects[kind][@(name)] : nil; }
 
-static void gen(int kind, GLsizei n, GLuint *names, Class cls)
+static void gen(int kind, int n, uint32_t *names, Class cls)
 {
-  if (!ensure_device() || n < 0) return set_error(GL_INVALID_VALUE);
-  for (GLsizei i = 0; i < n; i++) {
-    names[i] = ++gl.nextName;
-    gl.objects[kind][@(names[i])] = cls ? [cls new] : [NSNull null];
+  if (!ensure_device() || n < 0) return set_error(MTL_INVALID_VALUE);
+  for (int i = 0; i < n; i++) {
+    names[i] = ++mtl.nextName;
+    mtl.objects[kind][@(names[i])] = cls ? [cls new] : [NSNull null];
   }
 }
 
-static void forget(int kind, GLsizei n, GLuint const *names)
+static void forget(int kind, int n, uint32_t const *names)
 {
-  for (GLsizei i = 0; names && i < n; i++) if (names[i]) [gl.objects[kind] removeObjectForKey:@(names[i])];
+  for (int i = 0; names && i < n; i++) if (names[i]) [mtl.objects[kind] removeObjectForKey:@(names[i])];
 }
 
 #pragma mark - Command buffers and passes
 
 static id<MTLCommandBuffer> command_buffer(void)
 {
-  if (gl.cb) return gl.cb;
-  gl.cb = [gl.queue commandBuffer];
-  uint64_t serial = ++gl.serial;
-  [gl.cb addCompletedHandler:^(id<MTLCommandBuffer> cb) {
+  if (mtl.cb) return mtl.cb;
+  mtl.cb = [mtl.queue commandBuffer];
+  uint64_t serial = ++mtl.serial;
+  [mtl.cb addCompletedHandler:^(id<MTLCommandBuffer> cb) {
     (void)cb;
-    uint64_t done = atomic_load(&gl.completed);
-    while (done < serial && !atomic_compare_exchange_weak(&gl.completed, &done, serial)) {}
+    uint64_t done = atomic_load(&mtl.completed);
+    while (done < serial && !atomic_compare_exchange_weak(&mtl.completed, &done, serial)) {}
   }];
-  return gl.cb;
+  return mtl.cb;
 }
 
 static void end_pass(void)
 {
-  if (!gl.encoderOpen) return;
-  [gl.encoder endEncoding];
-  gl.encoder = nil;
-  gl.encoderFramebuffer = nil;
-  gl.encoderOpen = NO;
-  gl.lastPipeline = nil;
+  if (!mtl.encoderOpen) return;
+  [mtl.encoder endEncoding];
+  mtl.encoder = nil;
+  mtl.encoderFramebuffer = nil;
+  mtl.encoderOpen = NO;
+  mtl.lastPipeline = nil;
 }
 
 static void commit(BOOL wait)
 {
   end_pass();
-  if (!gl.cb) return;
-  id<MTLCommandBuffer> cb = gl.cb;
-  gl.cb = nil;
+  if (!mtl.cb) return;
+  id<MTLCommandBuffer> cb = mtl.cb;
+  mtl.cb = nil;
   [cb commit];
   if (wait) [cb waitUntilCompleted];
 }
 
-static void use(GLMTexture *t) { if (t) t->lastUse = gl.serial; }
+static void use(OrcaTexture *t) { if (t) t->lastUse = mtl.serial; }
 
 // The texture the default framebuffer draws into this frame.
 static id<MTLTexture> default_color(void)
 {
   CAMetalLayer *layer = current_layer();
   if (layer) {
-    if (!gl.drawable) {
+    if (!mtl.drawable) {
       CGSize size = layer.drawableSize;
       if (size.width < 1 || size.height < 1) return nil;
-      gl.drawable = [layer nextDrawable];
+      mtl.drawable = [layer nextDrawable];
     }
-    return gl.drawable.texture;
+    return mtl.drawable.texture;
   }
   struct AXsize size;
   axGetSize(&size);
   NSUInteger w = MAX(1, (NSUInteger)(size.width * axGetScaling()));
   NSUInteger h = MAX(1, (NSUInteger)(size.height * axGetScaling()));
-  if (!gl.offscreen || gl.offscreen.width != w || gl.offscreen.height != h) {
-    MTLPixelFormat format = gl.srgb ? MTLPixelFormatRGBA8Unorm_sRGB : MTLPixelFormatRGBA8Unorm;
+  if (!mtl.offscreen || mtl.offscreen.width != w || mtl.offscreen.height != h) {
+    MTLPixelFormat format = mtl.srgb ? MTLPixelFormatRGBA8Unorm_sRGB : MTLPixelFormatRGBA8Unorm;
     MTLTextureDescriptor *d = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:format
                                                                                   width:w height:h mipmapped:NO];
     d.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     d.storageMode = MTLStorageModePrivate;
-    gl.offscreen = [gl.device newTextureWithDescriptor:d];
+    mtl.offscreen = [mtl.device newTextureWithDescriptor:d];
   }
-  return gl.offscreen;
+  return mtl.offscreen;
 }
 
 static id<MTLTexture> default_depth(id<MTLTexture> color)
 {
   if (!color) return nil;
-  if (!gl.defaultDepth || gl.defaultDepth.width != color.width || gl.defaultDepth.height != color.height) {
+  if (!mtl.defaultDepth || mtl.defaultDepth.width != color.width || mtl.defaultDepth.height != color.height) {
     MTLTextureDescriptor *d = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatDepth32Float_Stencil8
                                                                                   width:color.width
                                                                                  height:color.height
                                                                               mipmapped:NO];
     d.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
     d.storageMode = MTLStorageModePrivate;
-    gl.defaultDepth = [gl.device newTextureWithDescriptor:d];
+    mtl.defaultDepth = [mtl.device newTextureWithDescriptor:d];
   }
-  return gl.defaultDepth;
+  return mtl.defaultDepth;
 }
 
 static BOOL has_stencil(MTLPixelFormat f)
@@ -410,11 +410,11 @@ static BOOL has_stencil(MTLPixelFormat f)
 typedef struct
 {
   id<MTLTexture> color, depth, stencil;
-  GLMTexture *__unsafe_unretained colorObject, *__unsafe_unretained depthObject;
+  OrcaTexture *__unsafe_unretained colorObject, *__unsafe_unretained depthObject;
   BOOL flipped;   // offscreen: rows in bottom-up order
 } targets_t;
 
-static targets_t framebuffer_targets(GLMFramebuffer *fb)
+static targets_t framebuffer_targets(OrcaFramebuffer *fb)
 {
   targets_t t = { 0 };
   if (!fb) {
@@ -435,20 +435,20 @@ static targets_t framebuffer_targets(GLMFramebuffer *fb)
 // Starts a pass on the draw framebuffer, applying a pending clear.
 static BOOL begin_pass(void)
 {
-  if (gl.encoderOpen && gl.encoderFramebuffer == gl.drawFramebuffer &&
-      gl.encoderDefault == !gl.drawFramebuffer)
+  if (mtl.encoderOpen && mtl.encoderFramebuffer == mtl.drawFramebuffer &&
+      mtl.encoderDefault == !mtl.drawFramebuffer)
     return YES;
   end_pass();
-  targets_t t = framebuffer_targets(gl.drawFramebuffer);
+  targets_t t = framebuffer_targets(mtl.drawFramebuffer);
   if (!t.color && !t.depth) return NO;
   MTLRenderPassDescriptor *rp = [MTLRenderPassDescriptor renderPassDescriptor];
   if (t.color) {
     rp.colorAttachments[0].texture = t.color;
     rp.colorAttachments[0].storeAction = MTLStoreActionStore;
-    if (gl.pendingClear & GL_COLOR_BUFFER_BIT) {
+    if (mtl.pendingClear & MTL_COLOR_BUFFER_BIT) {
       rp.colorAttachments[0].loadAction = MTLLoadActionClear;
-      rp.colorAttachments[0].clearColor = MTLClearColorMake(gl.pendingColor[0], gl.pendingColor[1],
-                                                            gl.pendingColor[2], gl.pendingColor[3]);
+      rp.colorAttachments[0].clearColor = MTLClearColorMake(mtl.pendingColor[0], mtl.pendingColor[1],
+                                                            mtl.pendingColor[2], mtl.pendingColor[3]);
     } else {
       rp.colorAttachments[0].loadAction = MTLLoadActionLoad;
     }
@@ -456,21 +456,21 @@ static BOOL begin_pass(void)
   if (t.depth) {
     rp.depthAttachment.texture = t.depth;
     rp.depthAttachment.storeAction = MTLStoreActionStore;
-    rp.depthAttachment.loadAction = gl.pendingClear & GL_DEPTH_BUFFER_BIT ? MTLLoadActionClear : MTLLoadActionLoad;
-    rp.depthAttachment.clearDepth = gl.pendingDepth;
+    rp.depthAttachment.loadAction = mtl.pendingClear & MTL_DEPTH_BUFFER_BIT ? MTLLoadActionClear : MTLLoadActionLoad;
+    rp.depthAttachment.clearDepth = mtl.pendingDepth;
   }
   if (t.stencil) {
     rp.stencilAttachment.texture = t.stencil;
     rp.stencilAttachment.storeAction = MTLStoreActionStore;
-    rp.stencilAttachment.loadAction = gl.pendingClear & GL_STENCIL_BUFFER_BIT ? MTLLoadActionClear : MTLLoadActionLoad;
-    rp.stencilAttachment.clearStencil = (uint32_t)gl.pendingStencil;
+    rp.stencilAttachment.loadAction = mtl.pendingClear & MTL_STENCIL_BUFFER_BIT ? MTLLoadActionClear : MTLLoadActionLoad;
+    rp.stencilAttachment.clearStencil = (uint32_t)mtl.pendingStencil;
   }
-  gl.pendingClear = 0;
-  gl.encoder = [command_buffer() renderCommandEncoderWithDescriptor:rp];
-  if (!gl.encoder) return NO;
-  gl.encoderOpen = YES;
-  gl.encoderFramebuffer = gl.drawFramebuffer;
-  gl.encoderDefault = !gl.drawFramebuffer;
+  mtl.pendingClear = 0;
+  mtl.encoder = [command_buffer() renderCommandEncoderWithDescriptor:rp];
+  if (!mtl.encoder) return NO;
+  mtl.encoderOpen = YES;
+  mtl.encoderFramebuffer = mtl.drawFramebuffer;
+  mtl.encoderDefault = !mtl.drawFramebuffer;
   use(t.colorObject);
   use(t.depthObject);
   return YES;
@@ -479,29 +479,29 @@ static BOOL begin_pass(void)
 // A clear recorded for a framebuffer that is no longer bound must still happen.
 static void flush_pending_clear(void)
 {
-  if (gl.pendingClear && begin_pass()) end_pass();
-  gl.pendingClear = 0;
+  if (mtl.pendingClear && begin_pass()) end_pass();
+  mtl.pendingClear = 0;
 }
 
 #pragma mark - Pixel formats and uploads
 
-static int is_compressed(GLenum f) { return (f >= 0x93B0 && f <= 0x93DD) || (f >= 0x83F0 && f <= 0x83F3); }
+static int is_compressed(mtlEnum f) { return (f >= 0x93B0 && f <= 0x93DD) || (f >= 0x83F0 && f <= 0x83F3); }
 
-static MTLPixelFormat pixel_format(GLenum internal, GLenum format)
+static MTLPixelFormat pixel_format(mtlEnum internal, mtlEnum format)
 {
   switch (internal) {
-    case GL_RGBA: case GL_RGBA8: case GL_RGB: case GL_RGB8:
-      return format == GL_BGRA ? MTLPixelFormatBGRA8Unorm : MTLPixelFormatRGBA8Unorm;
-    case GL_SRGB8_ALPHA8: case GL_SRGB8: case GL_SRGB:
-      return format == GL_BGRA ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatRGBA8Unorm_sRGB;
-    case GL_RED: case GL_R8: case GL_ALPHA: case GL_LUMINANCE: return MTLPixelFormatR8Unorm;
-    case GL_DEPTH_COMPONENT: case GL_DEPTH_COMPONENT24: case GL_DEPTH_COMPONENT32F: return MTLPixelFormatDepth32Float;
-    case GL_DEPTH_COMPONENT16: return MTLPixelFormatDepth16Unorm;
-    case GL_DEPTH_STENCIL: case GL_DEPTH24_STENCIL8: return MTLPixelFormatDepth32Float_Stencil8;
+    case MTL_RGBA: case MTL_RGBA8: case MTL_RGB: case MTL_RGB8:
+      return format == MTL_BGRA ? MTLPixelFormatBGRA8Unorm : MTLPixelFormatRGBA8Unorm;
+    case MTL_SRGB8_ALPHA8: case MTL_SRGB8: case MTL_SRGB:
+      return format == MTL_BGRA ? MTLPixelFormatBGRA8Unorm_sRGB : MTLPixelFormatRGBA8Unorm_sRGB;
+    case MTL_RED: case MTL_R8: case MTL_ALPHA: case MTL_LUMINANCE: return MTLPixelFormatR8Unorm;
+    case MTL_DEPTH_COMPONENT: case MTL_DEPTH_COMPONENT24: case MTL_DEPTH_COMPONENT32F: return MTLPixelFormatDepth32Float;
+    case MTL_DEPTH_COMPONENT16: return MTLPixelFormatDepth16Unorm;
+    case MTL_DEPTH_STENCIL: case MTL_DEPTH24_STENCIL8: return MTLPixelFormatDepth32Float_Stencil8;
   }
   if (internal >= 0x93B0 && internal <= 0x93DD) {
     if (@available(macOS 11.0, iOS 13.0, *)) {
-      if (![gl.device supportsFamily:MTLGPUFamilyApple2]) return MTLPixelFormatInvalid;
+      if (![mtl.device supportsFamily:MTLGPUFamilyApple2]) return MTLPixelFormatInvalid;
       if (internal == 0x93B0) return MTLPixelFormatASTC_4x4_LDR;
       if (internal == 0x93D0) return MTLPixelFormatASTC_4x4_sRGB;
     }
@@ -509,7 +509,7 @@ static MTLPixelFormat pixel_format(GLenum internal, GLenum format)
   }
   if (internal >= 0x83F0 && internal <= 0x83F3) {
     if (@available(macOS 11.0, iOS 16.4, *)) {
-      if (!gl.device.supportsBCTextureCompression) return MTLPixelFormatInvalid;
+      if (!mtl.device.supportsBCTextureCompression) return MTLPixelFormatInvalid;
       if (internal <= 0x83F1) return MTLPixelFormatBC1_RGBA;
       return internal == 0x83F2 ? MTLPixelFormatBC2_RGBA : MTLPixelFormatBC3_RGBA;
     }
@@ -523,36 +523,36 @@ static BOOL is_depth_format(MTLPixelFormat f)
   return f == MTLPixelFormatDepth32Float || f == MTLPixelFormatDepth16Unorm || has_stencil(f);
 }
 
-static int source_bpp(GLenum format, GLenum type)
+static int source_bpp(mtlEnum format, mtlEnum type)
 {
-  if (type == GL_UNSIGNED_INT_8_8_8_8_REV) return 4;
+  if (type == MTL_UNSIGNED_INT_8_8_8_8_REV) return 4;
   switch (format) {
-    case GL_RED: case GL_ALPHA: case GL_LUMINANCE: return 1;
-    case GL_RGB: return 3;
+    case MTL_RED: case MTL_ALPHA: case MTL_LUMINANCE: return 1;
+    case MTL_RGB: return 3;
     default: return 4;
   }
 }
 
-static NSUInteger target_slice(GLenum target)
+static NSUInteger target_slice(mtlEnum target)
 {
-  return target >= GL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-       ? target - GL_TEXTURE_CUBE_MAP_POSITIVE_X : 0;
+  return target >= MTL_TEXTURE_CUBE_MAP_POSITIVE_X && target <= MTL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+       ? target - MTL_TEXTURE_CUBE_MAP_POSITIVE_X : 0;
 }
 
-static GLenum base_target(GLenum target)
+static mtlEnum base_target(mtlEnum target)
 {
-  return target_slice(target) || target == GL_TEXTURE_CUBE_MAP_POSITIVE_X ? GL_TEXTURE_CUBE_MAP : target;
+  return target_slice(target) || target == MTL_TEXTURE_CUBE_MAP_POSITIVE_X ? MTL_TEXTURE_CUBE_MAP : target;
 }
 
-static GLMTexture *bound_texture(GLenum target)
+static OrcaTexture *bound_texture(mtlEnum target)
 {
-  unit_t *u = &gl.units[gl.activeUnit];
-  return base_target(target) == GL_TEXTURE_CUBE_MAP ? u->boundCube : u->bound2D;
+  unit_t *u = &mtl.units[mtl.activeUnit];
+  return base_target(target) == MTL_TEXTURE_CUBE_MAP ? u->boundCube : u->bound2D;
 }
 
-// Mipmapped loaders (DDS, PVR) set GL_TEXTURE_MAX_LEVEL before uploading;
+// Mipmapped loaders (DDS, PVR) set MTL_TEXTURE_MAX_LEVEL before uploading;
 // other textures get one level, whatever the default minification filter.
-static BOOL wants_mipmaps(GLMTexture *t)
+static BOOL wants_mipmaps(OrcaTexture *t)
 {
   return t->maxLevel > 0 && t->maxLevel < 1000;
 }
@@ -565,13 +565,13 @@ static NSUInteger full_chain(NSUInteger w, NSUInteger h)
 }
 
 // (Re)creates the storage for level 0 at the given size, keeping no content.
-static BOOL allocate(GLMTexture *t, GLenum target, MTLPixelFormat format, GLint w, GLint h, GLenum internal)
+static BOOL allocate(OrcaTexture *t, mtlEnum target, MTLPixelFormat format, int w, int h, mtlEnum internal)
 {
-  BOOL cube = base_target(target) == GL_TEXTURE_CUBE_MAP;
+  BOOL cube = base_target(target) == MTL_TEXTURE_CUBE_MAP;
   NSUInteger levels = wants_mipmaps(t) ? MIN(full_chain(w, h), (NSUInteger)t->maxLevel + 1) : 1;
   if (t->texture && t->texture.pixelFormat == format && t->width == w && t->height == h &&
       (t->texture.textureType == MTLTextureTypeCube) == cube && t->texture.mipmapLevelCount >= levels &&
-      t->lastUse <= atomic_load(&gl.completed))
+      t->lastUse <= atomic_load(&mtl.completed))
     return YES;  // same storage, not in use by the GPU: write in place
   MTLTextureDescriptor *d = cube
     ? [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:format size:w mipmapped:NO]
@@ -584,25 +584,25 @@ static BOOL allocate(GLMTexture *t, GLenum target, MTLPixelFormat format, GLint 
   d.storageMode = MTLStorageModeShared;
 #if TARGET_OS_OSX
   d.storageMode = MTLStorageModeManaged;  // CPU-written textures on discrete GPUs
-  if (@available(macOS 10.15, *)) if (gl.device.hasUnifiedMemory) d.storageMode = MTLStorageModeShared;
+  if (@available(macOS 10.15, *)) if (mtl.device.hasUnifiedMemory) d.storageMode = MTLStorageModeShared;
 #endif
   if (is_depth_format(format)) d.storageMode = MTLStorageModePrivate;
-  id<MTLTexture> texture = [gl.device newTextureWithDescriptor:d];
-  if (!texture) return set_error(GL_OUT_OF_MEMORY), NO;
+  id<MTLTexture> texture = [mtl.device newTextureWithDescriptor:d];
+  if (!texture) return set_error(MTL_OUT_OF_MEMORY), NO;
   t->texture = texture;
   t->swizzled = nil;
   t->sampler = nil;
   t->width = w, t->height = h;
-  t->levels = (GLint)levels;
+  t->levels = (int)levels;
   t->internalFormat = internal;
   t->lastUse = 0;
   return YES;
 }
 
 // Adds mip levels to a texture whose loader uploads more than it allocated.
-static BOOL grow_levels(GLMTexture *t, GLint level)
+static BOOL grow_levels(OrcaTexture *t, int level)
 {
-  if (level < (GLint)t->texture.mipmapLevelCount) return YES;
+  if (level < (int)t->texture.mipmapLevelCount) return YES;
   MTLTextureDescriptor *d = [MTLTextureDescriptor new];
   d.textureType = t->texture.textureType;
   d.pixelFormat = t->texture.pixelFormat;
@@ -610,8 +610,8 @@ static BOOL grow_levels(GLMTexture *t, GLint level)
   d.mipmapLevelCount = MIN(full_chain(d.width, d.height), (NSUInteger)level + 1);
   d.usage = t->texture.usage;
   d.storageMode = t->texture.storageMode;
-  id<MTLTexture> grown = [gl.device newTextureWithDescriptor:d];
-  if (!grown || level >= (GLint)grown.mipmapLevelCount) return set_error(GL_INVALID_VALUE), NO;
+  id<MTLTexture> grown = [mtl.device newTextureWithDescriptor:d];
+  if (!grown || level >= (int)grown.mipmapLevelCount) return set_error(MTL_INVALID_VALUE), NO;
   end_pass();
   id<MTLBlitCommandEncoder> blit = [command_buffer() blitCommandEncoder];
   NSUInteger slices = t->texture.textureType == MTLTextureTypeCube ? 6 : 1;
@@ -623,24 +623,24 @@ static BOOL grow_levels(GLMTexture *t, GLint level)
   t->texture = grown;
   t->swizzled = nil;
   t->sampler = nil;
-  t->levels = (GLint)grown.mipmapLevelCount;
-  t->lastUse = gl.serial;
+  t->levels = (int)grown.mipmapLevelCount;
+  t->lastUse = mtl.serial;
   return YES;
 }
 
 // Writes rows into a texture region in bottom-up order (first row = row 0). A
 // texture the GPU may still read is updated through a blit in the stream.
-static void write_region(GLMTexture *t, NSUInteger slice, GLint level, GLint x, GLint y, GLsizei w, GLsizei h,
+static void write_region(OrcaTexture *t, NSUInteger slice, int level, int x, int y, int w, int h,
                          void const *bytes, NSUInteger rowBytes, NSUInteger imageBytes)
 {
   MTLRegion region = MTLRegionMake2D(x, y, w, h);
-  BOOL busy = t->lastUse > atomic_load(&gl.completed) || t->texture.storageMode == MTLStorageModePrivate;
+  BOOL busy = t->lastUse > atomic_load(&mtl.completed) || t->texture.storageMode == MTLStorageModePrivate;
   if (!busy) {
     [t->texture replaceRegion:region mipmapLevel:level slice:slice withBytes:bytes
                   bytesPerRow:rowBytes bytesPerImage:0];
     return;
   }
-  id<MTLBuffer> staging = [gl.device newBufferWithBytes:bytes length:MAX(imageBytes, 1)
+  id<MTLBuffer> staging = [mtl.device newBufferWithBytes:bytes length:MAX(imageBytes, 1)
                                                 options:MTLResourceStorageModeShared];
   end_pass();
   id<MTLBlitCommandEncoder> blit = [command_buffer() blitCommandEncoder];
@@ -648,24 +648,24 @@ static void write_region(GLMTexture *t, NSUInteger slice, GLint level, GLint x, 
             sourceSize:MTLSizeMake(w, h, 1) toTexture:t->texture destinationSlice:slice
       destinationLevel:level destinationOrigin:MTLOriginMake(x, y, 0)];
   [blit endEncoding];
-  t->lastUse = gl.serial;
+  t->lastUse = mtl.serial;
 }
 
 // Converts client pixels to the texture's layout: RGB gains alpha and rows
 // lose their unpack padding. Returns a malloc'd buffer the caller frees, or
 // NULL when `pixels` can be used as is (then *rowBytes is set).
-static void *convert_pixels(void const *pixels, GLsizei w, GLsizei h, GLenum format, GLenum type,
+static void *convert_pixels(void const *pixels, int w, int h, mtlEnum format, mtlEnum type,
                             NSUInteger *rowBytes)
 {
   int bpp = source_bpp(format, type);
-  NSUInteger stride = ((NSUInteger)w * bpp + gl.unpackAlignment - 1) / gl.unpackAlignment * gl.unpackAlignment;
-  if (format != GL_RGB) return *rowBytes = stride, NULL;
+  NSUInteger stride = ((NSUInteger)w * bpp + mtl.unpackAlignment - 1) / mtl.unpackAlignment * mtl.unpackAlignment;
+  if (format != MTL_RGB) return *rowBytes = stride, NULL;
   uint8_t *out = malloc((size_t)w * h * 4);
   if (!out) return *rowBytes = 0, NULL;
-  for (GLsizei r = 0; r < h; r++) {
+  for (int r = 0; r < h; r++) {
     uint8_t const *src = (uint8_t const *)pixels + r * stride;
     uint8_t *dst = out + (size_t)r * w * 4;
-    for (GLsizei c = 0; c < w; c++)
+    for (int c = 0; c < w; c++)
       dst[c * 4] = src[c * 3], dst[c * 4 + 1] = src[c * 3 + 1], dst[c * 4 + 2] = src[c * 3 + 2], dst[c * 4 + 3] = 255;
   }
   *rowBytes = (NSUInteger)w * 4;
@@ -674,177 +674,177 @@ static void *convert_pixels(void const *pixels, GLsizei w, GLsizei h, GLenum for
 
 static void const *unpack_source(void const *pixels)
 {
-  if (!gl.unpackBuffer) return pixels;
-  if (!gl.unpackBuffer->buffer) return NULL;
-  return (uint8_t const *)gl.unpackBuffer->buffer.contents + (uintptr_t)pixels;
+  if (!mtl.unpackBuffer) return pixels;
+  if (!mtl.unpackBuffer->buffer) return NULL;
+  return (uint8_t const *)mtl.unpackBuffer->buffer.contents + (uintptr_t)pixels;
 }
 
 #pragma mark - Buffers
 
-void mtlGenBuffers(GLsizei n, GLuint *buffers) { gen(OBJ_BUFFER, n, buffers, GLMBuffer.class); }
+void mtlGenBuffers(int n, uint32_t *buffers) { gen(OBJ_BUFFER, n, buffers, OrcaBuffer.class); }
 
-void mtlDeleteBuffers(GLsizei n, GLuint const *buffers)
+void mtlDeleteBuffers(int n, uint32_t const *buffers)
 {
-  for (GLsizei i = 0; buffers && i < n; i++) {
-    GLMBuffer *b = object(OBJ_BUFFER, buffers[i]);
-    if (b && gl.arrayBuffer == b) gl.arrayBuffer = nil;
-    if (b && gl.unpackBuffer == b) gl.unpackBuffer = nil;
-    if (b && gl.vertexArray->elements == b) gl.vertexArray->elements = nil;
+  for (int i = 0; buffers && i < n; i++) {
+    OrcaBuffer *b = object(OBJ_BUFFER, buffers[i]);
+    if (b && mtl.arrayBuffer == b) mtl.arrayBuffer = nil;
+    if (b && mtl.unpackBuffer == b) mtl.unpackBuffer = nil;
+    if (b && mtl.vertexArray->elements == b) mtl.vertexArray->elements = nil;
   }
   forget(OBJ_BUFFER, n, buffers);
 }
 
-static GLMBuffer *__strong *buffer_binding(GLenum target)
+static OrcaBuffer *__strong *buffer_binding(mtlEnum target)
 {
   switch (target) {
-    case GL_ARRAY_BUFFER: return &gl.arrayBuffer;
-    case GL_PIXEL_UNPACK_BUFFER: return &gl.unpackBuffer;
-    case GL_ELEMENT_ARRAY_BUFFER: return gl.vertexArray ? &gl.vertexArray->elements : NULL;
+    case MTL_ARRAY_BUFFER: return &mtl.arrayBuffer;
+    case MTL_PIXEL_UNPACK_BUFFER: return &mtl.unpackBuffer;
+    case MTL_ELEMENT_ARRAY_BUFFER: return mtl.vertexArray ? &mtl.vertexArray->elements : NULL;
   }
   return NULL;
 }
 
-void mtlBindBuffer(GLenum target, GLuint buffer)
+void mtlBindBuffer(mtlEnum target, uint32_t buffer)
 {
-  GLMBuffer *__strong *binding = buffer_binding(target);
-  if (!binding) return set_error(GL_INVALID_ENUM);
+  OrcaBuffer *__strong *binding = buffer_binding(target);
+  if (!binding) return set_error(MTL_INVALID_ENUM);
   *binding = object(OBJ_BUFFER, buffer);
 }
 
 // New storage every time, matching orphan semantics: draws already encoded keep
 // reading the previous contents.
-void mtlBufferData(GLenum target, GLsizeiptr size, void const *data, GLenum usage)
+void mtlBufferData(mtlEnum target, ptrdiff_t size, void const *data, mtlEnum usage)
 {
   (void)usage;
-  GLMBuffer *__strong *binding = buffer_binding(target);
-  GLMBuffer *b = binding ? *binding : nil;
-  if (!b) return set_error(GL_INVALID_OPERATION);
+  OrcaBuffer *__strong *binding = buffer_binding(target);
+  OrcaBuffer *b = binding ? *binding : nil;
+  if (!b) return set_error(MTL_INVALID_OPERATION);
   b->size = (NSUInteger)MAX(size, 0);
   b->padded = nil;
   b->buffer = !size ? nil
-            : data ? [gl.device newBufferWithBytes:data length:size options:MTLResourceStorageModeShared]
-                   : [gl.device newBufferWithLength:size options:MTLResourceStorageModeShared];
-  if (size && !b->buffer) set_error(GL_OUT_OF_MEMORY);
+            : data ? [mtl.device newBufferWithBytes:data length:size options:MTLResourceStorageModeShared]
+                   : [mtl.device newBufferWithLength:size options:MTLResourceStorageModeShared];
+  if (size && !b->buffer) set_error(MTL_OUT_OF_MEMORY);
 }
 
-void *mtlMapBuffer(GLenum target, GLenum access)
+void *mtlMapBuffer(mtlEnum target, mtlEnum access)
 {
   (void)access;
-  GLMBuffer *__strong *binding = buffer_binding(target);
-  GLMBuffer *b = binding ? *binding : nil;
+  OrcaBuffer *__strong *binding = buffer_binding(target);
+  OrcaBuffer *b = binding ? *binding : nil;
   return b && b->buffer ? b->buffer.contents : NULL;
 }
 
-GLboolean mtlUnmapBuffer(GLenum target) { (void)target; return GL_TRUE; }
+bool mtlUnmapBuffer(mtlEnum target) { (void)target; return MTL_TRUE; }
 
 #pragma mark - Vertex arrays
 
-void mtlGenVertexArrays(GLsizei n, GLuint *arrays) { gen(OBJ_VERTEXARRAY, n, arrays, GLMVertexArray.class); }
+void mtlGenVertexArrays(int n, uint32_t *arrays) { gen(OBJ_VERTEXARRAY, n, arrays, OrcaVertexArray.class); }
 
-void mtlDeleteVertexArrays(GLsizei n, GLuint const *arrays)
+void mtlDeleteVertexArrays(int n, uint32_t const *arrays)
 {
-  for (GLsizei i = 0; arrays && i < n; i++)
-    if (arrays[i] && arrays[i] == gl.vertexArrayName) gl.vertexArray = gl.defaultVertexArray, gl.vertexArrayName = 0;
+  for (int i = 0; arrays && i < n; i++)
+    if (arrays[i] && arrays[i] == mtl.vertexArrayName) mtl.vertexArray = mtl.defaultVertexArray, mtl.vertexArrayName = 0;
   forget(OBJ_VERTEXARRAY, n, arrays);
 }
 
-void mtlBindVertexArray(GLuint array)
+void mtlBindVertexArray(uint32_t array)
 {
-  GLMVertexArray *va = array ? object(OBJ_VERTEXARRAY, array) : gl.defaultVertexArray;
-  if (!va) return set_error(GL_INVALID_OPERATION);
-  gl.vertexArray = va;
-  gl.vertexArrayName = array;
+  OrcaVertexArray *va = array ? object(OBJ_VERTEXARRAY, array) : mtl.defaultVertexArray;
+  if (!va) return set_error(MTL_INVALID_OPERATION);
+  mtl.vertexArray = va;
+  mtl.vertexArrayName = array;
 }
 
-void mtlVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized,
-                           GLsizei stride, void const *pointer)
+void mtlVertexAttribPointer(uint32_t index, int size, mtlEnum type, bool normalized,
+                           int stride, void const *pointer)
 {
-  if (index >= MAX_VERTEX_ATTRIBS || size < 1 || size > 4) return set_error(GL_INVALID_VALUE);
-  GLMVertexArray *va = gl.vertexArray;
-  if (gl.arrayBuffer && ![va->retained containsObject:gl.arrayBuffer]) [va->retained addObject:gl.arrayBuffer];
+  if (index >= MAX_VERTEX_ATTRIBS || size < 1 || size > 4) return set_error(MTL_INVALID_VALUE);
+  OrcaVertexArray *va = mtl.vertexArray;
+  if (mtl.arrayBuffer && ![va->retained containsObject:mtl.arrayBuffer]) [va->retained addObject:mtl.arrayBuffer];
   attrib_t *a = &va->attribs[index];
-  a->buffer = gl.arrayBuffer;
+  a->buffer = mtl.arrayBuffer;
   a->size = size, a->type = type, a->normalized = normalized;
   a->stride = stride;
   a->offset = (uintptr_t)pointer;
 }
 
-void mtlEnableVertexAttribArray(GLuint index)
+void mtlEnableVertexAttribArray(uint32_t index)
 {
-  if (index >= MAX_VERTEX_ATTRIBS) return set_error(GL_INVALID_VALUE);
-  gl.vertexArray->attribs[index].enabled = YES;
+  if (index >= MAX_VERTEX_ATTRIBS) return set_error(MTL_INVALID_VALUE);
+  mtl.vertexArray->attribs[index].enabled = YES;
 }
 
 #pragma mark - Textures
 
-void mtlGenTextures(GLsizei n, GLuint *textures) { gen(OBJ_TEXTURE, n, textures, GLMTexture.class); }
+void mtlGenTextures(int n, uint32_t *textures) { gen(OBJ_TEXTURE, n, textures, OrcaTexture.class); }
 
-void mtlDeleteTextures(GLsizei n, GLuint const *textures)
+void mtlDeleteTextures(int n, uint32_t const *textures)
 {
-  for (GLsizei i = 0; textures && i < n; i++) {
-    GLMTexture *t = object(OBJ_TEXTURE, textures[i]);
+  for (int i = 0; textures && i < n; i++) {
+    OrcaTexture *t = object(OBJ_TEXTURE, textures[i]);
     for (int u = 0; t && u < MAX_TEXTURE_UNITS; u++) {
-      if (gl.units[u].bound2D == t) gl.units[u].bound2D = nil;
-      if (gl.units[u].boundCube == t) gl.units[u].boundCube = nil;
+      if (mtl.units[u].bound2D == t) mtl.units[u].bound2D = nil;
+      if (mtl.units[u].boundCube == t) mtl.units[u].boundCube = nil;
     }
   }
   forget(OBJ_TEXTURE, n, textures);
 }
 
-void mtlActiveTexture(GLenum texture)
+void mtlActiveTexture(mtlEnum texture)
 {
-  if (texture < GL_TEXTURE0 || texture >= GL_TEXTURE0 + MAX_TEXTURE_UNITS) return set_error(GL_INVALID_ENUM);
-  gl.activeUnit = texture - GL_TEXTURE0;
+  if (texture < MTL_TEXTURE0 || texture >= MTL_TEXTURE0 + MAX_TEXTURE_UNITS) return set_error(MTL_INVALID_ENUM);
+  mtl.activeUnit = texture - MTL_TEXTURE0;
 }
 
-void mtlBindTexture(GLenum target, GLuint texture)
+void mtlBindTexture(mtlEnum target, uint32_t texture)
 {
-  GLMTexture *t = object(OBJ_TEXTURE, texture);
-  if (texture && !t) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = object(OBJ_TEXTURE, texture);
+  if (texture && !t) return set_error(MTL_INVALID_OPERATION);
   if (t && !t->target) t->target = target;
-  unit_t *u = &gl.units[gl.activeUnit];
-  if (target == GL_TEXTURE_CUBE_MAP) u->boundCube = t;
-  else if (target == GL_TEXTURE_2D || target == GL_TEXTURE_RECTANGLE) u->bound2D = t;
-  else set_error(GL_INVALID_ENUM);
+  unit_t *u = &mtl.units[mtl.activeUnit];
+  if (target == MTL_TEXTURE_CUBE_MAP) u->boundCube = t;
+  else if (target == MTL_TEXTURE_2D || target == MTL_TEXTURE_RECTANGLE) u->bound2D = t;
+  else set_error(MTL_INVALID_ENUM);
 }
 
-void mtlTexParameteri(GLenum target, GLenum pname, GLint param)
+void mtlTexParameteri(mtlEnum target, mtlEnum pname, int param)
 {
-  GLMTexture *t = bound_texture(target);
-  if (!t) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = bound_texture(target);
+  if (!t) return set_error(MTL_INVALID_OPERATION);
   switch (pname) {
-    case GL_TEXTURE_MIN_FILTER: t->minFilter = param; break;
-    case GL_TEXTURE_MAG_FILTER: t->magFilter = param; break;
-    case GL_TEXTURE_WRAP_S: t->wrapS = param; break;
-    case GL_TEXTURE_WRAP_T: t->wrapT = param; break;
-    case GL_TEXTURE_WRAP_R: t->wrapR = param; break;
-    case GL_TEXTURE_MAX_LEVEL: t->maxLevel = param; return;
-    case GL_TEXTURE_BASE_LEVEL: return;
-    case GL_TEXTURE_SWIZZLE_R: case GL_TEXTURE_SWIZZLE_G:
-    case GL_TEXTURE_SWIZZLE_B: case GL_TEXTURE_SWIZZLE_A:
-      t->swizzle[pname - GL_TEXTURE_SWIZZLE_R] = param;
+    case MTL_TEXTURE_MIN_FILTER: t->minFilter = param; break;
+    case MTL_TEXTURE_MAG_FILTER: t->magFilter = param; break;
+    case MTL_TEXTURE_WRAP_S: t->wrapS = param; break;
+    case MTL_TEXTURE_WRAP_T: t->wrapT = param; break;
+    case MTL_TEXTURE_WRAP_R: t->wrapR = param; break;
+    case MTL_TEXTURE_MAX_LEVEL: t->maxLevel = param; return;
+    case MTL_TEXTURE_BASE_LEVEL: return;
+    case MTL_TEXTURE_SWIZZLE_R: case MTL_TEXTURE_SWIZZLE_G:
+    case MTL_TEXTURE_SWIZZLE_B: case MTL_TEXTURE_SWIZZLE_A:
+      t->swizzle[pname - MTL_TEXTURE_SWIZZLE_R] = param;
       t->swizzled = nil;
       return;
-    default: return set_error(GL_INVALID_ENUM);
+    default: return set_error(MTL_INVALID_ENUM);
   }
   t->sampler = nil;
 }
 
-void mtlPixelStorei(GLenum pname, GLint param)
+void mtlPixelStorei(mtlEnum pname, int param)
 {
-  if (pname == GL_UNPACK_ALIGNMENT && (param == 1 || param == 2 || param == 4 || param == 8))
-    gl.unpackAlignment = param;
+  if (pname == MTL_UNPACK_ALIGNMENT && (param == 1 || param == 2 || param == 4 || param == 8))
+    mtl.unpackAlignment = param;
 }
 
-void mtlTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
-                  GLint border, GLenum format, GLenum type, void const *pixels)
+void mtlTexImage2D(mtlEnum target, int level, int internalformat, int width, int height,
+                  int border, mtlEnum format, mtlEnum type, void const *pixels)
 {
   (void)border;
-  GLMTexture *t = bound_texture(target);
-  if (!t || !ensure_device()) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = bound_texture(target);
+  if (!t || !ensure_device()) return set_error(MTL_INVALID_OPERATION);
   if (width < 1 || height < 1) return;
   MTLPixelFormat pf = pixel_format(internalformat, format);
-  if (pf == MTLPixelFormatInvalid) return log_once("unsupported texture format"), set_error(GL_INVALID_ENUM);
+  if (pf == MTLPixelFormatInvalid) return log_once("unsupported texture format"), set_error(MTL_INVALID_ENUM);
   if (level == 0) {
     if (!allocate(t, target, pf, width, height, internalformat)) return;
   } else if (!t->texture || !grow_levels(t, level)) {
@@ -854,38 +854,38 @@ void mtlTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei wid
   if (!source || is_depth_format(pf)) return;
   NSUInteger rowBytes;
   void *converted = convert_pixels(source, width, height, format, type, &rowBytes);
-  if (!rowBytes) return set_error(GL_OUT_OF_MEMORY);
+  if (!rowBytes) return set_error(MTL_OUT_OF_MEMORY);
   write_region(t, target_slice(target), level, 0, 0, width, height, converted ? converted : source,
                rowBytes, rowBytes * height);
   free(converted);
 }
 
-void mtlTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-                     GLsizei height, GLenum format, GLenum type, void const *pixels)
+void mtlTexSubImage2D(mtlEnum target, int level, int xoffset, int yoffset, int width,
+                     int height, mtlEnum format, mtlEnum type, void const *pixels)
 {
-  GLMTexture *t = bound_texture(target);
-  if (!t || !t->texture) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = bound_texture(target);
+  if (!t || !t->texture) return set_error(MTL_INVALID_OPERATION);
   if (width < 1 || height < 1) return;
-  if (xoffset + width > (GLint)(t->texture.width >> level) || yoffset + height > (GLint)(t->texture.height >> level))
-    return set_error(GL_INVALID_VALUE);
+  if (xoffset + width > (int)(t->texture.width >> level) || yoffset + height > (int)(t->texture.height >> level))
+    return set_error(MTL_INVALID_VALUE);
   void const *source = unpack_source(pixels);
   if (!source) return;
   NSUInteger rowBytes;
   void *converted = convert_pixels(source, width, height, format, type, &rowBytes);
-  if (!rowBytes) return set_error(GL_OUT_OF_MEMORY);
+  if (!rowBytes) return set_error(MTL_OUT_OF_MEMORY);
   write_region(t, target_slice(target), level, xoffset, yoffset, width, height,
                converted ? converted : source, rowBytes, rowBytes * height);
   free(converted);
 }
 
-void mtlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-                            GLsizei height, GLint border, GLsizei imageSize, void const *data)
+void mtlCompressedTexImage2D(mtlEnum target, int level, mtlEnum internalformat, int width,
+                            int height, int border, int imageSize, void const *data)
 {
   (void)border;
-  GLMTexture *t = bound_texture(target);
-  if (!t || !ensure_device()) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = bound_texture(target);
+  if (!t || !ensure_device()) return set_error(MTL_INVALID_OPERATION);
   MTLPixelFormat pf = pixel_format(internalformat, 0);
-  if (pf == MTLPixelFormatInvalid) return log_once("unsupported compressed texture format"), set_error(GL_INVALID_ENUM);
+  if (pf == MTLPixelFormatInvalid) return log_once("unsupported compressed texture format"), set_error(MTL_INVALID_ENUM);
   if (level == 0) {
     if (!allocate(t, target, pf, width, height, internalformat)) return;
   } else if (!t->texture || !grow_levels(t, level)) {
@@ -897,49 +897,49 @@ void mtlCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, 
                          rowBytes, (NSUInteger)imageSize);
 }
 
-int mtlTexImageIOSurface(GLenum target, void *iosurface, GLsizei width, GLsizei height)
+int mtlTexImageIOSurface(mtlEnum target, void *iosurface, int width, int height)
 {
-  GLMTexture *t = bound_texture(target);
+  OrcaTexture *t = bound_texture(target);
   if (!t || !iosurface || !ensure_device()) return -1;
   MTLTextureDescriptor *d = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatBGRA8Unorm
                                                                                 width:width height:height
                                                                             mipmapped:NO];
   d.usage = MTLTextureUsageShaderRead;
-  id<MTLTexture> texture = [gl.device newTextureWithDescriptor:d iosurface:(IOSurfaceRef)iosurface plane:0];
+  id<MTLTexture> texture = [mtl.device newTextureWithDescriptor:d iosurface:(IOSurfaceRef)iosurface plane:0];
   if (!texture) return -1;
   t->texture = texture;
   t->swizzled = nil;
   t->width = width, t->height = height, t->levels = 1;
-  t->internalFormat = GL_RGBA;
+  t->internalFormat = MTL_RGBA;
   return 0;
 }
 
-static MTLSamplerAddressMode address_mode(GLenum wrap)
+static MTLSamplerAddressMode address_mode(mtlEnum wrap)
 {
   switch (wrap) {
-    case GL_CLAMP_TO_EDGE: return MTLSamplerAddressModeClampToEdge;
-    case GL_MIRRORED_REPEAT: return MTLSamplerAddressModeMirrorRepeat;
+    case MTL_CLAMP_TO_EDGE: return MTLSamplerAddressModeClampToEdge;
+    case MTL_MIRRORED_REPEAT: return MTLSamplerAddressModeMirrorRepeat;
     default: return MTLSamplerAddressModeRepeat;
   }
 }
 
-static id<MTLSamplerState> sampler_for(GLMTexture *t)
+static id<MTLSamplerState> sampler_for(OrcaTexture *t)
 {
   if (t->sampler) return t->sampler;
   BOOL mips = t->texture && t->texture.mipmapLevelCount > 1;
-  GLenum min = t->minFilter;
+  mtlEnum min = t->minFilter;
   MTLSamplerMinMagFilter minFilter =
-    (min == GL_NEAREST || min == GL_NEAREST_MIPMAP_NEAREST || min == GL_NEAREST_MIPMAP_LINEAR)
+    (min == MTL_NEAREST || min == MTL_NEAREST_MIPMAP_NEAREST || min == MTL_NEAREST_MIPMAP_LINEAR)
       ? MTLSamplerMinMagFilterNearest : MTLSamplerMinMagFilterLinear;
-  MTLSamplerMipFilter mipFilter = !mips || min == GL_NEAREST || min == GL_LINEAR ? MTLSamplerMipFilterNotMipmapped
-                                : (min == GL_NEAREST_MIPMAP_LINEAR || min == GL_LINEAR_MIPMAP_LINEAR)
+  MTLSamplerMipFilter mipFilter = !mips || min == MTL_NEAREST || min == MTL_LINEAR ? MTLSamplerMipFilterNotMipmapped
+                                : (min == MTL_NEAREST_MIPMAP_LINEAR || min == MTL_LINEAR_MIPMAP_LINEAR)
                                   ? MTLSamplerMipFilterLinear : MTLSamplerMipFilterNearest;
-  MTLSamplerMinMagFilter magFilter = t->magFilter == GL_NEAREST ? MTLSamplerMinMagFilterNearest
+  MTLSamplerMinMagFilter magFilter = t->magFilter == MTL_NEAREST ? MTLSamplerMinMagFilterNearest
                                                                 : MTLSamplerMinMagFilterLinear;
   NSNumber *key = @((uint32_t)minFilter | (uint32_t)magFilter << 2 | (uint32_t)mipFilter << 4 |
                     (uint32_t)address_mode(t->wrapS) << 8 | (uint32_t)address_mode(t->wrapT) << 12 |
                     (uint32_t)address_mode(t->wrapR) << 16);
-  id<MTLSamplerState> s = gl.samplers[key];
+  id<MTLSamplerState> s = mtl.samplers[key];
   if (!s) {
     MTLSamplerDescriptor *d = [MTLSamplerDescriptor new];
     d.minFilter = minFilter;
@@ -948,27 +948,27 @@ static id<MTLSamplerState> sampler_for(GLMTexture *t)
     d.sAddressMode = address_mode(t->wrapS);
     d.tAddressMode = address_mode(t->wrapT);
     d.rAddressMode = address_mode(t->wrapR);
-    s = [gl.device newSamplerStateWithDescriptor:d];
-    gl.samplers[key] = s;
+    s = [mtl.device newSamplerStateWithDescriptor:d];
+    mtl.samplers[key] = s;
   }
   return t->sampler = s;
 }
 
-static MTLTextureSwizzle swizzle_channel(GLenum s)
+static MTLTextureSwizzle swizzle_channel(mtlEnum s)
 {
   switch (s) {
-    case GL_RED: return MTLTextureSwizzleRed;
-    case GL_GREEN: return MTLTextureSwizzleGreen;
-    case GL_BLUE: return MTLTextureSwizzleBlue;
-    case GL_ALPHA: return MTLTextureSwizzleAlpha;
-    case GL_ONE: return MTLTextureSwizzleOne;
+    case MTL_RED: return MTLTextureSwizzleRed;
+    case MTL_GREEN: return MTLTextureSwizzleGreen;
+    case MTL_BLUE: return MTLTextureSwizzleBlue;
+    case MTL_ALPHA: return MTLTextureSwizzleAlpha;
+    case MTL_ONE: return MTLTextureSwizzleOne;
     default: return MTLTextureSwizzleZero;
   }
 }
 
-static id<MTLTexture> sampled_texture(GLMTexture *t)
+static id<MTLTexture> sampled_texture(OrcaTexture *t)
 {
-  if (t->swizzle[0] == GL_RED && t->swizzle[1] == GL_GREEN && t->swizzle[2] == GL_BLUE && t->swizzle[3] == GL_ALPHA)
+  if (t->swizzle[0] == MTL_RED && t->swizzle[1] == MTL_GREEN && t->swizzle[2] == MTL_BLUE && t->swizzle[3] == MTL_ALPHA)
     return t->texture;
   if (!t->swizzled && t->texture) {
     if (@available(macOS 10.15, iOS 13.0, *)) {
@@ -986,137 +986,137 @@ static id<MTLTexture> sampled_texture(GLMTexture *t)
   return t->swizzled ? t->swizzled : t->texture;
 }
 
-static GLMTexture *fallback_texture(BOOL cube)
+static OrcaTexture *fallback_texture(BOOL cube)
 {
-  GLMTexture *__strong *slot = cube ? &gl.blackCube : &gl.blackTexture;
+  OrcaTexture *__strong *slot = cube ? &mtl.blackCube : &mtl.blackTexture;
   if (*slot) return *slot;
-  GLMTexture *t = [GLMTexture new];
+  OrcaTexture *t = [OrcaTexture new];
   uint32_t black = 0xff000000;
   MTLTextureDescriptor *d = cube
     ? [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm size:1 mipmapped:NO]
     : [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatRGBA8Unorm width:1 height:1 mipmapped:NO];
   d.usage = MTLTextureUsageShaderRead;
-  t->texture = [gl.device newTextureWithDescriptor:d];
+  t->texture = [mtl.device newTextureWithDescriptor:d];
   for (NSUInteger s = 0; s < (cube ? 6u : 1u); s++)
     [t->texture replaceRegion:MTLRegionMake2D(0, 0, 1, 1) mipmapLevel:0 slice:s withBytes:&black
                   bytesPerRow:4 bytesPerImage:4];
-  t->minFilter = GL_NEAREST;
+  t->minFilter = MTL_NEAREST;
   t->width = t->height = t->levels = 1;
   return *slot = t;
 }
 
 #pragma mark - Framebuffers
 
-void mtlGenFramebuffers(GLsizei n, GLuint *framebuffers) { gen(OBJ_FRAMEBUFFER, n, framebuffers, GLMFramebuffer.class); }
+void mtlGenFramebuffers(int n, uint32_t *framebuffers) { gen(OBJ_FRAMEBUFFER, n, framebuffers, OrcaFramebuffer.class); }
 
-void mtlDeleteFramebuffers(GLsizei n, GLuint const *framebuffers)
+void mtlDeleteFramebuffers(int n, uint32_t const *framebuffers)
 {
-  for (GLsizei i = 0; framebuffers && i < n; i++) {
+  for (int i = 0; framebuffers && i < n; i++) {
     if (!framebuffers[i]) continue;
-    if (framebuffers[i] == gl.drawName) mtlBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    if (framebuffers[i] == gl.readName) mtlBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    if (framebuffers[i] == mtl.drawName) mtlBindFramebuffer(MTL_DRAW_FRAMEBUFFER, 0);
+    if (framebuffers[i] == mtl.readName) mtlBindFramebuffer(MTL_READ_FRAMEBUFFER, 0);
   }
   forget(OBJ_FRAMEBUFFER, n, framebuffers);
 }
 
-void mtlBindFramebuffer(GLenum target, GLuint framebuffer)
+void mtlBindFramebuffer(mtlEnum target, uint32_t framebuffer)
 {
   if (!ensure_device()) return;
-  GLMFramebuffer *fb = object(OBJ_FRAMEBUFFER, framebuffer);
-  if (framebuffer && !fb) return set_error(GL_INVALID_OPERATION);
-  if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER) {
-    if (framebuffer != gl.drawName) flush_pending_clear();
-    gl.drawFramebuffer = fb;
-    gl.drawName = framebuffer;
+  OrcaFramebuffer *fb = object(OBJ_FRAMEBUFFER, framebuffer);
+  if (framebuffer && !fb) return set_error(MTL_INVALID_OPERATION);
+  if (target == MTL_FRAMEBUFFER || target == MTL_DRAW_FRAMEBUFFER) {
+    if (framebuffer != mtl.drawName) flush_pending_clear();
+    mtl.drawFramebuffer = fb;
+    mtl.drawName = framebuffer;
   }
-  if (target == GL_FRAMEBUFFER || target == GL_READ_FRAMEBUFFER) {
-    gl.readFramebuffer = fb;
-    gl.readName = framebuffer;
+  if (target == MTL_FRAMEBUFFER || target == MTL_READ_FRAMEBUFFER) {
+    mtl.readFramebuffer = fb;
+    mtl.readName = framebuffer;
   }
 }
 
-static GLMFramebuffer *framebuffer_for(GLenum target)
+static OrcaFramebuffer *framebuffer_for(mtlEnum target)
 {
-  return target == GL_READ_FRAMEBUFFER ? gl.readFramebuffer : gl.drawFramebuffer;
+  return target == MTL_READ_FRAMEBUFFER ? mtl.readFramebuffer : mtl.drawFramebuffer;
 }
 
-static void attach(GLenum target, GLenum attachment, GLMTexture *t)
+static void attach(mtlEnum target, mtlEnum attachment, OrcaTexture *t)
 {
-  GLMFramebuffer *fb = framebuffer_for(target);
-  if (!fb) return set_error(GL_INVALID_OPERATION);
-  if (gl.encoderOpen && gl.encoderFramebuffer == fb) end_pass();
+  OrcaFramebuffer *fb = framebuffer_for(target);
+  if (!fb) return set_error(MTL_INVALID_OPERATION);
+  if (mtl.encoderOpen && mtl.encoderFramebuffer == fb) end_pass();
   switch (attachment) {
-    case GL_COLOR_ATTACHMENT0: fb->color = t; break;
-    case GL_DEPTH_ATTACHMENT: fb->depth = t; break;
-    case GL_STENCIL_ATTACHMENT: fb->stencil = t; break;
-    case GL_DEPTH_STENCIL_ATTACHMENT: fb->depth = t, fb->stencil = nil; break;
-    default: set_error(GL_INVALID_ENUM);
+    case MTL_COLOR_ATTACHMENT0: fb->color = t; break;
+    case MTL_DEPTH_ATTACHMENT: fb->depth = t; break;
+    case MTL_STENCIL_ATTACHMENT: fb->stencil = t; break;
+    case MTL_DEPTH_STENCIL_ATTACHMENT: fb->depth = t, fb->stencil = nil; break;
+    default: set_error(MTL_INVALID_ENUM);
   }
 }
 
-void mtlFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+void mtlFramebufferTexture2D(mtlEnum target, mtlEnum attachment, mtlEnum textarget, uint32_t texture, int level)
 {
   (void)textarget, (void)level;
   attach(target, attachment, object(OBJ_TEXTURE, texture));
 }
 
-void mtlFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)
+void mtlFramebufferRenderbuffer(mtlEnum target, mtlEnum attachment, mtlEnum renderbuffertarget, uint32_t renderbuffer)
 {
   (void)renderbuffertarget;
   attach(target, attachment, object(OBJ_RENDERBUFFER, renderbuffer));
 }
 
-GLenum mtlCheckFramebufferStatus(GLenum target)
+mtlEnum mtlCheckFramebufferStatus(mtlEnum target)
 {
-  GLMFramebuffer *fb = framebuffer_for(target);
-  if (!fb) return GL_FRAMEBUFFER_COMPLETE;
-  if (!fb->color && !fb->depth) return GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
+  OrcaFramebuffer *fb = framebuffer_for(target);
+  if (!fb) return MTL_FRAMEBUFFER_COMPLETE;
+  if (!fb->color && !fb->depth) return MTL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT;
   if ((fb->color && !fb->color->texture) || (fb->depth && !fb->depth->texture))
-    return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
-  return GL_FRAMEBUFFER_COMPLETE;
+    return MTL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+  return MTL_FRAMEBUFFER_COMPLETE;
 }
 
-void mtlGetFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint *params)
+void mtlGetFramebufferAttachmentParameteriv(mtlEnum target, mtlEnum attachment, mtlEnum pname, int *params)
 {
   targets_t t = framebuffer_targets(framebuffer_for(target));
   if (!params) return;
   *params = 0;
-  BOOL depth = attachment == GL_DEPTH || attachment == GL_DEPTH_ATTACHMENT || attachment == GL_DEPTH_STENCIL_ATTACHMENT;
-  if (pname == GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE && depth && t.depth) *params = 24;
-  if (pname == GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING && !depth && t.color) {
+  BOOL depth = attachment == MTL_DEPTH || attachment == MTL_DEPTH_ATTACHMENT || attachment == MTL_DEPTH_STENCIL_ATTACHMENT;
+  if (pname == MTL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE && depth && t.depth) *params = 24;
+  if (pname == MTL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING && !depth && t.color) {
     MTLPixelFormat f = t.color.pixelFormat;
-    *params = f == MTLPixelFormatRGBA8Unorm_sRGB || f == MTLPixelFormatBGRA8Unorm_sRGB ? GL_SRGB : GL_LINEAR;
+    *params = f == MTLPixelFormatRGBA8Unorm_sRGB || f == MTLPixelFormatBGRA8Unorm_sRGB ? MTL_SRGB : MTL_LINEAR;
   }
 }
 
-void mtlGenRenderbuffers(GLsizei n, GLuint *renderbuffers)
+void mtlGenRenderbuffers(int n, uint32_t *renderbuffers)
 {
-  gen(OBJ_RENDERBUFFER, n, renderbuffers, GLMTexture.class);
-  for (GLsizei i = 0; i < n; i++) ((GLMTexture *)object(OBJ_RENDERBUFFER, renderbuffers[i]))->renderbuffer = YES;
+  gen(OBJ_RENDERBUFFER, n, renderbuffers, OrcaTexture.class);
+  for (int i = 0; i < n; i++) ((OrcaTexture *)object(OBJ_RENDERBUFFER, renderbuffers[i]))->renderbuffer = YES;
 }
 
-void mtlDeleteRenderbuffers(GLsizei n, GLuint const *renderbuffers)
+void mtlDeleteRenderbuffers(int n, uint32_t const *renderbuffers)
 {
-  for (GLsizei i = 0; renderbuffers && i < n; i++)
-    if (renderbuffers[i] && renderbuffers[i] == gl.renderbufferName) gl.renderbuffer = nil, gl.renderbufferName = 0;
+  for (int i = 0; renderbuffers && i < n; i++)
+    if (renderbuffers[i] && renderbuffers[i] == mtl.renderbufferName) mtl.renderbuffer = nil, mtl.renderbufferName = 0;
   forget(OBJ_RENDERBUFFER, n, renderbuffers);
 }
 
-void mtlBindRenderbuffer(GLenum target, GLuint renderbuffer)
+void mtlBindRenderbuffer(mtlEnum target, uint32_t renderbuffer)
 {
   (void)target;
-  gl.renderbuffer = object(OBJ_RENDERBUFFER, renderbuffer);
-  gl.renderbufferName = renderbuffer;
+  mtl.renderbuffer = object(OBJ_RENDERBUFFER, renderbuffer);
+  mtl.renderbufferName = renderbuffer;
 }
 
-void mtlRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height)
+void mtlRenderbufferStorage(mtlEnum target, mtlEnum internalformat, int width, int height)
 {
   (void)target;
-  if (!gl.renderbuffer) return set_error(GL_INVALID_OPERATION);
+  if (!mtl.renderbuffer) return set_error(MTL_INVALID_OPERATION);
   MTLPixelFormat pf = pixel_format(internalformat, 0);
-  if (pf == MTLPixelFormatInvalid) return set_error(GL_INVALID_ENUM);
-  gl.renderbuffer->maxLevel = 0;
-  allocate(gl.renderbuffer, GL_TEXTURE_2D, pf, width, height, internalformat);
+  if (pf == MTLPixelFormatInvalid) return set_error(MTL_INVALID_ENUM);
+  mtl.renderbuffer->maxLevel = 0;
+  allocate(mtl.renderbuffer, MTL_TEXTURE_2D, pf, width, height, internalformat);
 }
 
 #pragma mark - Blits
@@ -1138,31 +1138,31 @@ static NSString *const kBlitSource =
 static id<MTLRenderPipelineState> blit_pipeline(MTLPixelFormat format, BOOL depth)
 {
   NSNumber *key = @((NSUInteger)format << 1 | depth);
-  id<MTLRenderPipelineState> pso = gl.blitPipelines[key];
+  id<MTLRenderPipelineState> pso = mtl.blitPipelines[key];
   if (pso) return pso;
   NSError *error = nil;
-  if (!gl.blitLibrary) gl.blitLibrary = [gl.device newLibraryWithSource:kBlitSource options:nil error:&error];
-  if (!gl.blitLibrary) return axLog("Metal: blit shaders: %s", error.localizedDescription.UTF8String), nil;
+  if (!mtl.blitLibrary) mtl.blitLibrary = [mtl.device newLibraryWithSource:kBlitSource options:nil error:&error];
+  if (!mtl.blitLibrary) return axLog("Metal: blit shaders: %s", error.localizedDescription.UTF8String), nil;
   MTLRenderPipelineDescriptor *d = [MTLRenderPipelineDescriptor new];
-  d.vertexFunction = [gl.blitLibrary newFunctionWithName:@"orca_blit_vertex"];
-  d.fragmentFunction = [gl.blitLibrary newFunctionWithName:depth ? @"orca_blit_depth" : @"orca_blit_color"];
+  d.vertexFunction = [mtl.blitLibrary newFunctionWithName:@"orca_blit_vertex"];
+  d.fragmentFunction = [mtl.blitLibrary newFunctionWithName:depth ? @"orca_blit_depth" : @"orca_blit_color"];
   if (depth) {
     d.depthAttachmentPixelFormat = format;
     if (has_stencil(format)) d.stencilAttachmentPixelFormat = format;
   } else {
     d.colorAttachments[0].pixelFormat = format;
   }
-  pso = [gl.device newRenderPipelineStateWithDescriptor:d error:&error];
+  pso = [mtl.device newRenderPipelineStateWithDescriptor:d error:&error];
   if (!pso) return axLog("Metal: blit pipeline: %s", error.localizedDescription.UTF8String), nil;
-  return gl.blitPipelines[key] = pso;
+  return mtl.blitPipelines[key] = pso;
 }
 
 // Draws the window rectangle (sx0, sy0)-(sx1, sy1) of `src` over
 // (dx0, dy0)-(dx1, dy1) of `dst`. Both rectangles are in bottom-up
 // coordinates; `flipped` says which textures store rows bottom-up.
 static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, BOOL dstFlipped, BOOL depth,
-                      GLint sx0, GLint sy0, GLint sx1, GLint sy1,
-                      GLint dx0, GLint dy0, GLint dx1, GLint dy1, BOOL linear)
+                      int sx0, int sy0, int sx1, int sy1,
+                      int dx0, int dy0, int dx1, int dy1, BOOL linear)
 {
   id<MTLRenderPipelineState> pso = src && dst ? blit_pipeline(dst.pixelFormat, depth) : nil;
   if (!pso) return;
@@ -1196,44 +1196,44 @@ static void draw_quad(id<MTLTexture> src, BOOL srcFlipped, id<MTLTexture> dst, B
   MTLViewport vp = { MIN(dx0, dx1), dstFlipped ? lo : dh - hi, abs(dx1 - dx0), hi - lo, 0, 1 };
   [enc setViewport:vp];
   [enc setRenderPipelineState:pso];
-  if (depth) [enc setDepthStencilState:gl.depthAlways];
+  if (depth) [enc setDepthStencilState:mtl.depthAlways];
   [enc setVertexBytes:quad length:sizeof(quad) atIndex:0];
   [enc setFragmentTexture:src atIndex:0];
   MTLSamplerDescriptor *sd = [MTLSamplerDescriptor new];
   sd.minFilter = sd.magFilter = linear && !depth ? MTLSamplerMinMagFilterLinear : MTLSamplerMinMagFilterNearest;
   sd.sAddressMode = sd.tAddressMode = MTLSamplerAddressModeClampToEdge;
   NSNumber *key = @(linear && !depth ? 0x80000001u : 0x80000000u);
-  if (!gl.samplers[key]) gl.samplers[key] = [gl.device newSamplerStateWithDescriptor:sd];
-  [enc setFragmentSamplerState:gl.samplers[key] atIndex:0];
+  if (!mtl.samplers[key]) mtl.samplers[key] = [mtl.device newSamplerStateWithDescriptor:sd];
+  [enc setFragmentSamplerState:mtl.samplers[key] atIndex:0];
   [enc drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
   [enc endEncoding];
 }
 
-void mtlBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0,
-                       GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
+void mtlBlitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0,
+                       int dstX1, int dstY1, uint32_t mask, mtlEnum filter)
 {
-  if (!(mask & GL_COLOR_BUFFER_BIT)) return;
+  if (!(mask & MTL_COLOR_BUFFER_BIT)) return;
   flush_pending_clear();
-  targets_t src = framebuffer_targets(gl.readFramebuffer);
-  targets_t dst = framebuffer_targets(gl.drawFramebuffer);
-  if (!src.color || !dst.color) return set_error(GL_INVALID_OPERATION);
+  targets_t src = framebuffer_targets(mtl.readFramebuffer);
+  targets_t dst = framebuffer_targets(mtl.drawFramebuffer);
+  if (!src.color || !dst.color) return set_error(MTL_INVALID_OPERATION);
   draw_quad(src.color, src.flipped, dst.color, dst.flipped, NO, srcX0, srcY0, srcX1, srcY1,
-            dstX0, dstY0, dstX1, dstY1, filter == GL_LINEAR);
+            dstX0, dstY0, dstX1, dstY1, filter == MTL_LINEAR);
   use(src.colorObject);
   use(dst.colorObject);
 }
 
-void mtlCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
-                         GLsizei width, GLsizei height)
+void mtlCopyTexSubImage2D(mtlEnum target, int level, int xoffset, int yoffset, int x, int y,
+                         int width, int height)
 {
   (void)level;
-  GLMTexture *t = bound_texture(target);
-  if (!t || !t->texture) return set_error(GL_INVALID_OPERATION);
+  OrcaTexture *t = bound_texture(target);
+  if (!t || !t->texture) return set_error(MTL_INVALID_OPERATION);
   flush_pending_clear();
   BOOL depth = is_depth_format(t->texture.pixelFormat);
-  targets_t src = framebuffer_targets(gl.readFramebuffer);
+  targets_t src = framebuffer_targets(mtl.readFramebuffer);
   id<MTLTexture> from = depth ? src.depth : src.color;
-  if (!from) return set_error(GL_INVALID_OPERATION);
+  if (!from) return set_error(MTL_INVALID_OPERATION);
   draw_quad(from, src.flipped, t->texture, YES, depth, x, y, x + width, y + height,
             xoffset, yoffset, xoffset + width, yoffset + height, NO);
   use(t);
@@ -1241,18 +1241,18 @@ void mtlCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffs
   use(src.depthObject);
 }
 
-void mtlReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void *pixels)
+void mtlReadPixels(int x, int y, int width, int height, mtlEnum format, mtlEnum type, void *pixels)
 {
-  if (format != GL_RGBA || type != GL_UNSIGNED_BYTE || !pixels) return set_error(GL_INVALID_ENUM);
+  if (format != MTL_RGBA || type != MTL_UNSIGNED_BYTE || !pixels) return set_error(MTL_INVALID_ENUM);
   flush_pending_clear();
-  targets_t src = framebuffer_targets(gl.readFramebuffer);
-  if (!src.color || width < 1 || height < 1) return set_error(GL_INVALID_OPERATION);
-  // Metal rejects a copy outside the texture; OpenGL leaves those pixels undefined.
-  if (x < 0 || y < 0 || x + width > (GLint)src.color.width || y + height > (GLint)src.color.height)
-    return set_error(GL_INVALID_VALUE);
-  GLint top = src.flipped ? y : (GLint)src.color.height - (y + height);
+  targets_t src = framebuffer_targets(mtl.readFramebuffer);
+  if (!src.color || width < 1 || height < 1) return set_error(MTL_INVALID_OPERATION);
+  // Metal rejects a copy outside the texture.
+  if (x < 0 || y < 0 || x + width > (int)src.color.width || y + height > (int)src.color.height)
+    return set_error(MTL_INVALID_VALUE);
+  int top = src.flipped ? y : (int)src.color.height - (y + height);
   NSUInteger rowBytes = (NSUInteger)width * 4;
-  id<MTLBuffer> buffer = [gl.device newBufferWithLength:rowBytes * height options:MTLResourceStorageModeShared];
+  id<MTLBuffer> buffer = [mtl.device newBufferWithLength:rowBytes * height options:MTLResourceStorageModeShared];
   end_pass();
   id<MTLBlitCommandEncoder> blit = [command_buffer() blitCommandEncoder];
   [blit copyFromTexture:src.color sourceSlice:0 sourceLevel:0 sourceOrigin:MTLOriginMake(x, top, 0)
@@ -1261,11 +1261,11 @@ void mtlReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum forma
   [blit endEncoding];
   commit(YES);
   BOOL bgra = src.color.pixelFormat == MTLPixelFormatBGRA8Unorm || src.color.pixelFormat == MTLPixelFormatBGRA8Unorm_sRGB;
-  for (GLsizei r = 0; r < height; r++) {
+  for (int r = 0; r < height; r++) {
     uint8_t const *row = (uint8_t const *)buffer.contents + rowBytes * (src.flipped ? r : height - 1 - r);
     uint8_t *out = (uint8_t *)pixels + rowBytes * r;
     memcpy(out, row, rowBytes);
-    for (GLsizei c = 0; bgra && c < width; c++) {
+    for (int c = 0; bgra && c < width; c++) {
       uint8_t b = out[c * 4];
       out[c * 4] = out[c * 4 + 2], out[c * 4 + 2] = b;
     }
@@ -1274,24 +1274,24 @@ void mtlReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum forma
 
 #pragma mark - Shaders and programs
 
-GLuint mtlCreateShader(GLenum type)
+uint32_t mtlCreateShader(mtlEnum type)
 {
-  GLuint name;
-  gen(OBJ_SHADER, 1, &name, GLMShader.class);
-  GLMShader *s = object(OBJ_SHADER, name);
+  uint32_t name;
+  gen(OBJ_SHADER, 1, &name, OrcaShader.class);
+  OrcaShader *s = object(OBJ_SHADER, name);
   if (!s) return 0;
   s->type = type;
   return name;
 }
 
-void mtlDeleteShader(GLuint shader) { forget(OBJ_SHADER, 1, &shader); }
+void mtlDeleteShader(uint32_t shader) { forget(OBJ_SHADER, 1, &shader); }
 
-void mtlShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, GLint const *length)
+void mtlShaderSource(uint32_t shader, int count, char const *const *string, int const *length)
 {
-  GLMShader *s = object(OBJ_SHADER, shader);
-  if (!s) return set_error(GL_INVALID_VALUE);
+  OrcaShader *s = object(OBJ_SHADER, shader);
+  if (!s) return set_error(MTL_INVALID_VALUE);
   NSMutableString *text = [NSMutableString new];
-  for (GLsizei i = 0; i < count; i++) {
+  for (int i = 0; i < count; i++) {
     NSString *part = length && length[i] >= 0
       ? [[NSString alloc] initWithBytes:string[i] length:length[i] encoding:NSUTF8StringEncoding]
       : [NSString stringWithUTF8String:string[i]];
@@ -1301,67 +1301,67 @@ void mtlShaderSource(GLuint shader, GLsizei count, GLchar const *const *string, 
 }
 
 // Translation needs both stages, so it happens when the program links.
-void mtlCompileShader(GLuint shader) { (void)shader; }
+void mtlCompileShader(uint32_t shader) { (void)shader; }
 
-void mtlGetShaderiv(GLuint shader, GLenum pname, GLint *params)
+void mtlGetShaderiv(uint32_t shader, mtlEnum pname, int *params)
 {
-  GLMShader *s = object(OBJ_SHADER, shader);
+  OrcaShader *s = object(OBJ_SHADER, shader);
   if (!params) return;
-  if (pname == GL_COMPILE_STATUS) *params = s && s->source ? GL_TRUE : GL_FALSE;
-  else if (pname == GL_INFO_LOG_LENGTH) *params = 0;
+  if (pname == MTL_COMPILE_STATUS) *params = s && s->source ? MTL_TRUE : MTL_FALSE;
+  else if (pname == MTL_INFO_LOG_LENGTH) *params = 0;
 }
 
-void mtlGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
+void mtlGetShaderInfoLog(uint32_t shader, int bufSize, int *length, char *infoLog)
 {
   (void)shader;
   if (length) *length = 0;
   if (infoLog && bufSize > 0) *infoLog = 0;
 }
 
-GLuint mtlCreateProgram(void)
+uint32_t mtlCreateProgram(void)
 {
-  GLuint name;
-  gen(OBJ_PROGRAM, 1, &name, GLMProgram.class);
+  uint32_t name;
+  gen(OBJ_PROGRAM, 1, &name, OrcaProgram.class);
   return object(OBJ_PROGRAM, name) ? name : 0;
 }
 
-void mtlDeleteProgram(GLuint program)
+void mtlDeleteProgram(uint32_t program)
 {
-  if (program && program == gl.programName) gl.program = nil, gl.programName = 0;
+  if (program && program == mtl.programName) mtl.program = nil, mtl.programName = 0;
   forget(OBJ_PROGRAM, 1, &program);
 }
 
-void mtlAttachShader(GLuint program, GLuint shader)
+void mtlAttachShader(uint32_t program, uint32_t shader)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
-  GLMShader *s = object(OBJ_SHADER, shader);
-  if (!p || !s) return set_error(GL_INVALID_VALUE);
-  if (s->type == GL_VERTEX_SHADER) p->vs = s;
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
+  OrcaShader *s = object(OBJ_SHADER, shader);
+  if (!p || !s) return set_error(MTL_INVALID_VALUE);
+  if (s->type == MTL_VERTEX_SHADER) p->vs = s;
   else p->fs = s;
 }
 
-void mtlDetachShader(GLuint program, GLuint shader)
+void mtlDetachShader(uint32_t program, uint32_t shader)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
-  GLMShader *s = object(OBJ_SHADER, shader);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
+  OrcaShader *s = object(OBJ_SHADER, shader);
   if (p && p->vs == s) p->vs = nil;
   if (p && p->fs == s) p->fs = nil;
 }
 
-static id<MTLFunction> compile_stage(GLMProgram *p, int stage, NSMutableString *log)
+static id<MTLFunction> compile_stage(OrcaProgram *p, int stage, NSMutableString *log)
 {
   NSError *error = nil;
   MTLCompileOptions *options = [MTLCompileOptions new];
   options.languageVersion = MTLLanguageVersion2_1;
-  id<MTLLibrary> library = [gl.device newLibraryWithSource:@(p->refl->source[stage]) options:options error:&error];
+  id<MTLLibrary> library = [mtl.device newLibraryWithSource:@(p->refl->source[stage]) options:options error:&error];
   if (!library) {
-    [log appendFormat:@"%s: %@\n", stage == GLSL_MSL_VERTEX ? "vertex" : "fragment", error.localizedDescription];
+    [log appendFormat:@"%s: %@\n", stage == MSL_VERTEX ? "vertex" : "fragment", error.localizedDescription];
     return nil;
   }
   return [library newFunctionWithName:@(p->refl->entry[stage])];
 }
 
-static struct { char const *name; struct glsl_msl_program const *refl; } const k_builtin_shaders[] = {
+static struct { char const *name; struct msl_program const *refl; } const k_builtin_shaders[] = {
   { "Default Shader",      &k_refl_default      },
   { "UI Shader",           &k_refl_ui           },
   { "Charset Shader",      &k_refl_charset      },
@@ -1376,7 +1376,7 @@ static struct { char const *name; struct glsl_msl_program const *refl; } const k
   { "Backdrop Blur Shader",&k_refl_backdrop_blur},
 };
 
-static struct glsl_msl_program const *
+static struct msl_program const *
 lookup_msl_refl(NSString *name)
 {
   if (!name) return NULL;
@@ -1386,16 +1386,16 @@ lookup_msl_refl(NSString *name)
   return NULL;
 }
 
-void mtlProgramLabel(GLuint program, char const *name)
+void mtlProgramLabel(uint32_t program, char const *name)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
   if (p) p->name = name ? @(name) : nil;
 }
 
-void mtlLinkProgram(GLuint program)
+void mtlLinkProgram(uint32_t program)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
-  if (!p || !ensure_device()) return set_error(GL_INVALID_VALUE);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
+  if (!p || !ensure_device()) return set_error(MTL_INVALID_VALUE);
   NSString *name = p->name;
   [p reset];
   p->name = name;
@@ -1410,7 +1410,7 @@ void mtlLinkProgram(GLuint program)
     return;
   }
   int ok = YES;
-  for (int s = 0; ok && s < GLSL_MSL_STAGES; s++) {
+  for (int s = 0; ok && s < MSL_STAGES; s++) {
     p->functions[s] = compile_stage(p, s, log);
     ok = p->functions[s] != nil;
     p->data[s] = calloc(1, MAX(p->refl->blockSize[s], 4));
@@ -1422,150 +1422,150 @@ void mtlLinkProgram(GLuint program)
   p->flipY = -1;
   for (uint32_t i = 0; ok && i < p->refl->numUniforms; i++) {
     p->units[i] = 0;
-    if (!strcmp(p->refl->uniforms[i].name, GLSL_MSL_FLIP_Y)) p->flipY = (int32_t)i;
+    if (!strcmp(p->refl->uniforms[i].name, MSL_FLIP_Y)) p->flipY = (int32_t)i;
   }
   p->log = log;
   p->linked = ok;
   if (!ok) [p reset], p->log = log;
 }
 
-void mtlUseProgram(GLuint program)
+void mtlUseProgram(uint32_t program)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
-  if (program && (!p || !p->linked)) return set_error(GL_INVALID_OPERATION);
-  gl.program = p;
-  gl.programName = program;
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
+  if (program && (!p || !p->linked)) return set_error(MTL_INVALID_OPERATION);
+  mtl.program = p;
+  mtl.programName = program;
 }
 
-static BOOL hidden(struct glsl_msl_uniform const *u) { return !strcmp(u->name, GLSL_MSL_FLIP_Y); }
+static BOOL hidden(struct msl_uniform const *u) { return !strcmp(u->name, MSL_FLIP_Y); }
 
-void mtlGetProgramiv(GLuint program, GLenum pname, GLint *params)
+void mtlGetProgramiv(uint32_t program, mtlEnum pname, int *params)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
-  if (!p || !params) return set_error(GL_INVALID_VALUE);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
+  if (!p || !params) return set_error(MTL_INVALID_VALUE);
   switch (pname) {
-    case GL_LINK_STATUS: *params = p->linked; break;
-    case GL_INFO_LOG_LENGTH: *params = p->log.length ? (GLint)strlen(p->log.UTF8String) + 1 : 0; break;
-    case GL_ACTIVE_UNIFORMS:
+    case MTL_LINK_STATUS: *params = p->linked; break;
+    case MTL_INFO_LOG_LENGTH: *params = p->log.length ? (int)strlen(p->log.UTF8String) + 1 : 0; break;
+    case MTL_ACTIVE_UNIFORMS:
       *params = 0;
       for (uint32_t i = 0; p->refl && i < p->refl->numUniforms; i++) *params += !hidden(&p->refl->uniforms[i]);
       break;
-    case GL_ACTIVE_ATTRIBUTES: *params = p->refl ? (GLint)p->refl->numAttributes : 0; break;
-    default: set_error(GL_INVALID_ENUM);
+    case MTL_ACTIVE_ATTRIBUTES: *params = p->refl ? (int)p->refl->numAttributes : 0; break;
+    default: set_error(MTL_INVALID_ENUM);
   }
 }
 
-void mtlGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog)
+void mtlGetProgramInfoLog(uint32_t program, int bufSize, int *length, char *infoLog)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
   char const *text = p && p->log ? p->log.UTF8String : "";
-  GLsizei n = bufSize > 0 ? (GLsizei)MIN(strlen(text), (size_t)bufSize - 1) : 0;
+  int n = bufSize > 0 ? (int)MIN(strlen(text), (size_t)bufSize - 1) : 0;
   if (infoLog && bufSize > 0) memcpy(infoLog, text, n), infoLog[n] = 0;
   if (length) *length = n;
 }
 
-void mtlGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size,
-                        GLenum *type, GLchar *name)
+void mtlGetActiveUniform(uint32_t program, uint32_t index, int bufSize, int *length, int *size,
+                        mtlEnum *type, char *name)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
   for (uint32_t i = 0, visible = 0; p && p->refl && i < p->refl->numUniforms; i++) {
-    struct glsl_msl_uniform const *u = &p->refl->uniforms[i];
+    struct msl_uniform const *u = &p->refl->uniforms[i];
     if (hidden(u) || visible++ != index) continue;
-    char text[GLSL_MSL_NAME + 4];
+    char text[MSL_MAX_NAME + 4];
     snprintf(text, sizeof(text), u->arraySize > 1 ? "%s[0]" : "%s", u->name);
-    GLsizei n = bufSize > 0 ? (GLsizei)MIN(strlen(text), (size_t)bufSize - 1) : 0;
+    int n = bufSize > 0 ? (int)MIN(strlen(text), (size_t)bufSize - 1) : 0;
     if (name && bufSize > 0) memcpy(name, text, n), name[n] = 0;
     if (length) *length = n;
-    if (size) *size = (GLint)u->arraySize;
-    if (type) *type = u->gltype;
+    if (size) *size = (int)u->arraySize;
+    if (type) *type = u->type;
     return;
   }
-  set_error(GL_INVALID_VALUE);
+  set_error(MTL_INVALID_VALUE);
 }
 
 // A location is the uniform's index with the array element above bit 8.
-GLint mtlGetUniformLocation(GLuint program, GLchar const *name)
+int mtlGetUniformLocation(uint32_t program, char const *name)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
   if (!p || !p->refl || !name) return -1;
-  char base[GLSL_MSL_NAME];
+  char base[MSL_MAX_NAME];
   int element = 0;
   snprintf(base, sizeof(base), "%s", name);
   char *bracket = strchr(base, '[');
   if (bracket) element = atoi(bracket + 1), *bracket = 0;
   for (uint32_t i = 0; i < p->refl->numUniforms; i++) {
-    struct glsl_msl_uniform const *u = &p->refl->uniforms[i];
+    struct msl_uniform const *u = &p->refl->uniforms[i];
     if (hidden(u) || strcmp(u->name, base)) continue;
-    return element < 0 || (uint32_t)element >= u->arraySize ? -1 : (GLint)(i | (uint32_t)element << 8);
+    return element < 0 || (uint32_t)element >= u->arraySize ? -1 : (int)(i | (uint32_t)element << 8);
   }
   return -1;
 }
 
-GLint mtlGetAttribLocation(GLuint program, GLchar const *name)
+int mtlGetAttribLocation(uint32_t program, char const *name)
 {
-  GLMProgram *p = object(OBJ_PROGRAM, program);
+  OrcaProgram *p = object(OBJ_PROGRAM, program);
   for (uint32_t i = 0; p && p->refl && name && i < p->refl->numAttributes; i++)
-    if (!strcmp(p->refl->attributes[i].name, name)) return (GLint)p->refl->attributes[i].location;
+    if (!strcmp(p->refl->attributes[i].name, name)) return (int)p->refl->attributes[i].location;
   return -1;
 }
 
-static int components(GLenum type, int *columns, BOOL *integer)
+static int components(mtlEnum type, int *columns, BOOL *integer)
 {
   *columns = 1;
   *integer = NO;
   switch (type) {
-    case GL_FLOAT: return 1;
-    case GL_FLOAT_VEC2: return 2;
-    case GL_FLOAT_VEC3: return 3;
-    case GL_FLOAT_VEC4: return 4;
-    case GL_INT: case GL_BOOL: case GL_UNSIGNED_INT: *integer = YES; return 1;
-    case GL_INT_VEC2: case GL_BOOL_VEC2: case GL_UNSIGNED_INT_VEC2: *integer = YES; return 2;
-    case GL_INT_VEC3: case GL_BOOL_VEC3: case GL_UNSIGNED_INT_VEC3: *integer = YES; return 3;
-    case GL_INT_VEC4: case GL_BOOL_VEC4: case GL_UNSIGNED_INT_VEC4: *integer = YES; return 4;
-    case GL_FLOAT_MAT2: *columns = 2; return 2;
-    case GL_FLOAT_MAT3: *columns = 3; return 3;
-    case GL_FLOAT_MAT4: *columns = 4; return 4;
+    case MTL_FLOAT: return 1;
+    case MTL_FLOAT_VEC2: return 2;
+    case MTL_FLOAT_VEC3: return 3;
+    case MTL_FLOAT_VEC4: return 4;
+    case MTL_INT: case MTL_BOOL: case MTL_UNSIGNED_INT: *integer = YES; return 1;
+    case MTL_INT_VEC2: case MTL_BOOL_VEC2: case MTL_UNSIGNED_INT_VEC2: *integer = YES; return 2;
+    case MTL_INT_VEC3: case MTL_BOOL_VEC3: case MTL_UNSIGNED_INT_VEC3: *integer = YES; return 3;
+    case MTL_INT_VEC4: case MTL_BOOL_VEC4: case MTL_UNSIGNED_INT_VEC4: *integer = YES; return 4;
+    case MTL_FLOAT_MAT2: *columns = 2; return 2;
+    case MTL_FLOAT_MAT3: *columns = 3; return 3;
+    case MTL_FLOAT_MAT4: *columns = 4; return 4;
   }
   return 0;
 }
 
-static struct glsl_msl_uniform const *uniform_at(GLint location, uint32_t *index, uint32_t *element)
+static struct msl_uniform const *uniform_at(int location, uint32_t *index, uint32_t *element)
 {
-  GLMProgram *p = gl.program;
+  OrcaProgram *p = mtl.program;
   if (location < 0 || !p || !p->refl) return NULL;
   *index = (uint32_t)location & 0xff;
   *element = (uint32_t)location >> 8;
-  if (*index >= p->refl->numUniforms) return set_error(GL_INVALID_OPERATION), NULL;
+  if (*index >= p->refl->numUniforms) return set_error(MTL_INVALID_OPERATION), NULL;
   return &p->refl->uniforms[*index];
 }
 
 // Writes `count` elements of `n` values each; values are floats or ints as
 // the caller passes them and are converted to the uniform's type.
-static void write_uniform(GLint location, GLsizei count, int n, float const *f, GLint const *i)
+static void write_uniform(int location, int count, int n, float const *f, int const *i)
 {
   uint32_t index, element;
-  struct glsl_msl_uniform const *u = uniform_at(location, &index, &element);
+  struct msl_uniform const *u = uniform_at(location, &index, &element);
   if (!u) return;
-  if (u->gltype == GL_SAMPLER_2D || u->gltype == GL_SAMPLER_CUBE || u->gltype == GL_SAMPLER_3D ||
-      u->gltype == GL_SAMPLER_2D_SHADOW) {
-    gl.program->units[index] = i ? i[0] : (GLint)f[0];
+  if (u->type == MTL_SAMPLER_2D || u->type == MTL_SAMPLER_CUBE || u->type == MTL_SAMPLER_3D ||
+      u->type == MTL_SAMPLER_2D_SHADOW) {
+    mtl.program->units[index] = i ? i[0] : (int)f[0];
     return;
   }
   int columns;
   BOOL integer;
-  int size = components(u->gltype, &columns, &integer);
-  if (!size || columns > 1) return set_error(GL_INVALID_OPERATION);
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+  int size = components(u->type, &columns, &integer);
+  if (!size || columns > 1) return set_error(MTL_INVALID_OPERATION);
+  for (int s = 0; s < MSL_STAGES; s++) {
     if (u->offset[s] < 0) continue;
-    for (GLsizei e = 0; e < count && element + e < u->arraySize; e++) {
+    for (int e = 0; e < count && element + e < u->arraySize; e++) {
       uint32_t at = (uint32_t)u->offset[s] + (element + e) * u->arrayStride[s];
-      if (at + size * 4 > gl.program->refl->blockSize[s]) break;
-      uint8_t *dst = gl.program->data[s] + at;
+      if (at + size * 4 > mtl.program->refl->blockSize[s]) break;
+      uint8_t *dst = mtl.program->data[s] + at;
       for (int c = 0; c < size && c < n; c++) {
         int k = e * n + c;
         if (integer) {
           int32_t v = i ? i[k] : (int32_t)f[k];
-          if (u->gltype >= GL_BOOL && u->gltype <= GL_BOOL_VEC4) v = v != 0;
+          if (u->type >= MTL_BOOL && u->type <= MTL_BOOL_VEC4) v = v != 0;
           memcpy(dst + c * 4, &v, 4);
         } else {
           float v = f ? f[k] : (float)i[k];
@@ -1576,233 +1576,233 @@ static void write_uniform(GLint location, GLsizei count, int n, float const *f, 
   }
 }
 
-static void write_matrix(GLint location, GLsizei count, int n, GLboolean transpose, GLfloat const *value)
+static void write_matrix(int location, int count, int n, bool transpose, float const *value)
 {
   uint32_t index, element;
-  struct glsl_msl_uniform const *u = uniform_at(location, &index, &element);
+  struct msl_uniform const *u = uniform_at(location, &index, &element);
   if (!u) return;
   int columns;
   BOOL integer;
-  if (components(u->gltype, &columns, &integer) != n || columns != n) return set_error(GL_INVALID_OPERATION);
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+  if (components(u->type, &columns, &integer) != n || columns != n) return set_error(MTL_INVALID_OPERATION);
+  for (int s = 0; s < MSL_STAGES; s++) {
     if (u->offset[s] < 0) continue;
-    for (GLsizei e = 0; e < count && element + e < u->arraySize; e++) {
+    for (int e = 0; e < count && element + e < u->arraySize; e++) {
       uint32_t at = (uint32_t)u->offset[s] + (element + e) * u->arrayStride[s];
-      if (at + (n - 1) * u->matrixStride[s] + n * 4 > gl.program->refl->blockSize[s]) break;
+      if (at + (n - 1) * u->matrixStride[s] + n * 4 > mtl.program->refl->blockSize[s]) break;
       float const *m = value + e * n * n;
       for (int c = 0; c < n; c++) {
-        float *col = (float *)(gl.program->data[s] + at + c * u->matrixStride[s]);
+        float *col = (float *)(mtl.program->data[s] + at + c * u->matrixStride[s]);
         for (int r = 0; r < n; r++) col[r] = transpose ? m[r * n + c] : m[c * n + r];
       }
     }
   }
 }
 
-void mtlUniform1f(GLint location, GLfloat v0) { write_uniform(location, 1, 1, &v0, NULL); }
-void mtlUniform2f(GLint location, GLfloat v0, GLfloat v1) { GLfloat v[] = { v0, v1 }; write_uniform(location, 1, 2, v, NULL); }
-void mtlUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) { GLfloat v[] = { v0, v1, v2 }; write_uniform(location, 1, 3, v, NULL); }
-void mtlUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) { GLfloat v[] = { v0, v1, v2, v3 }; write_uniform(location, 1, 4, v, NULL); }
-void mtlUniform1i(GLint location, GLint v0) { write_uniform(location, 1, 1, NULL, &v0); }
-void mtlUniform2fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 2, value, NULL); }
-void mtlUniform3fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 3, value, NULL); }
-void mtlUniform4fv(GLint location, GLsizei count, GLfloat const *value) { write_uniform(location, count, 4, value, NULL); }
-void mtlUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 3, transpose, value); }
-void mtlUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, GLfloat const *value) { write_matrix(location, count, 4, transpose, value); }
+void mtlUniform1f(int location, float v0) { write_uniform(location, 1, 1, &v0, NULL); }
+void mtlUniform2f(int location, float v0, float v1) { float v[] = { v0, v1 }; write_uniform(location, 1, 2, v, NULL); }
+void mtlUniform3f(int location, float v0, float v1, float v2) { float v[] = { v0, v1, v2 }; write_uniform(location, 1, 3, v, NULL); }
+void mtlUniform4f(int location, float v0, float v1, float v2, float v3) { float v[] = { v0, v1, v2, v3 }; write_uniform(location, 1, 4, v, NULL); }
+void mtlUniform1i(int location, int v0) { write_uniform(location, 1, 1, NULL, &v0); }
+void mtlUniform2fv(int location, int count, float const *value) { write_uniform(location, count, 2, value, NULL); }
+void mtlUniform3fv(int location, int count, float const *value) { write_uniform(location, count, 3, value, NULL); }
+void mtlUniform4fv(int location, int count, float const *value) { write_uniform(location, count, 4, value, NULL); }
+void mtlUniformMatrix3fv(int location, int count, bool transpose, float const *value) { write_matrix(location, count, 3, transpose, value); }
+void mtlUniformMatrix4fv(int location, int count, bool transpose, float const *value) { write_matrix(location, count, 4, transpose, value); }
 
 #pragma mark - Fixed-function state
 
-void mtlEnable(GLenum cap)
+void mtlEnable(mtlEnum cap)
 {
   switch (cap) {
-    case GL_BLEND: gl.blend = YES; break;
-    case GL_DEPTH_TEST: gl.depthTest = YES; break;
-    case GL_STENCIL_TEST: gl.stencilTest = YES; break;
-    case GL_CULL_FACE: gl.cull = YES; break;
-    case GL_FRAMEBUFFER_SRGB:
-      gl.srgb = YES;
-      if (ensure_device() && current_layer()) gl.layer.pixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
+    case MTL_BLEND: mtl.blend = YES; break;
+    case MTL_DEPTH_TEST: mtl.depthTest = YES; break;
+    case MTL_STENCIL_TEST: mtl.stencilTest = YES; break;
+    case MTL_CULL_FACE: mtl.cull = YES; break;
+    case MTL_FRAMEBUFFER_SRGB:
+      mtl.srgb = YES;
+      if (ensure_device() && current_layer()) mtl.layer.pixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
       break;
   }
 }
 
-void mtlDisable(GLenum cap)
+void mtlDisable(mtlEnum cap)
 {
   switch (cap) {
-    case GL_BLEND: gl.blend = NO; break;
-    case GL_DEPTH_TEST: gl.depthTest = NO; break;
-    case GL_STENCIL_TEST: gl.stencilTest = NO; break;
-    case GL_CULL_FACE: gl.cull = NO; break;
-    case GL_FRAMEBUFFER_SRGB:
-      gl.srgb = NO;
-      if (gl.layer) gl.layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
+    case MTL_BLEND: mtl.blend = NO; break;
+    case MTL_DEPTH_TEST: mtl.depthTest = NO; break;
+    case MTL_STENCIL_TEST: mtl.stencilTest = NO; break;
+    case MTL_CULL_FACE: mtl.cull = NO; break;
+    case MTL_FRAMEBUFFER_SRGB:
+      mtl.srgb = NO;
+      if (mtl.layer) mtl.layer.pixelFormat = MTLPixelFormatBGRA8Unorm;
       break;
   }
 }
 
-void mtlBlendFunc(GLenum sfactor, GLenum dfactor) { gl.blendSrc = sfactor, gl.blendDst = dfactor; }
+void mtlBlendFunc(mtlEnum sfactor, mtlEnum dfactor) { mtl.blendSrc = sfactor, mtl.blendDst = dfactor; }
 
-void mtlColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
+void mtlColorMask(bool red, bool green, bool blue, bool alpha)
 {
-  gl.colorMask = (red ? MTLColorWriteMaskRed : 0) | (green ? MTLColorWriteMaskGreen : 0) |
+  mtl.colorMask = (red ? MTLColorWriteMaskRed : 0) | (green ? MTLColorWriteMaskGreen : 0) |
                  (blue ? MTLColorWriteMaskBlue : 0) | (alpha ? MTLColorWriteMaskAlpha : 0);
 }
 
-void mtlCullFace(GLenum mode) { gl.cullFace = mode; }
-void mtlDepthFunc(GLenum func) { gl.depthFunc = func; }
-void mtlDepthMask(GLboolean flag) { gl.depthMask = flag; }
-void mtlStencilFunc(GLenum func, GLint ref, GLuint mask) { gl.stencilFunc = func, gl.stencilRef = ref, gl.stencilReadMask = mask; }
-void mtlStencilMask(GLuint mask) { gl.stencilWriteMask = mask; }
-void mtlStencilOp(GLenum fail, GLenum zfail, GLenum zpass) { gl.stencilFail = fail, gl.stencilZFail = zfail, gl.stencilZPass = zpass; }
-void mtlViewport(GLint x, GLint y, GLsizei width, GLsizei height)
+void mtlCullFace(mtlEnum mode) { mtl.cullFace = mode; }
+void mtlDepthFunc(mtlEnum func) { mtl.depthFunc = func; }
+void mtlDepthMask(bool flag) { mtl.depthMask = flag; }
+void mtlStencilFunc(mtlEnum func, int ref, uint32_t mask) { mtl.stencilFunc = func, mtl.stencilRef = ref, mtl.stencilReadMask = mask; }
+void mtlStencilMask(uint32_t mask) { mtl.stencilWriteMask = mask; }
+void mtlStencilOp(mtlEnum fail, mtlEnum zfail, mtlEnum zpass) { mtl.stencilFail = fail, mtl.stencilZFail = zfail, mtl.stencilZPass = zpass; }
+void mtlViewport(int x, int y, int width, int height)
 {
-  gl.viewport[0] = x, gl.viewport[1] = y, gl.viewport[2] = width, gl.viewport[3] = height;
+  mtl.viewport[0] = x, mtl.viewport[1] = y, mtl.viewport[2] = width, mtl.viewport[3] = height;
 }
-// The renderer never enables GL_SCISSOR_TEST, so the rectangle has no effect.
-void mtlScissor(GLint x, GLint y, GLsizei width, GLsizei height) { (void)x, (void)y, (void)width, (void)height; }
+// The renderer never enables MTL_SCISSOR_TEST, so the rectangle has no effect.
+void mtlScissor(int x, int y, int width, int height) { (void)x, (void)y, (void)width, (void)height; }
 
-void mtlClearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a)
+void mtlClearColor(float r, float g, float b, float a)
 {
-  gl.clearColor[0] = r, gl.clearColor[1] = g, gl.clearColor[2] = b, gl.clearColor[3] = a;
+  mtl.clearColor[0] = r, mtl.clearColor[1] = g, mtl.clearColor[2] = b, mtl.clearColor[3] = a;
 }
-void mtlClearDepthf(GLfloat d) { gl.clearDepth = d; }
-void mtlClearStencil(GLint s) { gl.clearStencil = s; }
+void mtlClearDepthf(float d) { mtl.clearDepth = d; }
+void mtlClearStencil(int s) { mtl.clearStencil = s; }
 
 // Clears the whole attachment: the renderer never enables the scissor test.
-void mtlClear(GLbitfield mask)
+void mtlClear(uint32_t mask)
 {
   if (!ensure_device()) return;
-  if (gl.encoderOpen && gl.encoderFramebuffer == gl.drawFramebuffer && gl.encoderDefault == !gl.drawFramebuffer)
+  if (mtl.encoderOpen && mtl.encoderFramebuffer == mtl.drawFramebuffer && mtl.encoderDefault == !mtl.drawFramebuffer)
     end_pass();
-  gl.pendingClear |= mask & (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  if (mask & GL_COLOR_BUFFER_BIT) memcpy(gl.pendingColor, gl.clearColor, sizeof(gl.pendingColor));
-  if (mask & GL_DEPTH_BUFFER_BIT) gl.pendingDepth = gl.clearDepth;
-  if (mask & GL_STENCIL_BUFFER_BIT) gl.pendingStencil = gl.clearStencil;
+  mtl.pendingClear |= mask & (MTL_COLOR_BUFFER_BIT | MTL_DEPTH_BUFFER_BIT | MTL_STENCIL_BUFFER_BIT);
+  if (mask & MTL_COLOR_BUFFER_BIT) memcpy(mtl.pendingColor, mtl.clearColor, sizeof(mtl.pendingColor));
+  if (mask & MTL_DEPTH_BUFFER_BIT) mtl.pendingDepth = mtl.clearDepth;
+  if (mask & MTL_STENCIL_BUFFER_BIT) mtl.pendingStencil = mtl.clearStencil;
 }
 
-void mtlGetIntegerv(GLenum pname, GLint *data)
+void mtlGetIntegerv(mtlEnum pname, int *data)
 {
   if (!data) return;
   switch (pname) {
-    case GL_VIEWPORT: memcpy(data, gl.viewport, sizeof(gl.viewport)); return;
-    case GL_FRAMEBUFFER_BINDING: *data = (GLint)gl.drawName; return;
-    case GL_READ_FRAMEBUFFER_BINDING: *data = (GLint)gl.readName; return;
-    case GL_RENDERBUFFER_BINDING: *data = (GLint)gl.renderbufferName; return;
-    case GL_SAMPLES: *data = 0; return;
-    case GL_NUM_EXTENSIONS: *data = 0; return;
-    case GL_ACTIVE_TEXTURE: *data = GL_TEXTURE0 + gl.activeUnit; return;
-    case GL_UNPACK_ALIGNMENT: *data = gl.unpackAlignment; return;
-    case GL_TEXTURE_BINDING_2D: {
-      GLMTexture *t = gl.units[gl.activeUnit].bound2D;
+    case MTL_VIEWPORT: memcpy(data, mtl.viewport, sizeof(mtl.viewport)); return;
+    case MTL_FRAMEBUFFER_BINDING: *data = (int)mtl.drawName; return;
+    case MTL_READ_FRAMEBUFFER_BINDING: *data = (int)mtl.readName; return;
+    case MTL_RENDERBUFFER_BINDING: *data = (int)mtl.renderbufferName; return;
+    case MTL_SAMPLES: *data = 0; return;
+    case MTL_NUM_EXTENSIONS: *data = 0; return;
+    case MTL_ACTIVE_TEXTURE: *data = MTL_TEXTURE0 + mtl.activeUnit; return;
+    case MTL_UNPACK_ALIGNMENT: *data = mtl.unpackAlignment; return;
+    case MTL_TEXTURE_BINDING_2D: {
+      OrcaTexture *t = mtl.units[mtl.activeUnit].bound2D;
       *data = 0;
-      for (NSNumber *name in gl.objects[OBJ_TEXTURE])
-        if (gl.objects[OBJ_TEXTURE][name] == t) *data = name.intValue;
+      for (NSNumber *name in mtl.objects[OBJ_TEXTURE])
+        if (mtl.objects[OBJ_TEXTURE][name] == t) *data = name.intValue;
       return;
     }
-    case GL_MAX_TEXTURE_SIZE:
+    case MTL_MAX_TEXTURE_SIZE:
       *data = 8192;
       if (ensure_device()) {
 #if TARGET_OS_OSX
         *data = 16384;
 #else
-        if (@available(iOS 13.0, *)) if ([gl.device supportsFamily:MTLGPUFamilyApple3]) *data = 16384;
+        if (@available(iOS 13.0, *)) if ([mtl.device supportsFamily:MTLGPUFamilyApple3]) *data = 16384;
 #endif
       }
       return;
   }
   *data = 0;
-  set_error(GL_INVALID_ENUM);
+  set_error(MTL_INVALID_ENUM);
 }
 
-GLubyte const *mtlGetString(GLenum name)
+char const *mtlGetString(mtlEnum name)
 {
   switch (name) {
-    case GL_VERSION: return (GLubyte const *)"OpenGL ES 3.0 (ORCA on Metal)";
-    case GL_VENDOR: return (GLubyte const *)"ORCA";
-    case GL_RENDERER: return (GLubyte const *)"Metal";
-    case GL_EXTENSIONS: return (GLubyte const *)"";
+    case MTL_VERSION: return "ORCA on Metal";
+    case MTL_VENDOR: return "ORCA";
+    case MTL_RENDERER: return "Metal";
+    case MTL_EXTENSIONS: return "";
   }
   return NULL;
 }
 
-GLubyte const *mtlGetStringi(GLenum name, GLuint index) { (void)name, (void)index; return NULL; }
+char const *mtlGetStringi(mtlEnum name, uint32_t index) { (void)name, (void)index; return NULL; }
 
-GLenum mtlGetError(void)
+mtlEnum mtlGetError(void)
 {
-  GLenum error = gl.error;
-  gl.error = GL_NO_ERROR;
+  mtlEnum error = mtl.error;
+  mtl.error = MTL_NO_ERROR;
   return error;
 }
 
 #pragma mark - Drawing
 
-static MTLCompareFunction compare_function(GLenum f)
+static MTLCompareFunction compare_function(mtlEnum f)
 {
   switch (f) {
-    case GL_NEVER: return MTLCompareFunctionNever;
-    case GL_LESS: return MTLCompareFunctionLess;
-    case GL_EQUAL: return MTLCompareFunctionEqual;
-    case GL_LEQUAL: return MTLCompareFunctionLessEqual;
-    case GL_GREATER: return MTLCompareFunctionGreater;
-    case GL_NOTEQUAL: return MTLCompareFunctionNotEqual;
-    case GL_GEQUAL: return MTLCompareFunctionGreaterEqual;
+    case MTL_NEVER: return MTLCompareFunctionNever;
+    case MTL_LESS: return MTLCompareFunctionLess;
+    case MTL_EQUAL: return MTLCompareFunctionEqual;
+    case MTL_LEQUAL: return MTLCompareFunctionLessEqual;
+    case MTL_GREATER: return MTLCompareFunctionGreater;
+    case MTL_NOTEQUAL: return MTLCompareFunctionNotEqual;
+    case MTL_GEQUAL: return MTLCompareFunctionGreaterEqual;
     default: return MTLCompareFunctionAlways;
   }
 }
 
-static MTLStencilOperation stencil_operation(GLenum op)
+static MTLStencilOperation stencil_operation(mtlEnum op)
 {
   switch (op) {
-    case GL_ZERO: return MTLStencilOperationZero;
-    case GL_REPLACE: return MTLStencilOperationReplace;
-    case GL_INCR: return MTLStencilOperationIncrementClamp;
-    case GL_DECR: return MTLStencilOperationDecrementClamp;
-    case GL_INVERT: return MTLStencilOperationInvert;
-    case GL_INCR_WRAP: return MTLStencilOperationIncrementWrap;
-    case GL_DECR_WRAP: return MTLStencilOperationDecrementWrap;
+    case MTL_ZERO: return MTLStencilOperationZero;
+    case MTL_REPLACE: return MTLStencilOperationReplace;
+    case MTL_INCR: return MTLStencilOperationIncrementClamp;
+    case MTL_DECR: return MTLStencilOperationDecrementClamp;
+    case MTL_INVERT: return MTLStencilOperationInvert;
+    case MTL_INCR_WRAP: return MTLStencilOperationIncrementWrap;
+    case MTL_DECR_WRAP: return MTLStencilOperationDecrementWrap;
     default: return MTLStencilOperationKeep;
   }
 }
 
-static MTLBlendFactor blend_factor(GLenum f)
+static MTLBlendFactor blend_factor(mtlEnum f)
 {
   switch (f) {
-    case GL_ZERO: return MTLBlendFactorZero;
-    case GL_ONE: return MTLBlendFactorOne;
-    case GL_SRC_COLOR: return MTLBlendFactorSourceColor;
-    case GL_ONE_MINUS_SRC_COLOR: return MTLBlendFactorOneMinusSourceColor;
-    case GL_SRC_ALPHA: return MTLBlendFactorSourceAlpha;
-    case GL_ONE_MINUS_SRC_ALPHA: return MTLBlendFactorOneMinusSourceAlpha;
-    case GL_DST_ALPHA: return MTLBlendFactorDestinationAlpha;
-    case GL_ONE_MINUS_DST_ALPHA: return MTLBlendFactorOneMinusDestinationAlpha;
-    case GL_DST_COLOR: return MTLBlendFactorDestinationColor;
-    case GL_ONE_MINUS_DST_COLOR: return MTLBlendFactorOneMinusDestinationColor;
+    case MTL_ZERO: return MTLBlendFactorZero;
+    case MTL_ONE: return MTLBlendFactorOne;
+    case MTL_SRC_COLOR: return MTLBlendFactorSourceColor;
+    case MTL_ONE_MINUS_SRC_COLOR: return MTLBlendFactorOneMinusSourceColor;
+    case MTL_SRC_ALPHA: return MTLBlendFactorSourceAlpha;
+    case MTL_ONE_MINUS_SRC_ALPHA: return MTLBlendFactorOneMinusSourceAlpha;
+    case MTL_DST_ALPHA: return MTLBlendFactorDestinationAlpha;
+    case MTL_ONE_MINUS_DST_ALPHA: return MTLBlendFactorOneMinusDestinationAlpha;
+    case MTL_DST_COLOR: return MTLBlendFactorDestinationColor;
+    case MTL_ONE_MINUS_DST_COLOR: return MTLBlendFactorOneMinusDestinationColor;
     default: return MTLBlendFactorOne;
   }
 }
 
-static MTLVertexFormat vertex_format(GLint size, GLenum type, GLboolean normalized)
+static MTLVertexFormat vertex_format(int size, mtlEnum type, bool normalized)
 {
   static MTLVertexFormat const floats[] = { MTLVertexFormatFloat, MTLVertexFormatFloat2, MTLVertexFormatFloat3, MTLVertexFormatFloat4 };
   static MTLVertexFormat const halves[] = { MTLVertexFormatHalf, MTLVertexFormatHalf2, MTLVertexFormatHalf3, MTLVertexFormatHalf4 };
   static MTLVertexFormat const ubytesN[] = { MTLVertexFormatUCharNormalized, MTLVertexFormatUChar2Normalized, MTLVertexFormatUChar3Normalized, MTLVertexFormatUChar4Normalized };
   static MTLVertexFormat const bytesN[] = { MTLVertexFormatCharNormalized, MTLVertexFormatChar2Normalized, MTLVertexFormatChar3Normalized, MTLVertexFormatChar4Normalized };
   switch (type) {
-    case GL_FLOAT: return floats[size - 1];
-    case GL_HALF_FLOAT: return halves[size - 1];
-    case GL_UNSIGNED_BYTE:
+    case MTL_FLOAT: return floats[size - 1];
+    case MTL_HALF_FLOAT: return halves[size - 1];
+    case MTL_UNSIGNED_BYTE:
       // Metal converts only normalized integers to a float input.
       if (!normalized) log_once("unnormalized byte attribute read as normalized");
       return ubytesN[size - 1];
-    case GL_BYTE:
+    case MTL_BYTE:
       if (!normalized) log_once("unnormalized byte attribute read as normalized");
       return bytesN[size - 1];
   }
   return MTLVertexFormatInvalid;
 }
 
-static GLsizei type_size(GLenum type)
+static int type_size(mtlEnum type)
 {
-  return type == GL_FLOAT ? 4 : type == GL_HALF_FLOAT ? 2 : 1;
+  return type == MTL_FLOAT ? 4 : type == MTL_HALF_FLOAT ? 2 : 1;
 }
 
 static NSUInteger source_stride(attrib_t const *a)
@@ -1814,13 +1814,13 @@ static NSUInteger source_stride(attrib_t const *a)
 // mesh file) are copied once into elements padded to a multiple of 4 bytes.
 static id<MTLBuffer> padded_buffer(attrib_t const *a)
 {
-  GLMBuffer *b = a->buffer;
+  OrcaBuffer *b = a->buffer;
   NSUInteger stride = source_stride(a), element = (NSUInteger)(a->size * type_size(a->type));
   if (b->padded && b->paddedStride == stride && b->paddedOffset == a->offset && b->paddedElement == element)
     return b->padded;
   NSUInteger count = b->size > a->offset ? (b->size - a->offset + stride - 1) / stride : 0;
   NSUInteger padded = (element + 3) & ~(NSUInteger)3;
-  b->padded = [gl.device newBufferWithLength:MAX(count * padded, 4) options:MTLResourceStorageModeShared];
+  b->padded = [mtl.device newBufferWithLength:MAX(count * padded, 4) options:MTLResourceStorageModeShared];
   uint8_t const *src = (uint8_t const *)b->buffer.contents + a->offset;
   uint8_t *dst = b->padded.contents;
   for (NSUInteger i = 0; i < count; i++)
@@ -1829,25 +1829,25 @@ static id<MTLBuffer> padded_buffer(attrib_t const *a)
   return b->padded;
 }
 
-static id<MTLRenderPipelineState> pipeline_for(GLMProgram *p, targets_t const *t, pipeline_key_t *key)
+static id<MTLRenderPipelineState> pipeline_for(OrcaProgram *p, targets_t const *t, pipeline_key_t *key)
 {
-  if (gl.lastPipeline && !memcmp(&gl.lastKey, key, sizeof(*key))) return gl.lastPipeline;
+  if (mtl.lastPipeline && !memcmp(&mtl.lastKey, key, sizeof(*key))) return mtl.lastPipeline;
   NSData *data = [NSData dataWithBytes:key length:sizeof(*key)];
   id<MTLRenderPipelineState> pso = p->pipelines[data];
   if (!pso) {
     MTLRenderPipelineDescriptor *d = [MTLRenderPipelineDescriptor new];
-    d.vertexFunction = p->functions[GLSL_MSL_VERTEX];
-    d.fragmentFunction = p->functions[GLSL_MSL_FRAGMENT];
+    d.vertexFunction = p->functions[MSL_VERTEX];
+    d.fragmentFunction = p->functions[MSL_FRAGMENT];
     MTLVertexDescriptor *vd = [MTLVertexDescriptor vertexDescriptor];
     for (uint32_t i = 0; i < p->refl->numAttributes; i++) {
       uint32_t l = p->refl->attributes[i].location;
-      NSUInteger index = GLSL_MSL_VERTEX_BUFFER_BASE + l;
+      NSUInteger index = MSL_VERTEX_BUFFER_BASE + l;
       vd.attributes[l].format = key->attrs[l].format;
       vd.attributes[l].offset = 0;
       vd.attributes[l].bufferIndex = index;
       if (key->attrs[l].stride) {
         vd.layouts[index].stride = key->attrs[l].stride;
-      } else {  // a disabled array reads OpenGL's default (0, 0, 0, 1)
+      } else {  // a disabled array reads the default (0, 0, 0, 1)
         vd.layouts[index].stride = 16;
         vd.layouts[index].stepFunction = MTLVertexStepFunctionConstant;
         vd.layouts[index].stepRate = 0;
@@ -1859,45 +1859,45 @@ static id<MTLRenderPipelineState> pipeline_for(GLMProgram *p, targets_t const *t
       c.pixelFormat = t->color.pixelFormat;
       c.writeMask = key->mask;
       c.blendingEnabled = key->blend;
-      c.sourceRGBBlendFactor = c.sourceAlphaBlendFactor = blend_factor(gl.blendSrc);
-      c.destinationRGBBlendFactor = c.destinationAlphaBlendFactor = blend_factor(gl.blendDst);
+      c.sourceRGBBlendFactor = c.sourceAlphaBlendFactor = blend_factor(mtl.blendSrc);
+      c.destinationRGBBlendFactor = c.destinationAlphaBlendFactor = blend_factor(mtl.blendDst);
     }
     if (t->depth) d.depthAttachmentPixelFormat = t->depth.pixelFormat;
     if (t->stencil) d.stencilAttachmentPixelFormat = t->stencil.pixelFormat;
     NSError *error = nil;
-    pso = [gl.device newRenderPipelineStateWithDescriptor:d error:&error];
+    pso = [mtl.device newRenderPipelineStateWithDescriptor:d error:&error];
     if (!pso) {
       axLog("Metal: pipeline: %s", error.localizedDescription.UTF8String);
       return nil;
     }
     p->pipelines[data] = pso;
   }
-  gl.lastPipeline = pso;
-  gl.lastKey = *key;
+  mtl.lastPipeline = pso;
+  mtl.lastKey = *key;
   return pso;
 }
 
 static id<MTLDepthStencilState> depth_state_for(targets_t const *t)
 {
-  if (!t->depth && !t->stencil) return gl.depthDisabled;
+  if (!t->depth && !t->stencil) return mtl.depthDisabled;
   struct {
     uint8_t test, func, write, stencil, sfunc, fail, zfail, zpass;
     uint32_t read, mask;
   } key = { 0 };
-  key.test = gl.depthTest && t->depth;
-  key.func = key.test ? (uint8_t)compare_function(gl.depthFunc) : MTLCompareFunctionAlways;
-  key.write = key.test && gl.depthMask;  // OpenGL writes no depth with the test off
-  key.stencil = gl.stencilTest && t->stencil;
+  key.test = mtl.depthTest && t->depth;
+  key.func = key.test ? (uint8_t)compare_function(mtl.depthFunc) : MTLCompareFunctionAlways;
+  key.write = key.test && mtl.depthMask;  // no depth is written with the test off
+  key.stencil = mtl.stencilTest && t->stencil;
   if (key.stencil) {
-    key.sfunc = (uint8_t)compare_function(gl.stencilFunc);
-    key.fail = (uint8_t)stencil_operation(gl.stencilFail);
-    key.zfail = (uint8_t)stencil_operation(gl.stencilZFail);
-    key.zpass = (uint8_t)stencil_operation(gl.stencilZPass);
-    key.read = gl.stencilReadMask & 0xff;
-    key.mask = gl.stencilWriteMask & 0xff;
+    key.sfunc = (uint8_t)compare_function(mtl.stencilFunc);
+    key.fail = (uint8_t)stencil_operation(mtl.stencilFail);
+    key.zfail = (uint8_t)stencil_operation(mtl.stencilZFail);
+    key.zpass = (uint8_t)stencil_operation(mtl.stencilZPass);
+    key.read = mtl.stencilReadMask & 0xff;
+    key.mask = mtl.stencilWriteMask & 0xff;
   }
   NSData *data = [NSData dataWithBytes:&key length:sizeof(key)];
-  id<MTLDepthStencilState> state = gl.depthStates[data];
+  id<MTLDepthStencilState> state = mtl.depthStates[data];
   if (state) return state;
   MTLDepthStencilDescriptor *d = [MTLDepthStencilDescriptor new];
   d.depthCompareFunction = key.func;
@@ -1912,29 +1912,29 @@ static id<MTLDepthStencilState> depth_state_for(targets_t const *t)
     s.writeMask = key.mask;
     d.frontFaceStencil = d.backFaceStencil = s;
   }
-  return gl.depthStates[data] = [gl.device newDepthStencilStateWithDescriptor:d];
+  return mtl.depthStates[data] = [mtl.device newDepthStencilStateWithDescriptor:d];
 }
 
-static void bind_samplers(GLMProgram *p)
+static void bind_samplers(OrcaProgram *p)
 {
   for (uint32_t i = 0; i < p->refl->numUniforms; i++) {
-    struct glsl_msl_uniform const *u = &p->refl->uniforms[i];
-    if (u->texture[GLSL_MSL_VERTEX] < 0 && u->texture[GLSL_MSL_FRAGMENT] < 0) continue;
-    GLint unit = p->units[i];
-    BOOL cube = u->gltype == GL_SAMPLER_CUBE;
-    GLMTexture *t = unit >= 0 && unit < MAX_TEXTURE_UNITS
-                  ? (cube ? gl.units[unit].boundCube : gl.units[unit].bound2D) : nil;
+    struct msl_uniform const *u = &p->refl->uniforms[i];
+    if (u->texture[MSL_VERTEX] < 0 && u->texture[MSL_FRAGMENT] < 0) continue;
+    int unit = p->units[i];
+    BOOL cube = u->type == MTL_SAMPLER_CUBE;
+    OrcaTexture *t = unit >= 0 && unit < MAX_TEXTURE_UNITS
+                  ? (cube ? mtl.units[unit].boundCube : mtl.units[unit].bound2D) : nil;
     if (!t || !t->texture) t = fallback_texture(cube);
     use(t);
     id<MTLTexture> texture = sampled_texture(t);
     id<MTLSamplerState> sampler = sampler_for(t);
-    if (u->texture[GLSL_MSL_VERTEX] >= 0) {
-      [gl.encoder setVertexTexture:texture atIndex:u->texture[GLSL_MSL_VERTEX]];
-      [gl.encoder setVertexSamplerState:sampler atIndex:u->sampler[GLSL_MSL_VERTEX]];
+    if (u->texture[MSL_VERTEX] >= 0) {
+      [mtl.encoder setVertexTexture:texture atIndex:u->texture[MSL_VERTEX]];
+      [mtl.encoder setVertexSamplerState:sampler atIndex:u->sampler[MSL_VERTEX]];
     }
-    if (u->texture[GLSL_MSL_FRAGMENT] >= 0) {
-      [gl.encoder setFragmentTexture:texture atIndex:u->texture[GLSL_MSL_FRAGMENT]];
-      [gl.encoder setFragmentSamplerState:sampler atIndex:u->sampler[GLSL_MSL_FRAGMENT]];
+    if (u->texture[MSL_FRAGMENT] >= 0) {
+      [mtl.encoder setFragmentTexture:texture atIndex:u->texture[MSL_FRAGMENT]];
+      [mtl.encoder setFragmentSamplerState:sampler atIndex:u->sampler[MSL_FRAGMENT]];
     }
   }
 }
@@ -1942,11 +1942,11 @@ static void bind_samplers(GLMProgram *p)
 // Encodes everything but the draw call itself; NO skips the draw.
 static BOOL prepare_draw(void)
 {
-  GLMProgram *p = gl.program;
-  if (!p || !p->linked || !ensure_device()) return set_error(GL_INVALID_OPERATION), NO;
-  if (gl.cull && gl.cullFace == GL_FRONT_AND_BACK) return NO;
+  OrcaProgram *p = mtl.program;
+  if (!p || !p->linked || !ensure_device()) return set_error(MTL_INVALID_OPERATION), NO;
+  if (mtl.cull && mtl.cullFace == MTL_FRONT_AND_BACK) return NO;
   if (!begin_pass()) return NO;
-  targets_t t = framebuffer_targets(gl.drawFramebuffer);
+  targets_t t = framebuffer_targets(mtl.drawFramebuffer);
 
   pipeline_key_t key;
   memset(&key, 0, sizeof(key));
@@ -1954,11 +1954,11 @@ static BOOL prepare_draw(void)
   key.color = t.color ? (uint32_t)t.color.pixelFormat : 0;
   key.depth = t.depth ? (uint32_t)t.depth.pixelFormat : 0;
   key.stencil = t.stencil ? (uint32_t)t.stencil.pixelFormat : 0;
-  key.blend = gl.blend;
-  key.src = gl.blend ? (uint8_t)blend_factor(gl.blendSrc) : 0;
-  key.dst = gl.blend ? (uint8_t)blend_factor(gl.blendDst) : 0;
-  key.mask = gl.colorMask;
-  GLMVertexArray *va = gl.vertexArray;
+  key.blend = mtl.blend;
+  key.src = mtl.blend ? (uint8_t)blend_factor(mtl.blendSrc) : 0;
+  key.dst = mtl.blend ? (uint8_t)blend_factor(mtl.blendDst) : 0;
+  key.mask = mtl.colorMask;
+  OrcaVertexArray *va = mtl.vertexArray;
   for (uint32_t i = 0; i < p->refl->numAttributes; i++) {
     uint32_t l = p->refl->attributes[i].location;
     attrib_t const *a = &va->attribs[l];
@@ -1969,7 +1969,7 @@ static BOOL prepare_draw(void)
     } else {
       int columns;
       BOOL integer;
-      int n = components(p->refl->attributes[i].gltype, &columns, &integer);
+      int n = components(p->refl->attributes[i].type, &columns, &integer);
       static MTLVertexFormat const floats[] = { MTLVertexFormatFloat, MTLVertexFormatFloat, MTLVertexFormatFloat2,
                                                 MTLVertexFormatFloat3, MTLVertexFormatFloat4 };
       key.attrs[l].format = (uint16_t)floats[MAX(0, MIN(n, 4))];
@@ -1978,80 +1978,79 @@ static BOOL prepare_draw(void)
   }
   id<MTLRenderPipelineState> pso = pipeline_for(p, &t, &key);
   if (!pso) return NO;
-  [gl.encoder setRenderPipelineState:pso];
-  [gl.encoder setDepthStencilState:depth_state_for(&t)];
-  [gl.encoder setStencilReferenceValue:(uint32_t)gl.stencilRef];
-  [gl.encoder setCullMode:!gl.cull ? MTLCullModeNone : gl.cullFace == GL_FRONT ? MTLCullModeFront : MTLCullModeBack];
-  // OpenGL's default counter-clockwise front faces; the Y flip of offscreen
-  // targets mirrors the winding.
-  [gl.encoder setFrontFacingWinding:t.flipped ? MTLWindingClockwise : MTLWindingCounterClockwise];
+  [mtl.encoder setRenderPipelineState:pso];
+  [mtl.encoder setDepthStencilState:depth_state_for(&t)];
+  [mtl.encoder setStencilReferenceValue:(uint32_t)mtl.stencilRef];
+  [mtl.encoder setCullMode:!mtl.cull ? MTLCullModeNone : mtl.cullFace == MTL_FRONT ? MTLCullModeFront : MTLCullModeBack];
+  // Front faces are counter-clockwise; the Y flip of offscreen targets mirrors the winding.
+  [mtl.encoder setFrontFacingWinding:t.flipped ? MTLWindingClockwise : MTLWindingCounterClockwise];
 
   id<MTLTexture> target = t.color ? t.color : t.depth;
   double height = target.height;
-  MTLViewport vp = { gl.viewport[0], t.flipped ? gl.viewport[1] : height - gl.viewport[1] - gl.viewport[3],
-                     gl.viewport[2], gl.viewport[3], 0, 1 };
-  [gl.encoder setViewport:vp];
+  MTLViewport vp = { mtl.viewport[0], t.flipped ? mtl.viewport[1] : height - mtl.viewport[1] - mtl.viewport[3],
+                     mtl.viewport[2], mtl.viewport[3], 0, 1 };
+  [mtl.encoder setViewport:vp];
 
   if (p->flipY >= 0) {
-    struct glsl_msl_uniform const *u = &p->refl->uniforms[p->flipY];
+    struct msl_uniform const *u = &p->refl->uniforms[p->flipY];
     float flip = t.flipped ? -1 : 1;
-    if (u->offset[GLSL_MSL_VERTEX] >= 0) memcpy(p->data[GLSL_MSL_VERTEX] + u->offset[GLSL_MSL_VERTEX], &flip, 4);
+    if (u->offset[MSL_VERTEX] >= 0) memcpy(p->data[MSL_VERTEX] + u->offset[MSL_VERTEX], &flip, 4);
   }
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+  for (int s = 0; s < MSL_STAGES; s++) {
     if (!p->refl->blockSize[s]) continue;
-    if (s == GLSL_MSL_VERTEX)
-      [gl.encoder setVertexBytes:p->data[s] length:p->refl->blockSize[s] atIndex:GLSL_MSL_UNIFORM_BUFFER];
+    if (s == MSL_VERTEX)
+      [mtl.encoder setVertexBytes:p->data[s] length:p->refl->blockSize[s] atIndex:MSL_UNIFORM_BUFFER];
     else
-      [gl.encoder setFragmentBytes:p->data[s] length:p->refl->blockSize[s] atIndex:GLSL_MSL_UNIFORM_BUFFER];
+      [mtl.encoder setFragmentBytes:p->data[s] length:p->refl->blockSize[s] atIndex:MSL_UNIFORM_BUFFER];
   }
   for (uint32_t i = 0; i < p->refl->numAttributes; i++) {
     uint32_t l = p->refl->attributes[i].location;
     attrib_t const *a = &va->attribs[l];
-    NSUInteger index = GLSL_MSL_VERTEX_BUFFER_BASE + l;
+    NSUInteger index = MSL_VERTEX_BUFFER_BASE + l;
     if (a->enabled && a->buffer && a->buffer->buffer && source_stride(a) % 4)
-      [gl.encoder setVertexBuffer:padded_buffer(a) offset:0 atIndex:index];
+      [mtl.encoder setVertexBuffer:padded_buffer(a) offset:0 atIndex:index];
     else if (a->enabled && a->buffer && a->buffer->buffer)
-      [gl.encoder setVertexBuffer:a->buffer->buffer offset:a->offset atIndex:index];
+      [mtl.encoder setVertexBuffer:a->buffer->buffer offset:a->offset atIndex:index];
     else
-      [gl.encoder setVertexBuffer:gl.constantAttribute offset:0 atIndex:index];
+      [mtl.encoder setVertexBuffer:mtl.constantAttribute offset:0 atIndex:index];
   }
   bind_samplers(p);
   return YES;
 }
 
-static MTLPrimitiveType primitive(GLenum mode, BOOL *ok)
+static MTLPrimitiveType primitive(mtlEnum mode, BOOL *ok)
 {
   *ok = YES;
   switch (mode) {
-    case GL_POINTS: return MTLPrimitiveTypePoint;
-    case GL_LINES: return MTLPrimitiveTypeLine;
-    case GL_LINE_STRIP: return MTLPrimitiveTypeLineStrip;
-    case GL_TRIANGLES: return MTLPrimitiveTypeTriangle;
-    case GL_TRIANGLE_STRIP: return MTLPrimitiveTypeTriangleStrip;
+    case MTL_POINTS: return MTLPrimitiveTypePoint;
+    case MTL_LINES: return MTLPrimitiveTypeLine;
+    case MTL_LINE_STRIP: return MTLPrimitiveTypeLineStrip;
+    case MTL_TRIANGLES: return MTLPrimitiveTypeTriangle;
+    case MTL_TRIANGLE_STRIP: return MTLPrimitiveTypeTriangleStrip;
   }
   *ok = NO;
   return MTLPrimitiveTypeTriangle;
 }
 
-void mtlDrawArrays(GLenum mode, GLint first, GLsizei count)
+void mtlDrawArrays(mtlEnum mode, int first, int count)
 {
   BOOL ok;
   MTLPrimitiveType type = primitive(mode, &ok);
-  if (!ok) return set_error(GL_INVALID_ENUM);
+  if (!ok) return set_error(MTL_INVALID_ENUM);
   if (count <= 0 || !prepare_draw()) return;
-  [gl.encoder drawPrimitives:type vertexStart:first vertexCount:count];
+  [mtl.encoder drawPrimitives:type vertexStart:first vertexCount:count];
 }
 
-void mtlDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indices)
+void mtlDrawElements(mtlEnum mode, int count, mtlEnum type, void const *indices)
 {
   BOOL ok;
   MTLPrimitiveType prim = primitive(mode, &ok);
-  if (!ok || (type != GL_UNSIGNED_INT && type != GL_UNSIGNED_SHORT)) return set_error(GL_INVALID_ENUM);
-  GLMBuffer *elements = gl.vertexArray->elements;
-  if (!elements || !elements->buffer) return set_error(GL_INVALID_OPERATION);
+  if (!ok || (type != MTL_UNSIGNED_INT && type != MTL_UNSIGNED_SHORT)) return set_error(MTL_INVALID_ENUM);
+  OrcaBuffer *elements = mtl.vertexArray->elements;
+  if (!elements || !elements->buffer) return set_error(MTL_INVALID_OPERATION);
   if (count <= 0 || !prepare_draw()) return;
-  [gl.encoder drawIndexedPrimitives:prim indexCount:count
-                          indexType:type == GL_UNSIGNED_INT ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16
+  [mtl.encoder drawIndexedPrimitives:prim indexCount:count
+                          indexType:type == MTL_UNSIGNED_INT ? MTLIndexTypeUInt32 : MTLIndexTypeUInt16
                         indexBuffer:elements->buffer indexBufferOffset:(NSUInteger)(uintptr_t)indices];
 }
 
@@ -2059,14 +2058,14 @@ void mtlDrawElements(GLenum mode, GLsizei count, GLenum type, void const *indice
 
 void mtlFlush(void)
 {
-  if (!gl.device) return;
+  if (!mtl.device) return;
   flush_pending_clear();
   commit(NO);
 }
 
 void mtlFinish(void)
 {
-  if (!gl.device) return;
+  if (!mtl.device) return;
   flush_pending_clear();
   commit(YES);
 }
@@ -2075,27 +2074,27 @@ void mtlFinish(void)
 void mtlBeginFrame(void)
 {
 #if TARGET_OS_OSX
-  if (!gl.framePool) gl.framePool = objc_autoreleasePoolPush();
+  if (!mtl.framePool) mtl.framePool = objc_autoreleasePoolPush();
 #endif
 }
 
 void mtlPresent(void)
 {
-  if (gl.device) {
-    if (!gl.drawFramebuffer) flush_pending_clear();
+  if (mtl.device) {
+    if (!mtl.drawFramebuffer) flush_pending_clear();
     end_pass();
 #if TARGET_OS_IPHONE
-    // iOS refuses GPU work from a background app, as OpenGL ES presents were.
+    // iOS refuses GPU work from a background app.
     if (UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-      gl.drawable = nil;
-      gl.cb = nil;
+      mtl.drawable = nil;
+      mtl.cb = nil;
     }
 #endif
-    if (gl.drawable) {
-      [command_buffer() presentDrawable:gl.drawable];
-      gl.drawable = nil;
+    if (mtl.drawable) {
+      [command_buffer() presentDrawable:mtl.drawable];
+      mtl.drawable = nil;
     }
     commit(NO);
   }
-  if (gl.framePool) objc_autoreleasePoolPop(gl.framePool), gl.framePool = NULL;
+  if (mtl.framePool) objc_autoreleasePoolPop(mtl.framePool), mtl.framePool = NULL;
 }

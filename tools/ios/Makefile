@@ -59,8 +59,7 @@ PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/u
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_scroll.o ios_accessibility.o)
 ifeq ($(RENDERER),metal)
-# GLSL is translated to MSL when a program links; dependencies.py builds
-# glslang, SPIRV-Cross and the translator into libglslmsl.a.
+# The Metal renderer is the one unit compiled with ARC.
 IOS_OBJECTS += $(ROOT)/obj/source/renderer/metal/metal.o
 endif
 LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts -framework CoreLocation -framework BackgroundTasks

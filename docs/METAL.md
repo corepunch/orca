@@ -1,11 +1,13 @@
 # Metal renderer
 
-iOS and macOS builds render with Metal. The renderer itself is unchanged: it
-still issues OpenGL ES 3.0 calls, and `source/renderer/metal/gl_metal.m`
-implements exactly that subset on Metal. Apple builds include
-`source/renderer/metal/gl_metal.h` in place of a system OpenGL header and the
-engine links no OpenGL framework, so a renderer change that calls something
-outside the subset fails to link rather than silently drawing nothing. (The
+iOS and macOS builds render with Metal. The renderer front end
+(`source/renderer/r_*.c`) is written against an OpenGL ES 3.0 subset; on Metal
+builds `r_local.h` maps that vocabulary (`gl*` calls, `GL*` types and `GL_*`
+constants) to the Metal backend's own `mtl*` functions, `mtlEnum` and `MTL_*`
+constants. The backend, `source/renderer/metal/metal.h` and `metal.m`, carries
+no GL naming and includes no OpenGL header, and the engine links no OpenGL
+framework, so a renderer change that uses something outside the subset fails
+to compile rather than silently drawing nothing. (The
 macOS platform library still links OpenGL for its `RENDERER=gl` code, which a
 Metal build compiles but never calls.)
 
@@ -24,43 +26,39 @@ OpenGL ES on iOS presents through `CAEAGLLayer`, which displays at most about
 platform library. With `AX_METAL`, `axCreateWindow` backs the window with a
 `CAMetalLayer` instead of an OpenGL view, `axGetMetalLayer` returns it, and
 `axMakeCurrentContext`, `axBeginPaint`, `axBindFramebuffer` and `axEndPaint`
-do nothing. `R_EndFrame` calls `GLMTL_Present`, which presents the drawable
+do nothing. `R_EndFrame` calls `mtlPresent`, which presents the drawable
 and commits the frame. A macOS offscreen surface (`axCreateSurface`, used by
 the editor's Preview) has no layer; the default framebuffer is then a texture
 of `axGetSize` times `axGetScaling` that `glReadPixels` reads.
 
-## Shaders: GLSL is translated when a program links
+## Shaders: hand-written MSL with reflection tables
 
-Shaders, built-in and custom, stay GLSL. `glLinkProgram` passes both stages to
-`GLSL_TranslateProgram` (`source/renderer/metal/glsl_msl.cpp`):
+The Metal backend compiles no GLSL. `source/renderer/metal/r_msl_shaders.h`
+holds the Metal Shading Language source of every built-in shader and a
+`struct msl_program` reflection table for it (`msl_program.h`): the entry
+points, each uniform's byte offset, array and matrix strides in each stage's
+uniform block, each sampler's `texture(n)`/`sampler(n)` pair and each vertex
+attribute's location.
 
-1. glslang compiles and links the two stages to SPIR-V with relaxed Vulkan
-   rules. Loose uniforms are gathered into one uniform block, the same in both
-   stages, and inputs, outputs and samplers get locations and bindings.
-   `#version 300 es` is compiled as `310 es`, the oldest version glslang
-   accepts for SPIR-V.
-2. SPIRV-Cross writes MSL for each stage, with the uniform block at
-   `buffer(0)` and each sampler at a `texture(n)`/`sampler(n)` pair.
-3. Its reflection gives each uniform's byte offset, array and matrix strides
-   in each stage, and each vertex input's location.
-4. `MTLDevice newLibraryWithSource:` compiles the MSL. Metal caches compiled
-   source between launches.
+The renderer labels a program with its shader's name before linking
+(`mtlProgramLabel`); `mtlLinkProgram` looks the table up by that name and
+compiles the MSL with `MTLDevice newLibraryWithSource:`. Metal caches compiled
+source between launches. A program without a table, or whose MSL fails to
+compile, reports the reason through `glGetProgramInfoLog`, as a GLSL link
+error would. Only the built-in shaders have tables: a custom GLSL `Shader`
+resource does not link on a Metal build.
 
-A shader that fails to translate reports the glslang or Metal compiler message
-through `glGetProgramInfoLog`, as an OpenGL link error would, and the engine
-falls back to its error shader.
+The tables come from the offline translator `GLSL_TranslateProgram`
+(`source/renderer/metal/glsl_msl.cpp`: glslang to SPIR-V, SPIRV-Cross to MSL),
+which the engine itself never calls. `make test-glsl-msl`
+runs it on every built-in shader, a lit shader with the lighting
+helpers, and `apps/octopus/Shaders/Gradient.xml`, for both iOS and macOS;
+`GLSL_MSL_DUMP="UI Shader (iOS)" build/bin/test_glsl_msl` prints the generated
+MSL of the named shader.
 
-`make test-glsl-msl` runs the translation on any host: every built-in shader,
-a lit shader with the lighting helpers, and `apps/octopus/Shaders/Gradient.xml`,
-for both iOS and macOS. `GLSL_MSL_DUMP="UI Shader (iOS)" build/bin/test_glsl_msl`
-prints the generated MSL of the named shader.
+## How the renderer's calls map to Metal
 
-Custom shaders need no changes. Not supported, as in the OpenGL renderer:
-user-declared uniform blocks, struct uniforms and sampler arrays.
-
-## How the OpenGL calls map to Metal
-
-- **Objects** are Objective-C objects in name tables; `gl_metal.m` is
+- **Objects** are Objective-C objects in name tables; `metal.m` is
   compiled with ARC.
 - **Render passes** start at the first draw on the bound framebuffer. A
   `glClear` before it becomes the pass's load action; a `glClear` in an open
@@ -98,7 +96,7 @@ user-declared uniform blocks, struct uniforms and sampler arrays.
 - **Clears** are load actions and ignore the write masks; `R_ClearScreen`
   opens them before clearing.
 - **macOS frames** run in an autorelease pool from `R_BeginFrame` to
-  `GLMTL_Present`, since the engine loop has none; iOS frames use the display
+  `mtlPresent`, since the engine loop has none; iOS frames use the display
   link's. On iOS a frame painted in the background is dropped, not presented.
 - **Formats.** Depth-stencil buffers are `Depth32Float_Stencil8`. ASTC 4x4
   is supported where Metal has it; S3TC (DDS) only on Macs and on iPads that
@@ -106,9 +104,7 @@ user-declared uniform blocks, struct uniforms and sampler arrays.
 
 ## Verification status
 
-The OpenGL renderer's own tests are unchanged. `make test-glsl-msl` runs
-everywhere. `gl_metal.m` and the Metal platform paths were written without a
-Mac and have not yet been compiled against Apple's SDK or run. On a Mac, check:
+The OpenGL renderer's own tests are unchanged. On a Mac, check:
 
 1. `make` and `make test-macos-offscreen` (clears and reads back an offscreen
    surface through the Metal layer), then `make test-macos-retina`.

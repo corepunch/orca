@@ -283,8 +283,8 @@ The renderer prepends a version preamble to every GLSL shader at load time:
 | WebGL 2 / QNX / iOS | `#version 300 es` |
 
 This is handled by `Shader_AssembleSource` in `source/renderer/r_shader.c`. Add `__EMSCRIPTEN__` or `__QNX__` guards there when adding platform-specific shader features.
-On Apple platforms the assembled GLSL is translated to MSL when the program
-links; see [Metal renderer](METAL.md).
+Metal builds compile no GLSL: a program uses the hand-written MSL of the
+built-in shader with its name; see [Metal renderer](METAL.md).
 
 ---
 

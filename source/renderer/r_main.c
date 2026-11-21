@@ -958,7 +958,7 @@ R_BeginFrame(struct color color)
   axGetSize(&size);
   axBeginPaint();
 #if ORCA_METAL
-  GLMTL_BeginFrame();
+  mtlBeginFrame();
   R_BindDefaultFramebuffer();
 #endif
 
@@ -994,7 +994,7 @@ R_EndFrame(void)
   }
 
 #if ORCA_METAL
-  GLMTL_Present();
+  mtlPresent();
 #else
   glFlush();
 #endif
