@@ -28,12 +28,12 @@ static void check_drawable(RetinaView *view, uint32_t width, uint32_t height, fl
   assert(fabs(view.bounds.size.height - height) < 0.01);
   assert(fabsf(axGetScaling() - scale) < 0.01f);
   assert(R_BeginFrame((struct color){0, 0, 0, 1}) >= 0);
-  GLint viewport[4];
-  mtlGetIntegerv(GL_VIEWPORT, viewport);
+  int viewport[4];
+  mtlGetIntegerv(MTL_VIEWPORT, viewport);
   assert(viewport[0] == 0 && viewport[1] == 0);
   assert(viewport[2] == lroundf(width * scale));
   assert(viewport[3] == lroundf(height * scale));
-  assert(mtlGetError() == GL_NO_ERROR);
+  assert(mtlGetError() == MTL_NO_ERROR);
 #if ORCA_METAL
   CGSize drawable = ((CAMetalLayer *)view.layer).drawableSize;
   assert(lround(drawable.width) == lroundf(width * scale));
@@ -99,7 +99,7 @@ int main(void)
     assert(axGetMetalLayer() == (__bridge void *)view.layer);
 #else
     assert(view.wantsBestResolutionOpenGLSurface);
-    assert(view.openGLContext && mtlGetString(GL_VERSION));
+    assert(view.openGLContext && mtlGetString(MTL_VERSION));
 #endif
     float backing = window.backingScaleFactor;
     check_drawable(view, 400, 300, backing);

@@ -1,5 +1,5 @@
 // GLSL -> SPIR-V (glslang) -> MSL (SPIRV-Cross), with the reflection the
-// Metal backend's OpenGL ES layer needs. See glsl_msl.h.
+// Metal backend needs. See glsl_msl.h.
 
 #include "glsl_msl.h"
 
@@ -69,8 +69,8 @@ prepare(char const *source, bool vertex)
   if (!vertex) return s;
   static std::regex const main_decl("\\bvoid[ \t\r\n]+main[ \t\r\n]*\\(");
   s = std::regex_replace(s, main_decl, "void orca_main(");
-  s += "\nuniform float " GLSL_MSL_FLIP_Y ";\n"
-       "void main() { orca_main(); gl_Position.y *= " GLSL_MSL_FLIP_Y "; }\n";
+  s += "\nuniform float " MSL_FLIP_Y ";\n"
+       "void main() { orca_main(); gl_Position.y *= " MSL_FLIP_Y "; }\n";
   return s;
 }
 
@@ -82,16 +82,16 @@ copy(std::string const &s)
   return p;
 }
 
-glsl_msl_uniform *
-find_uniform(glsl_msl_program *out, std::string const &name)
+msl_uniform *
+find_uniform(msl_program *out, std::string const &name)
 {
   for (uint32_t i = 0; i < out->numUniforms; i++)
     if (name == out->uniforms[i].name) return &out->uniforms[i];
-  if (out->numUniforms >= GLSL_MSL_MAX_UNIFORMS || name.size() >= GLSL_MSL_NAME) return nullptr;
-  glsl_msl_uniform *u = &out->uniforms[out->numUniforms++];
+  if (out->numUniforms >= MSL_MAX_UNIFORMS || name.size() >= MSL_MAX_NAME) return nullptr;
+  msl_uniform *u = &out->uniforms[out->numUniforms++];
   std::memset(u, 0, sizeof(*u));
   std::strcpy(u->name, name.c_str());
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) u->offset[s] = u->texture[s] = u->sampler[s] = -1;
+  for (int s = 0; s < MSL_STAGES; s++) u->offset[s] = u->texture[s] = u->sampler[s] = -1;
   return u;
 }
 
@@ -100,12 +100,12 @@ find_uniform(glsl_msl_program *out, std::string const &name)
 using declared_types = std::map<std::string, uint32_t>;
 
 bool
-translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
+translate_stage(std::vector<uint32_t> spirv, msl_stage stage,
                 glsl_msl_platform platform, declared_types const &declared,
-                glsl_msl_program *out, std::string &log)
+                msl_program *out, std::string &log)
 {
   spirv_cross::CompilerMSL msl(std::move(spirv));
-  spv::ExecutionModel model = stage == GLSL_MSL_VERTEX ? spv::ExecutionModelVertex
+  spv::ExecutionModel model = stage == MSL_VERTEX ? spv::ExecutionModelVertex
                                                        : spv::ExecutionModelFragment;
   auto options = msl.get_msl_options();
   options.platform = platform == GLSL_MSL_IOS ? spirv_cross::CompilerMSL::Options::iOS
@@ -123,7 +123,7 @@ translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
   block.stage = model;
   block.desc_set = kBlockSet;
   block.binding = kBlockBinding;
-  block.msl_buffer = GLSL_MSL_UNIFORM_BUFFER;
+  block.msl_buffer = MSL_UNIFORM_BUFFER;
   msl.add_msl_resource_binding(block);
 
   for (auto const &ub : res.uniform_buffers) {
@@ -139,10 +139,10 @@ translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
         log += "struct uniform " + msl.get_member_name(ub.base_type_id, i) + " is not supported\n";
         continue;
       }
-      glsl_msl_uniform *u = find_uniform(out, msl.get_member_name(ub.base_type_id, i));
+      msl_uniform *u = find_uniform(out, msl.get_member_name(ub.base_type_id, i));
       if (!u) return log += "too many uniforms\n", false;
       auto it = declared.find(u->name);
-      u->gltype = it != declared.end() ? it->second : gl_type(mt);
+      u->type = it != declared.end() ? it->second : gl_type(mt);
       u->arraySize = mt.array.empty() ? 1 : mt.array[0];
       u->offset[stage] = (int32_t)msl.type_struct_member_offset(type, i);
       u->arrayStride[stage] = mt.array.empty() ? 0 : msl.type_struct_member_array_stride(type, i);
@@ -152,10 +152,10 @@ translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
 
   uint32_t slot = 0;
   for (auto const &image : res.sampled_images) {
-    glsl_msl_uniform *u = find_uniform(out, msl.get_name(image.id));
+    msl_uniform *u = find_uniform(out, msl.get_name(image.id));
     if (!u) return log += "too many uniforms\n", false;
     spirv_cross::SPIRType const &t = msl.get_type(image.type_id);
-    u->gltype = gl_type(t);
+    u->type = gl_type(t);
     u->arraySize = t.array.empty() ? 1 : t.array[0];
     if (u->arraySize != 1) return log += std::string("sampler array ") + u->name + " is not supported\n", false;
     spirv_cross::MSLResourceBinding b{};
@@ -167,21 +167,21 @@ translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
     u->texture[stage] = u->sampler[stage] = (int32_t)slot++;
   }
 
-  if (stage == GLSL_MSL_VERTEX) {
+  if (stage == MSL_VERTEX) {
     for (auto const &input : res.stage_inputs) {
-      if (out->numAttributes >= GLSL_MSL_MAX_ATTRIBUTES) return log += "too many attributes\n", false;
+      if (out->numAttributes >= MSL_MAX_ATTRIBUTES) return log += "too many attributes\n", false;
       uint32_t location = msl.get_decoration(input.id, spv::DecorationLocation);
-      if (location >= GLSL_MSL_MAX_ATTRIBUTES) return log += "attribute location out of range\n", false;
-      glsl_msl_attribute *a = &out->attributes[out->numAttributes++];
+      if (location >= MSL_MAX_ATTRIBUTES) return log += "attribute location out of range\n", false;
+      msl_attribute *a = &out->attributes[out->numAttributes++];
       std::snprintf(a->name, sizeof(a->name), "%s", msl.get_name(input.id).c_str());
       a->location = location;
-      a->gltype = gl_type(msl.get_type(input.type_id));
+      a->type = gl_type(msl.get_type(input.type_id));
     }
   }
 
   std::string source = msl.compile();
   out->source[stage] = copy(source);
-  std::snprintf(out->entry[stage], GLSL_MSL_NAME, "%s",
+  std::snprintf(out->entry[stage], MSL_MAX_NAME, "%s",
                 msl.get_cleansed_entry_point_name("main", model).c_str());
   return out->source[stage] != nullptr;
 }
@@ -190,20 +190,20 @@ translate_stage(std::vector<uint32_t> spirv, glsl_msl_stage stage,
 
 extern "C" int
 GLSL_TranslateProgram(char const *vertex, char const *fragment,
-                      glsl_msl_platform platform, glsl_msl_program *out)
+                      glsl_msl_platform platform, msl_program *out)
 {
   std::memset(out, 0, sizeof(*out));
   std::call_once(glslang_once, [] { glslang::InitializeProcess(); });
   std::string log;
   bool ok = false;
   try {
-    std::string sources[GLSL_MSL_STAGES] = { prepare(vertex, true), prepare(fragment, false) };
-    EShLanguage const languages[GLSL_MSL_STAGES] = { EShLangVertex, EShLangFragment };
+    std::string sources[MSL_STAGES] = { prepare(vertex, true), prepare(fragment, false) };
+    EShLanguage const languages[MSL_STAGES] = { EShLangVertex, EShLangFragment };
     EShMessages const messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
     std::vector<std::unique_ptr<glslang::TShader>> shaders;
     glslang::TProgram program;
     bool parsed = true;
-    for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+    for (int s = 0; s < MSL_STAGES; s++) {
       auto shader = std::make_unique<glslang::TShader>(languages[s]);
       char const *text = sources[s].c_str();
       shader->setStrings(&text, 1);
@@ -217,7 +217,7 @@ GLSL_TranslateProgram(char const *vertex, char const *fragment,
       shader->setAutoMapBindings(true);
       shader->setAutoMapLocations(true);
       if (!shader->parse(GetDefaultResources(), 100, false, messages)) {
-        log += (s == GLSL_MSL_VERTEX ? "vertex: " : "fragment: ");
+        log += (s == MSL_VERTEX ? "vertex: " : "fragment: ");
         log += shader->getInfoLog();
         parsed = false;
       }
@@ -238,12 +238,12 @@ GLSL_TranslateProgram(char const *vertex, char const *fragment,
           if (r.glDefineType) declared[name] = (uint32_t)r.glDefineType;
         }
       }
-      for (int s = 0; ok && s < GLSL_MSL_STAGES; s++) {
+      for (int s = 0; ok && s < MSL_STAGES; s++) {
         std::vector<uint32_t> spirv;
         glslang::SpvOptions spv_options;
         spv_options.disableOptimizer = true;
         glslang::GlslangToSpv(*program.getIntermediate(languages[s]), spirv, &spv_options);
-        ok = translate_stage(std::move(spirv), (glsl_msl_stage)s, platform, declared, out, log);
+        ok = translate_stage(std::move(spirv), (msl_stage)s, platform, declared, out, log);
       }
     }
   } catch (std::exception const &e) {
@@ -255,9 +255,9 @@ GLSL_TranslateProgram(char const *vertex, char const *fragment,
 }
 
 extern "C" void
-GLSL_FreeProgram(glsl_msl_program *program)
+GLSL_FreeProgram(msl_program *program)
 {
-  for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+  for (int s = 0; s < MSL_STAGES; s++) {
     std::free(program->source[s]);
     program->source[s] = nullptr;
   }

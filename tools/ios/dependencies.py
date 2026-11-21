@@ -51,7 +51,7 @@ def build_shaders(sdk, prefix, root, flags):
                                      cwd=ROOT, text=True).splitlines()
     version, sources = config[0].split(), config[1].split()
     own = [ROOT / 'tools/shaders/shaders.mk', ROOT / 'source/renderer/metal/glsl_msl.cpp',
-           ROOT / 'source/renderer/metal/glsl_msl.h']
+           ROOT / 'source/renderer/metal/glsl_msl.h', ROOT / 'source/renderer/metal/msl_program.h']
     stamp = prefix / 'shaders.json'
     settings = json.dumps({'flags': flags, 'sources': sources, 'own': hashlib.sha256(
         b''.join(path.read_bytes() for path in own)).hexdigest(), 'pinned': [

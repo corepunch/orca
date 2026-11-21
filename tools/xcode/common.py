@@ -55,7 +55,7 @@ def unity_sources(root=ROOT):
     units['native_modules.m'] = [path for name in config['MODULES']
                                   for path in sorted((root / 'source' / name).rglob('*.m'))
                                   if metal not in path.parents]
-    # The Metal renderer's OpenGL ES layer is the one unit compiled with ARC.
+    # The Metal renderer is the one unit compiled with ARC.
     units[METAL_UNIT] = sorted(metal.glob('*.m'))
     return units
 

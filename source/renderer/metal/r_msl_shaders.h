@@ -12,7 +12,7 @@
 #ifndef R_MSL_SHADERS_H
 #define R_MSL_SHADERS_H
 
-#include "glsl_msl.h"
+#include "msl_program.h"
 
 // ============================================================  Default Shader
 // blockSize=120  attrs: a_position[0] a_normal[1] a_texcoord0[2] a_color[3]
@@ -69,7 +69,7 @@ static const char k_msl_fs_default[] =
   "    return u_texture.sample(u_textureSampler, in.v_texcoord0) * in.v_color * u.u_opacity;\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_default = {
+static struct msl_program k_refl_default = {
   .source = {(char *)k_msl_vs_default, (char *)k_msl_fs_default},
   .entry = {"main0","main0"},
   .blockSize = {120,120},
@@ -163,7 +163,7 @@ static const char k_msl_fs_ui[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_ui = {
+static struct msl_program k_refl_ui = {
   .source = {(char *)k_msl_vs_ui, (char *)k_msl_fs_ui},
   .entry = {"main0","main0"},
   .blockSize = {196,196},
@@ -267,7 +267,7 @@ static const char k_msl_fs_charset[] =
   "    return step(fr.y, 1.0) * mix(bg, fg, t) * u.u_opacity;\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_charset = {
+static struct msl_program k_refl_charset = {
   .source = {(char *)k_msl_vs_charset, (char *)k_msl_fs_charset},
   .entry = {"main0","main0"},
   .blockSize = {204,204},
@@ -350,7 +350,7 @@ static const char k_msl_fs_cinematic[] =
   "    return u_cinematicPalette.sample(u_cinematicPaletteSampler, float2(col.r, 0.5)) * u.u_opacity;\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_cinematic = {
+static struct msl_program k_refl_cinematic = {
   .source = {(char *)k_msl_vs_cinematic, (char *)k_msl_fs_cinematic},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
@@ -427,7 +427,7 @@ static const char k_msl_fs_ninepatch[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_ninepatch = {
+static struct msl_program k_refl_ninepatch = {
   .source = {(char *)k_msl_vs_ninepatch, (char *)k_msl_fs_ninepatch},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -487,7 +487,7 @@ static const char k_msl_fs_vertexcolor[] =
   "    return u.u_color * u.u_opacity;\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_vertexcolor = {
+static struct msl_program k_refl_vertexcolor = {
   .source = {(char *)k_msl_vs_vertexcolor, (char *)k_msl_fs_vertexcolor},
   .entry = {"main0","main0"},
   .blockSize = {100,100},
@@ -541,7 +541,7 @@ static const char k_msl_fs_error[] =
   "    return float4(1.0, 0.0, 1.0, u.u_opacity);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_error = {
+static struct msl_program k_refl_error = {
   .source = {(char *)k_msl_vs_error, (char *)k_msl_fs_error},
   .entry = {"main0","main0"},
   .blockSize = {72,72},
@@ -632,7 +632,7 @@ static const char k_msl_fs_button[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_button = {
+static struct msl_program k_refl_button = {
   .source = {(char *)k_msl_vs_button, (char *)k_msl_fs_button},
   .entry = {"main0","main0"},
   .blockSize = {208,208},
@@ -730,7 +730,7 @@ static const char k_msl_fs_roundedbox[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_roundedbox = {
+static struct msl_program k_refl_roundedbox = {
   .source = {(char *)k_msl_vs_roundedbox, (char *)k_msl_fs_roundedbox},
   .entry = {"main0","main0"},
   .blockSize = {224,224},
@@ -861,7 +861,7 @@ static const char k_msl_fs_blur_v[] =
   "    return float4(a,a,a,a) * u.u_opacity;\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_blur_h = {
+static struct msl_program k_refl_blur_h = {
   .source = {(char *)k_msl_blur_common_vs, (char *)k_msl_fs_blur_h},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -885,7 +885,7 @@ static struct glsl_msl_program k_refl_blur_h = {
   },
 };
 
-static struct glsl_msl_program k_refl_blur_v = {
+static struct msl_program k_refl_blur_v = {
   .source = {(char *)k_msl_blur_common_vs, (char *)k_msl_fs_blur_v},
   .entry = {"main0","main0"},
   .blockSize = {164,164},
@@ -979,7 +979,7 @@ static const char k_msl_fs_backdrop_blur[] =
   "    return float4(mix(float3(luma), color, u.u_saturation), 1.0);\n"
   "}\n";
 
-static struct glsl_msl_program k_refl_backdrop_blur = {
+static struct msl_program k_refl_backdrop_blur = {
   .source = {(char *)k_msl_vs_backdrop_blur, (char *)k_msl_fs_backdrop_blur},
   .entry = {"main0","main0"},
   .blockSize = {160,160},
