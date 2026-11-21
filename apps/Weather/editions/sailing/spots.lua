@@ -2,7 +2,8 @@
 -- places.lua is shared. `safe` is the wind directions (where the wind comes
 -- FROM, degrees) a rider can use there, clockwise from `from` to `to`;
 -- outside it the wind blows off the beach and a fallen kiter drifts away
--- from help. `note` is what a local would add.
+-- from help. `note` is what a local would add; `links` are pages to check
+-- by hand (Weather/editions/sailing/links.lua).
 --
 -- These are estimates from each beach's shore line, not local rules: check
 -- with the spot's school or club. A spot missing here gets a sector from its
@@ -18,9 +19,11 @@ Spots.byId = {
     tarifa = { safe = { from = 95, to = 325 },
         note = "the Poniente (west) is cross-onshore; a strong Levante (east) runs cross-offshore: experts only" },
     spo = { safe = { from = 180, to = 360 }, note = "a wide beach; at low tide the water is far out" },
-    bodensee = { safe = { from = 90, to = 270 }, note = "a north shore: a north wind carries you across the lake" },
+    bodensee = { safe = { from = 90, to = 270 }, note = "a north shore: a north wind carries you across the lake",
+        links = { { "OpenWindMap stations", "openwindmap.org" } } },
     garda = { safe = { from = 135, to = 225 },
-        note = "the afternoon Ora blows up the lake from the south; kites launch by boat at the north end" },
+        note = "the afternoon Ora blows up the lake from the south; kites launch by boat at the north end",
+        links = { { "OpenWindMap stations", "openwindmap.org" } } },
     mamry = { safe = { from = 180, to = 360 }, note = "an east shore" },
 }
 

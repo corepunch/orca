@@ -8,7 +8,11 @@
 -- toward the water); lakes have no waves or tides to read.
 --
 -- Extra requests: the same wind from several models (confidence), the
--- approximate tide, and the other spots within range ("this weekend").
+-- approximate tide, the other spots within range ("this weekend"), and
+-- existing open services (Research/services-sailing.md): official
+-- warnings (NWS, MeteoAlarm) that cap the hours they cover, and measured
+-- wind near the spot (METAR airports, OpenWindMap stations, NDBC buoys)
+-- shown beside the forecast, never in the rating.
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
 local Units = require "Weather/units"
@@ -18,6 +22,19 @@ local Spots = require "Weather/editions/sailing/spots"
 local Models = require "Weather/editions/sailing/models"
 local Tides = require "Weather/editions/sailing/tides"
 local Rank = require "Weather/editions/sailing/rank"
+local Warnings = require "Weather/editions/sailing/warnings"
+local Live = require "Weather/editions/sailing/live"
+local Links = require "Weather/editions/sailing/links"
+
+local SERVICES = { Warnings.nws, Warnings.meteoalarm, Live.metar, Live.openwindmap, Live.buoys[1], Live.buoys[2] }
+local ATTRIBUTION = {
+    { "Warnings in the US: National Weather Service", "Public domain, weather.gov." },
+    { "Warnings in Europe: EUMETNET – MeteoAlarm",
+        "Each warning names its national weather service and when it was issued. meteoalarm.org." },
+    { "Airport wind: NOAA Aviation Weather Center (METAR)", "Public domain, aviationweather.gov." },
+    { "Wind stations: © contributors of the Pioupiou / OpenWindMap network", "Community Licence, openwindmap.org." },
+    { "Buoys: NOAA National Data Buoy Center", "Public domain, ndbc.noaa.gov." },
+}
 
 local Sailing = {
     id = "sailing", title = "sailing",
@@ -26,7 +43,10 @@ local Sailing = {
     needsMarine = function(place) return not (place and place.lake) and "optional" end,
     settings = Profile.settings,
     sources = { Models.source, Tides.source, Rank.source(function() return Profile.current().range end) },
+    -- Credit for each service read (Provider.about).
+    attribution = ATTRIBUTION,
 }
+for _, source in ipairs(SERVICES) do table.insert(Sailing.sources, source) end
 -- What the place editor asks of a spot (P3); Spots.sector reads the safe
 -- sector the user set before its table.
 Sailing.placeFields = {
@@ -42,6 +62,7 @@ Sailing.placeFields = {
 }
 
 Sailing.Profile, Sailing.Spots, Sailing.Models, Sailing.Tides, Sailing.Rank = Profile, Spots, Models, Tides, Rank
+Sailing.Warnings, Sailing.Live, Sailing.Links = Warnings, Live, Links
 
 local GALE = 17.2 -- m/s, Beaufort 8, for every profile
 
@@ -150,6 +171,7 @@ function Sailing.rate(hour, forecast)
 
     -- The rider's own wind band (SA2); a gale caps every profile.
     local wind, lo, hi = hour.wind or 0, rider.min, rider.max
+    Warnings.rate(card, hour, forecast, rider)
     if wind >= GALE then card:cap(15, "Gale: stay ashore.")
     elseif wind < lo * 0.75 then card:add(-25, ("Too little wind for you: %s, you need %s."):format(W(wind), W(lo)))
     elseif wind < lo then card:add(-6, ("Marginal: %s, just under your %s."):format(W(wind), W(lo)))
@@ -321,12 +343,15 @@ local function hazard(forecast)
     end
 end
 
--- The big answers (F7): what to rig, any danger, the best spot this
--- weekend, how sure the forecast is, a sea breeze, the tide.
-function Sailing.cards(forecast, place)
+-- The big answers (F7): an official warning, what to rig, the wind
+-- measured now, any danger, the best spot this weekend, how sure the
+-- forecast is, a sea breeze, the tide, then pages to check by hand.
+function Sailing.cards(forecast, place, clock)
     local cards, rider = {}, Profile.current()
     local hour, result, span, when = planned(forecast)
     if not hour then return cards end
+    local here, now = place or forecast.spot, clock or forecast.epoch
+    for _, card in ipairs(Warnings.cards(forecast, here, now)) do cards[#cards + 1] = card end
     local label = when == "now" and "now" or when .. " " .. (span or Units.clock(hour.time))
     local rig, why = rigFor(hour, rider)
     if rig and result.verdict ~= "poor" then
@@ -338,6 +363,7 @@ function Sailing.cards(forecast, place)
             value = "stay ashore", tone = "poor",
             detail = reason and reason.text or "No usable wind for you today or tomorrow." }
     end
+    for _, card in ipairs(Live.cards(forecast, here, now)) do cards[#cards + 1] = card end
 
     local danger, because = hazard(forecast)
     if danger then cards[#cards + 1] = { id = "hazard", title = "watch out", value = danger, detail = because, tone = "poor" } end
@@ -397,6 +423,7 @@ function Sailing.cards(forecast, place)
                 detail = detail .. "a model sea level, about 8 km wide: not for navigation" }
         end
     end
+    for _, card in ipairs(Links.cards(here)) do cards[#cards + 1] = card end
     return cards
 end
 
