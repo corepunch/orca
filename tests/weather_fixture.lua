@@ -162,6 +162,10 @@ function Fixture.network(options)
     return net
 end
 
+-- One folder per test run, so suites running side by side (two checkouts,
+-- or two files at once) never share saved places.
+Fixture.RUN = ("%d-%s"):format(os.time(), tostring({}):match("0x(%x+)") or tostring(math.random(1e9)))
+
 -- The files the app and its editions keep, besides each place's forecast.
 Fixture.FILES = { "settings", "places", "garden-frost", "fishing-log", "surf-sessions", "stargazing-place" }
 
@@ -171,7 +175,7 @@ Fixture.FILES = { "settings", "places", "garden-frost", "fishing-log", "surf-ses
 function Fixture.storage(name, places, extra)
     local Storage = require "Weather/storage"
     local base = (os.getenv("TMPDIR") or "/tmp/"):gsub("/?$", "/")
-    local store = Storage.new { dir = base .. "orca-weather-tests/" .. name }
+    local store = Storage.new { dir = base .. "orca-weather-tests/" .. Fixture.RUN .. "/" .. name }
     for _, file in ipairs(Fixture.FILES) do store:remove(file) end
     for _, place in ipairs(places or {}) do
         store:remove("forecast-" .. place.id)
