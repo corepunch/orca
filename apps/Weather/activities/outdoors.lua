@@ -9,6 +9,8 @@ local Score = require "Weather/score"
 local Units = require "Weather/units"
 local Report = require "Weather/report"
 local Settings = require "Weather/settings"
+local Warnings = require "Weather/services/warnings"
+local Radar = require "Weather/services/radar"
 
 local Weather = {
     id = "outdoors", title = "outdoors", needsMarine = false,
@@ -130,76 +132,33 @@ Weather.airSource = {
         end
     end,
 }
--- Official warnings (W10). Open-Meteo has none, so the full app asks the
--- US National Weather Service (free, public domain) for US places. Europe's
--- MeteoAlarm and Canada's ECCC publish CAP XML and are not read yet: there
--- the app says nothing rather than "no warnings".
-local US = { { south = 24, north = 50, west = -125, east = -66 }, { south = 51, north = 72, west = -170, east = -129 },
-    { south = 18.5, north = 22.5, west = -161, east = -154 } }
+-- Official warnings (W10, SV-W1). Open-Meteo has none, so the full app asks
+-- the national service that covers the place (services/warnings.lua: the
+-- NWS, Environment Canada, MET Norway, DWD via Bright Sky). Where none can
+-- be read, the card says where to look, never "no warnings".
 function Weather.nwsCovers(spot)
-    for _, box in ipairs(US) do
-        if spot and spot.lat and spot.lat >= box.south and spot.lat <= box.north and spot.lon >= box.west
-            and spot.lon <= box.east then return true end
+    local state, entry = Warnings.coverage(spot)
+    return state == "covered" and entry.id == "nws"
+end
+Weather.isoEpoch = Warnings.isoEpoch
+Weather.alertSource = Warnings.source("nws")
+
+if not edition() then
+    Weather.sources = { Weather.airSource }
+    for _, source in ipairs(Warnings.sources()) do Weather.sources[#Weather.sources + 1] = source end
+    Weather.sources[#Weather.sources + 1] = Radar.source
+    -- Credit for every service the full app reads (settings' "about").
+    Weather.attribution = function()
+        local list = Warnings.attribution()
+        list[#list + 1] = Radar.attribution
+        return list
     end
-    return false
 end
 
--- "2026-11-18T14:00:00-08:00" → UTC epoch, or nil.
-local function isoEpoch(text)
-    local date, h, m, sign, oh, om = (text or ""):match("^(%d+%-%d+%-%d+)T(%d+):(%d+):%d+([%+%-])(%d+):(%d+)")
-    local base = date and Sky.epochOf(date)
-    if not base then return nil end
-    local offset = (tonumber(oh) * 3600 + tonumber(om) * 60) * (sign == "-" and -1 or 1)
-    return base + tonumber(h) * 3600 + tonumber(m) * 60 - offset
-end
-Weather.isoEpoch = isoEpoch
-
-Weather.alertSource = {
-    id = "outdoors-alerts", optional = true,
-    url = function(spot)
-        if not Weather.nwsCovers(spot) then return nil end
-        return ("https://api.weather.gov/alerts/active?point=%.4f,%.4f"):format(spot.lat, spot.lon)
-    end,
-    headers = { Accept = "application/geo+json" },
-    -- An answer without `features` is not "no warnings": it fails the source.
-    parse = function(json, forecast)
-        local features = assert(type(json.features) == "table" and json.features, "no alert list")
-        local list = {}
-        for _, feature in ipairs(features) do
-            local p = feature.properties or {}
-            if p.event and p.status ~= "Test" then
-                list[#list + 1] = { event = p.event, severity = p.severity, sender = p.senderName,
-                    ends = isoEpoch(p.ends or p.expires) }
-            end
-        end
-        forecast.warnings = list
-    end,
-}
-Weather.sources = not edition() and { Weather.airSource, Weather.alertSource } or nil
-
-local SEVERE = { Extreme = true, Severe = true }
 -- The warnings in force as cards, the most severe first (at most three).
-function Weather.warningCards(forecast, now)
-    local list, cards = {}, {}
-    for _, warning in ipairs(forecast.warnings or {}) do
-        if not warning.ends or warning.ends > (now or forecast.epoch) then list[#list + 1] = warning end
-    end
-    table.sort(list, function(a, b)
-        if (SEVERE[a.severity] or false) ~= (SEVERE[b.severity] or false) then return SEVERE[a.severity] or false end
-        return (a.ends or math.huge) < (b.ends or math.huge)
-    end)
-    for index = 1, math.min(3, #list) do
-        local warning = list[index]
-        local untilText = ""
-        if warning.ends then
-            local stamp = os.date("!%Y-%m-%dT%H:%M", warning.ends + (forecast.offset or 0))
-            untilText = "until " .. Sky.weekday(stamp:sub(1, 10)) .. " " .. Units.clock(stamp) .. " · "
-        end
-        cards[index] = { id = "warning-" .. index, title = "official warning", value = warning.event:lower(),
-            detail = untilText .. (warning.sender or "National Weather Service"),
-            tone = SEVERE[warning.severity] and "poor" or "fair" }
-    end
-    return cards
+-- The full app adds a calm card where none can be read here.
+function Weather.warningCards(forecast, now, spot)
+    return Warnings.cards(forecast, now, { spot = spot, note = Weather.sources ~= nil })
 end
 
 -- The index's band, 1 (good) to 6, and its word.
@@ -466,11 +425,19 @@ end
 
 -- The full app's first answers, ahead of the conditions on the hub.
 function Weather.cards(forecast, place, clock)
-    local cards = Weather.warningCards(forecast, clock)
-    local next = Weather.nextHour(forecast, clock)
-    if next then cards[#cards + 1] = { id = "next-hour", title = "next 2 hours", value = next.value, detail = next.detail,
-        tone = next.tone } end
+    local cards, coverage = {}, nil
+    for _, card in ipairs(Weather.warningCards(forecast, clock, forecast.spot or place)) do
+        if card.id == "warnings" then coverage = card else cards[#cards + 1] = card end
+    end
+    -- Where DWD's radar reaches, a line on where rain is now (SV-W5).
+    local next, radar = Weather.nextHour(forecast, clock), Radar.line(forecast, clock)
+    if next then cards[#cards + 1] = { id = "next-hour", title = "next 2 hours", value = next.value,
+        detail = next.detail .. (radar and " · " .. radar or ""), tone = next.tone }
+    elseif radar then cards[#cards + 1] = { id = "next-hour", title = "rain nearby", value = (radar:gsub("^radar: ", "")),
+        detail = "Deutscher Wetterdienst radar, the latest frames", tone = "info" } end
     for _, card in ipairs(Weather.today(forecast)) do cards[#cards + 1] = card end
+    -- "See the Met Office" goes last: it is the least urgent answer.
+    if coverage then cards[#cards + 1] = coverage end
     return cards
 end
 

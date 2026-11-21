@@ -133,7 +133,22 @@ Data/Settings.xml  the settings rows, split into units, activities and about
 Data/Search.xml    search results, notes and the suggestions
 Data/Place.xml     the place editor's facts, fields and links
 editions/<key>/    an edition's own modules, pages and data (its `page` routes)
+services/          shared existing services: the official-warning registry and its providers, DWD radar
 ```
+
+`services/` holds the outside services more than one app can reuse.
+`services/warnings.lua` is the official-warning registry: `Warnings.coverage(spot)`
+says `"covered"` (a provider is read: NWS, Environment Canada, MET Norway,
+DWD via Bright Sky), `"link"` (an official site to see: the Met Office,
+BoM, MeteoAlarm until its licence is confirmed, …) or `"none"`;
+`Warnings.sources()` gives one optional source per provider, each asked
+only where coverage picks it; `Warnings.cards(forecast, now, { note = true })`
+turns `forecast.warnings` into cards and, where nothing is read, a calm
+"see the Met Office" card, never "no warnings"; `Warnings.attribution()`
+credits them. `services/radar.lua` is the Bright Sky radar line for
+Germany. The full app's everyday outdoors uses both; an edition may add
+`Warnings.sources()` to its own `sources`. The API is in the header of
+`services/warnings.lua`.
 
 A place's forecast is fetched once and cached for ten minutes. The hub,
 every activity page and going back all reuse it. A pull to refresh (or the
