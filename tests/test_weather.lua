@@ -1181,12 +1181,13 @@ do
         function(url, options) return options.format == "text" and "#YY MM DD" or nil end, {})
     check(seen == "#YY MM DD", "The text reaches the source's parse")
     local first = Activities.list[1]
-    local before = first.attribution
-    first.attribution = { { "Tides by NOAA CO-OPS", "Public domain." }, { "Weather data by Open-Meteo.com", "twice" } }
+    local before, baseline = first.attribution, #Provider.about()
+    first.attribution = { { "Test credit by Example", "Public domain." }, { "Weather data by Open-Meteo.com", "twice" } }
     local about = Provider.about()
-    check(about[1][1] == "Weather data by Open-Meteo.com" and about[2][1] == "Tides by NOAA CO-OPS",
+    local function at(title) for index, line in ipairs(about) do if line[1] == title then return index end end end
+    check(about[1][1] == "Weather data by Open-Meteo.com" and (at("Test credit by Example") or 0) > 1,
         "An activity's service follows Open-Meteo")
-    check(about[#about][1] == "your data stays here" and #about == #Provider.ABOUT + 1, "Each title shows once")
+    check(about[#about][1] == "your data stays here" and #about == baseline + 1, "Each title shows once")
     first.attribution = before
 end
 
