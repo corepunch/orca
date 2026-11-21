@@ -102,6 +102,11 @@ folder.
 
 ## Design reference
 
+[Design research](Reference/README.md) (in Russian) surveys children's CD-ROM
+encyclopedias of the 1990s and 2000s, compares them with this app, and shows
+three concept screens: a study as the home screen, an article as a book
+spread, and a question hunt.
+
 [Microsoft’s Encarta guide](https://download.microsoft.com/documents/uk/athome/SM_Learn_5MinEncarta_F.pdf)
 shows a searchable index, text with related links, and a separate area for
 optional media. [Microsoft’s Encarta Kids announcement](https://news.microsoft.com/source/2004/07/07/microsoft-encarta-provides-fun-features-to-a-new-generation-of-students/)
