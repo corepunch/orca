@@ -159,7 +159,12 @@ function Posts.new(chat, options)
             app:notice(query.error and query.error.message or "", query.error ~= nil)
         end
     end
-    app.messagePerson = function(_, id, name) return chat:messagePerson(id, name) end
+    -- Chat's "message" action on another person's public profile.
+    app.profileActions = function(_, id, name)
+        local action = assert(filesystem.loadObject("Chat/Pages/PostProfileActions"))
+        action.Click = function() chat:messagePerson(id, name) end
+        return { action }
+    end
     app.sharePost = function(_, post) return chat:sharePost(post) end
     app.signOut = function() return chat:signOut() end
     local avatarChanged = app.avatarChanged
