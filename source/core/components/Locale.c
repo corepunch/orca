@@ -229,6 +229,38 @@ core_Uses24HourClock(void)
   return strcmp(measurement_of_region(core_GetRegion()), "us") != 0;
 }
 
+/* Dynamic Type: the content size categories and iOS's Body text style at
+ * each, in points (Apple's typography tables); large is 17. */
+static struct { char const *name; float body; } const content_sizes[] = {
+  { "extra-small", 14 }, { "small", 15 }, { "medium", 16 }, { "large", 17 }, { "extra-large", 19 },
+  { "extra-extra-large", 21 }, { "extra-extra-extra-large", 23 }, { "accessibility-medium", 28 },
+  { "accessibility-large", 33 }, { "accessibility-extra-large", 40 }, { "accessibility-extra-extra-large", 47 },
+  { "accessibility-extra-extra-extra-large", 53 },
+};
+static char content_size[48] = "large";
+
+lpcString_t
+core_GetContentSizeCategory(void)
+{
+  char const *value = getenv("ORCA_CONTENT_SIZE");
+  return value && *value ? value : content_size;
+}
+
+void
+core_SetContentSizeCategory(lpcString_t category)
+{
+  snprintf(content_size, sizeof(content_size), "%s", category && *category ? category : "large");
+}
+
+float
+core_GetTextScale(void)
+{
+  lpcString_t category = core_GetContentSizeCategory();
+  FOR_LOOP(i, sizeof(content_sizes) / sizeof(*content_sizes))
+    if (!strcmp(content_sizes[i].name, category)) return content_sizes[i].body / 17;
+  return 1;
+}
+
 static lpcString_t
 lookup_locale(struct Object *object, lpcString_t key)
 {

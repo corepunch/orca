@@ -349,6 +349,27 @@ place's forecast and syncs again. Tests pass `notifier` (a stand-in for
 `orca.notifications`) to `F.launch`; `tests/test_weather_alerts.lua` checks
 every rule, the plan and the hook.
 
+**VoiceOver and Dynamic Type** (W11). On iOS the engine mirrors each drawn
+screen into VoiceOver elements (`Node2D.AccessibilityLabel`, `…Hint`,
+`…Traits`, `…Hidden`; `source/ios_accessibility.m`). A button reads its own
+and its children's text, plain text reads as itself, and a Panorama or
+Pivot reads its title, then each header before its section. Weather adds
+labels where text alone is not enough: a band cell says its hour and verdict
+(`Spoken`, "09:00 good"), a reason its tone first (`Toned`, "poor: …"), and
+"good for", day, hour, detail and strip rows read as one sentence
+(`Summary`) with a hint where they open a page; charts are named after
+their series; "less" and "more" hint the setting they change. A new
+template whose meaning sits in a colour or an icon needs a label too.
+`orca.UIKit.describeAccessibility(screen)` lists what VoiceOver would read;
+`tests/test_weather.lua` checks the hub with it.
+
+Type follows the person's text size: `App.textScale()` turns
+`core.getTextScale()` (Settings, Display and Text Size) into
+`page.TextScale` for every page it opens, held between 0.9 and 1.35
+(`App.TEXT_SCALE`) because the Metro pages do not reflow beyond that; the
+accessibility sizes stop at 1.35. A change made while the app runs reaches
+the pages opened after it.
+
 ## Extension points for editions
 
 Wave 2 of [PLAN.md](PLAN.md) grows each edition in its own files

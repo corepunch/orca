@@ -22,6 +22,7 @@
 #include <float.h>
 #include <unistd.h>
 #include "ios_scroll.h"
+#include "ios_accessibility.h"
 #include <source/core/animation.h>
 #include "notifications/notifications_native.h"
 #include "signin/signin_native.h"
@@ -285,6 +286,7 @@ static uint32_t animation_time(void *context)
     if (status != LUA_OK) NSLog(@"ORCA: %s", lua_tostring(_coroutine, -1));
     if (reload) {
       ORCA_IOS_ClearScrollViews();
+      ORCA_IOS_ClearAccessibility();
       lua_close(_lua);
       _lua = _coroutine = NULL;
       if (![self start]) [self stop];
@@ -340,6 +342,42 @@ static uint32_t animation_time(void *context)
 - (void)dealloc { [self stop]; [super dealloc]; }
 @end
 
+// Dynamic Type: the person's text size, as core.getContentSizeCategory().
+static void orca_content_size(void)
+{
+  static struct { NSString *const *category; char const *name; } const names[] = {
+    { &UIContentSizeCategoryExtraSmall, "extra-small" }, { &UIContentSizeCategorySmall, "small" },
+    { &UIContentSizeCategoryMedium, "medium" }, { &UIContentSizeCategoryLarge, "large" },
+    { &UIContentSizeCategoryExtraLarge, "extra-large" }, { &UIContentSizeCategoryExtraExtraLarge, "extra-extra-large" },
+    { &UIContentSizeCategoryExtraExtraExtraLarge, "extra-extra-extra-large" },
+    { &UIContentSizeCategoryAccessibilityMedium, "accessibility-medium" },
+    { &UIContentSizeCategoryAccessibilityLarge, "accessibility-large" },
+    { &UIContentSizeCategoryAccessibilityExtraLarge, "accessibility-extra-large" },
+    { &UIContentSizeCategoryAccessibilityExtraExtraLarge, "accessibility-extra-extra-large" },
+    { &UIContentSizeCategoryAccessibilityExtraExtraExtraLarge, "accessibility-extra-extra-extra-large" },
+  };
+  NSString *category = UIApplication.sharedApplication.preferredContentSizeCategory;
+  char const *name = "large";
+  for (size_t i = 0; i < sizeof(names) / sizeof(*names); i++)
+    if ([category isEqualToString:*names[i].category]) name = names[i].name;
+  core_SetContentSizeCategory(name);
+}
+
+// VoiceOver turning on, or the text size changing, repaints the screen so
+// the accessibility bridge and applications see it.
+static void orca_observe_accessibility(void)
+{
+  NSNotificationCenter *center = NSNotificationCenter.defaultCenter;
+  void (^repaint)(NSNotification *) = ^(NSNotification *note) {
+    if ([note.name isEqualToString:UIContentSizeCategoryDidChangeNotification]) orca_content_size();
+    axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), NULL);
+  };
+  for (NSString *name in @[UIAccessibilityVoiceOverStatusDidChangeNotification,
+                           UIAccessibilitySwitchControlStatusDidChangeNotification,
+                           UIContentSizeCategoryDidChangeNotification])
+    [center addObserverForName:name object:nil queue:NSOperationQueue.mainQueue usingBlock:repaint];
+}
+
 @interface OrcaAppDelegate : UIResponder <UIApplicationDelegate>
 @end
 
@@ -350,6 +388,8 @@ static uint32_t animation_time(void *context)
   Notifications_AppleInitialize();
   // BGTaskScheduler needs its launch handlers before launch finishes.
   Notifications_AppleRegisterRefresh();
+  orca_content_size();
+  orca_observe_accessibility();
   return YES;
 }
 - (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)token

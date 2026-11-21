@@ -113,6 +113,7 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items, 
   if (!pPivot->_title) {
     pPivot->_title = Metro_CreateText(hObject, ID_TextBlock, "pivot-title", PIVOT_TITLE_SIZE, TRUE);
     GetNode2D(pPivot->_title)->IgnoreHitTest = TRUE;
+    GetNode2D(pPivot->_title)->AccessibilityTraits = kAccessibilityTraitsHeader;
   }
   Metro_SetText(pPivot->_title, pPivot->Title, toupper);
   Metro_Show(pPivot->_title, pPivot->Title && *pPivot->Title, 1);
@@ -121,6 +122,9 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items, 
   if (back && !pPivot->_back) {
     pPivot->_back = OBJ_Create(ID_Node2D);
     OBJ_AddChild(hObject, pPivot->_back);
+    // VoiceOver reads the drawn arrow as a "back" button.
+    PROP_SetStringValue(OBJ_FindLongProperty(pPivot->_back, ID_Node2D_AccessibilityLabel), "back");
+    GetNode2D(pPivot->_back)->AccessibilityTraits = kAccessibilityTraitsButton;
     // Antialiased vector artwork tinted like the glyph; CSS supplies its SVG.
     pPivot->_backRing = OBJ_Create(ID_VectorView);
     GetNode2D(pPivot->_backRing)->IgnoreHitTest = TRUE;

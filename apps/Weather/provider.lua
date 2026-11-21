@@ -25,6 +25,22 @@ Provider.computed = {
     hasIcon = function(values) return (values.Icon or "") ~= "" end,
     hasNote = function(values) return (values.Note or "") ~= "" end,
     hasDetail = function(values) return (values.Detail or "") ~= "" end,
+    -- VoiceOver (W11): a band cell is only a colour, so it says its tone.
+    spoken = function(values)
+        local tone = values.Tone ~= "info" and values.Tone or nil
+        return tone and (values.Title or "") .. " " .. tone or (values.Title or "")
+    end,
+    toned = function(values)
+        local tone = values.Tone ~= "info" and values.Tone or nil
+        return tone and tone .. ": " .. (values.Title or "") or (values.Title or "")
+    end,
+    summary = function(values)
+        local parts = {}
+        for _, key in ipairs { "Title", "Value", "Detail", "Note" } do
+            if (values[key] or "") ~= "" then parts[#parts + 1] = values[key] end
+        end
+        return table.concat(parts, ", ")
+    end,
     hasActions = function(values) return (values.Action1 or "") ~= "" end,
     hasAction2 = function(values) return (values.Action2 or "") ~= "" end,
     hasAction3 = function(values) return (values.Action3 or "") ~= "" end,

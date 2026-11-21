@@ -1,6 +1,7 @@
 <!-- An hour or a day: when, the sky, the verdict in its tone and a short
      line of the conditions that decided it. -->
-<Grid Columns="4 auto 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+<Grid Columns="4 auto 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}"
+      AccessibilityLabel="{Binding DataContext/Summary}" IgnoreHitTest="true">
   <StackView class="wx-bar" IgnoreHitTest="true"/>
   <VectorView Source="{Binding DataContext/Icon}" Width="28" Height="28" class="wx-ink"/>
   <StackView Spacing="0" JustifyContent="Center" IgnoreHitTest="true">

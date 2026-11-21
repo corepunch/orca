@@ -928,7 +928,45 @@ local function test_panorama_safe_area()
   print("PASS: test_panorama_safe_area")
 end
 
+-- W11: what VoiceOver reads of a Pivot (the drawn back arrow is a "back"
+-- button, the title a header, then the headers and the items), and
+-- TextScale growing text for Dynamic Type.
+local function test_accessibility_and_text_scale()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot { Title = "Messenger", BackIcon = "Metro/Icons/plus.svg" }
+  local item = pivot + ui.PivotItem { Name = "Thread", Header = "simon" }
+  local row = item + ui.Button { Name = "Row", Height = 60 }
+  local _ = row + ui.TextBlock { Text = "Hello", FontSize = 20 }
+  local _ = row + ui.TextBlock { Text = "  two\n lines ", FontSize = 20 }
+  local plain = item + ui.TextBlock { Name = "Plain", Text = "Plain words", FontSize = 20 }
+  local hidden = item + ui.TextBlock { Text = "Not read", AccessibilityHidden = true }
+  local icon = item + ui.Node2D { Name = "Icon", Width = 20, Height = 20, AccessibilityLabel = "sun" }
+  layout(screen)
+  test.expect_eq(ui.getAccessibilityLabel(row), "Hello, two lines", "A button reads its text, joined and folded")
+  test.expect_eq(ui.getAccessibilityLabel(hidden), "", "A hidden element reads nothing")
+  local spoken = ui.describeAccessibility(screen)
+  test.expect(spoken:find("Header\tMESSENGER\n", 1, true) and spoken:find("Button\tback\n", 1, true)
+    and spoken:find("Button\tHello, two lines\nStaticText\tPlain words\nNone\tsun\n", 1, true)
+    and not spoken:find("Not read", 1, true), "The Pivot reads title, back, row, text and label:\n" .. spoken)
+  test.expect(spoken:find("MESSENGER") < spoken:find("Hello"), "Title before the items")
+  local function measured(scale, change)
+    local s = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+    local stack = s + ui.StackView { JustifyContent = "Start", AlignItems = "Start", TextScale = change and 1 or scale }
+    local text = stack + ui.TextBlock { Text = "Plain words", FontSize = 20 }
+    layout(s)
+    if change then stack.TextScale = scale; layout(s) end
+    return text.ActualWidth, text.ActualHeight
+  end
+  local w1, h1 = measured(1)
+  local w2, h2 = measured(1.5)
+  test.expect(w2 > w1 * 1.3 and h2 > h1 * 1.3, ("TextScale grows the text below it: %gx%g to %gx%g"):format(w1, h1, w2, h2))
+  local w3 = measured(1.5, true)
+  test.expect(math.abs(w3 - w2) < 1, "Changing TextScale relays the text out: " .. w3)
+  print("PASS: test_accessibility_and_text_scale")
+end
+
 test_pivot()
+test_accessibility_and_text_scale()
 test_pivot_content_padding()
 test_panorama_safe_area()
 test_pivot_drag_reuse()

@@ -1,5 +1,7 @@
-<!-- One reason behind the verdict; the bar takes the reason's tone. -->
-<Grid Columns="4 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}" IgnoreHitTest="true">
+<!-- One reason behind the verdict; the bar takes the reason's tone, which
+     VoiceOver says first ("poor: gusts over 15 m/s"). -->
+<Grid Columns="4 1fr" Spacing="12" StateClasses="{Binding DataContext/Tone}" AccessibilityLabel="{Binding DataContext/Toned}"
+      IgnoreHitTest="true">
   <StackView class="wx-bar" IgnoreHitTest="true"/>
   <TextBlock Name="ReasonText" Text="{Binding DataContext/Title}" FontSize="17" WordWrap="true" class="wx-ink"
              IgnoreHitTest="true"/>

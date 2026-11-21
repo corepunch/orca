@@ -50,5 +50,11 @@
     <Column Name="HasIcon" Type="bool" Computed="hasIcon" DependsOn="Icon" Description="The row has an icon to show."/>
     <Column Name="HasNote" Type="bool" Computed="hasNote" DependsOn="Note" Description="The row has a note to show."/>
     <Column Name="HasDetail" Type="bool" Computed="hasDetail" DependsOn="Detail" Description="The row has a detail line."/>
+    <Column Name="Spoken" Type="string" Computed="spoken" DependsOn="Title Tone"
+            Description="What VoiceOver reads for a colour-only cell: the hour and its verdict (&quot;10:00 good&quot;)."/>
+    <Column Name="Toned" Type="string" Computed="toned" DependsOn="Title Tone"
+            Description="A line whose tone is only a colour, tone first (&quot;poor: gusts over 15 m/s&quot;)."/>
+    <Column Name="Summary" Type="string" Computed="summary" DependsOn="Title Value Detail Note"
+            Description="What VoiceOver reads for a whole row: title, value, detail and note, joined with commas."/>
   </Entity>
 </Schema>

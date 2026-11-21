@@ -1,7 +1,7 @@
 <!-- One hour of the verdict band: a cell in the hour's tone and, every
-     three hours, the hour beneath it. -->
+     three hours, the hour beneath it. VoiceOver reads "10:00 good". -->
 <StackView Width="13" Spacing="4" JustifyContent="Start" AlignItems="Center" StateClasses="{Binding DataContext/Tone}"
-           IgnoreHitTest="true">
+           AccessibilityLabel="{Binding DataContext/Spoken}" IgnoreHitTest="true">
   <StackView Width="13" Height="30" class="wx-bar" IgnoreHitTest="true"/>
   <TextBlock Text="{Binding DataContext/Short}" FontSize="11" class="wx-dim" IgnoreHitTest="true"/>
 </StackView>

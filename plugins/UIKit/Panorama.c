@@ -47,6 +47,7 @@ Panorama_Sync(struct Object *hObject, struct Panorama *pPanorama, struct Object 
   if (!pPanorama->_title) {
     pPanorama->_title = Metro_CreateText(hObject, ID_TextBlock, "panorama-title", PANORAMA_TITLE_SIZE, FALSE);
     GetNode2D(pPanorama->_title)->IgnoreHitTest = TRUE;
+    GetNode2D(pPanorama->_title)->AccessibilityTraits = kAccessibilityTraitsHeader;
   }
   Metro_SetText(pPanorama->_title, pPanorama->Title, tolower);
 
@@ -69,6 +70,7 @@ Panorama_Sync(struct Object *hObject, struct Panorama *pPanorama, struct Object 
     if (!item->_header) {
       item->_header = Metro_CreateText(hObject, ID_TextBlock, "panorama-header", PANORAMA_HEADER_SIZE, FALSE);
       GetNode2D(item->_header)->IgnoreHitTest = TRUE;
+      GetNode2D(item->_header)->AccessibilityTraits = kAccessibilityTraitsHeader;
     }
     Metro_SetText(item->_header, item->Header, tolower);
   }

@@ -118,7 +118,7 @@ def unity_sources(root=ROOT):
             units['u_' + name + '.c'] = sorted((root / folder / name).rglob('*.c'))
     units['u_platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
     units['ios_runtime.m'] = [root / 'source/ios.m',
-                              root / 'source/ios_scroll.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
+                              root / 'source/ios_scroll.m', root / 'source/ios_accessibility.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
     metal = root / 'source/renderer/metal'
     units['native_modules.m'] = [path for name in config['MODULES']
                                   for path in sorted((root / 'source' / name).rglob('*.m'))

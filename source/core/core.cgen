@@ -1303,6 +1303,21 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
       <details>Apple platforms read the locale's measurement system, which the person may change apart from the region. Elsewhere, and whenever ORCA_REGION is set, it follows the region: us for the United States, Liberia and Myanmar, uk for the United Kingdom, otherwise metric.</details>
       <returns type="string"/>
     </function>
+    <function name="GetContentSizeCategory">
+      <summary>Returns the person's preferred text size (Dynamic Type) as a content size category name.</summary>
+      <details>One of extra-small, small, medium, large (the default), extra-large, extra-extra-large, extra-extra-extra-large, accessibility-medium, accessibility-large, accessibility-extra-large, accessibility-extra-extra-large and accessibility-extra-extra-extra-large. ORCA_CONTENT_SIZE overrides it for previews and tests. iOS sets it from UIApplication preferredContentSizeCategory at launch and whenever the person changes Settings, Display and Text Size; other platforms report large unless SetContentSizeCategory was called.</details>
+      <returns type="string"/>
+    </function>
+    <function name="SetContentSizeCategory">
+      <summary>Sets the content size category GetContentSizeCategory reports.</summary>
+      <details>The iOS host calls it; tests call it to check how an application scales its type. An unknown name is kept but scales as large.</details>
+      <arg name="category" type="string">A name GetContentSizeCategory returns</arg>
+    </function>
+    <function name="GetTextScale">
+      <summary>Returns the text size multiplier for the current content size category, 1 at large.</summary>
+      <details>The ratio of iOS's Body text style at that category to its 17 points at large: from about 0.82 at extra-small to about 3.1 at accessibility-extra-extra-extra-large. Applications usually clamp it to what their layout can take, then set TextScale on a screen or page.</details>
+      <returns type="float"/>
+    </function>
     <function name="Uses24HourClock">
       <summary>Reports whether the device shows times on a 24-hour clock.</summary>
       <details>Apple platforms read the locale's hour format, including the person's 24-Hour Time switch. Elsewhere, and whenever ORCA_REGION is set, regions that read the us measurement system use a 12-hour clock and the rest 24 hours.</details>
