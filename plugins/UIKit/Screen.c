@@ -7,6 +7,7 @@
 #include <source/core/animation.h>
 #ifdef AX_PLATFORM_IOS
 #include <source/ios_scroll.h>
+#include <source/ios_accessibility.h>
 #endif
 #ifdef __ANDROID__
 #include <libs/platform/android/ax_android.h>
@@ -295,6 +296,7 @@ HANDLER(Screen, Window, Paint) {
 #ifdef AX_PLATFORM_IOS
   TRACE_Begin(kTracePhaseScrollSync);
   ORCA_IOS_SyncScrollViews(hObject);
+  ORCA_IOS_SyncAccessibility(hObject);
   TRACE_End(kTracePhaseScrollSync);
 #endif
 

@@ -644,10 +644,20 @@ HANDLER(Node2D, Node, ScrollWheel)
   return TRUE;
 }
 
+// An inherited TextScale reaches text below without changing it: mark each
+// descendant so its measure cache and text are taken again.
+static void
+Node2D_DirtySubtree(struct Object *object)
+{
+  OBJ_SetDirty(object);
+  FOR_EACH_OBJECT(child, object) Node2D_DirtySubtree(child);
+}
+
 HANDLER(Node2D, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property || pNode2D->_scrollWriting) return FALSE;
   uint32_t id = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  if (id == ID_Node2D_TextScale) Node2D_DirtySubtree(hObject);
   if (id == ID_Node2D_InertiaScrolling && !pNode2D->InertiaScrolling)
     pNode2D->_scrollVelocity.y = 0;
   if (id == ID_Node2D_ContentOffset) {

@@ -158,6 +158,17 @@
       <value name="Generic">Base style applied to all components of the specified target type. Serves as a default visual definition.</value>
       <value name="Named">Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.</value>
     </enum>
+    <enum name="AccessibilityTraits">
+      <summary>What an assistive technology such as VoiceOver says an element is, after UIAccessibilityTraits</summary>
+      <value name="Auto">From the element's class: a Button or an Input is one element (a button or a text field), a TextBlock with text is static text, and other elements are read through their children unless they have an AccessibilityLabel</value>
+      <value name="None">One element without a trait</value>
+      <value name="Button">One element that acts when activated</value>
+      <value name="Link">One element that opens another page or place</value>
+      <value name="Header">A heading that starts a section</value>
+      <value name="StaticText">Text that does not change and does not act</value>
+      <value name="Image">A picture or a graphic, such as a colour band or a chart</value>
+      <value name="Summary">A summary of the screen's state, read when the screen appears</value>
+    </enum>
     <enum name="TextDecoration">
       <summary>Specifies text decoration styles such as underline or strikethrough.</summary>
       <value name="None">No text decoration</value>
@@ -269,6 +280,18 @@
     </struct>
   </structs>
   <functions>
+    <function name="GetAccessibilityLabel" export="getAccessibilityLabel">
+      <summary>Returns the text VoiceOver reads for an element</summary>
+      <details>The element's AccessibilityLabel, or else its own visible text and that of its visible descendants, joined with commas; a descendant with a label contributes the label. Empty for a hidden element. The string is valid until the next call.</details>
+      <arg name="object" type="Object" pointer="true">The element</arg>
+      <returns type="string">The label, possibly empty</returns>
+    </function>
+    <function name="DescribeAccessibility" export="describeAccessibility">
+      <summary>Lists the accessibility elements of a laid-out screen, one line each</summary>
+      <details>The elements the iOS VoiceOver bridge exposes, in reading order: visible, inside the screen and their clipping ancestors, the topmost visible modal screen instead of the one under it. Each line is the trait name, a tab and the label, then a tab and the hint when there is one. For tests and diagnostics; the string is valid until the next call.</details>
+      <arg name="screen" type="Object" pointer="true">A Screen that has been drawn</arg>
+      <returns type="string">The elements, one per line</returns>
+    </function>
     <function name="LoadObjectFromCss" export="loadObjectFromCss">
       <summary>Loads a stylesheet object from a CSS file</summary>
       <details>Reads the specified CSS file and parses it into a StyleSheet object containing StyleRule children. Returns the root stylesheet object on success, or nil on failure.</details>
@@ -416,6 +439,11 @@
         <property name="ContentStretch" type="bool">Determines if content stretches to fill available space.</property>
         <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse.</property>
         <property name="IgnoreHitTest" type="bool">Marks object as ignored during hit testing (mouse interaction).</property>
+        <property name="TextScale" type="float" default="1" inherited="true">Multiplier applied to every font size in the element and below it, for Dynamic Type: set it on a screen or a page from core.getTextScale(), clamped to what the layout can take. 1 draws the sizes as written.</property>
+        <property name="AccessibilityLabel" type="string">What VoiceOver reads for the element, as UIAccessibility accessibilityLabel. An element with a label is read as one element and its children are not visited. Without one, a Button, an Input or a TextBlock is read from its own text and the text of its visible descendants, joined with commas. Give a label where the text alone is ambiguous or absent: an icon, a colour, a chart.</property>
+        <property name="AccessibilityHint" type="string">What happens when the element is activated, read after a pause, as accessibilityHint ("opens the hours of that day"). Optional.</property>
+        <property name="AccessibilityTraits" type="AccessibilityTraits">What the element is to VoiceOver. Auto takes it from the class; any other value makes the element one accessibility element.</property>
+        <property name="AccessibilityHidden" type="bool">Hides the element and its descendants from VoiceOver, as accessibilityElementsHidden: decoration, or text another element already reads.</property>
         <property name="ForegroundHint" type="ForegroundHint">Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.</property>
       </properties>
       <fields>

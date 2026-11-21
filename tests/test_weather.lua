@@ -412,6 +412,24 @@ check(app.store:get("WeatherRow", "tahoe:hour:2026-11-18T07:00").values.Short ==
 check(find("HubBandTitle").Text == "outdoors, next 24 hours" and find("Bandtahoe:hour:2026-11-18T06:00")
     and tickRow.values.Tone ~= "info" and find("Bandtahoe:hour:2026-11-18T06:00").StateClasses == tickRow.values.Tone,
     "The hourly section opens with outdoors' verdict band")
+-- W11: VoiceOver reads a band cell's hour and verdict, a row as one
+-- sentence with a hint, and the hub's visible elements in order.
+do
+    local UIKit = require "orca.UIKit"
+    local band9, row9 = find("Bandtahoe:hour:2026-11-18T09:00"), app.store:get("WeatherRow", "tahoe:hour:2026-11-18T09:00")
+    check(UIKit.getAccessibilityLabel(find("Bandtahoe:hour:2026-11-18T06:00")):find("^now ")
+        and UIKit.getAccessibilityLabel(band9) == "09:00 " .. row9.values.Tone,
+        "A band cell says its hour and verdict: " .. UIKit.getAccessibilityLabel(band9))
+    local fishingRow = find("GoodFortahoe:activity:fishing")
+    check(UIKit.getAccessibilityLabel(fishingRow):find("^fishing, good, best 06") and fishingRow.AccessibilityHint == "opens the activity",
+        "A good-for row reads as one sentence: " .. UIKit.getAccessibilityLabel(fishingRow))
+    check(UIKit.getAccessibilityLabel(find("HubTemp")) == "10°", "Plain text reads as itself")
+    local spoken = UIKit.describeAccessibility(app.screen)
+    check(spoken:find("^Header\tlake tahoe\nHeader\tnow\nStaticText\t10°\n") and spoken:find("\nNone\thumidity, 70%%\n")
+        and spoken:find("\nHeader\tgood for\nButton\toutdoors, good, "),
+        "The hub reads its title, each section's header, then the section:\n" .. spoken)
+    check(find("TempChart").AccessibilityLabel:find("^chart of the next 24 hours: temperature"), "Charts are named for VoiceOver")
+end
 check(text("Daytahoe:day:2026-11-20", "Verdict") == "11° / 7°" or text("Daytahoe:day:2026-11-20", "Verdict"):find("/"),
     "Days show high and low")
 check(text("Daytahoe:day:2026-11-19", "Why"):find(" for ") ~= nil, "Days name their best activity: "
@@ -1086,5 +1104,22 @@ for key, name in pairs(Activities.names) do
     check(package:find(('{ Key = "%s", Name = "%s" }'):format(key, name), 1, true), "package.lua names " .. key)
 end
 check(Activities.appName == "Weather", "The full app is plain Weather")
+
+-- W11: Dynamic Type. The content size category scales Weather's type,
+-- held to what the Metro layout takes.
+do
+    local core, App = require "orca.core", require "Weather/App"
+    check(core.getContentSizeCategory() == "large" and core.getTextScale() == 1, "Large is the default text size")
+    core.setContentSizeCategory("extra-large")
+    check(math.abs(core.getTextScale() - 19 / 17) < 1e-4 and math.abs(App.textScale() - 19 / 17) < 1e-4,
+        "Extra large is the Body style's 19 points")
+    core.setContentSizeCategory("accessibility-extra-extra-extra-large")
+    check(core.getTextScale() > 3 and App.textScale() == App.TEXT_SCALE.max, "The largest sizes stop at Weather's maximum")
+    core.setContentSizeCategory("extra-small")
+    check(App.textScale() == App.TEXT_SCALE.min, "And the smallest at its minimum")
+    core.setContentSizeCategory("bogus")
+    check(core.getTextScale() == 1, "An unknown category scales as large")
+    core.setContentSizeCategory("large")
+end
 
 F.done("weather")

@@ -13,9 +13,9 @@
       </StackView>
     </Button>
     <Button Name="SettingLess" Visible="{Binding DataContext/Stepper}" Click="LowerSetting" Height="64" BorderWidth="0"
-            FontSize="18" class="wx-link">less</Button>
+            AccessibilityHint="{Binding DataContext/Title}" FontSize="18" class="wx-link">less</Button>
     <Button Name="SettingMore" Visible="{Binding DataContext/Stepper}" Click="ChangeSetting" Height="64" BorderWidth="0"
-            FontSize="18" class="wx-link">more</Button>
+            AccessibilityHint="{Binding DataContext/Title}" FontSize="18" class="wx-link">more</Button>
   </Grid>
   <TextBlock Name="SettingDetail" Text="{Binding DataContext/Detail}" Visible="{Binding DataContext/HasDetail}"
              FontSize="14" WordWrap="true" class="wx-dim" IgnoreHitTest="true"/>

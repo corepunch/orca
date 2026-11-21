@@ -135,6 +135,9 @@ App = Application:extend {
     screenFor = function(self, page)
         local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
             RespectSafeArea = false, ClearColor = "#000000", StyleSheet = self:styleSheet() }
+        -- Dynamic Type (W11): the person's text size, as far as the Metro
+        -- layout takes it (headers and panorama titles grow too).
+        page.TextScale = App.textScale()
         screen:addChild(page)
         self:dress(screen, self:pageClasses())
         return screen
@@ -295,6 +298,10 @@ App = Application:extend {
         title("TempColumns", "temperature " .. Units.label("temp"))
         title("WindLine", "wind " .. Units.label("wind"))
         title("RainColumns", "chance of rain %")
+        -- VoiceOver reads a chart as one picture named by its series.
+        local function speak(name, text) local node = page:findChild(name, true); if node then node.AccessibilityLabel = text end end
+        speak("TempChart", "chart of the next 24 hours: temperature " .. Units.label("temp") .. " and wind " .. Units.label("wind"))
+        speak("RainChart", "chart of the next 24 hours: chance of rain")
     end,
 
     -- A setting row: step it and redraw the settings rows. Turning
@@ -339,6 +346,7 @@ App = Application:extend {
                 local unit = spec.unit and Units.label(spec.unit) or ""
                 shown.Title = (unit ~= "" and spec.title .. " " .. unit or spec.title)
                     .. (spec.note and " · " .. spec.note or "")
+                chart.AccessibilityLabel = "chart: " .. shown.Title
                 chart.Minimum = spec.min and Units.value(spec.unit, spec.min) or 0 / 0
                 chart.Maximum = spec.max and Units.value(spec.unit, spec.max) or 0 / 0
             end
@@ -494,5 +502,16 @@ App = Application:extend {
         return self:activate_route(path)
     end,
 }
+
+-- The person's text size (Dynamic Type) as a multiplier for Weather's type:
+-- `core.getTextScale()`, held between a little smaller and a third larger,
+-- which the Metro pages still lay out (the accessibility sizes stop there).
+App.TEXT_SCALE = { min = 0.9, max = 1.35 }
+function App.textScale()
+    local ok, engine = pcall(require, "orca.core")
+    local scale = ok and type(engine) == "table" and engine.getTextScale and engine.getTextScale() or 1
+    if type(scale) ~= "number" or scale ~= scale then return 1 end
+    return math.max(App.TEXT_SCALE.min, math.min(App.TEXT_SCALE.max, scale))
+end
 
 return App

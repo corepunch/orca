@@ -342,6 +342,31 @@ without asking. `reverse(lat, lon)` names a position with `CLGeocoder`
 to Apple's geocoding service. Nothing keeps tracking after a call. Desktop
 builds return `unsupported`.
 
+### VoiceOver and Dynamic Type
+
+While VoiceOver or Switch Control runs, every paint mirrors the visible
+screen into `UIAccessibilityElement`s in a transparent container over the
+ORCA view (`source/ios_accessibility.m`); nothing runs otherwise. The rules
+are platform-neutral in `plugins/UIKit/Accessibility.c`: a Button or Input
+is one element read from its own and its children's text, a TextBlock with
+text is static text, and any node with `AccessibilityLabel` or a non-Auto
+`AccessibilityTraits` is one element whose children are not visited.
+`AccessibilityHint` is read after a pause; `AccessibilityHidden` hides a
+subtree. Elements are clipped to the screen and to clipping ancestors, so an
+off-screen Panorama section or a scrolled-away row is not read. Activating
+an element taps its centre through the engine's input queue. A new screen
+posts `UIAccessibilityScreenChangedNotification`, other changes
+`LayoutChanged`. Not yet: three-finger scrolling (VoiceOver reads what is
+on screen; scroll with a finger, or apps keep important content near the
+top), adjustable controls and custom actions.
+
+`core.getContentSizeCategory()` and `core.getTextScale()` report the
+person's text size (Settings, Display and Text Size; `ORCA_CONTENT_SIZE`
+overrides it). `Node2D.TextScale` (inherited, default 1) multiplies every
+font size below a node; an app sets it on its page from `getTextScale()`,
+clamped to what its layout takes. Changes repaint; the app decides when to
+apply them.
+
 ## Verify
 
 ```sh

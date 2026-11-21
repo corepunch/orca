@@ -1133,11 +1133,14 @@ _MakeTextBlockTextRun(struct Object  *hObject,
   TextRun_ReadProperty(hObject, Font.Style,  &font.Style);
   TextRun_ReadProperty(hObject, Font.Size,   &font.Size);
   TextRun_ReadProperty(hObject, Font.Family, &font.Family);
+  // Dynamic Type: Node2D.TextScale on the text or an ancestor (inherited).
+  float scale = 1;
+  if (!OBJ_ReadProperty(hObject, ID_Node2D_TextScale, &scale) || !(scale > 0)) scale = 1;
 
   struct TextBlockTextRun view = {
     .string             = szText,
     .fontFamily         = font.Family,
-    .fontSize           = font.Size,
+    .fontSize           = font.Size * scale,
     .letterSpacing      = text.LetterSpacing,
     .lineHeight         = text.LineHeight,
     .fixedCharacterWidth= text.FixedCharacterWidth,

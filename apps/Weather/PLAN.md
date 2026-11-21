@@ -174,7 +174,7 @@ Priorities: **P0** to launch, **P1** soon after, **P2** later. Size: S, M, L.
 | W8 | Comfort setting ("I run cold") | P2 | S | an outdoors setting |
 | W9 | An hourly "good for" traffic-light row on the hub | P2 | S | DESIGN.md already proposes it |
 | W10 | Official severe weather warnings (US NWS, MeteoAlarm, Canada) | P1 | M–L | F4 source; check the MeteoAlarm licence |
-| W11 | Accessibility: VoiceOver labels, Dynamic Type, contrast | P1 | M | check what the engine supports |
+| W11 | Accessibility: VoiceOver labels, Dynamic Type, contrast | P1 | M | partial, see [README](README.md#tests): engine accessibility properties and an iOS VoiceOver bridge; labels on colour-only bands, reasons and rows; Dynamic Type through `TextScale`, 0.9 to 1.35. Not done: VoiceOver scrolling to content below the fold (three-finger scroll does not reach engine scroll views), live Dynamic Type on an open page, a contrast audit |
 | W12 | Rain radar | P2 | L | needs a paid provider; RainViewer's free API was cut back in 2025 |
 
 ### Fishers' Weather: `fishing.lua`
