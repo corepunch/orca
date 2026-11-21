@@ -116,22 +116,8 @@ LDFLAGS += $(EXE_RPATH)
 
 .DEFAULT_GOAL := default
 
-# GLSL to MSL translation, used by the Metal renderer on Apple platforms and
-# tested on every host.
-SHADER_GEN = $(BUILDDIR)/shaders/include
-include tools/shaders/shaders.mk
-SHADER_LIB = $(LIBDIR)/libglslmsl.a
-SHADER_OBJS = $(patsubst %.cpp,$(OBJECTDIR)/shaders/%.o,$(SHADER_SOURCES))
-CXX_RUNTIME = $(if $(filter Darwin,$(UNAME_S)),-lc++,-lstdc++)
-$(OBJECTDIR)/shaders/%.o: %.cpp $(SHADER_GEN)/glslang/build_info.h
-	$(Q)mkdir -p "$(@D)"
-	$(Q)echo "Compiling $<"
-	$(Q)$(CXX) -O2 -g -fPIC $(ARCH_FLAGS) $(SHADER_CXXFLAGS) -c "$<" -o "$@"
-$(SHADER_LIB): $(SHADER_OBJS) | directories
-	$(Q)rm -f "$@" && ar rcs "$@" $^
-
-# Apple builds render with Metal through an OpenGL ES layer (source/renderer/
-# metal); RENDERER=gl keeps the system OpenGL framework.
+# Apple builds render with Metal (source/renderer/metal); RENDERER=gl keeps
+# the system OpenGL framework.
 RENDERER ?= $(if $(filter Darwin,$(UNAME_S)),metal,gl)
 ifeq ($(RENDERER),metal)
 	CFLAGS += -DORCA_METAL=1 -DAX_METAL=1
@@ -648,8 +634,6 @@ $(1): $(3)
 	$(Q)$(TARGET) -test=$(2)
 endef
 
-.PHONY: test-glsl-msl
-$(eval $(call C_TEST_RULE,test-glsl-msl,tests/test_glsl_msl.c,$(BINDIR)/test_glsl_msl,platform $(SOURCEMODULES2) buildlib $(SHADER_LIB),,$(TEST_LDFLAGS) $(SHADER_LIB) $(CXX_RUNTIME) -lm))
 
 .PHONY: test-ios-tmpname
 $(eval $(call C_TEST_RULE,test-ios-tmpname,tests/test_ios_tmpname.c,$(BINDIR)/test_ios_tmpname,directories tools/ios/lua_config.h,,))
@@ -921,7 +905,7 @@ $(eval $(call LUA_TEST_RULE,test-editor-welcome,tests/test_editor_welcome.lua,un
 $(eval $(call LUA_TEST_RULE,test-editor-tabs,tests/test_editor_tabs.lua,unite copyshare))
 $(eval $(call LUA_TEST_RULE,test-editor-projects,tests/test_editor_projects.lua,unite copyshare))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-glsl-msl test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-editor-app test-shader-uniforms test-texture-downscale $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

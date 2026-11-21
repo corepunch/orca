@@ -45,16 +45,12 @@ The renderer labels a program with its shader's name before linking
 compiles the MSL with `MTLDevice newLibraryWithSource:`. Metal caches compiled
 source between launches. A program without a table, or whose MSL fails to
 compile, reports the reason through `glGetProgramInfoLog`, as a GLSL link
-error would. Only the built-in shaders have tables: a custom GLSL `Shader`
-resource does not link on a Metal build.
+error would.
 
-The tables come from the offline translator `GLSL_TranslateProgram`
-(`source/renderer/metal/glsl_msl.cpp`: glslang to SPIR-V, SPIRV-Cross to MSL),
-which the engine itself never calls. `make test-glsl-msl`
-runs it on every built-in shader, a lit shader with the lighting
-helpers, and `apps/octopus/Shaders/Gradient.xml`, for both iOS and macOS;
-`GLSL_MSL_DUMP="UI Shader (iOS)" build/bin/test_glsl_msl` prints the generated
-MSL of the named shader.
+Only the built-in shaders have tables, so a custom GLSL `Shader` resource does
+not link on a Metal build. There is no GLSL translation, at build time or at
+run time: a shader for Metal is written in MSL, and a project that needs its
+own has to supply MSL.
 
 ## How the renderer's calls map to Metal
 

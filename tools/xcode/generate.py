@@ -167,8 +167,8 @@ def generate(args, app):
     frameworks = ('UIKit', 'Foundation', 'Metal', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'PhotosUI', 'AVFoundation', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox',
                   'UserNotifications', 'AuthenticationServices', 'Contacts', 'CoreLocation', 'BackgroundTasks')
-    linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2', '-lglslmsl',
-              '-lc++', '-lz', '-liconv', '-lm']
+    linker = ['$(inherited)', '-llua', '-llz4', '-lfreetype', '-lpng16', '-ljpeg', '-lcurl', '-lxml2',
+              '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
     target_settings = {

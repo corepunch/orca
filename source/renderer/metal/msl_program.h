@@ -3,6 +3,8 @@
 
 // A Metal Shading Language program and its reflection: the two stage
 // sources and where each uniform and vertex attribute lives in them.
+// The Metal backend compiles no other shading language; r_msl_shaders.h has
+// one of these, written by hand, for each built-in shader.
 //
 // Loose uniforms of both stages are gathered into one uniform block per
 // stage at buffer(MSL_UNIFORM_BUFFER); the reflection gives each uniform's
@@ -53,14 +55,13 @@ struct msl_attribute
 
 struct msl_program
 {
-  char *source[MSL_STAGES];
+  char const *source[MSL_STAGES];
   char entry[MSL_STAGES][MSL_MAX_NAME];
   uint32_t blockSize[MSL_STAGES];  // 0 when the stage has no uniforms
   uint32_t numUniforms;
   uint32_t numAttributes;
   struct msl_uniform uniforms[MSL_MAX_UNIFORMS];
   struct msl_attribute attributes[MSL_MAX_ATTRIBUTES];
-  char *log;  // errors and warnings; may be set on success
 };
 
 #ifdef __cplusplus

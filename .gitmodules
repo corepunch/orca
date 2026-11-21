@@ -22,9 +22,3 @@
 [submodule "libs/libxml2"]
 	path = libs/libxml2
 	url = https://gitlab.gnome.org/GNOME/libxml2.git
-[submodule "libs/glslang"]
-	path = libs/glslang
-	url = https://github.com/KhronosGroup/glslang.git
-[submodule "libs/SPIRV-Cross"]
-	path = libs/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross.git

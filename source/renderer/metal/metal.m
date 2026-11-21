@@ -1405,8 +1405,7 @@ void mtlLinkProgram(uint32_t program)
   NSMutableString *log = [NSMutableString string];
   p->refl = lookup_msl_refl(p->name);
   if (!p->refl) {
-    p->log = [NSString stringWithFormat:@"%@: no MSL reflection; add lang=\"msl\" to the Shader XML or use a named builtin",
-              p->name ?: @"(unnamed program)"];
+    p->log = [NSString stringWithFormat:@"%@: no Metal shader with this name", p->name ?: @"(unnamed program)"];
     return;
   }
   int ok = YES;
