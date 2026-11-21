@@ -106,17 +106,20 @@ def url_types(project):
     return {'CFBundleURLTypes': [{'CFBundleURLName': 'Sign-in links', 'CFBundleURLSchemes': schemes}]} if schemes else {}
 
 
-def compile_assets(project, bundle, sdk, minimum):
+def compile_assets(project, bundle, sdk, minimum, edition=None):
     """Compile an optional native icon catalog during an actual Make build."""
     catalog = project / 'Assets.xcassets'
-    if not (catalog / 'AppIcon.appiconset/Contents.json').is_file():
+    icon = 'AppIcon'
+    if edition and (catalog / f'AppIcon-{edition}.appiconset/Contents.json').is_file():
+        icon = f'AppIcon-{edition}'
+    if not (catalog / f'{icon}.appiconset/Contents.json').is_file():
         return {}
     with tempfile.TemporaryDirectory(prefix='orca-app-icon-') as temporary:
         partial = Path(temporary) / 'asset-info.plist'
         subprocess.run([
             'xcrun', '--sdk', sdk, 'actool', str(catalog), '--compile', str(bundle),
             '--platform', sdk, '--minimum-deployment-target', minimum,
-            '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', 'AppIcon',
+            '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', icon,
             '--output-partial-info-plist', str(partial),
         ], check=True, stdout=subprocess.DEVNULL)
         return plistlib.loads(partial.read_bytes())
@@ -176,7 +179,7 @@ def main():
             }]},
         },
     }
-    info.update(compile_assets(project, bundle, args.sdk, args.minimum))
+    info.update(compile_assets(project, bundle, args.sdk, args.minimum, args.edition))
     info.update(url_types(project))
     languages = sorted(path.stem for path in (project / 'Locales').glob('*.lua')
                        if re.fullmatch(r'[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*', path.stem))

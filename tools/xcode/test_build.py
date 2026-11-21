@@ -206,23 +206,32 @@ class ResourceTests(unittest.TestCase):
         iconset = catalog / 'AppIcon.appiconset'
         iconset.mkdir(parents=True)
         (iconset / 'Contents.json').write_text('{}')
-        metadata = {'CFBundleIcons': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}},
-                    'CFBundleIcons~ipad': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}}}
+        edition_iconset = catalog / 'AppIcon-surf.appiconset'
+        edition_iconset.mkdir()
+        (edition_iconset / 'Contents.json').write_text('{}')
 
-        def fake_compile(command, check):
+        def fake_compile(command, *, check, stdout):
             self.assertTrue(check)
+            self.assertEqual(stdout, subprocess.DEVNULL)
             self.assertEqual(command[:5], ['xcrun', '--sdk', 'iphonesimulator', 'actool', str(catalog)])
             self.assertIn('--compile', command)
             self.assertEqual(command[command.index('--compile') + 1], str(self.bundle))
             self.assertEqual(command[command.index('--minimum-deployment-target') + 1], '16.0')
-            self.assertEqual(command[command.index('--app-icon') + 1], 'AppIcon')
+            self.assertEqual(command[command.index('--app-icon') + 1], icon)
             devices = [command[i + 1] for i, value in enumerate(command) if value == '--target-device']
             self.assertEqual(devices, ['iphone', 'ipad'])
             Path(command[command.index('--output-partial-info-plist') + 1]).write_bytes(plistlib.dumps(metadata))
 
-        with patch.object(module.subprocess, 'run', side_effect=fake_compile) as compiler:
-            self.assertEqual(module.compile_assets(self.project, self.bundle, 'iphonesimulator', '16.0'), metadata)
-            compiler.assert_called_once()
+        for edition, icon in ((None, 'AppIcon'), ('surf', 'AppIcon-surf'), ('fishing', 'AppIcon')):
+            with self.subTest(edition=edition):
+                metadata = {'CFBundleIcons': {'CFBundlePrimaryIcon': {'CFBundleIconName': icon}},
+                            'CFBundleIcons~ipad': {'CFBundlePrimaryIcon': {'CFBundleIconName': icon}}}
+                with patch.object(module.subprocess, 'run', side_effect=fake_compile) as compiler:
+                    self.assertEqual(
+                        module.compile_assets(self.project, self.bundle, 'iphonesimulator', '16.0', edition),
+                        metadata,
+                    )
+                    compiler.assert_called_once()
         (iconset / 'Contents.json').unlink()
         with patch.object(module.subprocess, 'run', side_effect=AssertionError('Unexpected toolchain invocation')):
             self.assertEqual(module.compile_assets(self.project, self.bundle, 'iphoneos', '16.0'), {})
