@@ -2,8 +2,10 @@
 --
 --   1. the angler's own thermometer reading (the log keeps one per place
 --      for three days);
---   2. on a coast, the sea surface from Open-Meteo's marine model;
---   3. on a big lake, Open-Meteo's `soil_temperature_0cm`, which is the
+--   2. a service's fresh measurement: the river gauge, the NOAA station or
+--      the Great Lake's average (Water.measured);
+--   3. on a coast, the sea surface from Open-Meteo's marine model;
+--   4. on a big lake, Open-Meteo's `soil_temperature_0cm`, which is the
 --      water surface where the model's grid cell is water. A cell that is
 --      really land swings with day and night, so a 24-hour swing of more
 --      than 5° means "no estimate here" rather than a wrong number.
@@ -13,6 +15,7 @@
 local Water = {}
 
 Water.READING_SECONDS = 3 * 24 * 3600
+Water.MEASURED_SECONDS = 2 * 24 * 3600 -- the hours a measurement stands for
 local LAND_SWING = 5
 local cache = setmetatable({}, { __mode = "k" })
 
@@ -37,15 +40,48 @@ local function lakeEstimate(forecast, hour)
     return value or nil
 end
 
--- The water at an hour: { temp, kind = "reading" | "sea" | "lake", source,
--- short }, or nil with no source. `reading` is the place's stored reading
--- ({ temp, epoch }) or nil.
-function Water.at(hour, forecast, reading)
+-- What a service measured near the place now (Gauges, editions/fishing/
+-- gauges.lua): the river gauge's sensor, the NOAA station's or the Great
+-- Lake's daily average, the first that is fresh. { temp, epoch, kind =
+-- "measured", source, short }, or nil. Stale readings are left out.
+function Water.measured(forecast)
+    if not forecast then return nil end
+    local Gauges = require "Weather/editions/fishing/gauges"
+    local Units = require "Weather/units"
+    local now = forecast.epoch or os.time()
+    local gauge = Gauges.of(forecast)
+    if gauge and gauge.fresh and gauge.temp then
+        return { temp = gauge.temp, epoch = gauge.epoch, kind = "measured", short = "at the gauge",
+            source = ("measured at %s, %s (%s)"):format(gauge.name, Gauges.ago(gauge.age), gauge.source) }
+    end
+    local noaa = forecast.waterNoaa
+    if noaa and now - noaa.epoch <= Gauges.STALE then
+        local station = forecast.spot and forecast.spot.tideStation or {}
+        local km = require("Weather/editions/fishing/tides").distanceKm(forecast.spot and forecast.spot.lat,
+            forecast.spot and forecast.spot.lon, noaa.lat or station.lat, noaa.lon or station.lon)
+        return { temp = noaa.temp, epoch = noaa.epoch, kind = "measured", short = "NOAA station",
+            source = ("measured at %s%s, %s (NOAA)"):format(station.name or noaa.name or "the NOAA station",
+                km and ", " .. Units.distance(km) .. " away" or "", Gauges.ago(now - noaa.epoch)) }
+    end
+    local lake = Gauges.lake(forecast)
+    if lake then
+        local week = lake.week and math.abs(lake.week) >= 0.5 and (", %s %s this week"):format(
+            lake.week > 0 and "up" or "down", Units.tempDelta(math.abs(lake.week))) or ""
+        return { temp = lake.temp, epoch = lake.epoch, kind = "measured", short = "lake average",
+            source = ("Lake %s average surface from satellites, not your shore%s (NOAA GLERL)"):format(lake.lake, week) }
+    end
+end
+
+-- The water at an hour: { temp, kind = "reading" | "measured" | "sea" |
+-- "lake", source, short }, or nil with no source. `reading` is the place's
+-- stored reading ({ temp, epoch }) or nil; `measured` is Water.measured's.
+function Water.at(hour, forecast, reading, measured)
     local spot = forecast and forecast.spot or {}
     local epoch = hour.epoch or forecast and forecast.epoch
     if reading and reading.temp and reading.epoch and epoch and math.abs(epoch - reading.epoch) <= Water.READING_SECONDS then
         return { temp = reading.temp, kind = "reading", source = "your own reading", short = "your reading" }
     end
+    if measured and epoch and math.abs(epoch - measured.epoch) <= Water.MEASURED_SECONDS then return measured end
     if not spot.lake and hour.seaTemp then
         return { temp = hour.seaTemp, kind = "sea", source = "sea surface, Open-Meteo marine model", short = "sea surface" }
     end

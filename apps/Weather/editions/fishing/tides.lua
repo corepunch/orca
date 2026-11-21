@@ -78,9 +78,38 @@ function Tides.parseSeaLevel(json)
     return { kind = "model", turns = turns, curve = curve, lat = json.latitude, lon = json.longitude }
 end
 
--- The two sources as forecast `sources`; the forecast keeps each answer.
+-- Measured water temperature at the place's NOAA station (SV-FI2): the
+-- recent 6-minute readings in UTC and °C. A station without the sensor
+-- answers `error.message`, and the water falls back to the model.
+function Tides.waterUrl(spot)
+    local station = spot and spot.tideStation
+    if not (station and station.noaa) then return nil end
+    return require("Weather/forecast").url("noaaTides", ("product=water_temperature&application=weather_app&date=recent"
+        .. "&station=%s&time_zone=gmt&units=metric&format=json"):format(station.noaa))
+end
+
+-- { data = { { t = "2026-11-18 05:48", v = "18.4", f = "0,0,0" } } } →
+-- { temp, epoch, name, lat, lon } of the newest reading.
+function Tides.parseWater(json)
+    local newest
+    for _, point in ipairs(json.data or {}) do
+        local temp = tonumber(point.v)
+        local d, h, m = (type(point.t) == "string" and point.t or ""):match("^(%d+%-%d+%-%d+) (%d+):(%d+)")
+        local start = d and Sky.epochOf(d)
+        local epoch = start and start + tonumber(h) * 3600 + tonumber(m) * 60
+        if temp and epoch and (not newest or epoch > newest.epoch) then newest = { temp = temp, epoch = epoch } end
+    end
+    if not newest then error(json.error and json.error.message or "no water temperature") end
+    local meta = json.metadata or {}
+    newest.name, newest.lat, newest.lon = meta.name, tonumber(meta.lat), tonumber(meta.lon)
+    return newest
+end
+
+-- The sources as forecast `sources`; the forecast keeps each answer.
 function Tides.sources()
     return {
+        { id = "water-noaa", optional = true, url = Tides.waterUrl,
+            parse = function(json, forecast) forecast.waterNoaa = Tides.parseWater(json) end },
         { id = "tides-noaa", optional = true, url = function(spot) return Tides.noaaUrl(spot) end,
             parse = function(json, forecast) forecast.tidesNoaa = Tides.parseNoaa(json) end },
         { id = "tides-model", optional = true, url = Tides.seaLevelUrl,

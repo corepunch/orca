@@ -27,8 +27,15 @@ River.source = { id = "river", optional = true, url = River.url,
 
 -- The river on a date: { discharge, usual (the median of the days before),
 -- ratio, trend = "rising" | "falling" | "steady", state = "high" | "low" |
--- "normal" }, or nil.
+-- "normal" }, or nil. Today a fresh gauge reading wins over the model
+-- (`gauge` is then the reading; its ratio and trend may be nil).
 function River.on(forecast, date)
+    local today = forecast.hours and forecast.hours[forecast.now]
+    local gauge = today and today.date == date and require("Weather/editions/fishing/gauges").of(forecast)
+    if gauge and gauge.fresh and (gauge.state or gauge.trend) then
+        return { discharge = gauge.flow, usual = gauge.usual, ratio = gauge.ratio, trend = gauge.trend or "steady",
+            state = gauge.state or "normal", gauge = gauge }
+    end
     local river = forecast.river
     if not river then return nil end
     local today, before = nil, {}
