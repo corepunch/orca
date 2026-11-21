@@ -18,6 +18,7 @@ local River = require "Weather/editions/fishing/river"
 local Species = require "Weather/editions/fishing/species"
 local Rules = require "Weather/editions/fishing/rules"
 local Log = require "Weather/editions/fishing/log"
+local Gauges = require "Weather/editions/fishing/gauges"
 
 local Fishing = {
     id = "fishing", title = "fishing",
@@ -36,6 +37,42 @@ Fishing.page = { routes = "Weather/editions/fishing/Data/Routes.xml", path = "/f
 
 Fishing.sources = Tides.sources()
 Fishing.sources[#Fishing.sources + 1] = River.source
+-- Measured water from public gauge networks and NOAA GLERL; each asks only
+-- where the place has a station (editions/fishing/gauges.lua).
+for _, source in ipairs(Gauges.sources()) do Fishing.sources[#Fishing.sources + 1] = source end
+
+-- Credit for each service, on the settings' "about" (Research/services-fishing.md):
+-- the services my places read, each once.
+Fishing.CREDITS = {
+    noaa = { "Tides and water temperature by NOAA CO-OPS", "Public domain, tidesandcurrents.noaa.gov." },
+    usgs = { "River data by the U.S. Geological Survey", "Public domain. Recent readings are provisional and may be revised." },
+    ea = { "River levels by the Environment Agency", "This uses Environment Agency flood and river level data from the "
+        .. "real-time data API (Beta). Open Government Licence v3.0." },
+    pegel = { "Water levels by WSV, PEGELONLINE", "Data licence Germany – Zero – Version 2.0, pegelonline.wsv.de." },
+    opw = { "Water levels by the Office of Public Works", "waterlevel.ie, CC BY 4.0." },
+    glerl = { "Great Lakes water temperature by NOAA GLERL", "GLSEA, a daily lake-average surface temperature from satellites." },
+}
+local CREDIT_ORDER = { "noaa", "usgs", "ea", "pegel", "opw", "glerl" }
+
+-- The services a place reads: { noaa = true, usgs = true, … }.
+function Fishing.services(place)
+    local used, station = {}, Gauges.station(place)
+    used.noaa = place.tideStation and place.tideStation.noaa and true
+    if station then used[station.network] = true end
+    used.usgs = used.usgs or Gauges.usgsUrl(place) ~= nil
+    used.glerl = Gauges.greatLake(place) ~= nil
+    return used
+end
+
+function Fishing.attribution()
+    local used = {}
+    for _, place in ipairs(require("Weather/myplaces").mine() or {}) do
+        for key, yes in pairs(Fishing.services(place)) do used[key] = used[key] or yes end
+    end
+    local list = {}
+    for _, key in ipairs(CREDIT_ORDER) do if used[key] then list[#list + 1] = Fishing.CREDITS[key] end end
+    return list
+end
 
 -- What the place editor asks of a water (P3). Lake, river or coast is the
 -- place's kind.
@@ -78,7 +115,7 @@ local function coastal(spot) return spot and spot.lat and not spot.lake and not 
 -- The water at an hour (Water.at with the place's own reading).
 function Fishing.water(hour, forecast)
     local spot = forecast and forecast.spot
-    return Water.at(hour, forecast, spot and Log.reading(spot.id))
+    return Water.at(hour, forecast, spot and Log.reading(spot.id), Water.measured(forecast))
 end
 
 -- The highest gust in the `hours` after an hour, and when it comes.
@@ -228,10 +265,11 @@ function Fishing.rate(hour, forecast)
         end
     end
 
-    local river = forecast.river and River.on(forecast, hour.date)
+    local river = River.on(forecast, hour.date)
     if river and river.state == "high" then
-        card:add(-15, "River running high and coloured: anglers call it blown out.")
-    elseif river and river.trend == "falling" and river.ratio > 1.2 then
+        card:add(-15, river.gauge and "The gauge reads high: anglers call the river blown out."
+            or "River running high and coloured: anglers call it blown out.")
+    elseif river and river.trend == "falling" and (river.ratio or 0) > 1.2 then
         card:add(6, "River dropping and clearing after a rise: a time anglers like.")
     end
 
@@ -366,14 +404,51 @@ function Fishing.solunarCard(forecast)
             :format(#minor > 0 and table.concat(minor, " · ") or "—") }
 end
 
+-- "1,240 ft³/s" or "35 m³/s", following the height unit.
+local function flowText(m3s)
+    local feet = Units.current("height") == "ft"
+    local value = math.floor((feet and m3s / 0.0283168 or m3s) + 0.5)
+    local text = tostring(value):reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "")
+    return text .. (feet and " ft³/s" or " m³/s")
+end
+
+-- The gauge's card: what it measured and how long ago, or that it has
+-- gone silent. `model` is the GloFAS line it replaces, if any.
+local function gaugeCard(forecast, gauge, now)
+    local parts = {}
+    if gauge.flow then parts[#parts + 1] = flowText(gauge.flow) end
+    if gauge.level then parts[#parts + 1] = "level " .. Units.height(gauge.level, 2) end
+    if gauge.trend then parts[#parts + 1] = gauge.trend end
+    if gauge.temp then parts[#parts + 1] = "water " .. Units.temp(gauge.temp) end
+    local reading = ("%s: %s"):format(gauge.name, table.concat(parts, ", "))
+    local distance = gauge.distance and gauge.distance >= 0.5 and (", %s away"):format(Units.distance(gauge.distance)) or ""
+    if not gauge.fresh then
+        return { id = "river", title = "river gauge", value = "silent since " .. when(gauge.time, now.date), tone = "info",
+            detail = ("No fresh reading: the last was %s (%s%s). Gauges go quiet in outages and floods; look at the water "
+                .. "before you wade."):format(reading, gauge.source, distance) }
+    end
+    local state = gauge.state == "high" and "high: blown out" or gauge.state == "low" and "low" or gauge.trend or "measured"
+    local usual = gauge.ratio and (" %d%% of the week's usual."):format(math.floor(gauge.ratio * 100 + 0.5)) or ""
+    return { id = "river", title = "river gauge", value = state, tone = gauge.state == "high" and "poor" or "info",
+        detail = ("%s, %s (%s%s).%s"):format(reading, Gauges.ago(gauge.age), gauge.source, distance, usual) }
+end
+
 function Fishing.riverCard(forecast)
     local now = forecast.hours and forecast.hours[forecast.now]
-    local river = now and River.on(forecast, now.date)
-    if not river then return nil end
+    if not now then return nil end
+    local gauge = Gauges.of(forecast)
+    if gauge then return gaugeCard(forecast, gauge, now) end
+    local silent = Gauges.station(forecast.spot) and Gauges.failed(forecast)
+        and "The gauge did not answer, so this is the model. " or ""
+    local river = River.on(forecast, now.date)
+    if not river then
+        return silent ~= "" and { id = "river", title = "river gauge", value = "no reading", tone = "info",
+            detail = "The gauge did not answer. That says nothing about the water: look before you wade." } or nil
+    end
     return { id = "river", title = "river", value = river.state == "high" and "high: blown out" or river.trend,
         tone = river.state == "high" and "poor" or "info",
-        detail = ("%d m³/s, %d%% of the week's usual. GloFAS model, about 5 km: a small stream may read as a bigger river.")
-            :format(math.floor(river.discharge + 0.5), math.floor(river.ratio * 100 + 0.5)) }
+        detail = ("%s%d m³/s, %d%% of the week's usual. GloFAS model, about 5 km: a small stream may read as a bigger river.")
+            :format(silent, math.floor(river.discharge + 0.5), math.floor(river.ratio * 100 + 0.5)) }
 end
 
 -- The big answers: wind building, the front, the water, the tide, the
@@ -420,6 +495,7 @@ function Fishing.metrics(hour, forecast)
     rows[#rows + 1] = { label = "cloud cover", value = Score.fmt(hour.cloud, "%") }
     rows[#rows + 1] = { label = "air", value = Units.temp(hour.temp), note = "feels like " .. Units.temp(hour.feels) }
     rows[#rows + 1] = Rules.metric(spot)
+    rows[#rows + 1] = Rules.blooms(spot, forecast)
     return rows
 end
 
