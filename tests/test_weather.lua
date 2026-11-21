@@ -1182,7 +1182,9 @@ do
     check(seen == "#YY MM DD", "The text reaches the source's parse")
     local first = Activities.list[1]
     local before, baseline = first.attribution, #Provider.about()
-    first.attribution = { { "Test credit by Example", "Public domain." }, { "Weather data by Open-Meteo.com", "twice" } }
+    local own = type(before) == "function" and before() or before or {}
+    first.attribution = { { "Test credit by Example", "Public domain." }, { "Weather data by Open-Meteo.com", "twice" },
+        table.unpack(own) }
     local about = Provider.about()
     local function at(title) for index, line in ipairs(about) do if line[1] == title then return index end end end
     check(about[1][1] == "Weather data by Open-Meteo.com" and (at("Test credit by Example") or 0) > 1,
