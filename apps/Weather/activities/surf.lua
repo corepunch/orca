@@ -15,6 +15,10 @@ local Waves = require "Weather/editions/surf/waves"
 local Tides = require "Weather/editions/surf/tides"
 local Outlook = require "Weather/editions/surf/outlook"
 local Logbook = require "Weather/editions/surf/logbook"
+local Hazards = require "Weather/editions/surf/hazards"
+local Buoys = require "Weather/editions/surf/buoys"
+local Comfort = require "Weather/editions/surf/comfort"
+local WaterQuality = require "Weather/editions/surf/waterquality"
 local Compare = require "Weather/compare"
 
 local Surf = {
@@ -26,7 +30,29 @@ local marine = { Tides.COLUMN }
 for _, name in ipairs(Waves.COLUMNS) do marine[#marine + 1] = name end
 -- Three past days of rain for the runoff warning; 16 days for the outlook.
 Surf.fields = { marine = marine, pastDays = 3, forecastDays = Outlook.DAYS }
-Surf.sources = { Outlook.source }
+-- Services that already exist (Research/services-surf.md), each optional:
+-- beach warnings, the buoy, measured water temperature, the current and
+-- official bathing-water status. A break without a station asks nothing.
+Surf.sources = { Outlook.source, Hazards.source, Buoys.source, Buoys.waterSource, Comfort.source }
+for _, source in ipairs(WaterQuality.sources) do Surf.sources[#Surf.sources + 1] = source end
+
+-- Credit on the settings' "about": a country's bathing-water line only
+-- once a break reads it. For now only in Surfers' Weather: the full app's
+-- test counts the about lines as if no activity had its own (PLAN.md,
+-- Surfers' services, requests). NWS, NDBC and CO-OPS are public domain,
+-- so no licence needs the line there meanwhile.
+function Surf.attribution()
+    local Activities = package.loaded["Weather/activities"]
+    if not (type(Activities) == "table" and Activities.edition == "surf") then return {} end
+    local list = { Hazards.attribution, Buoys.attribution[1], Buoys.attribution[2] }
+    for _, profile in pairs(Breaks.list) do
+        if profile.bathingWater and profile.bathingWater.ie then
+            list[#list + 1] = WaterQuality.attribution[1]
+            break
+        end
+    end
+    return list
+end
 
 -- The surfer's level (SU9): what is too big for them, and the size they
 -- enjoy most. Until they choose, the app rates for an intermediate.
@@ -128,6 +154,7 @@ function Surf.rate(hour, forecast)
     if Sky.isStorm(hour.code) then card:cap(5, "Lightning: get out of the water.") end
     if not light(hour) then card:cap(30, "Dark: wait for first light.")
     elseif Score.darkness(hour) == "civil" then card:note("First light: dawn patrol.") end
+    Hazards.rate(card, hour, forecast, level)
 
     local surf = Waves.surf(hour, profile)
     if not surf then card:cap(20, "No swell data for this spot.")
@@ -168,8 +195,17 @@ function Surf.rate(hour, forecast)
         end
     end
 
-    -- Runoff after heavy rain (SU8): germs from rivers and drains.
-    local rain = profile.runoff and rainBefore(forecast, hour)
+    -- An official restriction today (SV-SU4) replaces the runoff rule after
+    -- heavy rain (SU8: germs from rivers and drains); "none listed" does not.
+    local official = WaterQuality.status(forecast)
+    local today = forecast.hours and forecast.now and forecast.hours[forecast.now]
+    local officialToday = official and official.status ~= "none listed" and today and hour.date == today.date
+    if officialToday and official.status == "advice against bathing" then
+        card:add(-25, ("Official advice against bathing (%s)."):format(official.source))
+    elseif officialToday then
+        card:add(-10, ("Official water-quality risk (%s)."):format(official.source))
+    end
+    local rain = not officialToday and profile.runoff and rainBefore(forecast, hour)
     if rain and rain >= profile.runoff then
         card:add(-15, ("About %s of rain in 3 days: runoff can make the water unsafe."):format(rainText(rain)))
     end
@@ -243,7 +279,13 @@ function Surf.metrics(hour, forecast)
         rows[#rows + 1] = { label = "tide (approximate)", value = Tides.text(tide),
             note = ("next %s %s"):format(tide.next.kind, Units.clock(tide.next.time)) }
     end
-    rows[#rows + 1] = { label = "water", value = Units.temp(hour.seaTemp), note = wetsuit(hour.seaTemp) }
+    -- Measured at a station when fresh (SV-SU3), else the model's sea surface.
+    local water, from, station = Buoys.water(hour, forecast)
+    local note = wetsuit(water)
+    if note and from then
+        note = note .. " · " .. (from == "measured" and "measured" .. (station and " at " .. station or "") or "model")
+    end
+    rows[#rows + 1] = { label = "water", value = Units.temp(water), note = note }
     local day = hour.day or {}
     local civil = day.twilight and day.twilight.civil
     rows[#rows + 1] = { label = "first light · sunrise", value = Units.clock(civil and civil.dawn) .. " · "
@@ -336,14 +378,30 @@ function Surf.tideCard(forecast)
         tone = "info" }
 end
 
--- Water quality (SU8): only when the rain says so.
+-- Water quality: the official status where a country publishes one
+-- (SV-SU4), else only when the rain says so (SU8).
 function Surf.waterCard(forecast)
+    local official = WaterQuality.card(forecast)
+    if official and official.tone == "poor" then return official end
     local profile, now = Breaks.of(forecast.spot), forecast.hours[forecast.now]
     local rain = profile.runoff and now and rainBefore(forecast, now)
-    if not (rain and rain >= profile.runoff) then return nil end
+    if not (rain and rain >= profile.runoff) then return official end
     return { id = "water", title = "water quality", value = "runoff risk", tone = "poor",
         detail = ("about %s of rain in 3 days: drains and rivers wash germs into the sea; "
-            .. "stay out for 72 h after heavy rain"):format(rainText(rain)) }
+            .. "stay out for 72 h after heavy rain · %s"):format(rainText(rain),
+            official and "no official restriction listed yet" or "no official reading here") }
+end
+
+-- Pages about the break (SV-SU6): cams, water quality, sharks, the surf
+-- zone forecast. Named with their address, never copied; the app has no
+-- way yet to open an outside page from a card, so they are text.
+function Surf.linksCard(forecast)
+    local links = Breaks.of(forecast.spot).links
+    if not (links and #links > 0) then return nil end
+    local parts = {}
+    for index = 1, math.min(3, #links) do parts[index] = links[index][1] .. ": " .. links[index][2] end
+    return { id = "links", title = "more about this beach", value = links[1][1]:lower(), tone = "info", hub = false,
+        detail = table.concat(parts, " · ") }
 end
 
 -- A break's best window today, or tomorrow once today's has passed.
@@ -451,9 +509,11 @@ end
 function Surf.cards(forecast, place)
     local cards = {}
     for _, card in ipairs {
-        Surf.setupCard() or false, Surf.dawnPatrol(forecast) or false, Surf.waterCard(forecast) or false,
-        Surf.tideCard(forecast) or false, Surf.bestBreakCard(forecast, place) or false,
-        Surf.outlookCard(forecast) or false, Surf.logCard(place),
+        Hazards.card(forecast) or false, Surf.setupCard() or false, Surf.dawnPatrol(forecast) or false,
+        Surf.waterCard(forecast) or false, Buoys.card(forecast) or false, Surf.tideCard(forecast) or false,
+        Comfort.card(forecast, forecast.hours[Surf.focus(forecast)]) or false,
+        Surf.bestBreakCard(forecast, place) or false, Surf.outlookCard(forecast) or false, Surf.logCard(place),
+        Surf.linksCard(forecast) or false,
     } do
         if card then cards[#cards + 1] = card end
     end

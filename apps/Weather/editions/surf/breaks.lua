@@ -12,6 +12,15 @@
 --   runoff   rain in 72 h, mm, after which the water may be unsafe (a river
 --            mouth or storm drains nearby); nil when that is not known
 --
+-- and the services that know the break (editions/surf/buoys.lua,
+-- waterquality.lua), each optional:
+--
+--   buoy     the NDBC station that sees the swell before it arrives
+--   coops    the NOAA CO-OPS tide station that measures the water temperature
+--   bathingWater  official bathing-water IDs by country ({ ie = "IE…" })
+--   links    { name, address } pages about the beach (cams, water quality,
+--            sharks, lifeguards): named, never copied
+--
 -- These are starter profiles from public surf guides, not surveys: a local
 -- will know better, so the place editor lets people tune them (P3): a
 -- place's own `breakLevel` and `breakTide`, and a `facing` the user set
@@ -23,12 +32,16 @@ Breaks.list = {
     -- Open, heavy beach break with strong rips and cold water; best on an
     -- incoming mid tide in the autumn's NW groundswell and morning east wind.
     ["ocean-beach"] = { window = { 200, 320 }, wind = 90, size = { 0.8, 2.5 }, tide = "mid", level = "advanced",
-        exposure = 1.2, runoff = 2.5 },
+        exposure = 1.2, runoff = 2.5, buoy = "46026", coops = "9414290",
+        links = { { "NWS Bay Area beach forecast", "weather.gov/mtr" },
+            { "NDBC buoy 46026", "ndbc.noaa.gov/station_page.php?station=46026" } } },
     -- Surfrider: a long, mellow right point. Point Dume and the Channel
     -- Islands block the west; it lights up on south swell and north wind.
     -- LA County advises staying out of the ocean for 72 h after 0.1 in of rain.
     malibu = { window = { 165, 235 }, wind = 0, size = { 0.5, 2 }, tide = "low-mid", level = "intermediate",
-        exposure = 0.9, runoff = 2.5 },
+        exposure = 0.9, runoff = 2.5, buoy = "46025", coops = "9410840",
+        links = { { "Heal the Bay Beach Report Card", "beachreportcard.org" },
+            { "NWS Los Angeles beach forecast", "weather.gov/lox" } } },
     -- Encuentro's reefs face the North Atlantic; the trade wind turns
     -- onshore by late morning, so the early southerly land breeze matters.
     cabarete = { window = { 320, 60 }, wind = 180, size = { 0.6, 2.5 }, tide = "mid-high", level = "intermediate",
@@ -49,7 +62,8 @@ Breaks.list = {
     -- swell wraps in at the south end. Sydney's Beachwatch warns that
     -- stormwater fouls ocean beaches after heavy rain.
     bondi = { window = { 40, 170 }, wind = 290, size = { 0.4, 2 }, tide = "mid", level = "beginner",
-        exposure = 0.9, runoff = 10 },
+        exposure = 0.9, runoff = 10,
+        links = { { "Beachwatch NSW", "beachwatch.nsw.gov.au" }, { "SharkSmart NSW", "sharksmart.nsw.gov.au" } } },
 }
 
 -- A profile guessed from the beach's facing: open 60° either side of it,
