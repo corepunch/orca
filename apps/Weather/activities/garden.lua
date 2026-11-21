@@ -6,6 +6,12 @@
 -- with the answers (`cards`): frost tonight, water this week, the best time
 -- today, what the soil is warm enough to sow, and the jobs the weather
 -- times. The rules live in editions/garden/ (see Research/garden.md).
+--
+-- Existing services (Research/services-garden.md), each optional: NWS
+-- frost, heat and wind alerts for US places (warnings.lua), growing degree
+-- days from the archive (degree.lua), CAMS pollen for European mowing
+-- (jobs.lua) and the U.S. Drought Monitor's category (water.lua). Each
+-- is credited on the settings' "about" (`attribution`).
 local Sky = require "Weather/sky"
 local Score = require "Weather/score"
 local Units = require "Weather/units"
@@ -18,6 +24,8 @@ local Soil = require "Weather/editions/garden/soil"
 local Jobs = require "Weather/editions/garden/jobs"
 local Protect = require "Weather/editions/garden/protect"
 local Climate = require "Weather/editions/garden/climate"
+local Degree = require "Weather/editions/garden/degree"
+local Warnings = require "Weather/editions/garden/warnings"
 
 local Garden = {
     id = "garden", title = "garden", needsMarine = false,
@@ -29,9 +37,20 @@ local Garden = {
             "snowfall" },
         pastDays = 7, forecastDays = 16,
     },
-    sources = { Climate.source },
+    sources = { Climate.source, Degree.source, Warnings.nws, Jobs.pollenSource, Water.droughtSource },
     settings = Plot.SETTINGS,
 }
+
+-- Credit for the services read besides Open-Meteo, each under its owner's name.
+function Garden.attribution()
+    return {
+        { "Alerts: National Weather Service", "Public domain, weather.gov. US places; shown as issued." },
+        { "Pollen: Copernicus Atmosphere Monitoring Service",
+            ("Generated using Copernicus Atmosphere Monitoring Service information %s, via Open-Meteo. Europe."):format(
+                os.date("!%Y")) },
+        { "Drought: U.S. Drought Monitor", "National Drought Mitigation Center, USDA and NOAA; droughtmonitor.unl.edu." },
+    }
+end
 
 -- The hours after `hour`, up to `count` of them.
 local function ahead(forecast, hour, count)
@@ -77,6 +96,8 @@ function Garden.rate(hour, forecast)
     local temp = hour.temp
     if temp and temp >= 8 and temp <= 24 then card:add(12, "Pleasant weather for garden work.")
     elseif temp and temp > 28 then card:add(-10, "Hot: work in the morning, water at dusk.") end
+    local kind, _, level = Jobs.pollenAt(hour)
+    if level == "high" then card:note(("High %s pollen: hard on hay fever."):format(kind)) end
     return card
 end
 
@@ -113,8 +134,9 @@ local function bestTime(forecast)
     end
     if not best then return nil end
     local reason = best.reasons[1]
+    local pollen = title == "best time today" and Jobs.pollen(forecast)
     return { id = "best", title = title, value = span, tone = best.verdict,
-        detail = best.word .. (reason and " · " .. reason.text or "") }
+        detail = best.word .. (reason and " · " .. reason.text or "") .. (pollen and " · " .. pollen or "") }
 end
 
 -- Tradition, labelled as such (GA13): sow what crops above ground while
@@ -135,13 +157,19 @@ function Garden.cards(forecast, place)
     forecast.spot = forecast.spot or place
     local plot = Plot.current()
     Climate.want(place)
+    Degree.want(place)
     local cards = {}
     local function add(card) if card then cards[#cards + 1] = card end end
     local frost = Frost.card(forecast, plot, place.id and remembered(place))
     if frost and place.id then remember(place, frost) end
-    -- The hub keeps three: frost tonight and water this week always lead
-    -- (rank 0); a poor-tone warning (rank 1) may displace the best time.
+    -- The official word on frost, never "no warning" when it was not heard.
+    local official = frost and Warnings.frostNote(forecast, place, frost.level)
+    if official then frost.detail = frost.detail .. " · " .. official end
+    -- The hub keeps three: an official warning, frost tonight and water
+    -- this week lead (rank 0); a poor-tone warning (rank 1) may displace
+    -- the best time.
     local function pin(card, rank) if card then card.rank = card.rank or rank end; return card end
+    add(Warnings.card(forecast, place))
     add(pin(frost, 0))
     add(pin((Water.card(forecast, plot)), 0))
     add(pin(bestTime(forecast), 2))
@@ -149,6 +177,7 @@ function Garden.cards(forecast, place)
     add((Soil.card(forecast)))
     if plot.lawn then add(Soil.lawnCard(forecast)) end
     add((Jobs.card(forecast, plot)))
+    add(Degree.card(forecast, place, Climate.get(forecast, place), plot))
     if plot.moon then add(moonCard(forecast)) end
     return cards
 end
@@ -176,7 +205,11 @@ function Garden.metrics(hour, forecast)
     for _, job in ipairs(Jobs.list(forecast, plot)) do
         rows[#rows + 1] = { label = job.title, value = job.value, note = job.note, tone = job.tone }
     end
-    rows[#rows + 1] = Protect.blightMetric(forecast)
+    local blight = Protect.blightMetric(forecast)
+    -- SV-GA8: Britain's potato growers can sign up for the official alerts.
+    if Warnings.uk(forecast.spot) then blight.note = blight.note .. " · AHDB BlightWatch alerts: blightwatch.co.uk" end
+    rows[#rows + 1] = blight
+    rows[#rows + 1] = Warnings.metric(forecast, forecast.spot)
     for _, row in ipairs(Climate.metrics(forecast, forecast.spot)) do rows[#rows + 1] = row end
     rows[#rows + 1] = Report.wind(hour)
     rows[#rows + 1] = Report.sun(hour)
