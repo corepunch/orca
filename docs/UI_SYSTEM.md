@@ -237,9 +237,9 @@ is inset, as `adjustedContentInset` insets it on iOS.
   [Windows Phone page transitions](windows-phone-transitions.md) for the
   sources, values and parts.
 
-`share/orca/UIKit/Footer.lua` builds this shell for applications; see
-[App styling](app/styling.md#layout-and-sizing). Frost the bars with
-`backdrop-filter` and a translucent background.
+`share/orca/UIKit/Footer.lua` builds this shell for applications. Apply the
+built-in `frosted` class and set a translucent background to tint it. See
+[App styling](app/styling.md#layout-and-sizing).
 
 ## Loading content
 
@@ -535,7 +535,9 @@ static data file:
 - Loading, empty and error views bind query state
   (`DataContext/Rooms/ShowLoading`, `ShowEmpty`, `ShowError`).
 
-See [data-driven screens](app/datasources.md).
+See [data-driven screens](app/datasources.md) and
+[equal-width strips](app/styling.md#equal-width-strips) for bound items that
+share a row.
 
 ### When to keep explicit layout
 

@@ -31,8 +31,8 @@
                     ItemsSource="{Binding DataContext/Age/Items}" ItemTemplate="Weather/Templates/AgeRow"/>
         <ItemsStack Name="DetailItems" Spacing="2" JustifyContent="Start" ItemNamePrefix="Detail"
                     ItemsSource="{Binding DataContext/Details/Items}" ItemTemplate="Weather/Templates/DetailRow"/>
-        <ItemsStack Name="StripItems" Direction="Horizontal" Spacing="4" JustifyContent="Start" ItemNamePrefix="Strip"
-                    ItemsSource="{Binding DataContext/Strip/Items}" ItemTemplate="Weather/Templates/StripDay"/>
+        <UniformGridBox Name="StripItems" Spacing="4" ItemNamePrefix="Strip"
+                        ItemsSource="{Binding DataContext/Strip/Items}" ItemTemplate="Weather/Templates/StripDay"/>
         <Button Name="RefreshReport" Click="Report.Refresh" Visible="{Binding DataContext/Report/HasItems}" Height="44"
                 BorderWidth="0" FontSize="18" TextHorizontalAlignment="Left" class="wx-link">
           <BindingExpression Target="Text">IF({DataContext/Report/IsRefreshing}, "refreshing…", "refresh")</BindingExpression>

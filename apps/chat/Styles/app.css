@@ -121,21 +121,18 @@
 .chat-dark .chat-action:focus-visible { ring: 0 2 #41beec; }
 .chat-dark .chat-input:focus { border-color: #0084ff; background-color: #ffffff; }
 .chat-dark .conversation:hover { background-color: #1a1a1a; }
-/* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted.
-   Bars follow the app palette rather than the OS, like everything else. */
-.chat-light .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
-.chat-dark .frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; }
+/* The built-in frosted bars take their tint from the chat palette. */
+.chat-light .frosted, .chat-light .pivot-bar { background-color: #f7f7f79d; }
+.chat-dark .frosted, .chat-dark .pivot-bar { background-color: #16161695; }
 /* The app-bar button for the page in view is selected: accent, not dimmed. */
 .chat-light .appbar-command:selected { color: #006ad1; }
 .chat-dark .appbar-command:selected { color: #41beec; }
-.chat-light .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
-.chat-dark .pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; border-bottom-width: 0.5; border-color: #38383a; }
 .chat-light .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
 .chat-dark .bar-top { border-top-width: 0.5; border-color: #38383a; }
 /* A page strip docked on the app bar (Shell.joined) carries the hairline; the
    bar below it continues the same frosted panel. */
 .chat-light .bar-top.bar-joined, .chat-dark .bar-top.bar-joined { border-top-width: 0; }
-.chat-light .bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }
-.chat-dark .bar-bottom { border-bottom-width: 0.5; border-color: #38383a; }
+.chat-light .bar-bottom, .chat-light .pivot-bar { border-bottom-width: 0.5; border-color: #c6c6c8; }
+.chat-dark .bar-bottom, .chat-dark .pivot-bar { border-bottom-width: 0.5; border-color: #38383a; }
 /* A docked toolbar continues the header, so the hairline moves below it. */
 .toolbar-page .pivot-bar { border-bottom-width: 0; }

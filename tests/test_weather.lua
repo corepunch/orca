@@ -390,6 +390,26 @@ check(text("Detailtahoe:detail:1", "DetailValue") == "70%" and text("Detailtahoe
     "Details list humidity and sunrise")
 check(text("Striptahoe:strip:2026-11-18", "StripWeekday") == "wed" and find("Striptahoe:strip:2026-11-22")
     and not app.screen:findChild("Striptahoe:strip:2026-11-23", true), "The strip shows five days")
+do
+    local strip, details = find("StripItems"), find("DetailItems")
+    local originalWidth = hub.Width
+    for _, width in ipairs { 320, 390, 430 } do
+        hub.Width = width
+        hub:UpdateLayout(width, hub.Height)
+        check(strip.ActualX == details.ActualX and strip.ActualWidth == details.ActualWidth,
+            "The forecast strip fills the same panel width as the details")
+        local day = strip:getFirstChild()
+        local cellWidth = (strip.ActualWidth - 4 * strip.Spacing) / 5
+        for index = 0, 4 do
+            check(day and math.abs(day.ActualWidth - cellWidth) < 1
+                and math.abs(day.ActualX - index * (cellWidth + strip.Spacing)) < 1,
+                "The five forecast days share the available width equally")
+            day = day:getNext()
+        end
+    end
+    hub.Width = originalWidth
+    settle()
+end
 for _, id in ipairs { "outdoors", "fishing", "hiking", "stargazing" } do
     check(find("GoodFortahoe:activity:" .. id), "Lake Tahoe is good for " .. id)
 end

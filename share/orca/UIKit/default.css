@@ -71,6 +71,10 @@ Tab:dark:hover { background-color: var(--ui-control-hover-dark, var(--ui-control
 Tab:selected { background-color: var(--ui-accent, var(--accent, #3b82f6)); }
 Tab:focus-visible { ring: 0 2 #3b82f6; ring-color: var(--ui-accent, #3b82f6); }
 
+/* --- Frosted bars -------------------------------------------------------- */
+
+.frosted, .pivot-bar, .panorama-bar { backdrop-filter: blur(20) saturate(1.8); }
+
 /* --- Selection controls --------------------------------------------------
    Built-in parts are ordinary nodes: .control-indicator, .control-mark,
    .control-check, .control-indeterminate, .control-track, .control-thumb and

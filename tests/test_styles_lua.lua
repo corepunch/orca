@@ -1800,4 +1800,30 @@ end
 
 test_appearance_scopes()
 
+local function test_frosted_bars()
+  dofile(SHAREDIR .. "/plugins/default-styles.lua")
+  local screen = ui.Screen {
+    Width = 390, Height = 844, ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString [[
+      .frosted, .pivot-bar, .panorama-bar { background-color: #16324c80; }
+    ]],
+  }
+  local footer = screen + ui.Grid { class = "frosted", SafeAreaEdge = "Bottom", Height = 48 }
+  local pivot = screen + ui.Pivot { Title = "Chat", ExtendBodyBehindHeader = true }
+  local panorama = screen + ui.Panorama { Title = "Weather", ExtendBodyBehindHeader = true }
+  screen:UpdateLayout(390, 844)
+
+  local pivotBar = assert(pivot:findChild("Node2D"), "Pivot creates a header bar")
+  local panoramaBar = assert(panorama:findChild("Node2D"), "Panorama creates a header bar")
+  for _, bar in ipairs { footer, pivotBar, panoramaBar } do
+    test.expect_near(bar.BackdropFilterBlurRadius, 20, 0.001, "The default style supplies the blur")
+    test.expect_near(bar.BackdropFilterSaturation, 1.8, 0.001, "The default style supplies the saturation")
+    test.expect_near(bar.BackgroundColor.B, 0x4c / 255, 0.01, "The application supplies the tint")
+    test.expect_near(bar.BackgroundColor.A, 0x80 / 255, 0.01, "The tint stays translucent")
+  end
+  print("PASS: test_frosted_bars")
+end
+
+test_frosted_bars()
+
 print("All style tests passed.")

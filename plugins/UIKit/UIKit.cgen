@@ -1804,5 +1804,10 @@
       <details>Combines Grid's 2D layout with ItemsControl's data-binding. Specify Columns (and optionally Rows/Spacing), provide ItemsSource and ItemTemplate, and items fill the grid with automatic row wrapping when only Columns is specified.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
     </class>
+    <class name="UniformGridBox" parent="UniformGrid,ItemsControl">
+      <summary>Uniform grid layout for a collection of items</summary>
+      <details>Combines UniformGrid's equal-width layout with ItemsControl's retained collection presentation. Bind ItemsSource and ItemTemplate to distribute items evenly across the available width.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    </class>
   </classes>
 </module>

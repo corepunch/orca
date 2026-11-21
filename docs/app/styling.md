@@ -178,21 +178,18 @@ out as that row. Any node can be the docked bar: an `ApplicationBar` with
 `SafeAreaEdge = "Bottom"` and `ContentInsetAdjustment = "Always"` extends
 through the bottom inset by itself, as Chat and Octopus do.
 
-**Translucent bars:** frost a bar with a backdrop filter and a translucent
-background, which tints the blurred content, as iOS 7 bars do:
+Add the built-in `frosted` class to a custom header or footer to blur and
+saturate the content behind it. ORCA applies the same effect to the
+`pivot-bar` and `panorama-bar` parts that appear when
+`ExtendBodyBehindHeader` is enabled. Set a translucent background color to
+tint the blur.
 
 ```css
-.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
-.frosted:dark { background-color: #16161695; }
-.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
+.frosted, .pivot-bar, .panorama-bar { background-color: #f7f7f79d; }
+.frosted:dark, .pivot-bar:dark, .panorama-bar:dark { background-color: #16161695; }
 ```
 
-`pivot-bar` styles the bar a `Pivot` generates behind its title and headers
-when `ExtendBodyBehindHeader` is true; `panorama-bar` is the same bar on a
-`Panorama`. Metro headers use this frosted bar by default: extend the body
-behind the header and style the bar as Chat's, for example
-`.pivot-bar, .panorama-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #16161695; border-bottom-width: 0.5; border-color: #38383a; }`
-on a dark page. Use the bar's border, for example
+Use the bar's border, for example
 `border-bottom-width: 0.5; border-color: #c6c6c8`, for the hairline between a
 bar and the content. Give hairlines an opaque color: an sRGB framebuffer blends
 in linear light, so a 15% white line over a dark bar shows at about 45%.
@@ -211,6 +208,18 @@ creating `.indent-1`, `.indent-2`, and similar classes:
 
 This uses each item's data context. Keep shared spacing, typography, and
 colors in CSS. See [data-driven layout](../UI_SYSTEM.md#data-driven-layout-pattern).
+
+### Equal-width strips
+
+Use `UniformGrid` when peer cells should divide the width of their containing
+panel evenly, such as a row of equally weighted commands. Use `UniformGridBox`
+when the cells come from `ItemsSource` and `ItemTemplate`, as in the
+[Weather forecast strip](../../apps/Weather/Pages/Hub.xml).
+
+Set the gap with the grid's `Spacing` and leave each cell's width automatic.
+Center short labels and fixed-size icons inside each cell. Let cell backgrounds
+and dividers follow the cell width. Verify that the first and last cells reach
+the intended panel edges at narrow and wide window sizes.
 
 ## Icons, typography, and interaction
 
