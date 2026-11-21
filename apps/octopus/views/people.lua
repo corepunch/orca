@@ -22,10 +22,10 @@ local function profileContent(self, scope, userId, name, own)
     self.i18n:apply(page)
     scope:attach(page)
     self.visibility:watch(page, scope)
-    if not own and self.messagePerson then
-        local action = assert(filesystem.loadObject("Chat/Pages/PostProfileActions"))
-        action.Click = function() self:messagePerson(userId, name) end
-        page:findChild("ProfileActions", true):addChild(action)
+    -- A host app (Chat) may add its own actions for another person's profile.
+    if not own and self.profileActions then
+        local slot = page:findChild("ProfileActions", true)
+        for _, action in ipairs(self:profileActions(userId, name)) do slot:addChild(action) end
     end
     -- Metadata, follow state and posts load independently.
     scope:member("ProfilePosts"):set("AuthorId", userId)
