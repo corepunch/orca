@@ -48,9 +48,9 @@ FLAGS := $(VENDOR_INCLUDES) $(FLAGS)
 CFLAGS := $(FLAGS) -Igenerated
 # UIKit/UIKit.h in generated/ is the engine API, not Apple's framework header.
 OBJCFLAGS := $(FLAGS) -idirafter generated -fmodules-cache-path=$(ROOT)/module-cache
-MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials notifications signin contacts
+MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials notifications signin contacts location
 PLUGINS := UIKit SceneKit SpriteKit
-OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o $(ROOT)/obj/source/notifications/notifications_apple.o $(ROOT)/obj/source/signin/signin_apple.o $(ROOT)/obj/source/contacts/contacts_apple.o
+OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o $(ROOT)/obj/source/notifications/notifications_apple.o $(ROOT)/obj/source/notifications/notifications_refresh.o $(ROOT)/obj/source/signin/signin_apple.o $(ROOT)/obj/source/contacts/contacts_apple.o $(ROOT)/obj/source/location/location_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
 IOS_OBJECTS := $(addprefix $(ROOT)/obj/source/,ios.o ios_scroll.o)
@@ -59,7 +59,7 @@ ifeq ($(RENDERER),metal)
 # glslang, SPIRV-Cross and the translator into libglslmsl.a.
 IOS_OBJECTS += $(ROOT)/obj/source/renderer/metal/gl_metal.o
 endif
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libxml2.a libcurl.a) -liconv -lm -framework UIKit -framework Foundation $(if $(filter metal,$(RENDERER)),$(DEPS)/lib/libglslmsl.a -lc++ -framework Metal,-framework OpenGLES) -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework AVFoundation -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox -framework UserNotifications -framework AuthenticationServices -framework Contacts -framework CoreLocation -framework BackgroundTasks
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(Q)$(MAKE) --no-print-directory ARCH=$(shell uname -m) modules

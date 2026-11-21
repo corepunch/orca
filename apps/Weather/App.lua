@@ -14,6 +14,9 @@ local Activities = require "Weather/activities"
 local Places = require "Weather/places"
 local MyPlaces = require "Weather/myplaces"
 local PlacePages = require "Weather/placepages"
+local Search = require "Weather/search"
+local Alerts = require "Weather/alerts"
+local Notify = require "Weather/notify"
 local Storage = require "Weather/storage"
 local Settings = require "Weather/settings"
 local Units = require "Weather/units"
@@ -55,12 +58,20 @@ App = Application:extend {
             or Storage.default()
         Storage.use(self.storage)
         self.fetch = options.fetch
+        -- options.location replaces orca.location and options.notifier
+        -- orca.notifications (tests; false for none).
+        self.location = options.location
+        self.notifier = Notify.module(options.notifier)
         MyPlaces.init { storage = self.storage, curated = options.places or Places }
         self:listPlaces()
-        local region = options.region
-        if region == nil then region = Units.region() end
+        -- Tests name a region; the device also says its measurement system
+        -- and clock, which win over the region's usual ones.
+        local region, device = options.region, nil
+        if region == nil then region, device = Units.region(), Units.device() end
+        self.region = region
+        Search.prefer(region)
         offerFollowing()
-        Settings.init { storage = self.storage, edition = Activities.edition, region = region }
+        Settings.init { storage = self.storage, edition = Activities.edition, region = region, device = device }
         self.provider = Provider.new(self.places,
             { fetch = options.fetch, clock = options.clock, storage = self.storage })
         -- The hub's everyday answers and the day page, which the shared
@@ -71,7 +82,10 @@ App = Application:extend {
             if not forecast then return nil, err end
             return self.provider.drew(Report.day(place, forecast, params.Date, Activities.at(place)), forecast)
         end
-        self.provider.drawn = function(forecast) self:restyle(forecast) end
+        self.provider.drawn = function(forecast)
+            self:restyle(forecast)
+            self:planAlerts(forecast)
+        end
         PlacePages.install(self)
         local handlers = self.provider.handlers
         handlers.openActivity = function(scope, params) return self:openActivity(params.item, scope) end
@@ -199,6 +213,13 @@ App = Application:extend {
         elseif path == "/search" then
             if Activities.edition then page.StateClasses = Activities.edition end
             page:findChild("SearchPivot", true).Title = Activities.appName:lower()
+            -- "my location" on the hub: look as the page opens.
+            if self.locateOnOpen then
+                self.locateOnOpen = nil
+                scope:activate()
+                scope:member("Located"):refresh { force = true }
+                return self:screenFor(page)
+            end
         elseif path == "/place" then
             if Activities.edition then page.StateClasses = Activities.edition end
             local place, draft = self:editedPlace()
@@ -276,11 +297,32 @@ App = Application:extend {
         title("RainColumns", "chance of rain %")
     end,
 
-    -- A setting row: step it and redraw the settings rows.
+    -- A setting row: step it and redraw the settings rows. Turning
+    -- notifications on asks the system once; off cancels what is planned.
     changeSetting = function(self, scope, record, direction)
         local group, key = Settings.split(record and record.values.Setting)
         if not (group and Settings.step(group, key, direction)) then return end
+        if group == Alerts.GROUP then self:alertsChanged(key) end
         scope:member("Settings"):refresh { force = true }
+    end,
+
+    -- The home place's forecast was drawn: plan its alerts (N2). Only the
+    -- home place, only a fresh forecast, only when notifications are on.
+    planAlerts = function(self, forecast)
+        local home = MyPlaces.mine()[1]
+        if not (forecast and forecast.spot and home and forecast.spot.id == home.id) then return end
+        if not forecast.stale then self.homeForecast = forecast end
+        if not Settings.get(Alerts.GROUP, "on") or forecast.stale then return end
+        return Alerts.sync(forecast, forecast.spot, { now = self.provider.clock(), storage = self.storage,
+            notifier = self.notifier })
+    end,
+
+    alertsChanged = function(self, key)
+        if key == "on" and not Settings.get(Alerts.GROUP, "on") then
+            return Alerts.clear { notifier = self.notifier, storage = self.storage }
+        end
+        if key == "on" then Notify.authorize(self.notifier) end
+        if self.homeForecast then self:planAlerts(self.homeForecast) end
     end,
 
     -- The "today" charts follow the activity: a title, its unit and a note

@@ -1,5 +1,6 @@
-<!-- Add a place over Data/Search.xml: a name or a postcode, the places
-     found (with what and where each is), and before a search the places
+<!-- Add a place over Data/Search.xml: a name or a postcode, or "use my
+     location" where the device can say (the place it is at, or a calm
+     note when it cannot), the places found (with what and where each is), and before a search the places
      the app suggests. A Pivot with Back, titled with the app's name. -->
 <Grid Name="SearchPage" Rows="1fr" class="wx-page">
   <Pivot Name="SearchPivot" Title="weather" BackIcon="Weather/assets/icons/arrow-left.svg" BackRequested="GoBack" IsLocked="true"
@@ -11,6 +12,15 @@
                  Padding="10 0" BorderWidth="2" Submit="RunSearch" class="wx-input"/>
           <Button Name="RunSearch" Click="RunSearch" Height="44" BorderWidth="0" FontSize="20" class="wx-link">search</Button>
         </Grid>
+        <ItemsStack Name="LocateItems" JustifyContent="Start" ItemNamePrefix="Locate"
+                    ItemsSource="{Binding DataContext/LocationOffer/Items}" ItemTemplate="Weather/Templates/LocateRow"/>
+        <Grid Name="Locating" Height="64" Visible="{Binding DataContext/Located/IsBusy}" IgnoreHitTest="true">
+          <ActivityIndicator class="wx-dim"/>
+        </Grid>
+        <ItemsStack Name="LocatedNoteItems" Spacing="6" JustifyContent="Start" ItemNamePrefix="LocatedNote"
+                    ItemsSource="{Binding DataContext/LocatedNotes/Items}" ItemTemplate="Weather/Templates/NoteRow"/>
+        <ItemsStack Name="LocatedItems" Spacing="8" JustifyContent="Start" ItemNamePrefix="Located"
+                    ItemsSource="{Binding DataContext/LocatedFound/Items}" ItemTemplate="Weather/Templates/ResultRow"/>
         <Grid Name="Searching" Height="64" Visible="{Binding DataContext/Results/IsBusy}" IgnoreHitTest="true">
           <ActivityIndicator class="wx-dim"/>
         </Grid>
@@ -23,7 +33,7 @@
           <ItemsStack Name="SuggestedItems" Spacing="8" JustifyContent="Start" ItemNamePrefix="Suggested"
                       ItemsSource="{Binding DataContext/Suggested/Items}" ItemTemplate="Weather/Templates/ResultRow"/>
         </StackView>
-        <TextBlock Name="SearchPrivacy" Text="Searching sends only what you type to Open-Meteo. Your places stay on this device."
+        <TextBlock Name="SearchPrivacy" Text="Searching sends only what you type to Open-Meteo; your location, when you ask for it, goes only to Apple to name the place. Your places stay on this device."
                    FontSize="14" WordWrap="true" MarginTop="12" class="wx-dim" IgnoreHitTest="true"/>
       </StackView>
     </PivotItem>

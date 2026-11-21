@@ -329,6 +329,44 @@ class BundleTests(unittest.TestCase):
         self.assertTrue((self.project / 'package.lua').is_file())
         self.assertTrue((self.root / 'share/orca/startup.lua').is_file())
 
+    def test_capabilities_add_only_the_usage_strings_a_project_asks_for(self):
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertNotIn('NSLocationWhenInUseUsageDescription', info)
+        (self.project / 'package.lua').write_text('Name = "Chat"\nCapabilities = { "location" }\n')
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertIn('only when you ask', info['NSLocationWhenInUseUsageDescription'])
+        self.assertNotIn('UIBackgroundModes', info)
+        (self.project / 'package.lua').write_text('Name = "Chat"\nCapabilities = { "background-refresh" }\n')
+        result = self.package()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        info = plistlib.loads((self.bundle / 'Info.plist').read_bytes())
+        self.assertEqual(info['UIBackgroundModes'], ['fetch'])
+        self.assertEqual(info['BGTaskSchedulerPermittedIdentifiers'], ['org.orca.test.refresh'])
+        self.assertNotIn('NSLocationWhenInUseUsageDescription', info)
+        (self.project / 'package.lua').write_text('Name = "Chat"\nCapabilities = { "teleport" }\n')
+        self.assertNotEqual(self.package().returncode, 0)
+
+    def test_weather_asks_for_location(self):
+        self.assertIn('location', bundle.capabilities(ROOT / 'apps/Weather'))
+
+    def test_a_dark_launch_background_becomes_a_dark_launch_screen(self):
+        self.assertEqual(bundle.launch_background(ROOT / 'apps/Weather'), (0.0, 0.0, 0.0))
+        self.assertIsNone(bundle.launch_background(self.project))
+        self.assertEqual(bundle.launch_info((0.0, 0.0, 0.0)),
+                         {'UILaunchScreen': {'UIColorName': 'LaunchBackground'}, 'UIUserInterfaceStyle': 'Dark'})
+        self.assertNotIn('UIUserInterfaceStyle', bundle.launch_info((1.0, 1.0, 1.0)))
+        catalog = bundle.launch_catalog(self.root, (0.0, 0.5, 1.0))
+        colour = json.loads((catalog / 'LaunchBackground.colorset/Contents.json').read_text())
+        self.assertEqual(colour['colors'][0]['color']['components'],
+                         {'red': '0.000', 'green': '0.500', 'blue': '1.000', 'alpha': '1.000'})
+        (self.project / 'package.lua').write_text('Name = "Chat"\nLaunchBackground = "black"\n')
+        with self.assertRaises(ValueError):
+            bundle.launch_background(self.project)
+
 
 class EditionTests(unittest.TestCase):
     def test_weather_declares_an_edition_per_activity(self):

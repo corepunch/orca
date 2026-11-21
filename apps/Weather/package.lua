@@ -15,6 +15,13 @@ Editions = {
     { Key = "garden", Name = "Gardeners' Weather" },
     { Key = "stargazing", Name = "Stargazers' Weather" },
 }
+-- Native features the bundle declares (tools/ios/bundle.py): "use my
+-- location" adds the when-in-use usage string; background refresh lets iOS
+-- run background.lua now and then to plan the notifications again.
+Capabilities = { "location", "background-refresh" }
+-- Every screen clears to black: so does the launch screen (and system
+-- sheets stay dark), so Stargazers' red night never flashes white.
+LaunchBackground = "#000000"
 EnginePlugins = { { Name = "orca.UIKit" } }
 ThemeLibrary = {
     { Key = "accent", Value = "#1BA1E2" },

@@ -297,14 +297,14 @@ function MyPlaces.fromResult(result, query)
     return MyPlaces.draft(id, base, own)
 end
 
--- A draft for where the device is (wave 4: Core Location calls this with
--- the fix and, when it has one, a reverse-geocoded name). Nothing here asks
--- for location.
-function MyPlaces.fromLocation(lat, lon, name, region)
+-- A draft for where the device is (locate.lua calls this with the fix and,
+-- when it has one, the geocoded name, region and ISO country code). Nothing
+-- here asks for location.
+function MyPlaces.fromLocation(lat, lon, name, region, country)
     lat, lon = tonumber(lat), tonumber(lon)
-    if not (lat and lon) then return nil end
+    if not (lat and lon) or lat < -90 or lat > 90 or lon < -180 or lon > 180 then return nil end
     local base = { title = name or "here", region = region or ("%.2f°, %.2f°"):format(lat, lon),
-        lat = lat, lon = lon, located = true }
+        lat = lat, lon = lon, located = true, country = country }
     base.activities = MyPlaces.guess("town")
     return MyPlaces.draft(("at-%.3f_%.3f"):format(lat, lon), base, { kind = "town" })
 end

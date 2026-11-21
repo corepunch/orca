@@ -58,7 +58,7 @@ local function declaration(group, key)
 end
 
 local function default(group, key, setting)
-    if group == Settings.UNITS then return Units.defaults(state.edition, state.region)[key] end
+    if group == Settings.UNITS then return Units.defaults(state.edition, state.region, state.device)[key] end
     return setting and setting.default
 end
 
@@ -82,11 +82,13 @@ local function applyUnits()
 end
 
 -- options.storage (a Storage store; nil keeps settings in memory only),
--- options.edition and options.region pick the defaults. Loads what was
+-- options.edition, options.region and options.device (Units.device(): the
+-- phone's measurement system and clock) pick the defaults. Loads what was
 -- saved and applies the units.
 function Settings.init(options)
     options = options or {}
-    state.storage, state.edition, state.region = options.storage, options.edition, options.region
+    state.storage, state.edition, state.region, state.device = options.storage, options.edition, options.region,
+        options.device
     local saved = state.storage and state.storage:load("settings")
     state.values = type(saved) == "table" and saved or {}
     state.revision = state.revision + 1

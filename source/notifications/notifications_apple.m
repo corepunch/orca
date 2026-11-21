@@ -166,6 +166,62 @@ void Notifications_AppleSetActiveConversation(char const *conversationId) {
   });
 }
 
+// Local notifications carry this prefix, so cancelling all of them never
+// touches a remote notification another feature delivered.
+static NSString *const notification_local_prefix = @"orca.local.";
+
+void Notifications_AppleRequestLocalAuthorization(void) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    Notifications_AppleInitialize();
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    [center requestAuthorizationWithOptions:UNAuthorizationOptionAlert | UNAuthorizationOptionSound
+                         completionHandler:^(BOOL granted, NSError *error) {
+      if (error || !granted) {
+        notification_error(error ? "authorization_failed" : "permission_denied",
+                           "Notifications are off for this app. Allow them in Settings to hear about the weather.");
+        return;
+      }
+      struct NotificationsEvent event = { .type = "authorized" };
+      Notifications_Enqueue(&event);
+    }];
+  });
+}
+
+void Notifications_AppleScheduleLocal(char const *id, char const *title, char const *body, double at) {
+  NSString *identifier = [notification_local_prefix stringByAppendingString:[NSString stringWithUTF8String:id]];
+  UNMutableNotificationContent *content = [[UNMutableNotificationContent alloc] init];
+  content.title = [NSString stringWithUTF8String:title] ?: @"";
+  content.body = [NSString stringWithUTF8String:body] ?: @"";
+  content.sound = [UNNotificationSound defaultSound];
+  content.threadIdentifier = @"orca.local";
+  NSTimeInterval wait = at - [NSDate date].timeIntervalSince1970;
+  UNTimeIntervalNotificationTrigger *trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:MAX(wait, 1)
+                                                                                                   repeats:NO];
+  UNNotificationRequest *request = [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+#if !__has_feature(objc_arc)
+  [content release];
+#endif
+  [[UNUserNotificationCenter currentNotificationCenter] addNotificationRequest:request withCompletionHandler:^(NSError *error) {
+    if (error) notification_error("schedule_failed", "A notification could not be scheduled.");
+  }];
+}
+
+void Notifications_AppleCancelLocal(char const *id) {
+  UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+  if (id) {
+    NSArray<NSString *> *ids = @[[notification_local_prefix stringByAppendingString:[NSString stringWithUTF8String:id]]];
+    [center removePendingNotificationRequestsWithIdentifiers:ids];
+    [center removeDeliveredNotificationsWithIdentifiers:ids];
+    return;
+  }
+  [center getPendingNotificationRequestsWithCompletionHandler:^(NSArray<UNNotificationRequest *> *pending) {
+    NSMutableArray<NSString *> *ids = [NSMutableArray array];
+    for (UNNotificationRequest *request in pending)
+      if ([request.identifier hasPrefix:notification_local_prefix]) [ids addObject:request.identifier];
+    if (ids.count) [center removePendingNotificationRequestsWithIdentifiers:ids];
+  }];
+}
+
 @implementation OrcaNotificationDelegate
 #if !TARGET_OS_IOS
 + (void)load {

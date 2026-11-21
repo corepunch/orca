@@ -1,0 +1,4 @@
+<!-- "use my location": shown only where the device can say where it is.
+     A tap looks once; nothing is tracked or saved until the place is. -->
+<Button Name="UseLocation" Text="{Binding DataContext/Title}" Click="UseLocation" Height="44" BorderWidth="0"
+        FontSize="20" TextHorizontalAlignment="Left" class="wx-link"/>
