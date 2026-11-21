@@ -440,6 +440,16 @@ key live in `Forecast.endpoints` (`forecast`, `marine`, `airQuality`,
 `geocoding`, `flood`, `archive`, `noaaTides`, `apiKey`); build URLs with
 `Forecast.url(name, query)`, which switches every Open-Meteo host to the
 commercial "customer-" host and adds `apikey` when a key is set.
+`format = "text"` hands `parse` the body as a string instead of decoded
+JSON (NOAA NDBC's fixed-width buoy files, CSV). A host that is not
+Open-Meteo may keep its base URL in the edition's own module.
+
+**`attribution`: credit for a service.** An activity that reads another
+service lists `{ { "Tides by NOAA CO-OPS", "Public domain, tidesandcurrents.noaa.gov." } }`
+(or a function returning it). `Provider.about()` puts each title once on
+the settings' "about", after Open-Meteo's line and before the privacy line.
+The research behind each service and its licence is in
+`Research/services-<key>.md`.
 
 **`cards(forecast, place, clock, where)`: big answers.** Returns a list of
 `{ id, title, value, detail, tone = "good" | "fair" | "poor" | "info", icon }`

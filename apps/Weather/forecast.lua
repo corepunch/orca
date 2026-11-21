@@ -108,12 +108,14 @@ end
 -- Every request names the app (a generic User-Agent with no contact:
 -- api.weather.gov answers 403 without one) and sends no cookies. `extra`
 -- adds a source's own headers (a table, or a function of the spot).
+-- `format` "text" asks for the body as a string (NOAA NDBC's fixed-width
+-- buoy files, CSV) instead of decoded JSON.
 Forecast.userAgent = "Weather/1.0 (ORCA)"
-function Forecast.requestOptions(extra, spot)
+function Forecast.requestOptions(extra, spot, format)
     local headers = { ["User-Agent"] = Forecast.userAgent }
     if type(extra) == "function" then extra = extra(spot) end
     for name, value in pairs(extra or {}) do headers[name] = value end
-    return { headers = headers, nocookies = true }
+    return { headers = headers, nocookies = true, format = format }
 end
 
 function Forecast.networkFetch(url, options)
@@ -124,6 +126,11 @@ function Forecast.networkFetch(url, options)
     end
     local codeOk, code = pcall(function() return response:code() end)
     if not codeOk or code ~= 200 then return nil, "The forecast service is not answering." end
+    if options and options.format == "text" then
+        local read, text = pcall(function() return response:text() end)
+        if not read or type(text) ~= "string" or text == "" then return nil, "The answer came back empty." end
+        return text
+    end
     local decoded, body = pcall(function() return response:json() end)
     if not decoded or type(body) ~= "table" then return nil, "The forecast came back garbled." end
     return body
@@ -246,7 +253,7 @@ local function runSources(forecast, spot, sources, fetch, raw, lenient)
         local json, err
         if fetch then
             local url = source.url(spot, Forecast)
-            if url then json, err = fetch(url, Forecast.requestOptions(source.headers, spot)) end
+            if url then json, err = fetch(url, Forecast.requestOptions(source.headers, spot, source.format)) end
             raw.asked[source.id] = true
             if json then raw.sources[source.id] = json end
         elseif asked(raw, source.id) then

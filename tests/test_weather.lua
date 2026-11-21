@@ -1166,4 +1166,28 @@ do
     core.setContentSizeCategory("large")
 end
 
+-- Services: a source may ask for text, and an activity's attribution joins
+-- the settings' "about" once, between Open-Meteo and the privacy line.
+do
+    local Forecast, Provider, Activities = require "Weather/forecast", require "Weather/provider", require "Weather/activities"
+    check(Forecast.requestOptions(nil, nil, "text").format == "text", "A text source asks for text")
+    check(Forecast.requestOptions().format == nil, "Other requests decode JSON")
+    local seen
+    local source = { id = "buoy-test", optional = true, format = "text",
+        url = function() return "https://example.test/buoy.txt" end,
+        parse = function(body, forecast) seen = body end }
+    local forecast = { missing = {} }
+    Forecast.extend(forecast, { id = "x", lat = 0, lon = 0 }, { source },
+        function(url, options) return options.format == "text" and "#YY MM DD" or nil end, {})
+    check(seen == "#YY MM DD", "The text reaches the source's parse")
+    local first = Activities.list[1]
+    local before = first.attribution
+    first.attribution = { { "Tides by NOAA CO-OPS", "Public domain." }, { "Weather data by Open-Meteo.com", "twice" } }
+    local about = Provider.about()
+    check(about[1][1] == "Weather data by Open-Meteo.com" and about[2][1] == "Tides by NOAA CO-OPS",
+        "An activity's service follows Open-Meteo")
+    check(about[#about][1] == "your data stays here" and #about == #Provider.ABOUT + 1, "Each title shows once")
+    first.attribution = before
+end
+
 F.done("weather")

@@ -205,6 +205,22 @@ Provider.ABOUT = {
     { "your data stays here", "Your places and settings are kept on this device only." },
 }
 
+-- Open-Meteo's lines, then each activity's own `attribution` (a list of
+-- `{ title, detail }` for the services it reads: "Tides by NOAA CO-OPS"),
+-- each title once, then the privacy line.
+function Provider.about()
+    local list, seen = { Provider.ABOUT[1] }, { [Provider.ABOUT[1][1]] = true }
+    for _, activity in ipairs(Activities.list) do
+        local own = activity.attribution
+        if type(own) == "function" then own = own() end
+        for _, about in ipairs(own or {}) do
+            if not seen[about[1]] then seen[about[1]], list[#list + 1] = true, about end
+        end
+    end
+    for index = 2, #Provider.ABOUT do list[#list + 1] = Provider.ABOUT[index] end
+    return list
+end
+
 -- The settings page: shared units and appearance, each activity's own
 -- settings, and "about" (WeatherRow, Kind "setting" or "about").
 function Provider.settingsRows()
@@ -213,7 +229,7 @@ function Provider.settingsRows()
     for _, activity in ipairs(Activities.list) do groups[#groups + 1] = activity end
     groups[#groups + 1] = require("Weather/alerts").settingsGroup
     local rows = Settings.rows(groups)
-    for index, about in ipairs(Provider.ABOUT) do
+    for index, about in ipairs(Provider.about()) do
         rows[#rows + 1] = { id = "settings:about:" .. index, kind = "about", order = #rows + 1, title = about[1],
             detail = about[2], tone = "info", score = 0 }
     end
