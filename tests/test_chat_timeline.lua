@@ -462,10 +462,31 @@ do
     settle()
     assert(#f.reads == reads + 2, "Polling waits while a message is sending")
     app.threadScope:member("Composer").submitting = false
-    poll()
-    app.client:signOut()
+    -- A server revocation is discovered by a request that has already started.
+    f.readHook = function() coroutine.yield() end
+    assert(poll(), "Idle polling queues a message request")
+    local pending = assert(table.remove(queue, 1))
+    resume(pending)
+    assert(#f.reads == reads + 3 and coroutine.status(pending) == "suspended",
+        "The message request is in flight before revocation")
+    assert(app.client:signOut())
+    resume(pending)
     settle()
     assert(not app.threadScope and app.currentRoute ~= "/thread", "A revoked session leaves the conversation")
+    assert(f.messages.disposed and f.messages.items:count() == 0,
+        "An in-flight response cannot repopulate the disposed conversation")
+end
+
+-- Signing out through the app disposes the view even with a poll still queued.
+do
+    local app, f = fixture()
+    local reads = #f.reads
+    assert(poll() and #queue > 0, "A poll is queued before sign-out")
+    app:signOut()
+    settle()
+    assert(#f.reads == reads, "The queued request does not start after sign-out")
+    assert(not app.threadScope and app.currentRoute ~= "/thread" and f.messages.disposed,
+        "Signing out leaves the conversation and disposes its query")
 end
 
 orca.async, data.Scope.defaultHost = savedAsync, savedHost
