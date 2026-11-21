@@ -18,7 +18,14 @@
 --                       as the earliest, a frost-free autumn as the latest)
 --   hardiness           USDA zone from the mean of each year's coldest
 --                       night; the RHS rating of plants that survive it
+--   average season      the mean growing degree days by each day of the
+--                       season (degree.lua), from the daily maximums too
+--
+-- A place kept before the maximums were asked is asked once more; its
+-- frost dates stay shown meanwhile.
 local Forecast = require "Weather/forecast"
+local Degree = require "Weather/editions/garden/degree"
+local Warnings = require "Weather/editions/garden/warnings"
 local Storage = require "Weather/storage"
 local Units = require "Weather/units"
 local Climate = {}
@@ -63,17 +70,22 @@ function Climate.years(epoch)
     return year - Climate.YEARS, year - 1
 end
 
+-- Known and complete: frost dates and the average season (false when the
+-- answer had no maximums, so it is not asked again).
+local function complete(saved) return saved.climate and saved.climate.gddNormal ~= nil end
+
 -- The source's URL, or nil when nothing is needed (known, unseen, or tried
 -- less than a day ago).
 function Climate.url(spot, now)
     local saved = Climate.saved(spot)
-    if not saved or saved.frost or not saved.wanted then return nil end
+    if not saved or complete(saved) or not (saved.wanted or saved.climate) then return nil end
     now = now or os.time()
     if saved.tried and now - saved.tried < Climate.RETRY then return nil end
-    keep(spot, { wanted = true, tried = now })
+    keep(spot, { wanted = true, tried = now, frost = saved.frost, climate = saved.climate })
     local first, last = Climate.years(now)
     return Forecast.url("archive", ("latitude=%s&longitude=%s&start_date=%d-01-01&end_date=%d-12-31"
-        .. "&daily=temperature_2m_min&models=era5_land&timezone=auto"):format(spot.lat, spot.lon, first, last))
+        .. "&daily=temperature_2m_max,temperature_2m_min&models=era5_land&timezone=auto"):format(spot.lat, spot.lon,
+            first, last))
 end
 
 -- Days into the year, for a non-leap year (29 February counts as 1 March).
@@ -171,17 +183,29 @@ function Climate.compute(dates, mins, lat)
     }
 end
 
--- The source (Garden.sources): parses the archive answer and keeps the result.
+-- The source (Garden.sources): parses the archive answer and keeps the
+-- result. The forecast has no `spot` while its sources parse and the
+-- archive answers with its grid point, so the place asked is remembered
+-- from `url` (sources run one at a time).
+local asking
+-- The place asked, if the answer's grid point is near it (a replay after
+-- a failed request must not borrow another place's).
+local function near(spot, json)
+    if not (spot and json.latitude and json.longitude) then return spot end
+    return math.abs(spot.lat - json.latitude) < 0.5 and math.abs(spot.lon - json.longitude) < 0.5 and spot or nil
+end
 Climate.source = {
     id = "climate", optional = true,
-    url = function(spot) return Climate.url(spot) end,
+    url = function(spot) local url = Climate.url(spot); asking = url and spot; return url end,
     parse = function(json, forecast)
         local daily = json.daily or {}
-        local spot = forecast.spot or { lat = json.latitude, lon = json.longitude }
+        local spot = forecast.spot or near(asking, json) or { lat = json.latitude, lon = json.longitude }
+        asking = nil
         local result = Climate.compute(daily.time, daily.temperature_2m_min or {}, json.latitude or spot.lat)
         if not result then error("fewer than ten whole years of history") end
         local first, last = (daily.time[1] or ""):sub(1, 4), (daily.time[#daily.time] or ""):sub(1, 4)
         result.from, result.to = tonumber(first), tonumber(last)
+        result.gddNormal = Degree.normal(daily.time, daily.temperature_2m_max, daily.temperature_2m_min, spot) or false
         keep(spot, { frost = true, climate = result })
         forecast.climate = result
     end,
@@ -225,9 +249,12 @@ function Climate.metrics(forecast, spot)
                 note = "in the middle year; frost pockets have fewer" }
         end
     end
+    -- SV-GA8: where the official rating lives, by name only.
+    local official = british(spot) and " · RHS hardiness ratings: rhs.org.uk"
+        or Warnings.us(spot) and " · official map: planthardiness.ars.usda.gov" or ""
     rows[#rows + 1] = { label = "hardiness", value = "zone " .. c.zone,
-        note = ("coldest night of an average winter %s%s · approximate"):format(Units.temp(c.coldest),
-            british(spot) and (" · plants rated %s or hardier"):format(c.rhs) or "") }
+        note = ("coldest night of an average winter %s%s · approximate%s"):format(Units.temp(c.coldest),
+            british(spot) and (" · plants rated %s or hardier"):format(c.rhs) or "", official) }
     return rows
 end
 

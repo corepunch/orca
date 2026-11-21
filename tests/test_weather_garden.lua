@@ -32,7 +32,7 @@ local function build(spec)
     local hours = {}
     local past = spec.past or 0
     for k = -past, (spec.hours or 72) - 1 do
-        local epoch = NOW + k * 3600
+        local epoch = (spec.at or NOW) + k * 3600
         local time = os.date("!%Y-%m-%dT%H:00", epoch)
         local hod = tonumber(time:sub(12, 13))
         local h = { epoch = epoch, time = time, date = time:sub(1, 10), temp = 10, dewPoint = 5, cloud = 80, wind = 3,
@@ -40,7 +40,7 @@ local function build(spec)
         if spec.each then spec.each(h, k, hod) end
         hours[#hours + 1] = h
     end
-    return { hours = hours, now = past + 1, epoch = NOW, spot = spec.spot or LEEDS }
+    return { hours = hours, now = past + 1, epoch = spec.at or NOW, spot = spec.spot or LEEDS, missing = {} }
 end
 local function night(hod) return hod >= 18 or hod <= 9 end
 local function set(key, value) check(Settings.set("garden", key, value), "Set " .. key) end
@@ -336,21 +336,294 @@ local saved = Storage.load("garden-frost")
 check(saved and saved.leeds and saved.leeds.level == 2, "A frost warning is remembered")
 check(Garden.cards(evening(8), LEEDS)[1].detail:find("all clear", 1, true), "Then the all-clear when it goes")
 
+-- Existing services (Research/services-garden.md). Every answer here is a
+-- synthetic one in the service's documented shape; no test touches the network.
+local Warnings = require "Weather/editions/garden/warnings"
+local Degree = require "Weather/editions/garden/degree"
+local Sky = require "Weather/sky"
+local DAN = { id = "columbus", title = "Columbus", lat = 39.96, lon = -83.0, activities = { "garden" } }
+local SOUTH = { id = "canberra", title = "Canberra", lat = -35.3, lon = 149.1, activities = { "garden" } }
+for _, place in ipairs { LEEDS, DAN, SOUTH } do store:remove(Degree.key(place)) end
+store:remove("garden-drought")
+Degree.reset()
+local function iso(epoch) return os.date("!%Y-%m-%dT%H:%M:00+00:00", epoch) end
+local function cardsOf(forecast, place)
+    local byId, ids = {}, {}
+    for _, c in ipairs(Garden.cards(forecast, place)) do byId[c.id], ids[#ids + 1] = c, c.id end
+    return byId, table.concat(ids, ",")
+end
+
+-- SV-GA1: NWS alerts for US places, shown as issued.
+check(Warnings.nws.url(DAN):find("^https://api%.weather%.gov/alerts/active%?point=39%.9600,%-83%.0000")
+    and Warnings.nws.url(LEEDS) == nil and Warnings.nws.headers.Accept == "application/geo+json",
+    "NWS is asked for US places only, as GeoJSON")
+local function nwsAnswer(...)
+    local features = {}
+    for _, p in ipairs { ... } do features[#features + 1] = { type = "Feature", properties = p } end
+    return { type = "FeatureCollection", features = features }
+end
+local frostAdvisory = { event = "Frost Advisory", status = "Actual", messageType = "Alert", severity = "Minor",
+    senderName = "NWS Wilmington OH", headline = "Frost Advisory issued November 18 at 3:12AM EST until November 19 at 9:00AM EST by NWS Wilmington OH",
+    onset = iso(NOW + 12 * 3600), ends = iso(NOW + 27 * 3600) }
+local function usNight(temp)
+    local f = evening(temp)
+    f.spot, f.days = DAN, {}
+    return f
+end
+local fc = usNight(1.5)
+Warnings.nws.parse(nwsAnswer(frostAdvisory,
+    { event = "Winter Storm Warning", status = "Actual", headline = "not for the garden" },
+    { event = "Freeze Warning", status = "Test", headline = "a test" },
+    { event = "High Wind Warning", status = "Actual", headline = "old", ends = iso(NOW - 3600) }), fc)
+check(#fc.official.list == 2, "Kept: frost, freeze, heat and wind; tests dropped")
+local byId, ids = cardsOf(fc, DAN)
+check(ids:find("^official,frost,water") and byId.official.value == "Frost Advisory"
+    and byId.official.title == "official warning (NWS)" and byId.official.rank == 0
+    and byId.official.detail:find(frostAdvisory.headline, 1, true) and byId.official.detail:find("NWS Wilmington OH", 1, true),
+    "The NWS advisory leads, unmodified, with its issuer: " .. ids)
+check(byId.frost.detail:find("NWS: Frost Advisory in force", 1, true) and byId.frost.title == "frost tonight",
+    "The app's own estimate stays its own card and names the advisory")
+local hubIds = {}
+for _, row in ipairs(Report.hub(DAN, fc, { Garden }, nil, Garden)) do
+    if row.kind == "card" then hubIds[#hubIds + 1] = row.id:match("([^:]+)$") end
+end
+check(table.concat(hubIds, ",") == "official,frost,water", "The hub leads with NWS, then frost and water")
+check(Warnings.active(fc, NOW + 30 * 3600)[1] == nil and select(1, Warnings.state(fc, DAN, NOW + 30 * 3600)) == "quiet",
+    "An advisory that has ended is gone")
+local quiet = usNight(1.5)
+Warnings.nws.parse(nwsAnswer(), quiet)
+byId = cardsOf(quiet, DAN)
+check(not byId.official and byId.frost.detail:find("no NWS frost alert in force", 1, true)
+    and byId.frost.detail:find("our estimate", 1, true), "NWS quiet on a frosty night: this is our estimate")
+local failed = usNight(1.5)
+check(not pcall(Warnings.nws.parse, { title = "Service Unavailable" }, failed), "An answer without alerts fails the source")
+failed.missing.nws = "HTTP 503"
+byId = cardsOf(failed, DAN)
+check(not byId.official and byId.frost.detail:find("NWS alerts not reached", 1, true)
+    and not byId.frost.detail:find("no NWS", 1, true), "A failed NWS never reads as no warning: " .. byId.frost.detail)
+check(Warnings.metric(failed, DAN).value == "not reached" and Warnings.metric(quiet, DAN).value == "none for the garden"
+    and Warnings.metric(fc, DAN).value == "Frost Advisory", "The activity page says what NWS said, or that it was not heard")
+check(Warnings.metric(build {}, LEEDS).note:find("Met Office Weather Warnings", 1, true)
+    and Warnings.metric(build {}, { lat = 52.5, lon = 13.4 }) == nil, "Britain gets a Met Office link; elsewhere nothing")
+check(not cardsOf(evening(1.5), LEEDS).frost.detail:find("NWS", 1, true), "No NWS talk outside the US")
+
+-- SV-GA2: growing degree days (GA10).
+check(Degree.day(25, 12) == 8.5 and Degree.day(35, 20) == 15 and Degree.day(8, 2) == 0 and Degree.day(14, 4) == 2,
+    "A day's degree days: base 10°, capped at 30°")
+check(Degree.start(DAN, "2026-11-18") == "2026-01-01" and Degree.start(LEEDS, "2026-11-18") == "2026-04-01"
+    and Degree.start(SOUTH, "2026-03-01") == "2025-07-01", "Seasons: 1 January, 1 April in Britain, 1 July south")
+local CLEVELAND = { lat = 41.5, lon = -81.7 }
+store:remove(Degree.key(CLEVELAND))
+check(Degree.url(CLEVELAND, NOW) == nil, "An unseen place asks nothing")
+Degree.want(DAN)
+url = Degree.url(DAN, NOW)
+check(url and url:find("archive%-api") and url:find("start_date=2026%-01%-01&end_date=2026%-11%-13", 1)
+    and url:find("temperature_2m_max,temperature_2m_min", 1, true), "Then this season to five days ago: " .. tostring(url))
+check(Degree.url(DAN, NOW + 3600) == nil, "A try waits six hours")
+-- A season of days: `fn(date)` gives max and min.
+local function season(first, last, fn)
+    local dates, maxs, mins = {}, {}, {}
+    local e, stop = Sky.epochOf(first), Sky.epochOf(last)
+    while e <= stop do
+        local date = os.date("!%Y-%m-%d", e)
+        local mx, mn = fn(date)
+        local i = #dates + 1
+        dates[i], maxs[i], mins[i] = date, mx, mn
+        e = e + 86400
+    end
+    return { latitude = DAN.lat, longitude = DAN.lon, daily = { time = dates, temperature_2m_max = maxs, temperature_2m_min = mins } }
+end
+local warm = build { past = 7 * 24, hours = 7 * 24, spot = DAN }
+warm.days = {}
+for d = -7, 7 do
+    local date = os.date("!%Y-%m-%d", NOW + d * 86400)
+    warm.days[#warm.days + 1] = { date = date, max = 20, min = 10 }
+end
+Degree.source.parse(season("2026-01-01", "2026-11-13", function() return 18.4, 10 end), warm)
+check(warm.gdd.through == "2026-11-13" and math.abs(warm.gdd.total - 317 * 4.2) < 1e-6, "The archive's days are added up")
+check(Degree.url(DAN, NOW + 7 * 3600) == nil and Degree.url(DAN, NOW + 86400 + 7 * 3600) ~= nil, "Asked again a day later")
+local total = Degree.total(warm, DAN)
+check(total and math.abs(total.total - (317 * 4.2 + 5 * 5)) < 1e-6 and total.index == 322,
+    "Then the forecast's days to today")
+local gap = build { spot = DAN }
+gap.days = { { date = "2026-11-17", max = 20, min = 10 }, { date = "2026-11-18", max = 20, min = 10 } }
+gap.gdd = warm.gdd
+check(Degree.total(gap, DAN) == nil, "A missing day gives no total, not a wrong one")
+local broken = build { spot = DAN }
+Degree.source.parse(season("2026-01-01", "2026-03-10", function(date) if date == "2026-02-01" then return nil, nil end return 20, 10 end), broken)
+check(broken.gdd.through == "2026-01-31", "The total stops before a missing archive day")
+-- 30 years at 4 °C-days a day: today's total is reached 18 days later in an average year.
+local normals = season("1996-01-01", "2025-12-31", function() return 18, 10 end)
+local normal = Degree.normal(normals.daily.time, normals.daily.temperature_2m_max, normals.daily.temperature_2m_min, DAN)
+check(normal and normal[1] == 4 and normal[322] == 1288, "The average season by day")
+check(Degree.ahead(total, normal) == 18, "18 days ahead of an average year")
+local seasonCard = Degree.card(warm, DAN, { gddNormal = normal, from = 1996, to = 2025 }, Plot.current())
+check(seasonCard.value == "18 days ahead" and seasonCard.detail:find("1356 degree days since 1 jan (base 10°)", 1, true)
+    and seasonCard.detail:find("sweetcorn", 1, true) and seasonCard.detail:find("average year has 1288 by now (1996–2025)", 1, true)
+    and seasonCard.hub == false, "The growing season card: " .. seasonCard.detail)
+Units.use { temp = "f" }
+check(Degree.card(warm, DAN, { gddNormal = normal }, Plot.current()).detail:find("2442 degree days since jan 1 (base 50°)", 1, true),
+    "°F-days where the US reads °F")
+Units.use {}
+local flat = {}
+for k = 1, 366 do flat[k] = k < 300 and 4 * k or 1196 + (k - 299) * 0.2 end
+check(select(2, Degree.ahead(total, flat)) and Degree.card(warm, DAN, { gddNormal = flat }, Plot.current()).value
+    == "156 degree days above average", "Late in the season it counts degree days, not days")
+check(Degree.card(build { spot = DAN }, DAN, nil, Plot.current()).value == "not yet", "Without records: not yet")
+check(Degree.card(build { at = NOW - 240 * 86400, spot = LEEDS }, LEEDS, nil, Plot.current()).value == "from 1 apr",
+    "Britain counts from 1 April")
+check(Degree.crabgrass({ total = 120, start = "2026-01-01", today = "2026-04-10" }, DAN):find("crabgrass preventer: now", 1, true)
+    and Degree.crabgrass({ total = 60, start = "2026-01-01", today = "2026-04-01" }, DAN):find("not yet", 1, true)
+    and Degree.crabgrass({ total = 120, start = "2026-04-01", today = "2026-04-10" }, LEEDS) == nil,
+    "Lawns: the crabgrass window by °F-days from 1 January")
+-- The frost dates' archive now brings the average season too; an older
+-- copy without it is asked once more and keeps its frost dates meanwhile.
+local cfc = build { spot = DAN }
+Climate.source.parse(normals, cfc)
+check(cfc.climate.gddNormal and cfc.climate.gddNormal[322] == 1288 and Climate.url(DAN, NOW + 9 * 86400) == nil,
+    "Frost dates and the average season in one request")
+store:save(Climate.key(SOUTH), { frost = true, climate = { zone = "9b" } })
+Climate.reset()
+local again = Climate.url(SOUTH, NOW)
+check(again and again:find("temperature_2m_max", 1, true) and Climate.get(nil, SOUTH).zone == "9b",
+    "An older copy is asked once more and still shows its zone")
+store:remove(Climate.key(SOUTH))
+Climate.reset()
+
+-- SV-GA3: pollen for mowing, Europe only.
+check(Jobs.pollenSource.url(LEEDS):find("air%-quality") and Jobs.pollenSource.url(LEEDS):find("grass_pollen,birch_pollen,mugwort_pollen", 1, true)
+    and Jobs.pollenSource.url(DAN) == nil, "CAMS pollen is asked for European places only")
+local function pollenDay(fn)
+    local f = build { hours = 72, each = function(h) h.wind, h.gust, h.temp, h.dewPoint = 2, 4, 12, 6 end }
+    local times, grass, birch = {}, {}, {}
+    for index, h in ipairs(f.hours) do
+        times[index], grass[index], birch[index] = h.time, fn(tonumber(h.time:sub(12, 13)), h.date), 5
+    end
+    Jobs.pollenSource.parse({ hourly = { time = times, grass_pollen = grass, birch_pollen = birch } }, f)
+    return f
+end
+local pollen = pollenDay(function(hod, date) return date == "2026-11-18" and hod <= 13 and 80 or 10 end)
+check(pollen.hours[pollen.now + 2].grass_pollen == 80 and Jobs.pollen(pollen)
+    == "grass pollen high until 14:00: mow and weed after, if you have hay fever", "High grass pollen until 14:00")
+for _, job in ipairs(Jobs.list(pollen)) do jobs[job.id] = job end
+check(jobs.mow.note:find("grass pollen high until 14:00", 1, true), "It is a reason on mowing: " .. jobs.mow.note)
+byId = cardsOf(pollen, LEEDS)
+check(byId.best.detail:find("grass pollen high", 1, true), "And on the best time today: " .. byId.best.detail)
+check(F.says(Garden.rate(pollen.hours[pollen.now + 3], pollen):result(), "High grass pollen"), "The hour notes it")
+check(Jobs.pollen(pollenDay(function(hod) return hod >= 12 and 60 or 30 end)):find("from 12:00: mow and weed before", 1, true),
+    "Pollen rising at noon: mow before")
+check(Jobs.pollen(pollenDay(function() return 60 end)):find("rest of the day", 1, true), "High all day")
+check(Jobs.pollen(pollenDay(function() return 30 end)) == nil and Jobs.pollen(build {}) == nil, "Medium, or no data: nothing said")
+
+-- SV-GA4: the U.S. Drought Monitor's category.
+local droughtUrl = Water.droughtSource.url(DAN, nil, NOW)
+check(droughtUrl:find("USDM_current/FeatureServer/0/query?geometry=-83.0000,39.9600&geometryType=esriGeometryPoint", 1, true)
+    and droughtUrl:find("outFields=DM", 1, true) and Water.droughtSource.url(LEEDS, nil, NOW) == nil,
+    "The current map is asked at the point, US only")
+local dryUS = week { }
+dryUS.spot = DAN
+Water.droughtSource.parse({ features = { { attributes = { DM = 1 } }, { attributes = { DM = 2 } } } }, dryUS)
+check(Water.card(dryUS).detail:find("Severe drought (D2) here (U.S. Drought Monitor): check your utility's watering days", 1, true),
+    "D2 at the point: the water card says so")
+check(Water.droughtSource.url(DAN, nil, NOW + 3600) == nil and Water.droughtSource.url(DAN, nil, NOW + 2 * 86400) ~= nil,
+    "Weekly map, asked at most once a day")
+local later = week {}
+later.spot = DAN
+check(Water.drought(later) == 2 and Water.card(later).detail:find("Severe drought", 1, true), "Kept for the next day's forecast")
+local wet = week {}
+wet.spot = DAN
+Water.droughtSource.parse({ features = {} }, wet)
+check(Water.drought(wet) == -1 and not Water.card(wet).detail:find("drought", 1, true), "Outside the drought areas: nothing said")
+check(not pcall(Water.droughtSource.parse, { error = { code = 400 } }, build { spot = DAN }), "A refused query fails the source")
+store:remove("garden-drought")
+local unheard = week {}
+unheard.spot, unheard.missing.drought = DAN, "HTTP 500"
+check(not Water.card(unheard).detail:find("drought", 1, true), "A failed map says nothing, not 'no drought'")
+
+-- SV-GA5: a hosepipe-ban pointer in a dry British summer, never a claim.
+local July = NOW - 126 * 86400 -- 2026-07-15 06:00 UTC
+local function summer(spot)
+    local f = build { at = July, past = 7 * 24, hours = 7 * 24, spot = spot, each = function(h) h.et0 = 0.15 end }
+    return Water.card(f)
+end
+local hose = summer(LEEDS)
+check(hose.value:find("^water") and hose.detail:find("is there a hosepipe ban? ask your water company (Water UK: water.org.uk)", 1, true)
+    and not hose.detail:find("there is a ban", 1, true), "A dry British July: where to check for a ban")
+check(not Water.card(dry).detail:find("hosepipe", 1, true) and not summer(DAN).detail:find("hosepipe", 1, true),
+    "Not in November, not in the US")
+
+-- SV-GA8: where the official ratings live, by name.
+local cmetrics = {}
+for _, row in ipairs(Climate.metrics({ climate = c }, LEEDS)) do cmetrics[row.label] = row end
+check(cmetrics.hardiness.note:find("rhs.org.uk", 1, true), "Britain: RHS hardiness ratings")
+cmetrics = {}
+for _, row in ipairs(Climate.metrics({ climate = c }, DAN)) do cmetrics[row.label] = row end
+check(cmetrics.hardiness.note:find("planthardiness.ars.usda.gov", 1, true), "US: the official USDA map")
+local gb = {}
+for _, metric in ipairs(Garden.metrics(parsed.hours[parsed.now], parsed)) do gb[metric.label] = metric end
+check(gb["blight (Hutton)"].note:find("BlightWatch", 1, true) and gb["official warnings"].value == "Met Office",
+    "Leeds: BlightWatch and the Met Office link")
+
+-- Credit on the settings' about.
+local Provider = require "Weather/provider"
+local credits = {}
+for _, about in ipairs(Provider.about()) do credits[#credits + 1] = about[1] end
+credits = table.concat(credits, "|")
+check(credits:find("Alerts: National Weather Service", 1, true) and credits:find("Copernicus Atmosphere Monitoring Service", 1, true)
+    and credits:find("U.S. Drought Monitor", 1, true), "Each service is credited: " .. credits)
+
+-- Through the forecast load: each source asked where it covers, and a
+-- failed one leaves the rest standing.
+local net = F.network()
+net.answers["api%.weather%.gov"] = function() return nwsAnswer(frostAdvisory) end
+net.answers["USDM_current"] = function() return { features = { { attributes = { DM = 3 } } } } end
+local loaded = Forecast.load(DAN, false, net.fetch, NOW, Activities.request(DAN))
+local nwsOptions
+for index, u in ipairs(net.requests) do if u:find("api.weather.gov", 1, true) then nwsOptions = net.options[index] end end
+check(loaded and loaded.official and #loaded.official.list == 1 and loaded.drought.dm == 3
+    and nwsOptions and nwsOptions.headers.Accept == "application/geo+json" and nwsOptions.headers["User-Agent"],
+    "A US load asks NWS (with its headers) and the drought map")
+local askedPollen = false
+for _, u in ipairs(net.requests) do askedPollen = askedPollen or u:find("air%-quality") ~= nil end
+check(not askedPollen, "…and no European pollen")
+store:remove("garden-drought")
+local down = F.network()
+down.answers["api%.weather%.gov"] = function() return nil, "HTTP 503" end
+down.answers["USDM_current"] = function() return nil, "HTTP 500" end
+local standing = Forecast.load(DAN, false, down.fetch, NOW, Activities.request(DAN))
+check(standing and standing.missing.nws and standing.missing.drought and #Garden.cards(standing, DAN) > 0,
+    "NWS and the drought map down: the forecast and cards stand")
+store:remove("garden-drought")
+for _, place in ipairs { LEEDS, DAN, SOUTH } do store:remove(Degree.key(place)) end
+Degree.reset()
+
 -- The edition: its places, and the archive request never holding up the hub.
 local Places = require "Weather/places"
 local appStore = F.storage("garden", Places, Climate.key)
 Climate.reset()
+for _, place in ipairs(Places) do appStore:remove(Degree.key(place)) end
+appStore:remove("garden-drought")
+Degree.reset()
 local ui = F.checkEdition("garden")
 local first = Places[1]
 check(Climate.saved(first) and Climate.saved(first).wanted, "The first place is marked for frost dates")
 local asked = false
 for _, u in ipairs(ui.net.requests) do asked = asked or u:find("archive%-api") ~= nil end
 check(not asked, "The first load asks nothing of the archive")
-ui.net.answers["archive%-api"] = function()
-    return { latitude = first.lat, longitude = first.lon, daily = { time = dates, temperature_2m_min = mins } }
+-- The archive serves both: 30 years for the frost dates, this season for
+-- the degree days.
+ui.net.answers["archive%-api"] = function(u)
+    if u:find("models=era5_land", 1, true) then
+        return { latitude = first.lat, longitude = first.lon, daily = { time = dates, temperature_2m_min = mins } }
+    end
+    local answer = season(u:match("start_date=([%d%-]+)"), u:match("end_date=([%d%-]+)"), function() return 20, 10 end)
+    answer.latitude, answer.longitude = first.lat, first.lon
+    return answer
 end
 local refreshed = ui.app.provider.forecastFor(first.id, true)
 asked = false
 for _, u in ipairs(ui.net.requests) do asked = asked or u:find("archive%-api") ~= nil end
 check(asked and refreshed and Climate.get(refreshed, first).zone == "8a", "The next load fetches and keeps the frost dates")
+check(Degree.saved(first) and Degree.saved(first).through and Degree.saved(first).total > 0,
+    "…and this season's degree days")
 F.done("weather-garden")
