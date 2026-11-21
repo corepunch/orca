@@ -252,8 +252,178 @@ check(byId.rig and byId.rig.value == "the 9 m" and byId.rig.detail:find("rule of
 check(byId.hazard and byId.hazard.value == "thunder from 09:00" and byId.hazard.tone == "poor", "Thunder ahead is a card")
 check(byId.models and byId.models.value == "sure", "How sure the forecast is")
 
+-- Existing services (Research/services-sailing.md), on synthetic answers in
+-- each provider's documented shape (tests/fixtures/sailing/answers.lua).
+local A = dofile("tests/fixtures/sailing/answers.lua")
+local Warnings, Live, Links = Sailing.Warnings, Sailing.Live, Sailing.Links
+local NOW = F.NOW
+local function windyAt(spot)
+    local f = Forecast.parse(F.weather(spot.lat, { wind_speed_10m = function() return 8 end,
+        wind_gusts_10m = function() return 9.5 end, wind_direction_10m = function() return 270 end }), nil, NOW, spot)
+    f.spot = spot
+    return f
+end
+local function cardOf(f, place, id, clock)
+    for _, card in ipairs(Sailing.cards(f, place, clock)) do if card.id == id then return card end end
+end
+local tarifaSpot = { id = "tarifa", title = "Tarifa", lat = 36.01, lon = -5.61, facing = 210 }
+local constanceSpot = { id = "bodensee", title = "Lake Constance", lat = 47.60, lon = 9.40, lake = true, facing = 180 }
+local gardaSpot = { id = "garda", title = "Lake Garda", lat = 45.87, lon = 10.87, lake = true, facing = 180 }
+local cabareteSpot = { id = "cabarete", title = "Cabarete", lat = 19.76, lon = -70.41, facing = 0 }
+
+-- SV-SA1: US marine warnings from the National Weather Service.
+check(Warnings.nws.url(spotSF) == "https://api.weather.gov/alerts/active?point=37.8100,-122.4600"
+    and Warnings.nws.headers.Accept == "application/geo+json" and Warnings.nws.url(tarifaSpot) == nil
+    and Warnings.nws.url(cabareteSpot) == nil, "NWS warnings are asked for US points only, as GeoJSON")
+local sf = windyAt(spotSF)
+Warnings.nws.parse(A.nwsCrissy(), sf)
+check(#sf.sailing.nws == 3, "Marine events are kept; heat advisories and test messages are not")
+local active = Warnings.active(sf, spotSF, NOW)
+check(#active == 2 and active[1].event == "Gale Warning" and active[2].event == "Small Craft Advisory",
+    "The expired gale is dropped and the gale ahead ranks before the advisory in force")
+local warn = cardOf(sf, spotSF, "warning")
+check(warn and warn.value == "gale warning" and warn.tone == "poor" and warn.rank == 0
+    and warn.detail:find("^from wed 18:00 · until thu 12:00 · NWS San Francisco CA · issued wed 04:45 · 1 more"),
+    "The warning card: the gale ahead, when, who issued it and that there is more")
+Settings.set("sailing", "level", "beginner")
+local learner = Sailing.rate(sf.hours[sf.now + 4], sf):result()
+check(learner.score <= 25 and says(learner, "Official Small Craft Advisory in force: not for learners"),
+    "A Small Craft Advisory caps a learner")
+fresh()
+local morning = Sailing.rate(sf.hours[sf.now + 4], sf):result()
+check(morning.score > 25 and says(morning, "Small Craft Advisory in force: strong wind"),
+    "and is a caution for an intermediate rider")
+local evening = Sailing.rate(sf.hours[sf.now + 12], sf):result()
+check(evening.score <= 15 and says(evening, "Official Gale Warning in force: stay ashore"), "A gale warning caps every profile")
+local quiet = windyAt(spotSF)
+Warnings.nws.parse({ type = "FeatureCollection", features = {} }, quiet)
+local none = cardOf(quiet, spotSF, "warning")
+check(none and none.value == "none in force" and none.hub == false and none.detail:find("National Weather Service")
+    and none.detail:find("checked 06:00"), "An empty answer is 'none in force' with when, on the activity page only")
+check(not pcall(Warnings.nws.parse, { title = "error" }, windyAt(spotSF)), "An answer without features fails the source")
+local silent = windyAt(spotSF)
+silent.missing["sailing-nws"] = "No connection to the forecast service."
+local unchecked = cardOf(silent, spotSF, "warning")
+check(unchecked and unchecked.value == "not checked" and unchecked.detail:find("did not answer")
+    and not unchecked.detail:find("none"), "A failed service never reads as 'no warnings'")
+check(cardOf(windyAt(spotSF), spotSF, "warning") == nil and #Warnings.cards(windyAt(cabareteSpot), cabareteSpot, NOW) == 0,
+    "Nothing is said where no service was asked or none covers")
+
+-- SV-SA3: MeteoAlarm in Europe, matched to the spot's area.
+check(Warnings.meteoalarm.url(constanceSpot) == "https://feeds.meteoalarm.org/api/v1/warnings/feeds-germany"
+    and Warnings.meteoalarm.url({ lat = 43.3, lon = 5.4, country = "fr" }):find("feeds%-france$")
+    and Warnings.meteoalarm.url(spotSF) == nil and Warnings.meteoalarm.url(cabareteSpot) == nil,
+    "A European spot asks its country's MeteoAlarm feed")
+local bo = windyAt(constanceSpot)
+Warnings.meteoalarm.parse(A.meteoalarmGermany(), bo)
+check(#bo.sailing.meteoalarm == 3, "Wind and thunder are kept; rain and green levels are not")
+local here, elsewhere = Warnings.active(bo, constanceSpot, NOW)
+check(#here == 1 and here[1].level == "orange" and here[1].event == "wind gusts" and elsewhere == 1,
+    "The orange wind warning for the Bodensee district covers the lake; the expired one drops; Görlitz is elsewhere")
+local orange = cardOf(bo, constanceSpot, "warning")
+check(orange and orange.value == "orange wind warning" and orange.tone == "poor"
+    and orange.detail:find("Deutscher Wetterdienst via EUMETNET – MeteoAlarm · issued wed 04:30"),
+    "The card credits the national service through MeteoAlarm with the issue time")
+local capped = Sailing.rate(bo.hours[bo.now + 4], bo):result()
+check(capped.score <= 15 and says(capped, "orange wind warning in force"), "Orange wind caps the hours it covers")
+local spoSpot = { id = "spo", title = "Sankt Peter-Ording", lat = 54.30, lon = 8.60, facing = 270 }
+local north = cardOf(bo, spoSpot, "warning")
+check(north and north.value == "none in force" and north.detail:find("2 elsewhere in the country"),
+    "A warning for another district is told apart, not dropped")
+local lindau = { id = "geo-2878044", title = "Lindau", region = "Bavaria", country = "DE", lat = 47.55, lon = 9.68 }
+check(cardOf(bo, lindau, "warning").value == "check your area", "A found place that no area names never reads 'none'")
+check(Warnings.covers({ service = "meteoalarm", areas = { { polygon = { { 47, 9 }, { 48, 9 }, { 48, 10 }, { 47, 10 } } } } },
+    lindau), "A CAP polygon around the spot covers it")
+
+-- SV-SA2: the nearest airport's METAR, observed against forecast.
+check(Live.metar.url(tarifaSpot) == "https://aviationweather.gov/api/data/metar?bbox=35.51,-6.31,36.51,-4.91&format=json&hours=2",
+    "METAR is asked for a box of about 50 km around the spot")
+local ta = windyAt(tarifaSpot)
+Live.metar.parse(A.metarTarifa(), ta)
+check(#ta.sailing.metar == 2, "The newest report of each airport is kept")
+local readings = Live.readings(ta, tarifaSpot, NOW)
+check(readings[1].id == "LXGB" and math.floor(readings[1].age + 0.5) == 18
+    and Units.gust(readings[1].speed, readings[1].gust) == "14 g 21 kn", "Gibraltar, nearest, in knots, 18 min old")
+check(readings[2].variable and Live.wind(readings[2]) == "3 kn variable", "A VRB wind reads variable")
+local live = cardOf(ta, tarifaSpot, "live")
+check(live and live.title == "observed now · Gibraltar" and live.value == "14 g 21 kn W"
+    and live.detail:find("^airport, %d+ km away, 18 min ago · forecast 16 g 18 kn: running 2 kn below")
+    and live.detail:find("METAR via NOAA"), "The live card: observed, where, how old, and against the forecast")
+local stale = cardOf(ta, tarifaSpot, "live", NOW + 2 * 3600)
+check(stale and stale.value == "no fresh reading" and stale.hub == false and stale.detail:find("^last: Gibraltar")
+    and stale.detail:find("the forecast alone"), "A reading over 90 minutes old is not live")
+local empty = windyAt(tarifaSpot)
+Live.metar.parse({}, empty)
+check(cardOf(empty, tarifaSpot, "live").detail == "no station reporting near here: the forecast alone",
+    "An empty answer says no station reports")
+local down = windyAt(tarifaSpot)
+down.missing["sailing-metar"] = "The forecast service is not answering."
+check(cardOf(down, tarifaSpot, "live").detail:find("did not answer"), "A failed service says so")
+
+-- SV-SA4: OpenWindMap volunteer stations.
+check(Live.openwindmap.url(gardaSpot) == "https://api.pioupiou.fr/v1/live-with-meta/all"
+    and Live.openwindmap.url(tarifaSpot) == nil
+    and Live.openwindmap.url({ lat = 36, lon = -5.6, windStation = 1003 }):find("/live%-with%-meta/1003$"),
+    "OpenWindMap is asked where it is dense, or for the place's own station")
+local ga = windyAt(gardaSpot)
+Live.openwindmap.parse(A.pioupiouGarda(), ga)
+Live.metar.parse({ { icaoId = "LIPO", name = "Garda airfield, IT", lat = 45.84, lon = 10.85, obsTime = NOW - 600,
+    wdir = 170, wspd = 9 } }, ga)
+local stations = Live.readings(ga, gardaSpot, NOW)
+local names = {}
+for _, reading in ipairs(stations) do names[#names + 1] = reading.name end
+check(table.concat(names, ",") == "Torbole,Garda airfield,Malcesine",
+    "The station on the shore first, then by distance; the offline and the two-hour-old ones are skipped")
+check(Live.wind(stations[1]) == "15 g 20 kn S", "km/h become knots")
+local shoreCard = cardOf(ga, gardaSpot, "live")
+check(shoreCard.detail:find("^wind station, 0%.%d km away, 4 min ago") and shoreCard.detail:find("Garda airfield 9 kn S")
+    and shoreCard.detail:find("OpenWindMap$"), "The card names the station, its distance and age, and credits it")
+local one = windyAt(gardaSpot)
+Live.openwindmap.parse(A.pioupiouOne(), one)
+check(#one.sailing.openwindmap == 1 and one.sailing.openwindmap[1].name == "Malcesine", "One station's answer")
+
+-- SV-SA5: NDBC shore stations and buoys, as text.
+check(Live.buoys[2].url(spotSF) == "https://www.ndbc.noaa.gov/data/realtime2/46026.txt" and Live.buoys[2].format == "text"
+    and Live.buoys[1].url(tarifaSpot) == nil, "NDBC files are asked as text for the spots that have stations")
+local row = Live.ndbcRow(A.ndbc46026)
+check(row.at == NOW - 20 * 60 and row.speed == 8 and row.gust == nil and row.waveHeight == 1.8 and row.wavePeriod == 12,
+    "The newest row after two header lines; MM is missing")
+check(not pcall(Live.ndbcRow, "<html>Station not found</html>"), "A page that is not an NDBC file fails the source")
+local buoys = windyAt(spotSF)
+Live.buoys[1].parse(A.ndbcFTPC1, buoys)
+Live.buoys[2].parse(A.ndbc46026, buoys)
+local fort = cardOf(buoys, spotSF, "live")
+check(fort and fort.title == "observed now · Fort Point" and fort.value == "12 g 16 kn W" and fort.detail:find("NOAA NDBC$"),
+    "The shore station leads the live card")
+local buoyCard = cardOf(buoys, spotSF, "buoy")
+check(buoyCard and buoyCard.value == "1.8 m at 12 s" and buoyCard.detail:find("^wind 16 kn W · buoy, %d+ km away, 20 min ago"),
+    "The offshore buoy: waves, period and its wind")
+
+-- SV-SA6: pages to check by hand, links only.
+local links = cardOf(buoys, spotSF, "links")
+check(links and links.hub == false and links.detail:find("ndbc.noaa.gov/station_page.php%?station=46026")
+    and links.detail:find("forecast.weather.gov/MapClick.php%?lat=37.8100"), "Crissy links its NDBC pages and the NWS text")
+check(Links.cards(gardaSpot)[1].detail:find("openwindmap.org") and Links.cards(gardaSpot)[1].detail:find("meteoalarm.org"),
+    "Lake Garda links OpenWindMap and MeteoAlarm")
+check(#Links.cards(cabareteSpot) == 0 and cardOf(windyAt(cabareteSpot), cabareteSpot, "links") == nil,
+    "A place without links shows none")
+
+-- Each service is credited on the settings' about.
+local about = {}
+for _, entry in ipairs(require("Weather/provider").about()) do about[entry[1]] = entry[2] end
+check(about["Warnings in the US: National Weather Service"] and about["Warnings in Europe: EUMETNET – MeteoAlarm"]
+    and about["Airport wind: NOAA Aviation Weather Center (METAR)"]
+    and about["Wind stations: © contributors of the Pioupiou / OpenWindMap network"]:find("openwindmap.org")
+    and about["Buoys: NOAA National Data Buoy Center"], "Every service is credited on the about page")
+
 -- The edition on its own places, with every extra request answered.
 local net = F.network()
+net.answers["api%.weather%.gov"] = function() return A.nwsCrissy() end
+net.answers["realtime2/FTPC1"] = function() return A.ndbcFTPC1 end
+net.answers["realtime2/46026"] = function() return A.ndbc46026 end
+net.answers["aviationweather%.gov"] = function() return {} end
+net.answers["meteoalarm%.org"] = function() return A.meteoalarmGermany() end
+net.answers["pioupiou%.fr"] = function() return A.pioupiouGarda() end
 net.answers["models="] = function() return multi { ecmwf_ifs025 = 3, gfs_seamless = 3.2, icon_seamless = 2.9 } end
 net.answers["sea_level_height_msl"] = function() return tideAnswer() end
 net.answers["latitude=[%-%d%.]+,"] = function(u)
@@ -266,6 +436,7 @@ local Places = require "Weather/places"
 local ui = F.launch { places = Places, storageName = "sailing-cards", net = net }
 local place = Places[1]
 check(ui.has("Card" .. place.id .. ":card:rig"), "The hub leads with what to rig")
+check(ui.cards()[1] == "Card" .. place.id .. ":card:warning", "An official warning comes first on the hub")
 ui.open(place.id, "sailing")
 check(ui.has("Card" .. place.id .. ":sailing:card:rig") and ui.has("Card" .. place.id .. ":sailing:card:models"),
     "The activity's now view shows the rig and the models")
@@ -275,6 +446,16 @@ for _, u in ipairs(net.requests) do
     asked.tides = asked.tides or u:find("sea_level_height_msl") ~= nil
 end
 check(asked.models and asked.tides, "The edition asks for the models and the tide")
+check(ui.has("Card" .. place.id .. ":sailing:card:live") and ui.has("Card" .. place.id .. ":sailing:card:buoy")
+    and ui.has("Card" .. place.id .. ":sailing:card:links") and ui.has("Card" .. place.id .. ":sailing:card:warning"),
+    "The activity page shows the warning, the observed wind, the buoy and the links")
+local headers = {}
+for index, u in ipairs(net.requests) do
+    if u:find("api%.weather%.gov") then headers.nws = net.options[index].headers end
+    if u:find("realtime2/46026") then headers.ndbc = net.options[index] end
+end
+check(headers.nws and headers.nws.Accept == "application/geo+json" and headers.nws["User-Agent"]
+    and headers.ndbc and headers.ndbc.format == "text", "NWS gets GeoJSON and a User-Agent; NDBC is fetched as text")
 ui.back()
 -- The profile on the settings page follows the sport.
 ui.press("OpenSettings")
