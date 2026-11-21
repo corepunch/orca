@@ -1,22 +1,16 @@
-// The built-in shaders in Metal Shading Language, hand-written, each with its
-// reflection table. Included by r_builtin_shaders.c on Metal builds, where
-// every shader_desc there names its program here as its Metal shader.
+// The built-in shaders in Metal Shading Language, hand-written. Included by
+// r_builtin_shaders.c on Metal builds, where every shader_desc there names
+// its two stages here with SHADER_METAL(vertex, fragment).
 //
-// Layout rules: float4x4 = 64B, float3x3 = 48B (3×16B cols), float4 = 16B,
-// float3 = 16B slot / packed_float3 = 12B slot, float2 = 8B, float = 4B.
-// Uniform offsets follow std430 (vec3 align=16, size=12; next at tight align).
-// A vec3 is float3 when the gap to the next member is 16, packed_float3 when 12.
-//
-// Every vertex shader applies the Y-flip and depth remap to Metal's [0,1] range.
-// All shaders use entry point "main0" and uniform buffer [[buffer(0)]].
+// Every vertex shader applies the Y-flip (orca_FlipY) and the depth remap to
+// Metal's [0,1] range. The backend reads a stage's uniforms, textures and
+// attributes from the compiled function, so the layout of a uniform struct is
+// free and need not be the same in both stages.
 
 #ifndef __R_BUILTIN_SHADERS_MSL_H__
 #define __R_BUILTIN_SHADERS_MSL_H__
 
-#include "../metal/msl_program.h"
-
 // ============================================================  Default Shader
-// blockSize=120  attrs: a_position[0] a_normal[1] a_texcoord0[2] a_color[3]
 static const char k_msl_vs_default[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -70,30 +64,7 @@ static const char k_msl_fs_default[] =
   "    return u_texture.sample(u_textureSampler, in.v_texcoord0) * in.v_color * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_msl_default = {
-  .source = {k_msl_vs_default, k_msl_fs_default},
-  .entry = {"main0","main0"},
-  .blockSize = {120,120},
-  .numUniforms = 5,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_normalTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{116,116},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 4,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_normal",1,0x8b51},
-    {"a_texcoord0",2,0x8b50},
-    {"a_color",3,0x8b52},
-  },
-};
-
 // ================================================================  UI Shader
-// blockSize=196  attrs: a_position[0] a_texcoord0[1] a_texcoord1[2]
-// bboxMax: packed_float3 (176+12=188 for opacity, not 176+16)
 static const char k_msl_vs_ui[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -164,34 +135,7 @@ static const char k_msl_fs_ui[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_msl_ui = {
-  .source = {k_msl_vs_ui, k_msl_fs_ui},
-  .entry = {"main0","main0"},
-  .blockSize = {196,196},
-  .numUniforms = 10,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_radius",0x8b52,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_borderWidth",0x8b52,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{176,176},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{188,188},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{192,192},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 3,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-    {"a_texcoord1",2,0x8b50},
-  },
-};
-
 // ============================================================  Charset Shader
-// blockSize=204  attrs: a_position[0] a_texcoord0[1]
-// Both bboxMin and bboxMax are float3 (gap 16 each)
 static const char k_msl_vs_charset[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -268,36 +212,7 @@ static const char k_msl_fs_charset[] =
   "    return step(fr.y, 1.0) * mix(bg, fg, t) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_msl_charset = {
-  .source = {k_msl_vs_charset, k_msl_fs_charset},
-  .entry = {"main0","main0"},
-  .blockSize = {204,204},
-  .numUniforms = 13,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_textureSize",0x8b50,1,{176,176},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_selectedItem",0x8b50,1,{184,184},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_cursorPos",0x8b50,1,{192,192},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{200,200},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-    {"u_charset",0x8b5e,1,{-1,-1},{0,0},{0,0},{1,1},{1,1}},
-    {"u_palette",0x8b5e,1,{-1,-1},{0,0},{0,0},{2,2},{2,2}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-  },
-};
-
 // ==========================================================  Cinematic Shader
-// blockSize=160  attrs: a_position[0] a_texcoord0[1]
-// bboxMax: packed_float3 (144+12=156 for flipY)
 static const char k_msl_vs_cinematic[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -351,31 +266,7 @@ static const char k_msl_fs_cinematic[] =
   "    return u_cinematicPalette.sample(u_cinematicPaletteSampler, float2(col.r, 0.5)) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_msl_cinematic = {
-  .source = {k_msl_vs_cinematic, k_msl_fs_cinematic},
-  .entry = {"main0","main0"},
-  .blockSize = {160,160},
-  .numUniforms = 8,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{156,156},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-    {"u_cinematicPalette",0x8b5e,1,{-1,-1},{0,0},{0,0},{1,1},{1,1}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-  },
-};
-
 // ==========================================================  Ninepatch Shader
-// blockSize=164  attrs: a_position[0] a_texcoord0[1]
-// bboxMax: packed_float3 (144+12=156 for opacity)
 static const char k_msl_vs_ninepatch[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -428,30 +319,7 @@ static const char k_msl_fs_ninepatch[] =
   "    return float4(col.rgb, col.a * u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_msl_ninepatch = {
-  .source = {k_msl_vs_ninepatch, k_msl_fs_ninepatch},
-  .entry = {"main0","main0"},
-  .blockSize = {164,164},
-  .numUniforms = 8,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{156,156},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-  },
-};
-
 // ========================================================  VertexColor Shader
-// blockSize=100  attrs: a_position[0] a_texcoord0[1]
 static const char k_msl_vs_vertexcolor[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -488,26 +356,7 @@ static const char k_msl_fs_vertexcolor[] =
   "    return u.u_color * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_msl_vertexcolor = {
-  .source = {k_msl_vs_vertexcolor, k_msl_fs_vertexcolor},
-  .entry = {"main0","main0"},
-  .blockSize = {100,100},
-  .numUniforms = 4,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{64,64},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{80,80},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{96,96},{0,0},{0,0},{-1,-1},{-1,-1}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-  },
-};
-
 // ============================================================  Error Shader
-// blockSize=72  attrs: a_position[0] a_texcoord0[1]
 static const char k_msl_vs_error[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -542,26 +391,7 @@ static const char k_msl_fs_error[] =
   "    return float4(1.0, 0.0, 1.0, u.u_opacity);\n"
   "}\n";
 
-static const struct msl_program k_msl_error = {
-  .source = {k_msl_vs_error, k_msl_fs_error},
-  .entry = {"main0","main0"},
-  .blockSize = {72,72},
-  .numUniforms = 3,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{64,64},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{68,68},{0,0},{0,0},{-1,-1},{-1,-1}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-  },
-};
-
 // ===========================================================  Button Shader
-// blockSize=208  attrs: a_position[0] a_normal[1]
-// lightDir/viewDir: packed_float3 (gaps of 12)
 static const char k_msl_vs_button[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -633,33 +463,7 @@ static const char k_msl_fs_button[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static const struct msl_program k_msl_button = {
-  .source = {k_msl_vs_button, k_msl_fs_button},
-  .entry = {"main0","main0"},
-  .blockSize = {208,208},
-  .numUniforms = 10,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_normalTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_lightDir",0x8b51,1,{176,176},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_specularPower",0x1406,1,{188,188},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_viewDir",0x8b51,1,{192,192},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{204,204},{0,0},{0,0},{-1,-1},{-1,-1}},
-  },
-  .numAttributes = 2,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_normal",1,0x8b51},
-  },
-};
-
 // =========================================================  RoundedBox Shader
-// blockSize=224  attrs: a_position[0] a_normal[1] a_weight[2]
-// lightDir/viewDir: packed_float3
 static const char k_msl_vs_roundedbox[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -731,35 +535,7 @@ static const char k_msl_fs_roundedbox[] =
   "    return float4(u.u_color.rgb * baseColor, 1.0) * u.u_opacity + float4(spec);\n"
   "}\n";
 
-static const struct msl_program k_msl_roundedbox = {
-  .source = {k_msl_vs_roundedbox, k_msl_fs_roundedbox},
-  .entry = {"main0","main0"},
-  .blockSize = {224,224},
-  .numUniforms = 11,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_normalTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_color",0x8b52,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_radius",0x8b52,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{176,176},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_lightDir",0x8b51,1,{192,192},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_specularPower",0x1406,1,{204,204},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_viewDir",0x8b51,1,{208,208},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{220,220},{0,0},{0,0},{-1,-1},{-1,-1}},
-  },
-  .numAttributes = 3,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_normal",1,0x8b51},
-    {"a_weight",2,0x8b52},
-  },
-};
-
 // ===========================================================  Blur H Shader
-// blockSize=164  attrs: a_position[0] a_texcoord0[1] a_texcoord1[2]
-// bboxMax: packed_float3 (144+12=156 for opacity)
 static const char k_msl_blur_common_vs[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -862,57 +638,7 @@ static const char k_msl_fs_blur_v[] =
   "    return float4(a,a,a,a) * u.u_opacity;\n"
   "}\n";
 
-static const struct msl_program k_msl_blur_h = {
-  .source = {k_msl_blur_common_vs, k_msl_fs_blur_h},
-  .entry = {"main0","main0"},
-  .blockSize = {164,164},
-  .numUniforms = 9,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_texelSize",0x8b50,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_sigma",0x1406,1,{120,120},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{156,156},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 3,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-    {"a_texcoord1",2,0x8b50},
-  },
-};
-
-static const struct msl_program k_msl_blur_v = {
-  .source = {k_msl_blur_common_vs, k_msl_fs_blur_v},
-  .entry = {"main0","main0"},
-  .blockSize = {164,164},
-  .numUniforms = 9,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_texelSize",0x8b50,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_sigma",0x1406,1,{120,120},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_opacity",0x1406,1,{156,156},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{160,160},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 3,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-    {"a_texcoord1",2,0x8b50},
-  },
-};
-
 // ======================================================  Backdrop Blur Shader
-// blockSize=160  attrs: a_position[0] a_texcoord0[1] a_texcoord1[2]
-// bboxMax: packed_float3 (144+12=156 for flipY); no u_opacity
 static const char k_msl_vs_backdrop_blur[] =
   "#include <metal_stdlib>\n"
   "using namespace metal;\n"
@@ -979,29 +705,5 @@ static const char k_msl_fs_backdrop_blur[] =
   "    float luma = dot(color, float3(0.2126, 0.7152, 0.0722));\n"
   "    return float4(mix(float3(luma), color, u.u_saturation), 1.0);\n"
   "}\n";
-
-static const struct msl_program k_msl_backdrop_blur = {
-  .source = {k_msl_vs_backdrop_blur, k_msl_fs_backdrop_blur},
-  .entry = {"main0","main0"},
-  .blockSize = {160,160},
-  .numUniforms = 9,
-  .uniforms = {
-    {"u_modelViewProjectionTransform",0x8b5c,1,{0,0},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_textureTransform",0x8b5b,1,{64,64},{0,0},{16,16},{-1,-1},{-1,-1}},
-    {"u_texelSize",0x8b50,1,{112,112},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_sigma",0x1406,1,{120,120},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_saturation",0x1406,1,{124,124},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMin",0x8b51,1,{128,128},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_bboxMax",0x8b51,1,{144,144},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"orca_FlipY",0x1406,1,{156,156},{0,0},{0,0},{-1,-1},{-1,-1}},
-    {"u_texture",0x8b5e,1,{-1,-1},{0,0},{0,0},{0,0},{0,0}},
-  },
-  .numAttributes = 3,
-  .attributes = {
-    {"a_position",0,0x8b52},
-    {"a_texcoord0",1,0x8b50},
-    {"a_texcoord1",2,0x8b50},
-  },
-};
 
 #endif

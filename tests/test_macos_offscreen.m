@@ -35,8 +35,8 @@ static uint32_t link_program(char const *vertex, char const *fragment)
   return program;
 }
 
-// A program linked without a reflection table, as a project's Shader is,
-// gets its uniforms, textures and attributes from Metal's own reflection.
+// A program gets its uniforms, textures and attributes from Metal's own
+// reflection of its two functions, by name.
 static int check_reflected_program(void)
 {
   static char const prelude[] = "#include <metal_stdlib>\nusing namespace metal;\n";
@@ -75,7 +75,7 @@ static int check_reflected_program(void)
   char log[512] = "";
   mtlGetProgramiv(program, MTL_LINK_STATUS, &linked);
   mtlGetProgramInfoLog(program, sizeof(log), NULL, log);
-  if (!linked) return fprintf(stderr, "FAIL: a program without a reflection table must link: %s\n", log), 1;
+  if (!linked) return fprintf(stderr, "FAIL: the program must link: %s\n", log), 1;
   mtlGetProgramiv(program, MTL_ACTIVE_UNIFORMS, &uniforms);
   mtlGetProgramiv(program, MTL_ACTIVE_ATTRIBUTES, &attributes);
   // u_transform, u_tint, u_gain and u_map; orca_FlipY is the backend's own.
@@ -107,7 +107,7 @@ static int check_reflected_program(void)
   if (linked || !strstr(log, "orca_FlipY"))
     return fprintf(stderr, "FAIL: a vertex stage without orca_FlipY must not link: %s\n", log), 1;
   mtlDeleteProgram(program);
-  puts("PASS: a Metal program without a reflection table is reflected by Metal");
+  puts("PASS: a Metal program is reflected from its compiled functions");
   return 0;
 }
 
