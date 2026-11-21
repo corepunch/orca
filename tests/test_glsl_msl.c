@@ -31,16 +31,16 @@ assemble(struct shader_desc const *desc, bool_t vertex, bool_t es)
   return count ? text : NULL;
 }
 
-static struct glsl_msl_uniform const *
-uniform(struct glsl_msl_program const *p, char const *name)
+static struct msl_uniform const *
+uniform(struct msl_program const *p, char const *name)
 {
   for (uint32_t i = 0; i < p->numUniforms; i++)
     if (!strcmp(p->uniforms[i].name, name)) return &p->uniforms[i];
   return NULL;
 }
 
-static struct glsl_msl_attribute const *
-attribute(struct glsl_msl_program const *p, char const *name)
+static struct msl_attribute const *
+attribute(struct msl_program const *p, char const *name)
 {
   for (uint32_t i = 0; i < p->numAttributes; i++)
     if (!strcmp(p->attributes[i].name, name)) return &p->attributes[i];
@@ -50,22 +50,22 @@ attribute(struct glsl_msl_program const *p, char const *name)
 // Every translated program: both stages compiled, the Y flip present, block
 // offsets inside their block, and each sampler bound in some stage.
 static int
-check_program(struct glsl_msl_program const *p)
+check_program(struct msl_program const *p)
 {
-  struct glsl_msl_uniform const *flip = uniform(p, GLSL_MSL_FLIP_Y);
-  if (!p->source[GLSL_MSL_VERTEX] || !p->source[GLSL_MSL_FRAGMENT]) return 0;
-  if (!*p->entry[GLSL_MSL_VERTEX] || !*p->entry[GLSL_MSL_FRAGMENT]) return 0;
-  if (!flip || flip->offset[GLSL_MSL_VERTEX] < 0) return 0;
-  if (!strstr(p->source[GLSL_MSL_VERTEX], "vertex ")) return 0;
-  if (!strstr(p->source[GLSL_MSL_FRAGMENT], "fragment ")) return 0;
+  struct msl_uniform const *flip = uniform(p, MSL_FLIP_Y);
+  if (!p->source[MSL_VERTEX] || !p->source[MSL_FRAGMENT]) return 0;
+  if (!*p->entry[MSL_VERTEX] || !*p->entry[MSL_FRAGMENT]) return 0;
+  if (!flip || flip->offset[MSL_VERTEX] < 0) return 0;
+  if (!strstr(p->source[MSL_VERTEX], "vertex ")) return 0;
+  if (!strstr(p->source[MSL_FRAGMENT], "fragment ")) return 0;
   for (uint32_t i = 0; i < p->numUniforms; i++) {
-    struct glsl_msl_uniform const *u = &p->uniforms[i];
+    struct msl_uniform const *u = &p->uniforms[i];
     int bound = 0;
-    for (int s = 0; s < GLSL_MSL_STAGES; s++) {
+    for (int s = 0; s < MSL_STAGES; s++) {
       if (u->offset[s] >= 0 && (uint32_t)u->offset[s] >= p->blockSize[s]) return 0;
       bound |= u->offset[s] >= 0 || u->texture[s] >= 0;
     }
-    if (!bound || !u->gltype) return 0;
+    if (!bound || !u->type) return 0;
   }
   return 1;
 }
@@ -77,34 +77,34 @@ test_translate(struct shader_desc const *desc, char const *attr, char const *sam
     char name[128];
     snprintf(name, sizeof(name), "%s (%s)", desc->Name, es ? "iOS" : "macOS");
     char *vs = assemble(desc, TRUE, es), *fs = assemble(desc, FALSE, es);
-    struct glsl_msl_program program;
+    struct msl_program program;
     int ok = vs && fs && GLSL_TranslateProgram(vs, fs, es ? GLSL_MSL_IOS : GLSL_MSL_MACOS, &program);
     if (!ok && vs && fs) printf("%s\n", program.log ? program.log : "(no log)");
     // GLSL_MSL_DUMP=<shader name> prints the generated MSL for inspection.
     if (ok && getenv("GLSL_MSL_DUMP") && strstr(name, getenv("GLSL_MSL_DUMP")))
-      printf("%s\n%s\n", program.source[GLSL_MSL_VERTEX], program.source[GLSL_MSL_FRAGMENT]);
+      printf("%s\n%s\n", program.source[MSL_VERTEX], program.source[MSL_FRAGMENT]);
     // REFL_DUMP prints C reflection struct initializers (macOS only, for r_msl_shaders.h).
     if (ok && !es && getenv("REFL_DUMP")) {
       char cname[64];
       strncpy(cname, desc->Name, 63);
       for (char *c = cname; *c; c++) if (*c == ' ') *c = '_';
       for (char *c = cname; *c; c++) *c = (*c>='A'&&*c<='Z') ? (*c+32) : *c;
-      printf("/* %s */\nstatic const struct glsl_msl_program k_refl_%s = {\n", desc->Name, cname);
+      printf("/* %s */\nstatic const struct msl_program k_refl_%s = {\n", desc->Name, cname);
       printf("  .entry = { \"main0\", \"main0\" },\n");
       printf("  .blockSize = { %u, %u },\n", program.blockSize[0], program.blockSize[1]);
       printf("  .numUniforms = %u,\n  .uniforms = {\n", program.numUniforms);
       for (uint32_t ui = 0; ui < program.numUniforms; ui++) {
-        struct glsl_msl_uniform *u = &program.uniforms[ui];
+        struct msl_uniform *u = &program.uniforms[ui];
         printf("    { \"%s\", 0x%04x, %u, {%d,%d}, {%u,%u}, {%u,%u}, {%d,%d}, {%d,%d} },\n",
-          u->name, u->gltype, u->arraySize,
+          u->name, u->type, u->arraySize,
           u->offset[0], u->offset[1], u->arrayStride[0], u->arrayStride[1],
           u->matrixStride[0], u->matrixStride[1],
           u->texture[0], u->texture[1], u->sampler[0], u->sampler[1]);
       }
       printf("  },\n  .numAttributes = %u,\n  .attributes = {\n", program.numAttributes);
       for (uint32_t ai = 0; ai < program.numAttributes; ai++) {
-        struct glsl_msl_attribute *a = &program.attributes[ai];
-        printf("    { \"%s\", %u, 0x%04x },\n", a->name, a->location, a->gltype);
+        struct msl_attribute *a = &program.attributes[ai];
+        printf("    { \"%s\", %u, 0x%04x },\n", a->name, a->location, a->type);
       }
       printf("  },\n};\n\n");
     }
@@ -113,7 +113,7 @@ test_translate(struct shader_desc const *desc, char const *attr, char const *sam
       EXPECT(ok && check_program(&program));
       EXPECT(!ok || !attr || attribute(&program, attr));
       EXPECT(!ok || !sampler || (uniform(&program, sampler) &&
-                                 uniform(&program, sampler)->texture[GLSL_MSL_FRAGMENT] >= 0));
+                                 uniform(&program, sampler)->texture[MSL_FRAGMENT] >= 0));
     });
     if (vs && fs) GLSL_FreeProgram(&program);
     free(vs);
@@ -136,28 +136,28 @@ test_reflection(void)
     "in vec4 v_color; out vec4 FragColor;\n"
     "uniform sampler2D u_texture; uniform samplerCube u_env; uniform bool u_flag; uniform vec2 u_size;\n"
     "void main() { FragColor = v_color * texture(u_texture, u_size) * texture(u_env, vec3(1.0)) * (u_flag ? 1.0 : 0.5); }\n";
-  struct glsl_msl_program p;
+  struct msl_program p;
   int ok = GLSL_TranslateProgram(vs, fs, GLSL_MSL_IOS, &p);
   if (!ok) printf("%s\n", p.log ? p.log : "(no log)");
   RUN_TEST("reflection", {
     EXPECT(ok && check_program(&p));
-    struct glsl_msl_uniform const *mvp = uniform(&p, "u_mvp");
-    struct glsl_msl_uniform const *normal = uniform(&p, "u_normal");
-    struct glsl_msl_uniform const *lights = uniform(&p, "u_lights");
-    struct glsl_msl_uniform const *tex = uniform(&p, "u_texture");
-    struct glsl_msl_uniform const *env = uniform(&p, "u_env");
-    struct glsl_msl_uniform const *flag = uniform(&p, "u_flag");
-    EXPECT(mvp && mvp->gltype == 0x8B5C && mvp->offset[GLSL_MSL_VERTEX] >= 0);
-    EXPECT(normal && normal->gltype == 0x8B5B && normal->matrixStride[GLSL_MSL_VERTEX] == 16);
-    EXPECT(lights && lights->arraySize == 4 && lights->arrayStride[GLSL_MSL_VERTEX] == 64);
-    EXPECT(tex && tex->gltype == 0x8B5E && tex->texture[GLSL_MSL_FRAGMENT] >= 0);
-    EXPECT(tex && tex->texture[GLSL_MSL_VERTEX] < 0);
-    EXPECT(env && env->gltype == 0x8B60 && env->texture[GLSL_MSL_FRAGMENT] != tex->texture[GLSL_MSL_FRAGMENT]);
-    EXPECT(flag && flag->gltype == 0x8B56 && flag->offset[GLSL_MSL_FRAGMENT] >= 0);
+    struct msl_uniform const *mvp = uniform(&p, "u_mvp");
+    struct msl_uniform const *normal = uniform(&p, "u_normal");
+    struct msl_uniform const *lights = uniform(&p, "u_lights");
+    struct msl_uniform const *tex = uniform(&p, "u_texture");
+    struct msl_uniform const *env = uniform(&p, "u_env");
+    struct msl_uniform const *flag = uniform(&p, "u_flag");
+    EXPECT(mvp && mvp->type == 0x8B5C && mvp->offset[MSL_VERTEX] >= 0);
+    EXPECT(normal && normal->type == 0x8B5B && normal->matrixStride[MSL_VERTEX] == 16);
+    EXPECT(lights && lights->arraySize == 4 && lights->arrayStride[MSL_VERTEX] == 64);
+    EXPECT(tex && tex->type == 0x8B5E && tex->texture[MSL_FRAGMENT] >= 0);
+    EXPECT(tex && tex->texture[MSL_VERTEX] < 0);
+    EXPECT(env && env->type == 0x8B60 && env->texture[MSL_FRAGMENT] != tex->texture[MSL_FRAGMENT]);
+    EXPECT(flag && flag->type == 0x8B56 && flag->offset[MSL_FRAGMENT] >= 0);
     EXPECT(attribute(&p, "a_position") && attribute(&p, "a_color"));
     EXPECT(attribute(&p, "a_position")->location != attribute(&p, "a_color")->location);
     // Metal's clip space is 0..1 deep; the vertex stage converts OpenGL's.
-    EXPECT(strstr(p.source[GLSL_MSL_VERTEX], ".w) * 0.5"));
+    EXPECT(strstr(p.source[MSL_VERTEX], ".w) * 0.5"));
   });
   GLSL_FreeProgram(&p);
   char const *broken = "#version 300 es\nvoid main() { gl_Position = undefined_name; }\n";

@@ -604,7 +604,7 @@ IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
   GLsizei w = (GLsizei)IOSurfaceGetWidth(surface), h = (GLsizei)IOSurfaceGetHeight(surface);
   if (!img->texnum) R_Call(glGenTextures, 1, &img->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, img->texnum);
-  bool_t ok = GLMTL_TexImageIOSurface(GL_TEXTURE_2D, surface, w, h) == 0;
+  bool_t ok = mtlTexImageIOSurface(GL_TEXTURE_2D, surface, w, h) == 0;
   CFRelease(surface);
   if (!ok) return FALSE;
   img->Width = w;
