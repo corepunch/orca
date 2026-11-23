@@ -1,6 +1,6 @@
 -- A yielding background refresh must never restore a logged-out account or
 -- erase the replacement account's in-memory/private saved credentials.
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat = require "api.chat"
 local json = require "orca.json"
 local function session(token, user)

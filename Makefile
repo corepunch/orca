@@ -747,7 +747,7 @@ $(foreach t,$(XML_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/xml/$(subst 
 .PHONY: $(XML_LUA_TESTS)
 HEADLESS_LUA_TESTS += $(XML_LUA_TESTS)
 APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
-APP_LUA_TESTS += test-chat-stress test-octopus-stress test-octopus-app
+APP_LUA_TESTS += test-chat-stress test-octopus-stress test-octopus-app test-octopus-startup-api
 APP_LUA_TESTS += test-chat-localization test-octopus-localization
 APP_LUA_TESTS += test-chat-account-deletion
 APP_LUA_TESTS += test-chat-safety
