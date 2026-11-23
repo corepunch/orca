@@ -1,5 +1,6 @@
 -- Native Account auth has no dependency on the Chat function or its database.
 -- Each adapter owns its session cookie; the HTTP layer disables its shared jar.
+local Account = require "AppwriteAuth/account"
 local M = {}
 
 local function errorResponse(message)
@@ -11,41 +12,11 @@ local function successful(response)
     and response.status >= 200 and response.status < 300
 end
 
-local function credentials(response, projectId)
-  local name = "a_session_" .. projectId
-  local cookie, legacy
-  local function inspect(value)
-    if type(value) == "table" then for _, line in ipairs(value) do inspect(line) end
-    elseif type(value) == "string" then
-      for line in value:gmatch("[^\r\n]+") do
-        local key, content = line:match("^%s*([^=; ]+)=([^;\r\n]+)")
-        if content and not content:find("[%z\1-\32\127]") then
-          if key == name then cookie = key .. "=" .. content
-          elseif key == name .. "_legacy" then legacy = key .. "=" .. content end
-        end
-      end
-    end
-  end
-  for key, value in pairs(response.headers or {}) do
-    if type(key) == "string" and key:lower() == "set-cookie" then inspect(value) end
-  end
-  if cookie or legacy then return { Cookie = cookie or legacy } end
-  local secret = type(response.body) == "table" and response.body.secret
-  if type(secret) == "string" and secret ~= "" and not secret:find("[%z\1-\32\127]") then
-    return { ["X-Appwrite-Session"] = secret }
-  end
-end
-
 function M.new(options)
   local current, pending = nil, {}
   local currentUser, pushBusy, liveRecord, deletingUser
   local encode, store = options.encode, options.sessionStore
   local endpoint = options.endpoint:gsub("/$", "")
-  -- Appwrite sends OAuth and emailed sign-in links back to this per-project scheme.
-  local scheme = "appwrite-callback-" .. options.projectId:lower()
-  local function escape(value)
-    return (value:gsub("[^%w%-%._~]", function(c) return ("%%%02X"):format(c:byte()) end))
-  end
   local saveAvatar = require("api.appwrite_avatars").new {
     endpoint = endpoint, projectId = options.projectId, transport = options.transport, encode = options.encode,
   }
@@ -63,6 +34,7 @@ function M.new(options)
     end
     return response
   end
+  local account = Account.new(endpoint, options.projectId, call)
   local function stored(operation, value)
     if not store then return true end
     local ok, result, err = pcall(store[operation], value)
@@ -164,9 +136,9 @@ function M.new(options)
         user_metadata = { display_name = user.name or "" } } } }
   end
   local function signIn(email, password)
-    local response = call("POST", "/account/sessions/email", { email = email, password = password })
+    local response = account:password(email, password)
     if not successful(response) then return response end
-    return session(credentials(response, options.projectId), true)
+    return session(Account.credentials(response, options.projectId), true)
   end
   return function(request, path)
     local body = request.body or {}
@@ -257,7 +229,7 @@ function M.new(options)
     elseif request.method == "POST" and path == "/auth/v1/otp" and type(body.email) == "string" then
       -- Email only: Appwrite sends SMS codes only on paid plans.
       local field = "email"
-      local response = call("POST", "/account/tokens/email", { userId = "unique()", email = body.email })
+      local response = account:requestCode(body.email)
       if not successful(response) then return response end
       local token = response.body
       if type(token) ~= "table" or type(token.userId) ~= "string" or token.userId == "" then
@@ -269,40 +241,33 @@ function M.new(options)
       local key = "email:" .. body.email
       local userId = pending[key]
       if not userId then return { status = 400, body = { code = "verification_missing", message = "Request a new verification code first." } } end
-      local response = call("POST", "/account/sessions/token", { userId = userId, secret = body.token })
+      local response = account:exchange(userId, body.token)
       if not successful(response) then return response end
       pending[key] = nil
-      return session(credentials(response, options.projectId), true)
+      return session(Account.credentials(response, options.projectId), true)
     elseif request.method == "POST" and path == "/auth/v1/magiclink" and type(body.email) == "string" then
       -- The emailed link opens the app (or a configured https page that forwards to it).
-      local url = options.magicLinkUrl or (scheme .. "://magic")
-      local response = call("POST", "/account/tokens/magic-url", { userId = "unique()", email = body.email, url = url })
+      local response = account:requestMagicLink(body.email, options.magicLinkUrl)
       if not successful(response) then return response end
       return { status = 200, body = {} }
     elseif request.method == "POST" and path == "/auth/v1/authorize" then
-      -- Builds the provider page for a browser session; no request is made here.
-      if body.provider ~= "apple" and body.provider ~= "google" then
-        return { status = 400, body = { code = "validation", message = "Choose Apple or Google." } }
-      end
-      local back = escape(scheme .. "://oauth")
-      return { status = 200, body = { scheme = scheme, url = endpoint .. "/account/tokens/oauth2/" .. body.provider
-        .. "?project=" .. escape(options.projectId) .. "&success=" .. back .. "&failure=" .. back } }
+      return account:providerPage(body.provider)
     elseif request.method == "POST" and path == "/auth/v1/link-session" then
       -- Completes a link or provider sign-in from the userId and secret Appwrite returned.
       if type(body.userId) ~= "string" or not body.userId:match("^[%w][%w%._%-]*$") or #body.userId > 36
           or type(body.secret) ~= "string" or body.secret == "" or #body.secret > 1024 or body.secret:find("[%z\1-\32\127]") then
         return { status = 400, body = { code = "invalid_link", message = "This sign-in link is invalid. Request a new one." } }
       end
-      local response = call("POST", "/account/sessions/token", { userId = body.userId, secret = body.secret })
+      local response = account:exchange(body.userId, body.secret)
       if not successful(response) then return response end
-      return session(credentials(response, options.projectId), true)
+      return session(Account.credentials(response, options.projectId), true)
     elseif request.method == "POST" and path == "/auth/v1/restore" then
       local saved, err
       if store then saved, err = stored("load") end
       if err then return err end
       if not saved then return { status = 401, body = { code = "unauthenticated", message = "Sign in to continue." } } end
       -- Never restore arbitrary headers, even from private device storage.
-      local credential = type(saved) == "table" and credentials({ headers = { ["set-cookie"] = saved.Cookie },
+      local credential = type(saved) == "table" and Account.credentials({ headers = { ["set-cookie"] = saved.Cookie },
         body = { secret = saved["X-Appwrite-Session"] } }, options.projectId)
       if not credential then
         return forget() or { status = 401, body = { code = "unauthenticated", message = "Sign in again." } }

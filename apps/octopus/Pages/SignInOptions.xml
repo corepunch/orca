@@ -1,0 +1,9 @@
+<StackView Name="SignInOptionsPage" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Text="By creating an account you agree to the community rules. Objectionable content and abusive behaviour are not tolerated." TextResourceID="By creating an account you agree to the community rules. Objectionable content and abusive behaviour are not tolerated." FontSize="14" WordWrap="true" class="octopus-muted"/>
+  <Button Name="EmailCode" Text="Sign in with an email code" TextResourceID="Sign in with an email code" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary"/>
+  <Button Name="apple" Text="Continue with Apple" TextResourceID="Continue with Apple" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="google" Text="Continue with Google" TextResourceID="Continue with Google" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="Rules" Text="Community rules" TextResourceID="Community rules" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <Button Name="Privacy" Text="Privacy policy" TextResourceID="Privacy policy" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <TextBlock Name="AuthStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+</StackView>

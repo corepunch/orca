@@ -1,4 +1,5 @@
 -- Offline service contracts for startup payloads; run with standalone Lua.
+package.path = "apps/shared/?.lua;" .. package.path
 package.preload["orca.json"] = function() return dofile("share/orca/json.lua") end
 for _, name in ipairs { "fixtures", "mock" } do
     local module = name
@@ -17,7 +18,7 @@ local function client(transport, options)
     return assert(Octopus.client(options))
 end
 local function reader(service)
-    service.session = { cookie = "a_session_test=private", user = { id = "alice", name = "Alice", email = "alice@example.invalid" } }
+    service.session = { credential = { Cookie = "a_session_test=private" }, user = { id = "alice", name = "Alice", email = "alice@example.invalid" } }
     return service
 end
 local function contains(values, wanted)

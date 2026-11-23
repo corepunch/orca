@@ -1,5 +1,5 @@
 -- The Appwrite adapter runs without native modules or a live cloud account.
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat = require "api.chat"
 local json = require "orca.json"
 local Adapter = require "api.appwrite_transport"

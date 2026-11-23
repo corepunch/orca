@@ -1,5 +1,5 @@
 -- Offline push lifecycle and private Account target requests.
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 package.preload["Chat/Scripts/polling"] = function() return require "Scripts.polling" end
 local Chat = require "api.chat"
 local json = require "orca.json"

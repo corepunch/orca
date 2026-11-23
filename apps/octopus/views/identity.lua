@@ -1,6 +1,6 @@
 local ui = require "orca.UIKit"
 local C = require "Octopus/views/components"
-local People = require "Octopus/views/people"
+local filesystem = require "orca.filesystem"
 local Safety = require "Octopus/views/safety"
 local colors = C.colors
 local Identity = {}
@@ -73,14 +73,7 @@ function Identity.auth(self, mode)
                 self:repaint()
                 return
             end
-            self.authDraft, self.authReturn = nil, nil
-            self:resetSessionViews()
-            -- A new account (no picture yet) gets a random character first.
-            if People.assignRandom(self) then
-                self.pictureReturn = returnRoute
-                return self:show("/auth/picture")
-            end
-            self:show(returnRoute)
+            self:signedIn()
         end)
     end, { Name = signup and "SignUp" or "SignIn", Height = 52, FontSize = 16 })
     if signup then
@@ -109,6 +102,10 @@ function Identity.auth(self, mode)
     else
         email.Submit = function() password:setFocus() end
         password.Submit = function() submit:send("Node.LeftButtonUp") end
+        if self.emailSignIn then
+            form:addChild(C.button(self.i18n:t("Other sign-in options"), function() leave("/auth/options") end,
+                { Name = "OtherSignInOptions" }))
+        end
         form:addChild(C.button(self.i18n:t("New here? Create an account"), function() leave("/auth/signup") end, { Name = "GoToSignUp" }))
     end
     form:addChild(C.button(self.i18n:t("Continue without signing in"), function() leave(returnRoute) end, {
@@ -134,6 +131,62 @@ function Identity.auth(self, mode)
             Name = "OfflineAuthHint", FontSize = 11, Foreground = colors.dim, WordWrap = true }))
     end
     return self:frame(body)
+end
+
+local function authPage(self, name, title, backRoute)
+    local page = assert(filesystem.loadObject("Octopus/Pages/" .. name), "Missing Octopus/Pages/" .. name)
+    self.status = page:findChild("AuthStatus", true)
+    self.statusBar = nil
+    return page, self:frame(C.page(self.i18n:t(title), page, { back = function() self:goBack(backRoute) end }))
+end
+
+function Identity.options(self)
+    local page, screen = authPage(self, "SignInOptions", "Other sign-in options", "/auth")
+    page:findChild("EmailCode", true).Click = function() self:show("/auth/code") end
+    page:findChild("Rules", true).Click = function() Safety.openDocument(self, "/rules") end
+    page:findChild("Privacy", true).Click = function() Safety.openDocument(self, "/privacy") end
+    for _, provider in ipairs { "apple", "google" } do
+        local button = page:findChild(provider, true)
+        button.Visible = self[provider .. "SignIn"] == true
+        button.Click = function()
+            if not self[provider .. "SignIn"] or not self.signin then return end
+            local ok, err = self.signin:start(provider)
+            if not ok then self:notice(err.message, true) end
+        end
+    end
+    return screen
+end
+
+function Identity.code(self)
+    local page, screen = authPage(self, "EmailCode", "Sign in with an email code", "/auth/options")
+    self.authDraft = self.authDraft or {}
+    local draft, busy = self.authDraft, false
+    local email, code = page:findChild("Email", true), page:findChild("Code", true)
+    local send, verify = page:findChild("SendCode", true), page:findChild("VerifyCode", true)
+    email.Text = draft.email or ""
+    local function submit(action)
+        if busy then return end
+        busy = true
+        draft.email = email.Text
+        local navigation, address, entered = self.navigationEpoch, email.Text, code.Text
+        self:task(function()
+            local result, err
+            if action == "send" then result, err = self.client:requestCode(address)
+            else result, err = self.client:verifyCode(address, entered) end
+            busy = false
+            if action == "verify" and result then return self:signedIn() end
+            if self.navigationEpoch ~= navigation then return end
+            if not result then return self:notice(err.message, true) end
+            code.Text = ""
+            code:setFocus()
+            self:notice("Check your email for the six-digit code.")
+        end)
+    end
+    send.Click = function() submit("send") end
+    verify.Click = function() submit("verify") end
+    email.Submit = function() submit("send") end
+    code.Submit = function() submit("verify") end
+    return screen
 end
 
 return Identity

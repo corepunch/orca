@@ -4,6 +4,7 @@ StartupRoute = "/"
 WindowWidth = 390
 WindowHeight = 844
 ProjectReferences = {
+    { Name = "AppwriteAuth", Path = "../shared/AppwriteAuth" },
     { Name = "api", Path = "api" },
     { Name = "Octopus", Path = "../octopus" },
 }

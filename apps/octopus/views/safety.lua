@@ -125,8 +125,10 @@ function Safety.deleteAccount(self)
     local page = load(self, "DeleteAccount")
     self.status = page:findChild("DeleteAccountStatus", true)
     local confirm, busy, asked = page:findChild("ConfirmDeleteAccount", true), false, false
-    local function back() if not busy then self:goBack("/me") end end
-    page:findChild("KeepAccount", true).Click = back
+    local keep = page:findChild("KeepAccount", true)
+    local cleanupPending = false
+    local function back() if not busy and not cleanupPending then self:goBack("/me") end end
+    keep.Click = back
     confirm.Click = function()
         if busy then return end
         if not asked then
@@ -141,7 +143,15 @@ function Safety.deleteAccount(self)
         self:task(function()
             local ok, err = self.client:deleteAccount("DELETE")
             busy = false
-            if not ok then self:notice(err.message, true); return end
+            if not ok then
+                if err.code == "session_storage" then
+                    cleanupPending = true
+                    confirm.TextResourceID, confirm.Text = "Retry", self.i18n:t("Retry")
+                    keep.Visible = false
+                end
+                self:notice(err.message, true)
+                return
+            end
             self:resetSessionViews()
             self:show("/")
             self:notice("Your account was deleted.")
