@@ -35,7 +35,11 @@ local App = Application:extend {
                 namespace = table.concat({ config.endpoint, config.projectId, config.databaseId, config.bucketId,
                     config.feedCollectionId or "posts" }, "|"),
             }
-            config = setmetatable({ cache = cache, schedule = function(fn) orca.async(fn) end }, { __index = config })
+            local store
+            store, self.restoreError = require("AppwriteAuth/session_store").new(config, "octopus-session")
+            config = setmetatable({ cache = cache, sessionStore = store,
+                schedule = function(fn) orca.async(fn) end }, { __index = config })
+            self.restorePending = store ~= nil
         end
         if options.client then self.client = options.client
         elseif backend == "appwrite" then self.client, self.configurationError = Octopus.appwrite(config)
@@ -46,6 +50,17 @@ local App = Application:extend {
         self.media = options.media or require("Octopus/Scripts/media").new { cache = cache }
         self.publicCache = cache
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
+        if self.client and not options.client and backend == "appwrite" then
+            self.emailSignIn = true
+            if PLATFORM == "ios" and (config.appleSignIn or config.googleSignIn) then
+                self.signin = require("AppwriteAuth/browser").new(self, {
+                    name = "OctopusSignIn", callbackOnly = true, completeLink = self.client.completeProviderSignIn,
+                })
+                if self.signin and self.signin.supported then
+                    self.appleSignIn, self.googleSignIn = config.appleSignIn, config.googleSignIn
+                end
+            end
+        end
         self:resetSessionViews()
     end,
 
@@ -246,6 +261,7 @@ local App = Application:extend {
     end,
 
     afterPaint = function(self)
+        if self.restorePending and not self.restoreStarted and self.client then self:restoreLogin() end
         if self.visibility then self.visibility:update() end
         Home.loadVisible(self)
     end,
@@ -371,10 +387,41 @@ local App = Application:extend {
         self:show(route)
     end,
 
+    signedIn = function(self)
+        local route = self.authReturn
+        if not route or route:match("^/auth") then route = "/" end
+        self.authDraft, self.authReturn = nil, nil
+        self:resetSessionViews()
+        if People.assignRandom(self) then
+            self.pictureReturn = route
+            return self:show("/auth/picture")
+        end
+        self:show(route)
+    end,
+
+    restoreLogin = function(self)
+        self.restoreStarted = true
+        self:task(function()
+            local session, err = self.client:restoreSession()
+            self.restorePending = false
+            self.restoreError = not session and err and err.status ~= 401 and err.status ~= 403 and err or nil
+            if not self.restoreError then self:resetSessionViews() end
+            self:navigate("/")
+        end)
+    end,
+
     signOut = function(self)
         self:task(function()
+            if self.signin then self.signin.pending = nil end
             local ok, err = self.client:signOut()
-            self:resetSessionViews(); self:show("/")
+            self:resetSessionViews()
+            if not ok and err.code == "session_storage" then
+                self.logoutError = err
+                self:navigate("/")
+                return
+            end
+            self.logoutError = nil
+            self:show("/")
             if not ok then self:notice(self.i18n:t("Signed out on this device. %{error}", { error = err.message }), true) end
         end)
     end,
@@ -389,6 +436,21 @@ local App = Application:extend {
                 C.text(self.i18n:t(self.configurationError.message), { WordWrap = true, Foreground = colors.error }),
                 C.text(self.i18n:t("Check APPWRITE_ENDPOINT and APPWRITE_PROJECT_ID, then restart."), { WordWrap = true }),
             })))
+        end
+        if self.restorePending or self.restoreError or self.logoutError then
+            local error = self.logoutError or self.restoreError
+            local body = C.stack({ Spacing = 16 }, {
+                C.text(self.i18n:t(error and error.message or "Restoring your session…"), { WordWrap = true }),
+            })
+            if error then
+                body:addChild(C.button(self.i18n:t("Retry"), function()
+                    if self.logoutError then return self:signOut() end
+                    if self.restorePending then return end
+                    self.restorePending, self.restoreError = true, nil
+                    self:restoreLogin()
+                end))
+            end
+            return self:frame(C.page(self.i18n:t("sign in"), body))
         end
         return Home.page(self)
     end,
@@ -405,6 +467,8 @@ local App = Application:extend {
     ["/privacy"] = function(self) self.currentRoute = "/privacy"; return Safety.privacy(self) end,
     ["/delete-account"] = function(self) self.currentRoute = "/delete-account"; return Safety.deleteAccount(self) end,
     ["/auth"] = function(self) self.currentRoute = "/auth"; return Identity.auth(self, "signin") end,
+    ["/auth/options"] = function(self) self.currentRoute = "/auth/options"; return Identity.options(self) end,
+    ["/auth/code"] = function(self) self.currentRoute = "/auth/code"; return Identity.code(self) end,
     ["/auth/signup"] = function(self) self.currentRoute = "/auth/signup"; return Identity.auth(self, "signup") end,
     ["/auth/picture"] = function(self) self.currentRoute = "/auth/picture"; return People.picture(self) end,
 
@@ -412,7 +476,7 @@ local App = Application:extend {
         -- Keep active forms and in-flight submissions intact. Chrome is
         -- scoped to this palette, so deferring cannot create a mixed theme.
         local route = self.currentRoute
-        if route == "/auth" or route == "/auth/signup" then return false end
+        if route and route:match("^/auth") then return false end
         if (route == "/me" or route == "/write") and self.client and self.client:getSession() then return false end
         local thread = route == "/post" and self.thread
         if thread and Thread.busy(thread) then return false end
@@ -427,9 +491,14 @@ local App = Application:extend {
     end,
 
     run = function(self)
+        if self.signin then self.signin:activate() end
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
-            if message:is("Window.Closed") then return end
+            if message:is("Window.Closed") then
+                if self.signin then self.signin:suspend() end
+                return
+            end
+            if self.signin and message:is("Window.Activated") then self:task(function() self.signin:poll() end) end
             if message:is("Window.Paint") then self:updateAppearance() end
             local ok, result = pcall(system.dispatchMessage, self.screen, message)
             if not ok then io.stderr:write(tostring(result) .. "\n")

@@ -5,7 +5,7 @@ if os.getenv("CHAT_LIVE") ~= "1" then
     return
 end
 
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 io.stdout:setvbuf("line")
 local Chat = require "api.chat"
 local json = require "orca.json"

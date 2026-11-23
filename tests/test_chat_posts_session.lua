@@ -1,6 +1,6 @@
 -- Public posts reuse Chat's active identity without a second sign-in or a
 -- private Account cookie. All requests here use an injected offline transport.
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 local Chat = require "api.chat"
 local json = require "orca.json"
 local endpoint, checks = "https://fra.cloud.appwrite.io/v1", 0

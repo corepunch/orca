@@ -952,4 +952,19 @@ end
 system.is_dark_theme, os.getenv = isDark, getenv
 colors.refresh()
 
+-- The standalone auth options load app-owned XML and keep the email draft.
+local codeApp = App { client = Octopus.mock() }
+codeApp.activate_controller = function(self, controller) self.screen = controller.view; return controller end
+codeApp.repaint = function() end
+codeApp.emailSignIn = true
+codeApp:navigate("/auth")
+find(codeApp, "Email").Text = "reader@example.invalid"
+click(codeApp, "OtherSignInOptions")
+drain(codeApp)
+assert(find(codeApp, "EmailCode").Visible)
+assert(not find(codeApp, "apple").Visible and not find(codeApp, "google").Visible)
+click(codeApp, "EmailCode")
+drain(codeApp)
+assert(find(codeApp, "Email").Text == "reader@example.invalid" and find(codeApp, "VerifyCode").Visible)
+
 print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up, delayed fetches, retained refresh and errors passed")

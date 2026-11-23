@@ -1,4 +1,4 @@
-package.path = "apps/chat/?.lua;share/?.lua;" .. package.path
+package.path = "apps/shared/?.lua;apps/chat/?.lua;share/?.lua;" .. package.path
 local Store = require "Scripts.session_store"
 local json = require "orca.json"
 local records = {}

@@ -407,7 +407,7 @@ test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus
 	$(TARGET) -test=tests/test_octopus_composer.lua
 	$(TARGET) -test=tests/test_octopus_alignment.lua
 	$(TARGET) -test=tests/test_octopus_row_style.lua
-	$(TARGET) -test=tests/test_octopus_app.lua
+	$(MAKE) test-octopus-app
 	$(TARGET) -test=tests/test_octopus_safety.lua
 	$(TARGET) -test=tests/test_octopus_safety_ui.lua
 
@@ -425,6 +425,7 @@ test-editor-app: $(LUA_BIN)
 
 test-octopus-startup-api: $(LUA_BIN)
 	$(LUA) tests/test_octopus_startup_api.lua
+	$(LUA) tests/test_octopus_auth.lua
 
 test-octopus-backend:
 	$(NODE) --test apps/octopus/backend/test/*.test.js
@@ -746,7 +747,7 @@ $(foreach t,$(XML_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/xml/$(subst 
 .PHONY: $(XML_LUA_TESTS)
 HEADLESS_LUA_TESTS += $(XML_LUA_TESTS)
 APP_LUA_TESTS = test-chat-polling test-chat-avatars test-ledger-example test-mvvm-form test-octopus-composer
-APP_LUA_TESTS += test-chat-stress test-octopus-stress
+APP_LUA_TESTS += test-chat-stress test-octopus-stress test-octopus-app test-octopus-startup-api
 APP_LUA_TESTS += test-chat-localization test-octopus-localization
 APP_LUA_TESTS += test-chat-account-deletion
 APP_LUA_TESTS += test-chat-safety
@@ -917,3 +918,7 @@ include Makefile.webgl
 
 # Apply preprocessor flags after all ordinary flags, including command-line overrides.
 override CFLAGS += $(CPPFLAGS)
+
+.PHONY: test-octopus-app
+test-octopus-app:
+	$(TARGET) -test=tests/test_octopus_app.lua

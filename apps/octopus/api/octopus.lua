@@ -1,3 +1,4 @@
+local Account = require "AppwriteAuth/account"
 -- The Octopus client speaks Appwrite's Account, Databases and Storage REST APIs,
 -- the same services and collections as the Octopus website. A transport sends
 -- { method, path, query, body, headers, binary } and returns { status, body, headers };
@@ -119,27 +120,6 @@ local function profile(doc, userId)
         avatarId = doc and validId(doc.avatarId) and doc.avatarId or nil }
 end
 
--- Appwrite returns its session as a cookie named after the project.
-local function sessionCookie(headers, projectId)
-    local name, cookie, legacy = "a_session_" .. projectId:lower(), nil, nil
-    local function inspect(value)
-        if type(value) == "table" then for _, line in ipairs(value) do inspect(line) end
-        elseif type(value) == "string" then
-            for line in value:gmatch("[^\r\n]+") do
-                local key, content = line:match("^%s*([^=; ]+)=([^;\r\n]+)")
-                if content and not content:find("[%z\1-\32\127]") then
-                    if key:lower() == name then cookie = key .. "=" .. content
-                    elseif key:lower() == name .. "_legacy" then legacy = key .. "=" .. content end
-                end
-            end
-        end
-    end
-    for key, value in pairs(headers or {}) do
-        if type(key) == "string" and key:lower() == "set-cookie" then inspect(value) end
-    end
-    return cookie or legacy
-end
-
 function Client:collection(name)
     return "/databases/" .. self.databaseId .. "/collections/" .. name .. "/documents"
 end
@@ -148,7 +128,8 @@ function Client:_request(method, path, options)
     options = options or {}
     local headers = {}
     for key, value in pairs(options.headers or {}) do headers[key] = value end
-    if self.session then headers.Cookie = self.session.cookie end
+    local active = not options.anonymous and self.session or nil
+    for key, value in pairs(active and active.credential or {}) do headers[key] = value end
     local ok, response = pcall(self.transport, {
         method = method, path = path, query = options.query, body = options.body, headers = headers,
         binary = options.binary, params = options.params,
@@ -158,7 +139,10 @@ function Client:_request(method, path, options)
     end
     if response.status < 200 or response.status >= 300 then
         local data = type(response.body) == "table" and response.body or {}
-        if response.status == 401 and self.session and path:match("^/account") then self.session = nil end
+        if response.status == 401 and active and self.session == active and path:match("^/account") then
+            local _, err = self:_clearSession()
+            if err then return nil, err end
+        end
         return failure(data.type or data.code or "http_error",
             data.message or "Octopus could not complete the request.", response.status)
     end
@@ -240,26 +224,145 @@ function Client:currentUserId()
     return self.session and self.session.user.id
 end
 
-function Client:signIn(email, password)
-    email = trim(email)
-    if not text(email) or not text(password) then return failure("validation", "Enter your email and password.") end
-    self.session = nil
-    local response, err = self:_request("POST", "/account/sessions/email",
-        { body = { email = email, password = password }, raw = true })
-    if not response then return nil, err end
-    local cookie = sessionCookie(response.headers, self.projectId)
-    if not cookie then return failure("invalid_response", "Octopus did not return a session.") end
-    local account
-    account, err = self:_request("GET", "/account", { headers = { Cookie = cookie } })
+local function storageError()
+    return failure("session_storage", "Could not access your saved login. Please try again.")
+end
+
+function Client:_clearSession()
+    self.authAttempt = (self.authAttempt or 0) + 1
+    self.challenge, self.providerAttempt, self.session = nil, nil, nil
+    self.cleanupPending = self.sessionStore ~= nil
+    if self.sessionStore then
+        local ok, cleared = pcall(self.sessionStore.clear)
+        if not ok or not cleared then return storageError() end
+    end
+    self.cleanupPending = false
+    return true
+end
+
+function Client:_finishSignIn(credential, persist, attempt)
+    if not credential then return failure("invalid_response", "Octopus did not return a session.") end
+    local account, err = self:_request("GET", "/account", { headers = credential, anonymous = true })
+    if self.authAttempt ~= attempt then return failure("session_changed", "The active account changed during the request.") end
     if not account then return nil, err end
     if type(account) ~= "table" or not validId(account["$id"]) then
         return failure("invalid_response", "Octopus returned an invalid account.")
     end
-    self.session = { cookie = cookie, user = { id = account["$id"], name = account.name ~= "" and account.name
-        or email:match("^[^@]+"), email = account.email, accountName = account.name } }
+    if persist and self.sessionStore then
+        local ok, saved = pcall(self.sessionStore.save, credential)
+        if not ok or not saved then return storageError() end
+    end
+    local name = text(account.name) and account.name or (text(account.email) and account.email:match("^[^@]+")) or account["$id"]
+    local session = { credential = credential, user = {
+        id = account["$id"], name = name, email = account.email, accountName = account.name,
+    } }
+    self.session = session
     local public = self:ensureProfile()
-    if public and public.exists and text(public.username) then self.session.user.name = public.username end
+    if self.session ~= session then return failure("session_changed", "The active account changed during the request.") end
+    if public and public.exists and text(public.username) then session.user.name = public.username end
     return self:getSession()
+end
+
+function Client:_newAuthAttempt()
+    if self.cleanupPending then return storageError() end
+    self.authAttempt = (self.authAttempt or 0) + 1
+    return self.authAttempt
+end
+
+function Client:_finishExchange(response, err, attempt)
+    if not response then return nil, err end
+    return self:_finishSignIn(Account.credentials(response, self.projectId), true, attempt)
+end
+
+function Client:signIn(email, password)
+    email = trim(email)
+    if not text(email) or not text(password) then return failure("validation", "Enter your email and password.") end
+    local attempt, err = self:_newAuthAttempt()
+    if not attempt then return nil, err end
+    self.challenge = nil
+    local response
+    response, err = self.account:password(email, password)
+    return self:_finishExchange(response, err, attempt)
+end
+
+function Client:requestCode(email)
+    email = trim(email):lower()
+    if not email:match("^[^%s@]+@[^%s@]+%.[^%s@]+$") then
+        return failure("validation", "Enter a valid email address.")
+    end
+    local attempt, err = self:_newAuthAttempt()
+    if not attempt then return nil, err end
+    self.challenge = nil
+    local response
+    response, err = self.account:requestCode(email)
+    if not response then return nil, err end
+    if self.authAttempt ~= attempt then return failure("session_changed", "The active account changed during the request.") end
+    local token = response.body
+    if type(token) ~= "table" or not validId(token.userId) then
+        return failure("invalid_response", "Appwrite returned an invalid verification token.")
+    end
+    self.challenge = { email = email, userId = token.userId }
+    return true
+end
+
+function Client:verifyCode(email, code)
+    local challenge = self.challenge
+    if not challenge or challenge.email ~= trim(email):lower() then
+        return failure("verification_missing", "Request a new verification code first.")
+    end
+    if type(code) ~= "string" or not code:match("^%d%d%d%d%d%d$") then
+        return failure("validation", "Enter the six-digit verification code.")
+    end
+    local attempt, err = self:_newAuthAttempt()
+    if not attempt then return nil, err end
+    local response
+    response, err = self.account:exchange(challenge.userId, code)
+    if response and self.challenge == challenge then self.challenge = nil end
+    return self:_finishExchange(response, err, attempt)
+end
+
+function Client:authorizeProvider(provider)
+    local response = self.account:providerPage(provider)
+    if response.status ~= 200 then return nil, response.body end
+    local attempt, err = self:_newAuthAttempt()
+    if not attempt then return nil, err end
+    self.providerAttempt = attempt
+    return response.body
+end
+
+function Client:completeProviderSignIn(url)
+    local attempt = self.providerAttempt
+    self.providerAttempt = nil
+    if not attempt or self.authAttempt ~= attempt then
+        return failure("session_changed", "The active account changed during the request.")
+    end
+    local userId, secret, err = self.account:providerCredentials(url)
+    if not userId then return nil, err end
+    self.challenge = nil
+    local response
+    response, err = self.account:exchange(userId, secret)
+    return self:_finishExchange(response, err, attempt)
+end
+
+function Client:restoreSession()
+    if self.session then return self:getSession() end
+    if self.cleanupPending then
+        local cleared, clearError = self:_clearSession()
+        if not cleared then return nil, clearError end
+    end
+    if not self.sessionStore then return failure("unauthenticated", "Sign in to continue.", 401) end
+    local attempt, err = self:_newAuthAttempt()
+    if not attempt then return nil, err end
+    local ok, credential, loadError = pcall(self.sessionStore.load)
+    if not ok or loadError then return storageError() end
+    if not credential then return failure("unauthenticated", "Sign in to continue.", 401) end
+    local restored
+    restored, err = self:_finishSignIn(credential, false, attempt)
+    if not restored and err and (err.status == 401 or err.status == 403) and self.authAttempt == attempt then
+        local _, clearError = self:_clearSession()
+        if clearError then return nil, clearError end
+    end
+    return restored, err
 end
 
 function Client:signUp(name, email, password, confirm, handle)
@@ -463,22 +566,32 @@ end
 -- photos. The server accepts a durable deletion job and revokes sign-in.
 function Client:deleteAccount(confirmation)
     if confirmation ~= "DELETE" then return failure("validation", "Confirm account deletion first.") end
-    local result, err = self:_rpc("delete_chat_account", { confirmation = confirmation })
-    if result == nil then return nil, err end
-    if type(result) ~= "table" or (result.accepted ~= true and result.deleted ~= true) then
-        return failure("invalid_response", "The service did not confirm account deletion.")
+    local result, err = self.deletedAccount
+    if not result then
+        result, err = self:_rpc("delete_chat_account", { confirmation = confirmation })
+        if result == nil then return nil, err end
+        if type(result) ~= "table" or (result.accepted ~= true and result.deleted ~= true) then
+            return failure("invalid_response", "The service did not confirm account deletion.")
+        end
+        self.deletedAccount = { accepted = result.accepted == true, deleted = result.deleted == true }
     end
-    -- The account's sessions are revoked; only local state is left to forget.
-    self.session = nil
-    return { accepted = result.accepted == true, deleted = result.deleted == true }
+    local cleared, clearError = self:_clearSession()
+    if not cleared then return nil, clearError end
+    result, self.deletedAccount = self.deletedAccount, nil
+    return result
 end
 
 function Client:signOut()
-    if not self.session then return true end
-    local result, err = self:_request("DELETE", "/account/sessions/current")
-    -- Forget the session locally even when the server cannot be reached.
-    self.session = nil
-    return result, err
+    local credential = self.session and self.session.credential
+    local cleared, clearError = self:_clearSession()
+    if not cleared then
+        self.logoutCredential = self.logoutCredential or credential
+        return nil, clearError
+    end
+    credential = credential or self.logoutCredential
+    self.logoutCredential = nil
+    if not credential then return true end
+    return self:_request("DELETE", "/account/sessions/current", { headers = credential, anonymous = true })
 end
 
 -- The website creates each author's profile document with the user's ID.
@@ -1384,11 +1497,15 @@ function Octopus.client(options)
         or not validId(options.bucketId or "post-images") then
         return failure("configuration", "Set the public Appwrite project, database and bucket IDs.")
     end
-    return setmetatable({ mode = options.mode or "custom", transport = options.transport,
+    local client = setmetatable({ mode = options.mode or "custom", transport = options.transport,
         projectId = options.projectId, databaseId = options.databaseId or "octopus-db",
         bucketId = options.bucketId or "post-images", clock = options.clock or os.time, avatarIds = {}, profiles = {},
         feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule,
-        functionId = options.functionId or "orca-chat-api" }, Client)
+        functionId = options.functionId or "orca-chat-api", sessionStore = options.sessionStore }, Client)
+    client.account = Account.new(options.endpoint, options.projectId, function(method, path, body)
+        return client:_request(method, path, { body = body, raw = true, anonymous = true })
+    end)
+    return client
 end
 
 function Octopus.appwrite(options)
@@ -1403,7 +1520,8 @@ function Octopus.appwrite(options)
     }
     return Octopus.client { mode = "appwrite", transport = transport, projectId = options.projectId,
         databaseId = options.databaseId, bucketId = options.bucketId, clock = options.clock,
-        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule, functionId = options.functionId }
+        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule,
+        functionId = options.functionId, endpoint = endpoint, sessionStore = options.sessionStore }
 end
 
 -- The offline mock serves the same REST paths from in-memory fixtures.

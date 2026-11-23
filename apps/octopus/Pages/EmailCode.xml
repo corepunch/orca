@@ -1,0 +1,9 @@
+<StackView Name="EmailCodePage" Spacing="14" Overflow="hidden scroll" JustifyContent="Start">
+  <TextBlock Text="Email address" TextResourceID="Email address" FontSize="14" WordWrap="true" class="octopus-muted"/>
+  <Input Name="Email" Height="44" FontSize="15" Padding="12 0" BorderWidth="2" class="octopus-input octopus-field"/>
+  <Button Name="SendCode" Text="Send code" TextResourceID="Send code" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-outline"/>
+  <TextBlock Text="Verification code" TextResourceID="Verification code" FontSize="14" WordWrap="true" class="octopus-muted"/>
+  <Input Name="Code" Height="44" FontSize="15" Padding="12 0" BorderWidth="2" class="octopus-input octopus-field"/>
+  <Button Name="VerifyCode" Text="Sign in" TextResourceID="Sign in" Height="44" FontSize="15" FontWeight="Bold" TextHorizontalAlignment="Center" TextVerticalAlignment="Center" class="octopus-action octopus-primary"/>
+  <TextBlock Name="AuthStatus" FontSize="13" WordWrap="true" class="octopus-dim"/>
+</StackView>
