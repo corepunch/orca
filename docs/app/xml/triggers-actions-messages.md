@@ -80,6 +80,23 @@ radio-group binding/event semantics, and
 [the complete sample](../../../apps/MvvmForms/README.md)
 for separate schema, initial data, view, controller and committed snapshot.
 
+Use an explicit expression binding for calculations, formatting and enum-name
+comparisons, rather than putting an unmarked formula in a text attribute:
+
+```xml
+<TextBlock>
+  <Binding Target="Text" Mode="Expression"
+           Expression='IF(EQUAL({DataContext/State}, "INVALID_SNA"), "---", STRING(ROUND({DataContext/Speed})))'/>
+</TextBlock>
+```
+
+`EQUAL` compares two strings by their contents (null text is empty), or compares
+numeric arguments with the existing numeric tolerance. A string and a number
+are unequal without coercion; convert explicitly with `STRING` or `FLOAT` when
+needed. This also lets enum comparisons resolve after a view acquires its
+inherited data context.
+`CLAMP(minimum, maximum, value)` bounds a numeric input.
+
 ## Trigger types
 
 ### `EventTrigger` — react to a routed event

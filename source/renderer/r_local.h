@@ -403,6 +403,7 @@ enum shader_uniform
   kShaderUniform_BBoxMin,
   kShaderUniform_BBoxMax,
   kShaderUniform_Lights,
+  kShaderUniform_LightsCount,
   kShaderUniform_SceneColor,
   kShaderUniform_SceneDepth,
   kShaderUniform_SceneTextureSize,
@@ -590,6 +591,10 @@ extern struct shader_desc shader_backdrop_blur;
 uint32_t
 Shader_AssembleSource(struct shader_desc const* def, bool_t vertex,
                       char texts[][SHADER_TEXT_LENGTH], lpcString_t *codes);
+
+uint32_t
+Shader_BuildDesc(struct Object *object, struct Shader const *shader,
+                struct shader_desc *desc, bool_t *hasVertexStage);
 
 // Gives a fragment-only Shader the built-in UI vertex stage (shader_ui): its
 // source, attributes, varyings and engine uniforms after the first

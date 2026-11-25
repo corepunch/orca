@@ -692,20 +692,22 @@ local function test_datasource_provider_resolution()
 	test.expect_eq(data and data:getClassName(), "DataObject",
 		"XmlDataSource should own a DataObject tree")
 
-	local xml = '<Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData" />'
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "XML with DataContextSource name should load")
-	test.expect(root.DataContext ~= nil,
-		"DataContextSource='ApplicationData' should resolve the datasource-owned tree; got DataContext=" .. tostring(root.DataContext))
-	test.expect_eq(root.DataContext:getClassName(), "XmlDataSource",
-		"Root DataContext should remain the XmlDataSource")
+	for _, tag in ipairs { "Node2D", "Screen" } do
+		local xml = '<' .. tag .. ' Name="ds-test" DataContextSource="Example/DataSources/ApplicationData" />'
+		local root = filesystem.loadObjectFromXmlString(xml)
+		test.expect(root ~= nil, tag .. " with DataContextSource name should load")
+		test.expect(root.DataContext ~= nil,
+			tag .. " DataContextSource should resolve the datasource-owned tree")
+		test.expect_eq(root.DataContext:getClassName(), "XmlDataSource",
+			tag .. " DataContext should remain the XmlDataSource")
+	end
 
 	local bound = filesystem.loadObjectFromXmlString([[
-<StackView DataContextSource="Example/DataSources/ApplicationData">
+<Screen Width="800" Height="600" ResizeMode="NoResize" DataContextSource="Example/DataSources/ApplicationData">
   <TextBlock Name="source-bound-title">
     <BindingExpression Target="Text" Expression="{DataContext/Signals/SignalXml/Title}" />
   </TextBlock>
-</StackView>
+</Screen>
 ]])
 	core.runAllPrograms(bound)
 	local title = bound and bound:findChild("source-bound-title", true) or nil
@@ -741,6 +743,10 @@ local function test_datasource_provider_with_child()
 		'<Node2D DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader/XmlPanelHeader" />')
 	test.expect_eq(nested and nested.DataContext and nested.DataContext.Name, "XmlPanelHeader",
 		"DataContextSource child selector should resolve a nested path")
+	local screen = filesystem.loadObjectFromXmlString(
+		'<Screen DataContextSource="Example/DataSources/ApplicationData:Signals" />')
+	test.expect_eq(screen.DataContext and screen.DataContext.Name, "Signals",
+		"A screen child selector should set Screen.DataContext, not a Node attached property")
 
 	filesystem.unloadProject(project)
 	project = nil

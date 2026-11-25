@@ -123,6 +123,45 @@ scenario("large string fan-out across repeated VM temporary-pool rollover", func
     for _, sink in ipairs(sinks) do equal(sink.Text, "", "Null fallback owns an empty result in every target") end
 end)
 
+scenario("string equality produces a numeric condition", function()
+    local root = ui.StackView {}
+    local source = ui.TextBlock { Name = "Source", Text = "INVALID_SNA" }
+    local sink = ui.TextBlock {}
+    root:addChild(source); root:addChild(sink)
+    bind(sink, 'IF(EQUAL({../Source/Text}, "INVALID_SNA"), "---", "valid")')
+    evaluate(root)
+    equal(sink.Text, "---", "Equal enum names select the true branch")
+    source.Text = "VALID"
+    evaluate(root)
+    equal(sink.Text, "valid", "Different enum names select the false branch")
+    source.Text = nil
+    evaluate(root)
+    equal(sink.Text, "valid", "A cleared string compares without dereferencing a numeric register")
+    bind(sink, 'STRING(EQUAL({../Source/Text}, ""))')
+    evaluate(root)
+    equal(sink.Text, "1", "Null strings compare as empty text")
+    bind(sink, 'STRING(EQUAL("0", 0)) + STRING(EQUAL(0, "0"))')
+    evaluate(root)
+    equal(sink.Text, "00", "String and numeric values are unequal without coercion")
+end)
+
+scenario("enum equality survives evaluation before an inherited context exists", function()
+    local data = assert(fs.loadXmlDataStringWithSchema(
+        '<LateEnumBindingRecord State="INVALID_SNA"/>',
+        '<Schema><Entity Name="LateEnumBindingRecord"><Column Name="State" Type="string"/></Entity></Schema>'))
+    local root, sink = ui.StackView {}, ui.TextBlock {}
+    bind(sink, 'IF(EQUAL({DataContext/State}, "INVALID_SNA"), "---", "valid")')
+    evaluate(sink)
+    equal(sink.Text, "valid", "An unresolved source does not equal an enum name")
+    root.DataContext = data
+    root:addChild(sink)
+    evaluate(root)
+    equal(sink.Text, "---", "Attaching a lazily loaded view resolves enum equality")
+    data.State = "VALID"
+    evaluate(root)
+    equal(sink.Text, "valid", "The resolved binding continues observing enum changes")
+end)
+
 scenario("binding replacement and expression string ownership", function()
     local root = ui.StackView {}
     local a, b, sink = ui.TextBlock { Name = "A", Text = "alpha" }, ui.TextBlock { Name = "B", Text = "beta" }, ui.TextBlock {}

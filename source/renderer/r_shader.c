@@ -29,6 +29,7 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_bboxMin",                      // kShaderUniform_BBoxMin
   "u_bboxMax",                      // kShaderUniform_BBoxMax
   "u_lights",                       // kShaderUniform_Lights
+  "u_lightsCount",                  // kShaderUniform_LightsCount
   "u_sceneColor",                   // kShaderUniform_SceneColor
   "u_sceneDepth",                   // kShaderUniform_SceneDepth
   "u_sceneTextureSize",             // kShaderUniform_SceneTextureSize
@@ -742,6 +743,9 @@ Shader_BindMaterial(struct shader const* shader,
       case kShaderUniform_Lights:
         R_Call(glUniformMatrix4fv, location, view->num_lights, FALSE, (float*)&view->lights);
         break;
+      case kShaderUniform_LightsCount:
+        R_Call(glUniform1i, location, view->num_lights);
+        break;
       default:
         break;
     }
@@ -913,9 +917,9 @@ _DeclareUniforms(struct Object *hObject, struct Shader *pShader)
 // build takes the ones in its own shading language. `hasVertexStage` tells
 // whether the shader has a vertex stage in any language. Reads the object
 // only, so it can run again whenever the program must be (re)built.
-static uint32_t
-_BuildDesc(struct Object *hObject, struct Shader const *pShader,
-           struct shader_desc *desc, bool_t *hasVertexStage)
+uint32_t
+Shader_BuildDesc(struct Object *hObject, struct Shader const *pShader,
+                struct shader_desc *desc, bool_t *hasVertexStage)
 {
   uint32_t NumUniforms = 0;
   *hasVertexStage = FALSE;
@@ -945,20 +949,26 @@ _BuildDesc(struct Object *hObject, struct Shader const *pShader,
       case kDataTypeObject:
         if (!strcmp(PROP_GetUserData(p), "Texture")) {
           ud.Type = UT_SAMPLER_2D;
-          break;
         } else if (!strcmp(PROP_GetUserData(p), "CubeMapTexture")) {
           ud.Type = UT_SAMPLER_CUBE;
-          break;
         } else {
           continue;
         }
-      case kDataTypeFloat: ud.Type = UT_FLOAT; break;
+        struct Object *object = *(struct Object *const *)PROP_GetValue(p);
+        struct Texture *texture = GetTexture(object);
+        memcpy(ud.Default, &texture, sizeof(texture));
+        break;
+      case kDataTypeFloat:
+        ud.Type = UT_FLOAT;
+        PROP_CopyValue(p, ud.Default);
+        break;
       case kDataTypeColor:
         ud.Type = UT_COLOR;
         ud.Default[0] = 1;
         ud.Default[1] = 1;
         ud.Default[2] = 1;
         ud.Default[3] = 1;
+        if (!PROP_IsNull(p)) PROP_CopyValue(p, ud.Default);
         break;
       case kDataTypeStruct:
         switch (PROP_GetSize(p)) {
@@ -972,10 +982,18 @@ _BuildDesc(struct Object *hObject, struct Shader const *pShader,
           default:
             break;
         }
+        if (ud.Type == UT_FLOAT_VEC2 || ud.Type == UT_FLOAT_VEC3 || ud.Type == UT_FLOAT_VEC4)
+          PROP_CopyValue(p, ud.Default);
         break;
-      case kDataTypeInt: ud.Type = UT_INT; break;
-      case kDataTypeBool: ud.Type = UT_BOOL; break;
-      case kDataTypeEnum: ud.Type = UT_INT; break;
+      case kDataTypeInt:
+      case kDataTypeEnum:
+        ud.Type = UT_INT;
+        ud.Default[0] = *(int *)PROP_GetValue(p);
+        break;
+      case kDataTypeBool:
+        ud.Type = UT_BOOL;
+        ud.Default[0] = *(bool *)PROP_GetValue(p);
+        break;
       default:
         continue;
     }
@@ -1017,7 +1035,7 @@ _Realize(struct Object *hObject, struct Shader *pShader)
 {
   struct shader_desc desc;
   bool_t hasVertexStage;
-  uint32_t NumUniforms = _BuildDesc(hObject, pShader, &desc, &hasVertexStage);
+  uint32_t NumUniforms = Shader_BuildDesc(hObject, pShader, &desc, &hasVertexStage);
   GLuint prognum = hasVertexStage || Shader_UseUIVertexStage(&desc, NumUniforms)
                   ? _CreateGLProgram(&desc) : 0;
   if (prognum != 0) {
@@ -1070,6 +1088,13 @@ _ApplyLighting(struct shader_desc const* def,
       pszCodes[dwNumTexts++] = _PhongPointLight;
       break;
     case kShadingStandard:
+      pszCodes[dwNumTexts++] = "in highp vec3 a_position;\n"
+                               "in highp vec3 a_normal;\n"
+                               "uniform highp mat4 u_modelTransform;\n"
+                               "uniform highp mat3 u_normalTransform;\n"
+                               "uniform highp vec3 u_cameraPosition;\n"
+                               "uniform highp mat4 u_lights[16];\n"
+                               "uniform int u_lightsCount;\n";
       pszCodes[dwNumTexts++] = _PBRPointLight;
       break;
   }

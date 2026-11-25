@@ -142,23 +142,25 @@ FS_LoadXML(char const* szObjectName)
 
 int new_SpeedTest(lua_State* L)
 {
+  char const* szFileName = luaL_checkstring(L, 1);
+  if (cardata) return luaL_error(L, "Only one vsomeip protocol session can be active");
+  xmlDocPtr protocol = FS_LoadXML(szFileName);
+  if (!protocol) return luaL_error(L, "Can't find protocol file %s.xml", szFileName);
+  xmlNodePtr root = xmlDocGetRootElement(protocol);
+  if (!root || xmlStrcmp(root->name, XMLSTR("protocol"))) {
+    xmlFreeDoc(protocol);
+    return luaL_error(L, "Expected a <protocol> document in %s.xml", szFileName);
+  }
   LPMYSERVICE service = lua_newuserdata(L, sizeof(struct _MYSERVICE));
   luaL_setmetatable(L, "SpeedTest");
   memset(service, 0, sizeof(struct _MYSERVICE));
   service->on_client_added = on_client_added;
   service->on_service_added = on_service_added;
   service->fout = -1;
+  service->fin = -1;
   service->ident = CLIENT_ID;
-  service->fin = OpenListeningSocket(SOCKET_PATH_3);
-  RegisterApplication(service);
-  d_service = *service;
-
-  char const* szFileName = luaL_checkstring(L, 1);
-  if (cardata) {
-    xmlFreeDoc(cardata);
-    cardata = NULL;
-  }
-  if ((cardata = FS_LoadXML(szFileName))) {
+  cardata = protocol;
+  {
     xmlForEach(service, xmlDocGetRootElement(cardata))
     if (!xmlStrcmp(service->name, XMLSTR("service"))) {
       _SETTYPE(service, type_service);
@@ -177,27 +179,37 @@ int new_SpeedTest(lua_State* L)
                    LUA_REGISTRYINDEX,
                    (char const*)xmlGetPropQuick(service, XMLSTR("name")));
     }
-  } else {
-    return luaL_error(L, "Can't find protocol file %s", szFileName);
   }
 
-  int Read_Service(long dwService, long dwMethod, long dwLength, void* lpData);
-
-  uint16_t data[3] = { 200, 1, 0 };
-  Read_Service(5000, 32769, 6, data);
-
+  service->fin = OpenListeningSocket(SOCKET_PATH_3);
+  if (service->fin < 0)
+    return luaL_error(L, "Could not open vsomeip client socket %s", SOCKET_PATH_3);
+  RegisterApplication(service);
+  if (!service->registered)
+    return luaL_error(L, "Could not register with vsomeip router /tmp/vsomeip-0");
+  d_service = *service;
   return 1;
 }
 
 static int gc_SpeedTest(lua_State* L)
 {
   LPMYSERVICE service = luaL_checkudata(L, 1, "SpeedTest");
-  FOR_LOOP(client_id, service->numclients)
+  LPMYSERVICE live = service->fin == d_service.fin ? &d_service : service;
+  FOR_LOOP(client_id, live->numclients)
   {
-    SafeDelete(service->clients[client_id], close);
+    SafeDelete(live->clients[client_id], close);
   }
   SafeDelete(service->fout, close);
   SafeDelete(service->fin, CloseListeningSocket);
+  memset(&d_service, 0, sizeof(d_service));
+  d_service.fin = d_service.fout = -1;
+  if (cardata) {
+    xmlForEach(node, xmlDocGetRootElement(cardata)) {
+      if (xmlStrcmp(node->name, XMLSTR("service"))) continue;
+      lua_pushnil(L);
+      lua_setfield(L, LUA_REGISTRYINDEX, (char const*)xmlGetPropQuick(node, XMLSTR("name")));
+    }
+  }
   SafeDelete(cardata, xmlFreeDoc);
   return 0;
 }

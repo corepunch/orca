@@ -4,6 +4,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 #include <renderer/renderer.h>
+#include <filesystem/filesystem.h>
 #include <source/renderer/r_local.h>
 #include "test_local.h"
 
@@ -70,6 +71,54 @@ test_capture_without_renderer(void)
   });
 }
 
+static void
+test_shader_declared_defaults(void)
+{
+  struct Object *owner = FS_LoadObjectFromString(
+    "<Shader Name=\"UniformDefaults\"><Shader.Uniforms>"
+    "<PropertyType Name=\"Gain\" DataType=\"Float\" DefaultValue=\"3.15\"/>"
+    "<PropertyType Name=\"Tint\" DataType=\"Color\" DefaultValue=\"#4080c0ff\"/>"
+    "<PropertyType Name=\"Enabled\" DataType=\"Bool\" DefaultValue=\"true\"/>"
+    "<PropertyType Name=\"Image\" DataType=\"Object\" TypeString=\"Texture\"/>"
+    "</Shader.Uniforms></Shader>");
+  struct Object *texture = OBJ_Create(fnv1a32("Texture"));
+  struct shader_desc desc;
+  bool_t hasVertexStage = FALSE;
+  bool_t gain = FALSE, tint = FALSE, enabled = FALSE, sampler = FALSE;
+  RUN_TEST("shader_declared_defaults", {
+    EXPECT(owner && texture);
+    struct Property *image = OBJ_FindLongProperty(owner, fnv1a32("UniformDefaults.Image"));
+    EXPECT(image);
+    *(void **)PROP_GetRawValueSlot(image) = GetTexture(texture);
+    OBJ_AddRef(texture);
+    PROP_SetFlag(image, PF_MODIFIED);
+    uint32_t count = Shader_BuildDesc(owner, GetShader(owner), &desc, &hasVertexStage);
+    for (uint32_t i = 0; i < count; i++) {
+      struct uniform_def const *u = &desc.Uniforms[i];
+      if (!strcmp(u->Name, "Gain"))
+        gain = u->Type == UT_FLOAT && fabsf(u->Default[0] - 3.15f) < 0.001f;
+      if (!strcmp(u->Name, "Tint"))
+        tint = u->Type == UT_COLOR &&
+               fabsf(u->Default[0] - 64.f / 255) < 0.001f &&
+               fabsf(u->Default[1] - 128.f / 255) < 0.001f &&
+               fabsf(u->Default[2] - 192.f / 255) < 0.001f &&
+               u->Default[3] == 1;
+      if (!strcmp(u->Name, "Enabled"))
+        enabled = u->Type == UT_BOOL && u->Default[0] == 1;
+      if (!strcmp(u->Name, "Image"))
+        sampler = u->Type == UT_SAMPLER_2D &&
+                  *(struct Texture *const *)u->Default == GetTexture(texture);
+    }
+    EXPECT(gain);
+    EXPECT(tint);
+    EXPECT(enabled);
+    EXPECT(sampler);
+    PROP_SetValue(image, &(struct Object *){ NULL });
+  });
+  OBJ_ReleaseRef(owner);
+  OBJ_ReleaseRef(texture);
+}
+
 // A Shader without a VertexShader gets the built-in UI vertex stage after its
 // own uniforms, so its fragment code can read the box varyings.
 static void
@@ -114,6 +163,7 @@ int main(void)
   test_texture_uniform("EnvironmentMap", "CubeMapTexture", UT_SAMPLER_CUBE);
   test_texture_uniform("DiffuseMap", "Texture", UT_SAMPLER_2D);
   test_capture_without_renderer();
+  test_shader_declared_defaults();
   test_fragment_only_ui_shader();
   lua_close(L);
   printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);

@@ -54,6 +54,15 @@ Available built-in shader types:
 
 ---
 
+## Shader uniform defaults
+
+`Shader.Uniforms` declarations store `DefaultValue` on the shader's attached
+properties. Program descriptions copy those values from the shader,
+including texture references and numeric/color conversion. A material or node
+can override them; an unset uniform retains its shader-declared default.
+Color defaults use ORCA color syntax such as `#4080c0ff`, not whitespace-separated
+vectors. Unity conversion encodes linear RGB as sRGB bytes and leaves alpha linear.
+
 ## Text Rendering Pipeline
 
 `TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via FreeType (`libs/freetype`), then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).

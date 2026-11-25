@@ -119,6 +119,8 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     return TRUE;
   }
   if (!strcmp(name, "DataContextSource")) {
+    struct Property *context = OBJ_FindShortProperty(o, fnv1a32("DataContext"));
+    if (!context) return Con_Error("DataContextSource requires a DataContext property"), FALSE;
     const char *colon = strrchr(value, ':');
     const char *ds_name = NULL;
 
@@ -149,12 +151,12 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     if (colon && dataObj) {
       struct Object *child = OBJ_FindByPath(dataObj, colon + 1);
       if (child) {
-        PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
+        PROP_SetValue(context, &child);
       }
     } else if (dataSource) {
-      PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataSource);
+      PROP_SetValue(context, &dataSource);
     } else {
-      PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
+      PROP_SetValue(context, &dataObj);
     }
     return TRUE;
   }

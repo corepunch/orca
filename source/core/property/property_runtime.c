@@ -372,7 +372,16 @@ tok_op(PLUS) {
 OPERATOR(MUL, v[0] * v[1]);
 OPERATOR(SUB, v[0] - v[1]);
 OPERATOR(DIV, v[0] / v[1]);
-OPERATOR(EQUAL, fabs(v[0] - v[1]) < 0.0001f);
+OPERATOR(EQUAL_NUMBER, fabs(v[0] - v[1]) < 0.0001f);
+tok_op(EQUAL) {
+  bool_t left = regs[0].type == kDataTypeString;
+  bool_t right = regs[1].type == kDataTypeString;
+  if (!left && !right) return op_EQUAL_NUMBER(token, regs, object, output);
+  const char *a = VM_REG_STR(&regs[0]), *b = VM_REG_STR(&regs[1]);
+  InitOutput(output, kDataTypeInt, sizeof(float));
+  output->value[0] = left && right && !strcmp(a ? a : "", b ? b : "");
+  return TRUE;
+}
 OPERATOR(UNM, -v[0]);
 OPERATOR(STEP, v[0] <= v[1]);
 OPERATOR(CLAMP, fmax(v[0], fmin(v[1], v[2])));

@@ -75,6 +75,19 @@ feed entry is `feed:post`) and embed the shared record. Stores are per account
 `Schema.null` clears a nullable field; a missing field is left alone. Records
 that nothing shows are evicted beyond the store's capacity.
 
+## Native XML data files
+
+A package can declare an `XmlDataSource` with `Schema` and `Source` XML files.
+The schema registers typed observable records; the data XML supplies their
+initial values and named hierarchy. A wire protocol definition must be converted
+to that schema/data pair rather than passed directly as `Source`.
+
+Set `DataContextSource="App/DataSources/Vehicle"` on a `Screen` or visual node
+to bind descendants through paths such as
+`{Binding DataContext/SpeedometerService/speedForDisplay/value}`. The context
+remains the datasource, whose `GetData` resolves its current record tree.
+Append `:child/path` to select a record subtree instead.
+
 ## Native XML sources over a process connection
 
 For a service that already returns schema-shaped XML, `XmlDataSource` can feed

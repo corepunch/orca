@@ -728,6 +728,8 @@ HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-notifications
 HEADLESS_LUA_TESTS += test-signin
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
+HEADLESS_LUA_TESTS += test-vsomeip-protocol
+$(eval $(call LUA_TEST_RULE,test-vsomeip-protocol,tests/test_vsomeip_protocol.lua,unite))
 HEADLESS_LUA_TESTS += test-chart
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-data-collection
