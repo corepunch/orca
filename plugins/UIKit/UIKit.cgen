@@ -19,6 +19,21 @@
     <external struct="ItemsControlEntry"/>
   </externals>
   <enums>
+    <enum name="GradientInterpolation">
+      <summary>Interpolation between a linear gradient's two stops.</summary>
+      <value name="Linear">Linear interpolation.</value>
+      <value name="SmoothStep">Cubic smoothstep between SmoothStart and SmoothEnd.</value>
+    </enum>
+    <enum name="GradientMapping">
+      <summary>Coordinate space used for a gradient.</summary>
+      <value name="Box">Map to the element box.</value>
+      <value name="TextLine">Map to each text line when supported; otherwise use the element box.</value>
+    </enum>
+    <enum name="GradientColorSpace">
+      <summary>Encoding of gradient stop RGB values.</summary>
+      <value name="sRGB">Match ordinary ORCA colors, including renderer sRGB conversion when enabled.</value>
+      <value name="Linear">Already-linear values; never apply sRGB conversion.</value>
+    </enum>
     <enum name="Direction">
       <summary>Defines the primary axis for layout operations</summary>
       <value name="Horizontal">Left-to-right horizontal layout</value>
@@ -222,6 +237,14 @@
         <field name="Color" type="color">Solid color fill.</field>
         <field name="Image" type="Texture" pointer="true">Texture/image fill.</field>
         <field name="Material" type="Material" pointer="true">Custom material or shader fill. Advanced fill using shader/material settings for effects beyond simple color or image.</field>
+        <field name="Gradient" type="LinearGradientBrush" pointer="true">Two-stop gradient fill, used when no custom material or image is set.</field>
+      </fields>
+    </struct>
+    <struct name="TextLineBox">
+      <summary>Line clip and gradient bounds in unscaled local text points, with a top-left origin.</summary>
+      <fields>
+        <field name="Clip" type="rect">Visible line rectangle.</field>
+        <field name="GradientBounds" type="rect">Line-relative gradient rectangle.</field>
       </fields>
     </struct>
     <struct name="ShadowShorthand">
@@ -317,6 +340,20 @@
         <property name="Color" type="color">The color value used to fill the target area.</property>
       </properties>
     </class>
+    <class name="LinearGradientBrush" parent="Brush">
+      <summary>Two-stop linear gradient in relative box coordinates, with the origin at top left.</summary>
+      <properties>
+        <property name="StartColor" type="color" default=".r=1,.g=1,.b=1,.a=1">Color at the start point.</property>
+        <property name="EndColor" type="color" default=".r=1,.g=1,.b=1,.a=1">Color at the end point.</property>
+        <property name="StartPoint" type="vec2">Start point relative to the painted box.</property>
+        <property name="EndPoint" type="vec2" default=".x=1,.y=1">End point relative to the painted box.</property>
+        <property name="Interpolation" type="GradientInterpolation">Linear or SmoothStep interpolation.</property>
+        <property name="Mapping" type="GradientMapping">Box by default; TextLine requests per-line mapping on text.</property>
+        <property name="ColorSpace" type="GradientColorSpace">Stop color encoding; sRGB by default.</property>
+        <property name="SmoothStart" type="float">SmoothStep lower edge.</property>
+        <property name="SmoothEnd" type="float" default="1">SmoothStep upper edge.</property>
+      </properties>
+    </class>
     <class name="TextRun">
       <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
       <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
@@ -350,6 +387,7 @@
         <handle message="TextBlockConcept.MakeText"/>
         <handle message="TextBlockConcept.GetInfo"/>
         <handle message="TextBlockConcept.GetTexture"/>
+        <handle message="TextBlockConcept.DrawGradientLines"/>
       </handles>
       <properties>
         <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
@@ -383,6 +421,14 @@
         </message>
         <message name="GetTexture">
           <summary>Requests the texture for the prepared text content.</summary>
+        </message>
+        <message name="DrawGradientLines">
+          <summary>Draws the prepared text with a line-relative gradient.</summary>
+          <fields>
+            <field name="view" type="ViewDef" pointer="true">View definition for rendering.</field>
+            <field name="entity" type="ViewEntity" pointer="true">Text entity and brush.</field>
+            <field name="yUp" type="bool">Whether entity coordinates increase upward.</field>
+          </fields>
         </message>
       </messages>
     </class>

@@ -2,6 +2,7 @@
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="SceneKit" namespace="orca">
   <require file="../../source/renderer/api/renderer.cgen"/>
+  <require file="../UIKit/UIKit.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
     <include file="core/core.h"/>
@@ -257,6 +258,7 @@
       </handles>
       <properties>
         <property name="Color" type="color">Text colour (white when unset)</property>
+        <property name="Foreground" type="BrushShorthand">Text brush; a gradient takes precedence over Color.</property>
       </properties>
       <fields>
         <field name="_node3D" type="Node3D" pointer="true"/>

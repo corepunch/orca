@@ -33,6 +33,12 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_sceneColor",                   // kShaderUniform_SceneColor
   "u_sceneDepth",                   // kShaderUniform_SceneDepth
   "u_sceneTextureSize",             // kShaderUniform_SceneTextureSize
+  "u_gradientStartColor",
+  "u_gradientEndColor",
+  "u_gradientPoints",
+  "u_gradientParams",
+  "u_gradientCoordTransform",
+  "u_premultiplied",
 };
 
 #define VERT_FOFS(x) &((DRAWVERT*)NULL)->x
@@ -675,6 +681,39 @@ Shader_BindMaterial(struct shader const* shader,
 			case kShaderUniform_Color:
 				R_Call(glUniform4fv, location, 1, (GLfloat const*)&color);
 				break;
+      case kShaderUniform_GradientStartColor:
+      case kShaderUniform_GradientEndColor: {
+        struct color c = uniform == kShaderUniform_GradientStartColor
+          ? ent->material.gradientStartColor : ent->material.gradientEndColor;
+#ifdef R_USE_SRGB
+        if (!ent->material.gradientLinearColor)
+          for (int i = 0; i < 3; i++)
+            ((float*)&c)[i] = powf(((float*)&c)[i], 2.2f);
+#endif
+        R_Call(glUniform4fv, location, 1, (GLfloat const*)&c);
+        break;
+      }
+      case kShaderUniform_GradientPoints:
+        R_Call(glUniform4f, location, ent->material.gradientStartPoint.x,
+               ent->material.gradientStartPoint.y, ent->material.gradientEndPoint.x,
+               ent->material.gradientEndPoint.y);
+        break;
+      case kShaderUniform_GradientParams:
+        R_Call(glUniform4f, location, ent->material.gradientEnabled ? 1 : 0,
+               ent->material.gradientSmooth ? 1 : 0,
+               ent->material.gradientSmoothStart, ent->material.gradientSmoothEnd);
+        break;
+      case kShaderUniform_Premultiplied:
+        R_Call(glUniform1f, location,
+               tr.blendMode == BLEND_MODE_PREMULTIPLIED_ALPHA ||
+               tr.blendMode == BLEND_MODE_PREMULTIPLIED_ADDITIVE ? 1 : 0);
+        break;
+      case kShaderUniform_GradientCoordTransform: {
+        struct vec4 t = ent->material.gradientCoordTransformSet
+          ? ent->material.gradientCoordTransform : (struct vec4){1, 1, 0, 0};
+        R_Call(glUniform4fv, location, 1, (GLfloat const*)&t);
+        break;
+      }
       case kShaderUniform_Charset:
         Texture_Bind(tr.textures[TX_CHARSET], GL_TEXTURE_2D, location, 1);
         R_SetPointFiltering();

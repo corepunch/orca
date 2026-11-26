@@ -36,6 +36,26 @@ f_resetTextStats(lua_State *L)
 }
 
 static int
+c_parse_vector2(const char* str, void* dst, size_t sz)
+{
+  if (!str || !dst || sz != sizeof(struct vec2)) return FALSE;
+  char *end;
+  float x = strtof(str, &end);
+  if (end == str || !isfinite(x)) return FALSE;
+  bool_t separated = isspace((unsigned char)*end);
+  while (isspace((unsigned char)*end)) end++;
+  if (*end == ',') { separated = TRUE; end++; }
+  if (!separated) return FALSE;
+  str = end;
+  float y = strtof(str, &end);
+  if (end == str || !isfinite(y)) return FALSE;
+  while (isspace((unsigned char)*end)) end++;
+  if (*end) return FALSE;
+  *(struct vec2*)dst = (struct vec2){x, y};
+  return TRUE;
+}
+
+static int
 c_parse_shadow_shorthand(const char* str, void* dst, size_t sz)
 {
   if (!dst || sz != sizeof(struct ShadowShorthand)) return FALSE;
@@ -119,6 +139,7 @@ c_parse_transform2(const char* str, void* dst, size_t sz)
 
 void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
+  OBJ_RegisterStructParser("Vector2D", c_parse_vector2);
   OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
   OBJ_RegisterStructParser("ShadowShorthand", c_parse_shadow_shorthand);
   OBJ_RegisterStructParser("BackdropFilterShorthand", c_parse_backdrop_filter);

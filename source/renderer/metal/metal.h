@@ -237,6 +237,7 @@ void mtlDeleteTextures(int n, uint32_t const *textures);
 void mtlActiveTexture(mtlEnum texture);
 void mtlBindTexture(mtlEnum target, uint32_t texture);
 void mtlTexParameteri(mtlEnum target, mtlEnum pname, int param);
+void mtlGenerateMipmap(mtlEnum target);
 void mtlPixelStorei(mtlEnum pname, int param);
 void mtlTexImage2D(mtlEnum target, int level, int internalformat, int width, int height,
                   int border, mtlEnum format, mtlEnum type, void const *pixels);

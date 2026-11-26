@@ -147,7 +147,18 @@ HANDLER(TextBlock, Node2D, DrawForeground)
     TextBlockText_VisitRange(text->_text, (int)range.x, (int)range.y, draw_highlight, &highlight);
   }
 
-  R_DrawEntity(pDrawForeground->viewdef, &entity);
+  if (pDrawForeground->brush.Gradient && !pDrawForeground->brush.Material &&
+      !pDrawForeground->brush.Image &&
+      pDrawForeground->brush.Gradient->Mapping == kGradientMappingTextLine) {
+    struct TextLineBox *lines;
+    uint32_t count;
+    HRESULT hr = TextBlockText_GetLineLayout(text->_text, &lines, &count);
+    if (SUCCEEDED(hr))
+      hr = TextBlockText_DrawGradientLines(pDrawForeground->viewdef, &entity, lines, count, FALSE);
+    if (FAILED(hr)) return Con_Error("could not draw text gradient lines"), TRUE;
+  } else {
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
+  }
 
   /* Emoji keep their own colors: draw them untinted over the text. */
   struct Texture const *emoji = text->_text->emojiTexture;
@@ -155,6 +166,7 @@ HANDLER(TextBlock, Node2D, DrawForeground)
     entity.shader = NULL;
     entity.material.texture = emoji;
     entity.material.color = (struct color){ 1, 1, 1, 1 };
+    entity.material.gradientEnabled = FALSE;
     entity.material.numUniforms = 0;
     entity.borderWidth = (struct vec4){ 0 };
     R_DrawEntity(pDrawForeground->viewdef, &entity);

@@ -50,6 +50,13 @@
       <value name="Base">Uses base texture addressing mode (platform-specific default behavior).</value>
       <value name="Mirror">Mirrors the texture at every boundary, so sampling past an edge reads the pixels just inside it.</value>
     </enum>
+    <enum name="TextureAxisWrap">
+      <summary>Texture coordinate wrapping for one axis.</summary>
+      <value name="Inherit">Use the texture's WrapMode.</value>
+      <value name="Clamp">Clamp coordinates to the edge.</value>
+      <value name="Repeat">Repeat coordinates beyond the boundary.</value>
+      <value name="Mirror">Mirror coordinates at each boundary.</value>
+    </enum>
     <enum name="TextureColorSpace">
       <value name="Automatic">Uses the renderer's default image color space, preserving existing texture loading behavior.</value>
       <value name="Linear">Stores color channels without sRGB decoding, for linear colors and non-color data.</value>
@@ -263,6 +270,8 @@
         <property name="MinificationFilter" type="TextureFilter">Filtering method used when texture is rendered smaller than its original size.</property>
         <property name="MagnificationFilter" type="TextureFilter">Filtering method used when texture is rendered larger than its original size.</property>
         <property name="WrapMode" type="TextureWrap">Defines how texture coordinates outside [0, 1] range are handled.</property>
+        <property name="WrapModeU" type="TextureAxisWrap">Horizontal wrapping; Inherit uses WrapMode.</property>
+        <property name="WrapModeV" type="TextureAxisWrap">Vertical wrapping; Inherit uses WrapMode.</property>
         <property name="Format" type="TextureFormat">Specifies the internal pixel format and channel layout used for texture storage in GPU memory.</property>
         <property name="Scale" type="int">Scale factor for high-DPI display support. Indicates the pixel density multiplier (e.g., 1 for standard displays, 2 for Retina/2x displays, 3 for 3x displays). The texture is loaded at higher resolution and scaled down for rendering on high-DPI screens.</property>
         <property name="MipmapMode" type="MipmapMode">Controls how mipmaps are sampled when rendering the texture. Higher modes like `Linear` and `Trilinear` yield smoother transitions at the cost of performance.</property>

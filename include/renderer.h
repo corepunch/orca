@@ -338,6 +338,14 @@ struct ViewMaterial
   enum blend_mode blendMode;
   float opacity;
   uint32_t textureWrap;                // Override wrap mode for this draw (0 = use texture default, kTextureWrapRepeat = tile)
+  bool_t gradientEnabled;
+  bool_t gradientSmooth;
+  bool_t gradientLinearColor;
+  struct color gradientStartColor, gradientEndColor;
+  struct vec2 gradientStartPoint, gradientEndPoint;
+  float gradientSmoothStart, gradientSmoothEnd;
+  struct vec4 gradientCoordTransform;  // box coordinate scale XY and offset XY
+  bool_t gradientCoordTransformSet;    // false selects identity, even for zero-initialized entities
 };
 
 // Helper macro to convert rect (x, y, width, height) to box3 (min, max)

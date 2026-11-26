@@ -81,6 +81,55 @@ check_blank_lines(void)
 }
 
 static void
+check_inline_runs(void)
+{
+  struct TextBlockText text = {
+    .numTextRuns = 1, .scale = 2,
+    .run = {{ .string = "2222", .fontSize = 32 }},
+  };
+  struct AXsize wholeSize, splitSize;
+  unsigned char *whole, *split;
+  assert(SUCCEEDED(TextBlockText_Rasterize(&text, &wholeSize, &whole)));
+  text.numTextRuns = 2;
+  text.run[0].string = "22";
+  text.run[1] = (struct TextBlockTextRun){ .string = "22", .fontSize = 32 };
+  assert(SUCCEEDED(TextBlockText_Rasterize(&text, &splitSize, &split)));
+  assert(wholeSize.width == splitSize.width && wholeSize.height == splitSize.height);
+  assert(!memcmp(whole, split, wholeSize.width * wholeSize.height));
+  free(whole);
+  free(split);
+}
+
+static void
+check_line_layout(void)
+{
+  struct TextBlockText text = {
+    .numTextRuns = 1, .scale = 2,
+    .run = {{ .string = "Hello\nHello", .fontSize = 20 }},
+  };
+  struct TextLineBox *lines;
+  uint32_t count;
+  assert(SUCCEEDED(TextBlockText_GetLineLayout(&text, &lines, &count)));
+  assert(count == 2);
+  assert(lines[0].Clip.y < lines[1].Clip.y);
+  assert(lines[0].GradientBounds.width == lines[1].GradientBounds.width);
+  assert(lines[0].GradientBounds.height == lines[1].GradientBounds.height);
+  assert(lines[0].GradientBounds.y < lines[1].GradientBounds.y);
+  text.run[0].string = "Hello";
+  assert(SUCCEEDED(TextBlockText_GetLineLayout(&text, &lines, &count)));
+  assert(count == 1);
+  text.run[0].string = "\nHello world hello world";
+  text.availableWidth = 65;
+  text.textWrapping = TEXT_WRAP_WRAP;
+  text.trimLeading = TRUE;
+  assert(SUCCEEDED(TextBlockText_GetLineLayout(&text, &lines, &count)));
+  assert(count > 1 && lines[0].Clip.y > 0);
+  for (uint32_t i = 1; i < count; i++)
+    assert(lines[i].Clip.y >= lines[i - 1].Clip.y + lines[i - 1].Clip.height);
+  free(text.lines);
+}
+
+static void
 save_preview(char const *path)
 {
   enum { width = 1040, height = 400 };
@@ -142,6 +191,8 @@ main(void)
     check_raster("small", scale, 400, TRUE);
   }
   check_blank_lines();
+  check_inline_runs();
+  check_line_layout();
   char const *preview = getenv("ORCA_TEXT_LEADING_PREVIEW");
   if (preview) save_preview(preview);
   lua_close(L);

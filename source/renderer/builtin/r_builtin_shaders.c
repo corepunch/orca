@@ -104,6 +104,12 @@ struct shader_desc shader_ui = {
     { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_HIGH },
     { "u_opacity", UT_FLOAT, PRECISION_LOW },
+    { "u_gradientStartColor", UT_FLOAT_VEC4, PRECISION_HIGH },
+    { "u_gradientEndColor", UT_FLOAT_VEC4, PRECISION_HIGH },
+    { "u_gradientPoints", UT_FLOAT_VEC4, PRECISION_HIGH },
+    { "u_gradientParams", UT_FLOAT_VEC4, PRECISION_HIGH },
+    { "u_gradientCoordTransform", UT_FLOAT_VEC4, PRECISION_HIGH },
+    { "u_premultiplied", UT_FLOAT, PRECISION_LOW },
   },
     .Attributes = {
       { "a_position", UT_FLOAT_VEC4 },
@@ -146,7 +152,20 @@ struct shader_desc shader_ui = {
   "}\n",
     .FragmentShader =
   "void main() {\n"
-  "  vec4 col = texture(u_texture, v_texcoord0) * u_color;\n"
+  "  vec4 paint = u_color;\n"
+  "  if (u_gradientParams.x > 0.5) {\n"
+  "    vec2 p = v_boxCoord * u_gradientCoordTransform.xy + u_gradientCoordTransform.zw;\n"
+  "    vec2 d = u_gradientPoints.zw - u_gradientPoints.xy;\n"
+  "    float dd = dot(d, d);\n"
+  "    float t = dd > 0.00000001 ? clamp(dot(p - u_gradientPoints.xy, d) / dd, 0.0, 1.0) : 0.0;\n"
+  "    if (u_gradientParams.y > 0.5) {\n"
+  "      float a = u_gradientParams.z, b = u_gradientParams.w;\n"
+  "      t = b > a ? smoothstep(a, b, t) : step(a, t);\n"
+  "    }\n"
+  "    paint = mix(u_gradientStartColor, u_gradientEndColor, t);\n"
+  "  }\n"
+  "  vec4 col = texture(u_texture, v_texcoord0) * paint;\n"
+  "  if (u_premultiplied > 0.5) col.rgb *= paint.a * u_opacity;\n"
   "  fragColor = vec4(col.rgb, col.a * u_opacity);\n"
 //  "  fragColor += vec4(0.1);"
   "}\n"

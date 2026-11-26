@@ -1250,6 +1250,15 @@ MAT4_FromTranslation(struct vec3 const* v)
 }
 
 struct color COLOR_Parse(lpcString_t string) {
+  if (!strncmp(string, "sc#", 3)) {
+    float r, g, b, a;
+    int end = 0;
+    if (sscanf(string + 3, " %f , %f , %f , %f %n", &a, &r, &g, &b, &end) == 4 &&
+        end && !string[3 + end] && isfinite(a) && isfinite(r) && isfinite(g) && isfinite(b))
+      return color_new(r, g, b, a);
+    fprintf(stderr, "Invalid scRGB color: %s\n", string);
+    return color_new(1, 1, 1, 1);
+  }
   int r = 255, g = 255, b = 255, a = 100;
   if (sscanf(string, "#%02x%02x%02x%02x", &r, &g, &b, &a) == 4)
     return color_new(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);

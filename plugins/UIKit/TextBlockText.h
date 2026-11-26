@@ -5,6 +5,9 @@
 
 struct FontFamily;
 struct Texture;
+struct TextLineBox;
+struct ViewDef;
+struct ViewEntity;
 
 struct TextBlockTextRun
 {
@@ -36,6 +39,10 @@ struct TextBlockText
   bool_t placeholder;
   struct Texture *texture;
   struct Texture *emojiTexture; // RGBA emoji drawn over the tinted texture, or NULL
+  struct TextLineBox *lines;
+  uint32_t lineCount;
+  uint32_t lineHash;
+  bool_t lineValid;
   char *displayBuffer;
   size_t displayCapacity;
   struct TextBlockTextRun run[UI_MAX_TEXT_RUNS];
@@ -53,6 +60,14 @@ enum
 ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
 ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
 ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
+ORCA_API HRESULT TextBlockText_GetLineLayout(struct TextBlockText *text,
+                                             struct TextLineBox **lines,
+                                             uint32_t *count);
+ORCA_API HRESULT TextBlockText_DrawGradientLines(struct ViewDef const *view,
+                                                struct ViewEntity const *entity,
+                                                struct TextLineBox const *lines,
+                                                uint32_t count,
+                                                bool_t yUp);
 /* Codepoint index of the caret position nearest a point in text space. */
 void TextBlockText_VisitRange(struct TextBlockText const *text, int start, int end,
                               void (*visit)(void *, struct rect), void *context);

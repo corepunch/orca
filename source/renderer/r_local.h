@@ -277,6 +277,7 @@ typedef ptrdiff_t GLintptr;
 #define glStencilOp                           mtlStencilOp
 #define glTexImage2D                          mtlTexImage2D
 #define glTexParameteri                       mtlTexParameteri
+#define glGenerateMipmap                      mtlGenerateMipmap
 #define glTexSubImage2D                       mtlTexSubImage2D
 #define glUniform1f                           mtlUniform1f
 #define glUniform1i                           mtlUniform1i
@@ -408,6 +409,12 @@ enum shader_uniform
   kShaderUniform_SceneColor,
   kShaderUniform_SceneDepth,
   kShaderUniform_SceneTextureSize,
+  kShaderUniform_GradientStartColor,
+  kShaderUniform_GradientEndColor,
+  kShaderUniform_GradientPoints,
+  kShaderUniform_GradientParams,
+  kShaderUniform_GradientCoordTransform,
+  kShaderUniform_Premultiplied,
   kShaderUniform_Count
 };
 

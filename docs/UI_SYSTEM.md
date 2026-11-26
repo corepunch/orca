@@ -116,6 +116,42 @@ The panel reads that from the measured `TextBlock`, as Unigram's
 `MessageBubblePanel` and Telegram Android's `ChatMessageCell` do; Telegram
 Desktop and Telegram Web reserve the same space inside the text instead.
 
+## Linear gradient brushes
+
+`Node2D.BackgroundGradient` and `Node2D.ForegroundGradient` accept a
+`LinearGradientBrush`; `TextBlock3D.ForegroundGradient` uses the same brush.
+For example:
+
+```xml
+<TextBlock Text="Hello">
+  <TextBlock.ForegroundGradient>
+    <LinearGradientBrush StartColor="#ff0000ff" EndColor="#0000ffff"
+                         StartPoint="0,0" EndPoint="0,1"/>
+  </TextBlock.ForegroundGradient>
+</TextBlock>
+```
+
+Coordinates are relative to the painted box, with zero at the top or left
+and one at the bottom or right. The projected position is clamped to the two
+stops. Equal points select the start color. `Interpolation="SmoothStep"`
+applies cubic smoothstep using `SmoothStart` and `SmoothEnd` (defaults 0 and
+1); non-increasing edges produce a step at `SmoothStart`. `Mapping="TextLine"`
+requests a separate mapping per text line; other elements use the box.
+`ColorSpace="Linear"` supplies already-linear RGB values; the default `sRGB`
+follows ordinary ORCA colors, including the renderer's optional sRGB
+conversion. Alpha is not converted. Interpolation occurs in shader color space.
+XML color values use the ordinary color parser. For unquantized linear colors,
+use `ColorSpace="Linear"` and `sc#alpha,red,green,blue`, for example
+`StartColor="sc#1,0.29999998,0.29999998,0.29999998"`. The color channels
+themselves carry no color-space tag.
+
+Custom materials take precedence over gradients, and images take precedence
+over gradients in `Node2D` brushes. A text glyph texture remains a coverage
+mask. `TextBlock3D.ForegroundColor` overrides its legacy `Color`; the latter
+remains the fallback when Foreground is unset. `TextBlock3D.ForegroundImage`
+is not supported. Renderer clients can set `ViewMaterial.gradientCoordTransform` and
+`gradientCoordTransformSet` to map box coordinates independently of mask UVs.
+
 ## Password inputs
 
 Use `Input { Type = "Password" }` for passwords. UIKit masks the prepared

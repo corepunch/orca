@@ -86,6 +86,10 @@ It requires a display-backed or offscreen renderer.
 blend factors and transitions between cached pipelines using real RGBA pixels.
 Run it with OpenGL and Metal binaries when changing shared blend state.
 
+`python3 tools/test_texture_wrapping.py --binary build/bin/orca` checks
+independent and inherited texture wrapping and mipmap generation with rendered
+pixels. Run it with both OpenGL and Metal builds.
+
 ## Editor Preview startup
 
 `make test-startup-render-mode` checks the shared startup policy for both screen

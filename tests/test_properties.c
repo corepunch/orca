@@ -1596,6 +1596,16 @@ static void test_color_parse_hex_rgba(void) {
     }
 }
 
+static void test_color_parse_scrgb(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct color c = COLOR_Parse("sc#1,0.3,0.625,1.25");
+        EXPECT(c.a == 1.0f);
+        EXPECT(c.r == 0.3f);
+        EXPECT(c.g == 0.625f);
+        EXPECT(c.b == 1.25f);
+    }
+}
+
 /* Parsing: set a color property from a parsed string. */
 static void test_color_property_from_parse(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
@@ -1863,6 +1873,8 @@ static void test_project_string_property_set_get(void) {
 int main(void) {
     /* Darwin lazily initializes timezone state on the first platform clock read. */
     core_AdvanceFrame();
+    /* Floating-point scanning initializes libc's locale cache on first use. */
+    (void)COLOR_Parse("sc#1,0,0,0");
     mem_init();
 
     printf("ORCA property system tests\n");
@@ -1950,6 +1962,7 @@ int main(void) {
         DECL_TEST(test_color_property_clear),
         DECL_TEST(test_color_parse_hex_rgb),
         DECL_TEST(test_color_parse_hex_rgba),
+        DECL_TEST(test_color_parse_scrgb),
         DECL_TEST(test_color_property_from_parse),
         DECL_TEST(test_color_import_whole),
         DECL_TEST(test_color_import_theme_value),

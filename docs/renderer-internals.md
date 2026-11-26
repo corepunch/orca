@@ -12,6 +12,9 @@ uploads. `Automatic` retains the renderer's existing platform default. Use
 GPU decoding happens before filtering and never changes alpha. The source
 bytes are not gamma-converted or requantized during loading.
 
+`Texture.WrapModeU` and `WrapModeV` independently override `WrapMode`.
+Each defaults to `Inherit`, preserving the existing shared wrap setting.
+
 `Image.HasMipmaps` generates GPU mip levels. `Texture.MipmapMode` selects mip
 interpolation independently of within-level filtering; magnification never
 uses a mipmapped filter. `SeparateAlphaAdditive` blends RGB with

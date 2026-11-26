@@ -858,6 +858,19 @@ void mtlTexImage2D(mtlEnum target, int level, int internalformat, int width, int
   free(converted);
 }
 
+void mtlGenerateMipmap(mtlEnum target)
+{
+  OrcaTexture *t = bound_texture(target);
+  if (!t || !t->texture) return set_error(MTL_INVALID_OPERATION);
+  int last = (int)full_chain(t->width, t->height) - 1;
+  if (!last || !grow_levels(t, last)) return;
+  end_pass();
+  id<MTLBlitCommandEncoder> blit = [command_buffer() blitCommandEncoder];
+  [blit generateMipmapsForTexture:t->texture];
+  [blit endEncoding];
+  t->lastUse = mtl.serial;
+}
+
 void mtlTexSubImage2D(mtlEnum target, int level, int xoffset, int yoffset, int width,
                      int height, mtlEnum format, mtlEnum type, void const *pixels)
 {

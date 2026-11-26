@@ -351,6 +351,17 @@ Node2D_GetViewEntity(struct Node2D* node2d,
                     uniforms + entity->material.numUniforms);
   } else if (brush->Image) {
     entity->material.texture = brush->Image;
+  } else if (brush->Gradient) {
+    struct LinearGradientBrush const *g = brush->Gradient;
+    entity->material.gradientEnabled = TRUE;
+    entity->material.gradientStartColor = g->StartColor;
+    entity->material.gradientEndColor = g->EndColor;
+    entity->material.gradientStartPoint = g->StartPoint;
+    entity->material.gradientEndPoint = g->EndPoint;
+    entity->material.gradientSmooth = g->Interpolation == kGradientInterpolationSmoothStep;
+    entity->material.gradientLinearColor = g->ColorSpace == kGradientColorSpaceLinear;
+    entity->material.gradientSmoothStart = g->SmoothStart;
+    entity->material.gradientSmoothEnd = g->SmoothEnd;
   } else {
     entity->material.color = brush->Color;
   }
@@ -376,7 +387,7 @@ HANDLER(Node2D, Node2D, DrawBackground)
 
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, NULL, &pDrawBackground->brush);
   // A transparent color or opacity would draw nothing.
-  if (!entity.material.texture && !entity.shader &&
+  if (!entity.material.texture && !entity.shader && !entity.material.gradientEnabled &&
       (entity.material.color.a <= 0 || entity.material.opacity <= 0))
     return FALSE;
 
@@ -417,6 +428,7 @@ HANDLER(Node2D, Node2D, DrawForeground)
     return FALSE;
 
   if (!pDrawForeground->image &&
+      !pDrawForeground->brush.Gradient &&
       !Node2D_GetProperty(hObject, kNode2DForegroundMaterial)) {
     return FALSE;
   }
@@ -1181,6 +1193,7 @@ _Node2DGetForegroundBrush(struct Object *object)
   Node2D_ReadProperty(object, Foreground.Color, &brush.Color);
   Node2D_ReadProperty(object, Foreground.Image, &brush.Image);
   Node2D_ReadProperty(object, Foreground.Material, &brush.Material);
+  Node2D_ReadProperty(object, Foreground.Gradient, &brush.Gradient);
 
   return brush;
 }

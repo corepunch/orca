@@ -131,6 +131,18 @@ wrap_to_gl(enum TextureWrap value)
 }
 
 static GLenum
+axis_wrap_to_gl(enum TextureAxisWrap value, enum TextureWrap inherited)
+{
+  switch (value) {
+    case kTextureAxisWrapInherit: return wrap_to_gl(inherited);
+    case kTextureAxisWrapClamp: return GL_CLAMP_TO_EDGE;
+    case kTextureAxisWrapRepeat: return GL_REPEAT;
+    case kTextureAxisWrapMirror: return GL_MIRRORED_REPEAT;
+  }
+  return wrap_to_gl(inherited);
+}
+
+static GLenum
 format_to_gl(enum TextureFormat format)
 {
   switch (format) {
@@ -148,12 +160,13 @@ R_ApplyImageParms(struct Texture* image, GLenum target, bool_t mipmaps)
 {
   int gl_min = filter_to_gl(image->MinificationFilter, mipmaps, image->MipmapMode);
   int gl_mag = filter_to_gl(image->MagnificationFilter, FALSE, kMipmapModeBase);
-  int gl_wrap = wrap_to_gl(image->WrapMode);
+  int gl_wrap_u = axis_wrap_to_gl(image->WrapModeU, image->WrapMode);
+  int gl_wrap_v = axis_wrap_to_gl(image->WrapModeV, image->WrapMode);
 
   R_Call(glTexParameteri, target, GL_TEXTURE_MIN_FILTER, gl_min);
   R_Call(glTexParameteri, target, GL_TEXTURE_MAG_FILTER, gl_mag);
-  R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_S, gl_wrap);
-  R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_T, gl_wrap);
+  R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_S, gl_wrap_u);
+  R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_T, gl_wrap_v);
 
   if (image->Format == kTextureFormatAlpha8) {
 #ifndef __EMSCRIPTEN__

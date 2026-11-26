@@ -402,6 +402,7 @@ typedef struct {
   /* inputs */
   struct TextBlockText const *text;
   bool_t    bRender;
+  bool_t    captureLines;
   int rangeStart, rangeEnd;
   void (*visitRange)(void *, struct rect);
   void *rangeContext;
@@ -415,6 +416,9 @@ typedef struct {
   /* bitmaps (only when bRender == TRUE); emoji_data stays NULL without emoji */
   FontPixel     *image_data;
   byte_t        *emoji_data;
+  struct TextLineBox *lines;
+  uint32_t lineCount;
+  uint32_t lineCapacity;
 } LayoutCtx;
 
 /* Layout state shared across runs */
@@ -424,6 +428,7 @@ typedef struct {
   int     lineWidth;      /* max width reached on current line */
   int     lineHeight;     /* max face->height on current line */
   int     baseline;       /* max ascender on current line */
+  int     descender;      /* min descender on current line */
   int     charCount;      /* codepoint counter for cursor tracking */
   bool_t  lineHasContent; /* any non-space glyph committed on this line? */
 } LayoutState;
@@ -442,7 +447,41 @@ LS_NewLine(LayoutState *ls, RunMetrics const *m)
   ls->lineWidth   = 0;
   ls->lineHeight  = m->height;
   ls->baseline    = m->ascender;
+  ls->descender   = m->descender;
   ls->lineHasContent = FALSE;
+}
+
+static HRESULT
+T_CaptureLine(LayoutCtx *ctx, LayoutState const *ls,
+              struct AXsize const *sz, FontPixel const *bitmap)
+{
+  if (!ctx->captureLines || !ls->lineHasContent) return S_OK;
+  int const top = MAX(0, ls->lineY);
+  int const bottom = MIN(sz->height, ls->lineY + ls->lineHeight);
+  int left = sz->width, right = 0;
+  for (int y = top; y < bottom; y++)
+    for (int x = 0; x < sz->width; x++)
+      if (bitmap[x + (sz->height - y - 1) * sz->width]) {
+        left = MIN(left, x);
+        right = MAX(right, x + 1);
+      }
+  if (right <= left || bottom <= top) return S_OK;
+  if (ctx->lineCount == ctx->lineCapacity) {
+    uint32_t capacity = ctx->lineCapacity ? ctx->lineCapacity * 2 : 8;
+    struct TextLineBox *lines = realloc(ctx->lines, capacity * sizeof(*lines));
+    if (!lines) return E_OUTOFMEMORY;
+    ctx->lines = lines;
+    ctx->lineCapacity = capacity;
+  }
+  float const scale = ctx->text->scale;
+  ctx->lines[ctx->lineCount++] = (struct TextLineBox){
+    .Clip = { 0, top / scale, sz->width / scale, (bottom - top) / scale },
+    .GradientBounds = {
+      left / scale, ls->lineY / scale, (right - left) / scale,
+      (ls->baseline - ls->descender) / scale,
+    },
+  };
+  return S_OK;
 }
 
 /*
@@ -473,6 +512,7 @@ T_LayoutText(LayoutCtx *ctx)
       ls.lineX = (int)(text->textIndent * scale);
     int current_char = 0; /* true per-character index, parallel to pInput->Cursor */
     int spaceOffset  = 0; /* accumulated space advance since last committed word */
+    bool_t endsWord = FALSE;
 
     for (struct TextBlockTextRun const *run = text->run;
          run - text->run < text->numTextRuns; run++)
@@ -484,10 +524,12 @@ T_LayoutText(LayoutCtx *ctx)
 
       ls.lineHeight = MAX(ls.lineHeight, m.height);
       ls.baseline   = MAX(ls.baseline, m.ascender);
+      ls.descender  = MIN(ls.descender, m.descender);
 
       lpcString_t p = run->string;
       lpcString_t tokenEnd = NULL;
       bool_t continuation = FALSE;
+      bool_t atRunStart = TRUE;
       while (*p) {
         /* skip tags */
         if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
@@ -500,6 +542,8 @@ T_LayoutText(LayoutCtx *ctx)
         ls.charCount++;
 
         if (ch == '\n') {
+          endsWord = FALSE;
+          atRunStart = FALSE;
           if (!ctx->cursorSet && current_char == text->cursor) {
             ctx->cursor.x      = (int)(ls.lineX / scale);
             ctx->cursor.y      = (int)(ls.lineY / scale);
@@ -517,6 +561,8 @@ T_LayoutText(LayoutCtx *ctx)
         }
 
         if (ch < 128 && isspace(ch)) {
+          endsWord = FALSE;
+          atRunStart = FALSE;
           /* A plain space: just advance, no measurement needed here;
            word tokens already carry their own space prefix below. */
           if (!ctx->cursorSet && current_char == text->cursor) {
@@ -541,19 +587,21 @@ T_LayoutText(LayoutCtx *ctx)
         /* word_p now points past the word */
 
         /* Decide whether to wrap before this word */
+        int const spacePrefix = ls.lineHasContent && !(atRunStart && endsWord) ? m.spaceAdv : 0;
+        atRunStart = FALSE;
         if (continuation) {
           measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
           LS_NewLine(&ls, &m);
         } else if (wrapW > 0 && ls.lineHasContent) {
-          int needed = ls.lineX + m.spaceAdv + wordW;
+          int needed = ls.lineX + spacePrefix + wordW;
           if (needed > wrapW) {
             measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
             LS_NewLine(&ls, &m);
           } else {
-            ls.lineX += m.spaceAdv;
+            ls.lineX += spacePrefix;
           }
         } else if (ls.lineHasContent) {
-          ls.lineX += m.spaceAdv;
+          ls.lineX += spacePrefix;
         }
         if (breakWords && wordW > wrapW - ls.lineX) {
           word_p = word_start;
@@ -619,6 +667,7 @@ T_LayoutText(LayoutCtx *ctx)
 
         ls.lineX += wordW;
         ls.lineHasContent = TRUE;
+        endsWord = TRUE;
         ls.lineHeight = MAX(ls.lineHeight, m.height);
         ls.baseline   = MAX(ls.baseline, m.ascender);
         spaceOffset = 0;
@@ -675,6 +724,7 @@ T_LayoutText(LayoutCtx *ctx)
     ls.lineX = (int)(text->textIndent * scale);
   int  ul_depth     = 0;       /* nesting depth for <u> tags */
   uint32_t prev_gi  = 0;
+  bool_t endsWord = FALSE;
 
   byte_t   *emoji_data      = NULL;
   bool_t    bDone           = FALSE;
@@ -690,10 +740,14 @@ T_LayoutText(LayoutCtx *ctx)
     if (!run->string) continue;
 
     RunMetrics m;
-    if (!T_BeginRun(run, scale, &m)) { free(image_data); free(emoji_data); return E_UNEXPECTED; }
+    if (!T_BeginRun(run, scale, &m)) {
+      free(image_data); free(emoji_data); free(ctx->lines);
+      return E_UNEXPECTED;
+    }
 
     ls.lineHeight = MAX(ls.lineHeight, m.height);
     ls.baseline   = MAX(ls.baseline, m.ascender);
+    ls.descender  = MIN(ls.descender, m.descender);
 
     /* Ellipsis threshold for this run */
     int ellipsisW = 0;
@@ -706,6 +760,8 @@ T_LayoutText(LayoutCtx *ctx)
     lpcString_t p = run->string;
     lpcString_t tokenEnd = NULL;
     bool_t continuation = FALSE;
+    bool_t atRunStart = TRUE;
+    prev_gi = 0;
     while (*p && !bDone) {
       /* consume markup tags at any position */
       if (!strncmp(p, "<u>",  3)) { p += 3; ul_depth++; continue; }
@@ -715,16 +771,27 @@ T_LayoutText(LayoutCtx *ctx)
       uint32_t const ch = u8_readchar(&p);
 
       if (ch == '\n') {
+        endsWord = FALSE;
+        atRunStart = FALSE;
+        if (FAILED(T_CaptureLine(ctx, &ls, &sz, image_data))) {
+          free(image_data); free(emoji_data); free(ctx->lines);
+          return E_OUTOFMEMORY;
+        }
         ls.lineY  += ls.lineHeight;
         ls.lineX   = text->textIndent > 0 ? (int)(text->textIndent * scale) : 0;
         ls.lineHeight = m.height;
         ls.baseline  = m.ascender;
+        ls.descender = m.descender;
         ls.lineHasContent = FALSE;
         prev_gi = 0;
         continue;
       }
 
-      if (ch < 128 && isspace(ch)) continue;  /* spacing handled at word boundary */
+      if (ch < 128 && isspace(ch)) {
+        endsWord = FALSE;
+        atRunStart = FALSE;
+        continue;
+      }
 
       /* ── We have a word ── */
       lpcString_t word_start = before;
@@ -737,15 +804,21 @@ T_LayoutText(LayoutCtx *ctx)
       if (!continuation) tokenEnd = word_end;
 
       /* Determine inter-word space */
-      int spacePrefix = ls.lineHasContent ? m.spaceAdv : 0;
+      int spacePrefix = ls.lineHasContent && !(atRunStart && endsWord) ? m.spaceAdv : 0;
+      atRunStart = FALSE;
 
       /* Wrap decision */
       if (wrapW > 0 && ls.lineHasContent) {
         if (continuation || ls.lineX + spacePrefix + wordW > wrapW) {
+          if (FAILED(T_CaptureLine(ctx, &ls, &sz, image_data))) {
+            free(image_data); free(emoji_data); free(ctx->lines);
+            return E_OUTOFMEMORY;
+          }
           ls.lineY      += ls.lineHeight;
           ls.lineX       = 0;
           ls.lineHeight  = m.height;
           ls.baseline    = m.ascender;
+          ls.descender   = m.descender;
           ls.lineHasContent = FALSE;
           prev_gi = 0;
           spacePrefix = 0;
@@ -834,6 +907,7 @@ T_LayoutText(LayoutCtx *ctx)
         }
         p = word_end;
         ls.lineHasContent = TRUE;
+        endsWord = TRUE;
         continue;
       }
 
@@ -851,6 +925,7 @@ T_LayoutText(LayoutCtx *ctx)
                  ul_thick, &prev_gi);
 
       ls.lineHasContent = TRUE;
+      endsWord = TRUE;
       ls.lineHeight = MAX(ls.lineHeight, m.height);
       p = word_end;
     }
@@ -860,6 +935,12 @@ T_LayoutText(LayoutCtx *ctx)
   if (ellipsis_face) {
     T_BlitEllipsis(ellipsis_face, ellipsis_scale, image_data, &sz,
                    ellipsis_x, ellipsis_y, ellipsis_base);
+    ls.lineHasContent = TRUE;
+  }
+
+  if (FAILED(T_CaptureLine(ctx, &ls, &sz, image_data))) {
+    free(image_data); free(emoji_data); free(ctx->lines);
+    return E_OUTOFMEMORY;
   }
 
   ctx->image_data = image_data;
@@ -1034,12 +1115,79 @@ TextBlockText_GetTexture(struct TextBlockText *text)
   return text->texture;
 }
 
+ORCA_API HRESULT
+TextBlockText_GetLineLayout(struct TextBlockText *text,
+                            struct TextLineBox **lines,
+                            uint32_t *count)
+{
+  if (!text || !lines || !count) return E_INVALIDARG;
+  uint32_t const hash = TextBlockText_GetHash(text);
+  if (!text->lineValid || text->lineHash != hash) {
+    LayoutCtx ctx = { .text = text, .bRender = TRUE, .captureLines = TRUE };
+    HRESULT const hr = T_LayoutText(&ctx);
+    if (FAILED(hr)) return hr;
+    free(ctx.image_data);
+    free(ctx.emoji_data);
+    free(text->lines);
+    text->lines = ctx.lines;
+    text->lineCount = ctx.lineCount;
+    text->lineHash = hash;
+    text->lineValid = TRUE;
+  }
+  *lines = text->lines;
+  *count = text->lineCount;
+  return S_OK;
+}
+
+ORCA_API HRESULT
+TextBlockText_DrawGradientLines(struct ViewDef const *view,
+                                struct ViewEntity const *entity,
+                                struct TextLineBox const *lines,
+                                uint32_t count,
+                                bool_t yUp)
+{
+  struct Texture const *texture = entity->material.texture;
+  if (!texture || texture->Width <= 0 || texture->Height <= 0) return E_INVALIDARG;
+  float const width = texture->Width, height = texture->Height;
+  float const boxWidth = entity->bbox.max.x - entity->bbox.min.x;
+  float const boxHeight = entity->bbox.max.y - entity->bbox.min.y;
+  for (uint32_t i = 0; i < count; i++) {
+    struct rect const clip = lines[i].Clip;
+    struct rect const bounds = lines[i].GradientBounds;
+    if (clip.width <= 0 || clip.height <= 0 || bounds.width <= 0 || bounds.height <= 0)
+      continue;
+    struct ViewEntity line = *entity;
+    line.bbox.min.x = entity->bbox.min.x + clip.x / width * boxWidth;
+    line.bbox.max.x = line.bbox.min.x + clip.width / width * boxWidth;
+    line.bbox.min.y = entity->bbox.min.y +
+      (yUp ? height - clip.y - clip.height : clip.y) / height * boxHeight;
+    line.bbox.max.y = line.bbox.min.y + clip.height / height * boxHeight;
+    line.material.textureMatrix = MAT3_Identity();
+    line.material.textureMatrix.v[0] = clip.width / width;
+    line.material.textureMatrix.v[4] = (yUp ? -clip.height : clip.height) / height;
+    line.material.textureMatrix.v[6] = clip.x / width;
+    line.material.textureMatrix.v[7] = yUp ? 1 - clip.y / height
+      : 1 - (clip.y + clip.height) / height;
+    line.material.gradientCoordTransform = (struct vec4){
+      clip.width / bounds.width,
+      (yUp ? -clip.height : clip.height) / bounds.height,
+      (clip.x - bounds.x) / bounds.width,
+      (clip.y + (yUp ? clip.height : 0) - bounds.y) / bounds.height,
+    };
+    line.material.gradientCoordTransformSet = TRUE;
+    HRESULT const hr = R_DrawEntity(view, &line);
+    if (FAILED(hr)) return hr;
+  }
+  return S_OK;
+}
+
 ORCA_API void
 TextBlockText_Release(struct TextBlockText *text)
 {
   if (!text) return;
   SafeDelete(text->texture, Texture_Release);
   SafeDelete(text->emojiTexture, Texture_Release);
+  free(text->lines);
   free(text->displayBuffer);
   free(text);
 }
@@ -1208,6 +1356,21 @@ HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)
 {
   if (!pTextBlockConcept->_text) return 0;
   return (intptr_t)TextBlockText_GetTexture(pTextBlockConcept->_text);
+}
+
+HANDLER(TextBlockConcept, TextBlockConcept, DrawGradientLines)
+{
+  struct TextLineBox *lines;
+  uint32_t count;
+  if (!pTextBlockConcept->_text || !pDrawGradientLines)
+    return Con_Error("text gradient has no layout"), FALSE;
+  HRESULT const hr = TextBlockText_GetLineLayout(pTextBlockConcept->_text, &lines, &count);
+  if (FAILED(hr)) return Con_Error("could not lay out text gradient lines"), FALSE;
+  if (FAILED(TextBlockText_DrawGradientLines(pDrawGradientLines->view,
+                                           pDrawGradientLines->entity, lines, count,
+                                           pDrawGradientLines->yUp)))
+    return Con_Error("could not draw text gradient lines"), FALSE;
+  return TRUE;
 }
 
 HANDLER(TextBlockConcept, Object, Create)
