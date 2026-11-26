@@ -181,6 +181,21 @@ local function test_multiple_attached_properties()
   print("PASS: test_multiple_attached_properties")
 end
 
+local function test_symbolic_controller()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  local label = screen + ui.TextBlock { Text = "idle", Width = 100 }
+  local sm = core.StateManager()
+  local group = sm + core.StateGroup { ControllerProperty = "Text" }
+  group:addChild(core.State { Value = "open", ['Node.Width'] = 42 })
+  label:addComponentByName("StateManagerController")
+  label.StateManager = sm
+  label:send("Object.Start")
+  label.Text = "open"
+  core.flushQueue()
+  test.expect_near(label.Width, 42, 0.01, "symbolic controller matches its state")
+  label:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
@@ -189,5 +204,6 @@ test_state_group_width()
 test_state_manager_reassignment()
 test_state_path_to_child()
 test_multiple_attached_properties()
+test_symbolic_controller()
 
 print("All StateManager tests passed.")

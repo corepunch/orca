@@ -187,12 +187,26 @@ _ReleaseArrayItems(struct Property *property)
 bool_t
 PROP_IsNull(struct Property const *property)
 {
-  return property == NULL || !(property->flags & PF_MODIFIED);
+  return property == NULL || (!(property->flags & PF_MODIFIED) && !property->stateOverride);
 }
 
 void
 PROP_Clear(struct Property *property)
 {
+  if (property->stateOverride) {
+    void *presented = property->value;
+    struct StatePropertyOverride *state = property->stateOverride;
+    property->value = state->base;
+    property->stateOverride = NULL;
+    PROP_Clear(property);
+    property->stateOverride = state;
+    property->value = presented;
+    return;
+  }
+  if (PROP_StateOverrideConflicts(property)) {
+    Con_Error("StateManager: clear of overlapping state property %s", PROP_GetName(property));
+    return;
+  }
   if (property->pdesc->DataType == kDataTypeObject) PROP_InvalidateBindingPaths();
   free(property->handlerName);
   property->handlerName = NULL;
@@ -254,6 +268,8 @@ OBJ_ReleaseProperties(struct Object *hobj)
 {
   PROP_InvalidateBindingPaths();
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
+    PROP_DiscardStateOverride(p);
+  FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
     if (p->specializedBase) {
@@ -268,8 +284,8 @@ OBJ_ReleaseProperties(struct Object *hobj)
       free(p->value);
       p->value = NULL;
     }
-    free(p);
   }
+  FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj)) free(p);
 }
 
 static void
@@ -298,6 +314,12 @@ void
 PROP_ClearSpecialized(struct Property *pprop) {
   FOR_EACH_LIST(struct Property, p, pprop) {
     if (p->flags & PF_SPECIALIZED) {
+      void *presented = p->value;
+      struct StatePropertyOverride *state = p->stateOverride;
+      if (state) {
+        p->value = state->base;
+        p->stateOverride = NULL;
+      }
       PROP_Clear(p);
       p->flags &= ~(PF_SPECIALIZED | PF_STYLED);
       if (p->specializedBase) {
@@ -311,6 +333,10 @@ PROP_ClearSpecialized(struct Property *pprop) {
         p->specializedBase = NULL;
         free(base->value);
         free(base);
+      }
+      if (state) {
+        p->value = presented;
+        p->stateOverride = state;
       }
       PROP_NotifyChanged(p);
     }

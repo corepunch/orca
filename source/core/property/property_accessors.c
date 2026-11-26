@@ -40,9 +40,10 @@ PROP_SetFlag(struct Property *property, uint32_t value)
     base->flags = property->flags & (PF_MODIFIED | PF_OWNS_OBJECT_CHILD | PF_STYLED);
     property->flags &= ~PF_OWNS_OBJECT_CHILD;
     base->value = ZeroAlloc(PROP_GetSize(property));
-    memcpy(base->value, property->value, PROP_GetSize(property));
+    void *resolved = property->stateOverride ? property->stateOverride->base : property->value;
+    memcpy(base->value, resolved, PROP_GetSize(property));
     if (PROP_GetType(property) == kDataTypeString) {
-      char *text = *(char **)property->value;
+      char *text = *(char **)resolved;
       *(char **)base->value = text ? strdup(text) : NULL;
     } else if (PROP_GetType(property) == kDataTypeObject) {
       struct Object *object = PROP_GetObjectValue(property);
@@ -89,7 +90,8 @@ PROP_GetValue(struct Property const *property)
   if (property->pdesc && property->pdesc->IsArray) {
     return property->value;
   }
-  if (property->pdesc && property->pdesc->IsInherited && !(property->flags & PF_MODIFIED)) {
+  if (property->pdesc && property->pdesc->IsInherited &&
+      !(property->flags & PF_MODIFIED) && !property->stateOverride) {
     for (struct Object *obj = property->object ? OBJ_GetParent(property->object) : NULL; obj; obj = OBJ_GetParent(obj)) {
       struct Property *p = OBJ_FindLongProperty(obj, property->pdesc->FullIdentifier);
       if (p && (p->flags & PF_MODIFIED)) {
@@ -251,6 +253,142 @@ PROP_IsSameValue(struct Property const *property, void const* source)
   return memcmp(slot, source, PROP_GetSize(property)) == 0;
 }
 
+bool_t
+PROP_HasStateOverride(struct Property const *property)
+{
+  return property && property->stateOverride != NULL;
+}
+
+void const *
+PROP_GetStateBaseValue(struct Property const *property, void *owner)
+{
+  if (!property) return NULL;
+  if (!property->stateOverride) return PROP_GetValue(property);
+  if (property->stateOverride->owner != owner) {
+    Con_Error("StateManager: invalid state override owner");
+    return NULL;
+  }
+  if (property->pdesc->IsInherited && !(property->flags & PF_MODIFIED)) {
+    for (struct Object *obj = OBJ_GetParent(property->object); obj; obj = OBJ_GetParent(obj)) {
+      struct Property *p = OBJ_FindLongProperty(obj, property->pdesc->FullIdentifier);
+      if (p && (p->flags & PF_MODIFIED)) return PROP_GetValue(p);
+    }
+    return NULL;
+  }
+  return property->stateOverride->base;
+}
+
+bool_t
+PROP_StateOverrideConflicts(struct Property const *property)
+{
+  if (!property || !property->value || !property->object) return FALSE;
+  uintptr_t a = (uintptr_t)property->value;
+  size_t size = PROP_GetSize(property);
+  for (struct Property *other = OBJ_GetProperties(property->object); other; other = other->next) {
+    if (other == property || !other->stateOverride || !other->value) continue;
+    uintptr_t b = (uintptr_t)other->value;
+    size_t otherSize = PROP_GetSize(other);
+    if ((a <= b && b - a < size) || (b < a && a - b < otherSize)) return TRUE;
+  }
+  return FALSE;
+}
+
+bool_t
+PROP_BeginStateOverride(struct Property *property, void *owner)
+{
+  if (!property || !owner || !property->value || !property->pdesc ||
+      property->pdesc->IsArray || !PROP_GetSize(property))
+    return Con_Error("StateManager: invalid or unsupported state override property"), FALSE;
+  if (property->stateOverride) {
+    if (property->stateOverride->owner == owner) return TRUE;
+    return Con_Error("StateManager: property %s already has a state override", PROP_GetName(property)), FALSE;
+  }
+  if (PROP_StateOverrideConflicts(property))
+    return Con_Error("StateManager: overlapping state override for %s", PROP_GetName(property)), FALSE;
+  eDataType_t type = PROP_GetType(property);
+  if (type == kDataTypeObject || type == kDataTypeEvent || property->pdesc->IsPointer) {
+    Con_Error("StateManager: unsupported state override type for %s", PROP_GetName(property));
+    return FALSE;
+  }
+  struct StatePropertyOverride *state = calloc(1, sizeof(*state));
+  if (!state) return Con_Error("StateManager: cannot allocate property override"), FALSE;
+  state->base = malloc(PROP_GetSize(property));
+  if (!state->base) return free(state), Con_Error("StateManager: cannot allocate base value"), FALSE;
+  memcpy(state->base, property->value, PROP_GetSize(property));
+  if (type == kDataTypeString) {
+    char *text = *(char **)state->base;
+    *(char **)state->base = text ? strdup(text) : NULL;
+    if (text && !*(char **)state->base)
+      return free(state->base), free(state), Con_Error("StateManager: cannot copy base string"), FALSE;
+  }
+  state->owner = owner;
+  if (property->pdesc->IsInherited && !(property->flags & PF_MODIFIED)) {
+    void const *inherited = PROP_GetValue(property);
+    if (inherited) {
+      if (type == kDataTypeString) {
+        char const *text = *(char const *const *)inherited;
+        char *copy = text ? strdup(text) : NULL;
+        if (text && !copy) {
+          free(*(char **)state->base);
+          free(state->base);
+          free(state);
+          return Con_Error("StateManager: cannot copy inherited string"), FALSE;
+        }
+        free(*(char **)property->value);
+        *(char **)property->value = copy;
+      } else {
+        memcpy(property->value, inherited, PROP_GetSize(property));
+      }
+    }
+  }
+  property->stateOverride = state;
+  return TRUE;
+}
+
+bool_t
+PROP_SetStateOverride(struct Property *property, void *owner, void const *value)
+{
+  if (!property || !property->stateOverride || property->stateOverride->owner != owner || !value) {
+    Con_Error("StateManager: invalid state override owner or value");
+    return FALSE;
+  }
+  if (PROP_IsSameValue(property, value)) return TRUE;
+  uint32_t flags = property->flags;
+  PROP_SetStoredValue(property, value);
+  property->flags = flags;
+  PROP_NotifyChanged(property);
+  return TRUE;
+}
+
+void
+PROP_DiscardStateOverride(struct Property *property)
+{
+  if (!property || !property->stateOverride) return;
+  struct StatePropertyOverride *state = property->stateOverride;
+  if (PROP_GetType(property) == kDataTypeString) free(*(char **)state->base);
+  free(state->base);
+  free(state);
+  property->stateOverride = NULL;
+}
+
+bool_t
+PROP_EndStateOverride(struct Property *property, void *owner)
+{
+  if (!property || !property->stateOverride || property->stateOverride->owner != owner) {
+    Con_Error("StateManager: invalid state override owner");
+    return FALSE;
+  }
+  struct StatePropertyOverride *state = property->stateOverride;
+  if (PROP_GetType(property) == kDataTypeString) free(*(char **)property->value);
+  memcpy(property->value, state->base, PROP_GetSize(property));
+  free(state->base);
+  free(state);
+  property->stateOverride = NULL;
+  OBJ_SetDirty(property->object);
+  PROP_NotifyChanged(property);
+  return TRUE;
+}
+
 void
 PROP_NotifyChanged(struct Property *property)
 {
@@ -270,9 +408,22 @@ PROP_NotifyChanged(struct Property *property)
 void
 PROP_SetValue(struct Property *property, void const* source)
 {
-  if (!property || PROP_IsSameValue(property, source)) {
+  if (!property || !source) return;
+  if (PROP_StateOverrideConflicts(property)) {
+    Con_Error("StateManager: write to overlapping state property %s", PROP_GetName(property));
     return;
   }
+  if (property->stateOverride) {
+    struct Property base = *property;
+    base.value = property->stateOverride->base;
+    base.stateOverride = NULL;
+    if (PROP_IsSameValue(&base, source)) return;
+    PROP_SetStoredValue(&base, source);
+    property->flags = base.flags;
+    PROP_WriteBindingSource(&base);
+    return;
+  }
+  if (PROP_IsSameValue(property, source)) return;
   PROP_SetStoredValue(property, source);
   if (property->pdesc->IsArray) {
     return;

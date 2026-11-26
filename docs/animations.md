@@ -37,6 +37,67 @@ A typical workflow:
 
 ---
 
+## Declarative visual states
+
+Use `StateManager` for presentation driven by observable data, rather than a
+script that starts and stops clips. Explicit XML `Components` attaches native
+components before attributes and children load; it accepts comma- or
+whitespace-separated registered class names. Qualified attached properties
+alone do not attach their owner component.
+
+```xml
+<Node2D Components="StateManagerController"
+        StateManagerController.StateManager="MyApp/States/Panel"
+        StateManagerController.ActiveState="{Binding DataContext/PanelState}"
+        StateManagerController.ReducedMotion="{Binding DataContext/ReducedMotion}"/>
+```
+
+The referenced state resource can contain:
+
+```xml
+<StateManager>
+  <StateGroup ControllerProperty="ActiveState">
+    <StateTransition From="Hidden" To="Selected" Duration="0.3"/>
+    <StateTransition To="Hidden" Duration="0.2"/>
+    <State Value="Hidden" Node.Visible="false" Node.Opacity="0"/>
+    <State Value="Selected" Node.Visible="true" Node.Opacity="1"/>
+  </StateGroup>
+</StateManager>
+```
+
+A group opts into managed, binding-preserving overrides by containing at least
+one `StateTransition`, including a zero-duration transition. Groups without
+transitions retain their legacy direct-assignment behavior.
+
+- `State.Value` matches strings exactly; numeric values must parse completely.
+  Boolean controllers also accept `true` and `false`.
+- Empty or `*` transition filters are wildcards. More exact filters win; ties
+  retain declaration order. An unmatched transition applies immediately.
+- Initial state and manager reassignment apply immediately. Interruptions
+  start at the current displayed pose; selecting the same state does not
+  restart it. `IsTransitioning` reports whether motion remains.
+- Floats and `Vector2D/3D/4D`, `Transform2D/3D` interpolate using the shared
+  animation clock. Other supported scalar values switch immediately.
+  `Node.Visible=true` enters immediately; `false` waits until exit completes.
+- Existing bindings remain installed. Their updates change the retained base,
+  not the displayed override; animation never writes back through TwoWay
+  bindings. Omitted setters and unmatched states restore the latest base.
+- `ReducedMotion` completes the same final state immediately.
+- Nested `State.Path` values resolve from the host, not the enclosing state.
+  Managed targets must belong to its subtree. Overlapping storage aliases,
+  duplicate targets, controller-property overrides, arrays, object/event
+  values and pointer properties are rejected explicitly.
+
+Removing a managed group or replacing/removing its manager releases its
+overrides. State resources should be authored before activation; changing a
+setter in an already-selected state is not a request to restart its transition.
+Custom shader inputs must be registered before their state resource is parsed.
+For shaders that do not consume inherited opacity, use appropriate shader
+inputs or a transform/visibility transition instead of expecting `Node.Opacity`
+to fade them.
+
+---
+
 ## AnimationClip XML Format
 
 An `AnimationClip` is an object loaded from an XML file (just like an `Image` or `Shader`). Place the file anywhere on the asset search path and load it with `require("path/to/MyClip")`.

@@ -11,6 +11,7 @@
     <external struct="style_class_selector"/>
     <external struct="style_selector"/>
     <external struct="collection_observer"/>
+    <external struct="state_manager_runtime"/>
     <external struct="StructDesc"/>
   </externals>
   <enums>
@@ -905,8 +906,19 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
       <summary>Defines property overrides to apply when the parent StateGroup's controller property matches Value.</summary>
       <details>A State is a child of a StateGroup. When the controller property equals Value, attached properties on this State (e.g. 'Node.Opacity' = 0.5) are applied to the object identified by Path (or the host object if Path is empty).</details>
       <properties>
-        <property name="Value" type="string">The value of the controller property that activates this state (compared as a number; for booleans "true"/"false" are also accepted)</property>
+        <property name="Value" type="string">Controller value that activates this state: an exact string, a number, or true/false for a boolean.</property>
         <property name="Path" type="string">Optional path from the host object to the target object. Empty string means the host object itself.</property>
+      </properties>
+    </class>
+    <class name="StateTransition">
+      <summary>Declares motion between states in a StateGroup.</summary>
+      <details>A group containing transitions uses binding-preserving overrides. Float and floating-point geometry values interpolate; other values switch immediately, except Visible=false, which waits for completion. Initial state assignment is immediate. Empty From/To or "*" matches any state; more specific transitions take priority.</details>
+      <properties>
+        <property name="From" type="string">Previous State.Value filter.</property>
+        <property name="To" type="string">Next State.Value filter.</property>
+        <property name="Duration" type="float">Duration in seconds; zero applies immediately.</property>
+        <property name="Interpolation" type="InterpolationMode" default="Cubic">Interpolation curve.</property>
+        <property name="Easing" type="Easing" default="InOut">Curve easing.</property>
       </properties>
     </class>
     <class name="StateManagerController">
@@ -915,11 +927,20 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Animate"/>
+        <handle message="Object.Release"/>
+        <handle message="DataObject.CollectionChanged"/>
         <handle message="StateManagerController.ControllerChanged"/>
       </handles>
       <properties>
         <property name="StateManager" type="StateManager" pointer="true">The StateManager object that supplies the StateGroup definitions. Setting this property automatically marks all tracked controller properties.</property>
+        <property name="ActiveState" type="string">Optional string selection property for declarative state bindings.</property>
+        <property name="ReducedMotion" type="bool">Complete managed transitions immediately while preserving their final state.</property>
+        <property name="IsTransitioning" type="bool" readonly="true">Whether any managed group is currently moving.</property>
       </properties>
+      <fields>
+        <field name="_runtime" type="state_manager_runtime" pointer="true">Private managed state lifetime and transition tracks.</field>
+      </fields>
       <messages>
         <message name="ControllerChanged" routing="Direct">
           <summary>Evaluate all state groups whose controller property matches the changed property.</summary>

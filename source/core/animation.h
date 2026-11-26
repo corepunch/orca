@@ -11,5 +11,6 @@ ORCA_API void ANIM_SetClock(AnimationClock clock, void *context);
 ORCA_API void ANIM_SetPaused(bool_t paused);
 ORCA_API void ANIM_BeginFrame(void);
 ORCA_API void ANIM_EndFrame(void);
+ORCA_API float anim_interpolate(enum InterpolationMode interpolation, enum Easing easing, float time);
 
 #endif

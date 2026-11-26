@@ -31,6 +31,7 @@ struct Property
   struct Property*           next;
   struct Binding*            binding;
   struct Property*           specializedBase;
+  struct StatePropertyOverride *stateOverride;
   struct Object*             object;
   struct PropertyType const *pdesc;
   void*                      value;
@@ -44,6 +45,19 @@ struct Property
   uint64_t                   bindingPaths;
   uint64_t                   bindingData;
 };
+
+struct StatePropertyOverride {
+  void *owner;
+  void *base;
+};
+
+bool_t PROP_BeginStateOverride(struct Property *property, void *owner);
+bool_t PROP_SetStateOverride(struct Property *property, void *owner, void const *value);
+bool_t PROP_EndStateOverride(struct Property *property, void *owner);
+bool_t PROP_HasStateOverride(struct Property const *property);
+void const *PROP_GetStateBaseValue(struct Property const *property, void *owner);
+void PROP_DiscardStateOverride(struct Property *property);
+bool_t PROP_StateOverrideConflicts(struct Property const *property);
 
 static inline bool_t
 PROP_HasHandler(struct Property const *property)

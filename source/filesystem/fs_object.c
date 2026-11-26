@@ -100,6 +100,7 @@ propdesc(struct Object *o, lpcString_t name)
 static bool_t
 special_attr(struct Object *o, lpcString_t name, lpcString_t value)
 {
+  if (!strcmp(name, "Components")) return TRUE;
   if (!strcmp(name, "ClassName") || !strcmp(name, "PlaceholderTemplate")) return TRUE;
   if (!strcmp(name, "Name") || !strcmp(name, "id")) {
     OBJ_SetName(o, value);
@@ -694,6 +695,22 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   if (!FS_NormalizeXmlSceneAttributes(o, x)) {
     OBJ_ReleaseRef(o);
     return NULL;
+  }
+
+  xmlChar *components = xmlGetProp(x, XMLSTR("Components"));
+  if (components) {
+    char *context = NULL;
+    for (char *name = strtok_r((char *)components, ", \t\r\n", &context);
+         name; name = strtok_r(NULL, ", \t\r\n", &context)) {
+      struct ClassDesc const *component = OBJ_FindClass(name);
+      if (!component || !OBJ_AddComponent(o, component->ClassID)) {
+        Con_Error("Could not attach component '%s' to '%s'", name, tag);
+        xmlFree(components);
+        OBJ_ReleaseRef(o);
+        return NULL;
+      }
+    }
+    xmlFree(components);
   }
 
   // Controller loading precedes named handlers regardless of attribute order.

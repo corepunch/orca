@@ -14,6 +14,12 @@ static const char *s_current_test;
 
 /* Binding compilation is an exported private seam; no private headers needed. */
 extern bool_t PROP_SetBinding(struct Property *, const char *, eBindingMode_t, bool_t);
+/* Exercise the private state layer without exposing it through the public API. */
+extern bool_t PROP_BeginStateOverride(struct Property *, void *);
+extern bool_t PROP_SetStateOverride(struct Property *, void *, void const *);
+extern bool_t PROP_EndStateOverride(struct Property *, void *);
+extern bool_t PROP_HasStateOverride(struct Property const *);
+extern void const *PROP_GetStateBaseValue(struct Property const *, void *);
 
 struct StringMemory {
     const char *Left, *Right, *Result, *Saved, *Inherited;
@@ -40,6 +46,8 @@ static struct PropertyType properties[] = {
       .Offset = offsetof(struct StringMemory, PairA), .TypeString = "Vector2D" },
     { .Name = "PairB", .Key = "PairB", .DataType = kDataTypeStruct, .DataSize = sizeof(float[2]),
       .Offset = offsetof(struct StringMemory, PairB), .TypeString = "bounds" },
+    { .Name = "PairFirst", .Key = "PairFirst", .DataType = kDataTypeFloat, .DataSize = sizeof(float),
+      .Offset = offsetof(struct StringMemory, PairA) },
     { .Name = "ObjectA", .Key = "ObjectA", .DataType = kDataTypeObject, .DataSize = sizeof(void *),
       .Offset = offsetof(struct StringMemory, ObjectA), .TypeString = "DataContext" },
     { .Name = "ObjectB", .Key = "ObjectB", .DataType = kDataTypeObject, .DataSize = sizeof(void *),
@@ -763,6 +771,72 @@ static void writable_binding_rejects_incompatible_compound_types(void)
     OBJ_ReleaseRef(o);
 }
 
+static void state_override_preserves_binding(void)
+{
+    struct Object *o = object();
+    struct Property *source = property(o, "Left"), *target = property(o, "Result");
+    int owner;
+    PROP_SetStringValue(source, "base");
+    assert(PROP_SetBinding(target, "{./Left}", kBindingModeTwoWay, TRUE));
+    update(target);
+    assert(PROP_BeginStateOverride(target, &owner));
+    const char *display = "presented";
+    assert(PROP_SetStateOverride(target, &owner, &display));
+    expect_text(target, "presented");
+    expect_text(source, "base");
+    PROP_SetStringValue(source, "new source");
+    update(target);
+    expect_text(target, "presented");
+    assert(!strcmp(*(char const *const *)PROP_GetStateBaseValue(target, &owner), "new source"));
+    PROP_SetStringValue(target, "edited base");
+    expect_text(target, "presented");
+    expect_text(source, "edited base");
+    assert(PROP_EndStateOverride(target, &owner));
+    expect_text(target, "edited base");
+    assert(PROP_HasProgram(target) && !PROP_HasStateOverride(target));
+    OBJ_ReleaseRef(o);
+}
+
+static void state_override_specialization_and_destruction(void)
+{
+    struct Object *o = object();
+    struct Property *p = property(o, "Left");
+    int owner, other;
+    PROP_SetStringValue(p, "base");
+    assert(PROP_BeginStateOverride(p, &owner));
+    assert(!PROP_BeginStateOverride(p, &other));
+    const char *display = "display";
+    assert(PROP_SetStateOverride(p, &owner, &display));
+    PROP_SetFlag(p, PF_SPECIALIZED);
+    PROP_SetStringValue(p, "hover");
+    expect_text(p, "display");
+    assert(!strcmp(*(char const *const *)PROP_GetStateBaseValue(p, &owner), "hover"));
+    PROP_ClearSpecialized(p);
+    expect_text(p, "display");
+    assert(PROP_EndStateOverride(p, &owner));
+    expect_text(p, "base");
+    assert(PROP_BeginStateOverride(p, &owner));
+    assert(PROP_SetStateOverride(p, &owner, &display));
+    OBJ_ReleaseRef(o);
+}
+
+static void state_override_rejects_aliases(void)
+{
+    struct Object *o = object();
+    struct Property *whole = property(o, "PairA"), *part = property(o, "PairFirst");
+    int a, b;
+    float original[2] = { 1, 2 }, display[2] = { 3, 4 }, attempt = 9;
+    PROP_SetValue(whole, original);
+    assert(PROP_BeginStateOverride(whole, &a));
+    assert(PROP_SetStateOverride(whole, &a, display));
+    assert(!PROP_BeginStateOverride(part, &b));
+    PROP_SetValue(part, &attempt);
+    assert(((float const *)PROP_GetValue(whole))[0] == 3);
+    assert(PROP_EndStateOverride(whole, &a));
+    assert(((float const *)PROP_GetValue(whole))[0] == 1);
+    OBJ_ReleaseRef(o);
+}
+
 static void small_component_property_cache_is_aligned(void)
 {
     struct Object *o = OBJ_Create(tiny_class.ClassID);
@@ -852,6 +926,8 @@ int main(int argc, char **argv)
         TEST(binding_failure_releases_expression_and_token),
         TEST(writable_binding_rejects_readonly_and_mismatched_sources),
         TEST(writable_binding_rejects_incompatible_compound_types),
+        TEST(state_override_preserves_binding), TEST(state_override_specialization_and_destruction),
+        TEST(state_override_rejects_aliases),
         TEST(small_component_property_cache_is_aligned), TEST(destruction_order_stress),
     };
     for (size_t i = 0; i < ARRAY_SIZE(tests); i++) {

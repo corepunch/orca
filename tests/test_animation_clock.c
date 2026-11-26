@@ -1,4 +1,5 @@
 #include <include/orca.h>
+#include <include/api.h>
 #include <core/core.h>
 #include <UIKit/UIKit.h>
 #include <lua.h>
@@ -187,6 +188,16 @@ static void tick(lua_State *L, struct FakeClock *clock, uint32_t delta)
   ANIM_EndFrame();
 }
 
+static int evaluate_state(lua_State *L)
+{
+  struct Object *object = luaX_checkObject(L, 1);
+  struct StateManagerController_ControllerChangedEventArgs args = {
+    .Property = OBJ_FindLongProperty(object, ID_StateManagerController_ActiveState),
+  };
+  OBJ_SendMessageW(object, ID_StateManagerController_ControllerChanged, 0, &args);
+  return 0;
+}
+
 static void test_components(lua_State *L, struct FakeClock *clock)
 {
   run(L,
@@ -264,6 +275,83 @@ static void test_pivot(lua_State *L, struct FakeClock *clock)
     "collectgarbage('collect')\n");
 }
 
+static void test_managed_states(lua_State *L, struct FakeClock *clock)
+{
+  run(L,
+    "local core, ui = require 'orca.core', require 'orca.UIKit'\n"
+    "screen = ui.Screen { Width = 200, Height = 200, ResizeMode = 'NoResize' }\n"
+    "base = screen + ui.Node2D { Width = 40 }; base:setName('base')\n"
+    "panel = screen + ui.Node2D {}\n"
+    "label = panel + ui.TextBlock { Text = 'base' }; label:setName('label')\n"
+    "panel:attachPropertyProgram('Node.Width', '{../base/Width}', 'TwoWay', true)\n"
+    "core.runAllPrograms(panel)\n"
+    "manager = core.StateManager()\n"
+    "group = manager + core.StateGroup { ControllerProperty = 'ActiveState' }\n"
+    "group:addChild(core.StateTransition { Duration = 1, Interpolation = 'Linear' })\n"
+    "group:addChild(core.State { Value = 'Closed', ['Node.Width'] = 10, ['Node.Visible'] = false })\n"
+    "open = group + core.State { Value = 'Open', ['Node.Width'] = 110, ['Node.Visible'] = true }\n"
+    "caption = open + core.State { Path = 'label', ['TextRun.Text'] = 'open' }\n"
+    "panel:addComponentByName('StateManagerController')\n"
+    "panel.ActiveState = 'Closed'; panel.StateManager = manager\n"
+    "panel:send('Object.Start'); core.flushQueue()\n"
+    "assert(panel.Width == 10 and not panel.Visible and not panel.IsTransitioning, 'initial state is final')\n"
+    "assert(base.Width == 40, 'initial override does not write to TwoWay source')\n"
+    "panel.ActiveState = 'Open'; evaluateState(panel)\n"
+    "assert(panel.Visible and panel.IsTransitioning, 'incoming content is visible at transition start')\n"
+    "assert(label.Text == 'open', 'strings switch discretely')\n"
+    "caption['TextRun.Text'] = 'changed definition'\n"
+    "animated = { panel }\n");
+  tick(L, clock, 500);
+  run(L,
+    "assert(math.abs(panel.Width - 60) < .001, 'transition reaches its numeric midpoint')\n"
+    "assert(label.Text == 'open', 'active transition owns its string endpoint')\n"
+    "panel.ActiveState = 'Closed'; evaluateState(panel)\n"
+    "assert(math.abs(panel.Width - 60) < .001 and panel.Visible, 'reversal starts at the displayed pose')\n");
+  tick(L, clock, 500);
+  run(L,
+    "assert(math.abs(panel.Width - 35) < .001 and panel.Visible, 'outgoing content survives its exit')\n"
+    "panel.ActiveState = 'Closed'; evaluateState(panel)\n");
+  tick(L, clock, 500);
+  run(L,
+    "assert(panel.Width == 10 and not panel.Visible and not panel.IsTransitioning, 'same state does not restart')\n"
+    "base.Width = 77; require('orca.core').advanceFrame(); require('orca.core').runAllPrograms(panel)\n"
+    "assert(panel.Width == 10 and base.Width == 77, 'binding updates the retained base, not the presentation')\n"
+    "panel.ReducedMotion = true; panel.ActiveState = 'Open'; evaluateState(panel)\n"
+    "assert(panel.Width == 110 and panel.Visible and not panel.IsTransitioning, 'reduced motion reaches the same final state')\n"
+    "assert(base.Width == 77, 'animation never propagates to the TwoWay source')\n"
+    "panel.ReducedMotion = false; panel.ActiveState = 'Unmatched'; evaluateState(panel)\n");
+  tick(L, clock, 500);
+  run(L,
+    "assert(math.abs(panel.Width - 93.5) < .001, 'unmatched state returns towards the live binding')\n"
+    "base.Width = 88; require('orca.core').advanceFrame(); require('orca.core').runAllPrograms(panel)\n");
+  tick(L, clock, 500);
+  run(L,
+    "assert(panel.Width == 88 and base.Width == 88, 'exit restores the latest, not the captured, base')\n"
+    "panel.ReducedMotion = true; panel.ActiveState = 'Open'; evaluateState(panel)\n"
+    "open:removeFromParent()\n"
+    "assert(panel.Width == 88 and label.Text == 'base', 'removing the selected state restores live bases')\n"
+    "group:addChild(open)\n"
+    "assert(panel.Width == 110, 'adding the matching state re-evaluates an idle controller')\n"
+    "group:removeFromParent()\n");
+  tick(L, clock, 0);
+  run(L,
+    "assert(panel.Width == 88, 'removing a managed group restores its base')\n"
+    "panel.StateManager = manager; require('orca.core').flushQueue()\n"
+    "base.Width = 99; require('orca.core').advanceFrame(); require('orca.core').runAllPrograms(panel)\n"
+    "assert(panel.Width == 99, 'the binding remains attached after removal')\n"
+    "local bad = screen + require('orca.UIKit').Node2D { Width = 10, Height = 20 }\n"
+    "local sm = require('orca.core').StateManager()\n"
+    "local sg = sm + require('orca.core').StateGroup { ControllerProperty = 'Width' }\n"
+    "sg:addChild(require('orca.core').State { Value = 'not-a-number', ['Node.Height'] = 77 })\n"
+    "bad:addComponentByName('StateManagerController'); bad.StateManager = sm; bad:send('Object.Start')\n"
+    "bad.Width = 0; require('orca.core').flushQueue()\n"
+    "assert(bad.Height == 20, 'an invalid numeric state does not match zero')\n"
+    "bad:removeFromParent()\n"
+    "panel:removeFromParent(); base:removeFromParent()\n"
+    "animated, panel, base, manager, group, screen, open, caption, label = nil, nil, nil, nil, nil, nil, nil, nil, nil\n"
+    "collectgarbage('collect')\n");
+}
+
 int main(void)
 {
   struct FakeClock clock = { 10000 };
@@ -275,6 +363,8 @@ int main(void)
   luaL_requiref(L, "orca", luaopen_orca, 1); lua_pop(L, 1);
   luaL_requiref(L, "orca.core", luaopen_orca_core, 1); lua_pop(L, 1);
   luaL_requiref(L, "orca.UIKit", luaopen_orca_UIKit, 1); lua_pop(L, 1);
+  lua_pushcfunction(L, evaluate_state);
+  lua_setglobal(L, "evaluateState");
   test_dispatch_mutation();
   clock.now += 0u - ANIM_GetTime();
   assert(ANIM_GetTime() == 0);
@@ -283,8 +373,9 @@ int main(void)
   assert(ANIM_GetTime() == UINT32_MAX);
   test_components(L, &clock); // production player primes at max, then crosses the wrap
   test_pivot(L, &clock);
+  test_managed_states(L, &clock);
   lua_close(L);
   ANIM_SetClock(NULL, NULL);
-  puts("PASS: animation clock, zero/wrap playback, simultaneous components and dispatch mutation lifetimes");
+  puts("PASS: animation clock, concurrent components, managed state transitions and dispatch lifetimes");
   return 0;
 }
