@@ -169,7 +169,7 @@ R_PNGSize(struct AXbuffer* sb)
 }
 
 struct AXsize
-R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
+R_TexImagePNGWithColorSpace(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha, enum TextureColorSpace color_space)
 {
   int width = 0, height = 0;
   byte_t* image = png_decode(sb, target == GL_TEXTURE_2D, &width, &height);
@@ -177,15 +177,20 @@ R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
 
   if (premultiply_alpha) premultiply_rgba(image, width * height);
 
-  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 4);
-  R_Call(glTexImage2D,target,0,
+  bool_t srgb = color_space == kTextureColorSpaceSRGB;
 #ifdef R_USE_SRGB
-         GL_SRGB8_ALPHA8,
-#else
-         GL_RGBA,
+  srgb |= color_space == kTextureColorSpaceAutomatic;
 #endif
+  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 4);
+  R_Call(glTexImage2D,target,0, srgb ? GL_SRGB8_ALPHA8 : GL_RGBA,
          width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,image);
 
   free(image);
   return MAKE_TEX_SIZE(width, height);
+}
+
+struct AXsize
+R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
+{
+  return R_TexImagePNGWithColorSpace(target, sb, premultiply_alpha, kTextureColorSpaceAutomatic);
 }

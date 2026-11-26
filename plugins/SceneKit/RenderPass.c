@@ -63,7 +63,13 @@ _ModifyPipelineState(struct Object *obj, PPIPELINESTATE ps, struct ViewDef* view
   curr = *ps;
   SETPIPEVALUE(BlendMode, blend_mode);
   SETPIPEVALUE(ColorWriteMode, color_write_mode);
-  SETPIPEVALUE(CullMode, cull_mode);
+  if (IS_DEFINED(CullMode)) {
+    switch (rp->CullMode) {
+      case kCullModeNone: curr.cull_mode = CULL_MODE_NONE; break;
+      case kCullModeBack: curr.cull_mode = CULL_MODE_BACK; break;
+      case kCullModeFront: curr.cull_mode = CULL_MODE_FRONT; break;
+    }
+  }
   SETPIPEVALUE(DepthTestFunction, depth.func);
   SETPIPEVALUE(DepthWriteEnabled, depth.write);
   SETPIPEVALUE(StencilMask, stencil.mask);
@@ -228,6 +234,9 @@ R_RenderPassDraw(struct Object *hObj, struct Object *scene, struct ViewDef* view
   PIPELINESTATE prev;
   if (GetDrawObjectsRenderPass(hObj)) {
     _OBJ_Draws(hObj, scene, viewdef);
+  } else if (GetClearRenderPass(hObj)) {
+    struct ClearRenderPass *rp = GetClearRenderPass(hObj);
+    R_ClearScreen(rp->ClearColor, rp->ClearDepth, rp->ClearStencil);
   } else if (GetPipelineStateRenderPass(hObj)) {
     R_GetPipelineState(&prev);
     _ModifyPipelineState(hObj, &prev, viewdef);

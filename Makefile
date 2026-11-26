@@ -512,7 +512,10 @@ iphone ipad:
 test-ios-tools: test-ios-tmpname test-ios-message-frame test-ios-scroll-policy
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
-.PHONY: test-mesh-mcp
+.PHONY: test-mesh-mcp test-fbx-import
+test-fbx-import: orca-fbx
+	ORCA_FBX="$(abspath $(BINDIR)/orca-fbx)" python3 -m unittest discover -s tests -p 'test_fbx_import.py'
+
 test-mesh-mcp:
 	PYTHONPYCACHEPREFIX=build/pycache python3 -m unittest discover -s tests -p 'test_mesh_mcp.py'
 

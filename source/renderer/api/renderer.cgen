@@ -20,6 +20,10 @@
       <value name="Additive">Additive color blending</value>
       <value name="PremultipliedAlpha">Alpha-premultiplied blending</value>
       <value name="MixedAlpha">Mixed alpha composition</value>
+      <value name="PremultipliedAdditive">Add source and destination color and alpha without source-alpha weighting</value>
+      <value name="SeparateAlpha">Source-alpha RGB blending with source-over alpha (One, OneMinusSrcAlpha)</value>
+      <value name="SeparateAlphaAdditive">Source-alpha-weighted additive RGB, with additive unweighted alpha (One, One)</value>
+      <value name="Multiply">Multiply destination RGB by source RGB while preserving destination alpha</value>
     </enum>
     <enum name="CompareFunc">
       <summary>Comparison functions for depth and stencil testing</summary>
@@ -45,6 +49,11 @@
       <value name="Repeat">Repeats the texture pattern when coordinates exceed [0, 1] range.</value>
       <value name="Base">Uses base texture addressing mode (platform-specific default behavior).</value>
       <value name="Mirror">Mirrors the texture at every boundary, so sampling past an edge reads the pixels just inside it.</value>
+    </enum>
+    <enum name="TextureColorSpace">
+      <value name="Automatic">Uses the renderer's default image color space, preserving existing texture loading behavior.</value>
+      <value name="Linear">Stores color channels without sRGB decoding, for linear colors and non-color data.</value>
+      <value name="SRGB">Decodes sRGB color channels before texture filtering. Alpha remains linear.</value>
     </enum>
     <enum name="TextureFormat">
       <summary>Defines the internal pixel format for texture storage.</summary>
@@ -279,6 +288,7 @@
       <properties>
         <property name="Source" type="string">Path to the texture image file to be loaded.</property>
         <property name="PremultiplyAlpha" type="bool">When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.</property>
+        <property name="ColorSpace" type="TextureColorSpace">Selects PNG and JPEG texture color decoding. Automatic preserves the renderer's default. Alpha remains linear.</property>
         <property name="Type" type="ImageType">When set to `Mask`, treats the texture as an alpha mask, ignoring RGB components and using only the alpha channel for masking operations.</property>
         <property name="HasMipmaps" type="bool">When `true`, automatically generates mipmap levels for improved texture quality at varying distances and reduced aliasing artifacts.</property>
         <property name="Size" type="string">Texture dimensions in the format "Width x Height", e.g., "256 x 256".</property>

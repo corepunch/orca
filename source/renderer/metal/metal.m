@@ -164,7 +164,7 @@ typedef struct
 {
   uint32_t program;
   uint32_t color, depth, stencil;
-  uint8_t blend, src, dst, mask;
+  uint8_t blend, src, dst, srcAlpha, dstAlpha, mask;
   struct { uint16_t format, stride; } attrs[MAX_VERTEX_ATTRIBS];
 } pipeline_key_t;
 
@@ -205,7 +205,7 @@ static struct
   int unpackAlignment;
 
   BOOL blend, depthTest, stencilTest, cull;
-  mtlEnum blendSrc, blendDst;
+  mtlEnum blendSrc, blendDst, blendSrcAlpha, blendDstAlpha;
   uint8_t colorMask;
   mtlEnum cullFace, depthFunc;
   BOOL depthMask;
@@ -279,7 +279,8 @@ static BOOL ensure_device(void)
   mtl.blitPipelines = [NSMutableDictionary new];
   mtl.defaultVertexArray = mtl.vertexArray = [OrcaVertexArray new];
   mtl.unpackAlignment = 4;
-  mtl.blendSrc = MTL_ONE, mtl.blendDst = MTL_ZERO;
+  mtl.blendSrc = mtl.blendSrcAlpha = MTL_ONE;
+  mtl.blendDst = mtl.blendDstAlpha = MTL_ZERO;
   mtl.colorMask = 0xf;
   mtl.cullFace = MTL_BACK;
   mtl.depthFunc = MTL_LESS;
@@ -1767,7 +1768,16 @@ void mtlDisable(mtlEnum cap)
   }
 }
 
-void mtlBlendFunc(mtlEnum sfactor, mtlEnum dfactor) { mtl.blendSrc = sfactor, mtl.blendDst = dfactor; }
+void mtlBlendFuncSeparate(mtlEnum srcRGB, mtlEnum dstRGB, mtlEnum srcAlpha, mtlEnum dstAlpha)
+{
+  mtl.blendSrc = srcRGB, mtl.blendDst = dstRGB;
+  mtl.blendSrcAlpha = srcAlpha, mtl.blendDstAlpha = dstAlpha;
+}
+
+void mtlBlendFunc(mtlEnum sfactor, mtlEnum dfactor)
+{
+  mtlBlendFuncSeparate(sfactor, dfactor, sfactor, dfactor);
+}
 
 void mtlColorMask(bool red, bool green, bool blue, bool alpha)
 {
@@ -1987,8 +1997,10 @@ static id<MTLRenderPipelineState> pipeline_for(OrcaProgram *p, targets_t const *
       c.pixelFormat = t->color.pixelFormat;
       c.writeMask = key->mask;
       c.blendingEnabled = key->blend;
-      c.sourceRGBBlendFactor = c.sourceAlphaBlendFactor = blend_factor(mtl.blendSrc);
-      c.destinationRGBBlendFactor = c.destinationAlphaBlendFactor = blend_factor(mtl.blendDst);
+      c.sourceRGBBlendFactor = blend_factor(mtl.blendSrc);
+      c.destinationRGBBlendFactor = blend_factor(mtl.blendDst);
+      c.sourceAlphaBlendFactor = blend_factor(mtl.blendSrcAlpha);
+      c.destinationAlphaBlendFactor = blend_factor(mtl.blendDstAlpha);
     }
     if (t->depth) d.depthAttachmentPixelFormat = t->depth.pixelFormat;
     if (t->stencil) d.stencilAttachmentPixelFormat = t->stencil.pixelFormat;
@@ -2085,6 +2097,8 @@ static BOOL prepare_draw(void)
   key.blend = mtl.blend;
   key.src = mtl.blend ? (uint8_t)blend_factor(mtl.blendSrc) : 0;
   key.dst = mtl.blend ? (uint8_t)blend_factor(mtl.blendDst) : 0;
+  key.srcAlpha = mtl.blend ? (uint8_t)blend_factor(mtl.blendSrcAlpha) : 0;
+  key.dstAlpha = mtl.blend ? (uint8_t)blend_factor(mtl.blendDstAlpha) : 0;
   key.mask = mtl.colorMask;
   OrcaVertexArray *va = mtl.vertexArray;
   for (uint32_t i = 0; i < p->refl->numAttributes; i++) {

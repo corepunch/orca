@@ -214,6 +214,7 @@ typedef ptrdiff_t GLintptr;
 #define glBindTexture                         mtlBindTexture
 #define glBindVertexArray                     mtlBindVertexArray
 #define glBlendFunc                           mtlBlendFunc
+#define glBlendFuncSeparate                   mtlBlendFuncSeparate
 #define glBlitFramebuffer                     mtlBlitFramebuffer
 #define glBufferData                          mtlBufferData
 #define glCheckFramebufferStatus              mtlCheckFramebufferStatus

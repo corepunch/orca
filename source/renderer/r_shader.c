@@ -211,10 +211,8 @@ Shader_AssembleSource(struct shader_desc const* def, bool_t vertex,
 
   FOR_LOOP(i, dwNumTexts) codes[i] = texts[i];
 
-  uint32_t _ApplyLighting(struct shader_desc const*,lpcString_t *,uint32_t);
-  if (vertex) {
-    dwNumTexts = _ApplyLighting(def, codes, dwNumTexts);
-  }
+  uint32_t _ApplyLighting(struct shader_desc const*,bool_t,lpcString_t *,uint32_t);
+  dwNumTexts = _ApplyLighting(def, vertex, codes, dwNumTexts);
 
   lpcString_t source = vertex ? def->VertexShader : def->FragmentShader;
   if (!source) {
@@ -835,31 +833,29 @@ static lpcString_t _PhongPointLight =
 //"}\n";
 
 static lpcString_t _PBRPointLight =
-"vec3 PBRPointLight(mat4 light, float metallic, float smoothness, vec3 albedo) {\n"
-"  vec3   normal = normalize(u_normalTransform * a_normal);\n"
-"  vec3   vertex = (u_modelTransform * vec4(a_position.xyz, 1.0)).xyz;\n"
-"  vec3   viewDir = normalize(u_cameraPosition - vertex);\n"
-"  float  intensity = light[2][2];\n"
-"  float  range = light[2][3];\n"
-"  vec3   toLight = light[0].xyz - vertex;\n"
-"  float  dist = length(toLight);\n"
-"  vec3   L = toLight / dist;\n"
-"  float  NdotL = max(dot(normal, L), 0.0);\n"
-"  vec3   lightColor = light[1].xyz;\n"
-"  vec3   diffuseColor = albedo * (1.0 - metallic);\n"
-"  vec3   specularColor = mix(vec3(0.04), albedo, metallic);\n"
-"  vec3   halfway = normalize(L + viewDir);\n"
-"  float  NdotH = max(dot(normal, halfway), 0.0);\n"
-"  float  shininess = mix(8.0, 128.0, smoothness);\n"
-"  float  spec = pow(NdotH, shininess);\n"
-"  vec3   diffuse = diffuseColor * NdotL * lightColor;\n"
-"  vec3   specular = specularColor * spec * lightColor;\n"
-"  float  distSqr = dist * dist;\n"
-"  float  k = 2.0f;\n"
-"  float  rangeFactor = dist / range;\n"
-"  float  falloff = clamp(1.0 - rangeFactor * rangeFactor, 0.0, 1.0);\n"
-"  float  att = intensity / (distSqr + k) * falloff * falloff;\n"
-"  return att * intensity * (diffuse + specular);\n"
+"vec3 PBRPointLight(mat4 light, float metallic, float smoothness, vec3 albedo,\n"
+"                   vec3 position, vec3 normal, vec3 viewDir) {\n"
+"  vec3 toLight = light[0].xyz - position;\n"
+"  float distanceSqr = max(dot(toLight, toLight), 1.17549435e-38);\n"
+"  vec3 L = toLight * inversesqrt(distanceSqr);\n"
+"  float factor = distanceSqr / (light[2][3] * light[2][3]);\n"
+"  float attenuation = max(1.0 - factor * factor, 0.0);\n"
+"  attenuation = attenuation * attenuation / distanceSqr;\n"
+"  if (light[3].w > 0.5) {\n"
+"    L = normalize(light[3].xyz);\n"
+"    attenuation = 1.0;\n"
+"  }\n"
+"  float roughness = max((1.0 - smoothness) * (1.0 - smoothness), 0.0078125);\n"
+"  float roughness2 = max(roughness * roughness, 0.00006103515625);\n"
+"  vec3 halfway = normalize(L + viewDir);\n"
+"  float NoH = clamp(dot(normal, halfway), 0.0, 1.0);\n"
+"  float LoH = clamp(dot(L, halfway), 0.0, 1.0);\n"
+"  float d = NoH * NoH * (roughness2 - 1.0) + 1.00001;\n"
+"  float spec = roughness2 / (d * d * max(0.1, LoH * LoH) * (roughness * 4.0 + 2.0));\n"
+"  vec3 diffuse = albedo * (0.96 * (1.0 - metallic));\n"
+"  vec3 specular = mix(vec3(0.04), albedo, metallic);\n"
+"  return (diffuse + specular * spec) * light[1].xyz * light[2][2] *\n"
+"         (attenuation * max(dot(normal, L), 0.0));\n"
 "}\n";
 
 // A Shader with only a FragmentShader is a UI material: it takes the built-in
@@ -1078,6 +1074,7 @@ HANDLER(Shader, Object, Destroy) {
 
 uint32_t
 _ApplyLighting(struct shader_desc const* def,
+               bool_t vertex,
                lpcString_t *pszCodes,
                uint32_t dwNumTexts)
 {
@@ -1085,10 +1082,10 @@ _ApplyLighting(struct shader_desc const* def,
     case kShadingUnlit:
       break;
     case kShadingPhong:
-      pszCodes[dwNumTexts++] = _PhongPointLight;
+      if (vertex) pszCodes[dwNumTexts++] = _PhongPointLight;
       break;
     case kShadingStandard:
-      pszCodes[dwNumTexts++] = "in highp vec3 a_position;\n"
+      if (vertex) pszCodes[dwNumTexts++] = "in highp vec3 a_position;\n"
                                "in highp vec3 a_normal;\n"
                                "uniform highp mat4 u_modelTransform;\n"
                                "uniform highp mat3 u_normalTransform;\n"
@@ -1096,6 +1093,12 @@ _ApplyLighting(struct shader_desc const* def,
                                "uniform highp mat4 u_lights[16];\n"
                                "uniform int u_lightsCount;\n";
       pszCodes[dwNumTexts++] = _PBRPointLight;
+      if (vertex) pszCodes[dwNumTexts++] =
+        "vec3 PBRPointLight(mat4 light, float metallic, float smoothness, vec3 albedo) {\n"
+        "  vec3 position = (u_modelTransform * vec4(a_position, 1.0)).xyz;\n"
+        "  return PBRPointLight(light, metallic, smoothness, albedo, position,\n"
+        "    normalize(u_normalTransform * a_normal), normalize(u_cameraPosition - position));\n"
+        "}\n";
       break;
   }
   return dwNumTexts;

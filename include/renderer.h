@@ -70,6 +70,10 @@ enum blend_mode
   BLEND_MODE_ADDITIVE,
   BLEND_MODE_PREMULTIPLIED_ALPHA,
   BLEND_MODE_MIXED_ALPHA,
+  BLEND_MODE_PREMULTIPLIED_ADDITIVE,
+  BLEND_MODE_SEPARATE_ALPHA,
+  BLEND_MODE_SEPARATE_ALPHA_ADDITIVE,
+  BLEND_MODE_MULTIPLY,
 };
 
 enum text_wrap
@@ -371,6 +375,7 @@ struct ViewEntity
 enum light_type {
   LIGHT_POINT,
   LIGHT_SPOT,
+  LIGHT_DIRECTIONAL,
 };
 
 struct view_light // shall be size of mat4
@@ -381,7 +386,7 @@ struct view_light // shall be size of mat4
   struct vec2 angles;
   float intensity;
   float range;
-  struct vec4 padding;
+  struct vec4 padding; // directional source-to-light vector in xyz; w is 1 for directional
 };
 
 struct view_camera

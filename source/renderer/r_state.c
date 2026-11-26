@@ -166,6 +166,19 @@ R_SetBlendMode(enum blend_mode value)
     case BLEND_MODE_MIXED_ALPHA:
       R_Call(glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       break;
+    case BLEND_MODE_PREMULTIPLIED_ADDITIVE:
+      R_Call(glBlendFunc, GL_ONE, GL_ONE);
+      break;
+    case BLEND_MODE_SEPARATE_ALPHA:
+      R_Call(glBlendFuncSeparate, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+             GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      break;
+    case BLEND_MODE_SEPARATE_ALPHA_ADDITIVE:
+      R_Call(glBlendFuncSeparate, GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+      break;
+    case BLEND_MODE_MULTIPLY:
+      R_Call(glBlendFuncSeparate, GL_DST_COLOR, GL_ZERO, GL_ZERO, GL_ONE);
+      break;
     default:
       R_Call(glBlendFunc, GL_ONE, GL_ZERO);
       break;
@@ -183,6 +196,7 @@ void
 R_SetScissorRect(struct rect const *rect)
 {
   float s = axGetScaling();
+  R_Call(glEnable, GL_SCISSOR_TEST);
   R_Call(glScissor, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 

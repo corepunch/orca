@@ -184,6 +184,11 @@ obj.Clip = require("MyApp/Animations/FadeOut")
 
 > **Note — scrubbing.** Setting `CurrentTime` while the player is not playing applies the clip at that time. This lets a clip be bound to an input value (for example a slider or a data value) instead of the clock.
 
+A stopped player with `CurrentTime` bound and `AutoplayEnabled="false"`
+also applies that bound pose on `Object.Start`, including when the initial
+value is zero. Startup does not reset its bound time. Unbound, inactive
+players still leave their targets untouched until playback or scrubbing.
+
 ### `PlaybackMode` enum
 
 | Value | Behaviour |

@@ -64,6 +64,10 @@ static void collect_lights(struct Object *object,
     vl->intensity = light->Intensity;
     vl->range = light->Range;
     vl->type = (enum light_type)light->Type;
+    if (vl->type == LIGHT_DIRECTIONAL) {
+      float const *matrix = GetNode3D(object)->Matrix.v;
+      vl->padding = (struct vec4){ -matrix[8], -matrix[9], -matrix[10], 1.0f };
+    }
   }
   FOR_EACH_CHILD(object, collect_lights, viewdef);
 }

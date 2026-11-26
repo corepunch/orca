@@ -31,6 +31,11 @@ and commits the frame. A macOS offscreen surface (`axCreateSurface`, used by
 the editor's Preview) has no layer; the default framebuffer is then a texture
 of `axGetSize` times `axGetScaling` that `glReadPixels` reads.
 
+Blend modes retain their RGB and alpha factors independently in the pipeline
+cache. `SeparateAlpha` uses `(SrcAlpha, OneMinusSrcAlpha)` for RGB and
+`(One, OneMinusSrcAlpha)` for alpha. `PremultipliedAdditive` uses `(One, One)`
+for both. Existing `Alpha`, `Additive`, and `MixedAlpha` behavior is unchanged.
+
 ## Shaders: MSL in the shader definitions
 
 The Metal backend compiles Metal Shading Language and nothing else; there is

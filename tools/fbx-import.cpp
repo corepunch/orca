@@ -460,7 +460,10 @@ static void ExportMesh(FbxMesh *mesh, lpcString_t  directory) {
   for (int i = 0, v = 0; i < numPolygons; v += mesh->GetPolygonSize(i), i++) {
     std::vector<DRAWINDEX> *ptrIndices = &outIndices;
     if (materials) {
-      auto k = materials->GetIndexArray().GetAt(i);
+      auto materialIndex = materials->GetMappingMode() == FbxGeometryElement::eAllSame ? 0 : i;
+      auto k = materials->GetIndexArray().GetAt(materialIndex);
+      // -1 is an unassigned FBX material, not a missing polygon.
+      if (k == -1) k = 0;
       if (kNumSubmaterials <= k) {
         Con_Error("Can not add submesh %d. Max submeshes %d", k,
               kNumSubmaterials);

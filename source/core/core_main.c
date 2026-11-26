@@ -123,6 +123,13 @@ OBJ_DeclarePropertyType(struct PropertyType const *decl, lpcString_t owner)
     case kDataTypeObject: type.DataSize = sizeof(void*); break;
     case kDataTypeFloat:  type.DataSize = sizeof(float); break;
     case kDataTypeColor:  type.DataSize = sizeof(struct color); break;
+    case kDataTypeStruct: {
+      struct StructDesc const *desc = type.TypeString ? OBJ_FindStructDesc(type.TypeString) : NULL;
+      if (!desc || !desc->StructSize)
+        return Con_Error("Property type %s has an unknown struct type", full), FALSE;
+      type.DataSize = desc->StructSize;
+      break;
+    }
     default:              type.DataSize = sizeof(int); break;
   }
   struct PropertyType const *known = core_FindPropertyType(type.FullIdentifier);

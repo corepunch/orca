@@ -4,6 +4,22 @@ This page documents internal conventions and non-obvious behaviours of the ORCA 
 
 ---
 
+## Image color space and sampling
+
+`Image.ColorSpace` selects `Automatic`, `Linear`, or `SRGB` for PNG and JPEG
+uploads. `Automatic` retains the renderer's existing platform default. Use
+`Linear` for linear color/data textures and `SRGB` for encoded color textures;
+GPU decoding happens before filtering and never changes alpha. The source
+bytes are not gamma-converted or requantized during loading.
+
+`Image.HasMipmaps` generates GPU mip levels. `Texture.MipmapMode` selects mip
+interpolation independently of within-level filtering; magnification never
+uses a mipmapped filter. `SeparateAlphaAdditive` blends RGB with
+`SrcAlpha, One` and alpha with `One, One`. `Multiply` uses `DstColor, Zero`
+for RGB and preserves destination alpha. Existing blend modes are unchanged.
+
+---
+
 ## Display density
 
 Normal renderer windows request `AX_WINDOW_HIGHDPI` while keeping layout and
@@ -62,6 +78,14 @@ including texture references and numeric/color conversion. A material or node
 can override them; an unset uniform retains its shader-declared default.
 Color defaults use ORCA color syntax such as `#4080c0ff`, not whitespace-separated
 vectors. Unity conversion encodes linear RGB as sRGB bytes and leaves alpha linear.
+
+Struct uniforms use registered public type names, such as `Vector3D`, with
+matching numeric defaults. Dynamically declared struct properties obtain their
+storage size from that registered descriptor, rather than scalar integer size.
+
+SceneKit `ClearRenderPass` clears color, depth and stencil before its following
+passes. `PipelineStateRenderPass.Scissor` enables and sets the GL scissor test,
+so a nested viewport can clear its own depth without erasing sibling content.
 
 ## Text Rendering Pipeline
 

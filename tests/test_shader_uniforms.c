@@ -80,11 +80,15 @@ test_shader_declared_defaults(void)
     "<PropertyType Name=\"Tint\" DataType=\"Color\" DefaultValue=\"#4080c0ff\"/>"
     "<PropertyType Name=\"Enabled\" DataType=\"Bool\" DefaultValue=\"true\"/>"
     "<PropertyType Name=\"Image\" DataType=\"Object\" TypeString=\"Texture\"/>"
+    "<PropertyType Name=\"Offset2\" DataType=\"Struct\" TypeString=\"Vector2D\" DefaultValue=\"-1 2\"/>"
+    "<PropertyType Name=\"Offset3\" DataType=\"Struct\" TypeString=\"Vector3D\" DefaultValue=\"-1 2 3\"/>"
+    "<PropertyType Name=\"Offset4\" DataType=\"Struct\" TypeString=\"Vector4D\" DefaultValue=\"-1 2 3 4\"/>"
     "</Shader.Uniforms></Shader>");
   struct Object *texture = OBJ_Create(fnv1a32("Texture"));
   struct shader_desc desc;
   bool_t hasVertexStage = FALSE;
   bool_t gain = FALSE, tint = FALSE, enabled = FALSE, sampler = FALSE;
+  uint32_t vectors = 0;
   RUN_TEST("shader_declared_defaults", {
     EXPECT(owner && texture);
     struct Property *image = OBJ_FindLongProperty(owner, fnv1a32("UniformDefaults.Image"));
@@ -108,11 +112,19 @@ test_shader_declared_defaults(void)
       if (!strcmp(u->Name, "Image"))
         sampler = u->Type == UT_SAMPLER_2D &&
                   *(struct Texture *const *)u->Default == GetTexture(texture);
+      if (!strcmp(u->Name, "Offset2") && u->Type == UT_FLOAT_VEC2 &&
+          u->Default[0] == -1 && u->Default[1] == 2) vectors |= 1;
+      if (!strcmp(u->Name, "Offset3") && u->Type == UT_FLOAT_VEC3 &&
+          u->Default[0] == -1 && u->Default[1] == 2 && u->Default[2] == 3) vectors |= 2;
+      if (!strcmp(u->Name, "Offset4") && u->Type == UT_FLOAT_VEC4 &&
+          u->Default[0] == -1 && u->Default[1] == 2 &&
+          u->Default[2] == 3 && u->Default[3] == 4) vectors |= 4;
     }
     EXPECT(gain);
     EXPECT(tint);
     EXPECT(enabled);
     EXPECT(sampler);
+    EXPECT(vectors == 7);
     PROP_SetValue(image, &(struct Object *){ NULL });
   });
   OBJ_ReleaseRef(owner);

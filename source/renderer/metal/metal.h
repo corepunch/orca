@@ -297,6 +297,7 @@ void mtlUniformMatrix4fv(int location, int count, bool transpose, float const *v
 void mtlEnable(mtlEnum cap);
 void mtlDisable(mtlEnum cap);
 void mtlBlendFunc(mtlEnum sfactor, mtlEnum dfactor);
+void mtlBlendFuncSeparate(mtlEnum srcRGB, mtlEnum dstRGB, mtlEnum srcAlpha, mtlEnum dstAlpha);
 void mtlColorMask(bool red, bool green, bool blue, bool alpha);
 void mtlCullFace(mtlEnum mode);
 void mtlDepthFunc(mtlEnum func);

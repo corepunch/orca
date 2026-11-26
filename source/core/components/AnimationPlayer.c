@@ -105,6 +105,14 @@ static void apply_clip(struct Object *hObject, struct AnimationClip *clip, float
 // AnimationPlayer_Start
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
+    struct Property *time = OBJ_FindLongProperty(hObject, ID_AnimationPlayer_CurrentTime);
+    if (!pAnimationPlayer->AutoplayEnabled && !pAnimationPlayer->Playing &&
+        time && PROP_HasProgram(time)) {
+        // A bound zero may not emit PropertyChanged, but still owns the initial pose.
+        float current = *(float const *)PROP_GetValue(time);
+        if (clip) apply_clip(hObject, clip, current);
+        return FALSE;
+    }
     if (clip) {
         if (pAnimationPlayer->PlaybackMode == kPlaybackModeReverse) {
             pAnimationPlayer->CurrentTime = clip->StopTime;

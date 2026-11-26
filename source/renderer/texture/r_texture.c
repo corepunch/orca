@@ -46,6 +46,7 @@
 //}
 
 struct AXsize R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha);
+struct AXsize R_TexImagePNGWithColorSpace(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha, enum TextureColorSpace color_space);
 struct AXsize R_ImageSize(struct AXbuffer* sb);
 struct AXsize R_TexImageDDS(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
@@ -53,6 +54,7 @@ struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
 // struct AXsize R_TexImageS3TC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageASTC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageJPEG(GLenum target, struct AXbuffer* rgb);
+struct AXsize R_TexImageJPEGWithColorSpace(GLenum target, struct AXbuffer* rgb, enum TextureColorSpace color_space);
 struct AXsize R_TexImageJPEGwithAlpha(GLenum target,struct AXbuffer* rgb,struct AXbuffer* alpha,bool_t premultiply_alpha);
 struct AXsize R_PNGSize(struct AXbuffer* sb);
 struct AXsize R_JPEGSize(struct AXbuffer* sb);
@@ -101,8 +103,14 @@ Texture_Release(struct Texture* image)
 }
 
 static GLenum
-filter_to_gl(enum TextureFilter value, bool_t has_mipmaps)
+filter_to_gl(enum TextureFilter value, bool_t has_mipmaps, enum MipmapMode mipmap_mode)
 {
+  if (has_mipmaps && mipmap_mode != kMipmapModeBase) {
+    bool_t nearest_mip = mipmap_mode == kMipmapModeNearest;
+    if (value == kTextureFilterNearest)
+      return nearest_mip ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_LINEAR;
+    return nearest_mip ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR_MIPMAP_LINEAR;
+  }
   switch (value) {
     case kTextureFilterNearest: return GL_NEAREST;
     case kTextureFilterLinear: return GL_LINEAR;
@@ -138,8 +146,8 @@ format_to_gl(enum TextureFormat format)
 void
 R_ApplyImageParms(struct Texture* image, GLenum target, bool_t mipmaps)
 {
-  int gl_min = filter_to_gl(image->MinificationFilter, mipmaps);
-  int gl_mag = filter_to_gl(image->MagnificationFilter, mipmaps);
+  int gl_min = filter_to_gl(image->MinificationFilter, mipmaps, image->MipmapMode);
+  int gl_mag = filter_to_gl(image->MagnificationFilter, FALSE, kMipmapModeBase);
   int gl_wrap = wrap_to_gl(image->WrapMode);
 
   R_Call(glTexParameteri, target, GL_TEXTURE_MIN_FILTER, gl_min);
@@ -343,12 +351,12 @@ R_TexImage(GLenum target,
   byte_t const* bytes = sb->data;
   /* JPEG may start with any marker, including APP2 for an ICC profile. */
   if (bytes[0] == 0xff && bytes[1] == 0xd8 && bytes[2] == 0xff)
-    return R_TexImageJPEG(target, sb);
+    return R_TexImageJPEGWithColorSpace(target, sb, pImage->ColorSpace);
   uint32_t header;
   memcpy(&header, bytes, sizeof header);
   switch (header) {
     case PNG_HEADER:
-      return R_TexImagePNG(target, sb, pImage->PremultiplyAlpha);
+      return R_TexImagePNGWithColorSpace(target, sb, pImage->PremultiplyAlpha, pImage->ColorSpace);
     case ASTC_HEADER:
       return R_TexImageASTC(target, sb);
     case DDS_HEADER:
@@ -378,7 +386,7 @@ R_TexImage(GLenum target,
       //			return size;
       //		}
       //	}
-      return R_TexImageJPEG(target, sb);
+      return R_TexImageJPEGWithColorSpace(target, sb, pImage->ColorSpace);
     default:
       return MAKE_TEX_SIZE(0, 0);
   }
@@ -454,6 +462,8 @@ _UploadImage(struct Image const *pImage, struct Texture *pTexture)
   if ((pFile = FS_LoadFile(pImage->Source))) {
     struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
     tex = R_TexImage(GL_TEXTURE_2D, &sb, pTexture, pImage);
+    if (pImage->HasMipmaps && tex.width && tex.height)
+      R_Call(glGenerateMipmap, GL_TEXTURE_2D);
     R_ApplyImageParms(pTexture, GL_TEXTURE_2D, pImage->HasMipmaps);
     FS_FreeFile(pFile);
   } else Con_Error("%s: can't load image", pImage->Source);

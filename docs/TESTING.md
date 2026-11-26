@@ -29,6 +29,16 @@ xvfb-run make test
 - Headless Lua/UI/layout work: use `make test-headless`.
 - Display-backed behavior: use `xvfb-run make test`.
 
+## FBX conversion
+
+`make test-fbx-import FBX_SDK="/path/to/FBX SDK/2020.2"` builds the converter
+and checks a synthetic two-triangle FBX. An unassigned material (`-1`) must
+retain its geometry in submesh zero; `AllSame` material mapping must use its
+single index for every polygon. The Autodesk SDK is required only to build
+the tool, so this target stays outside the default suites. To test an existing
+binary, set `ORCA_FBX` and run
+`python3 -m unittest discover -s tests -p test_fbx_import.py`.
+
 ## TreeView controls and editor trees
 
 ```bash
@@ -67,6 +77,14 @@ python3 tools/capture.py apps/Weather --wait 'Now*' \
 Snapshots render at the package's window size in points (1x). They show the
 app's real data, so a networked app needs its service; headless assertions
 stay the regression check.
+
+`python3 tools/test_renderpass.py --binary build/bin/orca` checks nested
+SceneKit clear-pass execution and scissor isolation using real rendered pixels.
+It requires a display-backed or offscreen renderer.
+
+`python3 tools/test_blending.py --binary build/bin/orca` checks native RGB/alpha
+blend factors and transitions between cached pipelines using real RGBA pixels.
+Run it with OpenGL and Metal binaries when changing shared blend state.
 
 ## Editor Preview startup
 

@@ -55,6 +55,7 @@
       <summary>Types of light sources for scene illumination</summary>
       <value name="Point">Omnidirectional point light source (like a light bulb)</value>
       <value name="Spot">Directional spot light with cone-shaped illumination area</value>
+      <value name="Directional">Infinite light directed along the node's local positive Z axis</value>
     </enum>
   </enums>
   <classes>
@@ -263,7 +264,7 @@
     </class>
     <class name="Light3D" parent="Node3D">
       <summary>3D light source for scene illumination and shadow casting</summary>
-      <details>Provides dynamic lighting for 3D scenes with support for point and spot light types. Affects material shading, shadow casting, and overall scene atmosphere.</details>
+      <details>Provides dynamic lighting for 3D scenes with support for point, spot, and directional light types. Directional light travels along the node's local positive Z axis.</details>
       <handles>
         <handle message="Node3D.Render"/>
       </handles>
@@ -272,7 +273,7 @@
         <property name="SpotAngle" type="vec2">Inner and outer cone angles for spot lights (X=inner, Y=outer in degrees)</property>
         <property name="Intensity" type="float" default="1">Brightness multiplier for light output (1.0 = normal intensity)</property>
         <property name="Range" type="float" default="10">Maximum distance at which light affects surfaces (for performance optimization)</property>
-        <property name="Type" type="LightType">Type of light source (point or spot)</property>
+        <property name="Type" type="LightType">Type of light source (point, spot, or directional)</property>
       </properties>
     </class>
     <class name="SpriteView" parent="Node3D">

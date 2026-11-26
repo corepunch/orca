@@ -346,6 +346,47 @@ local function test_animation_player_scrub()
   print("PASS: test_animation_player_scrub")
 end
 
+local function test_animation_player_initial_bound_pose()
+  local fs = require "orca.filesystem"
+  for _, case in ipairs {
+    { expression = "CLAMP(0, 1, 0)", expected = 0.2, time = 0 },
+    { expression = "CLAMP(0, 1, 0.5)", expected = 0.5, time = 0.5 },
+    { expected = 0.9, time = 0 },
+  } do
+    local binding = case.expression and
+      ('<Binding Target="CurrentTime" Mode="Expression" Expression="%s"/>'):format(case.expression) or ""
+    local node = assert(fs.loadObjectFromString(([[
+      <Node2D>
+        <Node2D Name="Target" Opacity="0.9"/>
+        <AnimationPlayer Name="Driver" AutoplayEnabled="false">
+          <AnimationPlayer.Clip>
+            <AnimationClip StartTime="0" StopTime="1">
+              <AnimationCurve Path="../Target" Property="Opacity">
+                <AnimationCurve.Keyframes>
+                  <Keyframe Time="0" Value="0.2 0 0 0" TangentMode="1"/>
+                  <Keyframe Time="1" Value="0.8 0 0 0" TangentMode="1"/>
+                </AnimationCurve.Keyframes>
+              </AnimationCurve>
+            </AnimationClip>
+          </AnimationPlayer.Clip>
+          %s
+        </AnimationPlayer>
+      </Node2D>]]):format(binding)))
+    local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+    screen:addChild(node)
+    local driver = assert(node:findChild("Driver", false))
+    local target = assert(node:findChild("Target", false))
+    test.expect(driver:findByPath("../Target") == target, "curve resolves the target")
+    driver:send("Object.Start")
+    core.runAllPrograms(screen)
+    core.flushQueue()
+    test.expect_near(target.Opacity, case.expected, 0.001, "only bound scrubbers apply an initial pose")
+    test.expect_near(driver.CurrentTime, case.time, 0.001, "startup preserves bound time")
+    test.expect(not driver.Playing, "initial scrubbing does not start playback")
+  end
+  print("PASS: test_animation_player_initial_bound_pose")
+end
+
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
@@ -364,5 +405,6 @@ test_animation_player_duration_scale()
 test_animation_player_playback_mode()
 test_animation_player_reverse_start()
 test_animation_player_scrub()
+test_animation_player_initial_bound_pose()
 
 print("All animation tests passed.")

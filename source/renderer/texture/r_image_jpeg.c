@@ -108,27 +108,32 @@ R_DecodeJPEG_RGB(struct AXbuffer* buf, int* width, int* height)
 }
 
 static void
-jpeg_upload(GLenum target, struct jpeg_imageinfo const* image)
+jpeg_upload(GLenum target, struct jpeg_imageinfo const* image, enum TextureColorSpace color_space)
 {
-  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 1);
-  R_Call(glTexImage2D, target, 0,
+  bool_t srgb = color_space == kTextureColorSpaceSRGB;
 #ifdef R_USE_SRGB
-         GL_SRGB8,
-#else
-         GL_RGB,
+  srgb |= color_space == kTextureColorSpaceAutomatic;
 #endif
+  R_Call(glPixelStorei, GL_UNPACK_ALIGNMENT, 1);
+  R_Call(glTexImage2D, target, 0, srgb ? GL_SRGB8 : GL_RGB,
          image->width, image->height, 0, GL_RGB, GL_UNSIGNED_BYTE, image->data);
+}
+
+struct AXsize
+R_TexImageJPEGWithColorSpace(GLenum target, struct AXbuffer* rgb, enum TextureColorSpace color_space)
+{
+  struct jpeg_imageinfo image = {0};
+  image.data = R_DecodeJPEG_RGB(rgb, &image.width, &image.height);
+  if (!image.data) return MAKE_TEX_SIZE(0, 0);
+  jpeg_upload(target, &image, color_space);
+  free(image.data);
+  return MAKE_TEX_SIZE(image.width, image.height);
 }
 
 struct AXsize
 R_TexImageJPEG(GLenum target, struct AXbuffer* rgb)
 {
-  struct jpeg_imageinfo image = {0};
-  image.data = R_DecodeJPEG_RGB(rgb, &image.width, &image.height);
-  if (!image.data) return MAKE_TEX_SIZE(0, 0);
-  jpeg_upload(target, &image);
-  free(image.data);
-  return MAKE_TEX_SIZE(image.width, image.height);
+  return R_TexImageJPEGWithColorSpace(target, rgb, kTextureColorSpaceAutomatic);
 }
 
 struct AXsize
@@ -166,7 +171,7 @@ R_TexImageJPEGwithAlpha(GLenum target, struct AXbuffer* buf_rgb,
 #endif
            rgb.width, rgb.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     free(data);
-  } else jpeg_upload(target, &rgb);
+  } else jpeg_upload(target, &rgb, kTextureColorSpaceAutomatic);
   free(rgb.data);
   free(alpha.data);
   return MAKE_TEX_SIZE(rgb.width, rgb.height);
