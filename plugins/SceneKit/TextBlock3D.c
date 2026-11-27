@@ -13,6 +13,9 @@ HANDLER(TextBlock3D, Node3D, Render)
 
   float w = pTextRun->_textinfo.txWidth;
   float h = pTextRun->_textinfo.txHeight;
+  float measuredWidth = w * 0.1f;
+  if (pTextBlock3D->MeasuredWidth != measuredWidth)
+    PROP_SetValue(OBJ_FindLongProperty(hObject, ID_TextBlock3D_MeasuredWidth), &measuredWidth);
 
   struct ViewEntity entity = {
     .radius = (struct vec4){0},

@@ -259,6 +259,7 @@
       <properties>
         <property name="Color" type="color">Text colour (white when unset)</property>
         <property name="Foreground" type="BrushShorthand">Text brush; a gradient takes precedence over Color.</property>
+        <property name="MeasuredWidth" type="float">Width of the rendered text in local 3D units, before this node's transform. Updated when text is rendered.</property>
       </properties>
       <fields>
         <field name="_node3D" type="Node3D" pointer="true"/>
