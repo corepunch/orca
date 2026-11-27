@@ -476,6 +476,7 @@ T_CaptureLine(LayoutCtx *ctx, LayoutState const *ls,
   float const scale = ctx->text->scale;
   ctx->lines[ctx->lineCount++] = (struct TextLineBox){
     .Clip = { 0, top / scale, sz->width / scale, (bottom - top) / scale },
+    .Baseline = (ls->lineY + ls->baseline) / scale,
     .GradientBounds = {
       left / scale, ls->lineY / scale, (right - left) / scale,
       (ls->baseline - ls->descender) / scale,
@@ -1350,6 +1351,19 @@ HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
   struct text_info *info = (struct text_info*)pGetInfo;
   if (!info || !pTextBlockConcept->_text) return FALSE;
   return SUCCEEDED(TextBlockText_GetInfo(pTextBlockConcept->_text, info));
+}
+
+HANDLER(TextBlockConcept, TextBlockConcept, GetFirstVisibleBaseline)
+{
+  float *baseline = (float*)pGetFirstVisibleBaseline;
+  struct TextLineBox *lines;
+  uint32_t count;
+  if (!baseline || !pTextBlockConcept->_text) return FALSE;
+  HRESULT hr = TextBlockText_GetLineLayout(pTextBlockConcept->_text, &lines, &count);
+  if (FAILED(hr)) return Con_Error("could not measure text baseline"), FALSE;
+  if (!count) return FALSE;
+  *baseline = lines[0].Baseline;
+  return TRUE;
 }
 
 HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)

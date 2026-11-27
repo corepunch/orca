@@ -90,6 +90,9 @@ Run it with OpenGL and Metal binaries when changing shared blend state.
 independent and inherited texture wrapping and mipmap generation with rendered
 pixels. Run it with both OpenGL and Metal builds.
 
+`python3 tools/test_3d_origins.py --binary build/bin/orca` checks SpriteView
+pivots and first-line 3D text baseline positioning with rendered pixels.
+
 ## Editor Preview startup
 
 `make test-startup-render-mode` checks the shared startup policy for both screen

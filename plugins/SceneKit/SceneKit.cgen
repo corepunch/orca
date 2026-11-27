@@ -260,6 +260,7 @@
         <property name="Color" type="color">Text colour (white when unset)</property>
         <property name="Foreground" type="BrushShorthand">Text brush; a gradient takes precedence over Color.</property>
         <property name="MeasuredWidth" type="float">Width of the rendered text in local 3D units, before this node's transform. Updated when text is rendered.</property>
+        <property name="BaselineOrigin" type="bool" default="FALSE">Place the first visible text line's baseline at the local origin instead of centering the text bitmap vertically.</property>
       </properties>
       <fields>
         <field name="_node3D" type="Node3D" pointer="true"/>
@@ -288,6 +289,7 @@
       <properties>
         <property name="Image" type="Texture" pointer="true">2D image texture to display on the billboard sprite</property>
         <property name="Bounds" type="vec4">Texture coordinates and sizing (X=U, Y=V, Z=width, W=height)</property>
+        <property name="Pivot" type="vec2" default=".x=0.5,.y=0.5">Normalized sprite origin, measured from the bottom-left corner.</property>
       </properties>
     </class>
   </classes>

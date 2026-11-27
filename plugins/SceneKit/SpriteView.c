@@ -35,7 +35,7 @@ HANDLER(SpriteView, Node3D, Render)
   struct ViewEntity entity = {
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){
-      -0.005f*viewbox.width, -0.005f*viewbox.height,
+      -0.01f*pSpriteView->Pivot.x*viewbox.width, -0.01f*pSpriteView->Pivot.y*viewbox.height,
       0.01f*viewbox.width, 0.01f*viewbox.height
     })),
     .matrix = GetNode3D(hObject)->Matrix,

@@ -17,9 +17,16 @@ HANDLER(TextBlock3D, Node3D, Render)
   if (pTextBlock3D->MeasuredWidth != measuredWidth)
     PROP_SetValue(OBJ_FindLongProperty(hObject, ID_TextBlock3D_MeasuredWidth), &measuredWidth);
 
+  float y = -h / 2;
+  if (pTextBlock3D->BaselineOrigin) {
+    float baseline;
+    if (OBJ_SendMessageW(hObject, ID_TextBlockConcept_GetFirstVisibleBaseline, 0, &baseline))
+      y = baseline - h;
+  }
+
   struct ViewEntity entity = {
     .radius = (struct vec4){0},
-    .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
+    .bbox = BOX3_FromRect(((struct rect){-w/2,y,w,h})),
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,
       .color = pTextBlock3D->Color,   // all zero (unset) draws white
